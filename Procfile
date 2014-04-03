@@ -1,1 +1,1 @@
-web: target/universal/stage/bin/dailysoccer -Dhttp.port=$PORT
+web: target/universal/stage/bin/backend -Dhttp.port=$PORT -DapplyEvolutions.default=false
