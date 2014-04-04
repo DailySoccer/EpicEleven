@@ -6,12 +6,12 @@ import play.mvc.*;
 import play.mvc.Http.RequestBody;
 import views.html.*;
 
-class TestClass {
-	public String var1 = "Hello";
-	public String var2 = "Bye";
-}
-
 public class Application extends Controller {
+
+    public static class TestClass {
+        public String key1;
+        public String key2;
+    }
 
     public static Result test() {
         //return ok(index.render("Your new application is ready."));

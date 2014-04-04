@@ -4,7 +4,9 @@
 
 
 GET     /                           controllers.Assets.at(path="/public", file="index.html")
+GET     /*file               		controllers.Assets.at(path="/public", file)
 GET     /test                       controllers.Application.test()
 GET     /ping                       controllers.Application.ping()
-GET     /*file               		controllers.Assets.at(path="/public", file)
 GET     /jsontest					controllers.Application.jsontest()
+
+POST     /signup					controllers.Login.signup()

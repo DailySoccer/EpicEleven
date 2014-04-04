@@ -1,1 +1,1 @@
-web: target/universal/stage/bin/backend -Dhttp.port=$PORT -DapplyEvolutions.default=false
+web: target/universal/stage/bin/backend -Dconfig.resource=production.conf
