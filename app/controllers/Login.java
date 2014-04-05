@@ -1,5 +1,9 @@
 package controllers;
 
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import play.Logger;
+import play.Play;
 import play.data.validation.Constraints.*;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -9,7 +13,7 @@ import static play.data.Form.*;
 public class Login extends Controller {
 
     // https://github.com/playframework/playframework/tree/master/samples/java/forms
-    public static class SignupData {
+    public static class SignupParams {
         @Required @MinLength(value = 4)
         public String first_name;
 
@@ -22,8 +26,13 @@ public class Login extends Controller {
         public String repeat_password;
     }
 
+    public static class LoginParams {
+        @Required public String first_name;
+        @Required public String password;
+    }
+
     public static Result signup() {
-        final Form<SignupData> signupForm = form(SignupData.class).bindFromRequest();
+        final Form<SignupParams> signupForm = form(SignupParams.class).bindFromRequest();
 
         if (!signupForm.hasErrors()) {
             if(signupForm.field("first_name").valueOr("").equals("admin"))
@@ -37,13 +46,29 @@ public class Login extends Controller {
         }
 
         if (!signupForm.hasErrors()) {
-            SignupData signupData = signupForm.get();
+            SignupParams signupParams = signupForm.get();
 
-            return ok(String.format("Hello %s", signupData.first_name));
+            return ok(String.format("Hello %s", signupParams.first_name));
         }
         else {
             return badRequest(signupForm.errorsAsJson());
         }
+    }
+
+    public static Result login() {
+        String mongodbUri = Play.application().configuration().getString("mongodb.uri");
+
+        try {
+            MongoClient mongoClient = new MongoClient(new MongoClientURI(mongodbUri));
+        } catch (Exception exc) {
+            Logger.error("Error connecting to MongoDB {}", mongodbUri);
+        }
+
+        return ok("THIS_IS_THE_TOKEN");
+    }
+
+    public static Result user_profile() {
+        return ok();
     }
 
     private static boolean isSecurePassword(String password) {
