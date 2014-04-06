@@ -8,6 +8,7 @@ Installing the environment
     After installing, make sure version 7 is installed:
 
     $ java -version
+
     java version "1.7.0_51"
 
 
