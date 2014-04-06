@@ -11,10 +11,13 @@ Installing the environment
 
     java version "1.7.0_51"
 
-
 - You need to install the Play framework. I recommend using homebrew:
 
     $ brew install play
+
+ - You need to install mongodb
+
+    $ brew install mongo
 
 - To run the server:
 

@@ -1,33 +1,38 @@
 package controllers;
 
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
-import play.Logger;
-import play.Play;
+import com.mongodb.DB;
+import model.Model;
+import model.User;
+import org.jongo.Jongo;
+import org.jongo.MongoCollection;
 import play.data.validation.Constraints.*;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.data.*;
 import static play.data.Form.*;
+import play.Logger;
 
 public class Login extends Controller {
 
     // https://github.com/playframework/playframework/tree/master/samples/java/forms
     public static class SignupParams {
         @Required @MinLength(value = 4)
-        public String first_name;
+        public String firstName;
 
         @Required @MinLength(value = 4)
-        public String last_name;
+        public String lastName;
+
+        @Required @MinLength(value = 4)
+        public String nickName;
 
         @Required @Email public String email;
 
         public String password;
-        public String repeat_password;
+        public String repeatPassword;
     }
 
     public static class LoginParams {
-        @Required public String first_name;
+        @Required public String email;
         @Required public String password;
     }
 
@@ -35,36 +40,35 @@ public class Login extends Controller {
         final Form<SignupParams> signupForm = form(SignupParams.class).bindFromRequest();
 
         if (!signupForm.hasErrors()) {
-            if(signupForm.field("first_name").valueOr("").equals("admin"))
-                signupForm.reject("first_name", "This username is already taken");
+            if(signupForm.field("nickName").valueOr("").equals("admin"))
+                signupForm.reject("nickName", "This nickName is already taken");
 
             if (!isSecurePassword(signupForm.field("password").valueOr("")))
                 signupForm.reject("password", "Password is not secure");
 
-            if (!signupForm.field("password").valueOr("").equals(signupForm.field("repeat_password").valueOr("")))
-                signupForm.reject("repeat_password", "Passwords don't match");
+            if (!signupForm.field("password").valueOr("").equals(signupForm.field("repeatPassword").valueOr("")))
+                signupForm.reject("repeatPassword", "Passwords don't match");
         }
 
         if (!signupForm.hasErrors()) {
-            SignupParams signupParams = signupForm.get();
-
-            return ok(String.format("Hello %s", signupParams.first_name));
+            createUser(signupForm.get());
+            return ok();
         }
         else {
             return badRequest(signupForm.errorsAsJson());
         }
     }
 
+    private static void createUser(SignupParams theParams) {
+        final Jongo jongo = Model.createJongo();
+
+        MongoCollection users = jongo.getCollection("users");
+        users.insert(new User(theParams.firstName, theParams.lastName, theParams.nickName,
+                              theParams.email, theParams.password));
+    }
+
     public static Result login() {
-        String mongodbUri = Play.application().configuration().getString("mongodb.uri");
 
-        Logger.info("The MongoDB uri is {}", mongodbUri);
-
-        try {
-            MongoClient mongoClient = new MongoClient(new MongoClientURI(mongodbUri));
-        } catch (Exception exc) {
-            Logger.error("Error connecting to MongoDB {}", mongodbUri);
-        }
 
         return ok("THIS_IS_THE_TOKEN");
     }
