@@ -1,6 +1,17 @@
 Installing the environment
 ==========================
 
+- You need to install Java SE JDK 7u51.
+
+    http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html
+
+    After installing, make sure version 7 is installed:
+
+    $ java -version
+    java version "1.7.0_51"
+    Java(TM) SE Runtime Environment (build 1.7.0_51-b13)
+    Java HotSpot(TM) 64-Bit Server VM (build 24.51-b03, mixed mode)
+
 - You need to install the Play framework. I recommend using homebrew:
 
     $ brew install play
@@ -17,7 +28,8 @@ Installing the environment
 
     [backend] $ run
 
-- I recommend installing Intellij Idea 13, specially for debugging.
+- I recommend installing Intellij Idea 13. To connect the IDE to the debugger, you need to "Edit configuration" and
+  add a new remote configuration. Make it point to whatever the port "play debug" tells you.
 
 
 
