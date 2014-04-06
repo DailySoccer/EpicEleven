@@ -58,6 +58,8 @@ public class Login extends Controller {
     public static Result login() {
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
 
+        Logger.info("The MongoDB uri is {}", mongodbUri);
+
         try {
             MongoClient mongoClient = new MongoClient(new MongoClientURI(mongodbUri));
         } catch (Exception exc) {
