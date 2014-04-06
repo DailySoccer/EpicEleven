@@ -51,6 +51,7 @@ public class Login extends Controller {
         }
 
         if (!signupForm.hasErrors()) {
+            // TODO: Exceptions managing
             createUser(signupForm.get());
             return ok();
         }

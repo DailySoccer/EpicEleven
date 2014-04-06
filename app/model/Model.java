@@ -13,5 +13,5 @@ public class Model {
     }
 
     // TODO: Should be this included in the conf file?
-    static public String dbName = "dailySoccerDB";
+    static public String dbName = "app23671191";
 }
