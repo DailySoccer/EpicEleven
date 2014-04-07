@@ -31,8 +31,8 @@ public class Model {
     }
 
     static public void ShutdownConnection() {
-        if (Model._mongoClient != null) {
-            Model._mongoClient.close();
+        if (_mongoClient != null) {
+            _mongoClient.close();
         }
     }
 
