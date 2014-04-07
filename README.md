@@ -1,22 +1,22 @@
 Installing the environment
 ==========================
 
-- You need to install Java SE JDK 7u51.
+- You need to install Java SE JDK 7u51: http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html
 
-    http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html
-
-    After installing, make sure version 7 is installed:
-
+    Make sure version 7 is installed:
+    
     $ java -version
 
-    java version "1.7.0_51"
+    - java version "1.7.0_51"
+    - Java(TM) SE Runtime Environment (build 1.7.0_51-b13)
+    - Java HotSpot(TM) 64-Bit Server VM (build 24.51-b03, mixed mode)
 
 - You need to install the Play framework. I recommend using homebrew:
 
     $ brew install play
 
- - You need to install mongodb
-
+- You need to install mongodb
+ 
     $ brew install mongo
 
 - To run the server:
@@ -28,19 +28,15 @@ Installing the environment
     $ backend> play debug
 
     And then, from inside the console, you start the server:
-
+    
     [backend] $ run
 
-- I recommend installing Intellij Idea 13. To connect the IDE to the debugger, you need to "Edit configuration" and
+- Install Intellij Idea 13. To connect the IDE to the debugger, you need to "Edit configuration" and
   add a new remote configuration. Make it point to whatever the port "play debug" tells you.
 
 
 
-Deploying to Heroku
+Heroku
 ===================
 
 - Heroku reference documentation: https://devcenter.heroku.com/categories/heroku-architecture
-
-- After commiting everything to your master branch:
-
-    $ git push heroku master
