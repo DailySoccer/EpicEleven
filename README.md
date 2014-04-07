@@ -40,3 +40,4 @@ Heroku
 ===================
 
 - Heroku reference documentation: https://devcenter.heroku.com/categories/heroku-architecture
+- Our URL is: http://dailysoccer.herokuapp.com/
