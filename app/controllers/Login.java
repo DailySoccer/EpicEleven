@@ -51,7 +51,7 @@ public class Login extends Controller {
         }
 
         if (!signupForm.hasErrors()) {
-            // TODO: Exceptions managing
+            // TODO: Exceptions managing (duplicated key, for instance)
             createUser(signupForm.get());
             return ok();
         }
