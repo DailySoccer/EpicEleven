@@ -4,7 +4,7 @@ import org.bson.types.ObjectId;
 
 public class User {
 
-    private ObjectId _id;
+    public ObjectId _id;
 
 	public String firstName;
 	public String lastName;
@@ -20,4 +20,6 @@ public class User {
 		this.email = email;
 		this.password = password;
 	}
+
+    public User() {}
 }

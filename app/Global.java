@@ -1,4 +1,3 @@
-import com.mongodb.*;
 import model.Model;
 import play.*;
 
@@ -8,12 +7,12 @@ public class Global extends GlobalSettings {
     public void onStart(Application app) {
         Logger.info("Application has started");
 
-        Model.InitConnection();
+        Model.init();
     }
 
     public void onStop(Application app) {
         Logger.info("Application shutdown...");
 
-        Model.ShutdownConnection();
+        Model.shutdown();
     }
 }

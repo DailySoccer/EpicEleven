@@ -25,7 +25,7 @@ public class Application extends Controller {
     }
 
     @BodyParser.Of(BodyParser.Json.class)
-    public static Result jsontest() {
+    public static Result jsonTest() {
     	RequestBody body = request().body();
     	return ok("Got json: " + body.asJson());
     }
