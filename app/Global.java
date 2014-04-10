@@ -1,5 +1,9 @@
 import model.Model;
 import play.*;
+import play.mvc.Action;
+import play.mvc.Http;
+
+import java.lang.reflect.Method;
 
 // http://www.playframework.com/documentation/2.2.x/JavaGlobal
 public class Global extends GlobalSettings {

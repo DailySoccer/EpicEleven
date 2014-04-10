@@ -1,5 +1,6 @@
 package controllers;
 
+import actions.CorsComposition;
 import model.Model;
 import model.Session;
 import model.User;
@@ -16,6 +17,7 @@ import play.Logger;
 
 import java.util.Date;
 
+@CorsComposition.Cors
 public class Login extends Controller {
 
     // https://github.com/playframework/playframework/tree/master/samples/java/forms
