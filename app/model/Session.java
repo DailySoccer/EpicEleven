@@ -1,12 +1,11 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import org.bson.types.ObjectId;
 import java.util.Date;
 
 
 public class Session {
-    private ObjectId _id;
-
     public String sessionToken;
     public ObjectId userId;
     public Date createdAt;
@@ -18,4 +17,7 @@ public class Session {
     }
 
     public Session() {}
+
+    @JsonView(JSONViews.Private.class)
+    private ObjectId _id;
 }

@@ -1,8 +1,15 @@
 package utils;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeCreator;
+import com.mongodb.util.JSON;
+import com.mongodb.util.JSONParseException;
+import model.JSONViews;
+import play.Logger;
+import play.libs.Json;
 
 
 public class ReturnHelper {
@@ -16,8 +23,14 @@ public class ReturnHelper {
     public ReturnHelper(Object payload) { setPayloadAndStatus(payload); }
     public ReturnHelper() {}
 
-    public JsonNode toJSON() {
-        return new ObjectMapper().valueToTree(this);
+    public JsonNode toJsonNode() {
+        try {
+            // TODO: Evitar convertir a string para luego convertir a JsonNode
+            return Json.parse(new ObjectMapper().writerWithView(JSONViews.Public.class).writeValueAsString(this));
+        } catch (JsonProcessingException exc) {
+            Logger.error("toJSON: ", exc);
+            return null;
+        }
     }
 
     public void setPayloadAndStatus(Object payload) {
