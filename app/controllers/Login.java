@@ -1,13 +1,16 @@
 package controllers;
 
 import actions.CorsComposition;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.mongodb.MongoException;
 import model.Model;
 import model.Session;
 import model.User;
-import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import play.Play;
 import play.data.validation.Constraints.*;
+import play.libs.Crypto;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -45,32 +48,53 @@ public class Login extends Controller {
 
     public static Result signup() {
         Form<SignupParams> signupForm = form(SignupParams.class).bindFromRequest();
+        SignupParams params = null;
+        ObjectNode result = Json.newObject();
 
         if (!signupForm.hasErrors()) {
-            if(signupForm.field("nickName").valueOr("").equals("admin"))
-                signupForm.reject("nickName", "This nickName is already taken");
+            params = signupForm.get();
+            User dup = Model.users().findOne("{ $or: [ {email:'#'}, {nickName:'#'} ] }", params.email, params.nickName).as(User.class);
 
-            if (!isSecurePassword(signupForm.field("password").valueOr("")))
+            if (dup != null) {
+                if (dup.email.equals(params.email))
+                    signupForm.reject("email", "This email is already taken");
+
+                if (dup.nickName.equals(params.nickName))
+                    signupForm.reject("nickName", "This nickName is already taken");
+            }
+
+            if (!isSecurePassword(params.password))
                 signupForm.reject("password", "Password is not secure");
         }
 
         if (!signupForm.hasErrors()) {
-            // TODO: Exceptions managing (duplicated key, for instance)
-            createUser(signupForm.get());
-            return ok();
+            if (!createUser(params))
+                signupForm.reject("generalError", "General error: Try again please");
         }
-        else {
+
+        if (signupForm.hasErrors())
             return badRequest(signupForm.errorsAsJson());
-        }
+        else
+            return ok();
     }
 
 
-    private static void createUser(SignupParams theParams) {
-        Jongo jongo = Model.createJongo();
+    private static boolean createUser(SignupParams theParams) {
+        boolean bRet = true;
 
-        MongoCollection users = jongo.getCollection("users");
-        users.insert(new User(theParams.firstName, theParams.lastName, theParams.nickName,
-                              theParams.email, theParams.password));
+        // Puede ocurrir que salte una excepcion por duplicidad, no seria un error de programacion puesto que, aunque
+        // comprobamos si el email o nickname estan duplicados antes de llamar aqui, es posible que se creen en
+        // paralelo. Por esto, la vamos a controlar explicitamente
+        try {
+            MongoCollection users = Model.jongo().getCollection("users");
+            users.insert(new User(theParams.firstName, theParams.lastName, theParams.nickName,
+                                  theParams.email, theParams.password));
+        } catch (MongoException exc) {
+            Logger.error("createUser:", exc);
+            bRet = false;
+        }
+
+        return bRet;
     }
 
 
@@ -83,19 +107,17 @@ public class Login extends Controller {
             return badRequest("TODO");
 
         LoginParams loginParams = loginParamsForm.get();
-        Jongo jongo = Model.createJongo();
 
         // TODO: Necesitamos sanitizar el email?
-        User theUser = jongo.getCollection("users").findOne("{email:'#'}", loginParams.email).as(User.class);
+        User theUser = Model.users().findOne("{email:'#'}", loginParams.email).as(User.class);
 
         if (theUser == null)
             return badRequest("TODO");
 
-        // TODO: Password check (SecretKeyFactory), verificar el rendimiento de SecureRandom, ver si podemos quitar
-        // el indice unico en las sesiones, caducidad
-        String sessionToken = Model.getRandomSessionToken();
+        // TODO: Password check, caducidad
+        String sessionToken = Crypto.generateSignedToken();
         Session newSession = new Session(sessionToken, theUser._id, new Date());
-        jongo.getCollection("sessions").insert(newSession);
+        Model.sessions().insert(newSession);
 
         // Durante el desarrollo en local, usamos cookies para que sea mas facil debugear
         if (Play.isDev())
@@ -106,9 +128,8 @@ public class Login extends Controller {
 
 
     public static Result userProfile() {
-        Jongo jongo = Model.createJongo();
 
-        User theUser = getUserFromSession(jongo);
+        User theUser = getUserFromSession();
 
         if (theUser == null)
             return badRequest("TODO");
@@ -117,19 +138,18 @@ public class Login extends Controller {
     }
 
 
-    private static User getUserFromSession(Jongo jongo) {
+    private static User getUserFromSession() {
         String sessionToken = getSessionToken();
 
         if (sessionToken == null)
             return null;
 
-        MongoCollection sessions = jongo.getCollection("sessions");
-        Session theSession = sessions.findOne("{sessionToken:'#'}", sessionToken).as(Session.class);
+        Session theSession = Model.sessions().findOne("{sessionToken:'#'}", sessionToken).as(Session.class);
 
         if (theSession == null)
             return null;
 
-        return jongo.getCollection("users").findOne(theSession.userId).as(User.class);
+        return Model.users().findOne(theSession.userId).as(User.class);
     }
 
 

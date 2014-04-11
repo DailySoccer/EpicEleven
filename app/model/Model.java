@@ -1,8 +1,10 @@
 package model;
 
+import com.apple.eawt.AppEvent;
 import com.mongodb.*;
 import org.joda.time.DateTime;
 import org.jongo.Jongo;
+import org.jongo.MongoCollection;
 import play.Logger;
 import play.Play;
 import utils.*;
@@ -12,11 +14,9 @@ import java.util.Date;
 
 public class Model {
 
-    // http://jongo.org/
-    static public Jongo createJongo() {
-        return new Jongo(_mongoDB);
-    }
-
+    static public Jongo jongo() { return _jongo; }
+    static public MongoCollection sessions() { return _jongo.getCollection("sessions"); }
+    static public MongoCollection users() { return _jongo.getCollection("users"); }
 
     static public void init() {
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
@@ -24,18 +24,28 @@ public class Model {
 
         Logger.info("The MongoDB uri is {}", mongodbUri);
 
-        try {
-            _mongoClient = new MongoClient(mongoClientURI);
-            _mongoDB = _mongoClient.getDB(mongoClientURI.getDatabase());
+        boolean bIsInitialized = false;
+        while (!bIsInitialized) {
+            try {
+                _mongoClient = new MongoClient(mongoClientURI);
+                _mongoDB = _mongoClient.getDB(mongoClientURI.getDatabase());
 
-            // Let's make sure our DB has the neccesary collections and indexes
-            ensureDB(_mongoDB);
+                // Let's make sure our DB has the neccesary collections and indexes
+                ensureDB(_mongoDB);
+                bIsInitialized = true;
 
-        } catch (Exception exc) {
-            Logger.error("Error initializating MongoDB {}\n{}", mongodbUri, exc.toString());
+            } catch (Exception exc) {
+                Logger.error("Error initializating MongoDB {}: {}", mongodbUri, exc.toString());
+
+                // We try again in 10s
+                try {
+                    Logger.info("Trying to initialize MongoDB again in 10s...");
+                    Thread.sleep(10000);
+                } catch (InterruptedException intExc) { Logger.error("Interrupted"); }
+            }
         }
 
-        _secureRandom = new SecureRandom(DateTime.now().toString().getBytes());
+        _jongo = new Jongo(_mongoDB);
     }
 
 
@@ -45,14 +55,6 @@ public class Model {
     }
 
 
-    static public String getRandomSessionToken() {
-        // Note: Depending on the implementation, the generateSeed and nextBytes methods may block as entropy is being
-        // gathered, for example, if they need to read from /dev/random on various unix-like operating systems.
-        byte[] nextBytes = new byte[16];
-        _secureRandom.nextBytes(nextBytes);
-        return StringUtils.bytesToHex(nextBytes);
-    }
-
     static public void ensureDB(DB theMongoDB) {
         DBCollection users = theMongoDB.getCollection("users");
 
@@ -60,6 +62,8 @@ public class Model {
         users.createIndex(new BasicDBObject("email", 1), new BasicDBObject("unique", true));
         users.createIndex(new BasicDBObject("nickName", 1), new BasicDBObject("unique", true));
 
+        // Do we need the sessionToken to be unique? SecureRandom guarantees it to be unique, doesn't it?
+        // http://www.kodyaz.com/images/pics/random-number-generator-dilbert-comic.jpg
         DBCollection sessions = theMongoDB.getCollection("sessions");
         sessions.createIndex(new BasicDBObject("sessionToken", 1), new BasicDBObject("unique", true));
     }
@@ -72,6 +76,6 @@ public class Model {
     // DB and DBCollection are completely thread safe. In fact, they are cached so you get the same instance no matter what.
     static private DB _mongoDB;
 
-    // http://docs.oracle.com/javase/7/docs/technotes/guides/security/StandardNames.html#SecureRandom
-    static private SecureRandom _secureRandom;
+    // Jongo is thread safe too: https://groups.google.com/forum/#!topic/jongo-user/KwukXi5Vm7c
+    static private Jongo _jongo;
 }
