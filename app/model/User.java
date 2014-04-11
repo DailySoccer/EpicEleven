@@ -1,10 +1,11 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.bson.types.ObjectId;
 
 public class User {
 
-    public ObjectId _id;
+    @JsonIgnore public ObjectId _id;
 
 	public String firstName;
 	public String lastName;

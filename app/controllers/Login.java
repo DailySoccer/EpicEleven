@@ -1,16 +1,14 @@
 package controllers;
 
 import actions.CorsComposition;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.MongoException;
 import model.Model;
+import utils.ReturnHelper;
 import model.Session;
 import model.User;
-import org.jongo.MongoCollection;
 import play.Play;
 import play.data.validation.Constraints.*;
 import play.libs.Crypto;
-import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -49,7 +47,6 @@ public class Login extends Controller {
     public static Result signup() {
         Form<SignupParams> signupForm = form(SignupParams.class).bindFromRequest();
         SignupParams params = null;
-        ObjectNode result = Json.newObject();
 
         if (!signupForm.hasErrors()) {
             params = signupForm.get();
@@ -72,25 +69,21 @@ public class Login extends Controller {
                 signupForm.reject("generalError", "General error: Try again please");
         }
 
-        if (signupForm.hasErrors())
-            return badRequest(signupForm.errorsAsJson());
-        else
-            return ok();
+        return ok(new ReturnHelper(!signupForm.hasErrors(), signupForm.errorsAsJson()).toJSON());
     }
 
 
     private static boolean createUser(SignupParams theParams) {
         boolean bRet = true;
 
-        // Puede ocurrir que salte una excepcion por duplicidad, no seria un error de programacion puesto que, aunque
+        // Puede ocurrir que salte una excepcion por duplicidad. No seria un error de programacion puesto que, aunque
         // comprobamos si el email o nickname estan duplicados antes de llamar aqui, es posible que se creen en
         // paralelo. Por esto, la vamos a controlar explicitamente
         try {
-            MongoCollection users = Model.jongo().getCollection("users");
-            users.insert(new User(theParams.firstName, theParams.lastName, theParams.nickName,
-                                  theParams.email, theParams.password));
+            Model.users().insert(new User(theParams.firstName, theParams.lastName, theParams.nickName,
+                                          theParams.email, theParams.password));
         } catch (MongoException exc) {
-            Logger.error("createUser:", exc);
+            Logger.error("createUser: ", exc);
             bRet = false;
         }
 
@@ -102,44 +95,43 @@ public class Login extends Controller {
     // confirmacion de la cuenta a traves de email, etc. Hay un monton de notas en Asana
     public static Result login() {
         Form<LoginParams> loginParamsForm = form(LoginParams.class).bindFromRequest();
+        ReturnHelper returnHelper = new ReturnHelper();
 
-        if (loginParamsForm.hasErrors())
-            return badRequest("TODO");
+        if (!loginParamsForm.hasErrors()) {
+            LoginParams loginParams = loginParamsForm.get();
 
-        LoginParams loginParams = loginParamsForm.get();
+            // TODO: Necesitamos sanitizar el email?
+            User theUser = Model.users().findOne("{email:'#'}", loginParams.email).as(User.class);
 
-        // TODO: Necesitamos sanitizar el email?
-        User theUser = Model.users().findOne("{email:'#'}", loginParams.email).as(User.class);
+            if (theUser == null || !isPasswordCorrect(theUser, loginParams.password)) {
+                loginParamsForm.reject("email", "email or password incorrect");
+                returnHelper.setKO(loginParamsForm.errorsAsJson());
+            }
+            else {
+                String sessionToken = Crypto.generateSignedToken();
+                Session newSession = new Session(sessionToken, theUser._id, new Date());
+                Model.sessions().insert(newSession);
 
-        if (theUser == null)
-            return badRequest("TODO");
+                // Durante el desarrollo en local, usamos cookies para que sea mas facil debugear
+                if (Play.isDev())
+                    response().setCookie("sessionToken", sessionToken);
 
-        // TODO: Password check, caducidad
-        String sessionToken = Crypto.generateSignedToken();
-        Session newSession = new Session(sessionToken, theUser._id, new Date());
-        Model.sessions().insert(newSession);
+                returnHelper.setOK(sessionToken);
+            }
+        }
 
-        // Durante el desarrollo en local, usamos cookies para que sea mas facil debugear
-        if (Play.isDev())
-            response().setCookie("sessionToken", sessionToken);
-
-        return ok(sessionToken);
+        return ok(returnHelper.toJSON());
     }
 
 
     public static Result userProfile() {
 
-        User theUser = getUserFromSession();
-
-        if (theUser == null)
-            return badRequest("TODO");
-
-        return ok(theUser.nickName.toString());
+        return ok(new ReturnHelper(getUserFromRequest()).toJSON());
     }
 
 
-    private static User getUserFromSession() {
-        String sessionToken = getSessionToken();
+    private static User getUserFromRequest() {
+        String sessionToken = getSessionTokenFromRequest();
 
         if (sessionToken == null)
             return null;
@@ -153,7 +145,7 @@ public class Login extends Controller {
     }
 
 
-    private static String getSessionToken() {
+    private static String getSessionTokenFromRequest() {
         String sessionToken = request().getQueryString("sessionToken");
 
         if (sessionToken == null && Play.isDev()) {
@@ -166,6 +158,9 @@ public class Login extends Controller {
         return sessionToken;
     }
 
+    private static boolean isPasswordCorrect(User theUser, String password) {
+        return true;
+    }
 
     private static boolean isSecurePassword(String password) {
         return true;
