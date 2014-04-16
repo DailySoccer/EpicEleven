@@ -3,7 +3,6 @@ package controllers;
 import actions.CorsComposition;
 import com.mongodb.MongoException;
 import model.Model;
-import play.libs.Json;
 import utils.ReturnHelper;
 import model.Session;
 import model.User;

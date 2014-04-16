@@ -10,6 +10,10 @@ public class Session {
     public ObjectId userId;
     public Date createdAt;
 
+    @JsonView(JSONViews.Private.class)
+    private ObjectId _id;
+
+
     public Session(String sessionToken, ObjectId userId, Date createdAt) {
         this.sessionToken = sessionToken;
         this.userId = userId;
@@ -17,7 +21,4 @@ public class Session {
     }
 
     public Session() {}
-
-    @JsonView(JSONViews.Private.class)
-    private ObjectId _id;
 }
