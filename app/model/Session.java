@@ -7,10 +7,14 @@ import java.util.Date;
 
 public class Session {
     public String sessionToken;
+
+    @JsonView(JSONViews.NotForClient.class)
     public ObjectId userId;
+
+    @JsonView(JSONViews.NotForClient.class)
     public Date createdAt;
 
-    @JsonView(JSONViews.Private.class)
+    @JsonView(JSONViews.NotForClient.class)
     private ObjectId _id;
 
 

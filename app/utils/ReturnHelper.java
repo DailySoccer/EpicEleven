@@ -13,44 +13,41 @@ import play.libs.Json;
 
 
 public class ReturnHelper {
-    static public final String OK = "OK";
-    static public final String KO = "KO";
-
-    public String status = OK;
+    public boolean status = true;
     public Object payload;
 
-    public ReturnHelper(boolean status, Object payload) { this.status = status? OK : KO; this.payload = payload; }
+    public ReturnHelper(boolean status, Object payload) { this.status = status; this.payload = payload; }
     public ReturnHelper(Object payload) { setPayloadAndStatus(payload); }
     public ReturnHelper() {}
 
     public JsonNode toJsonNode() {
         try {
             // TODO: Evitar convertir a string para luego convertir a JsonNode
-            return Json.parse(new ObjectMapper().writerWithView(JSONViews.Public.class).writeValueAsString(this));
+            return Json.parse(new ObjectMapper().writerWithView(JSONViews.Public.class).writeValueAsString(payload));
         } catch (JsonProcessingException exc) {
             Logger.error("toJSON: ", exc);
             return null;
         }
     }
 
-    public void setPayloadAndStatus(Object payload) {
-        if (payload == null) {
-            status = KO;
-            this.payload = null;
-        }
-        else {
-            status = OK;
-            this.payload = payload;
-        }
-    }
-
     public void setOK(Object payload) {
-        status = OK;
+        status = true;
         this.payload = payload;
     }
 
     public void setKO(Object payload) {
-        status = KO;
+        status = false;
         this.payload = payload;
+    }
+
+    private void setPayloadAndStatus(Object payload) {
+        if (payload == null) {
+            status = false;
+            this.payload = null;
+        }
+        else {
+            status = true;
+            this.payload = payload;
+        }
     }
 }

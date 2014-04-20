@@ -10,7 +10,7 @@ public class User {
 	public String email;
 	public String password;
 
-    @JsonView(JSONViews.Private.class)
+    @JsonView(JSONViews.NotForClient.class)
     public ObjectId _id;
 
 

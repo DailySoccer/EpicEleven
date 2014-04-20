@@ -8,7 +8,7 @@ GET     /jsontest					controllers.Application.jsonTest()
 
 POST    /login                      controllers.Login.login()
 POST    /signup 					controllers.Login.signup()
-GET     /user_profile               controllers.Login.userProfile()
+GET     /get_user_profile           controllers.Login.getUserProfile()
 
 GET     /                           controllers.Assets.at(path="/public", file="index.html")
 GET     /*file               		controllers.Assets.at(path="/public", file)

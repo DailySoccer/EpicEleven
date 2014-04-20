@@ -2,6 +2,7 @@ package controllers;
 
 import actions.CorsComposition;
 import com.mongodb.MongoException;
+import model.ClientError;
 import model.Model;
 import utils.ReturnHelper;
 import model.Session;
@@ -69,7 +70,7 @@ public class Login extends Controller {
                 signupForm.reject("generalError", "General error: Try again please");
         }
 
-        return ok(new ReturnHelper(!signupForm.hasErrors(), signupForm.errorsAsJson()).toJSON());
+        return getResultFromReturnHelper(new ReturnHelper(!signupForm.hasErrors(), signupForm.errorsAsJson()));
     }
 
 
@@ -92,7 +93,7 @@ public class Login extends Controller {
 
 
     // TODO: Todo esto es totalmente incorrecto, es un borrador. Hay que hacer cosas como caducidad de sesiones,
-    // confirmacion de la cuenta a traves de email, etc. Hay un monton de notas en Asana
+    // confirmacion de la cuenta a traves de email, etc. Hay un monton de notas en Asana.
     public static Result login() {
         Form<LoginParams> loginParamsForm = form(LoginParams.class).bindFromRequest();
         ReturnHelper returnHelper = new ReturnHelper();
@@ -116,17 +117,25 @@ public class Login extends Controller {
                 if (Play.isDev())
                     response().setCookie("sessionToken", sessionToken);
 
-                returnHelper.setOK(sessionToken);
+                returnHelper.setOK(newSession);
             }
         }
 
-        return ok(returnHelper.toJSON());
+        return getResultFromReturnHelper(returnHelper);
     }
 
 
-    public static Result userProfile() {
+    public static Result getUserProfile() {
+        ReturnHelper returnHelper = new ReturnHelper();
+        User theUser = getUserFromRequest();
 
-        return ok(new ReturnHelper(getUserFromRequest()).toJSON());
+        if (theUser == null) {
+            returnHelper.setKO(new ClientError("User not found", "Check your sessionToken"));
+        } else {
+            returnHelper.setOK(theUser);
+        }
+
+        return getResultFromReturnHelper(returnHelper);
     }
 
 
@@ -144,8 +153,8 @@ public class Login extends Controller {
         return Model.users().findOne(theSession.userId).as(User.class);
     }
 
-
     private static String getSessionTokenFromRequest() {
+        // TODO: Security problem when this gets logged by any server. Move it to the HHTP Basic Auth header
         String sessionToken = request().getQueryString("sessionToken");
 
         if (sessionToken == null && Play.isDev()) {
@@ -164,5 +173,12 @@ public class Login extends Controller {
 
     private static boolean isSecurePassword(String password) {
         return true;
+    }
+
+    private static Result getResultFromReturnHelper(ReturnHelper returnHelper) {
+        if (returnHelper.status)
+            return ok(returnHelper.toJsonNode());
+        else
+            return badRequest(returnHelper.toJsonNode());
     }
 }
