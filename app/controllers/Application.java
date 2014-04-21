@@ -24,10 +24,6 @@ public class Application extends Controller {
     	//return ok("Pong " + dbUrl);
     }
 
-    public static Result leches() {
-        return ok("42");
-    }
-
     @BodyParser.Of(BodyParser.Json.class)
     public static Result jsonTest() {
     	RequestBody body = request().body();
