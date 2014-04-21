@@ -2,7 +2,7 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET     /mu-1234-cafe-5678-babe     controllers.Application.leches()
+GET     /mu-e9c129e9-530ca1cd-724265e6-24359b3b     controllers.Application.leches()
 GET     /test                       controllers.Application.test()
 GET     /ping                       controllers.Application.ping()
 GET     /jsontest					controllers.Application.jsonTest()
