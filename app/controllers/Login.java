@@ -154,7 +154,7 @@ public class Login extends Controller {
     }
 
     private static String getSessionTokenFromRequest() {
-        // TODO: Security problem when this gets logged by any server. Move it to the HHTP Basic Auth header
+        // TODO: Security problem when this gets logged by any server. Move it to the HTTP Basic Auth header
         String sessionToken = request().getQueryString("sessionToken");
 
         if (sessionToken == null && Play.isDev()) {

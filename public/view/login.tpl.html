@@ -1,0 +1,38 @@
+<section login-ctrl>
+
+<form class="form-login form-horizontal" ng-submit="ctrl.login(email, password)" data-toggle="validator" role="form">
+<fieldset>
+
+<!-- Form Name -->
+<legend>Login</legend>
+
+<!-- Text input-->
+<div class="control-group">
+  <label class="control-label" for="Email">Email</label>
+  <div class="controls">
+    <input id="Email" name="Email" ng-model="email" type="email" placeholder="email" class="input-xlarge form-control" required="">
+    
+  </div>
+</div>
+
+<!-- Password input-->
+<div class="control-group">
+  <label class="control-label" for="Password">Password</label>
+  <div class="controls">
+    <input id="Password" name="Password" ng-model="password" type="password" placeholder="password" class="input-xlarge form-control" required="">
+    
+  </div>
+</div>
+
+<!-- Button -->
+<div class="control-group">
+  <label class="control-label" for="login"></label>
+  <div class="controls">
+    <button id="login" name="login" class="btn btn-primary">Log in</button>
+  </div>
+</div>
+
+</fieldset>
+</form>
+
+</section>
