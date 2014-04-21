@@ -1,16 +1,10 @@
 package model;
 
-import com.apple.eawt.AppEvent;
 import com.mongodb.*;
-import org.joda.time.DateTime;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import play.Logger;
 import play.Play;
-import utils.*;
-
-import java.security.SecureRandom;
-import java.util.Date;
 
 
 public class Model {
