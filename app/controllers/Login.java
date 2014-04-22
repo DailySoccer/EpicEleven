@@ -1,6 +1,9 @@
 package controllers;
 
 import actions.CorsComposition;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.MongoException;
 import model.ClientError;
 import model.Model;
@@ -70,7 +73,13 @@ public class Login extends Controller {
                 signupForm.reject("generalError", "General error: Try again please");
         }
 
-        return getResultFromReturnHelper(new ReturnHelper(!signupForm.hasErrors(), signupForm.errorsAsJson()));
+        JsonNode result = signupForm.errorsAsJson();
+
+        if (!signupForm.hasErrors()) {
+            result = new ObjectMapper().createObjectNode().put("result", "ok");
+        }
+
+        return getResultFromReturnHelper(new ReturnHelper(!signupForm.hasErrors(), result));
     }
 
 
