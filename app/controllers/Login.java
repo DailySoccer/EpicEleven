@@ -3,7 +3,6 @@ package controllers;
 import actions.CorsComposition;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.MongoException;
 import model.ClientError;
 import model.Model;
@@ -79,7 +78,7 @@ public class Login extends Controller {
             result = new ObjectMapper().createObjectNode().put("result", "ok");
         }
 
-        return getResultFromReturnHelper(new ReturnHelper(!signupForm.hasErrors(), result));
+        return createResult(new ReturnHelper(!signupForm.hasErrors(), result));
     }
 
 
@@ -130,7 +129,7 @@ public class Login extends Controller {
             }
         }
 
-        return getResultFromReturnHelper(returnHelper);
+        return createResult(returnHelper);
     }
 
 
@@ -144,7 +143,7 @@ public class Login extends Controller {
             returnHelper.setOK(theUser);
         }
 
-        return getResultFromReturnHelper(returnHelper);
+        return createResult(returnHelper);
     }
 
 
@@ -184,7 +183,7 @@ public class Login extends Controller {
         return true;
     }
 
-    private static Result getResultFromReturnHelper(ReturnHelper returnHelper) {
+    private static Result createResult(ReturnHelper returnHelper) {
         if (returnHelper.status)
             return ok(returnHelper.toJsonNode());
         else
