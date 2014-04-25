@@ -31,8 +31,10 @@ Installing the environment
     
     [backend] $ run
 
-- Install Intellij Idea 13. To connect the IDE to the debugger, you need to "Edit configuration" and
-  add a new remote configuration. Make it point to whatever the port "play debug" tells you.
+- Install Intellij Idea 13. http://www.playframework.com/documentation/2.2.x/IDE
+
+  To connect the IDE to the debugger, you need to "Edit configuration" and add a new remote configuration. Make it point
+  to whatever the port "play debug" tells you.
 
 
 
