@@ -1,5 +1,7 @@
 import model.Model;
 import play.*;
+import play.api.mvc.EssentialFilter;
+import play.filters.gzip.GzipFilter;
 import play.mvc.Action;
 import play.mvc.Http;
 
@@ -18,5 +20,11 @@ public class Global extends GlobalSettings {
         Logger.info("Application shutdown...");
 
         Model.shutdown();
+    }
+
+    public <T extends EssentialFilter> Class<T>[] filters() {
+        if (Play.isProd())
+            return new Class[]{GzipFilter.class};
+        return new Class[] {};
     }
 }
