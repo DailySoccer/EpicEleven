@@ -7,6 +7,7 @@ cd ../backend
 git add .
 git commit -am "Including build in deploy branch"
 git push heroku deploy --force
-rm -rf public/
-git checkout master --force
-git branch -D deploy
+
+rem rm -rf public/
+rem git checkout master --force
+rem git branch -D deploy
