@@ -1,3 +1,4 @@
+set -e
 git commit -am "We always commit before a new deploy"
 git checkout -b deploy
 rm public
