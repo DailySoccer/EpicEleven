@@ -6,8 +6,6 @@ cd ../webclient
 cd ../backend
 git add .
 git commit -am "Including build in deploy branch"
-git push heroku deploy --force
-
-rem rm -rf public/
-rem git checkout master --force
-rem git branch -D deploy
+git push heroku deploy:master --force
+git checkout master
+git branch -D deploy
