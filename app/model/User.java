@@ -10,9 +10,6 @@ public class User {
 	public String email;
 	public String password;
 
-    @JsonView(JSONViews.NotForClient.class)
-    public ObjectId _id;
-
 
 	public User(String firstName, String lastName, String nickName, String email, String password)
 	{
@@ -24,4 +21,8 @@ public class User {
 	}
 
     public User() {}
+
+
+    @JsonView(JsonViews.NotForClient.class)
+    public ObjectId _id;
 }

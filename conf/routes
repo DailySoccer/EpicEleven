@@ -6,9 +6,9 @@ GET     /test                       controllers.Application.test()
 GET     /ping                       controllers.Application.ping()
 GET     /jsontest					controllers.Application.jsonTest()
 
-POST    /login                      controllers.Login.login()
-POST    /signup 					controllers.Login.signup()
-GET     /get_user_profile           controllers.Login.getUserProfile()
+POST    /login                      controllers.LoginController.login()
+POST    /signup 					controllers.LoginController.signup()
+GET     /get_user_profile           controllers.LoginController.getUserProfile()
 
 GET     /                           controllers.Assets.at(path="/public", file="index.html")
 GET     /*file               		controllers.Assets.at(path="/public", file)

@@ -8,15 +8,11 @@ import java.util.Date;
 public class Session {
     public String sessionToken;
 
-    @JsonView(JSONViews.NotForClient.class)
+    @JsonView(JsonViews.NotForClient.class)
     public ObjectId userId;
 
-    @JsonView(JSONViews.NotForClient.class)
+    @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
-
-    @JsonView(JSONViews.NotForClient.class)
-    private ObjectId _id;
-
 
     public Session(String sessionToken, ObjectId userId, Date createdAt) {
         this.sessionToken = sessionToken;
@@ -25,4 +21,7 @@ public class Session {
     }
 
     public Session() {}
+
+    @JsonView(JsonViews.NotForClient.class)
+    private ObjectId _id;
 }

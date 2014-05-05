@@ -1,6 +1,7 @@
 package controllers;
 
 import actions.CorsComposition;
+import play.Logger;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
@@ -13,16 +14,17 @@ import play.Play;
 import play.data.validation.Constraints.*;
 import play.libs.Crypto;
 import play.mvc.Controller;
-import play.mvc.Http;
 import play.mvc.Result;
 import play.data.*;
+import utils.SessionUtils;
+
 import static play.data.Form.*;
-import play.Logger;
+
 
 import java.util.Date;
 
 @CorsComposition.Cors
-public class Login extends Controller {
+public class LoginController extends Controller {
 
     // https://github.com/playframework/playframework/tree/master/samples/java/forms
     public static class SignupParams {
@@ -135,7 +137,7 @@ public class Login extends Controller {
 
     public static Result getUserProfile() {
         ReturnHelper returnHelper = new ReturnHelper();
-        User theUser = getUserFromRequest();
+        User theUser = SessionUtils.getUserFromRequest(request());
 
         if (theUser == null) {
             returnHelper.setKO(new ClientError("User not found", "Check your sessionToken"));
@@ -146,34 +148,6 @@ public class Login extends Controller {
         return createResult(returnHelper);
     }
 
-
-    private static User getUserFromRequest() {
-        String sessionToken = getSessionTokenFromRequest();
-
-        if (sessionToken == null)
-            return null;
-
-        Session theSession = Model.sessions().findOne("{sessionToken:'#'}", sessionToken).as(Session.class);
-
-        if (theSession == null)
-            return null;
-
-        return Model.users().findOne(theSession.userId).as(User.class);
-    }
-
-    private static String getSessionTokenFromRequest() {
-        // TODO: Security problem when this gets logged by any server. Move it to the HTTP Basic Auth header
-        String sessionToken = request().getQueryString("sessionToken");
-
-        if (sessionToken == null && Play.isDev()) {
-            Http.Cookie theCookie = request().cookie("sessionToken");
-
-            if (theCookie != null)
-                sessionToken = theCookie.value();
-        }
-
-        return sessionToken;
-    }
 
     private static boolean isPasswordCorrect(User theUser, String password) {
         return true;

@@ -1,6 +1,6 @@
 package model;
 
-public class JSONViews {
+public class JsonViews {
     static public class Public {}
     static public class NotForClient {}
 }

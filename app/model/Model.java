@@ -1,10 +1,16 @@
 package model;
 
 import com.mongodb.*;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import play.Logger;
 import play.Play;
+
+import java.util.ArrayList;
+
+import static model.MatchEvent.*;
 
 
 public class Model {
@@ -12,6 +18,7 @@ public class Model {
     static public Jongo jongo() { return _jongo; }
     static public MongoCollection sessions() { return _jongo.getCollection("sessions"); }
     static public MongoCollection users() { return _jongo.getCollection("users"); }
+    static public MongoCollection contests() { return _jongo.getCollection("contests"); }
 
     static public void init() {
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
@@ -24,9 +31,12 @@ public class Model {
             try {
                 _mongoClient = new MongoClient(mongoClientURI);
                 _mongoDB = _mongoClient.getDB(mongoClientURI.getDatabase());
+                _jongo = new Jongo(_mongoDB);
 
                 // Let's make sure our DB has the neccesary collections and indexes
                 ensureDB(_mongoDB);
+                MockData.ensureDBMockData();
+
                 bIsInitialized = true;
 
             } catch (Exception exc) {
@@ -39,8 +49,6 @@ public class Model {
                 } catch (InterruptedException intExc) { Logger.error("Interrupted"); }
             }
         }
-
-        _jongo = new Jongo(_mongoDB);
     }
 
 
@@ -61,8 +69,9 @@ public class Model {
         // http://www.kodyaz.com/images/pics/random-number-generator-dilbert-comic.jpg
         DBCollection sessions = theMongoDB.getCollection("sessions");
         sessions.createIndex(new BasicDBObject("sessionToken", 1), new BasicDBObject("unique", true));
-    }
 
+        DBCollection contests = theMongoDB.getCollection("contests");
+    }
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/
     static private MongoClient _mongoClient;

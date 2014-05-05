@@ -1,3 +1,5 @@
+#!/bin/sh
+
 rm public
 cd ../webclient
 ./build_rsync.sh
