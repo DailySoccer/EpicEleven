@@ -1,6 +1,6 @@
 #!/bin/sh
 
-git commit -am "We always commit before a new deploy"
+git commit -am "New deploy"
 git branch -D deploy
 git checkout -b deploy
 rm public
