@@ -1,26 +1,25 @@
 package model;
 
-import com.fasterxml.jackson.annotation.JsonView;
 import org.bson.types.ObjectId;
+import org.jongo.marshall.jackson.oid.Id;
 
-import java.util.Date;
 import java.util.List;
 
 public class Contest {
 
-    public enum PrizeType {
-        STANDARD,
-        WINNER_TAKES_ALL
-    }
+    @Id
+    public ObjectId contestId;
 
     public String name;
-    public int salaryCap;
 
     public int currentEntries;
     public int maxEntries;
 
+    public int salaryCap;
     public int entryFee;
     public PrizeType prizeType;
 
-    List<MatchEvent> matchEvents;
+    public List<ObjectId> matchEventIds;
+
+    public Contest() {}
 }

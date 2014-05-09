@@ -2,11 +2,11 @@ package utils;
 
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import model.JsonViews;
 import play.Logger;
-import play.libs.Json;
+import play.mvc.Content;
+import play.mvc.Result;
+import play.mvc.Results;
 
 
 public class ReturnHelper {
@@ -17,14 +17,31 @@ public class ReturnHelper {
     public ReturnHelper(Object payload) { setPayloadAndStatus(payload); }
     public ReturnHelper() {}
 
-    public JsonNode toJsonNode() {
+
+    public Result toResult() {
+
+        // Los metodos de Results aceptan o un JsonNode o un Content. Si quisieramos mandar un JsonNode, tendriamos que
+        // parsear la jsonPayload con Json.parse(), duplicando el trabajo. Asi que mejor creamos un Content.
+        Content ret = null;
+
         try {
-            // TODO: Evitar convertir a string para luego convertir a JsonNode
-            return Json.parse(new ObjectMapper().writerWithView(JsonViews.Public.class).writeValueAsString(payload));
+            final String jsonpayload = new ObjectIdMapper().writerWithView(JsonViews.Public.class).writeValueAsString(payload);
+
+             ret = new Content() {
+                @Override public String body() { return jsonpayload; }
+                @Override public String contentType() { return "application/json"; }
+            };
         } catch (JsonProcessingException exc) {
-            Logger.error("toJSON: ", exc);
-            return null;
+            Logger.error("toResult: ", exc);
         }
+
+        if (ret == null)
+            return Results.badRequest();
+
+        if (!status)
+            return Results.badRequest(ret);
+
+        return Results.ok(ret);
     }
 
     public void setOK(Object payload) {

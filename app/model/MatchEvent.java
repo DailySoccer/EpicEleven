@@ -1,12 +1,17 @@
 package model;
 
-import java.util.ArrayList;
+import org.bson.types.ObjectId;
+import org.jongo.marshall.jackson.oid.Id;
+
 import java.util.Date;
 
 public class MatchEvent {
 
-    public Team teamA;
-    public Team teamB;
+    @Id
+    public ObjectId matchEventId;
+
+    public SoccerTeam soccerTeamA;
+    public SoccerTeam soccerTeamB;
 
     public Date startDate;      // Date stores milliseconds since the start of the Unix epoch in UTC
 

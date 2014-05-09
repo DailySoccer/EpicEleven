@@ -6,7 +6,7 @@ import play.mvc.*;
 import play.mvc.Http.RequestBody;
 import views.html.*;
 
-public class Application extends Controller {
+public class MainController extends Controller {
 
     public static class TestClass {
         public String key1;
@@ -20,8 +20,8 @@ public class Application extends Controller {
     
     public static Result ping() {
     	// A little test of reading the application.conf
-    	return ok(ping.render(Play.application().configuration().getString("db.default.url")));
-    	//return ok("Pong " + dbUrl);
+    	//return ok(ping.render(Play.application().configuration().getString("db.default.url")));
+    	return ok("Pong");
     }
 
     @BodyParser.Of(BodyParser.Json.class)

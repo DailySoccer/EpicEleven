@@ -15,10 +15,12 @@ import static model.MatchEvent.*;
 
 public class Model {
 
+    static public DB mongoDB() { return _mongoDB; }
     static public Jongo jongo() { return _jongo; }
     static public MongoCollection sessions() { return _jongo.getCollection("sessions"); }
     static public MongoCollection users() { return _jongo.getCollection("users"); }
     static public MongoCollection contests() { return _jongo.getCollection("contests"); }
+    static public MongoCollection matchEvents() { return _jongo.getCollection("matchEvents"); }
 
     static public void init() {
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
@@ -35,7 +37,6 @@ public class Model {
 
                 // Let's make sure our DB has the neccesary collections and indexes
                 ensureDB(_mongoDB);
-                MockData.ensureDBMockData();
 
                 bIsInitialized = true;
 
@@ -71,6 +72,10 @@ public class Model {
         sessions.createIndex(new BasicDBObject("sessionToken", 1), new BasicDBObject("unique", true));
 
         DBCollection contests = theMongoDB.getCollection("contests");
+        DBCollection matchEvents = theMongoDB.getCollection("matchEvents");
+
+        // During development we like to always have test data
+        MockData.ensureDBMockData();
     }
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/

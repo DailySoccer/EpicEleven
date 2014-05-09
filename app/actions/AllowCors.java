@@ -12,15 +12,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 
-public class CorsComposition {
+public class AllowCors {
     @With(CorsAction.class)
     @Target({ ElementType.TYPE, ElementType.METHOD })
     @Retention(RetentionPolicy.RUNTIME)
-    public @interface Cors {
+    public @interface Origin {
         String value() default "*";
     }
 
-    public static class CorsAction extends Action<Cors> {
+    public static class CorsAction extends Action<Origin> {
         @Override
         public F.Promise<SimpleResult> call(Http.Context context) throws Throwable {
             context.response().setHeader("Access-Control-Allow-Origin", "*");

@@ -2,6 +2,7 @@ package model;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import play.Play;
 
 import java.util.ArrayList;
 
@@ -9,6 +10,10 @@ import java.util.ArrayList;
 public class MockData {
 
     static public void ensureDBMockData() {
+        if (Play.isProd()) {
+            return;
+        }
+
         if (Model.contests().count() == 0) {
             createContests();
         }
@@ -20,12 +25,25 @@ public class MockData {
 
         for (int dayCounter = 0; dayCounter < 10; ++dayCounter) {
             for (int contestCounter = 0; contestCounter < 10; ++contestCounter) {
+
                 Contest contest = new Contest();
-                contest.matchEvents = new ArrayList<>();
+
+                contest.matchEventIds = new ArrayList<>();
+                contest.maxEntries = 10;
+                contest.prizeType = PrizeType.STANDARD;
+                contest.entryFee = 10;
+                contest.salaryCap = 1000000;
+
+                contest.name = "Contest " + contestCounter + " date " + currentCreationDay;
+
                 for (int teamCounter = 0; teamCounter < 12; teamCounter += 2) {
-                    contest.matchEvents.add(createMatchEvent(String.format("Team%02d", teamCounter),
-                            String.format("Team%02d", teamCounter + 1), currentCreationDay));
+                    MatchEvent newMatch = createMatchEvent(String.format("Team%02d", teamCounter),
+                                                           String.format("Team%02d", teamCounter + 1),
+                                                           currentCreationDay);
+                    Model.matchEvents().insert(newMatch);
+                    contest.matchEventIds.add(newMatch.matchEventId);
                 }
+
                 Model.contests().insert(contest);
             }
 
@@ -37,16 +55,16 @@ public class MockData {
 
         MatchEvent matchEvent = new MatchEvent();
         matchEvent.startDate = dateTime.toDate();
-        matchEvent.teamA = createTeam(teamA);
-        matchEvent.teamB = createTeam(teamB);
+        matchEvent.soccerTeamA = createTeam(teamA);
+        matchEvent.soccerTeamB = createTeam(teamB);
 
         return matchEvent;
     }
 
-    static private Team createTeam(final String teamName) {
-        return new Team() {{
+    static private SoccerTeam createTeam(final String teamName) {
+        return new SoccerTeam() {{
             name = teamName;
-            players = new ArrayList<SoccerPlayer>() {{
+            soccerPlayers = new ArrayList<SoccerPlayer>() {{
                 add(createSoccerPlayer(teamName, 0, FieldPos.GOALKEEPER));
 
                 add(createSoccerPlayer(teamName, 1, FieldPos.DEFENSE));

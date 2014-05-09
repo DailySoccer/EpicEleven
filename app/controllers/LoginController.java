@@ -1,6 +1,6 @@
 package controllers;
 
-import actions.CorsComposition;
+import actions.AllowCors;
 import play.Logger;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,7 +23,7 @@ import static play.data.Form.*;
 
 import java.util.Date;
 
-@CorsComposition.Cors
+@AllowCors.Origin
 public class LoginController extends Controller {
 
     // https://github.com/playframework/playframework/tree/master/samples/java/forms
@@ -80,7 +80,7 @@ public class LoginController extends Controller {
             result = new ObjectMapper().createObjectNode().put("result", "ok");
         }
 
-        return createResult(new ReturnHelper(!signupForm.hasErrors(), result));
+        return new ReturnHelper(!signupForm.hasErrors(), result).toResult();
     }
 
 
@@ -131,7 +131,7 @@ public class LoginController extends Controller {
             }
         }
 
-        return createResult(returnHelper);
+        return returnHelper.toResult();
     }
 
 
@@ -145,7 +145,7 @@ public class LoginController extends Controller {
             returnHelper.setOK(theUser);
         }
 
-        return createResult(returnHelper);
+        return returnHelper.toResult();
     }
 
 
@@ -155,12 +155,5 @@ public class LoginController extends Controller {
 
     private static boolean isSecurePassword(String password) {
         return true;
-    }
-
-    private static Result createResult(ReturnHelper returnHelper) {
-        if (returnHelper.status)
-            return ok(returnHelper.toJsonNode());
-        else
-            return badRequest(returnHelper.toJsonNode());
     }
 }

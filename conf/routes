@@ -2,13 +2,15 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET     /test                       controllers.Application.test()
-GET     /ping                       controllers.Application.ping()
-GET     /jsontest					controllers.Application.jsonTest()
+GET     /test                       controllers.MainController.test()
+GET     /ping                       controllers.MainController.ping()
+GET     /jsontest					controllers.MainController.jsonTest()
 
 POST    /login                      controllers.LoginController.login()
 POST    /signup 					controllers.LoginController.signup()
 GET     /get_user_profile           controllers.LoginController.getUserProfile()
+
+GET     /get_active_contests_pack   controllers.ContestController.getActiveContestsPack()
 
 GET     /                           controllers.Assets.at(path="/public", file="index.html")
 GET     /*file               		controllers.Assets.at(path="/public", file)
