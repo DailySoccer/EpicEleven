@@ -11,7 +11,8 @@ POST    /login                      controllers.LoginController.login()
 POST    /signup 					controllers.LoginController.signup()
 GET     /get_user_profile           controllers.LoginController.getUserProfile()
 
-GET     /get_active_contests_pack   controllers.ContestController.getActiveContestsPack()
+GET     /get_active_contests        controllers.ContestController.getActiveContests()
+GET     /get_active_match_events    controllers.ContestController.getActiveMatchEvents()
 
 GET     /                           controllers.Assets.at(path="/public", file="index.html")
 GET     /*file               		controllers.Assets.at(path="/public", file)

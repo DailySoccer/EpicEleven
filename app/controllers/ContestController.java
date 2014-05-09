@@ -14,20 +14,15 @@ import utils.ReturnHelper;
 @UserAuthenticated
 public class ContestController extends Controller {
 
-    public static Result getActiveContestsPack() {
-
+    public static Result getActiveContests() {
         User theUser = (User)ctx().args.get("User");
 
-        ContestsPack contestsPack = new ContestsPack();
-
-        contestsPack.contests = Model.contests().find().as(Contest.class);
-        contestsPack.matchEvents = Model.matchEvents().find().as(MatchEvent.class);
-
-        return new ReturnHelper(contestsPack).toResult();
+        return new ReturnHelper(Model.contests().find().as(Contest.class)).toResult();
     }
 
-    private static class ContestsPack {
-        public Iterable<Contest> contests;
-        public Iterable<MatchEvent> matchEvents;
+    public static Result getActiveMatchEvents() {
+        User theUser = (User)ctx().args.get("User");
+
+        return new ReturnHelper(Model.matchEvents().find().as(MatchEvent.class)).toResult();
     }
 }
