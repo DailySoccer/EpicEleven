@@ -5,6 +5,7 @@
 GET     /test                       controllers.MainController.test()
 GET     /ping                       controllers.MainController.ping()
 GET     /jsontest					controllers.MainController.jsonTest()
+GET     /resetDBActiveContests      controllers.MainController.resetDBActiveContests()
 
 POST    /login                      controllers.LoginController.login()
 POST    /signup 					controllers.LoginController.signup()

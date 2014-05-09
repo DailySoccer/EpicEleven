@@ -10,13 +10,11 @@ import java.util.ArrayList;
 public class MockData {
 
     static public void ensureDBMockData() {
-        if (Play.isProd()) {
+        if (Play.isProd())
             return;
-        }
 
-        if (Model.contests().count() == 0) {
+        if (Model.contests().count() == 0)
             createContests();
-        }
     }
 
     static private void createContests() {

@@ -1,5 +1,6 @@
 package controllers;
 
+import model.Model;
 import play.*;
 import play.libs.Json;
 import play.mvc.*;
@@ -22,6 +23,12 @@ public class MainController extends Controller {
     	// A little test of reading the application.conf
     	//return ok(ping.render(Play.application().configuration().getString("db.default.url")));
     	return ok("Pong");
+    }
+
+    public static Result resetDBActiveContests() {
+        Model.resetDBActiveContests();
+
+        return ok();
     }
 
     @BodyParser.Of(BodyParser.Json.class)
