@@ -28,8 +28,13 @@ Installing the environment
     $ backend> play debug
 
     And then, from inside the console, you start the server:
-    
+
     [backend] $ run
+
+    You can also debug and run in the same step:
+
+    [backend] $ play debug run
+    
 
 - Install Intellij Idea 13. Follow this instructions:
 
