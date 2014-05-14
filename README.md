@@ -1,15 +1,15 @@
 Installing the environment
 ==========================
 
-- You need to install Java SE JDK 7u51: http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html
+- You need to install Java SE JDK 7u55: http://www.oracle.com/technetwork/java/javase/downloads/jdk7-downloads-1880260.html
 
     Make sure version 7 is installed:
     
     $ java -version
 
-    - java version "1.7.0_51"
-    - Java(TM) SE Runtime Environment (build 1.7.0_51-b13)
-    - Java HotSpot(TM) 64-Bit Server VM (build 24.51-b03, mixed mode)
+    - java version "1.7.0_55"
+    - Java(TM) SE Runtime Environment (build 1.7.0_55-b13)
+    - Java HotSpot(TM) 64-Bit Server VM (build 24.55-b03, mixed mode)
 
 - You need to install the Play framework. I recommend using homebrew:
 
