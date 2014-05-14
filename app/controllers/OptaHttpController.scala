@@ -3,14 +3,19 @@ package controllers
 
 import play.api.mvc._
 import model.{XMLContest, Model}
+import org.joda.time.DateTime
 
 /**
  * Created by gnufede on 12/05/14.
  */
+
 class OptaHttpController extends Controller{
 
   def optaXmlInput = Action(parse.xml) { request =>
-    Model.xmlcontests().insert(new XMLContest(xml=request.body, name=___, startDate=___))
+    Model.xmlcontests().insert(new XMLContest(xml=request.body.toString, headers=request.headers.toSimpleMap,
+                                              name=request.headers("x-meta-default-filename"),
+                                              startDate=DateTime.now))
+    Ok()
   }
 }
   /*
