@@ -13,7 +13,7 @@ import play.mvc.Results._
 class OptaHttpController extends Controller{}
 object OptaHttpController extends Controller{
 
-  def optaXmlInput = Action(parse.xml) { request =>
+  def optaXmlInput = Action(parse.xml(maxLength = 1024*1024*4)) { request =>
     Model.xmlcontests().insert(new XMLContest(xml=request.body.toString, headers=request.headers.toSimpleMap,
                                               name=request.headers("x-meta-default-filename"),
                                               startDate=DateTime.now))
