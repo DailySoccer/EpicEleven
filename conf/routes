@@ -16,3 +16,5 @@ GET     /get_active_match_events    controllers.ContestController.getActiveMatch
 
 GET     /                           controllers.Assets.at(path="/public", file="index.html")
 GET     /*file               		controllers.Assets.at(path="/public", file)
+
+POST    /opta                       controllers.OptaHttpController.optaXmlInput()

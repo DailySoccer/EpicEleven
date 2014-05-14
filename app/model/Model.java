@@ -21,6 +21,7 @@ public class Model {
     static public MongoCollection users() { return _jongo.getCollection("users"); }
     static public MongoCollection contests() { return _jongo.getCollection("contests"); }
     static public MongoCollection matchEvents() { return _jongo.getCollection("matchEvents"); }
+    static public MongoCollection xmlcontests() { return _jongo.getCollection("xmlcontests"); }
 
     static public void init() {
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
