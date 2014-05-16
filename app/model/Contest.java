@@ -12,8 +12,8 @@ public class Contest {
 
     public String name;
 
-    public int currentEntries;
-    public int maxEntries;
+    public List<ObjectId> currentUserIds;
+    public int maxUsers;
 
     public int salaryCap;
     public int entryFee;

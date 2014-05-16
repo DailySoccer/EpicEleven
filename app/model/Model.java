@@ -1,16 +1,10 @@
 package model;
 
 import com.mongodb.*;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import play.Logger;
 import play.Play;
-
-import java.util.ArrayList;
-
-import static model.MatchEvent.*;
 
 
 public class Model {
@@ -19,8 +13,15 @@ public class Model {
     static public Jongo jongo() { return _jongo; }
     static public MongoCollection sessions() { return _jongo.getCollection("sessions"); }
     static public MongoCollection users() { return _jongo.getCollection("users"); }
+
+    static public MongoCollection prefabContests() { return _jongo.getCollection("prefabContests"); }
+    static public MongoCollection prefabMatchEvents() { return _jongo.getCollection("prefabMatchEvents"); }
+    static public MongoCollection prefabSoccerTeams() { return _jongo.getCollection("prefabSoccerTeams"); }
+    static public MongoCollection prefabSoccerPlayers() { return _jongo.getCollection("prefabSoccerPlayers"); }
+
     static public MongoCollection contests() { return _jongo.getCollection("contests"); }
     static public MongoCollection matchEvents() { return _jongo.getCollection("matchEvents"); }
+
     static public MongoCollection xmlcontests() { return _jongo.getCollection("xmlcontests"); }
 
     static public void init() {
@@ -72,6 +73,11 @@ public class Model {
         DBCollection sessions = theMongoDB.getCollection("sessions");
         sessions.createIndex(new BasicDBObject("sessionToken", 1), new BasicDBObject("unique", true));
 
+        DBCollection prefabContests = theMongoDB.getCollection("prefabContests");
+        DBCollection prefabMatchEvents = theMongoDB.getCollection("prefabMatchEvents");
+        DBCollection prefabSoccerTeams = theMongoDB.getCollection("prefabSoccerTeams");
+        DBCollection prefabSoccerPlayers = theMongoDB.getCollection("prefabSoccerPlayers");
+
         DBCollection contests = theMongoDB.getCollection("contests");
         DBCollection matchEvents = theMongoDB.getCollection("matchEvents");
 
@@ -79,14 +85,12 @@ public class Model {
         MockData.ensureDBMockData();
     }
 
-    static public void resetDBActiveContests() {
+    static public void resetDB() {
         if (Play.isProd())
             return;
 
-        contests().remove();
-        matchEvents().remove();
-
-        MockData.ensureDBMockData();
+        _mongoDB.dropDatabase();
+        ensureDB(_mongoDB);
     }
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/

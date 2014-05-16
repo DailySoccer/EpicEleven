@@ -25,8 +25,8 @@ public class MainController extends Controller {
     	return ok("Pong");
     }
 
-    public static Result resetDBActiveContests() {
-        Model.resetDBActiveContests();
+    public static Result resetDB() {
+        Model.resetDB();
 
         return ok();
     }
