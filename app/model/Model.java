@@ -14,10 +14,10 @@ public class Model {
     static public MongoCollection sessions() { return _jongo.getCollection("sessions"); }
     static public MongoCollection users() { return _jongo.getCollection("users"); }
 
-    static public MongoCollection prefabContests() { return _jongo.getCollection("prefabContests"); }
-    static public MongoCollection prefabMatchEvents() { return _jongo.getCollection("prefabMatchEvents"); }
-    static public MongoCollection prefabSoccerTeams() { return _jongo.getCollection("prefabSoccerTeams"); }
-    static public MongoCollection prefabSoccerPlayers() { return _jongo.getCollection("prefabSoccerPlayers"); }
+    static public MongoCollection templateContests() { return _jongo.getCollection("templateContests"); }
+    static public MongoCollection templateMatchEvents() { return _jongo.getCollection("templateMatchEvents"); }
+    static public MongoCollection templateSoccerTeams() { return _jongo.getCollection("templateSoccerTeams"); }
+    static public MongoCollection templateSoccerPlayers() { return _jongo.getCollection("templateSoccerPlayers"); }
 
     static public MongoCollection contests() { return _jongo.getCollection("contests"); }
     static public MongoCollection matchEvents() { return _jongo.getCollection("matchEvents"); }
@@ -73,10 +73,10 @@ public class Model {
         DBCollection sessions = theMongoDB.getCollection("sessions");
         sessions.createIndex(new BasicDBObject("sessionToken", 1), new BasicDBObject("unique", true));
 
-        DBCollection prefabContests = theMongoDB.getCollection("prefabContests");
-        DBCollection prefabMatchEvents = theMongoDB.getCollection("prefabMatchEvents");
-        DBCollection prefabSoccerTeams = theMongoDB.getCollection("prefabSoccerTeams");
-        DBCollection prefabSoccerPlayers = theMongoDB.getCollection("prefabSoccerPlayers");
+        DBCollection templateContests = theMongoDB.getCollection("templateContests");
+        DBCollection templateMatchEvents = theMongoDB.getCollection("templateMatchEvents");
+        DBCollection templateSoccerTeams = theMongoDB.getCollection("templateSoccerTeams");
+        DBCollection templateSoccerPlayers = theMongoDB.getCollection("templateSoccerPlayers");
 
         DBCollection contests = theMongoDB.getCollection("contests");
         DBCollection matchEvents = theMongoDB.getCollection("matchEvents");

@@ -5,10 +5,10 @@ import org.jongo.marshall.jackson.oid.Id;
 
 import java.util.List;
 
-public class PrefabContest {
+public class TemplateContest {
 
     @Id
-    public ObjectId prefabContestId;
+    public ObjectId templateContestId;
 
     public String name;             // Auto-gen if blank
     public String postName;         // This goes in parenthesis
@@ -20,7 +20,7 @@ public class PrefabContest {
     public int entryFee;
     public PrizeType prizeType;
 
-    public List<ObjectId> prefabMatchEventIds;  // We rather have it here that normalize it in a N:N table
+    public List<ObjectId> templatebMatchEventIds;  // We rather have it here that normalize it in a N:N table
 
-    public PrefabContest() {}
+    public TemplateContest() {}
 }

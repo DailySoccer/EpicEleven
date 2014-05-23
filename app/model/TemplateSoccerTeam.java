@@ -4,9 +4,9 @@ package model;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 
-public class PrefabSoccerTeam {
+public class TemplateSoccerTeam {
     @Id
-    public ObjectId prefabSoccerTeamId;
+    public ObjectId templateSoccerTeamId;
 
     public String name;
 }

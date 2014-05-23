@@ -4,13 +4,13 @@ package model;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 
-public class PrefabSoccerPlayer {
+public class TemplateSoccerPlayer {
     @Id
-    public ObjectId prefabSoccerPlayerId;
+    public ObjectId templateSoccerPlayerId;
 
     public String name;
     public FieldPos fieldPos;
     public int salary;
 
-    public ObjectId prefabTeamId;
+    public ObjectId templateTeamId;
 }
