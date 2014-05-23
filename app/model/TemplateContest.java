@@ -20,7 +20,7 @@ public class TemplateContest {
     public int entryFee;
     public PrizeType prizeType;
 
-    public List<ObjectId> templatebMatchEventIds;  // We rather have it here that normalize it in a N:N table
+    public List<ObjectId> templateMatchEventIds;  // We rather have it here that normalize it in a N:N table
 
     public TemplateContest() {}
 }

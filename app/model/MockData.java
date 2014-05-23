@@ -58,14 +58,14 @@ public final class MockData {
                 contest.prizeType = PrizeType.STANDARD;
                 contest.entryFee = (contestCounter + 1) * 10;
                 contest.salaryCap = 100000;
-                contest.templatebMatchEventIds = new ArrayList<>();
+                contest.templateMatchEventIds = new ArrayList<>();
 
                 for (int teamCounter = 0; teamCounter < 20; teamCounter += 2) {
                     TemplateMatchEvent newMatch = createTemplateMatchEvent(String.format("Team%02d", teamCounter),
                             String.format("Team%02d", teamCounter + 1),
                             currentCreationDay);
 
-                    contest.templatebMatchEventIds.add(newMatch.templateMatchEventId);
+                    contest.templateMatchEventIds.add(newMatch.templateMatchEventId);
                 }
 
                 Model.templateContests().insert(contest);
