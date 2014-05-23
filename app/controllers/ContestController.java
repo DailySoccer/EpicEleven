@@ -10,6 +10,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ReturnHelper;
 
+import java.util.ArrayList;
+
 @AllowCors.Origin
 @UserAuthenticated
 public class ContestController extends Controller {

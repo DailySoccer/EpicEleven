@@ -22,7 +22,7 @@ public @interface UserAuthenticated {
             User theUser = SessionUtils.getUserFromRequest(ctx.request());
 
             if (theUser == null) {
-                Logger.info("Not authenticated " + ctx);
+                Logger.info("UserAuthenticated failed: " + ctx);
                 return F.Promise.promise(new F.Function0<SimpleResult>() {
                     @Override
                     public SimpleResult apply() throws Throwable {
