@@ -17,6 +17,7 @@ object OptaHttpController extends Controller{
     Model.xmlcontests.insert(new XMLContest(xml=request.body.toString, headers=request.headers.toSimpleMap,
                                               name=request.headers("x-meta-default-filename"),
                                               startDate=DateTime.now))
+    val optaReader = new opta.XmlReader(request.body.toString)
     Ok("Yeah, XML")
   }
 }

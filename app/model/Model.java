@@ -23,6 +23,7 @@ public class Model {
     static public MongoCollection matchEvents() { return _jongo.getCollection("matchEvents"); }
 
     static public MongoCollection xmlcontests() { return _jongo.getCollection("xmlcontests"); }
+    static public MongoCollection optaDB() { return _jongo.getCollection("optaDB"); }
 
     static public void init() {
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
