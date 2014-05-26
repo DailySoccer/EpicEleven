@@ -10,7 +10,7 @@ import play.mvc.Results;
 
 
 public class ReturnHelper {
-    public boolean status = true;
+    public boolean status = false;
     public Object payload;
 
     public ReturnHelper(boolean status, Object payload) { this.status = status; this.payload = payload; }
@@ -25,12 +25,14 @@ public class ReturnHelper {
         Content ret = null;
 
         try {
-            final String jsonpayload = new ObjectIdMapper().writerWithView(JsonViews.Public.class).writeValueAsString(payload);
+            if (payload != null) {
+                final String jsonpayload = new ObjectIdMapper().writerWithView(JsonViews.Public.class).writeValueAsString(payload);
 
-             ret = new Content() {
-                @Override public String body() { return jsonpayload; }
-                @Override public String contentType() { return "application/json"; }
-            };
+                ret = new Content() {
+                    @Override public String body() { return jsonpayload; }
+                    @Override public String contentType() { return "application/json"; }
+                };
+            }
         } catch (JsonProcessingException exc) {
             Logger.error("toResult: ", exc);
         }
