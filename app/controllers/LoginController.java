@@ -71,7 +71,7 @@ public class LoginController extends Controller {
 
         if (!signupForm.hasErrors()) {
             if (!createUser(params))
-                signupForm.reject("generalError", "General error: Try again please");
+                signupForm.reject("error", "General error: Try again please");
         }
 
         JsonNode result = signupForm.errorsAsJson();

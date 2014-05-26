@@ -38,7 +38,7 @@ public class ReturnHelper {
         }
 
         if (ret == null)
-            return Results.badRequest();
+            return Results.badRequest("{\"error\": \"Server error\"}");
 
         if (!status)
             return Results.badRequest(ret);
