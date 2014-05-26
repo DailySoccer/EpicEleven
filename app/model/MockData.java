@@ -13,11 +13,11 @@ public final class MockData {
         if (Play.isProd())
             return;
 
-        createPrefabSoccerTeamsAndPlayers();
-        createPrefabContests();
+        createTemplateSoccerTeamsAndPlayers();
+        createTemplateContests();
     }
 
-    static private void createPrefabSoccerTeamsAndPlayers() {
+    static private void createTemplateSoccerTeamsAndPlayers() {
         FieldPos[] pos = new FieldPos[] { FieldPos.GOALKEEPER,
                                           FieldPos.DEFENSE, FieldPos.DEFENSE, FieldPos.DEFENSE, FieldPos.DEFENSE,
                                           FieldPos.MIDDLE, FieldPos.MIDDLE, FieldPos.MIDDLE, FieldPos.MIDDLE,
@@ -25,31 +25,31 @@ public final class MockData {
 
         for (int teamCounter = 0; teamCounter < 20; ++teamCounter) {
 
-            PrefabSoccerTeam soccerTeam = new PrefabSoccerTeam();
+            TemplateSoccerTeam soccerTeam = new TemplateSoccerTeam();
             soccerTeam.name = String.format("Team%02d", teamCounter);
 
-            Model.prefabSoccerTeams().insert(soccerTeam);
+            Model.templateSoccerTeams().insert(soccerTeam);
 
             for (int playerCounter = 0; playerCounter < 11; ++playerCounter) {
-                PrefabSoccerPlayer soccerPlayer = new PrefabSoccerPlayer();
+                TemplateSoccerPlayer soccerPlayer = new TemplateSoccerPlayer();
                 soccerPlayer.name = String.format("Player%02d-%02d", teamCounter, playerCounter);
                 soccerPlayer.fieldPos = pos[playerCounter];
                 soccerPlayer.salary = (playerCounter + 1) * 10000;
-                soccerPlayer.prefabTeamId = soccerTeam.prefabSoccerTeamId;
+                soccerPlayer.templateTeamId = soccerTeam.templateSoccerTeamId;
 
-                Model.prefabSoccerPlayers().insert(soccerPlayer);
+                Model.templateSoccerPlayers().insert(soccerPlayer);
             }
         }
     }
 
-    static private void createPrefabContests() {
+    static private void createTemplateContests() {
 
         DateTime currentCreationDay =  new DateTime(2014, 10, 14, 12, 0, DateTimeZone.UTC);
 
         for (int dayCounter = 0; dayCounter < 20; ++dayCounter) {                 // Durante 20 jornadas
             for (int contestCounter = 0; contestCounter < 3; ++contestCounter) {  // 3 concursos por jornada
 
-                PrefabContest contest = new PrefabContest();
+                TemplateContest contest = new TemplateContest();
 
                 contest.name = String.format("Contest%02d-%02d date %s", dayCounter, contestCounter, currentCreationDay);
                 contest.postName = "Late evening";
@@ -58,36 +58,36 @@ public final class MockData {
                 contest.prizeType = PrizeType.STANDARD;
                 contest.entryFee = (contestCounter + 1) * 10;
                 contest.salaryCap = 100000;
-                contest.prefabMatchEventIds = new ArrayList<>();
+                contest.templateMatchEventIds = new ArrayList<>();
 
                 for (int teamCounter = 0; teamCounter < 20; teamCounter += 2) {
-                    PrefabMatchEvent newMatch = createPrefabMatchEvent(String.format("Team%02d", teamCounter),
-                                                                       String.format("Team%02d", teamCounter + 1),
-                                                                       currentCreationDay);
+                    TemplateMatchEvent newMatch = createTemplateMatchEvent(String.format("Team%02d", teamCounter),
+                            String.format("Team%02d", teamCounter + 1),
+                            currentCreationDay);
 
-                    contest.prefabMatchEventIds.add(newMatch.prefabMatchEventId);
+                    contest.templateMatchEventIds.add(newMatch.templateMatchEventId);
                 }
 
-                Model.prefabContests().insert(contest);
+                Model.templateContests().insert(contest);
             }
 
             currentCreationDay.plusDays(7);
         }
     }
 
-    static private PrefabMatchEvent createPrefabMatchEvent(final String nameTeamA, final String nameTeamB, final DateTime dateTime) {
-        PrefabMatchEvent prefabMatchEvent = new PrefabMatchEvent();
-        prefabMatchEvent.startDate = dateTime.toDate();
+    static private TemplateMatchEvent createTemplateMatchEvent(final String nameTeamA, final String nameTeamB, final DateTime dateTime) {
+        TemplateMatchEvent templateMatchEvent = new TemplateMatchEvent();
+        templateMatchEvent.startDate = dateTime.toDate();
 
-        PrefabSoccerTeam teamA = Model.prefabSoccerTeams().findOne("{ name: '#' }", nameTeamA).as(PrefabSoccerTeam.class);
-        PrefabSoccerTeam teamB = Model.prefabSoccerTeams().findOne("{ name: '#' }", nameTeamB).as(PrefabSoccerTeam.class);
+        TemplateSoccerTeam teamA = Model.templateSoccerTeams().findOne("{ name: '#' }", nameTeamA).as(TemplateSoccerTeam.class);
+        TemplateSoccerTeam teamB = Model.templateSoccerTeams().findOne("{ name: '#' }", nameTeamB).as(TemplateSoccerTeam.class);
 
-        prefabMatchEvent.prefabSoccerTeamAId = teamA.prefabSoccerTeamId;
-        prefabMatchEvent.prefabSoccerTeamBId = teamB.prefabSoccerTeamId;
+        templateMatchEvent.templateSoccerTeamAId = teamA.templateSoccerTeamId;
+        templateMatchEvent.templateSoccerTeamBId = teamB.templateSoccerTeamId;
 
-        Model.prefabMatchEvents().insert(prefabMatchEvent);
+        Model.templateMatchEvents().insert(templateMatchEvent);
 
-        return prefabMatchEvent;
+        return templateMatchEvent;
     }
 
     static private void instantiateContests() {
