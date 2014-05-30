@@ -22,8 +22,9 @@ public class Model {
     static public MongoCollection contests() { return _jongo.getCollection("contests"); }
     static public MongoCollection matchEvents() { return _jongo.getCollection("matchEvents"); }
 
-    static public MongoCollection xmlcontests() { return _jongo.getCollection("xmlcontests"); }
+    static public MongoCollection optaXML() { return _jongo.getCollection("optaXML"); }
     static public MongoCollection optaDB() { return _jongo.getCollection("optaDB"); }
+    static public MongoCollection optaEvents() { return _jongo.getCollection("optaEvents"); }
 
     static public void init() {
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
@@ -82,6 +83,9 @@ public class Model {
         DBCollection contests = theMongoDB.getCollection("contests");
         DBCollection matchEvents = theMongoDB.getCollection("matchEvents");
 
+        DBCollection optaXML = theMongoDB.getCollection("optaXML");
+        DBCollection optaDB = theMongoDB.getCollection("optaDB");
+        DBCollection optaEvents = theMongoDB.getCollection("optaEvents");
         // During development we like to always have test data
         MockData.ensureDBMockData();
     }
