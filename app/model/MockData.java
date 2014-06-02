@@ -2,7 +2,9 @@ package model;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import play.Logger;
 import play.Play;
+import java.util.Date;
 
 import java.util.ArrayList;
 
@@ -15,6 +17,7 @@ public final class MockData {
 
         createTemplateSoccerTeamsAndPlayers();
         createTemplateContests();
+        instantiateContests();
     }
 
     static private void createTemplateSoccerTeamsAndPlayers() {
@@ -49,41 +52,59 @@ public final class MockData {
         for (int dayCounter = 0; dayCounter < 20; ++dayCounter) {                 // Durante 20 jornadas
             for (int contestCounter = 0; contestCounter < 3; ++contestCounter) {  // 3 concursos por jornada
 
-                TemplateContest contest = new TemplateContest();
+                TemplateContest templateContest = new TemplateContest();
 
-                contest.name = String.format("Contest%02d-%02d date %s", dayCounter, contestCounter, currentCreationDay);
-                contest.postName = "Late evening";
-                contest.minInstances = 3;
-                contest.maxEntries = 10;
-                contest.prizeType = PrizeType.STANDARD;
-                contest.entryFee = (contestCounter + 1) * 10;
-                contest.salaryCap = 100000;
-                contest.templateMatchEventIds = new ArrayList<>();
+                templateContest.name = String.format("Contest%02d-%02d date %s", dayCounter, contestCounter, currentCreationDay);
+                templateContest.postName = "Late evening";
+                templateContest.minInstances = 3;
+                templateContest.maxEntries = 10;
+                templateContest.prizeType = PrizeType.STANDARD;
+                templateContest.entryFee = (contestCounter + 1) * 10;
+                templateContest.salaryCap = 100000;
+                templateContest.startDate = currentCreationDay.toDate();
+                templateContest.templateMatchEventIds = new ArrayList<>();
 
                 for (int teamCounter = 0; teamCounter < 20; teamCounter += 2) {
                     TemplateMatchEvent newMatch = createTemplateMatchEvent(String.format("Team%02d", teamCounter),
                             String.format("Team%02d", teamCounter + 1),
                             currentCreationDay);
 
-                    contest.templateMatchEventIds.add(newMatch.templateMatchEventId);
+                    templateContest.templateMatchEventIds.add(newMatch.templateMatchEventId);
                 }
 
-                Model.templateContests().insert(contest);
+                Model.templateContests().insert(templateContest);
             }
 
-            currentCreationDay.plusDays(7);
+            currentCreationDay = currentCreationDay.plusDays(7);
         }
     }
 
     static private TemplateMatchEvent createTemplateMatchEvent(final String nameTeamA, final String nameTeamB, final DateTime dateTime) {
+        // Logger.info("MockData: MatchEvent: {} vs {} ({})", nameTeamA, nameTeamB, dateTime.toString("yyyy.MM.dd G 'at' HH:mm:ss z"));
+
         TemplateMatchEvent templateMatchEvent = new TemplateMatchEvent();
         templateMatchEvent.startDate = dateTime.toDate();
 
         TemplateSoccerTeam teamA = Model.templateSoccerTeams().findOne("{ name: '#' }", nameTeamA).as(TemplateSoccerTeam.class);
         TemplateSoccerTeam teamB = Model.templateSoccerTeams().findOne("{ name: '#' }", nameTeamB).as(TemplateSoccerTeam.class);
 
-        templateMatchEvent.templateSoccerTeamAId = teamA.templateSoccerTeamId;
-        templateMatchEvent.templateSoccerTeamBId = teamB.templateSoccerTeamId;
+        // setup Team A (incrustando a los futbolistas en el equipo)
+        SoccerTeam newTeamA = new SoccerTeam();
+        newTeamA.name = nameTeamA;
+        Iterable<TemplateSoccerPlayer> playersTeamA = Model.templateSoccerPlayers().find("{ templateTeamId: # }", teamA.templateSoccerTeamId).as(TemplateSoccerPlayer.class);
+        for(TemplateSoccerPlayer templateSoccer : playersTeamA) {
+            newTeamA.soccerPlayers.add(new SoccerPlayer(templateSoccer));
+        }
+        templateMatchEvent.soccerTeamA = newTeamA;
+
+        // setup Team B (incrustando a los futbolistas en el equipo)
+        SoccerTeam newTeamB = new SoccerTeam();
+        newTeamB.name = nameTeamB;
+        Iterable<TemplateSoccerPlayer> playersTeamB = Model.templateSoccerPlayers().find("{ templateTeamId: # }", teamB.templateSoccerTeamId).as(TemplateSoccerPlayer.class);
+        for(TemplateSoccerPlayer templateSoccer : playersTeamB) {
+            newTeamB.soccerPlayers.add(new SoccerPlayer(templateSoccer));
+        }
+        templateMatchEvent.soccerTeamB = newTeamB;
 
         Model.templateMatchEvents().insert(templateMatchEvent);
 
@@ -91,17 +112,15 @@ public final class MockData {
     }
 
     static private void instantiateContests() {
+        // Creamos los contest de la primera jornada
+        Date startDate = new DateTime(2014, 10, 14, 12, 0, DateTimeZone.UTC).toDate();
 
-    }
-
-    static private MatchEvent instantiateMatchEvent() {
-
-        return null;
-    }
-
-    static private SoccerTeam instantiateSoccerTeam() {
-
-
-        return null;
+        Iterable<TemplateContest> templateContests = Model.templateContests().find("{startDate: #}", startDate).as(TemplateContest.class);
+        for(TemplateContest template : templateContests) {
+            for(int i=0; i<template.minInstances; i++) {
+                Contest contest = new Contest(template);
+                Model.contests().insert(contest);
+            }
+        }
     }
 }

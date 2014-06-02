@@ -3,6 +3,7 @@ package model;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 
+import java.util.Date;
 import java.util.List;
 
 public class TemplateContest {
@@ -19,6 +20,8 @@ public class TemplateContest {
     public int salaryCap;
     public int entryFee;
     public PrizeType prizeType;
+
+    public Date startDate;
 
     public List<ObjectId> templateMatchEventIds;  // We rather have it here that normalize it in a N:N table
 

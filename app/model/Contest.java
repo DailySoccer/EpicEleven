@@ -4,6 +4,7 @@ import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 
 import java.util.List;
+import java.util.ArrayList;
 
 public class Contest {
 
@@ -12,14 +13,17 @@ public class Contest {
 
     public String name;
 
-    public List<ObjectId> currentUserIds;
+    public List<ObjectId> currentUserIds = new ArrayList<>();
     public int maxUsers;
 
-    public int salaryCap;
-    public int entryFee;
-    public PrizeType prizeType;
+    public ObjectId templateContestId;
 
-    public List<ObjectId> matchEventIds;
+    // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
+    public Contest() {
+    }
 
-    public Contest() {}
+    public Contest(TemplateContest template) {
+        templateContestId = template.templateContestId;
+        name = template.name;
+    }
 }
