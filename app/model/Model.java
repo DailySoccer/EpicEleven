@@ -61,6 +61,28 @@ public class Model {
             _mongoClient.close();
     }
 
+    static private String[] contestCollectionNames = {
+            "templateContests",
+            "templateMatchEvents",
+            "templateSoccerTeams",
+            "templateSoccerPlayers",
+            "contests",
+            "matchEvents"
+    };
+
+    static public void clearContestsDB(DB theMongoDB) {
+        for(String name : contestCollectionNames) {
+            //Logger.info("{} drop", name);
+            theMongoDB.getCollection(name).drop();
+        }
+    }
+
+    static public void ensureContestsDB(DB theMongoDB) {
+        for(String name : contestCollectionNames) {
+            //Logger.info("{} created", name);
+            theMongoDB.createCollection(name, new BasicDBObject());
+        }
+    }
 
     static public void ensureDB(DB theMongoDB) {
         DBCollection users = theMongoDB.getCollection("users");
@@ -74,18 +96,10 @@ public class Model {
         DBCollection sessions = theMongoDB.getCollection("sessions");
         sessions.createIndex(new BasicDBObject("sessionToken", 1), new BasicDBObject("unique", true));
 
-        DBCollection templateContests = theMongoDB.getCollection("templateContests");
-        DBCollection templateMatchEvents = theMongoDB.getCollection("templateMatchEvents");
-        DBCollection templateSoccerTeams = theMongoDB.getCollection("templateSoccerTeams");
-        DBCollection templateSoccerPlayers = theMongoDB.getCollection("templateSoccerPlayers");
-
-        DBCollection contests = theMongoDB.getCollection("contests");
-        DBCollection matchEvents = theMongoDB.getCollection("matchEvents");
-
         DBCollection optaDB = theMongoDB.getCollection("optaDB");
         DBCollection optaEvents = theMongoDB.getCollection("optaEvents");
-        // During development we like to always have test data
-        MockData.ensureDBMockData();
+
+        ensureContestsDB(theMongoDB);
     }
 
     static public void resetDB() {
@@ -94,6 +108,20 @@ public class Model {
 
         _mongoDB.dropDatabase();
         ensureDB(_mongoDB);
+
+        // During development we like to always have test data
+        MockData.ensureDBMockData();
+    }
+
+    static public void resetContests() {
+        if (Play.isProd())
+            return;
+
+        clearContestsDB(_mongoDB);
+        ensureContestsDB(_mongoDB);
+
+        // During development we like to always have test data
+        // MockData.ensureDBMockData();
     }
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/

@@ -31,6 +31,12 @@ public class MainController extends Controller {
         return ok();
     }
 
+    public static Result resetContests() {
+        Model.resetContests();
+
+        return ok();
+    }
+
     @BodyParser.Of(BodyParser.Json.class)
     public static Result jsonTest() {
     	RequestBody body = request().body();
