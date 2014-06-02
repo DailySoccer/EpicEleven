@@ -11,6 +11,7 @@ public class TemplateSoccerPlayer {
     public String name;
     public FieldPos fieldPos;
     public int salary;
+    public int fantasyPoints;
 
     public ObjectId templateTeamId;
 }

@@ -10,8 +10,8 @@ public class TemplateMatchEvent {
     @Id
     public ObjectId templateMatchEventId;
 
-    public ObjectId templateSoccerTeamAId;
-    public ObjectId templateSoccerTeamBId;
+    public SoccerTeam soccerTeamA;
+    public SoccerTeam soccerTeamB;
 
     public Date startDate;
 
