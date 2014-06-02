@@ -10,5 +10,5 @@ cd ../backend
 git add .
 git commit -am "Including build in deploy branch"
 git push heroku deploy:master --force
-# git checkout master
-# git branch -D deploy
+git checkout master
+git branch -D deploy
