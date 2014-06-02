@@ -24,6 +24,7 @@ public class Model {
 
     static public MongoCollection optaDB() { return _jongo.getCollection("optaDB"); }
     static public MongoCollection optaEvents() { return _jongo.getCollection("optaEvents"); }
+    static public MongoCollection optaPlayers() { return _jongo.getCollection("optaPlayers"); }
 
     static public void init() {
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
@@ -99,6 +100,7 @@ public class Model {
 
         DBCollection optaDB = theMongoDB.getCollection("optaDB");
         DBCollection optaEvents = theMongoDB.getCollection("optaEvents");
+        DBCollection optaPlayers = theMongoDB.getCollection("optaPlayers");
 
         //ensureContestsDB(theMongoDB);
     }

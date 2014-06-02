@@ -1,4 +1,4 @@
-package model;
+package model.opta;
 
 import java.util.Date;
 

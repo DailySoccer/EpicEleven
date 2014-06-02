@@ -19,3 +19,5 @@ GET     /                           controllers.Assets.at(path="/public", file="
 GET     /*file               		controllers.Assets.at(path="/public", file)
 
 POST    /opta                       controllers.OptaHttpController.optaXmlInput()
+
+GET     /parseFantasy               controllers.OptaHttpController.parseFantasy()
