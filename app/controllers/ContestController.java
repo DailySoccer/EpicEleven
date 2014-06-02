@@ -10,6 +10,7 @@ import play.mvc.Result;
 import utils.ReturnHelper;
 
 import java.util.Date;
+import java.util.HashMap;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import com.mongodb.BasicDBObject;
@@ -23,12 +24,11 @@ public class ContestController extends Controller {
 
         Date startDate = new DateTime(2014, 10, 14, 12, 0, DateTimeZone.UTC).toDate();
 
-        ReturnHelper ret = new ReturnHelper();
-        ret.include("match_events", Model.templateMatchEvents().find("{startDate: #}", startDate).as(TemplateMatchEvent.class));
-        ret.include("template_contests", Model.templateContests().find("{startDate: #}", startDate).as(TemplateContest.class));
-        ret.include("contests", Model.contests().find().as(Contest.class));
-        return ret.toResult();
-        // return new ReturnHelper(Model.contests().find().as(Contest.class)).toResult();
+        HashMap<String, Object> contest = new HashMap<String,Object>();
+        contest.put("match_events", Model.templateMatchEvents().find("{startDate: #}", startDate).as(TemplateMatchEvent.class));
+        contest.put("template_contests", Model.templateContests().find("{startDate: #}", startDate).as(TemplateContest.class));
+        contest.put("contests", Model.contests().find().as(Contest.class));
+        return new ReturnHelper(contest).toResult();
     }
 
     public static Result getActiveMatchEvents() {

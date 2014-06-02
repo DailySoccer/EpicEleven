@@ -12,27 +12,11 @@ import java.util.ArrayList;
 
 public class ReturnHelper {
     public boolean status = true;
+    public Object payload;
 
     public ReturnHelper(boolean status, Object payload) { this.status = status; this.payload = payload; }
     public ReturnHelper(Object payload) { setPayloadAndStatus(payload); }
     public ReturnHelper() {}
-
-    private class JsonEntry {
-        public String label;
-        public Object payload;
-        public JsonEntry(String aLabel, Object aPayload) {
-            label = aLabel;
-            payload = aPayload;
-        }
-
-        public String toJsonString() throws JsonProcessingException {
-            String jsonPayload = new ObjectIdMapper().writerWithView(JsonViews.Public.class).writeValueAsString(payload);
-            return String.format( "\"%s\" : %s", label, jsonPayload);
-        }
-    }
-    // Dos tipos de resultado: un objeto o una lista de objetos
-    private Object payload;
-    private ArrayList<JsonEntry> payloadList = new ArrayList<>();
 
     public Result toResult() {
 
@@ -42,7 +26,7 @@ public class ReturnHelper {
 
         try {
         	if (payload != null) {
-            	final String jsonPayload = payloadToString();
+            	final String jsonPayload = new ObjectIdMapper().writerWithView(JsonViews.Public.class).writeValueAsString(payload);
 
              	ret = new Content() {
                 	@Override public String body() { return jsonPayload; }
@@ -72,10 +56,6 @@ public class ReturnHelper {
         this.payload = payload;
     }
 
-    public void include(String label, Object payload) {
-        payloadList.add(new JsonEntry(label, payload));
-    }
-
     private void setPayloadAndStatus(Object payload) {
         if (payload == null) {
             status = false;
@@ -85,21 +65,5 @@ public class ReturnHelper {
             status = true;
             this.payload = payload;
         }
-    }
-
-    private String payloadToString() throws JsonProcessingException {
-        String result;
-        if (payloadList.isEmpty()) {
-            result = new ObjectIdMapper().writerWithView(JsonViews.Public.class).writeValueAsString(payload);
-        }
-        else {
-            result = "{";
-            for (JsonEntry data : payloadList) {
-                if (result != "{") result += ",\n";
-                result += data.toJsonString();
-            }
-            result += "}";
-        }
-        return result;
     }
 }
