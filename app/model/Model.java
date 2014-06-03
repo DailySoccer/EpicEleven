@@ -99,7 +99,7 @@ public class Model {
         DBCollection optaDB = theMongoDB.getCollection("optaDB");
         DBCollection optaEvents = theMongoDB.getCollection("optaEvents");
 
-        ensureContestsDB(theMongoDB);
+        //ensureContestsDB(theMongoDB);
     }
 
     static public void resetDB() {
