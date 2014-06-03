@@ -80,7 +80,8 @@ public class Model {
     static public void ensureContestsDB(DB theMongoDB) {
         for(String name : contestCollectionNames) {
             //Logger.info("{} created", name);
-            theMongoDB.createCollection(name, new BasicDBObject());
+            if (!theMongoDB.collectionExists(name))
+                theMongoDB.createCollection(name, new BasicDBObject());
         }
     }
 
