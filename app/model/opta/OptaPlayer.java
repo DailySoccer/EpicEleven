@@ -10,4 +10,5 @@ public class OptaPlayer {
     public int id;
     public int teamid;
     public String teamname;
+    public long updatedtime;
 }

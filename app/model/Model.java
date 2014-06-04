@@ -25,6 +25,9 @@ public class Model {
     static public MongoCollection optaDB() { return _jongo.getCollection("optaDB"); }
     static public MongoCollection optaEvents() { return _jongo.getCollection("optaEvents"); }
     static public MongoCollection optaPlayers() { return _jongo.getCollection("optaPlayers"); }
+    static public MongoCollection optaTeams() { return _jongo.getCollection("optaTeams"); }
+    static public MongoCollection pointsTranslation() { return _jongo.getCollection("pointsTranslation"); }
+    static public MongoCollection fantasyPoints() { return _jongo.getCollection("fantasyPoints"); }
 
     static public void init() {
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
@@ -101,6 +104,9 @@ public class Model {
         DBCollection optaDB = theMongoDB.getCollection("optaDB");
         DBCollection optaEvents = theMongoDB.getCollection("optaEvents");
         DBCollection optaPlayers = theMongoDB.getCollection("optaPlayers");
+        DBCollection optaTeams = theMongoDB.getCollection("optaTeams");
+        DBCollection pointsTranslation = theMongoDB.getCollection("pointsTranslation");
+        DBCollection fantasyPoints = theMongoDB.getCollection("fantasyPoints");
 
         //ensureContestsDB(theMongoDB);
     }
