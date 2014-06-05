@@ -17,9 +17,11 @@ class LoginTest extends SharedTest {
       goToHomePage
     }
 
+    /*
     "home to sign up" in {
       goToHomePage.clickOnSignUp
     }
+    */
 
     "home to login" in {
       goToHomePage.clickOnLogin
@@ -41,6 +43,20 @@ class LoginTest extends SharedTest {
         "password" -> "private"
       ))
     }
+
+    /*
+    "bing" in {
+      go to "http://www.bing.com"
+      textField(cssSelector("#sb_form_q")).value = "FluentLenium"
+      submit
+      pageTitle must include ("FluentLenium")
+    }
+
+    "amazon" in {
+      go to "http://www.amazon.com/"
+      pageTitle must be ("Amazon.com: Online Shopping for Electronics, Apparel, Computers, Books, DVDs & more")
+    }
+    */
   }
 
   after {
