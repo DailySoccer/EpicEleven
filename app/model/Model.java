@@ -103,10 +103,16 @@ public class Model {
 
         DBCollection optaDB = theMongoDB.getCollection("optaDB");
         DBCollection optaEvents = theMongoDB.getCollection("optaEvents");
+        optaEvents.createIndex(new BasicDBObject("parent_id", 1));
+        optaEvents.createIndex(new BasicDBObject("event_id", 1));
+        optaEvents.createIndex(new BasicDBObject("game_id", 1));
+        optaEvents.createIndex(new BasicDBObject("player_id", 1));
         DBCollection optaPlayers = theMongoDB.getCollection("optaPlayers");
         DBCollection optaTeams = theMongoDB.getCollection("optaTeams");
         DBCollection pointsTranslation = theMongoDB.getCollection("pointsTranslation");
+        pointsTranslation.createIndex(new BasicDBObject("event_code", 1));
         DBCollection fantasyPoints = theMongoDB.getCollection("fantasyPoints");
+        fantasyPoints.createIndex(new BasicDBObject("player_id", 1));
 
         //ensureContestsDB(theMongoDB);
     }

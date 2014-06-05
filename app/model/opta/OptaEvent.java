@@ -22,6 +22,7 @@ public class OptaEvent {
     public int type_id;
     public int event_id;
     public int player_id;
+    public int parent_id;
     public int outcome;
     public ArrayList<Integer> qualifiers;
     public Date timestamp;
@@ -38,9 +39,6 @@ public class OptaEvent {
             return false;
         }
         if (other.last_modified != null && this.last_modified != null){
-            System.out.println("this: "+this.last_modified);
-            System.out.println("other: "+other.last_modified);
-            System.out.println("is before? "+this.last_modified.before(other.last_modified));
             return this.last_modified.before(other.last_modified);
         }
         return false;

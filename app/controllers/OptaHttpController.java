@@ -1,14 +1,12 @@
 package controllers;
 
 import com.google.common.collect.Iterables;
-import com.mongodb.BasicDBList;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
+import com.mongodb.*;
 import com.mongodb.util.JSON;
 import model.FantasyPoints;
 import model.Model;
 import model.opta.*;
+import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.json.XML;
 import play.Logger;
@@ -79,6 +77,41 @@ public class OptaHttpController extends Controller {
 
     }
 
+    public static void copyEvent(OptaEvent destination, OptaEvent origin){
+        destination._id = new ObjectId();
+        destination.parent_id = origin.event_id;
+
+        destination.game_id = origin.game_id;
+        destination.home_team_id = origin.home_team_id;
+        destination.away_team_id = origin.away_team_id;
+        destination.competition_id = origin.competition_id;
+        destination.season_id = origin.season_id;
+        destination.event_id = origin.event_id;
+        destination.type_id = origin.type_id;
+        destination.outcome = origin.outcome;
+        destination.timestamp = origin.timestamp;
+
+        destination.unixtimestamp = origin.unixtimestamp;
+        destination.last_modified = origin.last_modified;
+        destination.qualifiers = origin.qualifiers;
+    }
+
+    public static void generateEvent(int event_type, int player_id, OptaEvent parent_event){
+        OptaEvent dbevent = Model.optaEvents().findOne("{parent_id: #, game_id: #, type_id: #}", parent_event.event_id,
+                                                       parent_event.game_id, event_type).as(OptaEvent.class);
+
+        if (dbevent == null){
+            dbevent = new OptaEvent();
+            copyEvent(dbevent, parent_event);
+            dbevent.player_id = player_id;
+            Model.optaEvents().save(dbevent);
+        }else if (dbevent.hasChanged(parent_event)) {
+            copyEvent(dbevent, parent_event);
+            dbevent.player_id = player_id;
+            Model.optaEvents().save(dbevent);
+        }
+    }
+
     public static Result createPointsTranslation(){
         int[][] pointsTable = {{1, 2},
                                {3, 10},
@@ -117,8 +150,8 @@ public class OptaHttpController extends Controller {
         return ok();
     }
 
-    private static void processFantasyPoints(OptaEvent event){
-        FantasyPoints dbFPoints = Model.fantasyPoints().findOne("{event_id: #}", event._id).as(FantasyPoints.class);
+    private static void processFantasyPoints(OptaEvent event, ObjectId upsertedId){
+        FantasyPoints dbFPoints = Model.fantasyPoints().findOne("{event_id: #}", upsertedId).as(FantasyPoints.class);
         FantasyPoints fpoints = new FantasyPoints();
         fpoints.event_type = event.type_id;
         fpoints.player_id = event.player_id;
@@ -147,6 +180,7 @@ public class OptaHttpController extends Controller {
 
     private static void processEvent(LinkedHashMap event, LinkedHashMap game) {
         OptaEvent my_event = new OptaEvent();
+        my_event._id = new ObjectId();
         my_event.game_id = (int) game.get("id");
         my_event.home_team_id = (int) game.get("home_team_id");
         my_event.away_team_id = (int) game.get("away_team_id");
@@ -179,17 +213,38 @@ public class OptaHttpController extends Controller {
                 my_event.qualifiers.add(temp_qualifier);
             }
         }
+        /*
+        DERIVED EVENTS GO HERE
+         */
+        // Falta inflingida -> 1004
+        if (my_event.type_id==4 && my_event.outcome==0){
+            my_event.type_id = 1004;
+        }
+        // Tarjeta roja -> 1017
+        if (my_event.type_id==17 && my_event.qualifiers.contains(33)){
+            my_event.type_id = 1017;
+        }
+        /*
+        // Gol al portero -> 1999
+        if (my_event.type_id==16){
+            //TODO: Extract current opposite goalkeeper
+            generateEvent(1999, goalkeeper, my_event);
+        }
+        */
+
+
+
 
         OptaEvent dbevent = Model.optaEvents().findOne("{event_id: #, game_id: #}", my_event.event_id, my_event.game_id).as(OptaEvent.class);
         if (dbevent != null){
             boolean updated = dbevent.hasChanged(my_event);
             if (updated){
-                Model.optaEvents().update("{event_id: #, game_id: #}", my_event.event_id, my_event.game_id).with(my_event);
-                processFantasyPoints(my_event);
+                WriteResult inserted = Model.optaEvents().update("{event_id: #, game_id: #}", my_event.event_id, my_event.game_id).with(my_event);
+                processFantasyPoints(my_event, my_event._id);
             }
         }else {
-            Model.optaEvents().insert(my_event);
-            processFantasyPoints(my_event);
+            WriteResult inserted = Model.optaEvents().insert(my_event);
+            processFantasyPoints(my_event, my_event._id);
         }
     }
 
@@ -215,41 +270,61 @@ public class OptaHttpController extends Controller {
     }
 
     public static Result parseEvents(){
+        //BasicDBObject game = Model.optaDB().findOne("{'Games': {$exists: true}}").as(BasicDBObject.class);
+        Model.optaEvents().remove();
+        Model.fantasyPoints().remove();
         BasicDBObject game = Model.optaDB().findOne("{'Games': {$exists: true}}").as(BasicDBObject.class);
+        long initial_time = System.currentTimeMillis();
         processEvents(game);
-        return ok("Yeah, Game processed");
+        System.currentTimeMillis();
+        return ok("Yeah, Game processed: "+(System.currentTimeMillis()-initial_time)+" milliseconds");
     }
 
     public static Result playersPoints(){
         Iterable<OptaPlayer> my_players = Model.optaPlayers().find().as(OptaPlayer.class);
-        String allplayers = "";
+        String allplayers = "<ul>";
         for (OptaPlayer my_player: my_players){
             Iterable<FantasyPoints> playerpoints = Model.fantasyPoints().find("{player_id: #}", my_player.id).as(FantasyPoints.class);
             int totalPoints = 0;
             for (FantasyPoints playerpoint: playerpoints){
                 totalPoints += playerpoint.points;
             }
-            allplayers += my_player.firstname+" "+my_player.lastname+"'s points: "+totalPoints+"\n";
+            allplayers += "<li>"+my_player.firstname+" "+my_player.lastname+"'s (<a href='/player/"+my_player.id+"'>"+my_player.id+"</a>) points: "+totalPoints+"</li>\n";
         }
-        return ok(allplayers);
+        allplayers += "</ul>";
+        return ok(allplayers).as("text/html");
     }
 
     public static Result playerPoints(int player){
         Iterable<FantasyPoints> playerpoints = Model.fantasyPoints().find("{player_id: #}", player).as(FantasyPoints.class);
         OptaPlayer my_player = Model.optaPlayers().findOne("{id: #}", player).as(OptaPlayer.class);
         int totalPoints = 0;
+        LinkedHashMap events = new LinkedHashMap();
+        LinkedHashMap points = new LinkedHashMap();
+
         for (FantasyPoints playerpoint: playerpoints){
             totalPoints += playerpoint.points;
+            if (playerpoint.points != 0){
+                if (events.containsKey(playerpoint.event_type)){
+                    events.put(playerpoint.event_type, 1+(int)events.get(playerpoint.event_type));
+                }else{
+                    events.put(playerpoint.event_type, 1);
+                    points.put(playerpoint.event_type, playerpoint.points);
+                }
+            }
         }
-        return ok(my_player.firstname+" "+my_player.lastname+"'s points: "+totalPoints);
+        String html = "<h1>"+my_player.firstname+" "+my_player.lastname+"'s points: "+totalPoints+"</h1> <ul>";
+        for (Object event_type: events.keySet()){
+            html += "<li>event "+event_type+"("+points.get(event_type)+" points): "+events.get(event_type)+" times</li>";
+        }
+        html += "</ul>";
+        return ok(html).as("text/html");
+//        return ok(my_player.firstname+" "+my_player.lastname+"'s points: "+totalPoints);
     }
 
     public static void processFantasy(BasicDBObject fantasy){
         ArrayList teams = new ArrayList();
         LinkedHashMap fantasy1 = (LinkedHashMap)fantasy.get("FANTASY");
-        for (Object key: fantasy1.keySet()){
-            System.out.println(key.toString());
-        }
         if (fantasy1.containsKey("Team")) {
             teams = (ArrayList)fantasy1.get("Team");
         }else{
@@ -276,7 +351,7 @@ public class OptaHttpController extends Controller {
                     Model.optaTeams().update("{id: #}", my_team.id).with(my_team);
                 }
             }else{
-                Model.optaTeams().insert(my_team);
+                Model.optaTeams().insert(my_team, true);
             }
 
             for (Object player: playersList){
