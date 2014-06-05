@@ -24,6 +24,10 @@ public class Model {
 
     static public MongoCollection optaDB() { return _jongo.getCollection("optaDB"); }
     static public MongoCollection optaEvents() { return _jongo.getCollection("optaEvents"); }
+    static public MongoCollection optaPlayers() { return _jongo.getCollection("optaPlayers"); }
+    static public MongoCollection optaTeams() { return _jongo.getCollection("optaTeams"); }
+    static public MongoCollection pointsTranslation() { return _jongo.getCollection("pointsTranslation"); }
+    static public MongoCollection fantasyPoints() { return _jongo.getCollection("fantasyPoints"); }
 
     static public void init() {
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
@@ -99,6 +103,16 @@ public class Model {
 
         DBCollection optaDB = theMongoDB.getCollection("optaDB");
         DBCollection optaEvents = theMongoDB.getCollection("optaEvents");
+        optaEvents.createIndex(new BasicDBObject("parent_id", 1));
+        optaEvents.createIndex(new BasicDBObject("event_id", 1));
+        optaEvents.createIndex(new BasicDBObject("game_id", 1));
+        optaEvents.createIndex(new BasicDBObject("player_id", 1));
+        DBCollection optaPlayers = theMongoDB.getCollection("optaPlayers");
+        DBCollection optaTeams = theMongoDB.getCollection("optaTeams");
+        DBCollection pointsTranslation = theMongoDB.getCollection("pointsTranslation");
+        pointsTranslation.createIndex(new BasicDBObject("event_code", 1));
+        DBCollection fantasyPoints = theMongoDB.getCollection("fantasyPoints");
+        fantasyPoints.createIndex(new BasicDBObject("player_id", 1));
 
         //ensureContestsDB(theMongoDB);
     }

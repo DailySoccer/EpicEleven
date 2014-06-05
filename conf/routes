@@ -15,6 +15,12 @@ GET     /get_user_profile           controllers.LoginController.getUserProfile()
 GET     /get_active_contests        controllers.ContestController.getActiveContests()
 GET     /get_active_match_events    controllers.ContestController.getActiveMatchEvents()
 
+GET     /parseFantasy               controllers.OptaHttpController.parseFantasy()
+GET     /parseEvents                controllers.OptaHttpController.parseEvents()
+GET     /createPointsTranslation    controllers.OptaHttpController.createPointsTranslation()
+GET     /player                     controllers.OptaHttpController.playersPoints()
+GET     /player/:player             controllers.OptaHttpController.playerPoints(player: Int)
+
 GET     /                           controllers.Assets.at(path="/public", file="index.html")
 GET     /*file               		controllers.Assets.at(path="/public", file)
 

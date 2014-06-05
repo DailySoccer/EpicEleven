@@ -1,4 +1,4 @@
-package model;
+package model.opta;
 
 
 import com.mongodb.DBObject;
