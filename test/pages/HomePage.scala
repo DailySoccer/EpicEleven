@@ -14,6 +14,10 @@ class HomePage extends SharedPage {
 
   def isAt = {
     pageTitle should be (TITLE)
+
+    eventually { find(linkText(LOGIN_TEXT)) should be ('defined) }
+    //eventually { find(linkText(SIGNUP_TEXT)) should be ('defined) }
+
     this
   }
 

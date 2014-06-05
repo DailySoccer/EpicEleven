@@ -70,14 +70,14 @@ public class Model {
             "matchEvents"
     };
 
-    static public void clearContestsDB(DB theMongoDB) {
+    static private void clearContestsDB(DB theMongoDB) {
         for(String name : contestCollectionNames) {
             //Logger.info("{} drop", name);
             theMongoDB.getCollection(name).drop();
         }
     }
 
-    static public void ensureContestsDB(DB theMongoDB) {
+    static private void ensureContestsDB(DB theMongoDB) {
         for(String name : contestCollectionNames) {
             //Logger.info("{} created", name);
             if (!theMongoDB.collectionExists(name))
@@ -85,7 +85,7 @@ public class Model {
         }
     }
 
-    static public void ensureDB(DB theMongoDB) {
+    static private void ensureDB(DB theMongoDB) {
         DBCollection users = theMongoDB.getCollection("users");
 
         // Si creando nuevo indice sobre datos que ya existan => .append("dropDups", true)
