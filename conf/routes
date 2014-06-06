@@ -14,6 +14,7 @@ GET     /get_user_profile           controllers.LoginController.getUserProfile()
 
 GET     /get_active_contests        controllers.ContestController.getActiveContests()
 GET     /get_active_match_events    controllers.ContestController.getActiveMatchEvents()
+POST    /add_fantasy_team           controllers.ContestController.addFantasyTeam()
 
 GET     /parseFantasy               controllers.OptaHttpController.parseFantasy()
 GET     /parseEvents                controllers.OptaHttpController.parseEvents()

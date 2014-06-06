@@ -5,10 +5,12 @@ import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import play.Logger;
 import play.Play;
+import org.bson.types.ObjectId;
+import java.util.List;
+import java.util.ArrayList;
 
 
 public class Model {
-
     static public DB mongoDB() { return _mongoDB; }
     static public Jongo jongo() { return _jongo; }
     static public MongoCollection sessions() { return _jongo.getCollection("sessions"); }
@@ -18,6 +20,7 @@ public class Model {
     static public MongoCollection templateMatchEvents() { return _jongo.getCollection("templateMatchEvents"); }
     static public MongoCollection templateSoccerTeams() { return _jongo.getCollection("templateSoccerTeams"); }
     static public MongoCollection templateSoccerPlayers() { return _jongo.getCollection("templateSoccerPlayers"); }
+    static public MongoCollection fantasyTeams() { return _jongo.getCollection("fantasyTeams"); }
 
     static public MongoCollection contests() { return _jongo.getCollection("contests"); }
     static public MongoCollection matchEvents() { return _jongo.getCollection("matchEvents"); }
@@ -71,7 +74,8 @@ public class Model {
             "templateSoccerTeams",
             "templateSoccerPlayers",
             "contests",
-            "matchEvents"
+            "matchEvents",
+            "fantasyTeams"
     };
 
     static private void clearContestsDB(DB theMongoDB) {
@@ -136,7 +140,53 @@ public class Model {
         ensureContestsDB(_mongoDB);
 
         // During development we like to always have test data
-        // MockData.ensureDBMockData();
+        MockData.ensureDBMockData();
+    }
+
+    static public User findUserId(String userId) {
+        User aUser = null;
+        Boolean userValid = ObjectId.isValid(userId);
+        if (userValid) {
+            aUser = Model.users().findOne(new ObjectId(userId)).as(User.class);
+        }
+        return aUser;
+    }
+
+    static public Contest findContestId(String contestId) {
+        Contest aContest = null;
+        Boolean userValid = ObjectId.isValid(contestId);
+        if (userValid) {
+            aContest = Model.contests().findOne(new ObjectId(contestId)).as(Contest.class);
+        }
+        return aContest;
+    }
+
+    /**
+     * Obtener una lista de Objetos a partir de una lista de 'string ids'
+     * @param classType: Clase de la lista de objetos a devolver (necesario para usar en la query a jongo)
+     * @param collection: MongoCollection a la que hacer la query
+     * @param strIdsList: Lista de 'String Ids' (de mongoDb)
+     * @return Lista de Objetos correspondientes a los ids incluidos en strSoccerIds
+     */
+    public static <T> Iterable<T> findObjectsFromIds(Class<T> classType, MongoCollection collection, String[] strIdsList) {
+        ArrayList<ObjectId> objectIdsList = new ArrayList<>();
+
+        // Jongo necesita que le proporcionemos el patrón de "#, #, #" (según el número de parámetros)
+        String patternParams = "";
+        for (String id : strIdsList) {
+            if (patternParams != "") patternParams += ",";
+            patternParams += "#";
+            // Convertir un id en formato cadena a ObjectId
+            objectIdsList.add(new ObjectId(id));
+        }
+
+        // Componer la query según el número de parámetros
+        String pattern = String.format("{_id: {$in: [%s]}}", patternParams);
+        return collection.find(pattern, objectIdsList.toArray()).as(classType);
+    }
+
+    public static Iterable<TemplateSoccerPlayer> findTemplateSoccerPlayersFromIds(String[] strIdsList) {
+        return findObjectsFromIds(TemplateSoccerPlayer.class, Model.templateSoccerPlayers(), strIdsList);
     }
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/
