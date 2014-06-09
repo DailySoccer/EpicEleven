@@ -166,11 +166,12 @@ public class Model {
     }
 
     /**
-     * Obtener una lista de Objetos a partir de una lista de 'string ids'
+     * Obtener una lista de Objetos a partir de una lista de 'string ids' (StringId = ObjectID.toString())
      * @param classType: Clase de la lista de objetos a devolver (necesario para usar en la query a jongo)
      * @param collection: MongoCollection a la que hacer la query
+     * @param fieldId: Identificador del campo a buscar
      * @param strIdsList: Lista de 'String Ids' (de mongoDb)
-     * @return Lista de Objetos correspondientes a los ids incluidos en strSoccerIds
+     * @return Lista de Objetos correspondientes a los ids incluidos en strIdsList
      */
     public static <T> Iterable<T> findObjectsFromIds(Class<T> classType, MongoCollection collection, String fieldId, List<String> strIdsList) {
         ArrayList<ObjectId> objectIdsList = new ArrayList<>();

@@ -200,4 +200,30 @@ public class ContestController extends Controller {
         ObjectId contestId = new ObjectId(contest);
         return new ReturnHelper(Model.fantasyTeams().find("{contestId: #}", contestId).as(FantasyTeam.class)).toResult();
     }
+
+    public static Result setLiveFantasyPointsOfSoccerPlayer(String strSoccerPlayerId, String strPoints) {
+        Logger.info("setLiveFantasyPoints: {} = {} fantasy points", strSoccerPlayerId, strPoints);
+
+        long startTime = System.currentTimeMillis();
+
+        if (!ObjectId.isValid(strSoccerPlayerId)) {
+            return new ReturnHelper(false, "SoccerPlayer invalid").toResult();
+        }
+
+        // Actualizar jugador si aparece en TeamA
+        Model.liveMatchEvents()
+                .update("{soccerTeamA.soccerPlayers.templateSoccerPlayerId: #}", new ObjectId(strSoccerPlayerId))
+                .multi()
+                .with("{$set: {soccerTeamA.soccerPlayers.$.fantasyPoints: #}}", strPoints);
+
+        // Actualizar jugador si aparece en TeamB
+        Model.liveMatchEvents()
+                .update("{soccerTeamB.soccerPlayers.templateSoccerPlayerId: #}", new ObjectId(strSoccerPlayerId))
+                .multi()
+                .with("{$set: {soccerTeamB.soccerPlayers.$.fantasyPoints: #}}", strPoints);
+
+        Logger.info("END: setLiveFantasyPoints: {}", System.currentTimeMillis() - startTime);
+
+        return ok();
+    }
 }
