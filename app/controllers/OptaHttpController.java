@@ -1,5 +1,6 @@
 package controllers;
 
+import actions.AllowCors;
 import com.google.common.collect.Iterables;
 import com.mongodb.*;
 import com.mongodb.util.JSON;
@@ -33,6 +34,7 @@ import java.util.Map;
 /**
  * Created by gnufede on 30/05/14.
  */
+@AllowCors.Origin
 public class OptaHttpController extends Controller {
     @BodyParser.Of(value = BodyParser.TolerantText.class, maxLength = 4 * 1024 * 1024)
     public static Result optaXmlInput(){
@@ -275,23 +277,20 @@ public class OptaHttpController extends Controller {
 
     public static F.Promise<Result> importXML(){
         //F.Promise<Result> resultPromise = WS.url("http://dailysoccer.herokuapp.com/get_xml/").get().map(
-        F.Promise<Result> resultPromise = WS.url("http://localhost:9000/get_xml/").get().map(
+        F.Promise<Result> resultPromise = WS.url("http://localhost:9000/get_xml").get().map(
                 new F.Function<WS.Response, Result>(){
                     public Result apply(WS.Response response){
                         long startDate = System.currentTimeMillis();
-                        String bodyText  = response.getBody().toString();
-                        System.out.println("-------");
-                        System.out.println(bodyText);
-                        System.out.println("-------");
+                        String bodyText  = response.getBody();
                         String name = response.getHeader("x-default-filename");
-                        //bodyText = bodyText.substring(bodyText.indexOf('<'));
                         BasicDBObject bodyAsJSON = (BasicDBObject) JSON.parse(XML.toJSONObject(bodyText).toString());
                         Model.optaDB().insert(new OptaDB(bodyText,
                                 bodyAsJSON,
                                 name,
-                                null,
+                                null, //headers, cannot be obtained programatically
                                 startDate,
                                 System.currentTimeMillis()));
+
                         return ok("Imported");
 
                     }
@@ -303,8 +302,13 @@ public class OptaHttpController extends Controller {
     public static Result getXML(){
         //OptaDB someOptaData = Model.optaDB().findOne("{'Games': {$exists: true}}").as(OptaDB.class);
         OptaDB someOptaData = Model.optaDB().findOne().as(OptaDB.class);
+        Map headers = someOptaData.headers;
+        for (Object header: headers.keySet()){
+            String value = ((String[]) headers.get(header))[0];
+            response().setHeader(header.toString(), value);
+        }
         response().setHeader("x-default-filename", someOptaData.name);
-        response().setContentType("text/xml");
+        response().setContentType("text/html");
         return ok(someOptaData.xml);
     }
 
