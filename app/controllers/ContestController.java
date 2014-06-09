@@ -90,7 +90,7 @@ public class ContestController extends Controller {
             }
 
             // Obtener los soccerIds : List<ObjectId>
-            List<String> strIdsList = ListUtils.stringListFromString("#", params.soccerTeam);
+            List<String> strIdsList = ListUtils.stringListFromString(",", params.soccerTeam);
             Iterable<TemplateSoccerPlayer> soccers = Model.findTemplateSoccerPlayersFromIds("_id", strIdsList);
 
             String soccerNames = "";
