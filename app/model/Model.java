@@ -137,8 +137,10 @@ public class Model {
     }
 
     static public void resetContests() {
+        /*
         if (Play.isProd())
             return;
+        */
 
         clearContestsDB(_mongoDB);
         ensureContestsDB(_mongoDB);
