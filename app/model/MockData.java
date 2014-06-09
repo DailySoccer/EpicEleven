@@ -11,7 +11,14 @@ import java.util.ArrayList;
 
 public final class MockData {
 
-    static public void ensureDBMockData() {
+    static public void ensureMockDataAll() {
+        if (Play.isProd())
+            return;
+
+        ensureMockDataContests();
+    }
+
+    static public void ensureMockDataContests() {
         if (Play.isProd())
             return;
 

@@ -114,6 +114,7 @@ public class Model {
         optaEvents.createIndex(new BasicDBObject("event_id", 1));
         optaEvents.createIndex(new BasicDBObject("game_id", 1));
         optaEvents.createIndex(new BasicDBObject("player_id", 1));
+
         DBCollection optaPlayers = theMongoDB.getCollection("optaPlayers");
         DBCollection optaTeams = theMongoDB.getCollection("optaTeams");
         DBCollection pointsTranslation = theMongoDB.getCollection("pointsTranslation");
@@ -121,7 +122,7 @@ public class Model {
         DBCollection fantasyPoints = theMongoDB.getCollection("fantasyPoints");
         fantasyPoints.createIndex(new BasicDBObject("player_id", 1));
 
-        //ensureContestsDB(theMongoDB);
+        ensureContestsDB(theMongoDB);
     }
 
     static public void resetDB() {
@@ -132,7 +133,7 @@ public class Model {
         ensureDB(_mongoDB);
 
         // During development we like to always have test data
-        MockData.ensureDBMockData();
+        MockData.ensureMockDataAll();
     }
 
     static public void resetContests() {
@@ -143,7 +144,7 @@ public class Model {
         ensureContestsDB(_mongoDB);
 
         // During development we like to always have test data
-        MockData.ensureDBMockData();
+        MockData.ensureMockDataContests();
     }
 
     static public User findUserId(String userId) {
