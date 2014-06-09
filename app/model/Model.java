@@ -83,14 +83,12 @@ public class Model {
 
     static private void clearContestsDB(DB theMongoDB) {
         for(String name : contestCollectionNames) {
-            //Logger.info("{} drop", name);
             theMongoDB.getCollection(name).drop();
         }
     }
 
     static private void ensureContestsDB(DB theMongoDB) {
         for(String name : contestCollectionNames) {
-            //Logger.info("{} created", name);
             if (!theMongoDB.collectionExists(name))
                 theMongoDB.createCollection(name, new BasicDBObject());
         }
@@ -137,15 +135,12 @@ public class Model {
     }
 
     static public void resetContests() {
-        /*
         if (Play.isProd())
             return;
-        */
 
         clearContestsDB(_mongoDB);
         ensureContestsDB(_mongoDB);
 
-        // During development we like to always have test data
         MockData.ensureMockDataContests();
     }
 

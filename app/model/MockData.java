@@ -19,10 +19,8 @@ public final class MockData {
     }
 
     static public void ensureMockDataContests() {
-        /*
         if (Play.isProd())
             return;
-        */
 
         createTemplateSoccerTeamsAndPlayers();
         createTemplateContests();
