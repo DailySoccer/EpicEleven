@@ -1,6 +1,9 @@
 package model;
 
+import org.bson.types.ObjectId;
+
 public class SoccerPlayer {
+    public ObjectId templateSoccerPlayerId;
     public String name;
     public FieldPos fieldPos;
     public int salary;
@@ -11,6 +14,7 @@ public class SoccerPlayer {
     }
 
     public SoccerPlayer(TemplateSoccerPlayer template) {
+        templateSoccerPlayerId = template.templateSoccerPlayerId;
         name = template.name;
         fieldPos = template.fieldPos;
         salary = template.salary;

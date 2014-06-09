@@ -90,6 +90,7 @@ public final class MockData {
 
         // setup Team A (incrustando a los futbolistas en el equipo)
         SoccerTeam newTeamA = new SoccerTeam();
+        newTeamA.templateSoccerTeamId = teamA.templateSoccerTeamId;
         newTeamA.name = nameTeamA;
         Iterable<TemplateSoccerPlayer> playersTeamA = Model.templateSoccerPlayers().find("{ templateTeamId: # }", teamA.templateSoccerTeamId).as(TemplateSoccerPlayer.class);
         for(TemplateSoccerPlayer templateSoccer : playersTeamA) {
@@ -99,6 +100,7 @@ public final class MockData {
 
         // setup Team B (incrustando a los futbolistas en el equipo)
         SoccerTeam newTeamB = new SoccerTeam();
+        newTeamB.templateSoccerTeamId = teamB.templateSoccerTeamId;
         newTeamB.name = nameTeamB;
         Iterable<TemplateSoccerPlayer> playersTeamB = Model.templateSoccerPlayers().find("{ templateTeamId: # }", teamB.templateSoccerTeamId).as(TemplateSoccerPlayer.class);
         for(TemplateSoccerPlayer templateSoccer : playersTeamB) {
@@ -119,6 +121,7 @@ public final class MockData {
         for(TemplateContest template : templateContests) {
             for(int i=0; i<template.minInstances; i++) {
                 Contest contest = new Contest(template);
+                contest.maxUsers = 10;
                 Model.contests().insert(contest);
             }
         }

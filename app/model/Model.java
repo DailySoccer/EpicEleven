@@ -8,6 +8,7 @@ import play.Play;
 import org.bson.types.ObjectId;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 
 public class Model {
@@ -20,6 +21,7 @@ public class Model {
     static public MongoCollection templateMatchEvents() { return _jongo.getCollection("templateMatchEvents"); }
     static public MongoCollection templateSoccerTeams() { return _jongo.getCollection("templateSoccerTeams"); }
     static public MongoCollection templateSoccerPlayers() { return _jongo.getCollection("templateSoccerPlayers"); }
+    static public MongoCollection liveMatchEvents() { return _jongo.getCollection("liveMatchEvents"); }
     static public MongoCollection fantasyTeams() { return _jongo.getCollection("fantasyTeams"); }
 
     static public MongoCollection contests() { return _jongo.getCollection("contests"); }
@@ -75,6 +77,7 @@ public class Model {
             "templateSoccerPlayers",
             "contests",
             "matchEvents",
+            "liveMatchEvents",
             "fantasyTeams"
     };
 
@@ -168,7 +171,7 @@ public class Model {
      * @param strIdsList: Lista de 'String Ids' (de mongoDb)
      * @return Lista de Objetos correspondientes a los ids incluidos en strSoccerIds
      */
-    public static <T> Iterable<T> findObjectsFromIds(Class<T> classType, MongoCollection collection, String[] strIdsList) {
+    public static <T> Iterable<T> findObjectsFromIds(Class<T> classType, MongoCollection collection, String fieldId, List<String> strIdsList) {
         ArrayList<ObjectId> objectIdsList = new ArrayList<>();
 
         // Jongo necesita que le proporcionemos el patrón de "#, #, #" (según el número de parámetros)
@@ -181,12 +184,24 @@ public class Model {
         }
 
         // Componer la query según el número de parámetros
-        String pattern = String.format("{_id: {$in: [%s]}}", patternParams);
+        String pattern = String.format("{%s: {$in: [%s]}}", fieldId, patternParams);
         return collection.find(pattern, objectIdsList.toArray()).as(classType);
     }
 
-    public static Iterable<TemplateSoccerPlayer> findTemplateSoccerPlayersFromIds(String[] strIdsList) {
-        return findObjectsFromIds(TemplateSoccerPlayer.class, Model.templateSoccerPlayers(), strIdsList);
+    public static Iterable<TemplateContest> findTemplateContestsFromIds(String fieldId, List<String> strIdsList) {
+        return findObjectsFromIds(TemplateContest.class, Model.templateContests(), fieldId, strIdsList);
+    }
+
+    public static Iterable<TemplateMatchEvent> findTemplateMatchEventFromIds(String fieldId, List<String> strIdsList) {
+        return findObjectsFromIds(TemplateMatchEvent.class, Model.templateMatchEvents(), fieldId, strIdsList);
+    }
+
+    public static Iterable<TemplateSoccerPlayer> findTemplateSoccerPlayersFromIds(String fieldId, List<String> strIdsList) {
+        return findObjectsFromIds(TemplateSoccerPlayer.class, Model.templateSoccerPlayers(), fieldId, strIdsList);
+    }
+
+    public static Iterable<LiveMatchEvent> findLiveMatchEventsFromIds(String fieldId, List<String> strIdsList) {
+        return findObjectsFromIds(LiveMatchEvent.class, Model.liveMatchEvents(), fieldId, strIdsList);
     }
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/
