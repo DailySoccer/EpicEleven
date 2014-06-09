@@ -1,0 +1,52 @@
+@(match_event: model.TemplateMatchEvent)
+
+@main("Mach Event - Admin") {
+
+<h1>Match Event: @match_event.templateMatchEventId</h1>
+
+<p>Start Date: @match_event.startDate</p>
+
+<div>
+    <table>
+        <caption>@match_event.soccerTeamA.name</caption>
+        <tr>
+            <th>Template SoccerID</th>
+            <th>Name</th>
+            <th>Field Pos</th>
+            <th>Salary</th>
+            <th>Fantasy Points</th>
+        </tr>
+        @for(p <- match_event.soccerTeamA.soccerPlayers) {
+        <tr>
+            <td>@p.templateSoccerPlayerId</td>
+            <td>@p.name</td>
+            <td>@p.fieldPos</td>
+            <td>@p.salary</td>
+            <td>@p.fantasyPoints</td>
+        </tr>
+        }
+    </table>
+    <table>
+        <caption>@match_event.soccerTeamB.name</caption>
+        <tr>
+            <th>Template SoccerID</th>
+            <th>Name</th>
+            <th>Field Pos</th>
+            <th>Salary</th>
+            <th>Fantasy Points</th>
+        </tr>
+        @for(p <- match_event.soccerTeamB.soccerPlayers) {
+        <tr>
+            <td>@p.templateSoccerPlayerId</td>
+            <td>@p.name</td>
+            <td>@p.fieldPos</td>
+            <td>@p.salary</td>
+            <td>@p.fantasyPoints</td>
+        </tr>
+        }
+    </table>
+</div>
+
+<a href='@routes.AdminController.templateMatchEvents'>Back to Template Match Events</a>
+
+}

@@ -1,0 +1,32 @@
+@(soccers: List[model.TemplateSoccerPlayer])
+
+@main("Template Soccer Players - Admin") {
+
+<h1>Soccer Players</h1>
+
+<div>
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Field Pos</th>
+            <th>Salary</th>
+            <th>Fantasy Points</th>
+            <th>Team ID</th>
+        </tr>
+        @for(p <- soccers) {
+        <tr>
+            <td>@p.templateSoccerPlayerId</td>
+            <td>@p.name</td>
+            <td>@p.fieldPos</td>
+            <td>@p.salary</td>
+            <td>@p.fantasyPoints</td>
+            <td><a href="@routes.AdminController.templateSoccerTeam(p.templateTeamId.toString())">@p.templateTeamId</a></td>
+        </tr>
+        }
+    </table>
+</div>
+
+<a href='@routes.AdminController.dashBoard'>Back to Dashboard</a>
+
+}

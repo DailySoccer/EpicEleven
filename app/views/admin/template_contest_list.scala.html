@@ -1,0 +1,43 @@
+@(template_contests: List[model.TemplateContest])
+
+@main("Template Contests - Admin") {
+
+<h1>Template Contests</h1>
+
+<div>
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>PostName</th>
+            <th>Min Instances</th>
+            <th>Max Entries</th>
+            <th>Salary Cap</th>
+            <th>Entry Fee</th>
+            <th>Prize Type</th>
+            <th>Start Date</th>
+            <!--
+            @for(i <- 0 to 10) {
+            <th>Match Event @i</th>
+            }
+            -->
+        </tr>
+        @for(p <- template_contests) {
+        <tr>
+            <td>@p.templateContestId</td>
+            <td>@p.name</td>
+            <td>@p.postName</td>
+            <td>@p.minInstances</td>
+            <td>@p.maxEntries</td>
+            <td>@p.salaryCap</td>
+            <td>@p.entryFee</td>
+            <td>@p.prizeType</td>
+            <td>@p.startDate</td>
+        </tr>
+        }
+    </table>
+</div>
+
+<a href='@routes.AdminController.dashBoard'>Back to Dashboard</a>
+
+}

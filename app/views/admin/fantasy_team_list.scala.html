@@ -1,0 +1,40 @@
+@(fantasy_teams: List[model.FantasyTeam])
+
+@main("Fantasy Teasm - Admin") {
+
+<h1>Fantasy Teams</h1>
+
+<div>
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>UserId</th>
+            <th>ContestId</th>
+            <th>Soccer 1</th>
+            <th>Soccer 2</th>
+            <th>Soccer 3</th>
+            <th>Soccer 4</th>
+            <th>Soccer 5</th>
+            <th>Soccer 6</th>
+            <th>Soccer 7</th>
+            <th>Soccer 8</th>
+            <th>Soccer 9</th>
+            <th>Soccer 10</th>
+            <th>Soccer 11</th>
+        </tr>
+        @for(p <- fantasy_teams) {
+        <tr>
+            <td>@p.fantasyTeamId</td>
+            <td>@p.userId</td>
+            <td>@p.contestId</td>
+            @for(id <- p.soccerIds) {
+            <td>@id</td>
+            }
+        </tr>
+        }
+    </table>
+</div>
+
+<a href='@routes.AdminController.dashBoard'>Back to Dashboard</a>
+
+}

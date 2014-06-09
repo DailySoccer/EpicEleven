@@ -16,11 +16,39 @@ GET     /get_active_contests        controllers.ContestController.getActiveConte
 GET     /get_active_match_events    controllers.ContestController.getActiveMatchEvents()
 POST    /add_fantasy_team           controllers.ContestController.addFantasyTeam()
 
+# LIVE
+GET     /get_live_match_events/template_contest/:contest    controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)
+GET     /get_live_match_events/match_events/:matchEvents    controllers.ContestController.getLiveMatchEventsFromMatchEvents(matchEvents)
+GET     /get_live_fantasy_teams/:contest                    controllers.ContestController.getLiveFantasyTeams(contest)
+
 GET     /parseFantasy               controllers.OptaHttpController.parseFantasy()
 GET     /parseEvents                controllers.OptaHttpController.parseEvents()
 GET     /createPointsTranslation    controllers.OptaHttpController.createPointsTranslation()
 GET     /player                     controllers.OptaHttpController.playersPoints()
 GET     /player/:player             controllers.OptaHttpController.playerPoints(player: Int)
+
+# ADMIN
+GET     /admin                                      controllers.AdminController.dashBoard()
+GET     /admin/lobby                                controllers.AdminController.lobby()
+
+GET     /admin/users                                controllers.AdminController.users()
+
+GET     /admin/fantasy_teams                        controllers.AdminController.fantasyTeams()
+
+GET     /admin/contests                             controllers.AdminController.contests()
+GET     /admin/contest/:contestId                   controllers.AdminController.contest(contestId : String)
+
+GET     /admin/template_contests                    controllers.AdminController.templateContests()
+GET     /admin/template_contest/:templateContestId  controllers.AdminController.templateContest(templateContestId : String)
+
+GET     /admin/template_match_events                controllers.AdminController.templateMatchEvents()
+GET     /admin/template_match_event/:templateMatchEventId       controllers.AdminController.templateMatchEvent(templateMatchEventId : String)
+
+GET     /admin/template_soccer_teams                controllers.AdminController.templateSoccerTeams()
+GET     /admin/template_soccer_team/:templateSoccerTeam         controllers.AdminController.templateSoccerTeam(templateSoccerTeam : String)
+
+GET     /admin/template_soccer_players              controllers.AdminController.templateSoccerPlayers()
+
 
 GET     /                           controllers.Assets.at(path="/public", file="index.html")
 GET     /*file               		controllers.Assets.at(path="/public", file)

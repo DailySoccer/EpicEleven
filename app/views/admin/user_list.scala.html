@@ -1,0 +1,32 @@
+@(users: List[model.User])
+
+@main("Users - Admin") {
+
+<h1>Users</h1>
+
+<div>
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>FirstName</th>
+            <th>LastName</th>
+            <th>NickName</th>
+            <th>Email</th>
+            <!--th>Password</th-->
+        </tr>
+        @for(p <- users) {
+        <tr>
+            <td>@p._id</td>
+            <td>@p.firstName</td>
+            <td>@p.lastName</td>
+            <td>@p.nickName</td>
+            <td>@p.email</td>
+            <!--td>@p.password</td-->
+        </tr>
+        }
+    </table>
+</div>
+
+<a href='@routes.AdminController.dashBoard'>Back to Dashboard</a>
+
+}

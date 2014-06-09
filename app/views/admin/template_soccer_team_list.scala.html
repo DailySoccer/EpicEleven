@@ -1,0 +1,24 @@
+@(teams: List[model.TemplateSoccerTeam])
+
+@main("Template Soccer Teams - Admin") {
+
+<h1>Teams</h1>
+
+<div>
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+        </tr>
+        @for(p <- teams) {
+        <tr>
+            <td>@p.templateSoccerTeamId</td>
+            <td><a href="@routes.AdminController.templateSoccerTeam(p.templateSoccerTeamId.toString())">@p.name</a></td>
+        </tr>
+        }
+    </table>
+</div>
+
+<a href='@routes.AdminController.dashBoard'>Back to Dashboard</a>
+
+}

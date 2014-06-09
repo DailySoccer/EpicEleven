@@ -1,0 +1,28 @@
+@(match_events: List[model.TemplateMatchEvent])
+
+@main("Template Mach Events - Admin") {
+
+<h1>Template Match Events</h1>
+
+<div>
+    <table>
+        <tr>
+            <th>Id</th>
+            <th>Teams</th>
+            <th>Start Date</th>
+        </tr>
+        @for(p <- match_events) {
+        <tr>
+            <td>@p.templateMatchEventId</td>
+            <td>
+                <a href="@routes.AdminController.templateMatchEvent(p.templateMatchEventId.toString())">
+                    @p.soccerTeamA.name vS @p.soccerTeamB.name</a></td>
+            <td>@p.startDate</td>
+        </tr>
+        }
+    </table>
+</div>
+
+<a href='@routes.AdminController.dashBoard'>Back to Dashboard</a>
+
+}

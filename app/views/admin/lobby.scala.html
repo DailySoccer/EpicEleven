@@ -1,0 +1,31 @@
+@(contests: List[model.Contest], templateMap: HashMap[org.bson.types.ObjectId, model.TemplateContest])
+
+@main("Lobby - Admin") {
+
+<h1>Lobby</h1>
+
+<div>
+<table>
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>CurrentUserIds</th>
+        <th>maxUsers</th>
+        <th>TemplateContestId</th>
+    </tr>
+    @for(p <- contests) {
+    <tr>
+        <td>@p.contestId</td>
+        <td><a href="@routes.AdminController.contest(p.contestId.toString())">@p.name</a></td>
+        <td>@p.currentUserIds</td>
+        <td>@p.maxUsers</td>
+        <td><a href="@routes.AdminController.templateContest(p.templateContestId.toString())">
+            @templateMap(p.templateContestId).name (@p.templateContestId)</a></td>
+    </tr>
+    }
+</table>
+</div>
+
+<div><a href='@routes.AdminController.dashBoard'>Back to Dashboard</a></div>
+
+}

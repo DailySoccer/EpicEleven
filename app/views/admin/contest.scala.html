@@ -1,0 +1,12 @@
+@(contest: model.Contest, map: Map[Integer, String])
+
+@main("Contest - Admin") {
+
+<h1>Contest: @contest.name</h1>
+
+<p>@map(0)</p>
+<p>@map(1)</p>
+
+<a href='@routes.AdminController.contests'>Back to Contests</a>
+
+}
