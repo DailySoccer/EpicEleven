@@ -2,12 +2,12 @@
 
 @main("Mach Event - Admin") {
 
-<h1>Match Event: @match_event.templateMatchEventId</h1>
+<h1 class="page-header">Match Event: @match_event.templateMatchEventId</h1>
 
-<p>Start Date: @match_event.startDate</p>
-
-<div>
-    <table>
+<h2 class="sub-header">Start Date: @match_event.startDate</h2>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
         <caption>@match_event.soccerTeamA.name</caption>
         <tr>
             <th>Template SoccerID</th>
@@ -16,6 +16,8 @@
             <th>Salary</th>
             <th>Fantasy Points</th>
         </tr>
+        </thead>
+        <tbody>
         @for(p <- match_event.soccerTeamA.soccerPlayers) {
         <tr>
             <td>@p.templateSoccerPlayerId</td>
@@ -25,9 +27,11 @@
             <td>@p.fantasyPoints</td>
         </tr>
         }
+        </tbody>
     </table>
-    <table>
+    <table class="table table-striped">
         <caption>@match_event.soccerTeamB.name</caption>
+        <thead>
         <tr>
             <th>Template SoccerID</th>
             <th>Name</th>
@@ -35,6 +39,8 @@
             <th>Salary</th>
             <th>Fantasy Points</th>
         </tr>
+        </thead>
+        <tbody>
         @for(p <- match_event.soccerTeamB.soccerPlayers) {
         <tr>
             <td>@p.templateSoccerPlayerId</td>
@@ -44,6 +50,7 @@
             <td>@p.fantasyPoints</td>
         </tr>
         }
+        </tbody>
     </table>
 </div>
 

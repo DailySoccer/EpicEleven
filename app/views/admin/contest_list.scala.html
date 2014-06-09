@@ -2,10 +2,12 @@
 
 @main("Contests - Admin") {
 
-<h1>Contests</h1>
+<h1 class="page-header">Contests</h1>
 
-<div>
-    <table>
+<h2 class="sub-header"></h2>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
         <tr>
             <th>Id</th>
             <th>Name</th>
@@ -13,6 +15,8 @@
             <th>maxUsers</th>
             <th>TemplateContestId</th>
         </tr>
+        </thead>
+        <tbody>
         @for(p <- contests) {
         <tr>
             <td>@p.contestId</td>
@@ -22,6 +26,7 @@
             <td><a href="@routes.AdminController.templateContest(p.templateContestId.toString())">@p.templateContestId</a></td>
         </tr>
         }
+        </tbody>
     </table>
 </div>
 

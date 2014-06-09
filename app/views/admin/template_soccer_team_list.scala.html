@@ -2,20 +2,25 @@
 
 @main("Template Soccer Teams - Admin") {
 
-<h1>Teams</h1>
+<h1 class="page-header">Template Soccer Teams</h1>
 
-<div>
-    <table>
+<h2 class="sub-header"></h2>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
         <tr>
             <th>Id</th>
             <th>Name</th>
         </tr>
+        </thead>
+        <tbody>
         @for(p <- teams) {
         <tr>
             <td>@p.templateSoccerTeamId</td>
             <td><a href="@routes.AdminController.templateSoccerTeam(p.templateSoccerTeamId.toString())">@p.name</a></td>
         </tr>
         }
+        </tbody>
     </table>
 </div>
 

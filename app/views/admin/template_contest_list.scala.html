@@ -2,10 +2,12 @@
 
 @main("Template Contests - Admin") {
 
-<h1>Template Contests</h1>
+<h1 class="page-header">Template Contests</h1>
 
-<div>
-    <table>
+<h2 class="sub-header"></h2>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
         <tr>
             <th>Id</th>
             <th>Name</th>
@@ -22,6 +24,8 @@
             }
             -->
         </tr>
+        </thead>
+        <tbody>
         @for(p <- template_contests) {
         <tr>
             <td>@p.templateContestId</td>
@@ -35,6 +39,7 @@
             <td>@p.startDate</td>
         </tr>
         }
+        </tbody>
     </table>
 </div>
 

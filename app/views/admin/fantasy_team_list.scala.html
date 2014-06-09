@@ -2,10 +2,12 @@
 
 @main("Fantasy Teasm - Admin") {
 
-<h1>Fantasy Teams</h1>
+<h1 class="page-header">Fantasy Teams</h1>
 
-<div>
-    <table>
+<h2 class="sub-header"></h2>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
         <tr>
             <th>Id</th>
             <th>UserId</th>
@@ -22,6 +24,8 @@
             <th>Soccer 10</th>
             <th>Soccer 11</th>
         </tr>
+        </thead>
+        <tbody>
         @for(p <- fantasy_teams) {
         <tr>
             <td>@p.fantasyTeamId</td>
@@ -32,6 +36,7 @@
             }
         </tr>
         }
+        </tbody>
     </table>
 </div>
 

@@ -2,15 +2,19 @@
 
 @main("Template Mach Events - Admin") {
 
-<h1>Template Match Events</h1>
+<h1 class="page-header">Template Match Events</h1>
 
-<div>
-    <table>
+<h2 class="sub-header"></h2>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
         <tr>
             <th>Id</th>
             <th>Teams</th>
             <th>Start Date</th>
         </tr>
+        </thead>
+        <tbody>
         @for(p <- match_events) {
         <tr>
             <td>@p.templateMatchEventId</td>
@@ -20,6 +24,7 @@
             <td>@p.startDate</td>
         </tr>
         }
+        </tbody>
     </table>
 </div>
 

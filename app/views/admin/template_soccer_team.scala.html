@@ -2,11 +2,13 @@
 
 @main("Template Soccer Team - Admin") {
 
-<h1>Template Soccer Team: @template_soccer_team.templateSoccerTeamId</h1>
+<h1 class="page-header">Template Soccer Team: @template_soccer_team.templateSoccerTeamId</h1>
 
-<div>
-    <table>
-        <caption>@template_soccer_team.name</caption>
+<h2 class="sub-header">@template_soccer_team.name</h2>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <!--caption>@template_soccer_team.name</caption-->
+        <thead>
         <tr>
             <th>Template SoccerID</th>
             <th>Name</th>
@@ -14,6 +16,8 @@
             <th>Salary</th>
             <th>Fantasy Points</th>
         </tr>
+        </thead>
+        <tbody>
         @for(p <- template_soccer_players) {
         <tr>
             <td>@p.templateSoccerPlayerId</td>
@@ -23,6 +27,7 @@
             <td>@p.fantasyPoints</td>
         </tr>
         }
+        </tbody>
     </table>
 </div>
 
