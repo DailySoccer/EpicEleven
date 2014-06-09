@@ -34,6 +34,9 @@ GET     /player/:player             controllers.OptaHttpController.playerPoints(
 
 # ADMIN
 GET     /admin                                      controllers.AdminController.dashBoard()
+GET     /admin/resetdb                              controllers.AdminController.resetDB()
+GET     /admin/reset_contests                       controllers.AdminController.resetContests()
+
 GET     /admin/lobby                                controllers.AdminController.lobby()
 
 GET     /admin/users                                controllers.AdminController.users()

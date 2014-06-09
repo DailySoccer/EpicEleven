@@ -13,8 +13,18 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 public class AdminController extends Controller {
+    public static Result resetDB() {
+        Model.resetDB();
+        return ok(views.html.admin.dashboard.render("Reset DB: OK"));
+    }
+
+    public static Result resetContests() {
+        Model.resetContests();
+        return ok(views.html.admin.dashboard.render("Reset Contests: OK"));
+    }
+
     public static Result dashBoard() {
-        return ok(views.html.admin.dashboard.render("hola"));
+        return ok(views.html.admin.dashboard.render(""));
     }
 
     public static Result lobby() {
