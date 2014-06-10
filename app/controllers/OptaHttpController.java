@@ -492,12 +492,14 @@ public class OptaHttpController extends Controller {
         OptaPlayer myPlayer = new OptaPlayer();
 
         if (playerObject.containsKey("firstname")){
+            myPlayer.id = (String) playerObject.get("id");
             myPlayer.firstname = (String) playerObject.get("firstname");
             myPlayer.lastname = (String) playerObject.get("lastname");
             myPlayer.position = (String) playerObject.get("position");
             myPlayer.teamId = (String) teamObject.get("id");
             myPlayer.teamName = (String) teamObject.get("name");
         }else if (playerObject.containsKey("Name")){
+            myPlayer.id = (String) playerObject.get("uID");
             myPlayer.name = (String) playerObject.get("Name");
             myPlayer.position = (String) playerObject.get("Position");
             myPlayer.teamId = (String) teamObject.get("uID");
