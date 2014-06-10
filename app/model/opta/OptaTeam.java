@@ -8,5 +8,5 @@ public class OptaTeam {
     public String shortname;
     public int id;
     public int[] leagues;
-    public long updatedtime;
+    public long updatedTime;
 }

@@ -8,7 +8,7 @@ public class OptaPlayer {
     public String lastname;
     public String position;
     public int id;
-    public int teamid;
-    public String teamname;
-    public long updatedtime;
+    public int teamId;
+    public String teamName;
+    public long updatedTime;
 }
