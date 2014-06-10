@@ -14,14 +14,14 @@ import java.util.Date;
 public class OptaEvent {
 
     public ObjectId _id;
-    public int gameId;
-    public int homeTeamId;
-    public int awayTeamId;
-    public int competitionId;
-    public int seasonId;
+    public String gameId;
+    public String homeTeamId;
+    public String awayTeamId;
+    public String competitionId;
+    public String seasonId;
     public int typeId;
     public int eventId;
-    public int playerId;
+    public String playerId;
     public int parentId;
     public int outcome;
     public ArrayList<Integer> qualifiers;

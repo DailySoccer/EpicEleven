@@ -66,6 +66,11 @@ public class OptaHttpController extends Controller {
             processFantasy(bodyAsJSON);
         }
 
+        if (request().headers().containsKey("X-Meta-Feed-Type") &&
+            request().headers().get("X-Meta-Feed-Type")[0].equals("F9")){
+            processF9(bodyAsJSON);
+        }
+
         if (bodyAsJSON.containsField("Games")){
             processEvents(bodyAsJSON);
         }
@@ -108,7 +113,7 @@ public class OptaHttpController extends Controller {
         destination.qualifiers = origin.qualifiers;
     }
 
-    public static void generateEvent(int eventType, int playerId, OptaEvent parentEvent){
+    public static void generateEvent(int eventType, String playerId, OptaEvent parentEvent){
         OptaEvent dbevent = Model.optaEvents().findOne("{parentId: #, gameId: #, typeId: #}", parentEvent.eventId,
                                                        parentEvent.gameId, eventType).as(OptaEvent.class);
 
@@ -193,11 +198,11 @@ public class OptaHttpController extends Controller {
     private static void processEvent(LinkedHashMap event, LinkedHashMap game) {
         OptaEvent myEvent = new OptaEvent();
         myEvent._id = new ObjectId();
-        myEvent.gameId = (int) game.get("id");
-        myEvent.homeTeamId = (int) game.get("home_team_id");
-        myEvent.awayTeamId = (int) game.get("away_team_id");
-        myEvent.competitionId = (int) game.get("competition_id");
-        myEvent.seasonId = (int) game.get("season_id");
+        myEvent.gameId = (String) game.get("id");
+        myEvent.homeTeamId = (String) game.get("home_team_id");
+        myEvent.awayTeamId = (String) game.get("away_team_id");
+        myEvent.competitionId = (String) game.get("competition_id");
+        myEvent.seasonId = (String) game.get("season_id");
         myEvent.eventId = (int) event.get("event_id");
         myEvent.typeId = (int) event.get("type_id");
         myEvent.outcome = (int)event.get("outcome");
@@ -207,7 +212,7 @@ public class OptaHttpController extends Controller {
         myEvent.lastModified = parseDate((String) event.get("last_modified"));
 
         if (event.containsKey("player_id")){
-            myEvent.playerId = (int) event.get("player_id");
+            myEvent.playerId = (String) event.get("player_id");
         }
 
         if (event.containsKey("Q")){
@@ -337,7 +342,7 @@ public class OptaHttpController extends Controller {
             for (FantasyPoints playerpoint: playerpoints){
                 totalPoints += playerpoint.points;
             }
-            allplayers += "<li>"+myPlayer.firstname+" "+myPlayer.lastname+"'s (<a href='/player/"+myPlayer.id+"'>"+myPlayer.id+"</a>) points: "+totalPoints+"</li>\n";
+            allplayers += "<li>"+myPlayer.name+"'s (<a href='/player/"+myPlayer.id+"'>"+myPlayer.id+"</a>) points: "+totalPoints+"</li>\n";
         }
         allplayers += "</ul>";
         return ok(allplayers).as("text/html");
@@ -361,13 +366,71 @@ public class OptaHttpController extends Controller {
                 }
             }
         }
-        String html = "<h1>"+myPlayer.firstname+" "+myPlayer.lastname+"'s points: "+totalPoints+"</h1> <ul>";
+        String html = "<h1>"+myPlayer.name+"'s points: "+totalPoints+"</h1> <ul>";
         for (Object eventType: events.keySet()){
             html += "<li>event "+eventType+"("+points.get(eventType)+" points): "+events.get(eventType)+" times</li>";
         }
         html += "</ul>";
         return ok(html).as("text/html");
 //        return ok(my_player.firstname+" "+my_player.lastname+"'s points: "+totalPoints);
+    }
+
+    public static void processF9(BasicDBObject f9){
+        ArrayList teams = new ArrayList();
+        LinkedHashMap myF9 = (LinkedHashMap)f9.get("SoccerFeed");
+        myF9 = (LinkedHashMap)myF9.get("SoccerDocument");
+        if (myF9.containsKey("Team")) {
+            teams = (ArrayList)myF9.get("Team");
+        }else{
+            if (myF9.containsKey("Match")){
+                LinkedHashMap match = (LinkedHashMap)(myF9.get("Match"));
+                teams = (ArrayList)match.get("Team");
+            }
+            else{
+                System.out.println("no match");
+            }
+        }
+
+        for (Object team: teams){
+            LinkedHashMap teamObject = (LinkedHashMap)team;
+            ArrayList playersList = (ArrayList)teamObject.get("Player");
+            OptaTeam myTeam = new OptaTeam();
+            myTeam.id = (String)teamObject.get("uID");
+            myTeam.name = (String)teamObject.get("Name");
+            myTeam.shortName = (String)teamObject.get("SYMID");
+            myTeam.updatedTime = System.currentTimeMillis();
+            OptaTeam dbteam = Model.optaTeams().findOne("{id: #}", myTeam.id).as(OptaTeam.class);
+            if (playersList != null){
+                if (dbteam != null){
+                    boolean updated = (dbteam.name != (String)teamObject.get("name"));
+                    if (updated){
+                        Model.optaTeams().update("{id: #}", myTeam.id).with(myTeam);
+                    }
+                }else{
+                    Model.optaTeams().insert(myTeam);
+                }
+
+                for (Object player: playersList) {
+                    LinkedHashMap playerObject = (LinkedHashMap) player;
+                    String playerId = (String) playerObject.get("uID");
+                    // First search if player already exists:
+                    OptaPlayer dbplayer = Model.optaPlayers().findOne("{id: #}", playerId).as(OptaPlayer.class);
+                    if (dbplayer != null) {
+                        boolean updated = !((dbplayer.position == (String) playerObject.get("Position")) &&
+                                (dbplayer.name == (String) playerObject.get("Name")) &&
+                                (dbplayer.teamName == (String) teamObject.get("Name")) &&
+                                (dbplayer.teamId == (String) teamObject.get("uID")));
+                        if (updated) {
+                            OptaPlayer myPlayer = createPlayer(playerObject, teamObject);
+                            Model.optaPlayers().update("{id: #}", playerId).with(myPlayer);
+                        }
+                    } else {
+                        OptaPlayer myPlayer = createPlayer(playerObject, teamObject);
+                        Model.optaPlayers().insert(myPlayer);
+                    }
+                }
+            }
+        }
     }
 
     public static void processFantasy(BasicDBObject fantasy){
@@ -389,7 +452,7 @@ public class OptaHttpController extends Controller {
             LinkedHashMap teamObject = (LinkedHashMap)team;
             ArrayList playersList = (ArrayList)teamObject.get("Player");
             OptaTeam myTeam = new OptaTeam();
-            myTeam.id = (int)teamObject.get("id");
+            myTeam.id = (String)teamObject.get("id");
             myTeam.name = (String)teamObject.get("name");
             myTeam.updatedTime = System.currentTimeMillis();
             OptaTeam dbteam = Model.optaTeams().findOne("{id: #}", myTeam.id).as(OptaTeam.class);
@@ -412,7 +475,7 @@ public class OptaHttpController extends Controller {
                                         (dbplayer.firstname == (String)playerObject.get("firstname")) &&
                                         (dbplayer.lastname == (String)playerObject.get("lastname")) &&
                                         (dbplayer.teamName == (String)teamObject.get("name")) &&
-                                        (dbplayer.teamId == (int)teamObject.get("id")));
+                                        (dbplayer.teamId == (String)teamObject.get("id")));
                     if (updated){
                         OptaPlayer myPlayer = createPlayer(playerObject, teamObject);
                         Model.optaPlayers().update("{id: #}", playerId).with(myPlayer);
@@ -427,11 +490,19 @@ public class OptaHttpController extends Controller {
 
     public static OptaPlayer createPlayer(LinkedHashMap playerObject, LinkedHashMap teamObject){
         OptaPlayer myPlayer = new OptaPlayer();
-        myPlayer.firstname = (String) playerObject.get("firstname");
-        myPlayer.lastname = (String) playerObject.get("lastname");
-        myPlayer.position = (String) playerObject.get("position");
-        myPlayer.teamId = (int) teamObject.get("id");
-        myPlayer.teamName = (String) teamObject.get("name");
+
+        if (playerObject.containsKey("firstname")){
+            myPlayer.firstname = (String) playerObject.get("firstname");
+            myPlayer.lastname = (String) playerObject.get("lastname");
+            myPlayer.position = (String) playerObject.get("position");
+            myPlayer.teamId = (String) teamObject.get("id");
+            myPlayer.teamName = (String) teamObject.get("name");
+        }else if (playerObject.containsKey("Name")){
+            myPlayer.name = (String) playerObject.get("Name");
+            myPlayer.position = (String) playerObject.get("Position");
+            myPlayer.teamId = (String) teamObject.get("uID");
+            myPlayer.teamName = (String) teamObject.get("Name");
+        }
         myPlayer.updatedTime = System.currentTimeMillis();
         return myPlayer;
     }
