@@ -8,7 +8,7 @@ import java.util.Date;
  */
 public class PointsTranslation {
     public ObjectId _id;
-    public int event_code;
+    public int eventCode;
     public int points;
     public Date timestamp;
     public long unixtimestamp;
