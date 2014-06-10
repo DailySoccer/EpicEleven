@@ -43,7 +43,12 @@ public class OptaHttpController extends Controller {
         BasicDBObject bodyAsJSON = (BasicDBObject) JSON.parse("{}");
         String name = "default-filename";
         try {
-            name = request().headers().get("x-meta-default-filename")[0];
+            if (request().headers().containsKey("x-meta-default-filename")){
+                name = request().headers().get("x-meta-default-filename")[0];
+            }
+            else if (request().headers().containsKey("X-Meta-Default-Filename")){
+                name = request().headers().get("X-Meta-Default-Filename")[0];
+            }
             bodyText = bodyText.substring(bodyText.indexOf('<'));
             bodyAsJSON = (BasicDBObject) JSON.parse(XML.toJSONObject(bodyText).toString());
         } catch (Exception e) {
