@@ -1,9 +1,8 @@
 #!/bin/sh
 
-# Cambiamos a la rama de deploy, asegurandonos de que esta recien creada
+# Cambiamos a la rama de deploy, asegurandonos de que esta creada/reseateada
 git stash
-git branch -D deploy
-git checkout -b deploy
+git checkout -B deploy
 
 # Tenemos que borrar el symlink y hacer una copia dura de toda la build
 rm public
