@@ -41,7 +41,8 @@ public class ContestController extends Controller {
         contest.put("template_contests", Model.templateContests().find("{startDate: #}", startDate).as(TemplateContest.class));
         contest.put("contests", Model.contests().find().as(Contest.class));
 
-        Logger.info("getActiveContests: {}", System.currentTimeMillis() - startTime);
+        // Logger.info("getActiveContests: {}", System.currentTimeMillis() - startTime);
+
         return new ReturnHelper(contest).toResult();
     }
 
