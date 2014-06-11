@@ -16,12 +16,12 @@ POST    /add_contest_entry          controllers.ContestController.addContestEntr
 
 # LIVE
 GET     /get_live_match_events/template_contest/:contest    controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)
-GET     /get_live_match_events/match_events/:matchEvents    controllers.ContestController.getLiveMatchEventsFromMatchEvents(matchEvents)
+POST    /get_live_match_events/match_events                 controllers.ContestController.getLiveMatchEventsFromMatchEvents()
 GET     /get_live_contest_entries/:contest                  controllers.ContestController.getLiveContestEntries(contest)
 # LIVE END
 
 # TEST
-GET     /live_fantasy_points/match_events/:matchEvents      controllers.ContestController.updateLiveFantasyPoints(matchEvents)
+POST    /live_fantasy_points/match_events                   controllers.ContestController.updateLiveFantasyPoints()
 POST    /set_live_fantasy_points/:soccerPlayerId/:points    controllers.ContestController.setLiveFantasyPointsOfSoccerPlayer(soccerPlayerId, points)
 # TEST END
 

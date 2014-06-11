@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import play.Logger;
 import play.data.Form;
 import play.data.validation.Constraints;
+import play.libs.Json;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.*;
@@ -22,7 +23,6 @@ import static play.data.Form.form;
 import org.bson.types.ObjectId;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 //@UserAuthenticated
 @AllowCors.Origin
@@ -74,7 +74,7 @@ public class ContestController extends Controller {
         if (!contestEntryForm.hasErrors()) {
             ContestEntryParams params = contestEntryForm.get();
 
-            Logger.info("addFantasyTeam: userId({}) contestId({}) soccerTeam({})", params.userId, params.contestId, params.soccerTeam);
+            Logger.info("addContestEntry: userId({}) contestId({}) soccerTeam({})", params.userId, params.contestId, params.soccerTeam);
 
             // Obtener el userId : ObjectId
             User aUser = Model.findUserId(params.userId);
@@ -88,18 +88,13 @@ public class ContestController extends Controller {
                 contestEntryForm.reject("contestId", "Contest invalid");
             }
 
-            // Obtener los soccerIds : List<ObjectId>
+            // Obtener los soccerIds de los futbolistas : List<ObjectId>
             List<ObjectId> soccerIds = new ArrayList<>();
-            List<String> strIdsList = ListUtils.stringListFromString(",", params.soccerTeam);
 
-            // Convertir las strings en ObjectId
-            List<ObjectId> idsList = new ArrayList<>();
-            for (String strId: strIdsList) {
-                idsList.add( new ObjectId(strId) );
-            }
+            List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
             Iterable<TemplateSoccerPlayer> soccers = Model.findTemplateSoccerPlayersFromIds("_id", idsList);
 
-            String soccerNames = "";
+            String soccerNames = "";    // Requerido para Logger.info
             for (TemplateSoccerPlayer soccer : soccers) {
                 soccerNames += soccer.name + " / ";
                 soccerIds.add(soccer.templateSoccerPlayerId);
@@ -176,19 +171,26 @@ public class ContestController extends Controller {
         return new ReturnHelper(liveMatchEventList).toResult();
     }
 
-    public static Result getLiveMatchEventsFromMatchEvents(String strMatchEventsId) {
-        Logger.info("getLiveMatchEventsFromMatchEvents: {}", strMatchEventsId);
+    // https://github.com/playframework/playframework/tree/master/samples/java/forms
+    public static class MatchEventsListParams {
+        @Constraints.Required
+        public String matchEvents;
+    }
+
+    public static Result getLiveMatchEventsFromMatchEvents() {
+        Form<MatchEventsListParams> matchEventForm = form(MatchEventsListParams.class).bindFromRequest();
+        if (matchEventForm.hasErrors()) {
+            return new ReturnHelper(false, "Form has errors").toResult();
+        }
+
+        MatchEventsListParams params = matchEventForm.get();
+
+        Logger.info("getLiveMatchEventsFromMatchEvents: {}", params);
 
         long startTime = System.currentTimeMillis();
 
-        // Separamos la cadena de MatchEventIds (separados por ',') en una lista de StringsIds
-        List<String> strMatchEventIdsList = ListUtils.stringListFromString(",", strMatchEventsId);
-
         // Convertir las strings en ObjectId
-        List<ObjectId> idsList = new ArrayList<>();
-        for (String strId: strMatchEventIdsList) {
-            idsList.add( new ObjectId(strId) );
-        }
+        List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.matchEvents);
 
         Iterable<LiveMatchEvent> liveMatchEventResults = Model.findLiveMatchEventsFromIds("templateMatchEventId", idsList);
         List<LiveMatchEvent> liveMatchEventList = ListUtils.listFromIterator(liveMatchEventResults.iterator());
@@ -219,15 +221,16 @@ public class ContestController extends Controller {
         return ok();
     }
 
-    public static Result updateLiveFantasyPoints(String strMatchEventsId) {
-        // Separamos la cadena de MatchEventIds (separados por ',') en una lista de StringsIds
-        List<String> strMatchEventIdsList = ListUtils.stringListFromString(",", strMatchEventsId);
+    public static Result updateLiveFantasyPoints() {
+        Form<MatchEventsListParams> matchEventForm = form(MatchEventsListParams.class).bindFromRequest();
+        if (matchEventForm.hasErrors()) {
+            return new ReturnHelper(false, "Form has errors").toResult();
+        }
+
+        MatchEventsListParams params = matchEventForm.get();
 
         // Convertir las strings en ObjectId
-        List<ObjectId> idsList = new ArrayList<>();
-        for (String strId: strMatchEventIdsList) {
-            idsList.add( new ObjectId(strId) );
-        }
+        List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.matchEvents);
 
         Model.updateLiveFantasyPoints(idsList);
 

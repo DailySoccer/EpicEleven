@@ -1,5 +1,7 @@
 package utils;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import play.libs.Json;
 import org.bson.types.ObjectId;
 import java.util.List;
 import java.util.ArrayList;
@@ -27,5 +29,20 @@ public class ListUtils {
         while (iter.hasNext())
             copy.add(iter.next());
         return copy;
+    }
+
+    public static List<ObjectId> objectIdListFromJson(String jsonData) {
+        List<ObjectId> idsList = new ArrayList<>();
+
+        JsonNode jsonNode = Json.parse(jsonData);
+        assert (jsonNode.isArray());
+
+        Iterator<JsonNode> iter = jsonNode.iterator();
+        while (iter.hasNext()) {
+            String strObjectId = iter.next().asText();
+            idsList.add(new ObjectId(strObjectId));
+        }
+
+        return idsList;
     }
 }
