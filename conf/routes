@@ -26,9 +26,9 @@ GET     /get_live_fantasy_teams/:contest                    controllers.ContestC
 POST    /set_live_fantasy_points/:soccerPlayerId/:points    controllers.ContestController.setLiveFantasyPointsOfSoccerPlayer(soccerPlayerId, points)
 # TEST END
 
-GET     /parseFantasy               controllers.OptaHttpController.parseFantasy()
-GET     /parseEvents                controllers.OptaHttpController.parseEvents()
-GET     /createPointsTranslation    controllers.OptaHttpController.createPointsTranslation()
+GET     /parse_fantasy              controllers.OptaHttpController.parseFantasy()
+GET     /parse_events               controllers.OptaHttpController.parseEvents()
+GET     /create_points_translation  controllers.OptaHttpController.createPointsTranslation()
 GET     /player                     controllers.OptaHttpController.playersPoints()
 GET     /player/:player             controllers.OptaHttpController.playerPoints(player: Int)
 
@@ -58,8 +58,10 @@ GET     /admin/template_soccer_team/:templateSoccerTeam         controllers.Admi
 GET     /admin/template_soccer_players              controllers.AdminController.templateSoccerPlayers()
 # ADMIN END
 
+GET     /get_xml                    controllers.OptaHttpController.getXML()
+GET     /import_xml                 controllers.OptaHttpController.importXML()
+POST    /opta                       controllers.OptaHttpController.optaXmlInput()
 
 GET     /                           controllers.Assets.at(path="/public", file="index.html")
 GET     /*file               		controllers.Assets.at(path="/public", file)
 
-POST    /opta                       controllers.OptaHttpController.optaXmlInput()

@@ -4,9 +4,9 @@ package model.opta;
  * Created by gnufede on 03/06/14.
  */
 public class OptaTeam {
+    public String id;
     public String name;
-    public String shortname;
-    public int id;
+    public String shortName;
     public int[] leagues;
-    public long updatedtime;
+    public long updatedTime;
 }

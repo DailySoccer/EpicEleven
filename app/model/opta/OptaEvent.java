@@ -14,20 +14,20 @@ import java.util.Date;
 public class OptaEvent {
 
     public ObjectId _id;
-    public int game_id;
-    public int home_team_id;
-    public int away_team_id;
-    public int competition_id;
-    public int season_id;
-    public int type_id;
-    public int event_id;
-    public int player_id;
-    public int parent_id;
+    public String gameId;
+    public String homeTeamId;
+    public String awayTeamId;
+    public String competitionId;
+    public String seasonId;
+    public int typeId;
+    public int eventId;
+    public String playerId;
+    public int parentId;
     public int outcome;
     public ArrayList<Integer> qualifiers;
     public Date timestamp;
     public long unixtimestamp;
-    public Date last_modified;
+    public Date lastModified;
 
     public OptaEvent(){}
 
@@ -38,8 +38,8 @@ public class OptaEvent {
         if (other == null) {
             return false;
         }
-        if (other.last_modified != null && this.last_modified != null){
-            return this.last_modified.before(other.last_modified);
+        if (other.lastModified != null && this.lastModified != null){
+            return this.lastModified.before(other.lastModified);
         }
         return false;
     }
@@ -59,18 +59,18 @@ public class OptaEvent {
                     System.out.println("other is null");
                     return false;
                 }
-                return (this.game_id == other.game_id &&
-                        this.home_team_id == other.home_team_id &&
-                        this.away_team_id == other.away_team_id &&
-                        this.competition_id == other.competition_id &&
-                        this.season_id == other.season_id &&
-                        this.type_id == other.type_id &&
-                        this.event_id == other.event_id &&
-                        this.player_id == other.player_id &&
+                return (this.gameId == other.gameId &&
+                        this.homeTeamId == other.homeTeamId &&
+                        this.awayTeamId == other.awayTeamId &&
+                        this.competitionId == other.competitionId &&
+                        this.seasonId == other.seasonId &&
+                        this.typeId == other.typeId &&
+                        this.eventId == other.eventId &&
+                        this.playerId == other.playerId &&
                         this.outcome == other.outcome &&
                         this.qualifiers.equals(other.qualifiers) &&
                         this.timestamp.equals(other.timestamp) &&
-                        this.last_modified.equals(other.last_modified) &&
+                        this.lastModified.equals(other.lastModified) &&
                         this.unixtimestamp == other.unixtimestamp);
             } catch (ClassCastException e) {
                 return false;
