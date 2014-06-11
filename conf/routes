@@ -5,8 +5,6 @@
 GET     /test                       controllers.MainController.test()
 GET     /ping                       controllers.MainController.ping()
 GET     /jsontest					controllers.MainController.jsonTest()
-GET     /resetdb                    controllers.MainController.resetDB()
-GET     /reset_contests             controllers.MainController.resetContests()
 
 POST    /login                      controllers.LoginController.login()
 POST    /signup 					controllers.LoginController.signup()
@@ -34,8 +32,8 @@ GET     /player/:player             controllers.OptaHttpController.playerPoints(
 
 # ADMIN
 GET     /admin                                      controllers.AdminController.dashBoard()
-GET     /admin/resetdb                              controllers.AdminController.resetDB()
-GET     /admin/reset_contests                       controllers.AdminController.resetContests()
+GET     /admin/resetdb                              controllers.AdminController.resetDB(mock : Boolean ?= false)
+GET     /admin/reset_contests                       controllers.AdminController.resetContests(mock : Boolean ?= false)
 
 GET     /admin/lobby                                controllers.AdminController.lobby()
 

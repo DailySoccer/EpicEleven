@@ -13,13 +13,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 public class AdminController extends Controller {
-    public static Result resetDB() {
-        Model.resetDB();
+    public static Result resetDB(boolean mock) {
+        Model.resetDB(mock);
+
         return ok(views.html.admin.dashboard.render("Reset DB: OK"));
     }
 
-    public static Result resetContests() {
-        Model.resetContests();
+    public static Result resetContests(boolean mock) {
+        Model.resetContests(mock);
+
         return ok(views.html.admin.dashboard.render("Reset Contests: OK"));
     }
 

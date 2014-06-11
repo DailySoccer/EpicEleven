@@ -8,8 +8,13 @@
 <p class="bg-primary tab-pane fade in active">@message</p>
 </div>
 
-<a href="@routes.AdminController.resetDB"><button class="btn btn-danger">Reset DB</button></a>
-<a href="@routes.AdminController.resetContests"><button class="btn btn-danger">Reset Contests</button></a>
+<a href="@routes.AdminController.resetDB(false)"><button class="btn btn-danger">Reset DB</button></a>
+<a href="@routes.AdminController.resetDB(true)"><button class="btn btn-danger">Reset DB with Mock Data</button></a>
+</br/>
+</br/>
+<a href="@routes.AdminController.resetContests(false)"><button class="btn btn-danger">Reset Contests</button></a>
+<a href="@routes.AdminController.resetContests(true)"><button class="btn btn-danger">Reset Contests with Mock data</button></a>
+
 
 
 <!--

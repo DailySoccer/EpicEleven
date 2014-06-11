@@ -122,19 +122,22 @@ public class Model {
         ensureContestsDB(theMongoDB);
     }
 
-    static public void resetDB() {
+    static public void resetDB(boolean mock) {
         _mongoDB.dropDatabase();
         ensureDB(_mongoDB);
 
-        // During development we like to always have test data
-        MockData.ensureMockDataAll();
+        if (mock) {
+            MockData.ensureMockDataAll();
+        }
     }
 
-    static public void resetContests() {
+    static public void resetContests(boolean mock) {
         clearContestsDB(_mongoDB);
         ensureContestsDB(_mongoDB);
 
-        MockData.ensureMockDataContests();
+        if (mock) {
+            MockData.ensureMockDataContests();
+        }
     }
 
     static public User findUserId(String userId) {
