@@ -45,7 +45,7 @@ public class Model {
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
         MongoClientURI mongoClientURI = new MongoClientURI(mongodbUri);
 
-        Logger.info("The MongoDB uri is {}", mongodbUri);
+        Logger.info("The MongoDB is {}/{}", mongoClientURI.getHosts(), mongoClientURI.getDatabase());
 
         boolean bIsInitialized = false;
         while (!bIsInitialized) {
