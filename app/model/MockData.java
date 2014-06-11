@@ -30,12 +30,14 @@ public final class MockData {
         for (int teamCounter = 0; teamCounter < 20; ++teamCounter) {
 
             TemplateSoccerTeam soccerTeam = new TemplateSoccerTeam();
+            soccerTeam.optaTeamId = String.valueOf(++optaTeamId);
             soccerTeam.name = String.format("Team%02d", teamCounter);
 
             Model.templateSoccerTeams().insert(soccerTeam);
 
             for (int playerCounter = 0; playerCounter < 11; ++playerCounter) {
                 TemplateSoccerPlayer soccerPlayer = new TemplateSoccerPlayer();
+                soccerPlayer.optaPlayerId = String.valueOf(++optaPlayerId);
                 soccerPlayer.name = String.format("Player%02d-%02d", teamCounter, playerCounter);
                 soccerPlayer.fieldPos = pos[playerCounter];
                 soccerPlayer.salary = (playerCounter + 1) * 10000;
@@ -127,4 +129,7 @@ public final class MockData {
             }
         }
     }
+
+    static int optaPlayerId = 0;
+    static int optaTeamId = 0;
 }

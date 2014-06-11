@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 public class SoccerTeam {
     public ObjectId templateSoccerTeamId;
+    public String optaTeamId;
     public String name;
     public ArrayList<SoccerPlayer> soccerPlayers = new ArrayList<>();
 }

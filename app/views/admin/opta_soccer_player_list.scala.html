@@ -1,0 +1,38 @@
+@(soccers: List[model.opta.OptaPlayer])
+
+@main("Opta Soccer Players - Admin") {
+
+<h1 class="page-header">Opta Soccer Players</h1>
+
+<h2 class="sub-header"></h2>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Team ID</th>
+            <th>Team Name</th>
+            <th>Updated Time</th>
+
+        </tr>
+        </thead>
+        <tbody>
+        @for(p <- soccers) {
+        <tr>
+            <td>@p.id</td>
+            <td>@p.name</td>
+            <td>@p.position</td>
+            <td>@p.teamId</td>
+            <td>@p.teamName</td>
+            <td>@p.updatedTime</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<a href='@routes.AdminController.dashBoard'>Back to Dashboard</a>
+
+}

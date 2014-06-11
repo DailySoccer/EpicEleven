@@ -13,6 +13,7 @@ GET     /get_user_profile           controllers.LoginController.getUserProfile()
 GET     /get_active_contests        controllers.ContestController.getActiveContests()
 GET     /get_active_match_events    controllers.ContestController.getActiveMatchEvents()
 POST    /add_fantasy_team           controllers.ContestController.addFantasyTeam()
+POST    /add_contest_entry          controllers.ContestController.addContestEntry()
 
 # LIVE
 GET     /get_live_match_events/template_contest/:contest    controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)
@@ -21,6 +22,7 @@ GET     /get_live_fantasy_teams/:contest                    controllers.ContestC
 # LIVE END
 
 # TEST
+GET     /live_fantasy_points/match_events/:matchEvents      controllers.ContestController.updateLiveFantasyPoints(matchEvents)
 POST    /set_live_fantasy_points/:soccerPlayerId/:points    controllers.ContestController.setLiveFantasyPointsOfSoccerPlayer(soccerPlayerId, points)
 # TEST END
 
@@ -32,8 +34,12 @@ GET     /player/:player             controllers.OptaHttpController.playerPoints(
 
 # ADMIN
 GET     /admin                                      controllers.AdminController.dashBoard()
-GET     /admin/resetdb                              controllers.AdminController.resetDB(mock : Boolean ?= false)
-GET     /admin/reset_contests                       controllers.AdminController.resetContests(mock : Boolean ?= false)
+GET     /admin/resetdb                              controllers.AdminController.resetDB()
+GET     /admin/create_mockdata_db                   controllers.AdminController.createMockDataDB()
+GET     /admin/reset_contests                       controllers.AdminController.resetContests()
+GET     /admin/create_mockdata_contests             controllers.AdminController.createMockDataContests()
+GET     /admin/import_teams_and_soccers             controllers.AdminController.importTeamsAndSoccers()
+GET     /admin/import_match_events                  controllers.AdminController.importMatchEvents()
 
 GET     /admin/lobby                                controllers.AdminController.lobby()
 
@@ -54,6 +60,9 @@ GET     /admin/template_soccer_teams                controllers.AdminController.
 GET     /admin/template_soccer_team/:templateSoccerTeam         controllers.AdminController.templateSoccerTeam(templateSoccerTeam : String)
 
 GET     /admin/template_soccer_players              controllers.AdminController.templateSoccerPlayers()
+
+GET     /admin/opta_soccer_players                  controllers.AdminController.optaSoccerPlayers()
+GET     /admin/opta_soccer_teams                    controllers.AdminController.optaSoccerTeams()
 # ADMIN END
 
 GET     /get_xml                    controllers.OptaHttpController.getXML()

@@ -131,6 +131,79 @@ public class ContestController extends Controller {
         return bRet;
     }
 
+    // https://github.com/playframework/playframework/tree/master/samples/java/forms
+    public static class ContestEntryParams {
+        @Constraints.Required
+        public String userId;
+
+        @Constraints.Required
+        public String contestId;
+
+        @Constraints.Required
+        public String soccerTeam;
+    }
+
+    public static Result addContestEntry() {
+        Form<ContestEntryParams> contestEntryForm = form(ContestEntryParams.class).bindFromRequest();
+
+        if (!contestEntryForm.hasErrors()) {
+            ContestEntryParams params = contestEntryForm.get();
+
+            Logger.info("addFantasyTeam: userId({}) contestId({}) soccerTeam({})", params.userId, params.contestId, params.soccerTeam);
+
+            // Obtener el userId : ObjectId
+            User aUser = Model.findUserId(params.userId);
+            if (aUser == null) {
+                contestEntryForm.reject("userId", "User invalid");
+            }
+
+            // Obtener el contestId : ObjectId
+            Contest aContest = Model.findContestId(params.contestId);
+            if (aContest == null) {
+                contestEntryForm.reject("contestId", "Contest invalid");
+            }
+
+            // Obtener los soccerIds : List<ObjectId>
+            List<ObjectId> soccerIds = new ArrayList<>();
+            List<String> strIdsList = ListUtils.stringListFromString(",", params.soccerTeam);
+            Iterable<TemplateSoccerPlayer> soccers = Model.findTemplateSoccerPlayersFromIds("_id", strIdsList);
+
+            String soccerNames = "";
+            for (TemplateSoccerPlayer soccer : soccers) {
+                soccerNames += soccer.name + " / ";
+                soccerIds.add(soccer.templateSoccerPlayerId);
+            }
+
+            if (!contestEntryForm.hasErrors()) {
+                Logger.info("contestEntry: Contest[{}] / User[{}] = ({}) => {}", aContest.name, aUser.nickName, soccerIds.size(), soccerNames);
+
+                // Crear el equipo en mongoDb.contestEntryCollection
+                createContestEntry(new ObjectId(params.userId), new ObjectId(params.contestId), soccerIds);
+            }
+        }
+
+        JsonNode result = contestEntryForm.errorsAsJson();
+
+        if (!contestEntryForm.hasErrors()) {
+            result = new ObjectMapper().createObjectNode().put("result", "ok");
+        }
+        return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
+    }
+
+    private static boolean createContestEntry(ObjectId user, ObjectId contest, List<ObjectId> soccers) {
+        boolean bRet = true;
+
+        try {
+            ContestEntry aContestEntry = new ContestEntry(user, contest, soccers);
+            Model.contestEntries().insert(aContestEntry);
+        } catch (MongoException exc) {
+            Logger.error("createContestEntry: ", exc);
+            bRet = false;
+        }
+
+        return bRet;
+    }
+
     public static Result getLiveMatchEventsFromTemplateContest(String templateContestId) {
         Logger.info("getLiveMatchEventsFromTemplateContest: {}", templateContestId);
 
@@ -203,27 +276,20 @@ public class ContestController extends Controller {
     }
 
     public static Result setLiveFantasyPointsOfSoccerPlayer(String strSoccerPlayerId, String strPoints) {
-        Logger.info("setLiveFantasyPoints: {} = {} fantasy points", strSoccerPlayerId, strPoints);
-
-        long startTime = System.currentTimeMillis();
-
         if (!ObjectId.isValid(strSoccerPlayerId)) {
             return new ReturnHelper(false, "SoccerPlayer invalid").toResult();
         }
 
-        // Actualizar jugador si aparece en TeamA
-        Model.liveMatchEvents()
-                .update("{soccerTeamA.soccerPlayers.templateSoccerPlayerId: #}", new ObjectId(strSoccerPlayerId))
-                .multi()
-                .with("{$set: {soccerTeamA.soccerPlayers.$.fantasyPoints: #}}", strPoints);
+        Model.setLiveFantasyPointsOfSoccerPlayer(new ObjectId(strSoccerPlayerId), strPoints);
 
-        // Actualizar jugador si aparece en TeamB
-        Model.liveMatchEvents()
-                .update("{soccerTeamB.soccerPlayers.templateSoccerPlayerId: #}", new ObjectId(strSoccerPlayerId))
-                .multi()
-                .with("{$set: {soccerTeamB.soccerPlayers.$.fantasyPoints: #}}", strPoints);
+        return ok();
+    }
 
-        Logger.info("END: setLiveFantasyPoints: {}", System.currentTimeMillis() - startTime);
+    public static Result updateLiveFantasyPoints(String strMatchEventsId) {
+        // Separamos la cadena de MatchEventIds (separados por ',') en una lista de StringsIds
+        List<String> strMatchEventIdsList = ListUtils.stringListFromString(",", strMatchEventsId);
+
+        Model.updateLiveFantasyPoints(strMatchEventIdsList);
 
         return ok();
     }

@@ -1,7 +1,7 @@
 package controllers;
 
 import model.*;
-import model.Model;
+import model.opta.*;
 import org.bson.types.ObjectId;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -13,16 +13,39 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 public class AdminController extends Controller {
-    public static Result resetDB(boolean mock) {
-        Model.resetDB(mock);
-
-        return ok(views.html.admin.dashboard.render("Reset DB: OK"));
+    public static Result resetDB() {
+        Model.resetDB();
+        return ok(views.html.admin.dashboard.render("> Reset DB: OK"));
     }
 
-    public static Result resetContests(boolean mock) {
-        Model.resetContests(mock);
+    public static Result createMockDataDB() {
+        Model.resetDB();
+        MockData.ensureMockDataAll();
+        return ok(views.html.admin.dashboard.render("> Reset DB with Mock Data"));
+    }
 
-        return ok(views.html.admin.dashboard.render("Reset Contests: OK"));
+    public static Result resetContests() {
+        Model.resetContests();
+        return ok(views.html.admin.dashboard.render("> Reset Contests: OK"));
+    }
+
+    public static Result createMockDataContests() {
+        Model.resetContests();
+        MockData.ensureMockDataContests();
+        return ok(views.html.admin.dashboard.render("> Reset Contests with Mock data: OK"));
+    }
+
+    public static Result importTeamsAndSoccers() {
+        /*
+        //Model.resetContests();
+        Model.importTeamsAndSoccersFromOptaDB();
+        return ok(views.html.admin.dashboard.render("> Import Teams & Soccers: OK"));
+        */
+        return ok(views.html.admin.dashboard.render("> TODO: Action not implemented yet."));
+    }
+
+    public static Result importMatchEvents() {
+        return ok(views.html.admin.dashboard.render("> TODO: Action not implemented yet."));
     }
 
     public static Result dashBoard() {
@@ -132,5 +155,19 @@ public class AdminController extends Controller {
         }
 
         return ret;
+    }
+
+    public static Result optaSoccerPlayers() {
+        Iterable<OptaPlayer> optaPlayerResults = Model.optaPlayers().find().as(OptaPlayer.class);
+        List<OptaPlayer> optaPlayerList = ListUtils.listFromIterator(optaPlayerResults.iterator());
+
+        return ok(views.html.admin.opta_soccer_player_list.render(optaPlayerList));
+    }
+
+    public static Result optaSoccerTeams() {
+        Iterable<OptaTeam> optaTeamResults = Model.optaTeams().find().as(OptaTeam.class);
+        List<OptaTeam> optaTeamList = ListUtils.listFromIterator(optaTeamResults.iterator());
+
+        return ok(views.html.admin.opta_soccer_team_list.render(optaTeamList));
     }
 }
