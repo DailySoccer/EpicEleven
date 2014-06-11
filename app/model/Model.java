@@ -58,7 +58,8 @@ public class Model {
                 bIsInitialized = true;
 
             } catch (Exception exc) {
-                Logger.error("Error initializating MongoDB {}: {}", mongodbUri, exc.toString());
+                Logger.error("Error initializating MongoDB {}/{}: {}", mongoClientURI.getHosts(),
+                                                                       mongoClientURI.getDatabase(), exc.toString());
 
                 // We try again in 10s
                 try {
