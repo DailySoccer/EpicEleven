@@ -61,8 +61,8 @@ Heroku
 - There has to be a variable set in the deployment enviroment to specify the config file. This variable is called $CONFIG_FILE and
   is referenced from the Procfile. To set this variable from the command line, use:
 
-  + heroku config:add --app staging CONFIG_FILE=staging.conf
-  + heroku config:add --app production CONFIG_FILE=production.conf
+  + heroku config:add --app dailysoccer-staging CONFIG_FILE=staging.conf
+  + heroku config:add --app dailysoccer CONFIG_FILE=production.conf
 
 
 

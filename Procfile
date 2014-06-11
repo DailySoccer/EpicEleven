@@ -1,1 +1,1 @@
-web: target/universal/stage/bin/backend -Dhttp.port=$PORT -Dconfig.resource=$CONFIG_FILE
+web: target/universal/stage/bin/backend -Dhttp.port=$PORT -Dconfig.resource=${CONFIG_FILE}
