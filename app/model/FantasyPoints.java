@@ -10,8 +10,8 @@ import java.util.Date;
 public class FantasyPoints {
     public int points;
     public int eventType;
-    public String playerId;
-    public ObjectId eventId;
+    public String playerId; //TODO: OptaPlayerId
+    public ObjectId eventId; //TODO: OptaEventId
     public ObjectId pointsTranslationId;
     public Date timestamp;
     public long unixtimestamp;

@@ -49,7 +49,9 @@ public class OptaHttpController extends Controller {
             else if (request().headers().containsKey("X-Meta-Default-Filename")){
                 name = request().headers().get("X-Meta-Default-Filename")[0];
             }
+            //TODO: Separar esto en 2 try-catch
             bodyText = bodyText.substring(bodyText.indexOf('<'));
+            //TODO: Tratar directamente de pasar JSON a BSON
             bodyAsJSON = (BasicDBObject) JSON.parse(XML.toJSONObject(bodyText).toString());
         } catch (Exception e) {
             e.printStackTrace();
@@ -65,6 +67,7 @@ public class OptaHttpController extends Controller {
 //            BasicDBList teams = (BasicDBList)bodyAsJSON.get("Team");
             processFantasy(bodyAsJSON);
         }
+        //TODO: poner elses
 
         if (request().headers().containsKey("X-Meta-Feed-Type") &&
             request().headers().get("X-Meta-Feed-Type")[0].equals("F9")){
@@ -82,7 +85,7 @@ public class OptaHttpController extends Controller {
         LinkedHashMap games = (LinkedHashMap)gamesObj.get("Games");
         LinkedHashMap game = (LinkedHashMap)games.get("Game");
 
-        try {
+        try { //TODO: isInstanceOf, as
             ArrayList events = (ArrayList)game.get("Event");
             for (Object event: events){
                 processEvent((LinkedHashMap)event, game);
@@ -113,6 +116,7 @@ public class OptaHttpController extends Controller {
         destination.qualifiers = origin.qualifiers;
     }
 
+    //TODO: Create child
     public static void generateEvent(int eventType, String playerId, OptaEvent parentEvent){
         OptaEvent dbevent = Model.optaEvents().findOne("{parentId: #, gameId: #, typeId: #}", parentEvent.eventId,
                                                        parentEvent.gameId, eventType).as(OptaEvent.class);
@@ -157,7 +161,7 @@ public class OptaHttpController extends Controller {
                 myPointsTranslation.unixtimestamp = 0L;
                 myPointsTranslation.timestamp = new Date(myPointsTranslation.unixtimestamp);
             }
-            else{
+            else{ //TODO: Si ya hay una tabla de traducción, no pisamos lo que había
                 myPointsTranslation.unixtimestamp = System.currentTimeMillis();
                 myPointsTranslation.timestamp = new Date(myPointsTranslation.unixtimestamp);
             }
@@ -266,6 +270,7 @@ public class OptaHttpController extends Controller {
 
     private static Date parseDate(String timestamp) {
         Date myDate = new Date();
+        //TODO: Parsear esto sin excepciones
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS");
         try {
             myDate = dateFormat.parse(timestamp);
@@ -382,7 +387,7 @@ public class OptaHttpController extends Controller {
         if (myF9.containsKey("Team")) {
             teams = (ArrayList)myF9.get("Team");
         }else{
-            if (myF9.containsKey("Match")){
+            if (myF9.containsKey("Match")){ //TODO: Aserciones
                 LinkedHashMap match = (LinkedHashMap)(myF9.get("Match"));
                 teams = (ArrayList)match.get("Team");
             }
@@ -400,13 +405,15 @@ public class OptaHttpController extends Controller {
             myTeam.shortName = (String)teamObject.get("SYMID");
             myTeam.updatedTime = System.currentTimeMillis();
             OptaTeam dbteam = Model.optaTeams().findOne("{id: #}", myTeam.id).as(OptaTeam.class);
-            if (playersList != null){
-                if (dbteam != null){
+            if (playersList != null) { //Si no es un equipo placeholder
+                if (dbteam != null) {
+                    //TODO: meter en el if
+                    //TODO:
                     boolean updated = (dbteam.name != (String)teamObject.get("name"));
                     if (updated){
-                        Model.optaTeams().update("{id: #}", myTeam.id).with(myTeam);
+                        Model.optaTeams().update("{id: #}", myTeam.id).with(myTeam); //TODO: meter upsert antes de with
                     }
-                }else{
+                } else {
                     Model.optaTeams().insert(myTeam);
                 }
 
@@ -416,6 +423,7 @@ public class OptaHttpController extends Controller {
                     // First search if player already exists:
                     OptaPlayer dbplayer = Model.optaPlayers().findOne("{id: #}", playerId).as(OptaPlayer.class);
                     if (dbplayer != null) {
+                        //TODO: meter estas 4 lineas en la condicion del if
                         boolean updated = !((dbplayer.position == (String) playerObject.get("Position")) &&
                                 (dbplayer.name == (String) playerObject.get("Name")) &&
                                 (dbplayer.teamName == (String) teamObject.get("Name")) &&

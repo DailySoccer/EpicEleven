@@ -22,10 +22,14 @@ public class OptaEvent {
     public int typeId;
     public int eventId;
     public String playerId;
+    //ObjectId?
     public int parentId;
+    // <DEBUG>
     public int outcome;
     public ArrayList<Integer> qualifiers;
+    // </DEBUG>
     public Date timestamp;
+    //TODO: Remove
     public long unixtimestamp;
     public Date lastModified;
 
@@ -38,12 +42,14 @@ public class OptaEvent {
         if (other == null) {
             return false;
         }
+        //TODO: Last modified no debería ser null
         if (other.lastModified != null && this.lastModified != null){
             return this.lastModified.before(other.lastModified);
         }
         return false;
     }
 
+    //TODO: Borrar
     public boolean equals(Object obj){
         //NOT FULLY FUNCTIONAL, has bugs
         if (obj == this) {

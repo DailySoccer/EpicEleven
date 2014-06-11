@@ -7,6 +7,7 @@ public class OptaTeam {
     public String id;
     public String name;
     public String shortName;
+    //TODO: competitionIds
     public int[] leagues;
     public long updatedTime;
 }
