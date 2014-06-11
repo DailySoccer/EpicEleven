@@ -49,4 +49,11 @@ Heroku
 ===================
 
 - Heroku reference documentation: https://devcenter.heroku.com/categories/heroku-architecture
-- Our URL is: http://dailysoccer.herokuapp.com/
+
+- Our URLs are: 
+    
+    http://dailysoccer.herokuapp.com/
+    http://dailysoccer-staging.herokuapp.com/
+
+- The deployment script accepts a parameter to specify the target heroku app:
+    $ backend> ./deploy.sh staging|production

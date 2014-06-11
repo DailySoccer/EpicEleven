@@ -1,5 +1,17 @@
 #!/bin/sh
 
+remotes_allowed_message="The only allowed Heroku remotes are: staging/production."
+
+if [ $# -eq 0 ] ; then
+    echo "You need to supply the Heroku remote. $remotes_allowed_message"
+    exit 1
+fi
+
+if [[ "$1" != "staging" && "$1" != "production" ]] ; then
+	echo $remotes_allowed_message
+    exit 1
+fi
+
 # Cambiamos a la rama de deploy, asegurandonos de que esta creada/reseateada
 git stash
 git checkout -B deploy
@@ -15,7 +27,7 @@ git add .
 git commit -am "Including build in deploy branch"
 
 # Push a heroku
-git push heroku deploy:master --force
+git push "$1" deploy:master --force
 
 # Vuelta a la rama principal
 git checkout master
