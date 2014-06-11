@@ -27,7 +27,6 @@ public class Model {
     static public MongoCollection templateSoccerTeams() { return _jongo.getCollection("templateSoccerTeams"); }
     static public MongoCollection templateSoccerPlayers() { return _jongo.getCollection("templateSoccerPlayers"); }
     static public MongoCollection liveMatchEvents() { return _jongo.getCollection("liveMatchEvents"); }
-    static public MongoCollection fantasyTeams() { return _jongo.getCollection("fantasyTeams"); }
     static public MongoCollection contestEntries() { return _jongo.getCollection("contestEntries"); }
 
     static public MongoCollection contests() { return _jongo.getCollection("contests"); }
@@ -84,7 +83,6 @@ public class Model {
             "contests",
             "matchEvents",
             "liveMatchEvents",
-            "fantasyTeams",
             "contestEntries"
     };
 
@@ -213,12 +211,12 @@ public class Model {
         }
     }
 
-    static public void updateLiveFantasyPoints(List<String> strMatchEventIdsList) {
-        Logger.info("updateLiveFantasyPoints: {}", strMatchEventIdsList);
+    static public void updateLiveFantasyPoints(List<ObjectId> matchEventIdsList) {
+        Logger.info("updateLiveFantasyPoints: {}", matchEventIdsList);
 
         long startTime = System.currentTimeMillis();
 
-        Iterable<LiveMatchEvent> liveMatchEventResults = Model.findLiveMatchEventsFromIds("templateMatchEventId", strMatchEventIdsList);
+        Iterable<LiveMatchEvent> liveMatchEventResults = Model.findLiveMatchEventsFromIds("templateMatchEventId", matchEventIdsList);
         List<LiveMatchEvent> liveMatchEventList = ListUtils.listFromIterator(liveMatchEventResults.iterator());
 
         for (LiveMatchEvent liveMatchEvent: liveMatchEventList) {
@@ -251,40 +249,36 @@ public class Model {
      * @param classType: Clase de la lista de objetos a devolver (necesario para usar en la query a jongo)
      * @param collection: MongoCollection a la que hacer la query
      * @param fieldId: Identificador del campo a buscar
-     * @param strIdsList: Lista de 'String Ids' (de mongoDb)
+     * @param idList: Lista de ObjectId (de mongoDb)
      * @return Lista de Objetos correspondientes a los ids incluidos en strIdsList
      */
-    public static <T> Iterable<T> findObjectsFromIds(Class<T> classType, MongoCollection collection, String fieldId, List<String> strIdsList) {
-        ArrayList<ObjectId> objectIdsList = new ArrayList<>();
-
+    public static <T> Iterable<T> findObjectsFromIds(Class<T> classType, MongoCollection collection, String fieldId, List<ObjectId> idList) {
         // Jongo necesita que le proporcionemos el patrón de "#, #, #" (según el número de parámetros)
         String patternParams = "";
-        for (String id : strIdsList) {
+        for (ObjectId id : idList) {
             if (patternParams != "") patternParams += ",";
             patternParams += "#";
-            // Convertir un id en formato cadena a ObjectId
-            objectIdsList.add(new ObjectId(id));
         }
 
         // Componer la query según el número de parámetros
         String pattern = String.format("{%s: {$in: [%s]}}", fieldId, patternParams);
-        return collection.find(pattern, objectIdsList.toArray()).as(classType);
+        return collection.find(pattern, idList.toArray()).as(classType);
     }
 
-    public static Iterable<TemplateContest> findTemplateContestsFromIds(String fieldId, List<String> strIdsList) {
-        return findObjectsFromIds(TemplateContest.class, Model.templateContests(), fieldId, strIdsList);
+    public static Iterable<TemplateContest> findTemplateContestsFromIds(String fieldId, List<ObjectId> idList) {
+        return findObjectsFromIds(TemplateContest.class, Model.templateContests(), fieldId, idList);
     }
 
-    public static Iterable<TemplateMatchEvent> findTemplateMatchEventFromIds(String fieldId, List<String> strIdsList) {
-        return findObjectsFromIds(TemplateMatchEvent.class, Model.templateMatchEvents(), fieldId, strIdsList);
+    public static Iterable<TemplateMatchEvent> findTemplateMatchEventFromIds(String fieldId, List<ObjectId> idList) {
+        return findObjectsFromIds(TemplateMatchEvent.class, Model.templateMatchEvents(), fieldId, idList);
     }
 
-    public static Iterable<TemplateSoccerPlayer> findTemplateSoccerPlayersFromIds(String fieldId, List<String> strIdsList) {
-        return findObjectsFromIds(TemplateSoccerPlayer.class, Model.templateSoccerPlayers(), fieldId, strIdsList);
+    public static Iterable<TemplateSoccerPlayer> findTemplateSoccerPlayersFromIds(String fieldId, List<ObjectId> idList) {
+        return findObjectsFromIds(TemplateSoccerPlayer.class, Model.templateSoccerPlayers(), fieldId, idList);
     }
 
-    public static Iterable<LiveMatchEvent> findLiveMatchEventsFromIds(String fieldId, List<String> strIdsList) {
-        return findObjectsFromIds(LiveMatchEvent.class, Model.liveMatchEvents(), fieldId, strIdsList);
+    public static Iterable<LiveMatchEvent> findLiveMatchEventsFromIds(String fieldId, List<ObjectId> idList) {
+        return findObjectsFromIds(LiveMatchEvent.class, Model.liveMatchEvents(), fieldId, idList);
     }
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/

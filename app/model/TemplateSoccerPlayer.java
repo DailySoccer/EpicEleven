@@ -23,7 +23,7 @@ public class TemplateSoccerPlayer {
 
     public TemplateSoccerPlayer(OptaPlayer optaPlayer, ObjectId aTemplateTeamId) {
         optaPlayerId = optaPlayer.id;
-        name = optaPlayer.firstname + " " + optaPlayer.lastname;
+        name = optaPlayer.name;
         fieldPos = getFieldPostFromOpta(optaPlayer.position);
         templateTeamId = aTemplateTeamId;
     }

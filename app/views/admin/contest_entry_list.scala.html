@@ -1,8 +1,8 @@
-@(fantasy_teams: List[model.FantasyTeam])
+@(contest_entries: List[model.ContestEntry])
 
 @main("Fantasy Teasm - Admin") {
 
-<h1 class="page-header">Fantasy Teams</h1>
+<h1 class="page-header">Contest Entries</h1>
 
 <h2 class="sub-header"></h2>
 <div class="table-responsive">
@@ -26,9 +26,9 @@
         </tr>
         </thead>
         <tbody>
-        @for(p <- fantasy_teams) {
+        @for(p <- contest_entries) {
         <tr>
-            <td>@p.fantasyTeamId</td>
+            <td>@p.contestEntryId</td>
             <td>@p.userId</td>
             <td>@p.contestId</td>
             @for(id <- p.soccerIds) {

@@ -36,12 +36,9 @@ public class AdminController extends Controller {
     }
 
     public static Result importTeamsAndSoccers() {
-        /*
-        //Model.resetContests();
+        Model.resetContests();
         Model.importTeamsAndSoccersFromOptaDB();
         return ok(views.html.admin.dashboard.render("> Import Teams & Soccers: OK"));
-        */
-        return ok(views.html.admin.dashboard.render("> TODO: Action not implemented yet."));
     }
 
     public static Result importMatchEvents() {
@@ -68,11 +65,11 @@ public class AdminController extends Controller {
         return ok(views.html.admin.user_list.render(userList));
     }
 
-    public static Result fantasyTeams() {
-        Iterable<FantasyTeam> fantasyTeamResults = Model.fantasyTeams().find().as(FantasyTeam.class);
-        List<FantasyTeam> fantasyTeamList = ListUtils.listFromIterator(fantasyTeamResults.iterator());
+    public static Result contestEntries() {
+        Iterable<ContestEntry> contestEntryResults = Model.contestEntries().find().as(ContestEntry.class);
+        List<ContestEntry> contestEntryList = ListUtils.listFromIterator(contestEntryResults.iterator());
 
-        return ok(views.html.admin.fantasy_team_list.render(fantasyTeamList));
+        return ok(views.html.admin.contest_entry_list.render(contestEntryList));
     }
 
     public static Result contests() {
@@ -139,9 +136,9 @@ public class AdminController extends Controller {
 
     public static HashMap<ObjectId, TemplateContest> getTemplateContestsFromList(List<Contest> contestList) {
         // Obtener la lista de Ids de los TemplateContests
-        ArrayList<String> idsList = new ArrayList<>();
+        ArrayList<ObjectId> idsList = new ArrayList<>();
         for (Contest contest : contestList) {
-            idsList.add(contest.templateContestId.toString());
+            idsList.add(contest.templateContestId);
         }
 
         // Obtenemos las lista de TemplateContest de todos los Ids

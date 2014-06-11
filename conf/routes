@@ -12,13 +12,12 @@ GET     /get_user_profile           controllers.LoginController.getUserProfile()
 
 GET     /get_active_contests        controllers.ContestController.getActiveContests()
 GET     /get_active_match_events    controllers.ContestController.getActiveMatchEvents()
-POST    /add_fantasy_team           controllers.ContestController.addFantasyTeam()
 POST    /add_contest_entry          controllers.ContestController.addContestEntry()
 
 # LIVE
 GET     /get_live_match_events/template_contest/:contest    controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)
 GET     /get_live_match_events/match_events/:matchEvents    controllers.ContestController.getLiveMatchEventsFromMatchEvents(matchEvents)
-GET     /get_live_fantasy_teams/:contest                    controllers.ContestController.getLiveFantasyTeams(contest)
+GET     /get_live_contest_entries/:contest                  controllers.ContestController.getLiveContestEntries(contest)
 # LIVE END
 
 # TEST
@@ -45,7 +44,7 @@ GET     /admin/lobby                                controllers.AdminController.
 
 GET     /admin/users                                controllers.AdminController.users()
 
-GET     /admin/fantasy_teams                        controllers.AdminController.fantasyTeams()
+GET     /admin/contest_entries                      controllers.AdminController.contestEntries()
 
 GET     /admin/contests                             controllers.AdminController.contests()
 GET     /admin/contest/:contestId                   controllers.AdminController.contest(contestId : String)
