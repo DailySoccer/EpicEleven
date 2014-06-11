@@ -56,4 +56,13 @@ Heroku
     http://dailysoccer-staging.herokuapp.com/
 
 - The deployment script accepts a parameter to specify the target heroku app:
-    $ backend> ./deploy.sh staging|production
+    $ backend> ./deploy.sh staging | production
+
+- There has to be a variable set in the deployment enviroment to specify the config file. This variable is called $CONFIG_FILE and
+  is referenced from the Procfile. To set this variable from the command line, use:
+
+  + heroku config:add --app staging CONFIG_FILE=staging.conf
+  + heroku config:add --app production CONFIG_FILE=production.conf
+
+
+

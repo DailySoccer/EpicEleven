@@ -123,9 +123,6 @@ public class Model {
     }
 
     static public void resetDB() {
-        if (Play.isProd())
-            return;
-
         _mongoDB.dropDatabase();
         ensureDB(_mongoDB);
 
@@ -134,9 +131,6 @@ public class Model {
     }
 
     static public void resetContests() {
-        if (Play.isProd())
-            return;
-
         clearContestsDB(_mongoDB);
         ensureContestsDB(_mongoDB);
 

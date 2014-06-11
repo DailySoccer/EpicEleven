@@ -1,1 +1,1 @@
-web: target/universal/stage/bin/backend -Dhttp.port=$PORT -Dconfig.resource=production.conf
+web: target/universal/stage/bin/backend -Dhttp.port=$PORT -Dconfig.resource=$CONFIG_FILE
