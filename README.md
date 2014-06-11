@@ -52,9 +52,8 @@ Heroku
 
 - Our URLs are: 
     
-    http://dailysoccer.herokuapp.com/
-
-    http://dailysoccer-staging.herokuapp.com/
+    + http://dailysoccer.herokuapp.com/
+    + http://dailysoccer-staging.herokuapp.com/
 
 - The deployment script accepts a parameter to specify the target heroku app:
 
