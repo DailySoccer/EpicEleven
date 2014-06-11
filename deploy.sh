@@ -32,7 +32,7 @@ git push "$1" deploy:master --force
 # Vuelta a la rama principal
 git checkout master
 git branch -D deploy
-git stash apply
+git stash pop
 
 # Restauramos el symlink borrado
 git checkout public
