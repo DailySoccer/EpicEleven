@@ -56,5 +56,5 @@ Heroku
     http://dailysoccer-staging.herokuapp.com/
 
 - The deployment script accepts a parameter to specify the target heroku app:
-- 
+
     $ backend> ./deploy.sh staging|production
