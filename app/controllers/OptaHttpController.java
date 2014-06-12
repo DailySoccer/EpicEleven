@@ -15,6 +15,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 
 
+import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -28,6 +29,11 @@ public class OptaHttpController extends Controller {
     public static Result optaXmlInput(){
         long startDate = System.currentTimeMillis();
         String bodyText = request().body().asText();
+        try {
+            bodyText = new String(bodyText.getBytes("ISO-8859-1"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
         BasicDBObject bodyAsJSON = (BasicDBObject) JSON.parse("{}");
         String name = "default-filename";
         try {
