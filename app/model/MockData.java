@@ -82,19 +82,62 @@ public final class MockData {
         }
     }
 
+    static public void createTemplateContest(final DateTime dateTime) {
+        TemplateContest templateContest = new TemplateContest();
+
+        templateContest.name = String.format("Contest date %s", dateTime);
+        templateContest.postName = "Late evening";
+        templateContest.minInstances = 3;
+        templateContest.maxEntries = 10;
+        templateContest.prizeType = PrizeType.STANDARD;
+        templateContest.entryFee = 10000;
+        templateContest.salaryCap = 100000;
+        templateContest.startDate = dateTime.toDate();
+        templateContest.templateMatchEventIds = new ArrayList<>();
+
+        // Buscar todos los template match events que jueguen ese dia
+        Iterable<TemplateMatchEvent> lMatchEvents = Model.templateMatchEvents().find("{startDate: #}", dateTime.toDate()).as(TemplateMatchEvent.class);
+        for (TemplateMatchEvent match: lMatchEvents) {
+            templateContest.templateMatchEventIds.add(match.templateMatchEventId);
+        }
+
+        Logger.info("MockData: Template Contest: {} ({})", templateContest.templateMatchEventIds, dateTime.toString("yyyy.MM.dd G 'at' HH:mm:ss z"));
+
+        Model.templateContests().insert(templateContest);
+    }
+
+    static public TemplateMatchEvent createTemplateMatchEvent(final DateTime dateTime) {
+        TemplateMatchEvent templateMatchEvent = new TemplateMatchEvent();
+        templateMatchEvent.startDate = dateTime.toDate();
+
+        Iterable<TemplateSoccerTeam> randomTeamA = Model.getRandomDocument(Model.templateSoccerTeams()).as(TemplateSoccerTeam.class);
+        TemplateSoccerTeam teamA = (randomTeamA.iterator().hasNext()) ? randomTeamA.iterator().next() : null;
+
+        Iterable<TemplateSoccerTeam> randomTeamB = Model.getRandomDocument(Model.templateSoccerTeams()).as(TemplateSoccerTeam.class);
+        TemplateSoccerTeam teamB = (randomTeamB.iterator().hasNext()) ? randomTeamB.iterator().next() : null;
+
+        return (teamA != null && teamB != null)
+                ? createTemplateMatchEvent(teamA.name, teamB.name, dateTime)
+                : null;
+    }
+
     static private TemplateMatchEvent createTemplateMatchEvent(final String nameTeamA, final String nameTeamB, final DateTime dateTime) {
-        // Logger.info("MockData: MatchEvent: {} vs {} ({})", nameTeamA, nameTeamB, dateTime.toString("yyyy.MM.dd G 'at' HH:mm:ss z"));
+        TemplateSoccerTeam teamA = Model.templateSoccerTeams().findOne("{ name: '#' }", nameTeamA).as(TemplateSoccerTeam.class);
+        TemplateSoccerTeam teamB = Model.templateSoccerTeams().findOne("{ name: '#' }", nameTeamB).as(TemplateSoccerTeam.class);
+
+        return createTemplateMatchEvent(teamA, teamB, dateTime);
+    }
+
+    static private TemplateMatchEvent createTemplateMatchEvent(TemplateSoccerTeam teamA, TemplateSoccerTeam teamB, final DateTime dateTime) {
+        Logger.info("MockData: Template MatchEvent: {} vs {} ({})", teamA.name, teamB.name, dateTime.toString("yyyy.MM.dd G 'at' HH:mm:ss z"));
 
         TemplateMatchEvent templateMatchEvent = new TemplateMatchEvent();
         templateMatchEvent.startDate = dateTime.toDate();
 
-        TemplateSoccerTeam teamA = Model.templateSoccerTeams().findOne("{ name: '#' }", nameTeamA).as(TemplateSoccerTeam.class);
-        TemplateSoccerTeam teamB = Model.templateSoccerTeams().findOne("{ name: '#' }", nameTeamB).as(TemplateSoccerTeam.class);
-
         // setup Team A (incrustando a los futbolistas en el equipo)
         SoccerTeam newTeamA = new SoccerTeam();
         newTeamA.templateSoccerTeamId = teamA.templateSoccerTeamId;
-        newTeamA.name = nameTeamA;
+        newTeamA.name = teamA.name;
         Iterable<TemplateSoccerPlayer> playersTeamA = Model.templateSoccerPlayers().find("{ templateTeamId: # }", teamA.templateSoccerTeamId).as(TemplateSoccerPlayer.class);
         for(TemplateSoccerPlayer templateSoccer : playersTeamA) {
             newTeamA.soccerPlayers.add(new SoccerPlayer(templateSoccer));
@@ -104,7 +147,7 @@ public final class MockData {
         // setup Team B (incrustando a los futbolistas en el equipo)
         SoccerTeam newTeamB = new SoccerTeam();
         newTeamB.templateSoccerTeamId = teamB.templateSoccerTeamId;
-        newTeamB.name = nameTeamB;
+        newTeamB.name = teamB.name;
         Iterable<TemplateSoccerPlayer> playersTeamB = Model.templateSoccerPlayers().find("{ templateTeamId: # }", teamB.templateSoccerTeamId).as(TemplateSoccerPlayer.class);
         for(TemplateSoccerPlayer templateSoccer : playersTeamB) {
             newTeamB.soccerPlayers.add(new SoccerPlayer(templateSoccer));
@@ -118,7 +161,11 @@ public final class MockData {
 
     static private void instantiateContests() {
         // Creamos los contest de la primera jornada
-        Date startDate = new DateTime(2014, 10, 14, 12, 0, DateTimeZone.UTC).toDate();
+        instantiateContests(new DateTime(2014, 10, 14, 12, 0, DateTimeZone.UTC));
+    }
+
+    static public void instantiateContests(final DateTime dateTime) {
+        Date startDate = dateTime.toDate();
 
         Iterable<TemplateContest> templateContests = Model.templateContests().find("{startDate: #}", startDate).as(TemplateContest.class);
         for(TemplateContest template : templateContests) {

@@ -1,0 +1,98 @@
+@(contestEntryForm: Form[views.admin.formData.ContestEntryForm])
+
+@input_text(field: Field, _placeholder: String = "", _class: String = "") = {
+    <input id="@field.name" name="@field.name" type="text" placeholder="@_placeholder" class="@_class @if(field.hasErrors) {has-error}" required="" value="@field.value">
+    @if(field.hasErrors) {
+        <span class="help-block">@{field.error.map { error => error.message }}</span>
+    }
+}
+
+@main("Contest Entry - Admin") {
+
+<h1 class="page-header">Contest Entry</h1>
+
+@if(contestEntryForm.hasErrors) {
+<div class="tab-content">
+    <p class="bg-primary tab-pane fade in active"> -> Contest Entry Form has errors</p>
+</div>
+}
+
+<h2 class="sub-header"></h2>
+
+@helper.form(action = routes.AdminController.submitContestEntry, 'class -> "form-horizontal") {
+    <fieldset>
+
+        <!-- Form Name -->
+        <legend>Contest Entry</legend>
+
+        <!-- Text input-->
+        <div class="control-group">
+            <label class="control-label">UserId</label>
+            <div class="controls">
+                @input_text(contestEntryForm("userId"), _placeholder = "UserId", _class = "form-control input-xlarge")
+            </div>
+        </div>
+
+        <!-- Text input-->
+        <div class="control-group">
+            <label class="control-label">ContestId</label>
+            <div class="controls">
+                @input_text(contestEntryForm("contestId"), _placeholder = "ContestId", _class = "form-control input-xlarge")
+            </div>
+        </div>
+
+        <!-- Text input-->
+        <div class="control-group">
+            <label class="control-label">Goalkeeper</label>
+            <div class="controls">
+                @input_text(contestEntryForm("goalkeeper"), _placeholder = "OptaId for Goalkeeper", _class = "input-xlarge")
+            </div>
+        </div>
+
+        <!-- Text input-->
+        <div class="control-group">
+            <label class="control-label">Defenses</label>
+            <div class="controls">
+                @input_text(contestEntryForm("defense1"), _placeholder = "OptaId for Defense", _class = "input-xlarge")
+                @input_text(contestEntryForm("defense2"), _placeholder = "OptaId for Defense", _class = "input-xlarge")
+                @input_text(contestEntryForm("defense3"), _placeholder = "OptaId for Defense", _class = "input-xlarge")
+                @input_text(contestEntryForm("defense4"), _placeholder = "OptaId for Defense", _class = "input-xlarge")
+            </div>
+        </div>
+
+        <!-- Text input-->
+        <div class="control-group">
+            <label class="control-label">Middles</label>
+            <div class="controls">
+                @input_text(contestEntryForm("middle1"), _placeholder = "OptaId for Middle", _class = "input-xlarge")
+                @input_text(contestEntryForm("middle2"), _placeholder = "OptaId for Middle", _class = "input-xlarge")
+                @input_text(contestEntryForm("middle3"), _placeholder = "OptaId for Middle", _class = "input-xlarge")
+                @input_text(contestEntryForm("middle4"), _placeholder = "OptaId for Middle", _class = "input-xlarge")
+            </div>
+        </div>
+
+        <!-- Text input-->
+        <div class="control-group">
+            <label class="control-label">Forwards</label>
+            <div class="controls">
+                @input_text(contestEntryForm("forward1"), _placeholder = "OptaId for Forward", _class = "input-xlarge")
+                @input_text(contestEntryForm("forward2"), _placeholder = "OptaId for Forward", _class = "input-xlarge")
+            </div>
+        </div>
+
+        <!-- Button (Double) -->
+        <div class="control-group">
+            <label class="control-label" for="ok"></label>
+            <div class="controls">
+                <button id="ok" name="ok" class="btn btn-success">Create</button>
+                <button id="cancel" name="cancel" class="btn btn-danger">Cancel</button>
+            </div>
+        </div>
+
+    </fieldset>
+}
+
+<br/>
+<a href='@routes.AdminController.dashBoard'>Back to Dashboard</a>
+
+}

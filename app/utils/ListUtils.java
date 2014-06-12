@@ -50,7 +50,7 @@ public class ListUtils {
     /**
      * Extraer los campos de un jsonArray
      * @param jsonData Array de campos en formato json  ej. "[valor1, valor2, valor3]"
-     * @return La lista de campos ej. [valor1, valor2, valor3]
+     * @return La lista de ObjectIds ej. [valor1, valor2, valor3]
      */
     public static List<ObjectId> objectIdListFromJson(String jsonData) {
         List<ObjectId> idsList = new ArrayList<>();
@@ -63,5 +63,23 @@ public class ListUtils {
             idsList.add(new ObjectId(iter.next().asText()));
 
         return idsList;
+    }
+
+    /**
+     * Extraer los campos de un jsonArray
+     * @param jsonData Array de campos en formato json  ej. "[valor1, valor2, valor3]"
+     * @return La lista de cadenas ej. [valor1, valor2, valor3]
+     */
+    public static List<String> stringListFromJson(String jsonData) {
+        List<String> list = new ArrayList<>();
+
+        JsonNode jsonNode = Json.parse(jsonData);
+        assert (jsonNode.isArray());
+
+        Iterator<JsonNode> iter = jsonNode.iterator();
+        while (iter.hasNext())
+            list.add(iter.next().asText());
+
+        return list;
     }
 }

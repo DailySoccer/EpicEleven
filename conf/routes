@@ -13,6 +13,7 @@ GET     /get_user_profile           controllers.LoginController.getUserProfile()
 GET     /get_active_contests        controllers.ContestController.getActiveContests()
 GET     /get_active_match_events    controllers.ContestController.getActiveMatchEvents()
 POST    /add_contest_entry          controllers.ContestController.addContestEntry()
+POST    /add_contest_entry/opta     controllers.ContestController.addContestEntryFromOptaIds()
 
 # LIVE
 GET     /get_live_match_events/template_contest/:contest    controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)
@@ -46,15 +47,21 @@ GET     /admin/lobby                                controllers.AdminController.
 GET     /admin/users                                controllers.AdminController.users()
 
 GET     /admin/live_match_events                    controllers.AdminController.liveMatchEvents()
+
+GET     /admin/create_contest_entry                 controllers.AdminController.createContestEntry()
+POST    /admin/create_contest_entry                 controllers.AdminController.submitContestEntry()
 GET     /admin/contest_entries                      controllers.AdminController.contestEntries()
 
 GET     /admin/contests                             controllers.AdminController.contests()
+GET     /admin/contest/instantiate                  controllers.AdminController.instantiateContests()
 GET     /admin/contest/:contestId                   controllers.AdminController.contest(contestId : String)
 
 GET     /admin/template_contests                    controllers.AdminController.templateContests()
+GET     /admin/template_contest/generate            controllers.AdminController.generateTemplateContest()
 GET     /admin/template_contest/:templateContestId  controllers.AdminController.templateContest(templateContestId : String)
 
 GET     /admin/template_match_events                controllers.AdminController.templateMatchEvents()
+GET     /admin/template_match_event/generate        controllers.AdminController.generateTemplateMatchEvent()
 GET     /admin/template_match_event/:templateMatchEventId       controllers.AdminController.templateMatchEvent(templateMatchEventId : String)
 
 GET     /admin/template_soccer_teams                controllers.AdminController.templateSoccerTeams()

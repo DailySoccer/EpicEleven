@@ -2,15 +2,27 @@ package controllers;
 
 import model.*;
 import model.opta.*;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.bson.types.ObjectId;
+import java.util.Date;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.data.Form;
+import play.data.validation.Constraints;
+import play.data.validation.ValidationError;
+
+import static play.data.Form.form;
 
 import utils.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import views.admin.formData.*;
 
 public class AdminController extends Controller {
     public static Result resetDB() {
@@ -72,6 +84,33 @@ public class AdminController extends Controller {
         return ok(views.html.admin.live_match_event_list.render(liveMatchEventList));
     }
 
+    public static Result createContestEntry() {
+        Form<ContestEntryForm> contestEntryForm = Form.form(ContestEntryForm.class);
+        return ok(views.html.admin.contest_entry_create.render(contestEntryForm));
+    }
+
+    public static Result submitContestEntry() {
+        Form<ContestEntryForm> contestEntryForm = form(ContestEntryForm.class).bindFromRequest();
+        if (contestEntryForm.hasErrors()) {
+            return badRequest(views.html.admin.contest_entry_create.render(contestEntryForm));
+        }
+
+        ContestEntryForm params = contestEntryForm.get();
+        Logger.info("UserId({}) Contest({})Goalkeeper({}) Defenses({}, {}, {}, {}) Middles({}, {}, {}, {}), Forwards({}, {})",
+                params.userId, params.contestId,
+                params.goalkeeper,
+                params.defense1, params.defense2, params.defense3, params.defense4,
+                params.middle1, params.middle2, params.middle3, params.middle4,
+                params.forward1, params.forward2);
+
+        boolean success = ContestController.createContestEntryFromOptaIds(params.userId, params.contestId, params.getTeam());
+        if ( !success ) {
+            return badRequest(views.html.admin.contest_entry_create.render(contestEntryForm));
+        }
+
+        return redirect(routes.AdminController.contestEntries());
+    }
+
     public static Result contestEntries() {
         Iterable<ContestEntry> contestEntryResults = Model.contestEntries().find().as(ContestEntry.class);
         List<ContestEntry> contestEntryList = ListUtils.listFromIterator(contestEntryResults.iterator());
@@ -94,8 +133,16 @@ public class AdminController extends Controller {
         return ok(views.html.admin.contest.render(contest, map));
     }
 
+    public static Result instantiateContests() {
+        //TODO: En que fecha tendriamos que generar los contests?
+        DateTime currentCreationDay =  new DateTime(2014, 10, 14, 12, 0, DateTimeZone.UTC);
+        MockData.instantiateContests(currentCreationDay);
+
+        return redirect(routes.AdminController.contests());
+    }
+
     public static Result templateContests() {
-        Iterable<TemplateContest> templateContestResults = Model.contests().find().as(TemplateContest.class);
+        Iterable<TemplateContest> templateContestResults = Model.templateContests().find().as(TemplateContest.class);
         List<TemplateContest> templateContestList = ListUtils.listFromIterator(templateContestResults.iterator());
 
         return ok(views.html.admin.template_contest_list.render(templateContestList));
@@ -103,6 +150,15 @@ public class AdminController extends Controller {
 
     public static Result templateContest(String templateContestId) {
         return TODO;
+    }
+
+    public static Result generateTemplateContest() {
+        //TODO: En que fecha tendriamos que generar el contest?
+        DateTime currentCreationDay =  new DateTime(2014, 10, 14, 12, 0, DateTimeZone.UTC);
+
+        MockData.createTemplateContest(currentCreationDay);
+
+        return redirect(routes.AdminController.templateContests());
     }
 
     public static Result templateMatchEvents() {
@@ -116,6 +172,15 @@ public class AdminController extends Controller {
         TemplateMatchEvent templateMatchEvent = Model.templateMatchEvents().findOne("{ _id : # }",
                 new ObjectId(templateMatchEventId)).as(TemplateMatchEvent.class);
         return ok(views.html.admin.template_match_event.render(templateMatchEvent));
+    }
+
+    public static Result generateTemplateMatchEvent() {
+        //TODO: En que fecha tendriamos que generar el partido?
+        DateTime currentCreationDay =  new DateTime(2014, 10, 14, 12, 0, DateTimeZone.UTC);
+
+        MockData.createTemplateMatchEvent(currentCreationDay);
+
+        return redirect(routes.AdminController.templateMatchEvents());
     }
 
     public static Result templateSoccerTeams() {
