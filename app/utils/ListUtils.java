@@ -8,6 +8,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 public class ListUtils {
+    /**
+     * Convertir una lista de ObjectId en su equivalente en formato String
+     * @param objectIdList Lista de ObjectId (mongoDB)
+     * @return Lista de String (identificadores de ObjectId en formato String)
+     */
     public static List<String> stringListFromObjectIdList(List<ObjectId> objectIdList) {
         List<String> list = new ArrayList<>();
         for(ObjectId objectId: objectIdList) {
@@ -16,21 +21,37 @@ public class ListUtils {
         return list;
     }
 
-    public static List<String> stringListFromString(String regex, String params) {
-        String[] strIds = params.split(regex);
+    /**
+     * Extraer los campos de una cadena (proporcionada como CSV)
+     * @param regex Caracteres usados para separar campos
+     * @param params Cadena con formato tipo CSV (comma-separated values) ej. "valor1,valor2,valor3"
+     * @return La lista de campos ej. [valor1, valor2, valor3]
+     */
+    public static List<String> listFromCSV(String regex, String params) {
         List<String> strIdsList = new ArrayList<>();
-        for (String strId: strIds)
+        for (String strId: params.split(regex))
             strIdsList.add(strId);
         return strIdsList;
     }
 
+    /**
+     * Convertir un iterator a una lista  (Iterator -> List>
+     * @param iter Iterator
+     * @param <T> Tipo del iterator
+     * @return La lista de elementos (extraidos del iterator)
+     */
     public static <T> List<T> listFromIterator(Iterator<T> iter) {
-        List<T> copy = new ArrayList<T>();
+        List<T> list = new ArrayList<T>();
         while (iter.hasNext())
-            copy.add(iter.next());
-        return copy;
+            list.add(iter.next());
+        return list;
     }
 
+    /**
+     * Extraer los campos de un jsonArray
+     * @param jsonData Array de campos en formato json  ej. "[valor1, valor2, valor3]"
+     * @return La lista de campos ej. [valor1, valor2, valor3]
+     */
     public static List<ObjectId> objectIdListFromJson(String jsonData) {
         List<ObjectId> idsList = new ArrayList<>();
 
@@ -38,10 +59,8 @@ public class ListUtils {
         assert (jsonNode.isArray());
 
         Iterator<JsonNode> iter = jsonNode.iterator();
-        while (iter.hasNext()) {
-            String strObjectId = iter.next().asText();
-            idsList.add(new ObjectId(strObjectId));
-        }
+        while (iter.hasNext())
+            idsList.add(new ObjectId(iter.next().asText()));
 
         return idsList;
     }

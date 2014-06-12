@@ -28,6 +28,13 @@ import java.util.ArrayList;
 @AllowCors.Origin
 public class ContestController extends Controller {
 
+    /*
+     * Devuelve la lista de contests activos (aquellos a los que un usuario puede apuntarse)
+     *  Incluye los datos referenciados por cada uno de los contest (sus templates y sus match events)
+     *      de forma que el cliente tenga todos los datos referenciados por un determinado contest
+     *
+     * TODO: ¿De donde obtendremos las fechas con las que filtar los contests? (las fechas que determinan que algo sea "activo")
+     */
     public static Result getActiveContests() {
         // User theUser = (User)ctx().args.get("User");
 
@@ -46,6 +53,9 @@ public class ContestController extends Controller {
         return new ReturnHelper(contest).toResult();
     }
 
+    /*
+     * Devuelve la lista de partidos (match events) activos (referenciados por los contests activos)
+     */
     public static Result getActiveMatchEvents() {
         // User theUser = (User)ctx().args.get("User");
 
@@ -68,6 +78,10 @@ public class ContestController extends Controller {
         public String soccerTeam;
     }
 
+    /**
+     * Añadir un contest entry
+     *      (participacion de un usuario en un contest, por medio de la seleccion de un equipo de futbolistas)
+     */
     public static Result addContestEntry() {
         Form<ContestEntryParams> contestEntryForm = form(ContestEntryParams.class).bindFromRequest();
 
@@ -116,6 +130,13 @@ public class ContestController extends Controller {
         return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
     }
 
+    /**
+     * Creacion de un contest entry (se añade a la base de datos)
+     * @param user      Usuario al que pertenece el equipo
+     * @param contest   Contest al que se apunta
+     * @param soccers   Lista de futbolistas con la que se apunta
+     * @return Si se ha realizado correctamente su creacion
+     */
     private static boolean createContestEntry(ObjectId user, ObjectId contest, List<ObjectId> soccers) {
         boolean bRet = true;
 
@@ -130,6 +151,15 @@ public class ContestController extends Controller {
         return bRet;
     }
 
+    /**
+     * Obtener los partidos "live" correspondientes a un template contest
+     *  Incluye los fantasy points obtenidos por cada uno de los futbolistas
+     *  Queremos recibir un TemplateContestID, y no un ContestID, dado que el Template es algo generico
+     *      y valido para todos los usuarios que esten apuntados a varios contests (creados a partir del mismo Template)
+     *  Los documentos "LiveMatchEvent" referencian los partidos del template (facilita la query)
+     * @param templateContestId TemplateContest sobre el que se esta interesado
+     * @return La lista de partidos "live"
+     */
     public static Result getLiveMatchEventsFromTemplateContest(String templateContestId) {
         Logger.info("getLiveMatchEventsFromTemplateContest: {}", templateContestId);
 
@@ -147,11 +177,12 @@ public class ContestController extends Controller {
             return new ReturnHelper(false, "TemplateContest not found").toResult();
         }
 
+        // Consultar por los partidos del TemplateContest (queremos su version "live")
         Iterable<LiveMatchEvent> liveMatchEventResults = Model.findLiveMatchEventsFromIds("templateMatchEventId", templateContest.templateMatchEventIds);
         List<LiveMatchEvent> liveMatchEventList = ListUtils.listFromIterator(liveMatchEventResults.iterator());
 
         // TODO: Si no encontramos ningun LiveMatchEvent, los creamos
-        if (liveMatchEventList.size() == 0) {
+        if (liveMatchEventList.isEmpty()) {
             Logger.info("create liveMatchEvents from TemplateContest({})", templateContest.templateContestId);
 
             // Obtenemos la lista de TemplateMatchEvents correspondientes al TemplateContest
@@ -177,6 +208,14 @@ public class ContestController extends Controller {
         public String matchEvents;
     }
 
+    /**
+     * Obtener los partidos "live" correspondientes a una lista de partidos (incluidos como POST.matchEvents)
+     *  Incluye los fantasy points obtenidos por cada uno de los futbolistas
+     *  Nota: Valido si queremos que el cliente haga querys mas especificas ("quiero estos partidos")
+     *      en lugar de mas genericas ("quiero este contest")
+     *      (dado que tiene todos los detalles para realizarlas con facilidad)
+     * @return La lista de partidos "live"
+     */
     public static Result getLiveMatchEventsFromMatchEvents() {
         Form<MatchEventsListParams> matchEventForm = form(MatchEventsListParams.class).bindFromRequest();
         if (matchEventForm.hasErrors()) {
@@ -200,6 +239,13 @@ public class ContestController extends Controller {
         return new ReturnHelper(liveMatchEventList).toResult();
     }
 
+    /**
+     * Obtener la lista de entradas a un contest determinado
+     *  En principio, un usuario al visitar el "live" deberia solicitar dicha informacion
+     *      para conocer quienes son los usuarios contrincantes y los equipos de futbolistas que seleccionaron
+     * @param contest Contest en el que estamos interesados
+     * @return Lista de contest entry  (incluye usuarios y equipos de futbolistas seleccionados = fantasy team)
+     */
     public static Result getLiveContestEntries(String contest) {
         Logger.info("getLiveContestEntries: {}", contest);
 
@@ -211,6 +257,13 @@ public class ContestController extends Controller {
         return new ReturnHelper(Model.contestEntries().find("{contestId: #}", contestId).as(ContestEntry.class)).toResult();
     }
 
+    /**
+     * Actualizar los puntos obtenidos por un determinado futbolista
+     *  TEMPORAL: Usado para realizar tests. No tiene sentido que los puntos nos vengan desde "fuera"
+     * @param strSoccerPlayerId Identificador del futbolista (templateSoccerPlayerId)
+     * @param strPoints Puntos (en formato cadena)
+     * @return Ok
+     */
     public static Result setLiveFantasyPointsOfSoccerPlayer(String strSoccerPlayerId, String strPoints) {
         if (!ObjectId.isValid(strSoccerPlayerId)) {
             return new ReturnHelper(false, "SoccerPlayer invalid").toResult();
@@ -221,6 +274,11 @@ public class ContestController extends Controller {
         return ok();
     }
 
+    /**
+     * Actualizar los puntos obtenidos por todos los futbolistas que participan en unos partidos (POST.matchEvents)
+     *  TEMPORAL: Usado para realizar tests.
+     * @return Ok
+     */
     public static Result updateLiveFantasyPoints() {
         Form<MatchEventsListParams> matchEventForm = form(MatchEventsListParams.class).bindFromRequest();
         if (matchEventForm.hasErrors()) {
@@ -229,7 +287,7 @@ public class ContestController extends Controller {
 
         MatchEventsListParams params = matchEventForm.get();
 
-        // Convertir las strings en ObjectId
+        // Convertir las stringsIds de partidos en ObjectId (de mongoDB)
         List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.matchEvents);
 
         Model.updateLiveFantasyPoints(idsList);

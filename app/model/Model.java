@@ -2,6 +2,7 @@ package model;
 
 import com.mongodb.*;
 import org.jongo.Jongo;
+import org.jongo.Find;
 import org.jongo.MongoCollection;
 import play.Logger;
 import play.Play;
@@ -138,33 +139,48 @@ public class Model {
         ensureContestsDB(_mongoDB);
     }
 
+    /**
+     * Inicializar la coleccion de equipos y futbolistas (que usaremos para crear los match events)
+     *  a partir de la coleccion de datos actualizada desde optaDB
+     */
     static public void importTeamsAndSoccersFromOptaDB() {
         long startTime = System.currentTimeMillis();
 
-        HashMap<String, TemplateSoccerTeam> teamsMap = new HashMap<>();
-        Iterable<OptaTeam> optaTeams = Model.optaTeams().find().as(OptaTeam.class);
-        for (OptaTeam optaTeam: optaTeams) {
-            TemplateSoccerTeam templateTeam = new TemplateSoccerTeam(optaTeam);
-            templateTeam.templateSoccerTeamId = new ObjectId();
-            Model.templateSoccerTeams().withWriteConcern(WriteConcern.SAFE).insert(templateTeam);
+        try {
 
-            teamsMap.put(templateTeam.optaTeamId,  templateTeam);
-        }
+            HashMap<String, TemplateSoccerTeam> teamsMap = new HashMap<>();
+            Iterable<OptaTeam> optaTeams = Model.optaTeams().find().as(OptaTeam.class);
+            for (OptaTeam optaTeam: optaTeams) {
+                TemplateSoccerTeam templateTeam = new TemplateSoccerTeam(optaTeam);
+                templateTeam.templateSoccerTeamId = new ObjectId();
+                Model.templateSoccerTeams().withWriteConcern(WriteConcern.SAFE).insert(templateTeam);
 
-        Iterable<OptaPlayer> optaPlayers = Model.optaPlayers().find().as(OptaPlayer.class);
-        for (OptaPlayer optaPlayer: optaPlayers) {
-            ObjectId teamId = null;
-            if (teamsMap.containsKey(optaPlayer.teamId)) {
-                teamId = teamsMap.get(optaPlayer.teamId).templateSoccerTeamId;
-
-                TemplateSoccerPlayer templatePlayer = new TemplateSoccerPlayer(optaPlayer, teamId);
-                Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).insert(templatePlayer);
+                teamsMap.put(templateTeam.optaTeamId,  templateTeam);
             }
+
+            Iterable<OptaPlayer> optaPlayers = Model.optaPlayers().find().as(OptaPlayer.class);
+            for (OptaPlayer optaPlayer: optaPlayers) {
+                ObjectId teamId = null;
+                if (teamsMap.containsKey(optaPlayer.teamId)) {
+                    teamId = teamsMap.get(optaPlayer.teamId).templateSoccerTeamId;
+
+                    TemplateSoccerPlayer templatePlayer = new TemplateSoccerPlayer(optaPlayer, teamId);
+                    Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).insert(templatePlayer);
+                }
+            }
+
+        } catch (MongoException exc) {
+            Logger.error("importTeamsAndSoccersFromOptaDB: ", exc);
         }
 
         Logger.info("import Teams&Soccers: {}", System.currentTimeMillis() - startTime);
     }
 
+    /**
+     * Actualizar los puntos fantasy de un determinado futbolista en los partidos "live"
+     * @param soccerPlayerId Identificador del futbolista
+     * @param strPoints Puntos fantasy
+     */
     static public void setLiveFantasyPointsOfSoccerPlayer(ObjectId soccerPlayerId, String strPoints) {
         Logger.info("setLiveFantasyPoints: {} = {} fantasy points", soccerPlayerId, strPoints);
 
@@ -185,6 +201,10 @@ public class Model {
         Logger.info("END: setLiveFantasyPoints: {}", System.currentTimeMillis() - startTime);
     }
 
+    /**
+     * Calcular y actualizar los puntos fantasy de un determinado futbolista en los partidos "live"
+     * @param soccerPlayer Futbolista
+     */
     static public void updateLiveFantasyPoints(SoccerPlayer soccerPlayer) {
         // Obtener sus fantasy points actuales
         Iterable<FantasyPoints> fantasyPointResults = fantasyPoints().find("{playerId: #",
@@ -193,13 +213,18 @@ public class Model {
         // Sumarlos
         float points = 0;
         for (FantasyPoints point: fantasyPointResults) {
-            points = point.points;
+            points += point.points;
         }
 
         // Actualizar sus puntos en cada LiverMatchEvent en el que participe
         setLiveFantasyPointsOfSoccerPlayer(soccerPlayer.templateSoccerPlayerId, String.valueOf(points));
     }
 
+    /**
+     * Calcular y actualizar los puntos fantasy de un determinado partido "live"
+     *  Opera sobre cada uno de los futbolistas del partido (teamA y teamB)
+     * @param liveMatchEvent Partido "live"
+     */
     static public void updateLiveFantasyPoints(LiveMatchEvent liveMatchEvent) {
         // Actualizamos los jugadores del TeamA
         for (SoccerPlayer soccer: liveMatchEvent.soccerTeamA.soccerPlayers) {
@@ -212,6 +237,10 @@ public class Model {
         }
     }
 
+    /**
+     * Calcular y actualizar los puntos fantasy de una lista de partidos "live"
+     * @param matchEventIdsList Lista de partidos "live"
+     */
     static public void updateLiveFantasyPoints(List<ObjectId> matchEventIdsList) {
         Logger.info("updateLiveFantasyPoints: {}", matchEventIdsList);
 
@@ -227,6 +256,11 @@ public class Model {
         Logger.info("END: updateLiveFantasyPoints: {}", System.currentTimeMillis() - startTime);
     }
 
+    /**
+     * Query de un usuario por su identificador en mongoDB (verifica la validez del mismo)
+     * @param userId Identificador del usuario
+     * @return User
+     */
     static public User findUserId(String userId) {
         User aUser = null;
         Boolean userValid = ObjectId.isValid(userId);
@@ -236,6 +270,11 @@ public class Model {
         return aUser;
     }
 
+    /**
+     * Query de un contest por su identificador en mongoDB (verifica la validez del mismo)
+     * @param contestId Identficador del contest
+     * @return Contest
+     */
     static public Contest findContestId(String contestId) {
         Contest aContest = null;
         Boolean userValid = ObjectId.isValid(contestId);
@@ -246,14 +285,13 @@ public class Model {
     }
 
     /**
-     * Obtener una lista de Objetos a partir de una lista de 'string ids' (StringId = ObjectID.toString())
-     * @param classType: Clase de la lista de objetos a devolver (necesario para usar en la query a jongo)
+     * Query de una lista de ObjectIds (en una misma query)
      * @param collection: MongoCollection a la que hacer la query
      * @param fieldId: Identificador del campo a buscar
      * @param idList: Lista de ObjectId (de mongoDb)
-     * @return Lista de Objetos correspondientes a los ids incluidos en strIdsList
+     * @return Find (de jongo)
      */
-    public static <T> Iterable<T> findObjectsFromIds(Class<T> classType, MongoCollection collection, String fieldId, List<ObjectId> idList) {
+    public static Find findObjectIds(MongoCollection collection, String fieldId, List<ObjectId> idList) {
         // Jongo necesita que le proporcionemos el patrón de "#, #, #" (según el número de parámetros)
         String patternParams = "";
         for (ObjectId id : idList) {
@@ -263,23 +301,23 @@ public class Model {
 
         // Componer la query según el número de parámetros
         String pattern = String.format("{%s: {$in: [%s]}}", fieldId, patternParams);
-        return collection.find(pattern, idList.toArray()).as(classType);
+        return collection.find(pattern, idList.toArray());
     }
 
     public static Iterable<TemplateContest> findTemplateContestsFromIds(String fieldId, List<ObjectId> idList) {
-        return findObjectsFromIds(TemplateContest.class, Model.templateContests(), fieldId, idList);
+        return findObjectIds(Model.templateContests(), fieldId, idList).as(TemplateContest.class);
     }
 
     public static Iterable<TemplateMatchEvent> findTemplateMatchEventFromIds(String fieldId, List<ObjectId> idList) {
-        return findObjectsFromIds(TemplateMatchEvent.class, Model.templateMatchEvents(), fieldId, idList);
+        return findObjectIds(Model.templateMatchEvents(), fieldId, idList).as(TemplateMatchEvent.class);
     }
 
     public static Iterable<TemplateSoccerPlayer> findTemplateSoccerPlayersFromIds(String fieldId, List<ObjectId> idList) {
-        return findObjectsFromIds(TemplateSoccerPlayer.class, Model.templateSoccerPlayers(), fieldId, idList);
+        return findObjectIds(Model.templateSoccerPlayers(), fieldId, idList).as(TemplateSoccerPlayer.class);
     }
 
     public static Iterable<LiveMatchEvent> findLiveMatchEventsFromIds(String fieldId, List<ObjectId> idList) {
-        return findObjectsFromIds(LiveMatchEvent.class, Model.liveMatchEvents(), fieldId, idList);
+        return findObjectIds(Model.liveMatchEvents(), fieldId, idList).as(LiveMatchEvent.class);
     }
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/
