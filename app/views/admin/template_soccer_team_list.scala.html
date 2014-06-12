@@ -10,6 +10,7 @@
         <thead>
         <tr>
             <th>Id</th>
+            <th>OptaId</th>
             <th>Name</th>
         </tr>
         </thead>
@@ -17,6 +18,7 @@
         @for(p <- teams) {
         <tr>
             <td>@p.templateSoccerTeamId</td>
+            <td>@p.optaTeamId</td>
             <td><a href="@routes.AdminController.templateSoccerTeam(p.templateSoccerTeamId.toString())">@p.name</a></td>
         </tr>
         }
