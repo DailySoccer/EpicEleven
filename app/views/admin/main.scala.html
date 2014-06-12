@@ -16,6 +16,10 @@
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css" rel="stylesheet">
 
+    <!-- DataTables -->
+    <link href="//cdn.datatables.net/1.10.0/css/jquery.dataTables.css" rel="stylesheet">
+    <link href="//cdn.datatables.net/plug-ins/be7019ee387/integration/bootstrap/3/dataTables.bootstrap.css" rel="stylesheet">
+
     <!-- Custom styles for this template -->
     <!-- link href="http://getbootstrap.com/examples/dashboard/dashboard.css" rel="stylesheet" -->
     <link href="/css/dashboard.css" rel="stylesheet">
@@ -96,5 +100,14 @@
 <!-- Placed at the end of the document so the pages load faster -->
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+<script src="//cdn.datatables.net/1.10.0/js/jquery.dataTables.js"></script>
+<script src="//cdn.datatables.net/plug-ins/be7019ee387/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+
+<script type="text/javascript" charset="utf-8">
+        $(document).ready( function () {
+            console.log( "DataTable init" );
+            $('#table_id').DataTable();
+        } );
+</script>
 </body>
 </html>
