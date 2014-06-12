@@ -71,6 +71,7 @@ GET     /admin/template_soccer_players              controllers.AdminController.
 
 GET     /admin/opta_soccer_players                  controllers.AdminController.optaSoccerPlayers()
 GET     /admin/opta_soccer_teams                    controllers.AdminController.optaSoccerTeams()
+GET     /admin/opta_match_events                    controllers.AdminController.optaMatchEvents()
 # ADMIN END
 
 GET     /get_xml                    controllers.OptaHttpController.getXML()

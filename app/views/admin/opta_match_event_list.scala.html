@@ -1,0 +1,45 @@
+@(match_events: List[model.opta.OptaMatchEvent])
+
+@main("Opta Match Events - Admin") {
+
+<h1 class="page-header">Opta Match Events</h1>
+
+<h2 class="sub-header"></h2>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>CompetitionId</th>
+            <th>Competition Name</th>
+            <th>SeasonId</th>
+            <th>SeasonName</th>
+            <th>HomeTeamId</th>
+            <th>AwayTeamId</th>
+            <th>Match Date</th>
+            <th>TimeZone</th>
+            <th>Last Modified</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(p <- match_events) {
+        <tr>
+            <td>@p.id</td>
+            <td>@p.competitionId</td>
+            <td>@p.competitionName</td>
+            <td>@p.seasonId</td>
+            <td>@p.seasonName</td>
+            <td>@p.homeTeamId</td>
+            <td>@p.awayTeamId</td>
+            <td>@p.matchDate</td>
+            <td>@p.timeZone</td>
+            <td>@p.lastModified</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<a href='@routes.AdminController.dashBoard'>Back to Dashboard</a>
+
+}

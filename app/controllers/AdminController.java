@@ -240,4 +240,11 @@ public class AdminController extends Controller {
 
         return ok(views.html.admin.opta_soccer_team_list.render(optaTeamList));
     }
+
+    public static Result optaMatchEvents() {
+        Iterable<OptaMatchEvent> optaMatchEventResults = Model.optaMatchEvents().find().as(OptaMatchEvent.class);
+        List<OptaMatchEvent> optaMatchEventList = ListUtils.listFromIterator(optaMatchEventResults.iterator());
+
+        return ok(views.html.admin.opta_match_event_list.render(optaMatchEventList));
+    }
 }
