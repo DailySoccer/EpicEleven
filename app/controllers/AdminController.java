@@ -54,7 +54,8 @@ public class AdminController extends Controller {
     }
 
     public static Result importMatchEvents() {
-        return ok(views.html.admin.dashboard.render("> TODO: Action not implemented yet."));
+        Model.importMatchEventsFromOptaDB();
+        return ok(views.html.admin.dashboard.render("> Import Match Events: OK"));
     }
 
     public static Result dashBoard() {

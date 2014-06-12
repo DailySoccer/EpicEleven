@@ -125,38 +125,7 @@ public final class MockData {
         TemplateSoccerTeam teamA = Model.templateSoccerTeams().findOne("{ name: '#' }", nameTeamA).as(TemplateSoccerTeam.class);
         TemplateSoccerTeam teamB = Model.templateSoccerTeams().findOne("{ name: '#' }", nameTeamB).as(TemplateSoccerTeam.class);
 
-        return createTemplateMatchEvent(teamA, teamB, dateTime);
-    }
-
-    static private TemplateMatchEvent createTemplateMatchEvent(TemplateSoccerTeam teamA, TemplateSoccerTeam teamB, final DateTime dateTime) {
-        Logger.info("MockData: Template MatchEvent: {} vs {} ({})", teamA.name, teamB.name, dateTime.toString("yyyy.MM.dd G 'at' HH:mm:ss z"));
-
-        TemplateMatchEvent templateMatchEvent = new TemplateMatchEvent();
-        templateMatchEvent.startDate = dateTime.toDate();
-
-        // setup Team A (incrustando a los futbolistas en el equipo)
-        SoccerTeam newTeamA = new SoccerTeam();
-        newTeamA.templateSoccerTeamId = teamA.templateSoccerTeamId;
-        newTeamA.name = teamA.name;
-        Iterable<TemplateSoccerPlayer> playersTeamA = Model.templateSoccerPlayers().find("{ templateTeamId: # }", teamA.templateSoccerTeamId).as(TemplateSoccerPlayer.class);
-        for(TemplateSoccerPlayer templateSoccer : playersTeamA) {
-            newTeamA.soccerPlayers.add(new SoccerPlayer(templateSoccer));
-        }
-        templateMatchEvent.soccerTeamA = newTeamA;
-
-        // setup Team B (incrustando a los futbolistas en el equipo)
-        SoccerTeam newTeamB = new SoccerTeam();
-        newTeamB.templateSoccerTeamId = teamB.templateSoccerTeamId;
-        newTeamB.name = teamB.name;
-        Iterable<TemplateSoccerPlayer> playersTeamB = Model.templateSoccerPlayers().find("{ templateTeamId: # }", teamB.templateSoccerTeamId).as(TemplateSoccerPlayer.class);
-        for(TemplateSoccerPlayer templateSoccer : playersTeamB) {
-            newTeamB.soccerPlayers.add(new SoccerPlayer(templateSoccer));
-        }
-        templateMatchEvent.soccerTeamB = newTeamB;
-
-        Model.templateMatchEvents().insert(templateMatchEvent);
-
-        return templateMatchEvent;
+        return Model.createTemplateMatchEvent(teamA, teamB, dateTime.toDate());
     }
 
     static private void instantiateContests() {

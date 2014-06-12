@@ -15,6 +15,7 @@ import java.util.Iterator;
 import model.opta.*;
 import play.mvc.Result;
 import utils.ListUtils;
+import java.util.Date;
 
 
 public class Model {
@@ -178,6 +179,70 @@ public class Model {
         }
 
         Logger.info("import Teams&Soccers: {}", System.currentTimeMillis() - startTime);
+    }
+
+    /**
+     * Inicializar la coleccion de partidos
+     *  a partir de la coleccion de datos actualizada desde optaDB
+     */
+    static public void importMatchEventsFromOptaDB() {
+        long startTime = System.currentTimeMillis();
+
+        try {
+            Iterable<OptaMatchEvent> optaMatchEvents = Model.optaMatchEvents().find().as(OptaMatchEvent.class);
+            for (OptaMatchEvent optaMatch: optaMatchEvents) {
+                TemplateSoccerTeam teamA = templateSoccerTeams().findOne("{optaTeamId: #}", optaMatch.homeTeamId).as(TemplateSoccerTeam.class);
+                TemplateSoccerTeam teamB = templateSoccerTeams().findOne("{optaTeamId: #}", optaMatch.awayTeamId).as(TemplateSoccerTeam.class);
+                if (teamA != null && teamB != null) {
+                    createTemplateMatchEvent(teamA, teamB, optaMatch.matchDate);
+                }
+                else {
+                    Logger.info("Ignorando OptaMatchEvent: {} ({})", optaMatch.id, optaMatch.matchDate);
+                }
+            }
+        } catch (MongoException exc) {
+            Logger.error("importTeamsAndSoccersFromOptaDB: ", exc);
+        }
+
+        Logger.info("import Teams&Soccers: {}", System.currentTimeMillis() - startTime);
+    }
+
+    /**
+     * Crea un template match event
+     * @param teamA     TeamA
+     * @param teamB     TeamB
+     * @param startDate Cuando se jugara el partido
+     * @return El template match event creado
+     */
+    static public TemplateMatchEvent createTemplateMatchEvent(TemplateSoccerTeam teamA, TemplateSoccerTeam teamB, Date startDate) {
+        Logger.info("Template MatchEvent: {} vs {} ({})", teamA.name, teamB.name, startDate);
+
+        TemplateMatchEvent templateMatchEvent = new TemplateMatchEvent();
+        templateMatchEvent.startDate = startDate;
+
+        // setup Team A (incrustando a los futbolistas en el equipo)
+        SoccerTeam newTeamA = new SoccerTeam();
+        newTeamA.templateSoccerTeamId = teamA.templateSoccerTeamId;
+        newTeamA.name = teamA.name;
+        Iterable<TemplateSoccerPlayer> playersTeamA = Model.templateSoccerPlayers().find("{ templateTeamId: # }", teamA.templateSoccerTeamId).as(TemplateSoccerPlayer.class);
+        for(TemplateSoccerPlayer templateSoccer : playersTeamA) {
+            newTeamA.soccerPlayers.add(new SoccerPlayer(templateSoccer));
+        }
+        templateMatchEvent.soccerTeamA = newTeamA;
+
+        // setup Team B (incrustando a los futbolistas en el equipo)
+        SoccerTeam newTeamB = new SoccerTeam();
+        newTeamB.templateSoccerTeamId = teamB.templateSoccerTeamId;
+        newTeamB.name = teamB.name;
+        Iterable<TemplateSoccerPlayer> playersTeamB = Model.templateSoccerPlayers().find("{ templateTeamId: # }", teamB.templateSoccerTeamId).as(TemplateSoccerPlayer.class);
+        for(TemplateSoccerPlayer templateSoccer : playersTeamB) {
+            newTeamB.soccerPlayers.add(new SoccerPlayer(templateSoccer));
+        }
+        templateMatchEvent.soccerTeamB = newTeamB;
+
+        Model.templateMatchEvents().insert(templateMatchEvent);
+
+        return templateMatchEvent;
     }
 
     /**
