@@ -40,7 +40,6 @@ public class Model {
     static public MongoCollection optaTeams() { return _jongo.getCollection("optaTeams"); }
     static public MongoCollection optaMatchEvents() { return _jongo.getCollection("optaMatchEvents"); }
     static public MongoCollection pointsTranslation() { return _jongo.getCollection("pointsTranslation"); }
-    static public MongoCollection fantasyPoints() { return _jongo.getCollection("fantasyPoints"); }
 
     static public void init() {
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
@@ -122,14 +121,12 @@ public class Model {
         optaEvents.createIndex(new BasicDBObject("parentId", 1));
         optaEvents.createIndex(new BasicDBObject("eventId", 1));
         optaEvents.createIndex(new BasicDBObject("gameId", 1));
-        optaEvents.createIndex(new BasicDBObject("playerId", 1));
+        optaEvents.createIndex(new BasicDBObject("optaPlayerId", 1));
         DBCollection optaPlayers = theMongoDB.getCollection("optaPlayers");
         DBCollection optaTeams = theMongoDB.getCollection("optaTeams");
         DBCollection optaMatchEvents = theMongoDB.getCollection("optaMatchEvents");
         DBCollection pointsTranslation = theMongoDB.getCollection("pointsTranslation");
-        pointsTranslation.createIndex(new BasicDBObject("eventCode", 1));
-        DBCollection fantasyPoints = theMongoDB.getCollection("fantasyPoints");
-        fantasyPoints.createIndex(new BasicDBObject("playerId", 1));
+        pointsTranslation.createIndex(new BasicDBObject("eventTypeId", 1));
 
         ensureContestsDB(theMongoDB);
     }
@@ -278,12 +275,12 @@ public class Model {
      */
     static public void updateLiveFantasyPoints(SoccerPlayer soccerPlayer) {
         // Obtener sus fantasy points actuales
-        Iterable<FantasyPoints> fantasyPointResults = fantasyPoints().find("{playerId: #",
-                soccerPlayer.optaPlayerId).as(FantasyPoints.class);
+        Iterable<OptaEvent> optaEventResults = optaEvents().find("{optaPlayerId: #",
+                soccerPlayer.optaPlayerId).as(OptaEvent.class);
 
         // Sumarlos
         float points = 0;
-        for (FantasyPoints point : fantasyPointResults) {
+        for (OptaEvent point: optaEventResults) {
             points += point.points;
         }
 
