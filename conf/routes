@@ -44,6 +44,7 @@ GET     /admin/lobby                                controllers.AdminController.
 
 GET     /admin/users                                controllers.AdminController.users()
 
+GET     /admin/live_match_events                    controllers.AdminController.liveMatchEvents()
 GET     /admin/contest_entries                      controllers.AdminController.contestEntries()
 
 GET     /admin/contests                             controllers.AdminController.contests()

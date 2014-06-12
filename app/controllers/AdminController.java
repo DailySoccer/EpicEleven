@@ -65,6 +65,13 @@ public class AdminController extends Controller {
         return ok(views.html.admin.user_list.render(userList));
     }
 
+    public static Result liveMatchEvents() {
+        Iterable<LiveMatchEvent> liveMatchEventResults = Model.liveMatchEvents().find().as(LiveMatchEvent.class);
+        List<LiveMatchEvent> liveMatchEventList = ListUtils.listFromIterator(liveMatchEventResults.iterator());
+
+        return ok(views.html.admin.live_match_event_list.render(liveMatchEventList));
+    }
+
     public static Result contestEntries() {
         Iterable<ContestEntry> contestEntryResults = Model.contestEntries().find().as(ContestEntry.class);
         List<ContestEntry> contestEntryList = ListUtils.listFromIterator(contestEntryResults.iterator());

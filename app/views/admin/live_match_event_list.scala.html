@@ -1,0 +1,35 @@
+@(match_events: List[model.LiveMatchEvent])
+
+@main("Live Mach Events - Admin") {
+
+<h1 class="page-header">Live Match Events</h1>
+
+<h2 class="sub-header"></h2>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Template Match Id</th>
+            <th>Teams</th>
+            <th>Start Date</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(p <- match_events) {
+        <tr>
+            <td>@p.liveMatchEventId</td>
+            <td>@p.templateMatchEventId</td>
+            <td>
+                <a href="@routes.AdminController.templateMatchEvent(p.templateMatchEventId.toString())">
+                    @p.soccerTeamA.name vS @p.soccerTeamB.name</a></td>
+            <td>@p.startDate</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<a href='@routes.AdminController.dashBoard'>Back to Dashboard</a>
+
+}
