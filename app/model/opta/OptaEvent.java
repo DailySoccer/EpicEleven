@@ -33,6 +33,9 @@ public class OptaEvent {
     public long unixtimestamp;
     public Date lastModified;
 
+    public int points;
+    public ObjectId pointsTranslationId;
+
     public OptaEvent(){}
 
     public boolean hasChanged(OptaEvent other){

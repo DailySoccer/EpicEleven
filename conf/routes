@@ -27,6 +27,7 @@ POST    /set_live_fantasy_points/:soccerPlayerId/:points    controllers.ContestC
 
 GET     /parse_fantasy              controllers.OptaHttpController.parseFantasy()
 GET     /parse_events               controllers.OptaHttpController.parseEvents()
+GET     /parse_f1                   controllers.OptaHttpController.parseF1()
 GET     /create_points_translation  controllers.OptaHttpController.createPointsTranslation()
 GET     /player                     controllers.OptaHttpController.playersPoints()
 GET     /player/:player             controllers.OptaHttpController.playerPoints(player: Int)

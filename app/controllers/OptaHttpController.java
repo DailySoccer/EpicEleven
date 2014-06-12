@@ -1,6 +1,7 @@
 package controllers;
 
 import actions.AllowCors;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Iterables;
 import com.mongodb.*;
 import com.mongodb.util.JSON;
@@ -9,6 +10,7 @@ import model.Model;
 import model.opta.*;
 import org.bson.types.ObjectId;
 import org.jongo.Find;
+import org.json.JSONObject;
 import org.json.XML;
 import org.w3c.dom.Document;
 import play.Logger;
@@ -26,10 +28,7 @@ import java.awt.*;
 import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by gnufede on 30/05/14.
@@ -49,9 +48,14 @@ public class OptaHttpController extends Controller {
             else if (request().headers().containsKey("X-Meta-Default-Filename")){
                 name = request().headers().get("X-Meta-Default-Filename")[0];
             }
-            //TODO: Separar esto en 2 try-catch
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        try {
             bodyText = bodyText.substring(bodyText.indexOf('<'));
-            //TODO: Tratar directamente de pasar JSON a BSON
+            // No hay manera de pasar de JSON a BSON directamente al parecer, sin pasar por String,
+            // o por un hashmap (que tampoco parece trivial)
+            // http://stackoverflow.com/questions/5699323/using-json-with-mongodb
             bodyAsJSON = (BasicDBObject) JSON.parse(XML.toJSONObject(bodyText).toString());
         } catch (Exception e) {
             e.printStackTrace();
@@ -62,20 +66,25 @@ public class OptaHttpController extends Controller {
                 request().headers(),
                 startDate,
                 System.currentTimeMillis()));
-
+        /*
         if (bodyAsJSON.containsField("FANTASY")){
 //            BasicDBList teams = (BasicDBList)bodyAsJSON.get("Team");
             processFantasy(bodyAsJSON);
         }
-        //TODO: poner elses
+        */
+        String feedtype = null;
+        if (request().headers().containsKey("X-Meta-Feed-Type")) {
+            feedtype = request().headers().get("X-Meta-Feed-Type")[0];
 
-        if (request().headers().containsKey("X-Meta-Feed-Type") &&
-            request().headers().get("X-Meta-Feed-Type")[0].equals("F9")){
-            processF9(bodyAsJSON);
-        }
-
-        if (bodyAsJSON.containsField("Games")){
-            processEvents(bodyAsJSON);
+            if (feedtype.equals("F9")){
+                processF9(bodyAsJSON);
+            }
+            else if (feedtype.equals("F24")){
+                processEvents(bodyAsJSON);
+            }
+            else if (feedtype.equals("F1")){
+                processF1(bodyAsJSON);
+            }
         }
         return ok("Yeah, XML processed");
     }
@@ -85,14 +94,13 @@ public class OptaHttpController extends Controller {
         LinkedHashMap games = (LinkedHashMap)gamesObj.get("Games");
         LinkedHashMap game = (LinkedHashMap)games.get("Game");
 
-        try { //TODO: isInstanceOf, as
-            ArrayList events = (ArrayList)game.get("Event");
-            for (Object event: events){
+        Object events = game.get("Event");
+        if (events instanceof ArrayList) {
+            for (Object event: (ArrayList)events){
                 processEvent((LinkedHashMap)event, game);
             }
-        }catch (ClassCastException notAnArraylist){
-            LinkedHashMap event = (LinkedHashMap)game.get("Event");
-            processEvent(event, game);
+        } else {
+            processEvent((LinkedHashMap)events, game);
         }
 
     }
@@ -160,17 +168,14 @@ public class OptaHttpController extends Controller {
             if (pointsTranslation == null){
                 myPointsTranslation.unixtimestamp = 0L;
                 myPointsTranslation.timestamp = new Date(myPointsTranslation.unixtimestamp);
+                myPointsTranslation.points = pointsTable[i][1];
+                Model.pointsTranslation().insert(myPointsTranslation);
             }
-            else{ //TODO: Si ya hay una tabla de traducción, no pisamos lo que había
-                myPointsTranslation.unixtimestamp = System.currentTimeMillis();
-                myPointsTranslation.timestamp = new Date(myPointsTranslation.unixtimestamp);
-            }
-            myPointsTranslation.points = pointsTable[i][1];
-            Model.pointsTranslation().insert(myPointsTranslation);
         }
         return ok();
     }
 
+    /*
     private static void processFantasyPoints(OptaEvent event, ObjectId upsertedId){
         FantasyPoints dbFPoints = Model.fantasyPoints().findOne("{eventId: #}", upsertedId).as(FantasyPoints.class);
         FantasyPoints fpoints = new FantasyPoints();
@@ -198,15 +203,16 @@ public class OptaHttpController extends Controller {
             Model.fantasyPoints().update("{eventId: #}", event._id).with(fpoints);
         }
     }
+    */
 
     private static void processEvent(LinkedHashMap event, LinkedHashMap game) {
         OptaEvent myEvent = new OptaEvent();
         myEvent._id = new ObjectId();
-        myEvent.gameId = (String) game.get("id");
-        myEvent.homeTeamId = (String) game.get("home_team_id");
-        myEvent.awayTeamId = (String) game.get("away_team_id");
-        myEvent.competitionId = (String) game.get("competition_id");
-        myEvent.seasonId = (String) game.get("season_id");
+        myEvent.gameId = game.get("id").toString();
+        myEvent.homeTeamId = game.get("home_team_id").toString();
+        myEvent.awayTeamId = game.get("away_team_id").toString();
+        myEvent.competitionId = game.get("competition_id").toString();
+        myEvent.seasonId = game.get("season_id").toString();
         myEvent.eventId = (int) event.get("event_id");
         myEvent.typeId = (int) event.get("type_id");
         myEvent.outcome = (int)event.get("outcome");
@@ -216,21 +222,20 @@ public class OptaHttpController extends Controller {
         myEvent.lastModified = parseDate((String) event.get("last_modified"));
 
         if (event.containsKey("player_id")){
-            myEvent.playerId = (String) event.get("player_id");
+            myEvent.playerId = event.get("player_id").toString();
         }
 
         if (event.containsKey("Q")){
-            try {
-                ArrayList qualifierList = (ArrayList) event.get("Q");
-                myEvent.qualifiers = new ArrayList<>(qualifierList.size());
-                for (Object qualifier: qualifierList){
-                    Integer tempQualifier = (Integer)((LinkedHashMap)qualifier).get("qualifier_id");
+            Object qualifierList = event.get("Q");
+            if (qualifierList instanceof ArrayList) {
+                myEvent.qualifiers = new ArrayList<>(((ArrayList) qualifierList).size());
+                for (Object qualifier : (ArrayList) qualifierList) {
+                    Integer tempQualifier = (Integer) ((LinkedHashMap) qualifier).get("qualifier_id");
                     myEvent.qualifiers.add(tempQualifier);
                 }
-            }catch (ClassCastException notAnArraylist){
-                LinkedHashMap qualifierList = (LinkedHashMap) event.get("Q");
+            } else {
                 myEvent.qualifiers = new ArrayList<>(1);
-                Integer tempQualifier = (Integer)qualifierList.get("qualifier_id");
+                Integer tempQualifier = (Integer)((LinkedHashMap)qualifierList).get("qualifier_id");
                 myEvent.qualifiers.add(tempQualifier);
             }
         }
@@ -253,6 +258,16 @@ public class OptaHttpController extends Controller {
         }
         */
 
+        Iterable<PointsTranslation> pointsTranslations = Model.pointsTranslation().
+                find("{eventCode: #, unixtimestamp: {$lte: #}}",
+                        myEvent.typeId, myEvent.unixtimestamp).sort("{unixtimestamp: -1}").as(PointsTranslation.class);
+
+        PointsTranslation pointsTranslation = null;
+        if (pointsTranslations.iterator().hasNext()){
+            pointsTranslation = pointsTranslations.iterator().next();
+            myEvent.pointsTranslationId = pointsTranslation._id;
+            myEvent.points = pointsTranslation.points;
+        }
 
 
         OptaEvent dbevent = Model.optaEvents().findOne("{eventId: #, gameId: #}", myEvent.eventId, myEvent.gameId).as(OptaEvent.class);
@@ -260,32 +275,32 @@ public class OptaHttpController extends Controller {
             boolean updated = dbevent.hasChanged(myEvent);
             if (updated){
                 WriteResult inserted = Model.optaEvents().update("{eventId: #, gameId: #}", myEvent.eventId, myEvent.gameId).with(myEvent);
-                processFantasyPoints(myEvent, myEvent._id);
+                //processFantasyPoints(myEvent, myEvent._id);
             }
         }else {
             WriteResult inserted = Model.optaEvents().insert(myEvent);
-            processFantasyPoints(myEvent, myEvent._id);
+            //processFantasyPoints(myEvent, myEvent._id);
         }
     }
 
     private static Date parseDate(String timestamp) {
-        Date myDate = new Date();
-        //TODO: Parsear esto sin excepciones
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SSS");
+        String dateConfig = timestamp.indexOf('T')>0? "yyyy-MM-dd'T'hh:mm:ss.SSSz" : "yyyy-MM-dd hh:mm:ss.SSSz";
+        SimpleDateFormat dateFormat = new SimpleDateFormat(dateConfig.substring(0, timestamp.length()));
+        int plusPos = timestamp.indexOf('+');
+        if (plusPos>=19) {
+            if (timestamp.substring(plusPos, timestamp.length()).equals("+00:00")) {
+                timestamp = timestamp.substring(0, plusPos);
+                dateFormat = new SimpleDateFormat(dateConfig.substring(0, timestamp.length()));
+            } else {
+                System.out.println(timestamp);
+            }
+        }
+
+        Date myDate = null;
         try {
             myDate = dateFormat.parse(timestamp);
         } catch (ParseException e) {
-            try {
-            dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss.SS");
-            myDate = dateFormat.parse(timestamp);
-            } catch (ParseException e1) {
-                try {
-                    dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
-                    myDate = dateFormat.parse(timestamp);
-                } catch (ParseException e2) {
-                    e.printStackTrace();
-                }
-            }
+            e.printStackTrace();
         }
         return myDate;
     }
@@ -380,18 +395,65 @@ public class OptaHttpController extends Controller {
 //        return ok(my_player.firstname+" "+my_player.lastname+"'s points: "+totalPoints);
     }
 
+    public static Result parseF1(){
+        OptaDB f1 = Model.optaDB().findOne("{'headers.X-Meta-Feed-Type': 'F1'}").as(OptaDB.class);
+        if (f1 != null)
+            processF1((BasicDBObject)f1.json);
+        return ok("Yeah, F1 processed");
+    }
+
+    public static void processF1(BasicDBObject f1) {
+        LinkedHashMap myF1 = (LinkedHashMap)((LinkedHashMap)f1.get("SoccerFeed")).get("SoccerDocument");
+
+        int competitionId = myF1.containsKey("competition_id")? (int) myF1.get("competition_id"): -1;
+        int seasonId = myF1.containsKey("season_id")? (int) myF1.get("season_id"): -1;
+        String seasonName = myF1.containsKey("season_name")? (String) myF1.get("season_name"): "NO SEASON NAME";
+        String competitionName = myF1.containsKey("competition_name")?
+                (String) myF1.get("competition_name"): "NO COMPETITION NAME";
+
+
+        ArrayList matches = myF1.containsKey("MatchData")? (ArrayList) myF1.get("MatchData"): null;
+        if (matches != null){
+            for (Object match: matches){
+                OptaMatchEvent myOptaMatchEvent = new OptaMatchEvent();
+
+                LinkedHashMap matchObject = (LinkedHashMap)match;
+                LinkedHashMap matchInfo = (LinkedHashMap) matchObject.get("MatchInfo");
+                myOptaMatchEvent.id = (String) matchObject.get("uID");
+                myOptaMatchEvent.lastModified = parseDate((String) matchObject.get("last_modified"));
+                myOptaMatchEvent.matchDate = parseDate((String) matchInfo.get("Date"));
+                myOptaMatchEvent.competitionId = competitionId;
+                myOptaMatchEvent.seasonId = seasonId;
+                myOptaMatchEvent.seasonName = seasonName;
+                myOptaMatchEvent.competitionName = competitionName;
+                myOptaMatchEvent.timeZone = (String) matchInfo.get("TZ");
+                ArrayList teams = matchObject.containsKey("TeamData")? (ArrayList)matchObject.get("TeamData"): null;
+                if (teams != null)
+                    for (Object team: teams){
+                        if (((LinkedHashMap)team).get("Side").equals("Home")) {
+                            myOptaMatchEvent.homeTeamId = (String) ((LinkedHashMap)team).get("TeamRef");
+                        } else {
+                            myOptaMatchEvent.awayTeamId = (String) ((LinkedHashMap)team).get("TeamRef");
+                        }
+
+                    }
+                Model.optaMatchEvents().insert(myOptaMatchEvent);
+            }
+
+        }
+    }
+
     public static void processF9(BasicDBObject f9){
         ArrayList teams = new ArrayList();
         LinkedHashMap myF9 = (LinkedHashMap)f9.get("SoccerFeed");
         myF9 = (LinkedHashMap)myF9.get("SoccerDocument");
         if (myF9.containsKey("Team")) {
-            teams = (ArrayList)myF9.get("Team");
-        }else{
-            if (myF9.containsKey("Match")){ //TODO: Aserciones
-                LinkedHashMap match = (LinkedHashMap)(myF9.get("Match"));
-                teams = (ArrayList)match.get("Team");
-            }
-            else{
+            teams = (ArrayList) myF9.get("Team");
+        } else {
+            if (myF9.containsKey("Match")) { //TODO: Aserciones
+                LinkedHashMap match = (LinkedHashMap) (myF9.get("Match"));
+                teams = (ArrayList) match.get("Team");
+            } else {
                 System.out.println("no match");
             }
         }

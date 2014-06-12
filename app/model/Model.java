@@ -37,6 +37,7 @@ public class Model {
     static public MongoCollection optaEvents() { return _jongo.getCollection("optaEvents"); }
     static public MongoCollection optaPlayers() { return _jongo.getCollection("optaPlayers"); }
     static public MongoCollection optaTeams() { return _jongo.getCollection("optaTeams"); }
+    static public MongoCollection optaMatchEvents() { return _jongo.getCollection("optaMatchEvents"); }
     static public MongoCollection pointsTranslation() { return _jongo.getCollection("pointsTranslation"); }
     static public MongoCollection fantasyPoints() { return _jongo.getCollection("fantasyPoints"); }
 
@@ -121,6 +122,7 @@ public class Model {
         optaEvents.createIndex(new BasicDBObject("playerId", 1));
         DBCollection optaPlayers = theMongoDB.getCollection("optaPlayers");
         DBCollection optaTeams = theMongoDB.getCollection("optaTeams");
+        DBCollection optaMatchEvents = theMongoDB.getCollection("optaMatchEvents");
         DBCollection pointsTranslation = theMongoDB.getCollection("pointsTranslation");
         pointsTranslation.createIndex(new BasicDBObject("eventCode", 1));
         DBCollection fantasyPoints = theMongoDB.getCollection("fantasyPoints");
