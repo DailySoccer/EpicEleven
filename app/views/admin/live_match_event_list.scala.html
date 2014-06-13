@@ -23,7 +23,7 @@
             <td>
                 <a href="@routes.AdminController.templateMatchEvent(p.templateMatchEventId.toString())">
                     @p.soccerTeamA.name vS @p.soccerTeamB.name</a></td>
-            <td>@p.startDate</td>
+            <td>@p.startDate.format("yyyy/MM/dd hh:mm:ss")</td>
         </tr>
         }
         </tbody>
