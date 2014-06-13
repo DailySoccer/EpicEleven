@@ -471,18 +471,20 @@ public class OptaHttpController extends Controller {
                     LinkedHashMap playerObject = (LinkedHashMap) player;
                     String playerId = (String) playerObject.get("uID");
                     // First search if player already exists:
-                    OptaPlayer dbplayer = Model.optaPlayers().findOne("{id: #}", playerId).as(OptaPlayer.class);
-                    if (dbplayer != null) {
-                        if (!((dbplayer.position == (String) playerObject.get("Position")) &&
-                              (dbplayer.name == (String) playerObject.get("Name")) &&
-                              (dbplayer.teamName == (String) teamObject.get("Name")) &&
-                              (dbplayer.teamId == (String) teamObject.get("uID")))) {
+                    if (playerId != null){
+                        OptaPlayer dbplayer = Model.optaPlayers().findOne("{id: #}", playerId).as(OptaPlayer.class);
+                        if (dbplayer != null) {
+                            if (!((dbplayer.position == (String) playerObject.get("Position")) &&
+                                    (dbplayer.name == (String) playerObject.get("Name")) &&
+                                    (dbplayer.teamName == (String) teamObject.get("Name")) &&
+                                    (dbplayer.teamId == (String) teamObject.get("uID")))) {
+                                OptaPlayer myPlayer = createPlayer(playerObject, teamObject);
+                                Model.optaPlayers().update("{id: #}", playerId).with(myPlayer);
+                            }
+                        } else {
                             OptaPlayer myPlayer = createPlayer(playerObject, teamObject);
-                            Model.optaPlayers().update("{id: #}", playerId).with(myPlayer);
+                            Model.optaPlayers().insert(myPlayer);
                         }
-                    } else {
-                        OptaPlayer myPlayer = createPlayer(playerObject, teamObject);
-                        Model.optaPlayers().insert(myPlayer);
                     }
                 }
             }
