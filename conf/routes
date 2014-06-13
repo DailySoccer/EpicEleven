@@ -29,7 +29,6 @@ POST    /set_live_fantasy_points/:soccerPlayerId/:points    controllers.ContestC
 GET     /parse_fantasy              controllers.OptaHttpController.parseFantasy()
 GET     /parse_events               controllers.OptaHttpController.parseEvents()
 GET     /parse_f1                   controllers.OptaHttpController.parseF1()
-GET     /create_points_translation  controllers.OptaHttpController.createPointsTranslation()
 GET     /player                     controllers.OptaHttpController.playersPoints()
 GET     /player/:player             controllers.OptaHttpController.playerPoints(player: Int)
 
@@ -42,14 +41,17 @@ GET     /admin/create_mockdata_contests             controllers.AdminController.
 GET     /admin/import_teams_and_soccers             controllers.AdminController.importTeamsAndSoccers()
 GET     /admin/import_match_events                  controllers.AdminController.importMatchEvents()
 
+GET     /admin/points_translation/create            controllers.AdminController.createPointsTranslation()
+GET     /admin/points_translations                  controllers.AdminController.pointsTranslations()
+
 GET     /admin/lobby                                controllers.AdminController.lobby()
 
 GET     /admin/users                                controllers.AdminController.users()
 
 GET     /admin/live_match_events                    controllers.AdminController.liveMatchEvents()
 
-GET     /admin/create_contest_entry                 controllers.AdminController.createContestEntry()
-POST    /admin/create_contest_entry                 controllers.AdminController.submitContestEntry()
+GET     /admin/contest_entry/add                    controllers.AdminController.addContestEntry()
+POST    /admin/contest_entry/add                    controllers.AdminController.submitContestEntry()
 GET     /admin/contest_entries                      controllers.AdminController.contestEntries()
 
 GET     /admin/contests                             controllers.AdminController.contests()
@@ -57,11 +59,11 @@ GET     /admin/contest/instantiate                  controllers.AdminController.
 GET     /admin/contest/:contestId                   controllers.AdminController.contest(contestId : String)
 
 GET     /admin/template_contests                    controllers.AdminController.templateContests()
-GET     /admin/template_contest/generate            controllers.AdminController.generateTemplateContest()
+GET     /admin/template_contest/create              controllers.AdminController.createTemplateContest()
 GET     /admin/template_contest/:templateContestId  controllers.AdminController.templateContest(templateContestId : String)
 
 GET     /admin/template_match_events                controllers.AdminController.templateMatchEvents()
-GET     /admin/template_match_event/generate        controllers.AdminController.generateTemplateMatchEvent()
+GET     /admin/template_match_event/create          controllers.AdminController.createTemplateMatchEvent()
 GET     /admin/template_match_event/:templateMatchEventId       controllers.AdminController.templateMatchEvent(templateMatchEventId : String)
 
 GET     /admin/template_soccer_teams                controllers.AdminController.templateSoccerTeams()

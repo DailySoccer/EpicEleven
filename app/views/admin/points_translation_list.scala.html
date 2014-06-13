@@ -1,0 +1,35 @@
+@(points_translation: List[model.PointsTranslation])
+
+@main("Contests - Admin") {
+
+<h1 class="page-header">Contests</h1>
+
+<a href="@routes.AdminController.createPointsTranslation"><button class="btn btn-success">Create Points Translation</button></a>
+
+<h2 class="sub-header"></h2>
+<div class="table-responsive">
+    <table id="table_id" class="table table-striped">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Event Type</th>
+            <th>Points</th>
+            <th>Timestamp</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(p <- points_translation) {
+        <tr>
+            <td>@p._id</td>
+            <td>@p.eventTypeId</td>
+            <td>@p.points</td>
+            <td>@p.timestamp</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<a href='@routes.AdminController.dashBoard'>Back to Dashboard</a>
+
+}

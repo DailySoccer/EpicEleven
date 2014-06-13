@@ -85,15 +85,56 @@ public class AdminController extends Controller {
         return ok(views.html.admin.live_match_event_list.render(liveMatchEventList));
     }
 
-    public static Result createContestEntry() {
+    public static Result createPointsTranslation(){
+        int[][] pointsTable = {{1, 2},
+                {3, 10},
+                {4, 15},
+                {7, 15},
+                {8, 15},
+                {10, 20},
+                {11, 20},
+                {12, 10},
+                {13, 20},
+                {14, 20},
+                {15, 20},
+                {16, 100},
+                {17, -50},
+                {41, 10},
+                {50, -20},
+                {51, -20},
+                {72, -5},
+                {1004, -5},
+                {1017, -200}};
+        for (int i = 0; i < pointsTable.length; i++){
+            PointsTranslation myPointsTranslation = new PointsTranslation();
+            myPointsTranslation.eventTypeId = pointsTable[i][0];
+            PointsTranslation pointsTranslation = Model.pointsTranslation().findOne("{eventTypeId: #}", myPointsTranslation.eventTypeId).as(PointsTranslation.class);
+            if (pointsTranslation == null){
+                myPointsTranslation.unixtimestamp = 0L;
+                myPointsTranslation.timestamp = new Date(myPointsTranslation.unixtimestamp);
+                myPointsTranslation.points = pointsTable[i][1];
+                Model.pointsTranslation().insert(myPointsTranslation);
+            }
+        }
+        return redirect(routes.AdminController.pointsTranslations());
+    }
+
+    public static Result pointsTranslations() {
+        Iterable<PointsTranslation> pointsTranslationsResults = Model.pointsTranslation().find().as(PointsTranslation.class);
+        List<PointsTranslation> pointsTranslationsList = ListUtils.listFromIterator(pointsTranslationsResults.iterator());
+
+        return ok(views.html.admin.points_translation_list.render(pointsTranslationsList));
+    }
+
+    public static Result addContestEntry() {
         Form<ContestEntryForm> contestEntryForm = Form.form(ContestEntryForm.class);
-        return ok(views.html.admin.contest_entry_create.render(contestEntryForm));
+        return ok(views.html.admin.contest_entry_add.render(contestEntryForm));
     }
 
     public static Result submitContestEntry() {
         Form<ContestEntryForm> contestEntryForm = form(ContestEntryForm.class).bindFromRequest();
         if (contestEntryForm.hasErrors()) {
-            return badRequest(views.html.admin.contest_entry_create.render(contestEntryForm));
+            return badRequest(views.html.admin.contest_entry_add.render(contestEntryForm));
         }
 
         ContestEntryForm params = contestEntryForm.get();
@@ -106,7 +147,7 @@ public class AdminController extends Controller {
 
         boolean success = ContestController.createContestEntryFromOptaIds(params.userId, params.contestId, params.getTeam());
         if ( !success ) {
-            return badRequest(views.html.admin.contest_entry_create.render(contestEntryForm));
+            return badRequest(views.html.admin.contest_entry_add.render(contestEntryForm));
         }
 
         return redirect(routes.AdminController.contestEntries());
@@ -153,7 +194,7 @@ public class AdminController extends Controller {
         return TODO;
     }
 
-    public static Result generateTemplateContest() {
+    public static Result createTemplateContest() {
         //TODO: En que fecha tendriamos que generar el contest?
         DateTime currentCreationDay =  new DateTime(2014, 10, 14, 12, 0, DateTimeZone.UTC);
 
@@ -175,7 +216,7 @@ public class AdminController extends Controller {
         return ok(views.html.admin.template_match_event.render(templateMatchEvent));
     }
 
-    public static Result generateTemplateMatchEvent() {
+    public static Result createTemplateMatchEvent() {
         //TODO: En que fecha tendriamos que generar el partido?
         DateTime currentCreationDay =  new DateTime(2014, 10, 14, 12, 0, DateTimeZone.UTC);
 
