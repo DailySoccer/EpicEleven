@@ -104,6 +104,21 @@ public class Model {
         }
     }
 
+    static private void clearDB(DB theMongoDB) {
+        // Indicamos las collections a borrar (no incluidas como "contestCollection"
+        final String[] collectionNames = {
+                "users",
+                "sessions"
+        };
+
+        // Eliminar las collections genericas
+        for (String name : collectionNames) {
+            theMongoDB.getCollection(name).drop();
+        }
+
+        clearContestsDB(theMongoDB);
+    }
+
     static private void ensureDB(DB theMongoDB) {
         DBCollection users = theMongoDB.getCollection("users");
 
@@ -132,7 +147,7 @@ public class Model {
     }
 
     static public void resetDB() {
-        _mongoDB.dropDatabase();
+        clearDB(_mongoDB);
         ensureDB(_mongoDB);
     }
 
@@ -274,6 +289,7 @@ public class Model {
      * @param soccerPlayer Futbolista
      */
     static public void updateLiveFantasyPoints(SoccerPlayer soccerPlayer) {
+        //TODO: ¿ $sum (aggregation) ?
         // Obtener sus fantasy points actuales
         Iterable<OptaEvent> optaEventResults = optaEvents().find("{optaPlayerId: #",
                 soccerPlayer.optaPlayerId).as(OptaEvent.class);
