@@ -67,23 +67,27 @@ public class OptaHttpController extends Controller {
             processFantasy(bodyAsJSON);
         }
         */
-        String feedtype = null;
+        String feedType = null;
         if (request().headers().containsKey("X-Meta-Feed-Type")) {
-            feedtype = request().headers().get("X-Meta-Feed-Type")[0];
-
-            if (feedtype.equals("F9")){
-                processF9(bodyAsJSON);
-            }
-            else if (feedtype.equals("F24")){
-                processEvents(bodyAsJSON);
-            }
-            else if (feedtype.equals("F1")){
-                processF1(bodyAsJSON);
-            }
+            feedType = request().headers().get("X-Meta-Feed-Type")[0];
+            processOptaDBInput(feedType, bodyAsJSON);
         }
         return ok("Yeah, XML processed");
     }
 
+
+    public static void processOptaDBInput(String feedType, BasicDBObject requestBody){
+        if (feedType.equals("F9")){
+            processF9(requestBody);
+        }
+        else if (feedType.equals("F24")){
+            processEvents(requestBody);
+        }
+        else if (feedType.equals("F1")){
+            processF1(requestBody);
+        }
+
+    }
 
     public static void processEvents(BasicDBObject gamesObj){
         LinkedHashMap games = (LinkedHashMap)gamesObj.get("Games");
