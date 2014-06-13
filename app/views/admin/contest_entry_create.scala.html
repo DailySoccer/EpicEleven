@@ -1,5 +1,14 @@
 @(contestEntryForm: Form[views.admin.formData.ContestEntryForm])
 
+@implicitFlashMessage = @{
+    if(contestEntryForm.hasErrors) {
+        model.FlashMessage.danger("Contest Entry Form has errors")
+    }
+    else {
+        null
+    }
+}
+
 @input_text(field: Field, _placeholder: String = "", _class: String = "") = {
     <input id="@field.name" name="@field.name" type="text" placeholder="@_placeholder" class="@_class @if(field.hasErrors) {has-error}" required="" value="@field.value">
     @if(field.hasErrors) {
@@ -10,12 +19,6 @@
 @main("Contest Entry - Admin") {
 
 <h1 class="page-header">Contest Entry</h1>
-
-@if(contestEntryForm.hasErrors) {
-<div class="tab-content">
-    <p class="bg-primary tab-pane fade in active"> -> Contest Entry Form has errors</p>
-</div>
-}
 
 <h2 class="sub-header"></h2>
 

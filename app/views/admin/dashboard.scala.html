@@ -1,12 +1,10 @@
-@(message: String)
+@(message: model.FlashMessage)
+
+@implicitFlashMessage = @{ message }
 
 @main("DailySoccer - Admin") {
 
 <h1 class="page-header">Dashboard</h1>
-
-<div class="tab-content">
-<p class="bg-primary tab-pane fade in active">@message</p>
-</div>
 
 <div>
     <a href="@routes.AdminController.resetDB"><button class="btn btn-danger">Reset DB</button></a>

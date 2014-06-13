@@ -1,4 +1,14 @@
-@(title: String)(content: Html)
+@(title: String)(content: Html)(implicit message: model.FlashMessage = null)
+
+@flash_message() = {
+    @if(message !=null) {
+    @if(!message.text.isEmpty) {
+    <div class="alert alert-@message.alertType alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <span class="">@message.text</span>
+    </div>
+    }}
+}
 
 <!DOCTYPE html>
 
@@ -90,6 +100,7 @@
             </ul>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            @flash_message
             @content
         </div>
     </div>

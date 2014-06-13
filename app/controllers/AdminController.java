@@ -27,39 +27,39 @@ import views.admin.formData.*;
 public class AdminController extends Controller {
     public static Result resetDB() {
         Model.resetDB();
-        return ok(views.html.admin.dashboard.render("> Reset DB: OK"));
+        return ok(views.html.admin.dashboard.render(FlashMessage.success("Reset DB: OK")));
     }
 
     public static Result createMockDataDB() {
         Model.resetDB();
         MockData.ensureMockDataAll();
-        return ok(views.html.admin.dashboard.render("> Reset DB with Mock Data"));
+        return ok(views.html.admin.dashboard.render(FlashMessage.success("Reset DB with Mock Data")));
     }
 
     public static Result resetContests() {
         Model.resetContests();
-        return ok(views.html.admin.dashboard.render("> Reset Contests: OK"));
+        return ok(views.html.admin.dashboard.render(FlashMessage.success("Reset Contests: OK")));
     }
 
     public static Result createMockDataContests() {
         Model.resetContests();
         MockData.ensureMockDataContests();
-        return ok(views.html.admin.dashboard.render("> Reset Contests with Mock data: OK"));
+        return ok(views.html.admin.dashboard.render(FlashMessage.success("Reset Contests with Mock data: OK")));
     }
 
     public static Result importTeamsAndSoccers() {
         Model.resetContests();
         Model.importTeamsAndSoccersFromOptaDB();
-        return ok(views.html.admin.dashboard.render("> Import Teams & Soccers: OK"));
+        return ok(views.html.admin.dashboard.render(FlashMessage.success("Import Teams & Soccers: OK")));
     }
 
     public static Result importMatchEvents() {
         Model.importMatchEventsFromOptaDB();
-        return ok(views.html.admin.dashboard.render("> Import Match Events: OK"));
+        return ok(views.html.admin.dashboard.render(FlashMessage.success("Import Match Events: OK")));
     }
 
     public static Result dashBoard() {
-        return ok(views.html.admin.dashboard.render(""));
+        return ok(views.html.admin.dashboard.render(null));
     }
 
     public static Result lobby() {
