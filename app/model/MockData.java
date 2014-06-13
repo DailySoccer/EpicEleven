@@ -21,6 +21,39 @@ public final class MockData {
         instantiateContests();
     }
 
+    public static void createPointsTranslation() {
+        int[][] pointsTable = {{1, 2},
+                {3, 10},
+                {4, 15},
+                {7, 15},
+                {8, 15},
+                {10, 20},
+                {11, 20},
+                {12, 10},
+                {13, 20},
+                {14, 20},
+                {15, 20},
+                {16, 100},
+                {17, -50},
+                {41, 10},
+                {50, -20},
+                {51, -20},
+                {72, -5},
+                {1004, -5},
+                {1017, -200}};
+        for (int i = 0; i < pointsTable.length; i++){
+            PointsTranslation myPointsTranslation = new PointsTranslation();
+            myPointsTranslation.eventTypeId = pointsTable[i][0];
+            PointsTranslation pointsTranslation = Model.pointsTranslation().findOne("{eventTypeId: #}", myPointsTranslation.eventTypeId).as(PointsTranslation.class);
+            if (pointsTranslation == null){
+                myPointsTranslation.unixtimestamp = 0L;
+                myPointsTranslation.timestamp = new Date(myPointsTranslation.unixtimestamp);
+                myPointsTranslation.points = pointsTable[i][1];
+                Model.pointsTranslation().insert(myPointsTranslation);
+            }
+        }
+    }
+
     static private void createTemplateSoccerTeamsAndPlayers() {
         FieldPos[] pos = new FieldPos[] { FieldPos.GOALKEEPER,
                                           FieldPos.DEFENSE, FieldPos.DEFENSE, FieldPos.DEFENSE, FieldPos.DEFENSE,
