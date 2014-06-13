@@ -10,6 +10,8 @@ public class TemplateMatchEvent {
     @Id
     public ObjectId templateMatchEventId;
 
+    public String optaMatchEventId;
+
     public SoccerTeam soccerTeamA;
     public SoccerTeam soccerTeamB;
 

@@ -206,7 +206,7 @@ public class Model {
                 TemplateSoccerTeam teamA = templateSoccerTeams().findOne("{optaTeamId: #}", optaMatch.homeTeamId).as(TemplateSoccerTeam.class);
                 TemplateSoccerTeam teamB = templateSoccerTeams().findOne("{optaTeamId: #}", optaMatch.awayTeamId).as(TemplateSoccerTeam.class);
                 if (teamA != null && teamB != null) {
-                    createTemplateMatchEvent(teamA, teamB, optaMatch.matchDate);
+                    createTemplateMatchEvent(optaMatch.id, teamA, teamB, optaMatch.matchDate);
                 }
                 else {
                     Logger.info("Ignorando OptaMatchEvent: {} ({})", optaMatch.id, optaMatch.matchDate);
@@ -227,10 +227,15 @@ public class Model {
      * @return El template match event creado
      */
     static public TemplateMatchEvent createTemplateMatchEvent(TemplateSoccerTeam teamA, TemplateSoccerTeam teamB, Date startDate) {
+        return createTemplateMatchEvent(null, teamA, teamB, startDate);
+    }
+
+    static public TemplateMatchEvent createTemplateMatchEvent(String optaMatchEventId, TemplateSoccerTeam teamA, TemplateSoccerTeam teamB, Date startDate) {
         Logger.info("Template MatchEvent: {} vs {} ({})", teamA.name, teamB.name, startDate);
 
         TemplateMatchEvent templateMatchEvent = new TemplateMatchEvent();
         templateMatchEvent.startDate = startDate;
+        templateMatchEvent.optaMatchEventId = optaMatchEventId;
 
         // setup Team A (incrustando a los futbolistas en el equipo)
         SoccerTeam newTeamA = new SoccerTeam();
@@ -252,7 +257,13 @@ public class Model {
         }
         templateMatchEvent.soccerTeamB = newTeamB;
 
-        Model.templateMatchEvents().insert(templateMatchEvent);
+        if (optaMatchEventId != null) {
+            // Insertar o actualizar
+            Model.templateMatchEvents().update("{optaMatchEventId: #}", optaMatchEventId).upsert().with(templateMatchEvent);
+        }
+        else {
+            Model.templateMatchEvents().insert(templateMatchEvent);
+        }
 
         return templateMatchEvent;
     }
