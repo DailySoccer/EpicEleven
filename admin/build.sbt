@@ -1,6 +1,6 @@
-name := "backend"
+name := "admin"
 
-version := "1.0-SNAPSHOT"
+//version := "1.0-SNAPSHOT"
 
 libraryDependencies ++= Seq(
   cache,
@@ -15,12 +15,5 @@ libraryDependencies ++= Seq(
 
 resolvers += "saucelabs-repository" at "http://repository-saucelabs.forge.cloudbees.com/release"
 
+
 play.Project.playJavaSettings
-
-
-
-// http://www.scala-sbt.org/release/tutorial/Multi-Project.html
-// http://www.playframework.com/documentation/2.3.x/SBTSubProjects
-lazy val backend = (project in file(".")).aggregate(admin)
-
-lazy val admin = (project in file("admin/"))

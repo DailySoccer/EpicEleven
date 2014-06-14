@@ -1,29 +1,17 @@
 package controllers;
 
-import model.*;
-import model.opta.*;
-import com.fasterxml.jackson.databind.JsonNode;
-import org.bson.types.ObjectId;
-import java.util.Date;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
-import play.data.Form;
-import play.data.validation.Constraints;
-import play.data.validation.ValidationError;
 
-import static play.data.Form.form;
 
-import utils.*;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+public class AdminController extends Controller {
 
-import views.admin.formData.*;
+    public static Result resetDB() {
+        return ok("Hello world");
+    }
+}
 
+/*
 public class AdminController extends Controller {
     public static Result resetDB() {
         Model.resetDB();

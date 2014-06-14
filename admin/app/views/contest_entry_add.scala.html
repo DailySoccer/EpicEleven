@@ -9,7 +9,7 @@
     }
 }
 
-@input_text(field: Field, _placeholder: String = "", _class: String = "") = {
+@input_text(field: Field, _placeholder: String = "../../../public", _class: String = "../../../public") = {
     <input id="@field.name" name="@field.name" type="text" placeholder="@_placeholder" class="@_class @if(field.hasErrors) {has-error}" required="" value="@field.value">
     @if(field.hasErrors) {
         <span class="help-block">@{field.error.map { error => error.message }}</span>

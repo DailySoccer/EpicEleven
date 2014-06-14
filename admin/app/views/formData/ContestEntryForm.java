@@ -1,4 +1,4 @@
-package views.admin.formData;
+package views.formData;
 
 import model.*;
 import model.opta.*;

@@ -1,10 +1,8 @@
-# Routes
-# This file defines all application routes (Higher priority routes first)
-# ~~~~
-
 GET     /test                       controllers.MainController.test()
 GET     /ping                       controllers.MainController.ping()
 GET     /jsontest					controllers.MainController.jsonTest()
+
+# ->      /admin                      admin.routes
 
 POST    /login                      controllers.LoginController.login()
 POST    /signup 					controllers.LoginController.signup()
@@ -15,71 +13,31 @@ GET     /get_active_match_events    controllers.ContestController.getActiveMatch
 POST    /add_contest_entry          controllers.ContestController.addContestEntry()
 POST    /add_contest_entry/opta     controllers.ContestController.addContestEntryFromOptaIds()
 
-# LIVE
-GET     /get_live_match_events/template_contest/:contest    controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)
-POST    /get_live_match_events/match_events                 controllers.ContestController.getLiveMatchEventsFromMatchEvents()
-GET     /get_live_contest_entries/:contest                  controllers.ContestController.getLiveContestEntries(contest)
-# LIVE END
 
-# TEST
-POST    /live_fantasy_points/match_events                   controllers.ContestController.updateLiveFantasyPoints()
-POST    /set_live_fantasy_points/:soccerPlayerId/:points    controllers.ContestController.setLiveFantasyPointsOfSoccerPlayer(soccerPlayerId, points)
-# TEST END
+# Live
+GET     /get_live_match_events/template_contest/:contest controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)
+POST    /get_live_match_events/match_events              controllers.ContestController.getLiveMatchEventsFromMatchEvents()
+GET     /get_live_contest_entries/:contest               controllers.ContestController.getLiveContestEntries(contest)
 
+
+# Test
+POST    /live_fantasy_points/match_events                controllers.ContestController.updateLiveFantasyPoints()
+POST    /set_live_fantasy_points/:soccerPlayerId/:points controllers.ContestController.setLiveFantasyPointsOfSoccerPlayer(soccerPlayerId, points)
+
+
+# Opta
 GET     /parse_fantasy              controllers.OptaHttpController.parseFantasy()
 GET     /parse_events               controllers.OptaHttpController.parseEvents()
 GET     /parse_f1                   controllers.OptaHttpController.parseF1()
 GET     /player                     controllers.OptaHttpController.playersPoints()
 GET     /player/:player             controllers.OptaHttpController.playerPoints(player: Int)
 
-# ADMIN
-GET     /admin                                      controllers.AdminController.dashBoard()
-GET     /admin/reset_db                              controllers.AdminController.resetDB()
-GET     /admin/create_mockdata_db                   controllers.AdminController.createMockDataDB()
-GET     /admin/reset_contests                       controllers.AdminController.resetContests()
-GET     /admin/create_mockdata_contests             controllers.AdminController.createMockDataContests()
-GET     /admin/import_teams_and_soccers             controllers.AdminController.importTeamsAndSoccers()
-GET     /admin/import_match_events                  controllers.AdminController.importMatchEvents()
-
-GET     /admin/points_translation/create            controllers.AdminController.createPointsTranslation()
-GET     /admin/points_translations                  controllers.AdminController.pointsTranslations()
-
-GET     /admin/lobby                                controllers.AdminController.lobby()
-
-GET     /admin/users                                controllers.AdminController.users()
-
-GET     /admin/live_match_events                    controllers.AdminController.liveMatchEvents()
-
-GET     /admin/contest_entry/add                    controllers.AdminController.addContestEntry()
-POST    /admin/contest_entry/add                    controllers.AdminController.submitContestEntry()
-GET     /admin/contest_entries                      controllers.AdminController.contestEntries()
-
-GET     /admin/contests                             controllers.AdminController.contests()
-GET     /admin/contest/instantiate                  controllers.AdminController.instantiateContests()
-GET     /admin/contest/:contestId                   controllers.AdminController.contest(contestId : String)
-
-GET     /admin/template_contests                    controllers.AdminController.templateContests()
-GET     /admin/template_contest/create              controllers.AdminController.createTemplateContest()
-GET     /admin/template_contest/:templateContestId  controllers.AdminController.templateContest(templateContestId : String)
-
-GET     /admin/template_match_events                controllers.AdminController.templateMatchEvents()
-GET     /admin/template_match_event/create          controllers.AdminController.createTemplateMatchEvent()
-GET     /admin/template_match_event/:templateMatchEventId       controllers.AdminController.templateMatchEvent(templateMatchEventId : String)
-
-GET     /admin/template_soccer_teams                controllers.AdminController.templateSoccerTeams()
-GET     /admin/template_soccer_team/:templateSoccerTeam         controllers.AdminController.templateSoccerTeam(templateSoccerTeam : String)
-
-GET     /admin/template_soccer_players              controllers.AdminController.templateSoccerPlayers()
-
-GET     /admin/opta_soccer_players                  controllers.AdminController.optaSoccerPlayers()
-GET     /admin/opta_soccer_teams                    controllers.AdminController.optaSoccerTeams()
-GET     /admin/opta_match_events                    controllers.AdminController.optaMatchEvents()
-# ADMIN END
-
 GET     /get_xml                    controllers.OptaHttpController.getXML()
 GET     /import_xml                 controllers.OptaHttpController.importXML()
 POST    /opta                       controllers.OptaHttpController.optaXmlInput()
 
+
+# Static assets
 GET     /                           controllers.Assets.at(path="/public", file="index.html")
 GET     /*file               		controllers.Assets.at(path="/public", file)
 
