@@ -1,10 +1,11 @@
 @(points_translation: List[model.PointsTranslation])
 
+
 @main("Contests - Admin") {
 
 <h1 class="page-header">Contests</h1>
 
-<a href="@admin.routes.AdminController.createPointsTranslation"><button class="btn btn-success">Create Points Translation</button></a>
+<a href="@AdminController.createPointsTranslation"><button class="btn btn-success">Create Points Translation</button></a>
 
 <h2 class="sub-header"></h2>
 <div class="table-responsive">
@@ -30,6 +31,6 @@
     </table>
 </div>
 
-<a href='@admin.routes.AdminController.dashBoard'>Back to Dashboard</a>
+<a href='@AdminController.dashBoard'>Back to Dashboard</a>
 
 }

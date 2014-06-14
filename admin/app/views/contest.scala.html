@@ -1,5 +1,6 @@
 @(contest: model.Contest, map: Map[Integer, String])
 
+
 @main("Contest - Admin") {
 
 <h1 class="page-header">Contest: @contest.name</h1>
@@ -7,6 +8,6 @@
 <p>@map(0)</p>
 <p>@map(1)</p>
 
-<a href='@admin.routes.AdminController.contests'>Back to Contests</a>
+<a href='AdminController.contests'>Back to Contests</a>
 
 }

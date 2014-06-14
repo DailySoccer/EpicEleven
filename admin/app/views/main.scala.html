@@ -1,5 +1,6 @@
 @(title: String)(content: Html)(implicit message: controllers.admin.FlashMessage = null)
 
+
 @flash_message() = {
     @if(message !=null) {
         @if(!message.text.isEmpty) {
@@ -60,7 +61,7 @@
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="@admin.routes.AdminController.dashBoard">Dashboard</a></li>
+                <li><a href="@AdminController.dashBoard">Dashboard</a></li>
                 <li><a href="#">Settings</a></li>
                 <li><a href="#">Profile</a></li>
                 <li><a href="#">Help</a></li>
@@ -76,29 +77,29 @@
     <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
             <ul class="nav nav-sidebar">
-                <li class="active"><a href="@admin.routes.AdminController.dashBoard">Overview</a></li>
+                <li class="active"><a href="@AdminController.dashBoard">Overview</a></li>
                 <!--li><a href="#">Reports</a></li>
                 <li><a href="#">Analytics</a></li>
                 <li><a href="#">Export</a></li-->
             </ul>
             <ul class="nav nav-sidebar">
-                <li><a href="@admin.routes.AdminController.lobby">Lobby</a></li>
-                <li><a href="@admin.routes.AdminController.users">Users</a></li>
-                <li><a href="@admin.routes.AdminController.liveMatchEvents">Live Match Events</a></li>
-                <li><a href="@admin.routes.AdminController.pointsTranslations">Points Translations</a></li>
-                <li><a href="@admin.routes.AdminController.contestEntries">Contest Entries</a></li>
-                <li><a href="@admin.routes.AdminController.contests">Contests</a></li>
+                <li><a href="@AdminController.lobby">Lobby</a></li>
+                <li><a href="@AdminController.users">Users</a></li>
+                <li><a href="@AdminController.liveMatchEvents">Live Match Events</a></li>
+                <li><a href="@AdminController.pointsTranslations">Points Translations</a></li>
+                <li><a href="@AdminController.contestEntries">Contest Entries</a></li>
+                <li><a href="@AdminController.contests">Contests</a></li>
             </ul>
             <ul class="nav nav-sidebar">
-                <li><a href="@admin.routes.AdminController.templateContests">Template Contests</a></li>
-                <li><a href="@admin.routes.AdminController.templateMatchEvents">Template Match Events</a></li>
-                <li><a href="@admin.routes.AdminController.templateSoccerTeams">Template Soccer Teams</a></li>
-                <li><a href="@admin.routes.AdminController.templateSoccerPlayers">Template Soccer Players</a></li>
+                <li><a href="@AdminController.templateContests">Template Contests</a></li>
+                <li><a href="@AdminController.templateMatchEvents">Template Match Events</a></li>
+                <li><a href="@AdminController.templateSoccerTeams">Template Soccer Teams</a></li>
+                <li><a href="@AdminController.templateSoccerPlayers">Template Soccer Players</a></li>
             </ul>
             <ul class="nav nav-sidebar">
-                <li><a href="@admin.routes.AdminController.optaSoccerPlayers">Opta Players</a></li>
-                <li><a href="@admin.routes.AdminController.optaSoccerTeams">Opta Teams</a></li>
-                <li><a href="@admin.routes.AdminController.optaMatchEvents">Opta Match Events</a></li>
+                <li><a href="@AdminController.optaSoccerPlayers">Opta Players</a></li>
+                <li><a href="@AdminController.optaSoccerTeams">Opta Teams</a></li>
+                <li><a href="@AdminController.optaMatchEvents">Opta Match Events</a></li>
             </ul>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">

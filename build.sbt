@@ -8,6 +8,8 @@ name := "backend"
 
 version := "1.0-SNAPSHOT"
 
+play.Project.playJavaSettings
+
 libraryDependencies ++= Seq(
   cache,
   filters,
@@ -20,8 +22,6 @@ libraryDependencies ++= Seq(
 )
 
 resolvers += "saucelabs-repository" at "http://repository-saucelabs.forge.cloudbees.com/release"
-
-play.Project.playJavaSettings
 
 // Definimos nuestros projectos y las dependencias entre ellos
 lazy val common = project

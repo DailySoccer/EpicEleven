@@ -20,10 +20,10 @@
         @for(p <- contests) {
         <tr>
             <td>@p.contestId</td>
-            <td><a href="@admin.routes.AdminController.contest(p.contestId.toString())">@p.name</a></td>
+            <td><a href="@AdminController.contest(p.contestId.toString())">@p.name</a></td>
             <td>@p.currentUserIds</td>
             <td>@p.maxUsers</td>
-            <td><a href="@admin.routes.AdminController.templateContest(p.templateContestId.toString())">
+            <td><a href="@AdminController.templateContest(p.templateContestId.toString())">
                 @templateMap(p.templateContestId).name (@p.templateContestId)</a></td>
         </tr>
         }
@@ -31,6 +31,6 @@
     </table>
 </div>
 
-<div><a href='@admin.routes.AdminController.dashBoard'>Back to Dashboard</a></div>
+<div><a href='@AdminController.dashBoard'>Back to Dashboard</a></div>
 
 }

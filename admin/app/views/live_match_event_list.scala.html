@@ -21,7 +21,7 @@
             <td>@p.liveMatchEventId</td>
             <td>@p.templateMatchEventId</td>
             <td>
-                <a href="@admin.routes.AdminController.templateMatchEvent(p.templateMatchEventId.toString())">
+                <a href="@AdminController.templateMatchEvent(p.templateMatchEventId.toString())">
                     @p.soccerTeamA.name vS @p.soccerTeamB.name</a></td>
             <td>@p.startDate.format("yyyy/MM/dd hh:mm:ss")</td>
         </tr>
@@ -30,6 +30,6 @@
     </table>
 </div>
 
-<a href='@admin.routes.AdminController.dashBoard'>Back to Dashboard</a>
+<a href='@AdminController.dashBoard'>Back to Dashboard</a>
 
 }

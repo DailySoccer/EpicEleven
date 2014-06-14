@@ -26,10 +26,6 @@ public class AdminController extends Controller {
         return ok(views.html.dashboard.render(null));
     }
 
-    public static Result quickTest() {
-        return ok(views.html.quick_test.render());
-    }
-
     public static Result resetDB() {
         Model.resetDB();
         return ok(views.html.dashboard.render(FlashMessage.success("Reset DB: OK")));

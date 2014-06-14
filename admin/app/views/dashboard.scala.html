@@ -1,5 +1,6 @@
 @(message: controllers.admin.FlashMessage)
 
+
 @implicitFlashMessage = @{message}
 
 @main("DailySoccer - Admin") {
@@ -7,20 +8,20 @@
 <h1 class="page-header">Dashboard</h1>
 
 <div>
-    <a href="@admin.routes.AdminController.resetDB"><button class="btn btn-danger">Reset DB</button></a>
-    <a href="@admin.routes.AdminController.createMockDataDB"><button class="btn btn-danger">Reset DB with Mock Data</button></a>
+    <a href="@AdminController.resetDB"><button class="btn btn-danger">Reset DB</button></a>
+    <a href="@AdminController.createMockDataDB"><button class="btn btn-danger">Reset DB with Mock Data</button></a>
 </div>
 <br/>
 <br/>
 <div>
-    <a href="@admin.routes.AdminController.resetContests"><button class="btn btn-danger">Reset Contests</button></a>
-    <a href="@admin.routes.AdminController.createMockDataContests"><button class="btn btn-danger">Reset Contests with Mock data</button></a>
+    <a href="@AdminController.resetContests"><button class="btn btn-danger">Reset Contests</button></a>
+    <a href="@AdminController.createMockDataContests"><button class="btn btn-danger">Reset Contests with Mock data</button></a>
 </div>
 <br/>
 <br/>
 <div>
-    <a href="@admin.routes.AdminController.importTeamsAndSoccers"><button class="btn btn-warning">Import Teams & Soccers</button></a>
-    <a href="@admin.routes.AdminController.importMatchEvents"><button class="btn btn-warning">Import MatchEvents</button></a>
+    <a href="@AdminController.importTeamsAndSoccers"><button class="btn btn-warning">Import Teams & Soccers</button></a>
+    <a href="@AdminController.importMatchEvents"><button class="btn btn-warning">Import MatchEvents</button></a>
 </div>
 
 <!--

@@ -1,5 +1,6 @@
 @(contestEntryForm: Form[controllers.admin.ContestEntryForm])
 
+
 @implicitFlashMessage = @{
     if(contestEntryForm.hasErrors) {
         controllers.admin.FlashMessage.danger("Contest Entry Form has errors")
@@ -22,7 +23,7 @@
 
 <h2 class="sub-header"></h2>
 
-@helper.form(action = admin.routes.AdminController.submitContestEntry, 'class -> "form-horizontal") {
+@helper.form(action = AdminController.submitContestEntry, 'class -> "form-horizontal") {
     <fieldset>
 
         <!-- Form Name -->
@@ -88,7 +89,7 @@
             <label class="control-label" for="ok"></label>
             <div class="controls">
                 <button id="ok" name="ok" class="btn btn-success">Create</button>
-                <a href="@admin.routes.AdminController.contestEntries" class="btn btn-danger">Cancel</a>
+                <a href="@AdminController.contestEntries" class="btn btn-danger">Cancel</a>
             </div>
         </div>
 
@@ -96,6 +97,6 @@
 }
 
 <br/>
-<a href='@admin.routes.AdminController.dashBoard'>Back to Dashboard</a>
+<a href='@AdminController.dashBoard'>Back to Dashboard</a>
 
 }

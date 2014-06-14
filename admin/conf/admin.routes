@@ -1,5 +1,4 @@
 GET         /                                                  controllers.admin.AdminController.dashBoard()
-GET         /quick_test                                        controllers.admin.AdminController.quickTest()
 
 GET         /reset_db                                          controllers.admin.AdminController.resetDB()
 GET         /create_mockdata_db                                controllers.admin.AdminController.createMockDataDB()
