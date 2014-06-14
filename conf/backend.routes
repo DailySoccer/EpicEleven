@@ -1,13 +1,13 @@
 GET     /test                       controllers.MainController.test()
 GET     /ping                       controllers.MainController.ping()
-GET     /jsontest					controllers.MainController.jsonTest()
+GET     /jsontest                   controllers.MainController.jsonTest()
 
 # Enganche de la zona de administracion
 ->      /admin                      admin.Routes
 
 # Login
 POST    /login                      controllers.LoginController.login()
-POST    /signup 					controllers.LoginController.signup()
+POST    /signup                     controllers.LoginController.signup()
 GET     /get_user_profile           controllers.LoginController.getUserProfile()
 
 # Active contests
@@ -39,5 +39,5 @@ POST    /opta                       controllers.OptaHttpController.optaXmlInput(
 
 # Static assets
 GET     /                           controllers.Assets.at(path="/public", file="index.html")
-GET     /*file               		controllers.Assets.at(path="/public", file)
+GET     /*file                      controllers.Assets.at(path="/public", file)
 

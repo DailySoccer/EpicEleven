@@ -8,6 +8,9 @@ import play.Logger;
 import play.Play;
 import org.bson.types.ObjectId;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -58,22 +61,43 @@ public class Model {
                 ensureDB(_mongoDB);
 
                 bIsInitialized = true;
-
-            } catch (Exception exc) {
+            }
+            catch (Exception exc) {
                 Logger.error("Error initializating MongoDB {}/{}: {}", mongoClientURI.getHosts(),
-                        mongoClientURI.getDatabase(), exc.toString());
+                                                                       mongoClientURI.getDatabase(), exc.toString());
 
-                // We try again in 10s
-                try {
-                    Logger.info("Trying to initialize MongoDB again in 10s...");
-                    Thread.sleep(10000);
-                } catch (InterruptedException intExc) {
-                    Logger.error("Interrupted");
+                if (exc instanceof MongoServerSelectionException && !Play.isProd()) {
+                    try {
+                        Logger.info("Mongodb seems to be off. Attempting to start it up.");
+                        LogInputStream(Runtime.getRuntime().exec("mongod run --config /usr/local/etc/mongod.conf"));
+                        WaitSeconds(2, "Waiting for mongod to start");
+                    }
+                    catch (Exception e) {
+                        WaitSeconds(10, "Trying to initialize MongoDB again");
+                    }
+                }
+                else {
+                    WaitSeconds(10, "Trying to recover from an unknown exception");
                 }
             }
         }
     }
 
+    static void LogInputStream(Process p) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        String line = "";
+        while ((line = reader.readLine())!= null)
+            Logger.info(line);
+    }
+
+    static void WaitSeconds(int seconds, String message) {
+        try {
+            Logger.info("{} in {} seconds...", message, seconds);
+            Thread.sleep(seconds * 1000);
+        } catch (InterruptedException intExc) {
+            Logger.error("Interrupted");
+        }
+    }
 
     static public void shutdown() {
         if (_mongoClient != null)
