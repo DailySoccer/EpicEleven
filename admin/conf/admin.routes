@@ -1,41 +1,43 @@
-GET     /                                     controllers.admin.AdminController.dashBoard()
-#GET     reset_db                             controllers.admin.AdminController.resetDB()
-#GET     create_mockdata_db                   controllers.admin.AdminController.createMockDataDB()
-#GET     reset_contests                       controllers.admin.AdminController.resetContests()
-#GET     create_mockdata_contests             controllers.admin.AdminController.createMockDataContests()
-#GET     import_teams_and_soccers             controllers.admin.AdminController.importTeamsAndSoccers()
-#GET     import_match_events                  controllers.admin.AdminController.importMatchEvents()
-#
-#GET     points_translation/create            controllers.admin.AdminController.createPointsTranslation()
-#GET     points_translations                  controllers.admin.AdminController.pointsTranslations()
-#
-#GET     lobby                                controllers.admin.AdminController.lobby()
-#
-#GET     users                                controllers.admin.AdminController.users()
-#
-#GET     live_match_events                    controllers.admin.AdminController.liveMatchEvents()
-#
-#GET     contest_entry/add                    controllers.admin.AdminController.addContestEntry()
-#POST    contest_entry/add                    controllers.admin.AdminController.submitContestEntry()
-#GET     contest_entries                      controllers.admin.AdminController.contestEntries()
-#
-#GET     contests                             controllers.admin.AdminController.contests()
-#GET     contest/instantiate                  controllers.admin.AdminController.instantiateContests()
-#GET     contest/:contestId                   controllers.admin.AdminController.contest(contestId : String)
-#
-#GET     template_contests                    controllers.admin.AdminController.templateContests()
-#GET     template_contest/create              controllers.admin.AdminController.createTemplateContest()
-#GET     template_contest/:templateContestId  controllers.admin.AdminController.templateContest(templateContestId : String)
-#
-#GET     template_match_events                      controllers.admin.AdminController.templateMatchEvents()
-#GET     template_match_event/create                controllers.admin.AdminController.createTemplateMatchEvent()
-#GET     template_match_event/:templateMatchEventId controllers.admin.AdminController.templateMatchEvent(templateMatchEventId : String)
-#
-#GET     template_soccer_teams                    controllers.admin.AdminController.templateSoccerTeams()
-#GET     template_soccer_team/:templateSoccerTeam controllers.admin.AdminController.templateSoccerTeam(templateSoccerTeam : String)
-#
-#GET     template_soccer_players              controllers.admin.AdminController.templateSoccerPlayers()
-#
-#GET     opta_soccer_players                  controllers.admin.AdminController.optaSoccerPlayers()
-#GET     opta_soccer_teams                    controllers.admin.AdminController.optaSoccerTeams()
-#GET     opta_match_events                    controllers.admin.AdminController.optaMatchEvents()
+GET         /                                                  controllers.admin.AdminController.dashBoard()
+GET         /quick_test                                        controllers.admin.AdminController.quickTest()
+
+GET         /reset_db                                          controllers.admin.AdminController.resetDB()
+GET         /create_mockdata_db                                controllers.admin.AdminController.createMockDataDB()
+GET         /reset_contests                                    controllers.admin.AdminController.resetContests()
+GET         /create_mockdata_contests                          controllers.admin.AdminController.createMockDataContests()
+GET         /import_teams_and_soccers                          controllers.admin.AdminController.importTeamsAndSoccers()
+GET         /import_match_events                               controllers.admin.AdminController.importMatchEvents()
+
+GET         /points_translation/create                         controllers.admin.AdminController.createPointsTranslation()
+GET         /points_translations                               controllers.admin.AdminController.pointsTranslations()
+
+GET         /lobby                                             controllers.admin.AdminController.lobby()
+
+GET         /users                                             controllers.admin.AdminController.users()
+
+GET         /live_match_events                                 controllers.admin.AdminController.liveMatchEvents()
+
+GET         /contest_entry/add                                 controllers.admin.AdminController.addContestEntry()
+POST        /contest_entry/add                                 controllers.admin.AdminController.submitContestEntry()
+GET         /contest_entries                                   controllers.admin.AdminController.contestEntries()
+
+GET         /contests                                          controllers.admin.AdminController.contests()
+GET         /contest/instantiate                               controllers.admin.AdminController.instantiateContests()
+GET         /contest/:contestId                                controllers.admin.AdminController.contest(contestId : String)
+
+GET         /template_contests                                 controllers.admin.AdminController.templateContests()
+GET         /template_contest/create                           controllers.admin.AdminController.createTemplateContest()
+GET         /template_contest/:templateContestId               controllers.admin.AdminController.templateContest(templateContestId : String)
+
+GET         /template_match_events                             controllers.admin.AdminController.templateMatchEvents()
+GET         /template_match_event/create                       controllers.admin.AdminController.createTemplateMatchEvent()
+GET         /template_match_event/:templateMatchEventId        controllers.admin.AdminController.templateMatchEvent(templateMatchEventId : String)
+
+GET         /template_soccer_teams                             controllers.admin.AdminController.templateSoccerTeams()
+GET         /template_soccer_team/:templateSoccerTeam          controllers.admin.AdminController.templateSoccerTeam(templateSoccerTeam : String)
+
+GET         /template_soccer_players                           controllers.admin.AdminController.templateSoccerPlayers()
+
+GET         /opta_soccer_players                               controllers.admin.AdminController.optaSoccerPlayers()
+GET         /opta_soccer_teams                                 controllers.admin.AdminController.optaSoccerTeams()
+GET         /opta_match_events                                 controllers.admin.AdminController.optaMatchEvents()

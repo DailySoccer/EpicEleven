@@ -24,6 +24,8 @@ resolvers += "saucelabs-repository" at "http://repository-saucelabs.forge.cloudb
 play.Project.playJavaSettings
 
 // Definimos nuestros projectos y las dependencias entre ellos
-lazy val backend = project.in(file(".")).aggregate(admin).dependsOn(admin)
+lazy val common = project
 
-lazy val admin = project
+lazy val admin = project.dependsOn(common)
+
+lazy val backend = project.in(file(".")).aggregate(common, admin).dependsOn(common, admin)

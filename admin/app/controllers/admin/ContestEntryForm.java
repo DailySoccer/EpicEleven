@@ -1,14 +1,11 @@
-package views.formData;
+package controllers.admin;
 
 import model.*;
-import model.opta.*;
-
-import play.data.Form;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 // https://github.com/playframework/playframework/tree/master/samples/java/forms
 public class ContestEntryForm {
@@ -63,47 +60,47 @@ public class ContestEntryForm {
         }
 
         // Validar cada uno de los futbolistas
-        if ( Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", goalkeeper).as(TemplateSoccerPlayer.class) == null ) {
+        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", goalkeeper).as(TemplateSoccerPlayer.class) == null) {
             errors.add(new ValidationError("goalkeeper", "Goalkeeper invalid"));
         }
 
-        if ( Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", defense1).as(TemplateSoccerPlayer.class) == null ) {
+        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", defense1).as(TemplateSoccerPlayer.class) == null) {
             errors.add(new ValidationError("defense1", "Defense invalid"));
         }
 
-        if ( Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", defense2).as(TemplateSoccerPlayer.class) == null ) {
+        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", defense2).as(TemplateSoccerPlayer.class) == null) {
             errors.add(new ValidationError("defense2", "Defense invalid"));
         }
 
-        if ( Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", defense3).as(TemplateSoccerPlayer.class) == null ) {
+        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", defense3).as(TemplateSoccerPlayer.class) == null) {
             errors.add(new ValidationError("defense3", "Defense invalid"));
         }
 
-        if ( Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", defense4).as(TemplateSoccerPlayer.class) == null ) {
+        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", defense4).as(TemplateSoccerPlayer.class) == null) {
             errors.add(new ValidationError("defense4", "Defense invalid"));
         }
 
-        if ( Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", middle1).as(TemplateSoccerPlayer.class) == null ) {
+        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", middle1).as(TemplateSoccerPlayer.class) == null) {
             errors.add(new ValidationError("middle1", "Middle invalid"));
         }
 
-        if ( Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", middle2).as(TemplateSoccerPlayer.class) == null ) {
+        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", middle2).as(TemplateSoccerPlayer.class) == null) {
             errors.add(new ValidationError("middle2", "Middle invalid"));
         }
 
-        if ( Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", middle3).as(TemplateSoccerPlayer.class) == null ) {
+        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", middle3).as(TemplateSoccerPlayer.class) == null) {
             errors.add(new ValidationError("middle3", "Middle invalid"));
         }
 
-        if ( Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", middle4).as(TemplateSoccerPlayer.class) == null ) {
+        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", middle4).as(TemplateSoccerPlayer.class) == null) {
             errors.add(new ValidationError("middle4", "Middle invalid"));
         }
 
-        if ( Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", forward1).as(TemplateSoccerPlayer.class) == null ) {
+        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", forward1).as(TemplateSoccerPlayer.class) == null) {
             errors.add(new ValidationError("forward1", "Forward invalid"));
         }
 
-        if ( Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", forward2).as(TemplateSoccerPlayer.class) == null ) {
+        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", forward2).as(TemplateSoccerPlayer.class) == null) {
             errors.add(new ValidationError("forward2", "Forward invalid"));
         }
 

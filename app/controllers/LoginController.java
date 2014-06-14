@@ -1,27 +1,28 @@
 package controllers;
 
 import actions.AllowCors;
-import play.Logger;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
 import model.ClientError;
 import model.Model;
-import utils.ReturnHelper;
 import model.Session;
 import model.User;
+import play.Logger;
 import play.Play;
-import play.data.validation.Constraints.*;
+import play.data.Form;
+import play.data.validation.Constraints.Email;
+import play.data.validation.Constraints.MinLength;
+import play.data.validation.Constraints.Required;
 import play.libs.Crypto;
 import play.mvc.Controller;
 import play.mvc.Result;
-import play.data.*;
+import utils.ReturnHelper;
 import utils.SessionUtils;
 
-import static play.data.Form.*;
-
-
 import java.util.Date;
+
+import static play.data.Form.form;
 
 @AllowCors.Origin
 public class LoginController extends Controller {

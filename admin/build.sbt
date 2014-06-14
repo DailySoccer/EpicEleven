@@ -4,11 +4,7 @@ version := "1.0-SNAPSHOT"
 
 libraryDependencies ++= Seq(
   cache,
-  filters,
-  "org.mongodb" % "mongo-java-driver" % "2.12.0",
-  "org.jongo" % "jongo" % "1.0"
+  filters
 )
 
 play.Project.playJavaSettings
-
-// generateRefReverseRouter := false

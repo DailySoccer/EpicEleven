@@ -1,11 +1,9 @@
 package controllers;
 
 import model.Model;
-import play.*;
 import play.libs.Json;
 import play.mvc.*;
 import play.mvc.Http.RequestBody;
-import views.html.*;
 
 public class MainController extends Controller {
 

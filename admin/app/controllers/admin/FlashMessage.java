@@ -1,4 +1,4 @@
-package model;
+package controllers.admin;
 
 public class FlashMessage {
     public String alertType;

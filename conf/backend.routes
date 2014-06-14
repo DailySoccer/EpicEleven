@@ -2,28 +2,28 @@ GET     /test                       controllers.MainController.test()
 GET     /ping                       controllers.MainController.ping()
 GET     /jsontest					controllers.MainController.jsonTest()
 
+# Enganche de la zona de administracion
 ->      /admin                      admin.Routes
 
+# Login
 POST    /login                      controllers.LoginController.login()
 POST    /signup 					controllers.LoginController.signup()
 GET     /get_user_profile           controllers.LoginController.getUserProfile()
 
+# Active contests
 GET     /get_active_contests        controllers.ContestController.getActiveContests()
 GET     /get_active_match_events    controllers.ContestController.getActiveMatchEvents()
 POST    /add_contest_entry          controllers.ContestController.addContestEntry()
 POST    /add_contest_entry/opta     controllers.ContestController.addContestEntryFromOptaIds()
 
-
-# Live
+# Live contests
 GET     /get_live_match_events/template_contest/:contest controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)
 POST    /get_live_match_events/match_events              controllers.ContestController.getLiveMatchEventsFromMatchEvents()
 GET     /get_live_contest_entries/:contest               controllers.ContestController.getLiveContestEntries(contest)
 
-
 # Test
 POST    /live_fantasy_points/match_events                controllers.ContestController.updateLiveFantasyPoints()
 POST    /set_live_fantasy_points/:soccerPlayerId/:points controllers.ContestController.setLiveFantasyPointsOfSoccerPlayer(soccerPlayerId, points)
-
 
 # Opta
 GET     /parse_fantasy              controllers.OptaHttpController.parseFantasy()

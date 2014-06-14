@@ -27,13 +27,13 @@
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
             <td>@p.fantasyPoints</td>
-            <td><a href="@routes.AdminController.templateSoccerTeam(p.templateTeamId.toString())">@p.templateTeamId</a></td>
+            <td><a href="@admin.routes.AdminController.templateSoccerTeam(p.templateTeamId.toString())">@p.templateTeamId</a></td>
         </tr>
         }
         </tbody>
     </table>
 </div>
 
-<a href='@routes.AdminController.dashBoard'>Back to Dashboard</a>
+<a href='@admin.routes.AdminController.dashBoard'>Back to Dashboard</a>
 
 }

@@ -4,7 +4,7 @@
 
 <h1 class="page-header">Template Match Events</h1>
 
-<a href="@routes.AdminController.createTemplateMatchEvent"><button class="btn btn-success">Create MatchEvent</button></a>
+<a href="@admin.routes.AdminController.createTemplateMatchEvent"><button class="btn btn-success">Create MatchEvent</button></a>
 
 <h2 class="sub-header"></h2>
 <div class="table-responsive">
@@ -23,7 +23,7 @@
             <td>@p.templateMatchEventId</td>
             <td>@p.optaMatchEventId</td>
             <td>
-                <a href="@routes.AdminController.templateMatchEvent(p.templateMatchEventId.toString())">
+                <a href="@admin.routes.AdminController.templateMatchEvent(p.templateMatchEventId.toString())">
                     @p.soccerTeamA.name vS @p.soccerTeamB.name</a></td>
             <td>@p.startDate.format("yyyy/MM/dd hh:mm:ss")</td>
         </tr>
@@ -32,6 +32,6 @@
     </table>
 </div>
 
-<a href='@routes.AdminController.dashBoard'>Back to Dashboard</a>
+<a href='@admin.routes.AdminController.dashBoard'>Back to Dashboard</a>
 
 }
