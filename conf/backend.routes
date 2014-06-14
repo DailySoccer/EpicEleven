@@ -2,7 +2,7 @@ GET     /test                       controllers.MainController.test()
 GET     /ping                       controllers.MainController.ping()
 GET     /jsontest					controllers.MainController.jsonTest()
 
-# ->      /admin                      admin.routes
+->      /admin                      admin.Routes
 
 POST    /login                      controllers.LoginController.login()
 POST    /signup 					controllers.LoginController.signup()

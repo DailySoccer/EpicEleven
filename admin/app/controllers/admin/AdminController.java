@@ -1,18 +1,16 @@
-package controllers;
+package controllers.admin;
 
 import play.mvc.Controller;
 import play.mvc.Result;
 
 
+
 public class AdminController extends Controller {
 
-    public static Result resetDB() {
-        return ok("Hello world");
+    public static Result dashBoard() {
+        return ok(views.html.admin.dashboard.render(null));
     }
-}
 
-/*
-public class AdminController extends Controller {
     public static Result resetDB() {
         Model.resetDB();
         return ok(views.html.admin.dashboard.render(FlashMessage.success("Reset DB: OK")));
@@ -44,10 +42,6 @@ public class AdminController extends Controller {
     public static Result importMatchEvents() {
         Model.importMatchEventsFromOptaDB();
         return ok(views.html.admin.dashboard.render(FlashMessage.success("Import Match Events: OK")));
-    }
-
-    public static Result dashBoard() {
-        return ok(views.html.admin.dashboard.render(null));
     }
 
     public static Result lobby() {

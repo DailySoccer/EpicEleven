@@ -1,3 +1,9 @@
+//
+// Sbt es enrevesado. Para poder tocar y entenderlo bien hace falta leerse el tutorial completo!
+//
+// Todas las keys: http://www.scala-sbt.org/0.13/sxr/sbt/Keys.scala.html
+// Y sus defaults: http://www.scala-sbt.org/0.13/sxr/sbt/Defaults.scala.html
+
 name := "backend"
 
 version := "1.0-SNAPSHOT"
@@ -7,20 +13,17 @@ libraryDependencies ++= Seq(
   filters,
   "org.mongodb" % "mongo-java-driver" % "2.12.0",                  // https://github.com/mongodb/mongo-java-driver
   "org.jongo" % "jongo" % "1.0",                                   // http://jongo.org/
+  "org.json" % "json" % "20140107",
   "org.seleniumhq.selenium" % "selenium-java" % "2.41.0" % "test",
   "org.scalatestplus" % "play_2.10" % "1.0.0" % "test",
-  "com.saucelabs" % "sauce_junit" % "2.0.5" % "test",
-  "org.json" % "json" % "20140107"
+  "com.saucelabs" % "sauce_junit" % "2.0.5" % "test"
 )
 
 resolvers += "saucelabs-repository" at "http://repository-saucelabs.forge.cloudbees.com/release"
 
 play.Project.playJavaSettings
 
+// Definimos nuestros projectos y las dependencias entre ellos
+lazy val backend = project.in(file(".")).aggregate(admin).dependsOn(admin)
 
-
-// http://www.scala-sbt.org/release/tutorial/Multi-Project.html
-// http://www.playframework.com/documentation/2.3.x/SBTSubProjects
-lazy val backend = (project in file(".")).aggregate(admin)
-
-lazy val admin = (project in file("admin/"))
+lazy val admin = project
