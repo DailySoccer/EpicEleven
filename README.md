@@ -41,7 +41,7 @@ Installing the environment
     http://www.playframework.com/documentation/2.2.x/IDE
 
   To connect the IDE to the debugger, you need to "Edit configuration" and add a new remote configuration. Make it point
-  to whatever the port "play debug" tells you.
+  to whatever the port "play debug" tells you (9999 in my case)
 
 
 
