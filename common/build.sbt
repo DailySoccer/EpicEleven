@@ -32,3 +32,6 @@ resourceDirectory in Test := baseDirectory.value / "conf"
 unmanagedResourceDirectories in Compile ~= { _.filter(_.exists) }
 
 unmanagedResourceDirectories in Test ~= { _.filter(_.exists) }
+
+// Necesitamos acentos
+javacOptions in (Compile, doc) := List("-encoding", "utf8", "-g")
