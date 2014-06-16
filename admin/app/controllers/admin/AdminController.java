@@ -14,6 +14,7 @@ import play.mvc.Result;
 import utils.ListUtils;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -261,4 +262,45 @@ public class AdminController extends Controller {
 
         return ok(views.html.opta_match_event_list.render(optaMatchEventList));
     }
+
+    public static Result launchSimulator(){
+        if (!OptaSimulator.existsInstance()){
+            OptaSimulator mySimulator = OptaSimulator.getInstance();
+            mySimulator.launch(0L, System.currentTimeMillis(), null);
+            //Launch as a Thread, runs and parses all documents as fast as possible
+            mySimulator.start();
+            return ok("Simulator started");
+        }
+        return ok("Simulator already started");
+    }
+
+    public static Result stopSimulator(){
+        OptaSimulator mySimulator = OptaSimulator.getInstance();
+        mySimulator.stop();
+        return ok("Simulator stopped");
+    }
+
+    //TODO: WIP
+    public static Result startSimulator(){
+        if (!OptaSimulator.existsInstance()){
+            OptaSimulator mySimulator = OptaSimulator.getInstance();
+            mySimulator.launch(0L, System.currentTimeMillis(), null);
+            return ok("Simulator started");
+        }
+        return ok("Simulator already started");
+
+    }
+
+    //TODO: WIP
+    public static Result simulatorNext(){
+        if (!OptaSimulator.existsInstance()) {
+            OptaSimulator mySimulator = OptaSimulator.getInstance();
+            mySimulator.next();
+            return ok("Simulator next step");
+        } else {
+            return ok("Simulator not running");
+        }
+
+    }
+
 }

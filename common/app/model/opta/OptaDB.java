@@ -25,4 +25,15 @@ public class OptaDB {
     }
 
     public OptaDB() {}
+
+    public String getFeedType(){
+        String feedType = null;
+        if (this.headers.containsKey("X-Meta-Feed-Type")) {
+            feedType = this.headers.get("X-Meta-Feed-Type")[0];
+        }
+        else if (this.headers.containsKey("x-meta-feed-type")) {
+            feedType = this.headers.get("x-meta-feed-type")[0];
+        }
+        return feedType;
+    }
 }

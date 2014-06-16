@@ -478,4 +478,11 @@ public class Model {
 
     // Jongo is thread safe too: https://groups.google.com/forum/#!topic/jongo-user/KwukXi5Vm7c
     static private Jongo _jongo;
+
+    public static void resetOpta() {
+        optaEvents().remove();
+        optaPlayers().remove();
+        optaTeams().remove();
+        optaMatchEvents().remove();
+    }
 }

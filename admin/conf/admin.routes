@@ -40,3 +40,8 @@ GET         /template_soccer_players                           controllers.admin
 GET         /opta_soccer_players                               controllers.admin.AdminController.optaSoccerPlayers()
 GET         /opta_soccer_teams                                 controllers.admin.AdminController.optaSoccerTeams()
 GET         /opta_match_events                                 controllers.admin.AdminController.optaMatchEvents()
+
+GET         /start_simulator                                   controllers.admin.AdminController.startSimulator()
+GET         /launch_simulator                                  controllers.admin.AdminController.launchSimulator()
+GET         /stop_simulator                                    controllers.admin.AdminController.stopSimulator()
+GET         /simulator_next                                    controllers.admin.AdminController.simulatorNext()
