@@ -398,7 +398,14 @@ public class OptaHttpController extends Controller {
                             myOptaMatchEvent.awayTeamId = (String) ((LinkedHashMap)team).get("TeamRef");
                         }
                     }
-                Model.optaMatchEvents().insert(myOptaMatchEvent);
+                OptaMatchEvent dbMatchEvent = Model.optaMatchEvents().findOne("{id: #}", myOptaMatchEvent.id).as(OptaMatchEvent.class);
+                if (dbMatchEvent != null){
+                    if (dbMatchEvent.lastModified.before(myOptaMatchEvent.lastModified)){
+                        Model.optaMatchEvents().update("{id: #}", myOptaMatchEvent.id).with(myOptaMatchEvent);
+                    }
+                }else{
+                    Model.optaMatchEvents().insert(myOptaMatchEvent);
+                }
             }
 
         }
