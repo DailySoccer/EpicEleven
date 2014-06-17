@@ -5,7 +5,6 @@ import model.opta.OptaMatchEvent;
 import model.opta.OptaPlayer;
 import model.opta.OptaTeam;
 import model.opta.OptaEvent;
-import com.mongodb.*;
 import org.bson.types.ObjectId;
 import java.util.Date;
 import org.joda.time.DateTime;
@@ -17,7 +16,6 @@ import play.mvc.Result;
 import utils.ListUtils;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -27,40 +25,52 @@ import static play.data.Form.form;
 public class AdminController extends Controller {
 
     public static Result dashBoard() {
-        return ok(views.html.dashboard.render(null));
+        return ok(views.html.dashboard.render());
     }
 
     public static Result resetDB() {
         Model.resetDB();
-        return ok(views.html.dashboard.render(FlashMessage.success("Reset DB: OK")));
+
+        FlashMessage.success("Reset DB: OK");
+        return ok(views.html.dashboard.render());
     }
 
     public static Result createMockDataDB() {
         Model.resetDB();
         MockData.ensureMockDataAll();
-        return ok(views.html.dashboard.render(FlashMessage.success("Reset DB with Mock Data")));
+
+        FlashMessage.success("Reset DB with Mock Data");
+        return ok(views.html.dashboard.render());
     }
 
     public static Result resetContests() {
         Model.resetContests();
-        return ok(views.html.dashboard.render(FlashMessage.success("Reset Contests: OK")));
+
+        FlashMessage.success("Reset Contests: OK");
+        return ok(views.html.dashboard.render());
     }
 
     public static Result createMockDataContests() {
         Model.resetContests();
         MockData.ensureMockDataContests();
-        return ok(views.html.dashboard.render(FlashMessage.success("Reset Contests with Mock data: OK")));
+
+        FlashMessage.success("Reset Contests with Mock data: OK");
+        return ok(views.html.dashboard.render());
     }
 
     public static Result importTeamsAndSoccers() {
         Model.resetContests();
         Model.importTeamsAndSoccersFromOptaDB();
-        return ok(views.html.dashboard.render(FlashMessage.success("Import Teams & Soccers: OK")));
+
+        FlashMessage.success("Import Teams & Soccers: OK");
+        return ok(views.html.dashboard.render());
     }
 
     public static Result importMatchEvents() {
         Model.importMatchEventsFromOptaDB();
-        return ok(views.html.dashboard.render(FlashMessage.success("Import Match Events: OK")));
+
+        FlashMessage.success("Import Match Events: OK");
+        return ok(views.html.dashboard.render());
     }
 
     public static Result lobby() {
@@ -196,6 +206,50 @@ public class AdminController extends Controller {
         List<TemplateContest> templateContestList = ListUtils.listFromIterator(templateContestResults.iterator());
 
         return ok(views.html.template_contest_list.render(templateContestList));
+    }
+
+    public static Result submitTemplateContest() {
+        Form<TemplateContestForm> templateContestForm = form(TemplateContestForm.class).bindFromRequest();
+        if (templateContestForm.hasErrors()) {
+            return badRequest(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
+        }
+
+        TemplateContestForm params = templateContestForm.get();
+
+        TemplateContest templateContest = new TemplateContest();
+        templateContest.name = params.name;
+        templateContest.postName = params.postName;
+        templateContest.minInstances = params.minInstances;
+        templateContest.maxEntries = params.maxEntries;
+        templateContest.salaryCap = params.salaryCap;
+        templateContest.entryFee = params.entryFee;
+        templateContest.prizeType = params.prizeType;
+
+        Date startDate = null;
+        templateContest.templateMatchEventIds = new ArrayList<>();
+        for (String optaMatchEventId: params.templateMatchEvents) {
+            TemplateMatchEvent templateMatchEvent = Model.templateMatchEvents().findOne(
+                    "{optaMatchEventId: #}", optaMatchEventId).as(TemplateMatchEvent.class);
+            templateContest.templateMatchEventIds.add(templateMatchEvent.templateMatchEventId);
+
+            if (startDate == null || templateMatchEvent.startDate.before(startDate)) {
+                startDate = templateMatchEvent.startDate;
+            }
+        }
+        templateContest.startDate = startDate;
+
+        for(String p: params.templateMatchEvents) {
+            Logger.info("{}", p);
+        }
+
+        Model.templateContests().insert(templateContest);
+
+        return redirect(routes.AdminController.templateContests());
+    }
+
+    public static Result addTemplateContest() {
+        Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class);
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
     }
 
     public static Result templateContest(String templateContestId) {

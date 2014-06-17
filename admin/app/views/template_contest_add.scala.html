@@ -1,0 +1,118 @@
+@(templateContestForm: Form[controllers.admin.TemplateContestForm], matchEventsOptions: HashMap[String, String])
+
+@import helper._
+@import helper.twitterBootstrap._
+
+@if(templateContestForm.hasErrors) {
+    @controllers.admin.FlashMessage.danger("Template MatchEvent Form has errors")
+}
+
+@input_text(field: Field, _placeholder: String = "", _class: String = "") = {
+    <input id="@field.name" name="@field.name" type="text" placeholder="@_placeholder" class="@_class @if(field.hasErrors) {has-error}" required="" value="@field.value">
+    @if(field.hasErrors) {
+        <span class="help-block">@{field.error.map { error => error.message }}</span>
+    }
+}
+
+@main("Template Contest - Admin") {
+
+<h1 class="page-header">Template Contest</h1>
+
+<h2 class="sub-header"></h2>
+
+@helper.form(action = AdminController.submitTemplateContest, 'class -> "form-horizontal") {
+<fieldset>
+
+    <!-- Form Name -->
+    <legend>Template Contest</legend>
+
+
+<!--
+    public String name;             // Auto-gen if blank
+    public String postName;         // This goes in parenthesis
+
+    public int minInstances;        // Minimum desired number of instances that we want running at any given moment
+    public int maxEntries;
+
+    public int salaryCap;
+    public int entryFee;
+    public PrizeType prizeType;
+
+    public Date startDate;
+
+    public List<ObjectId> templateMatchEventIds;  // We rather have it here that normalize it in a N:N table
+-->
+
+    @inputText(
+        templateContestForm("name"),
+        '_label -> "Name",
+        'size -> 100
+    )
+
+    @inputText(
+        templateContestForm("postName"),
+        '_label -> "Post Name",
+        'size -> 40
+    )
+
+    @inputText(
+        templateContestForm("minInstances"),
+        '_label -> "Min Instances",
+        'size -> 10
+    )
+
+    @inputText(
+        templateContestForm("minInstances"),
+        '_label -> "Max Entries",
+        'size -> 10
+    )
+
+    @inputText(
+        templateContestForm("salaryCap"),
+        '_label -> "Salary Cap",
+        'size -> 10
+    )
+
+    @inputText(
+        templateContestForm("entryFee"),
+        '_label -> "Entry Fee",
+        'size -> 10
+    )
+
+    @select(
+        templateContestForm("prizeType"),
+        options(model.PrizeType.options()),
+        '_label -> "Prize Type"
+    )
+
+    <!--
+    @inputDate(
+        templateContestForm("startDate"),
+        '_label -> "Start Date"
+    )
+    -->
+
+    @select(
+        templateContestForm("templateMatchEvents"),
+        options(matchEventsOptions),
+        '_label -> "Template Match Events",
+        'size -> 50,
+        'multiple -> true
+    )
+
+    <!-- Button (Double) -->
+    <div class="control-group">
+        <label class="control-label" for="ok"></label>
+        <div class="controls">
+            <button id="ok" name="ok" class="btn btn-success">Create</button>
+            <a href="@AdminController.templateContests" class="btn btn-danger">Cancel</a>
+        </div>
+    </div>
+
+</fieldset>
+}
+
+<br/>
+<a href='@AdminController.dashBoard'>Back to Dashboard</a>
+
+}

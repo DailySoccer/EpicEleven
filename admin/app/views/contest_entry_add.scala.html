@@ -1,16 +1,13 @@
 @(contestEntryForm: Form[controllers.admin.ContestEntryForm])
 
+@import helper._
+@import helper.twitterBootstrap._
 
-@implicitFlashMessage = @{
-    if(contestEntryForm.hasErrors) {
-        controllers.admin.FlashMessage.danger("Contest Entry Form has errors")
-    }
-    else {
-        null
-    }
+@if(contestEntryForm.hasErrors) {
+    @controllers.admin.FlashMessage.danger("Contest Entry Form has errors")
 }
 
-@input_text(field: Field, _placeholder: String = "../../../public", _class: String = "../../../public") = {
+@input_text(field: Field, _placeholder: String = "", _class: String = "") = {
     <input id="@field.name" name="@field.name" type="text" placeholder="@_placeholder" class="@_class @if(field.hasErrors) {has-error}" required="" value="@field.value">
     @if(field.hasErrors) {
         <span class="help-block">@{field.error.map { error => error.message }}</span>
