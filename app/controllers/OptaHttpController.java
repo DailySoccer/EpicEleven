@@ -178,9 +178,15 @@ public class OptaHttpController extends Controller {
     public static Result parseEvents(){
         //BasicDBObject game = Model.optaDB().findOne("{'Games': {$exists: true}}").as(BasicDBObject.class);
         Model.optaEvents().remove();
-        BasicDBObject game = Model.optaDB().findOne("{'Games': {$exists: true}}").as(BasicDBObject.class);
+        Iterable<BasicDBObject> games = Model.optaDB().find("{'json.Games': {$exists: true}}").as(BasicDBObject.class);
         long initialTime = System.currentTimeMillis();
-        OptaUtils.processEvents(game);
+        int i=0;
+        for (BasicDBObject object: games) {
+            play.Logger.info("parse({}): {}", ++i, object.get("_id"));
+
+            LinkedHashMap json = (LinkedHashMap) object.get("json");
+            OptaUtils.processEvents((LinkedHashMap)json.get("Games"));
+        }
         System.currentTimeMillis();
         return ok("Yeah, Game processed: "+(System.currentTimeMillis()-initialTime)+" milliseconds");
     }

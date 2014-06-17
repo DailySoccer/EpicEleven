@@ -4,7 +4,7 @@
 
 <h1 class="page-header">Template Match Events</h1>
 
-<a href="@AdminController.createTemplateMatchEvent"><button class="btn btn-success">Create MatchEvent</button></a>
+<!--a href="@AdminController.createTemplateMatchEvent"><button class="btn btn-success">Create MatchEvent</button></a-->
 
 <h2 class="sub-header"></h2>
 <div class="table-responsive">
@@ -12,7 +12,9 @@
         <thead>
         <tr>
             <th>Id</th>
-            <th>OptaId</thd>
+            <th>OptaId</th>
+            <th>OptaTeamAId</th>
+            <th>OptaTeamBId</th>
             <th>Teams</th>
             <th>Start Date</th>
         </tr>
@@ -22,6 +24,8 @@
         <tr>
             <td>@p.templateMatchEventId</td>
             <td>@p.optaMatchEventId</td>
+            <td>@p.soccerTeamA.optaTeamId</td>
+            <td>@p.soccerTeamB.optaTeamId</td>
             <td>
                 <a href="@AdminController.templateMatchEvent(p.templateMatchEventId.toString())">
                     @p.soccerTeamA.name vS @p.soccerTeamB.name</a></td>

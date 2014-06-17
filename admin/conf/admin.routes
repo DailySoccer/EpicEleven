@@ -14,6 +14,8 @@ GET         /lobby                                             controllers.admin
 
 GET         /users                                             controllers.admin.AdminController.users()
 
+GET         /live_match_event/:liveMatchEventId                controllers.admin.AdminController.liveMatchEvent(liveMatchEventId : String)
+GET         /live_match_events/update                          controllers.admin.AdminController.updateLive()
 GET         /live_match_events                                 controllers.admin.AdminController.liveMatchEvents()
 
 GET         /contest_entry/add                                 controllers.admin.AdminController.addContestEntry()
@@ -25,7 +27,7 @@ GET         /contest/instantiate                               controllers.admin
 GET         /contest/:contestId                                controllers.admin.AdminController.contest(contestId : String)
 
 GET         /template_contests                                 controllers.admin.AdminController.templateContests()
-GET         /template_contest/create                           controllers.admin.AdminController.createTemplateContest()
+GET         /template_contest/create_all                       controllers.admin.AdminController.createAllTemplateContests()
 GET         /template_contest/:templateContestId               controllers.admin.AdminController.templateContest(templateContestId : String)
 
 GET         /template_match_events                             controllers.admin.AdminController.templateMatchEvents()
@@ -45,3 +47,5 @@ GET         /start_simulator                                   controllers.admin
 GET         /launch_simulator                                  controllers.admin.AdminController.launchSimulator()
 GET         /stop_simulator                                    controllers.admin.AdminController.stopSimulator()
 GET         /simulator_next                                    controllers.admin.AdminController.simulatorNext()
+
+GET         /opta_events                                       controllers.admin.AdminController.optaEvents()

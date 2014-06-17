@@ -4,6 +4,8 @@
 
 <h1 class="page-header">Live Match Events</h1>
 
+<a href="@AdminController.updateLive"><button class="btn btn-success">Update Live</button></a>
+
 <h2 class="sub-header"></h2>
 <div class="table-responsive">
     <table id="table_id" class="table table-striped">
@@ -21,8 +23,8 @@
             <td>@p.liveMatchEventId</td>
             <td>@p.templateMatchEventId</td>
             <td>
-                <a href="@AdminController.templateMatchEvent(p.templateMatchEventId.toString())">
-                    @p.soccerTeamA.name vS @p.soccerTeamB.name</a></td>
+                <a href="@AdminController.liveMatchEvent(p.liveMatchEventId.toString())">
+                    @p.soccerTeamA.name (@p.soccerTeamA.getFantasyPoints()) vS @p.soccerTeamB.name (@p.soccerTeamB.getFantasyPoints())</a></td>
             <td>@p.startDate.format("yyyy/MM/dd hh:mm:ss")</td>
         </tr>
         }

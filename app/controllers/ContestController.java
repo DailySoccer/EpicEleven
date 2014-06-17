@@ -350,23 +350,6 @@ public class ContestController extends Controller {
     }
 
     /**
-     * Actualizar los puntos obtenidos por un determinado futbolista
-     *  TEMPORAL: Usado para realizar tests. No tiene sentido que los puntos nos vengan desde "fuera"
-     * @param strSoccerPlayerId Identificador del futbolista (templateSoccerPlayerId)
-     * @param strPoints Puntos (en formato cadena)
-     * @return Ok
-     */
-    public static Result setLiveFantasyPointsOfSoccerPlayer(String strSoccerPlayerId, String strPoints) {
-        if (!ObjectId.isValid(strSoccerPlayerId)) {
-            return new ReturnHelper(false, "SoccerPlayer invalid").toResult();
-        }
-
-        Model.setLiveFantasyPointsOfSoccerPlayer(new ObjectId(strSoccerPlayerId), strPoints);
-
-        return ok();
-    }
-
-    /**
      * Actualizar los puntos obtenidos por todos los futbolistas que participan en unos partidos (POST.matchEvents)
      *  TEMPORAL: Usado para realizar tests.
      * @return Ok

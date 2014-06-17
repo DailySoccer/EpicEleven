@@ -11,6 +11,7 @@ public class LiveMatchEvent {
     public ObjectId liveMatchEventId;
 
     public ObjectId templateMatchEventId;
+    public String optaMatchEventId;
 
     public SoccerTeam soccerTeamA;
     public SoccerTeam soccerTeamB;
@@ -21,6 +22,7 @@ public class LiveMatchEvent {
 
     public LiveMatchEvent(TemplateMatchEvent templateMatchEvent) {
         templateMatchEventId = templateMatchEvent.templateMatchEventId;
+        optaMatchEventId = templateMatchEvent.optaMatchEventId;
         soccerTeamA = templateMatchEvent.soccerTeamA;
         soccerTeamB = templateMatchEvent.soccerTeamB;
         startDate = templateMatchEvent.startDate;

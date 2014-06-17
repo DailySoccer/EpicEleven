@@ -37,6 +37,16 @@ public class OptaUtils {
     public static void processEvents(BasicDBObject gamesObj){
         try {
             LinkedHashMap games = (LinkedHashMap) gamesObj.get("Games");
+            processEvents(games);
+        } catch (NullPointerException e){
+            e.printStackTrace();
+        }
+
+
+    }
+
+    public static void processEvents(LinkedHashMap games){
+        try {
             LinkedHashMap game = (LinkedHashMap) games.get("Game");
 
             Object events = game.get("Event");
@@ -50,7 +60,6 @@ public class OptaUtils {
         } catch (NullPointerException e){
             e.printStackTrace();
         }
-
 
     }
 

@@ -4,7 +4,10 @@ import model.*;
 import model.opta.OptaMatchEvent;
 import model.opta.OptaPlayer;
 import model.opta.OptaTeam;
+import model.opta.OptaEvent;
+import com.mongodb.*;
 import org.bson.types.ObjectId;
+import java.util.Date;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import play.Logger;
@@ -74,6 +77,28 @@ public class AdminController extends Controller {
         List<User> userList = ListUtils.listFromIterator(userResults.iterator());
 
         return ok(views.html.user_list.render(userList));
+    }
+
+    public static Result updateLive() {
+        // Obtenemos la lista de TemplateMatchEvents
+        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.templateMatchEvents().find().as(TemplateMatchEvent.class);
+
+        // Existira un live Match Event por cada template Match Event
+        for (TemplateMatchEvent templateMatchEvent : templateMatchEventsResults) {
+            LiveMatchEvent liveMatchEvent = new LiveMatchEvent(templateMatchEvent);
+            Model.liveMatchEvents().update("{templateMatchEventId: #}", templateMatchEvent.templateMatchEventId).upsert().with(liveMatchEvent);
+
+            // Actualizar los fantasy points de cada live match event
+            Model.updateLiveFantasyPoints(liveMatchEvent);
+        }
+
+        return redirect(routes.AdminController.liveMatchEvents());
+    }
+
+    public static Result liveMatchEvent(String liveMatchEventId) {
+        LiveMatchEvent liveMatchEvent = Model.liveMatchEvents().findOne("{ _id : # }",
+                new ObjectId(liveMatchEventId)).as(LiveMatchEvent.class);
+        return ok(views.html.live_match_event.render(liveMatchEvent));
     }
 
     public static Result liveMatchEvents() {
@@ -150,11 +175,20 @@ public class AdminController extends Controller {
     }
 
     public static Result instantiateContests() {
-        //TODO: En que fecha tendriamos que generar los contests?
-        DateTime currentCreationDay =  new DateTime(2014, 10, 14, 12, 0, DateTimeZone.UTC);
-        MockData.instantiateContests(currentCreationDay);
+        Iterable<TemplateContest> templateContests = Model.templateContests().find().as(TemplateContest.class);
+        for(TemplateContest template : templateContests) {
+            instantiateTemplateContest(template);
+        }
 
         return redirect(routes.AdminController.contests());
+    }
+
+    public static void instantiateTemplateContest(TemplateContest templateContest) {
+        for(int i=0; i<templateContest.minInstances; i++) {
+            Contest contest = new Contest(templateContest);
+            contest.maxUsers = 10;
+            Model.contests().insert(contest);
+        }
     }
 
     public static Result templateContests() {
@@ -168,14 +202,76 @@ public class AdminController extends Controller {
         return TODO;
     }
 
-    public static Result createTemplateContest() {
-        //TODO: En que fecha tendriamos que generar el contest?
-        DateTime currentCreationDay =  new DateTime(2014, 10, 14, 12, 0, DateTimeZone.UTC);
+    public static Result createAllTemplateContests() {
+        Model.templateContests().remove();
 
-        MockData.createTemplateContest(currentCreationDay);
+        Iterable<TemplateMatchEvent> matchEventResults = Model.templateMatchEvents().find().sort("{startDate: 1}").as(TemplateMatchEvent.class);
+
+        DateTime dateTime = null;
+        List<TemplateMatchEvent> matchEvents = new ArrayList<>();   // Partidos que juntaremos en el mismo contests
+        for (TemplateMatchEvent match: matchEventResults) {
+            DateTime matchDateTime = new DateTime(match.startDate);
+            if (dateTime == null) {
+                dateTime = matchDateTime;
+            }
+
+            // El partido es de un dia distinto?
+            if (dateTime.dayOfYear().get() != matchDateTime.dayOfYear().get()) {
+                Logger.info("{} != {}", dateTime.dayOfYear().get(), matchDateTime.dayOfYear().get());
+
+                // El dia anterior tenia un numero suficiente de partidos? (minimo 2)
+                if (matchEvents.size() >= 2) {
+
+                    // crear el contest
+                    createTemplateContest(matchEvents);
+
+                    // empezar a registrar los partidos del nuevo contest
+                    matchEvents.clear();
+                }
+            }
+
+            dateTime = matchDateTime;
+            matchEvents.add(match);
+        }
+
+        // Tenemos partidos sin incluir en un contest?
+        if (matchEvents.size() > 0) {
+            createTemplateContest(matchEvents);
+        }
+
 
         return redirect(routes.AdminController.templateContests());
     }
+
+    public static void createTemplateContest(List<TemplateMatchEvent> templateMatchEvents) {
+        if (templateMatchEvents.size() == 0) {
+            Logger.error("createTemplateContest: templateMatchEvents is empty");
+            return;
+        }
+
+        Date startDate = templateMatchEvents.get(0).startDate;
+
+        TemplateContest templateContest = new TemplateContest();
+
+        templateContest.name = String.format("Contest date %s", startDate);
+        templateContest.postName = "Late evening";
+        templateContest.minInstances = 3;
+        templateContest.maxEntries = 10;
+        templateContest.prizeType = PrizeType.STANDARD;
+        templateContest.entryFee = 10000;
+        templateContest.salaryCap = 100000;
+        templateContest.startDate = startDate;
+        templateContest.templateMatchEventIds = new ArrayList<>();
+
+        for (TemplateMatchEvent match: templateMatchEvents) {
+            templateContest.templateMatchEventIds.add(match.templateMatchEventId);
+        }
+
+        Logger.info("MockData: Template Contest: {} ({})", templateContest.templateMatchEventIds, startDate);
+
+        Model.templateContests().insert(templateContest);
+    }
+
 
     public static Result templateMatchEvents() {
         Iterable<TemplateMatchEvent> soccerMatchEventResults = Model.templateMatchEvents().find().as(TemplateMatchEvent.class);
@@ -303,4 +399,10 @@ public class AdminController extends Controller {
 
     }
 
+     public static Result optaEvents() {
+         Iterable<OptaEvent> optaEventResults = Model.optaEvents().find().as(OptaEvent.class);
+         List<OptaEvent> optaEventList = ListUtils.listFromIterator(optaEventResults.iterator());
+
+         return ok(views.html.opta_event_list.render(optaEventList));
+    }
 }

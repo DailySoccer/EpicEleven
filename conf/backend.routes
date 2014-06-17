@@ -23,7 +23,6 @@ GET     /get_live_contest_entries/:contest               controllers.ContestCont
 
 # Test
 POST    /live_fantasy_points/match_events                controllers.ContestController.updateLiveFantasyPoints()
-POST    /set_live_fantasy_points/:soccerPlayerId/:points controllers.ContestController.setLiveFantasyPointsOfSoccerPlayer(soccerPlayerId, points)
 
 # Opta
 GET     /parse_fantasy              controllers.OptaHttpController.parseFantasy()
