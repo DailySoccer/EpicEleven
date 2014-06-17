@@ -443,7 +443,7 @@ public class AdminController extends Controller {
 
     //TODO: WIP
     public static Result simulatorNext(){
-        if (!OptaSimulator.existsInstance()) {
+        if (OptaSimulator.existsInstance()) {
             OptaSimulator mySimulator = OptaSimulator.getInstance();
             mySimulator.next();
             return ok("Simulator next step");
