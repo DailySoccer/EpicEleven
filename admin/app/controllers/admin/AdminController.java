@@ -413,44 +413,76 @@ public class AdminController extends Controller {
         return ok(views.html.opta_match_event_list.render(optaMatchEventList));
     }
 
-    public static Result launchSimulator(){
-        if (!OptaSimulator.existsInstance()){
+    public static Result simulator() {
+        return ok(views.html.simulator.render());
+    }
+
+    public static Result startSimulator(){
+        if (OptaSimulator.stoppedInstance()){
             OptaSimulator mySimulator = OptaSimulator.getInstance();
-            mySimulator.launch(0L, System.currentTimeMillis(), null);
+            mySimulator.launch(0L, System.currentTimeMillis(), 0, false, true, null);
+            mySimulator.pause();
+            FlashMessage.success("Simulator started");
+            return ok(views.html.simulator.render());
+            //return ok("Simulator started");
+        }
+        FlashMessage.warning("Simulator already started");
+        return ok(views.html.simulator.render());
+        //return ok("Simulator already started");
+
+    }
+
+    public static Result launchSimulator(){
+        OptaSimulator mySimulator = OptaSimulator.getInstance();
+        if (OptaSimulator.stoppedInstance()){
+            mySimulator.launch(0L, System.currentTimeMillis(), 0, false, true, null);
             //Launch as a Thread, runs and parses all documents as fast as possible
             mySimulator.start();
-            return ok("Simulator started");
+            FlashMessage.success("Simulator started");
+            return ok(views.html.simulator.render());
+            //return ok("Simulator started");
         }
-        return ok("Simulator already started");
+        FlashMessage.warning("Simulator already started");
+        return ok(views.html.simulator.render());
+        //return ok("Simulator already started");
     }
 
-    public static Result stopSimulator(){
+    public static Result pauseSimulator(){
+        OptaSimulator.getInstance().pause();
+        FlashMessage.success("Simulator paused");
+        return ok(views.html.simulator.render());
+        //return ok("Simulator paused");
+    }
+
+    public static Result resumeSimulator(){
         OptaSimulator mySimulator = OptaSimulator.getInstance();
-        mySimulator.stop();
-        return ok("Simulator stopped");
+        mySimulator.resumeLoop();
+        FlashMessage.success("Simulator resumed");
+        return ok(views.html.simulator.render());
+        //return ok("Simulator resumed");
     }
 
-    //TODO: WIP
-    public static Result startSimulator(){
-        if (!OptaSimulator.existsInstance()){
-            OptaSimulator mySimulator = OptaSimulator.getInstance();
-            mySimulator.launch(0L, System.currentTimeMillis(), null);
-            return ok("Simulator started");
-        }
-        return ok("Simulator already started");
-
-    }
-
-    //TODO: WIP
     public static Result simulatorNext(){
         if (OptaSimulator.existsInstance()) {
             OptaSimulator mySimulator = OptaSimulator.getInstance();
             mySimulator.next();
-            return ok("Simulator next step");
+            FlashMessage.success("Simulator resumed");
+            return ok(views.html.simulator.render());
+            //return ok("Simulator next step");
         } else {
-            return ok("Simulator not running");
+            FlashMessage.danger("Simulator not running");
+            return ok(views.html.simulator.render());
+            //return ok("Simulator not running");
         }
 
+    }
+
+    public static Result stopSimulator(){
+        OptaSimulator mySimulator = OptaSimulator.getInstance();
+        mySimulator.halt();
+        FlashMessage.success("Simulator stopped");
+        return ok(views.html.simulator.render());
+        //return ok("Simulator stopped");
     }
 
      public static Result optaEvents() {

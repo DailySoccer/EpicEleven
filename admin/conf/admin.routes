@@ -45,9 +45,13 @@ GET         /opta_soccer_players                               controllers.admin
 GET         /opta_soccer_teams                                 controllers.admin.AdminController.optaSoccerTeams()
 GET         /opta_match_events                                 controllers.admin.AdminController.optaMatchEvents()
 
+GET         /simulator                                         controllers.admin.AdminController.simulator()
+
 GET         /start_simulator                                   controllers.admin.AdminController.startSimulator()
 GET         /launch_simulator                                  controllers.admin.AdminController.launchSimulator()
 GET         /stop_simulator                                    controllers.admin.AdminController.stopSimulator()
 GET         /simulator_next                                    controllers.admin.AdminController.simulatorNext()
+GET         /pause_simulator                                   controllers.admin.AdminController.pauseSimulator()
+GET         /resume_simulator                                  controllers.admin.AdminController.resumeSimulator()
 
 GET         /opta_events                                       controllers.admin.AdminController.optaEvents()

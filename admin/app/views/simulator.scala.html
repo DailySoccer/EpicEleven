@@ -1,0 +1,29 @@
+@import controllers.admin.OptaSimulator
+@main("Simulator - Admin") {
+
+<h1 class="page-header">Simulator</h1>
+@if(!OptaSimulator.existsInstance() || OptaSimulator.stoppedInstance()){
+<div>
+    <a href="@AdminController.startSimulator"><button class="btn btn-primary">Start</button></a>
+    <a href="@AdminController.launchSimulator"><button class="btn btn-success">Launch</button></a>
+</div>
+<br/>
+}
+@if(OptaSimulator.launchedInstance()){
+<div>
+        @if(OptaSimulator.pausedInstance()){
+            <a href="@AdminController.resumeSimulator"><button class="btn btn-success">Resume</button></a>
+        } else {
+            <a href="@AdminController.pauseSimulator"><button class="btn btn-warning">Pause</button></a>
+        }
+</div>
+<br/>
+<br/>
+<div>
+    @if(OptaSimulator.pausedInstance()){
+        <a href="@AdminController.simulatorNext"><button class="btn btn-primary">Next</button></a>
+    }
+    <a href="@AdminController.stopSimulator"><button class="btn btn-danger">Stop</button></a>
+</div>
+}
+}

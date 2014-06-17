@@ -5,16 +5,26 @@ import model.Model;
 import model.opta.OptaDB;
 import utils.OptaUtils;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+
 /**
  * Created by gnufede on 13/06/14.
  */
-public class OptaSimulator extends Thread {
+public class OptaSimulator implements Runnable {
     static OptaSimulator instance;
+    static Thread optaThread;
     long initialDate;
     long endDate;
+    long lastParsedDate;
+    int waitMillisecondsBetweenEvents;
     String competitionId;
-    Iterable<OptaDB> optaDBCollection;
-    boolean stopLoop;
+    //Iterable<OptaDB> optaDBCollection;
+    volatile boolean stopLoop;
+    volatile boolean pauseLoop;
+    Iterator<OptaDB> optaIterator;
 
 
     public static OptaSimulator getInstance () {
@@ -28,28 +38,71 @@ public class OptaSimulator extends Thread {
         return instance != null;
     }
 
-    public OptaSimulator () {
+    public static boolean launchedInstance () {
+        return !getInstance().stopLoop;
     }
 
-    public void launch(long initialDate, long endDate, String competitionId){
+    public static boolean pausedInstance () {
+        return getInstance().pauseLoop;
+    }
+
+    public static boolean stoppedInstance () {
+        return !getInstance().launchedInstance();
+    }
+
+    public OptaSimulator () {
+        this.stopLoop = true;
+        this.pauseLoop = true;
+    }
+
+    public void launch(long initialDate, long endDate, int waitMillisecondsBetweenEvents, boolean fast,
+                       boolean resetOpta, String competitionId){
+        this.stopLoop = false;
+        this.pauseLoop = false;
         this.initialDate = initialDate;
         this.endDate = endDate;
+        this.lastParsedDate = 0L;
+        this.waitMillisecondsBetweenEvents = 1;
         this.competitionId = competitionId;
-        this.stopLoop = false;
-        if (competitionId != null){
-            this.optaDBCollection = Model.optaDB().find("{startDate: {$gte: #, $lte: #}, headers.X-Meta-Competition-Id: #}",
-                    initialDate, endDate, competitionId).sort("{startDate: 1}").as(OptaDB.class);
-        } else {
-            this.optaDBCollection = Model.optaDB().find("{startDate: {$gte: #, $lte: #}}",
-                    initialDate, endDate).sort("{startDate: 1}").as(OptaDB.class);
+        if (fast) {
+            List<String> names = Model.optaDB().distinct("name").as(String.class);
+            ArrayList<OptaDB> OptaDBs = new ArrayList<OptaDB>(names.size());
+            for (String name: names) {
+                Iterator<OptaDB> docIterator = Model.optaDB().find("{name: #, startDate: {$gte: #, $lte: #}}",
+                                                                   name, initialDate, endDate).
+                                    sort("{startDate: -1}").limit(1).
+                                    as(OptaDB.class).iterator();
+                if (docIterator.hasNext()){
+                    OptaDBs.add(docIterator.next());
+                }
+            }
+            this.optaIterator = OptaDBs.iterator();
+        }
+        else {
+            if (competitionId != null) {
+                this.optaIterator = Model.optaDB().find("{startDate: {$gte: #, $lte: #}, headers.X-Meta-Competition-Id: #}",
+                        initialDate, endDate, competitionId).sort("{startDate: 1}").as(OptaDB.class).iterator();
+            } else {
+                this.optaIterator = Model.optaDB().find("{startDate: {$gte: #, $lte: #}}",
+                        initialDate, endDate).sort("{startDate: 1}").as(OptaDB.class).iterator();
+            }
+        }
+        if (resetOpta) {
+            Model.resetOpta();
         }
     }
 
+    public void start() {
+        optaThread = new Thread(this);
+        optaThread.start();
+    }
+
+    @Override
     public void run () {
-        Model.resetOpta();
-        while (!stopLoop && next()){
+        this.stopLoop = false;
+        while (!stopLoop && (pauseLoop || next())) {
             try {
-                sleep(1);
+                Thread.sleep(this.waitMillisecondsBetweenEvents);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -57,16 +110,47 @@ public class OptaSimulator extends Thread {
 
     }
 
+    public void stop() {
+        this.halt();
+        optaThread = null;
+    }
+
     public void halt () {
         this.stopLoop = true;
-        this.stop();
+    }
+
+    public void pause () {
+        this.pauseLoop = true;
+    }
+
+    public static boolean isPaused () {
+        if (existsInstance()) {
+            return instance.pauseLoop;
+        }
+        return false;
+    }
+
+    public void resumeLoop () {
+        this.pauseLoop = false;
+        if (this.stopLoop) {
+            this.stopLoop = false;
+            this.start();
+        }
+    }
+
+    public void restartLoop () {
+        if (this.stopLoop) {
+            getInstance().start();
+        }
     }
 
     public boolean next (){
-        OptaDB nextDoc = optaDBCollection.iterator().hasNext()? optaDBCollection.iterator().next(): null;
+        OptaDB nextDoc = null;
+            nextDoc = optaIterator.hasNext()? optaIterator.next(): null;
         if (nextDoc != null){
-            System.out.println(nextDoc.name);
+            System.out.println(nextDoc.name + " " + (new Date(nextDoc.startDate)).toString());
             String feedType = nextDoc.getFeedType();
+            this.lastParsedDate = nextDoc.startDate;
             if (feedType != null){
                 OptaUtils.processOptaDBInput(feedType, (BasicDBObject) nextDoc.json);
             }
