@@ -100,21 +100,36 @@ public class OptaUtils {
         /*
         DERIVED EVENTS GO HERE
          */
-        // Falta inflingida -> 1004
+        // Falta/Penalty infligido
         if (myEvent.typeId==4 && myEvent.outcome==0){
-            myEvent.typeId = 1004;
+            if (myEvent.qualifiers.contains(9)){
+                myEvent.typeId = 1409;  //Penalty infligido -> 1409
+            } else {
+                myEvent.typeId = 1004;  // Falta infligida -> 1004
+            }
         }
         // Tarjeta roja -> 1017
         if (myEvent.typeId==17 && myEvent.qualifiers.contains(33)){
             myEvent.typeId = 1017;
         }
-        /*
-        // Gol al portero -> 1999
-        if (my_event.type_id==16){
-            //TODO: Extract current opposite goalkeeper
-            derivateEvent(1999, goalkeeper, my_event);
+        // Penalty miss -> 1410
+        if ((myEvent.typeId==13 || myEvent.typeId==14 || myEvent.typeId==15) &&
+                myEvent.outcome==0 && myEvent.qualifiers.contains(9)){
+            myEvent.typeId = 1410;
         }
-        */
+        // Gol en contra -> 1699
+        if (myEvent.typeId==16 && myEvent.outcome==1 && myEvent.qualifiers.contains(28)){
+            myEvent.typeId = 1699;
+        }
+        // Gol al portero -> 1860
+        if ((myEvent.typeId==10 || myEvent.typeId==11 || myEvent.typeId==12) &&
+               myEvent.qualifiers.contains(186)){
+            myEvent.typeId = 1860;
+        }
+        // Penalty parado -> 1058
+        if (myEvent.typeId==58 && !myEvent.qualifiers.contains(186)){
+            myEvent.typeId = 1058;
+        }
 
         Iterable<PointsTranslation> pointsTranslations = Model.pointsTranslation().
                 find("{eventTypeId: #, timestamp: {$lte: #}}",
