@@ -39,15 +39,32 @@ public class ContestController extends Controller {
 
         long startTime = System.currentTimeMillis();
 
-        Date startDate = new DateTime(2014, 10, 14, 12, 0, DateTimeZone.UTC).toDate();
-
         HashMap<String, Object> contest = new HashMap<>();
 
+        // Obtenemos los contests activos
+        Iterable<Contest> contestsResults = Model.contests().find().as(Contest.class);
+        List<Contest> contests = ListUtils.asList(contestsResults);
+
+        // Template Contests <- Contest Activos
+        Iterable<TemplateContest> templateContestResults = Model.findTemplateContests(contests).as(TemplateContest.class);
+        List<TemplateContest> templateContests = ListUtils.asList(templateContestResults);
+
+        // Match Events <- Template Contests
+        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.findTemplateMatchEvents(templateContests).as(TemplateMatchEvent.class);
+
+        contest.put("match_events", templateMatchEventsResults);
+        contest.put("template_contests", templateContests);
+        contest.put("contests", contests);
+
+        // TODO: Determinar mediante la fecha qué documentos enviar
+        /*
+        Date startDate = new DateTime(2014, 10, 14, 12, 0, DateTimeZone.UTC).toDate();
         contest.put("match_events", Model.templateMatchEvents().find("{startDate: #}", startDate).as(TemplateMatchEvent.class));
         contest.put("template_contests", Model.templateContests().find("{startDate: #}", startDate).as(TemplateContest.class));
-        contest.put("contests", Model.contests().find().as(Contest.class));
+        contest.put("contests", contests);
+        */
 
-        // Logger.info("getActiveContests: {}", System.currentTimeMillis() - startTime);
+        Logger.info("getActiveContests: {}", System.currentTimeMillis() - startTime);
 
         return new ReturnHelper(contest).toResult();
     }
@@ -271,7 +288,7 @@ public class ContestController extends Controller {
 
         // Consultar por los partidos del TemplateContest (queremos su version "live")
         Iterable<LiveMatchEvent> liveMatchEventResults = Model.findLiveMatchEventsFromIds("templateMatchEventId", templateContest.templateMatchEventIds);
-        List<LiveMatchEvent> liveMatchEventList = ListUtils.listFromIterator(liveMatchEventResults.iterator());
+        List<LiveMatchEvent> liveMatchEventList = ListUtils.asList(liveMatchEventResults);
 
         // TODO: Si no encontramos ningun LiveMatchEvent, los creamos
         if (liveMatchEventList.isEmpty()) {
@@ -324,7 +341,7 @@ public class ContestController extends Controller {
         List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.matchEvents);
 
         Iterable<LiveMatchEvent> liveMatchEventResults = Model.findLiveMatchEventsFromIds("templateMatchEventId", idsList);
-        List<LiveMatchEvent> liveMatchEventList = ListUtils.listFromIterator(liveMatchEventResults.iterator());
+        List<LiveMatchEvent> liveMatchEventList = ListUtils.asList(liveMatchEventResults);
 
         Logger.info("END: getLiveMatchEventsFromMatchEvents: {}", System.currentTimeMillis() - startTime);
 

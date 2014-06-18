@@ -40,11 +40,15 @@ public class ListUtils {
      * @param <T> Tipo del iterator
      * @return La lista de elementos (extraidos del iterator)
      */
-    public static <T> List<T> listFromIterator(Iterator<T> iter) {
+    public static <T> List<T> asList(Iterator<T> iter) {
         List<T> list = new ArrayList<T>();
         while (iter.hasNext())
             list.add(iter.next());
         return list;
+    }
+
+    public static <T> List<T> asList(Iterable<T> iterable) {
+        return asList(iterable.iterator());
     }
 
     /**

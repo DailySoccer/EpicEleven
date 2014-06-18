@@ -75,7 +75,7 @@ public class AdminController extends Controller {
 
     public static Result lobby() {
         Iterable<Contest> contestsResults = Model.contests().find().as(Contest.class);
-        List<Contest> contestList = ListUtils.listFromIterator(contestsResults.iterator());
+        List<Contest> contestList = ListUtils.asList(contestsResults);
 
         HashMap<ObjectId, TemplateContest> templateContestMap = getTemplateContestsFromList(contestList);
 
@@ -84,7 +84,7 @@ public class AdminController extends Controller {
 
     public static Result users() {
         Iterable<User> userResults = Model.users().find().as(User.class);
-        List<User> userList = ListUtils.listFromIterator(userResults.iterator());
+        List<User> userList = ListUtils.asList(userResults);
 
         return ok(views.html.user_list.render(userList));
     }
@@ -113,7 +113,7 @@ public class AdminController extends Controller {
 
     public static Result liveMatchEvents() {
         Iterable<LiveMatchEvent> liveMatchEventResults = Model.liveMatchEvents().find().as(LiveMatchEvent.class);
-        List<LiveMatchEvent> liveMatchEventList = ListUtils.listFromIterator(liveMatchEventResults.iterator());
+        List<LiveMatchEvent> liveMatchEventList = ListUtils.asList(liveMatchEventResults);
 
         return ok(views.html.live_match_event_list.render(liveMatchEventList));
     }
@@ -125,7 +125,7 @@ public class AdminController extends Controller {
 
     public static Result pointsTranslations() {
         Iterable<PointsTranslation> pointsTranslationsResults = Model.pointsTranslation().find().as(PointsTranslation.class);
-        List<PointsTranslation> pointsTranslationsList = ListUtils.listFromIterator(pointsTranslationsResults.iterator());
+        List<PointsTranslation> pointsTranslationsList = ListUtils.asList(pointsTranslationsResults);
 
         return ok(views.html.points_translation_list.render(pointsTranslationsList));
     }
@@ -164,14 +164,14 @@ public class AdminController extends Controller {
 
     public static Result contestEntries() {
         Iterable<ContestEntry> contestEntryResults = Model.contestEntries().find().as(ContestEntry.class);
-        List<ContestEntry> contestEntryList = ListUtils.listFromIterator(contestEntryResults.iterator());
+        List<ContestEntry> contestEntryList = ListUtils.asList(contestEntryResults);
 
         return ok(views.html.contest_entry_list.render(contestEntryList));
     }
 
     public static Result contests() {
         Iterable<Contest> contestsResults = Model.contests().find().as(Contest.class);
-        List<Contest> contestList = ListUtils.listFromIterator(contestsResults.iterator());
+        List<Contest> contestList = ListUtils.asList(contestsResults);
 
         return ok(views.html.contest_list.render(contestList));
     }
@@ -203,7 +203,7 @@ public class AdminController extends Controller {
 
     public static Result templateContests() {
         Iterable<TemplateContest> templateContestResults = Model.templateContests().find().as(TemplateContest.class);
-        List<TemplateContest> templateContestList = ListUtils.listFromIterator(templateContestResults.iterator());
+        List<TemplateContest> templateContestList = ListUtils.asList(templateContestResults);
 
         return ok(views.html.template_contest_list.render(templateContestList));
     }
@@ -329,7 +329,7 @@ public class AdminController extends Controller {
 
     public static Result templateMatchEvents() {
         Iterable<TemplateMatchEvent> soccerMatchEventResults = Model.templateMatchEvents().find().as(TemplateMatchEvent.class);
-        List<TemplateMatchEvent> matchEventList = ListUtils.listFromIterator(soccerMatchEventResults.iterator());
+        List<TemplateMatchEvent> matchEventList = ListUtils.asList(soccerMatchEventResults);
 
         return ok(views.html.template_match_event_list.render(matchEventList));
     }
@@ -351,7 +351,7 @@ public class AdminController extends Controller {
 
     public static Result templateSoccerTeams() {
         Iterable<TemplateSoccerTeam> soccerTeamResults = Model.templateSoccerTeams().find().as(TemplateSoccerTeam.class);
-        List<TemplateSoccerTeam> soccerTeamList = ListUtils.listFromIterator(soccerTeamResults.iterator());
+        List<TemplateSoccerTeam> soccerTeamList = ListUtils.asList(soccerTeamResults);
 
         return ok(views.html.template_soccer_team_list.render(soccerTeamList));
     }
@@ -361,13 +361,13 @@ public class AdminController extends Controller {
                 new ObjectId(templateSoccerTeamId)).as(TemplateSoccerTeam.class);
         Iterable<TemplateSoccerPlayer> soccerPlayerResults = Model.templateSoccerPlayers().find("{ templateTeamId: # }",
                 new ObjectId(templateSoccerTeamId)).as(TemplateSoccerPlayer.class);
-        List<TemplateSoccerPlayer> soccerPlayerList = ListUtils.listFromIterator(soccerPlayerResults.iterator());
+        List<TemplateSoccerPlayer> soccerPlayerList = ListUtils.asList(soccerPlayerResults);
         return ok(views.html.template_soccer_team.render(templateSoccerTeam, soccerPlayerList));
     }
 
     public static Result templateSoccerPlayers() {
         Iterable<TemplateSoccerPlayer> soccerPlayerResults = Model.templateSoccerPlayers().find().as(TemplateSoccerPlayer.class);
-        List<TemplateSoccerPlayer> soccerPlayerList = ListUtils.listFromIterator(soccerPlayerResults.iterator());
+        List<TemplateSoccerPlayer> soccerPlayerList = ListUtils.asList(soccerPlayerResults);
 
         return ok(views.html.template_soccer_player_list.render(soccerPlayerList));
     }
@@ -394,21 +394,21 @@ public class AdminController extends Controller {
 
     public static Result optaSoccerPlayers() {
         Iterable<OptaPlayer> optaPlayerResults = Model.optaPlayers().find().as(OptaPlayer.class);
-        List<OptaPlayer> optaPlayerList = ListUtils.listFromIterator(optaPlayerResults.iterator());
+        List<OptaPlayer> optaPlayerList = ListUtils.asList(optaPlayerResults);
 
         return ok(views.html.opta_soccer_player_list.render(optaPlayerList));
     }
 
     public static Result optaSoccerTeams() {
         Iterable<OptaTeam> optaTeamResults = Model.optaTeams().find().as(OptaTeam.class);
-        List<OptaTeam> optaTeamList = ListUtils.listFromIterator(optaTeamResults.iterator());
+        List<OptaTeam> optaTeamList = ListUtils.asList(optaTeamResults);
 
         return ok(views.html.opta_soccer_team_list.render(optaTeamList));
     }
 
     public static Result optaMatchEvents() {
         Iterable<OptaMatchEvent> optaMatchEventResults = Model.optaMatchEvents().find().as(OptaMatchEvent.class);
-        List<OptaMatchEvent> optaMatchEventList = ListUtils.listFromIterator(optaMatchEventResults.iterator());
+        List<OptaMatchEvent> optaMatchEventList = ListUtils.asList(optaMatchEventResults);
 
         return ok(views.html.opta_match_event_list.render(optaMatchEventList));
     }
@@ -487,7 +487,7 @@ public class AdminController extends Controller {
 
      public static Result optaEvents() {
          Iterable<OptaEvent> optaEventResults = Model.optaEvents().find().as(OptaEvent.class);
-         List<OptaEvent> optaEventList = ListUtils.listFromIterator(optaEventResults.iterator());
+         List<OptaEvent> optaEventList = ListUtils.asList(optaEventResults);
 
          return ok(views.html.opta_event_list.render(optaEventList));
     }

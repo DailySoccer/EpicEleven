@@ -14,9 +14,8 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Iterator;
+
 import model.opta.*;
-import play.mvc.Result;
 import utils.ListUtils;
 import java.util.Date;
 
@@ -386,7 +385,7 @@ public class Model {
         long startTime = System.currentTimeMillis();
 
         Iterable<LiveMatchEvent> liveMatchEventResults = Model.findLiveMatchEventsFromIds("templateMatchEventId", matchEventIdsList);
-        List<LiveMatchEvent> liveMatchEventList = ListUtils.listFromIterator(liveMatchEventResults.iterator());
+        List<LiveMatchEvent> liveMatchEventList = ListUtils.asList(liveMatchEventResults);
 
         for (LiveMatchEvent liveMatchEvent : liveMatchEventList) {
             updateLiveFantasyPoints(liveMatchEvent);
@@ -423,6 +422,28 @@ public class Model {
             aContest = Model.contests().findOne(new ObjectId(contestId)).as(Contest.class);
         }
         return aContest;
+    }
+
+    /**
+     *  Query de la lista de Template Contests correspondientes a una lista de contests
+     */
+    static public Find findTemplateContests(List<Contest> contests) {
+        List<ObjectId> contestObjectIds = new ArrayList<>(contests.size());
+        for (Contest contest: contests) {
+            contestObjectIds.add(contest.templateContestId);
+        }
+        return findObjectIds(templateContests(), "_id", contestObjectIds);
+    }
+
+    /**
+     *  Query de la lista de Template Match Events correspondientes a una lista de template contests
+     */
+    static public Find findTemplateMatchEvents(List<TemplateContest> templateContests) {
+        List<ObjectId> templateContestObjectIds = new ArrayList<>(templateContests.size());
+        for (TemplateContest templateContest: templateContests) {
+            templateContestObjectIds.addAll(templateContest.templateMatchEventIds);
+        }
+        return findObjectIds(templateMatchEvents(), "_id", templateContestObjectIds);
     }
 
     /**
