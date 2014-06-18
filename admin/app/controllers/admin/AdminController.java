@@ -119,6 +119,7 @@ public class AdminController extends Controller {
     }
 
     public static Result createPointsTranslation(){
+        Model.pointsTranslation().remove();
         MockData.createPointsTranslation();
         return redirect(routes.AdminController.pointsTranslations());
     }
