@@ -16,6 +16,7 @@
             <th>CurrentUserIds</th>
             <th>maxUsers</th>
             <th>TemplateContestId</th>
+            <th></th>
         </tr>
         </thead>
         <tbody>
@@ -26,6 +27,7 @@
             <td>@p.currentUserIds</td>
             <td>@p.maxUsers</td>
             <td><a href="@AdminController.templateContest(p.templateContestId.toString())">@p.templateContestId</a></td>
+            <td><a href="@AdminController.enterContest(p.contestId.toString())"><button class="btn btn-success">Enter</button></a></td>
         </tr>
         }
         </tbody>

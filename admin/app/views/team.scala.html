@@ -1,13 +1,8 @@
-@(template_soccer_team: model.TemplateSoccerTeam, template_soccer_players: List[model.TemplateSoccerPlayer])
+@(team: model.SoccerTeam)
 
-@main("Template Soccer Team - Admin") {
-
-<h1 class="page-header">Template Soccer Team: @template_soccer_team.templateSoccerTeamId</h1>
-
-<h2 class="sub-header">@template_soccer_team.name</h2>
 <div class="table-responsive">
     <table class="table table-striped">
-        <!--caption>@template_soccer_team.name</caption-->
+        <caption>@team.name</caption>
         <thead>
         <tr>
             <th>Template SoccerID</th>
@@ -19,7 +14,7 @@
         </tr>
         </thead>
         <tbody>
-        @for(p <- template_soccer_players) {
+        @for(p <- team.soccerPlayers) {
         <tr>
             <td>@p.templateSoccerPlayerId</td>
             <td>@p.optaPlayerId</td>
@@ -32,7 +27,3 @@
         </tbody>
     </table>
 </div>
-
-<a href='@AdminController.templateSoccerTeams'>Back to Template Soccer Teams</a>
-
-}

@@ -243,6 +243,66 @@ public class Model {
     }
 
     /**
+     * Creacion de un contest entry (se añade a la base de datos)
+     * @param userId        Usuario al que pertenece el equipo
+     * @param contestId     Contest al que se apunta
+     * @param optaIdsList   Lista de identificadores de los futbolistas de Opta
+     * @return Si se ha realizado correctamente su creacion
+     */
+    public static boolean createContestEntryFromOptaIds(String userId, String contestId, List<String> optaIdsList) {
+        Logger.info("createContestEntry: userId({}) contestId({}) soccerTeam({})", userId, contestId, optaIdsList);
+
+        // Obtener el userId : ObjectId
+        User aUser = Model.findUserId(userId);
+        if (aUser == null) {
+            return false;
+        }
+
+        // Obtener el contestId : ObjectId
+        Contest aContest = Model.findContestId(contestId);
+        if (aContest == null) {
+            return false;
+        }
+
+        // Obtener los soccerIds de los futbolistas : List<ObjectId>
+        List<ObjectId> soccerIds = new ArrayList<>();
+
+        Iterable<TemplateSoccerPlayer> soccers = Model.findFields(Model.templateSoccerPlayers(), "optaPlayerId", optaIdsList).as(TemplateSoccerPlayer.class);
+
+        String soccerNames = "";    // Requerido para Logger.info
+        for (TemplateSoccerPlayer soccer : soccers) {
+            soccerNames += soccer.name + " / ";
+            soccerIds.add(soccer.templateSoccerPlayerId);
+        }
+
+        Logger.info("contestEntry: Contest[{}] / User[{}] = ({}) => {}", aContest.name, aUser.nickName, soccerIds.size(), soccerNames);
+
+        // Crear el equipo en mongoDb.contestEntryCollection
+        return createContestEntry(new ObjectId(userId), new ObjectId(contestId), soccerIds);
+    }
+
+    /**
+     * Creacion de un contest entry (se añade a la base de datos)
+     * @param user      Usuario al que pertenece el equipo
+     * @param contest   Contest al que se apunta
+     * @param soccers   Lista de futbolistas con la que se apunta
+     * @return Si se ha realizado correctamente su creacion
+     */
+    public static boolean createContestEntry(ObjectId user, ObjectId contest, List<ObjectId> soccers) {
+        boolean bRet = true;
+
+        try {
+            ContestEntry aContestEntry = new ContestEntry(user, contest, soccers);
+            Model.contestEntries().insert(aContestEntry);
+        } catch (MongoException exc) {
+            Logger.error("createContestEntry: ", exc);
+            bRet = false;
+        }
+
+        return bRet;
+    }
+
+    /**
      * Crea un template match event
      * @param teamA     TeamA
      * @param teamB     TeamB
@@ -494,6 +554,29 @@ public class Model {
 
     public static Iterable<LiveMatchEvent> findLiveMatchEventsFromIds(String fieldId, List<ObjectId> idList) {
         return findObjectIds(liveMatchEvents(), fieldId, idList).as(LiveMatchEvent.class);
+    }
+
+    public static List<SoccerPlayer> getSoccerPlayersInContestEntry(String contestEntryId) {
+        ContestEntry contestEntry = Model.contestEntries().findOne("{ _id : # }", new ObjectId(contestEntryId)).as(ContestEntry.class);
+        Contest contest = Model.contests().findOne("{ _id: # }", contestEntry.contestId).as(Contest.class);
+        TemplateContest templateContest = Model.templateContests().findOne("{ _id: # }", contest.templateContestId).as(TemplateContest.class);
+        List<ObjectId> templateMatchEventIds = templateContest.templateMatchEventIds;
+
+        //Iterable<LiveMatchEvent> liveMatchEventsResults = Model.liveMatchEvents().find().as(LiveMatchEvent.class);
+        Iterable<LiveMatchEvent> liveMatchEventsResults = Model.findObjectIds(Model.liveMatchEvents(), "templateMatchEventId", templateMatchEventIds).as(LiveMatchEvent.class);
+        List<LiveMatchEvent> liveMatchEventList = ListUtils.asList(liveMatchEventsResults);
+
+        List<SoccerPlayer> soccerPlayers = new ArrayList<>();
+        for (ObjectId soccerId : contestEntry.soccerIds) {
+            for (LiveMatchEvent liveMatchEvent : liveMatchEventList) {
+                SoccerPlayer liveSoccer = liveMatchEvent.findTemplateSoccerPlayer(soccerId);
+                if (liveSoccer != null) {
+                    soccerPlayers.add(liveSoccer);
+                    break;
+                }
+            }
+        }
+        return soccerPlayers;
     }
 
     /**

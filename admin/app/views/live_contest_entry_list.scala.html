@@ -1,0 +1,33 @@
+@(contest_entries: List[model.ContestEntry])
+
+@main("Live Contest Entries - Admin") {
+
+<h1 class="page-header">Live Contest Entries</h1>
+
+<a href="@AdminController.updateContestEntriesLive"><button class="btn btn-success">Update Live</button></a>
+
+<h2 class="sub-header"></h2>
+<div class="table-responsive">
+    <table id="table_id" class="table table-striped">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>UserId</th>
+            <th>ContestId</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(p <- contest_entries) {
+        <tr>
+            <td>@p.contestEntryId</td>
+            <td>@p.userId</td>
+            <td><a href="@AdminController.liveContestEntry(p.contestEntryId.toString())">@p.contestId</a></td>
+        </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<a href='@AdminController.dashBoard'>Back to Dashboard</a>
+
+}

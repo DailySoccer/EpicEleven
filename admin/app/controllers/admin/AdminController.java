@@ -105,6 +105,23 @@ public class AdminController extends Controller {
         return redirect(routes.AdminController.liveMatchEvents());
     }
 
+    public static Result updateContestEntriesLive() {
+        return redirect(routes.AdminController.liveContestEntries());
+    }
+
+    public static Result liveContestEntry(String contestEntryId) {
+        ContestEntry contestEntry = Model.contestEntries().findOne("{ _id : # }", new ObjectId(contestEntryId)).as(ContestEntry.class);
+        List<SoccerPlayer> soccer_players = Model.getSoccerPlayersInContestEntry(contestEntryId);
+        return ok(views.html.live_contest_entry.render(contestEntry, soccer_players));
+    }
+
+    public static Result liveContestEntries() {
+        Iterable<ContestEntry> contestEntryResults = Model.contestEntries().find().as(ContestEntry.class);
+        List<ContestEntry> contestEntryList = ListUtils.asList(contestEntryResults);
+
+        return ok(views.html.live_contest_entry_list.render(contestEntryList));
+    }
+
     public static Result liveMatchEvent(String liveMatchEventId) {
         LiveMatchEvent liveMatchEvent = Model.liveMatchEvents().findOne("{ _id : # }",
                 new ObjectId(liveMatchEventId)).as(LiveMatchEvent.class);
@@ -133,32 +150,42 @@ public class AdminController extends Controller {
 
     public static Result addContestEntry() {
         Form<ContestEntryForm> contestEntryForm = Form.form(ContestEntryForm.class);
-        return ok(views.html.contest_entry_add.render(contestEntryForm));
+        return ok(views.html.contest_entry_add.render(contestEntryForm, null));
+    }
+
+    private static List<TemplateMatchEvent> getTemplateMatchEvents(String contestId) {
+        // Pasar la lista de partidos
+        Contest contest = Model.contests().findOne("{_id: #}", new ObjectId(contestId)).as(Contest.class);
+        TemplateContest templateContest = Model.templateContests().findOne("{_id: #}", contest.templateContestId).as(TemplateContest.class);
+
+        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.findTemplateMatchEventFromIds("_id", templateContest.templateMatchEventIds);
+        return ListUtils.asList(templateMatchEventsResults);
     }
 
     public static Result submitContestEntry() {
         Form<ContestEntryForm> contestEntryForm = form(ContestEntryForm.class).bindFromRequest();
         if (contestEntryForm.hasErrors()) {
-            return badRequest(views.html.contest_entry_add.render(contestEntryForm));
+            String contestId = contestEntryForm.field("contestId").value();
+            List<TemplateMatchEvent> templateMatchEvents = ObjectId.isValid(contestId) ? getTemplateMatchEvents(contestId) : null;
+            return badRequest(views.html.contest_entry_add.render(contestEntryForm, templateMatchEvents));
         }
 
         ContestEntryForm params = contestEntryForm.get();
+
+        boolean success = Model.createContestEntryFromOptaIds(params.userId, params.contestId, params.getTeam());
+        if ( !success ) {
+            FlashMessage.warning("Contest Entry invalid");
+            String contestId = contestEntryForm.field("contestId").value();
+            List<TemplateMatchEvent> templateMatchEvents = ObjectId.isValid(contestId) ? getTemplateMatchEvents(contestId) : null;
+            return badRequest(views.html.contest_entry_add.render(contestEntryForm, templateMatchEvents));
+        }
+
         Logger.info("UserId({}) Contest({})Goalkeeper({}) Defenses({}, {}, {}, {}) Middles({}, {}, {}, {}), Forwards({}, {})",
                 params.userId, params.contestId,
                 params.goalkeeper,
                 params.defense1, params.defense2, params.defense3, params.defense4,
                 params.middle1, params.middle2, params.middle3, params.middle4,
                 params.forward1, params.forward2);
-
-        /*
-         *
-         * TODO
-         *
-        boolean success = ContestController.createContestEntryFromOptaIds(params.userId, params.contestId, params.getTeam());
-        if ( !success ) {
-            return badRequest(views.html.contest_entry_add.render(contestEntryForm));
-        }
-        */
 
         return redirect(routes.AdminController.contestEntries());
     }
@@ -168,6 +195,32 @@ public class AdminController extends Controller {
         List<ContestEntry> contestEntryList = ListUtils.asList(contestEntryResults);
 
         return ok(views.html.contest_entry_list.render(contestEntryList));
+    }
+
+    public static Result enterContestWithForm(Form<ContestEntryForm> contestEntryForm) {
+        ContestEntryForm params = contestEntryForm.get();
+        String contestId = params.contestId;
+
+        return ok(views.html.contest_entry_add.render(contestEntryForm, getTemplateMatchEvents(contestId)));
+    }
+
+    public static Result enterContest(String contestId) {
+        ContestEntryForm params = new ContestEntryForm();
+        params.contestId = contestId;
+
+        Form<ContestEntryForm> contestEntryForm = Form.form(ContestEntryForm.class).fill(params);
+        return enterContestWithForm(contestEntryForm);
+
+        /*
+        // Pasar la lista de partidos
+        Contest contest = Model.contests().findOne("{_id: #}", new ObjectId(contestId)).as(Contest.class);
+        TemplateContest templateContest = Model.templateContests().findOne("{_id: #}", contest.templateContestId).as(TemplateContest.class);
+
+        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.findTemplateMatchEventFromIds("_id", templateContest.templateMatchEventIds);
+        List<TemplateMatchEvent> templateMatchEventsList = ListUtils.asList(templateMatchEventsResults);
+
+        return ok(views.html.contest_entry_add.render(contestEntryForm, templateMatchEventsList));
+        */
     }
 
     public static Result contests() {

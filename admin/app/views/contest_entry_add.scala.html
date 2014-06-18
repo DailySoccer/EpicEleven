@@ -1,4 +1,4 @@
-@(contestEntryForm: Form[controllers.admin.ContestEntryForm])
+@(contestEntryForm: Form[controllers.admin.ContestEntryForm], match_events: List[model.TemplateMatchEvent])
 
 @import helper._
 @import helper.twitterBootstrap._
@@ -8,11 +8,44 @@
 }
 
 @input_text(field: Field, _placeholder: String = "", _class: String = "") = {
+    <div>
     <input id="@field.name" name="@field.name" type="text" placeholder="@_placeholder" class="@_class @if(field.hasErrors) {has-error}" required="" value="@field.value">
     @if(field.hasErrors) {
         <span class="help-block">@{field.error.map { error => error.message }}</span>
     }
+    </div>
 }
+
+@show_team(team: model.SoccerTeam) = {
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <caption>@team.name</caption>
+            <thead>
+            <tr>
+                <th>Template SoccerID</th>
+                <th>OptaId</th>
+                <th>Name</th>
+                <th>Field Pos</th>
+                <th>Salary</th>
+                <th>Fantasy Points</th>
+            </tr>
+            </thead>
+            <tbody>
+            @for(p <- team.soccerPlayers) {
+            <tr>
+                <td>@p.templateSoccerPlayerId</td>
+                <td>@p.optaPlayerId</td>
+                <td>@p.name</td>
+                <td>@p.fieldPos</td>
+                <td>@p.salary</td>
+                <td>@p.fantasyPoints</td>
+            </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+
 
 @main("Contest Entry - Admin") {
 
@@ -91,7 +124,16 @@
         </div>
 
     </fieldset>
+
+    @if(match_events != null) {
+        @for(p <- match_events) {
+            @show_team(p.soccerTeamA)
+            @show_team(p.soccerTeamB)
+        }
+    }
 }
+
+<br/>
 
 <br/>
 <a href='@AdminController.dashBoard'>Back to Dashboard</a>

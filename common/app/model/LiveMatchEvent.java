@@ -27,4 +27,18 @@ public class LiveMatchEvent {
         soccerTeamB = templateMatchEvent.soccerTeamB;
         startDate = templateMatchEvent.startDate;
     }
+
+    public SoccerPlayer findTemplateSoccerPlayer(ObjectId templateSoccerPlayerId) {
+        for(SoccerPlayer soccer : soccerTeamA.soccerPlayers) {
+            if(soccer.templateSoccerPlayerId.compareTo(templateSoccerPlayerId) == 0)
+                return soccer;
+        }
+
+        for(SoccerPlayer soccer : soccerTeamB.soccerPlayers) {
+            if(soccer.templateSoccerPlayerId.compareTo(templateSoccerPlayerId) == 0)
+                return soccer;
+        }
+
+        return null;
+    }
 }

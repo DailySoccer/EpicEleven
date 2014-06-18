@@ -43,6 +43,20 @@ public class ContestEntryForm {
         return list;
     }
 
+    public void addSoccer(String optaPlayerId) {
+        if (goalkeeper.isEmpty())       goalkeeper = optaPlayerId;
+        else if (defense1.isEmpty())    defense1 = optaPlayerId;
+        else if (defense2.isEmpty())    defense2 = optaPlayerId;
+        else if (defense3.isEmpty())    defense3 = optaPlayerId;
+        else if (defense4.isEmpty())    defense4 = optaPlayerId;
+        else if (middle1.isEmpty())     middle1 = optaPlayerId;
+        else if (middle2.isEmpty())     middle2 = optaPlayerId;
+        else if (middle3.isEmpty())     middle3 = optaPlayerId;
+        else if (middle4.isEmpty())     middle4 = optaPlayerId;
+        else if (forward1.isEmpty())    forward1 = optaPlayerId;
+        else if (forward2.isEmpty())    forward2 = optaPlayerId;
+    }
+
     public List<ValidationError> validate() {
 
         List<ValidationError> errors = new ArrayList<>();

@@ -14,6 +14,10 @@ GET         /lobby                                             controllers.admin
 
 GET         /users                                             controllers.admin.AdminController.users()
 
+GET         /live_contest_entry/:contestEntryId                controllers.admin.AdminController.liveContestEntry(contestEntryId : String)
+GET         /live_contest_entries/update                       controllers.admin.AdminController.updateContestEntriesLive()
+GET         /live_contest_entries                              controllers.admin.AdminController.liveContestEntries()
+
 GET         /live_match_event/:liveMatchEventId                controllers.admin.AdminController.liveMatchEvent(liveMatchEventId : String)
 GET         /live_match_events/update                          controllers.admin.AdminController.updateLive()
 GET         /live_match_events                                 controllers.admin.AdminController.liveMatchEvents()
@@ -22,6 +26,7 @@ GET         /contest_entry/add                                 controllers.admin
 POST        /contest_entry/add                                 controllers.admin.AdminController.submitContestEntry()
 GET         /contest_entries                                   controllers.admin.AdminController.contestEntries()
 
+GET         /contest_enter/:contestId                          controllers.admin.AdminController.enterContest(contestId : String)
 GET         /contests                                          controllers.admin.AdminController.contests()
 GET         /contest/instantiate                               controllers.admin.AdminController.instantiateContests()
 GET         /contest/:contestId                                controllers.admin.AdminController.contest(contestId : String)
