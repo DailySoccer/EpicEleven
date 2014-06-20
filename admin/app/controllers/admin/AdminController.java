@@ -89,7 +89,7 @@ public class AdminController extends Controller {
         return ok(views.html.user_list.render(userList));
     }
 
-    public static Result showPlayerFantasyPoints(String contestId, String playerId) {
+    public static Result showPlayerFantasyPointsInContest(String contestId, String playerId) {
         List<OptaEvent> optaEventList = new ArrayList<>();
 
         TemplateSoccerPlayer templateSoccerPlayer = Model.templateSoccerPlayer( new ObjectId(playerId) );
@@ -100,6 +100,17 @@ public class AdminController extends Controller {
         for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
             optaEventList.addAll(Model.optaEvents(templateMatchEvent.optaMatchEventId, templateSoccerPlayer.optaPlayerId));
         }
+
+        return ok(views.html.player_fantasy_points.render(templateSoccerPlayer, optaEventList));
+    }
+
+    public static Result showPlayerFantasyPointsInMatchEvent(String templateMatchEventId, String playerId) {
+        List<OptaEvent> optaEventList = new ArrayList<>();
+
+        TemplateSoccerPlayer templateSoccerPlayer = Model.templateSoccerPlayer( new ObjectId(playerId) );
+        TemplateMatchEvent templateMatchEvent = Model.templateMatchEvent( new ObjectId(templateMatchEventId) );
+
+        optaEventList.addAll(Model.optaEvents(templateMatchEvent.optaMatchEventId, templateSoccerPlayer.optaPlayerId));
 
         return ok(views.html.player_fantasy_points.render(templateSoccerPlayer, optaEventList));
     }

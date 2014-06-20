@@ -24,7 +24,7 @@
             <td>@p.name</td>
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
-            <td>@p.fantasyPoints</td>
+            <td><a href="@AdminController.showPlayerFantasyPointsInMatchEvent(match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
         </tr>
         }
         </tbody>
@@ -47,7 +47,7 @@
             <td>@p.name</td>
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
-            <td>@p.fantasyPoints</td>
+            <td><a href="@AdminController.showPlayerFantasyPointsInMatchEvent(match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
         </tr>
         }
         </tbody>

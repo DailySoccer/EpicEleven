@@ -195,6 +195,10 @@ public class Model {
         return templateContests().findOne("{_id : #}", templateContestId).as(TemplateContest.class);
     }
 
+    static public TemplateMatchEvent templateMatchEvent(ObjectId templateMatchEventId) {
+        return templateMatchEvents().findOne("{_id : #}", templateMatchEventId).as(TemplateMatchEvent.class);
+    }
+
     static public TemplateSoccerPlayer templateSoccerPlayer(ObjectId templateSoccerPlayerId) {
         return templateSoccerPlayers().findOne("{_id : #}", templateSoccerPlayerId).as(TemplateSoccerPlayer.class);
     }
