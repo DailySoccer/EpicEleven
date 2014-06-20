@@ -50,18 +50,36 @@
 
 @scripts = {
     <script type="text/javascript">
+
+    // El futbolista ya esta incluido en el fantasy team?
+    function soccerInFantasyTeam(optaPlayerId) {
+        var soccers = $('.soccer')
+            .filter(function() { return this.value == optaPlayerId; });
+        return (soccers.length > 0);
+    }
+
     $(document).ready( function(){
+      // Helper: Añadir un futbolista al fantasy team
       $(".addSoccer").click(function() {
         var optaPlayerId = $(this).val();
-        // console.log("click " + valor);
-        // var soccersEmpty = $('.soccer[value=""]');
-        var soccersEmpty = $('.soccer').filter(function() { return this.value == ""; });
-        soccersEmpty.each(function() {
-            this.value = optaPlayerId;
-            return false;
-        });
+        if (!soccerInFantasyTeam(optaPlayerId)) {
+            var soccersEmpty = $('.soccer').filter(function() { return this.value == ""; });
+            if (soccersEmpty.length > 0) {
+                soccersEmpty.each(function() {
+                    this.value = optaPlayerId;
+                    return false;
+                });
+            }
+            else {
+                alert("Fantasy Team Full");
+            }
+        }
+        else {
+            alert("OptaId " + optaPlayerId + " duplicated in fantasy team");
+        }
       })
     })
+
     </script>
 }
 
