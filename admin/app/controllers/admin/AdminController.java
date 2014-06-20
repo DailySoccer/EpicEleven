@@ -106,6 +106,7 @@ public class AdminController extends Controller {
     }
 
     public static Result updateContestEntriesLive() {
+        updateLive();
         return redirect(routes.AdminController.liveContestEntries());
     }
 
@@ -133,6 +134,30 @@ public class AdminController extends Controller {
         List<LiveMatchEvent> liveMatchEventList = ListUtils.asList(liveMatchEventResults);
 
         return ok(views.html.live_match_event_list.render(liveMatchEventList));
+    }
+
+    public static Result submitPointsTranslation() {
+        Form<PointsTranslationForm> pointsTranslationForm = form(PointsTranslationForm.class).bindFromRequest();
+        if (pointsTranslationForm.hasErrors()) {
+            return badRequest(views.html.points_translation_add.render(pointsTranslationForm));
+        }
+
+        PointsTranslationForm params = pointsTranslationForm.get();
+
+        boolean success = Model.createPointsTranslation(params.eventType, params.points);
+        if ( !success ) {
+            FlashMessage.warning("Points Translation invalid");
+            return badRequest(views.html.points_translation_add.render(pointsTranslationForm));
+        }
+
+        Logger.info("Event Type ({}) = {} points", params.eventType, params.points);
+
+        return redirect(routes.AdminController.pointsTranslations());
+    }
+
+    public static Result addPointsTranslation() {
+        Form<PointsTranslationForm> pointsTranslationForm = Form.form(PointsTranslationForm.class);
+        return ok(views.html.points_translation_add.render(pointsTranslationForm));
     }
 
     public static Result createPointsTranslation(){

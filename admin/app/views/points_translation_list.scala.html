@@ -5,6 +5,7 @@
 
 <h1 class="page-header">Contests</h1>
 
+<a href="@AdminController.addPointsTranslation"><button class="btn btn-success">Add Points Translation</button></a>
 <a href="@AdminController.createPointsTranslation"><button class="btn btn-danger">Create Points Translation</button></a>
 
 <h2 class="sub-header"></h2>
@@ -24,7 +25,7 @@
             <td>@p._id</td>
             <td>@p.eventTypeId</td>
             <td>@p.points</td>
-            <td>@p.timestamp</td>
+            <td>@p.timestamp.format("yyyy/MM/dd hh:mm:ss")</td>
         </tr>
         }
         </tbody>

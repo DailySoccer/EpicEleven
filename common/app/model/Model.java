@@ -243,6 +243,19 @@ public class Model {
     }
 
     /**
+     * Creacion de una entrada de Points Translation
+     */
+    public static boolean createPointsTranslation(int eventType, int points) {
+        PointsTranslation pointsTranslation = new PointsTranslation();
+        pointsTranslation.eventTypeId = eventType;
+        pointsTranslation.points = points;
+        pointsTranslation.timestamp = new Date();
+        pointsTranslation.unixtimestamp = pointsTranslation.timestamp.getTime();
+        pointsTranslation().insert(pointsTranslation);
+        return true;
+    }
+
+    /**
      * Creacion de un contest entry (se añade a la base de datos)
      * @param userId        Usuario al que pertenece el equipo
      * @param contestId     Contest al que se apunta
