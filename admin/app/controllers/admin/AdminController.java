@@ -248,7 +248,10 @@ public class AdminController extends Controller {
     }
 
     public static void instantiateTemplateContest(TemplateContest templateContest) {
-        for(int i=0; i<templateContest.minInstances; i++) {
+        // Cuantas instancias tenemos creadas?
+        long instances = Model.contests().count("{templateContestId: #}", templateContest.templateContestId);
+
+        for(long i=instances; i<templateContest.minInstances; i++) {
             Contest contest = new Contest(templateContest);
             contest.maxUsers = 10;
             Model.contests().insert(contest);
