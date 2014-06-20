@@ -27,7 +27,10 @@
             <td>@p.currentUserIds.size()</td>
             <td>@p.maxUsers</td>
             <td><a href="@AdminController.templateContest(p.templateContestId.toString())">@p.templateContestId</a></td>
-            <td><a href="@AdminController.enterContest(p.contestId.toString())"><button class="btn btn-success">Enter</button></a></td>
+            <td>
+                <a href="@AdminController.enterContest(p.contestId.toString())"><button class="btn btn-success">Enter</button></a>
+                <a href="@AdminController.deleteContest(p.contestId.toString())"><button class="btn btn-danger">-</button></a>
+            </td>
         </tr>
         }
         </tbody>

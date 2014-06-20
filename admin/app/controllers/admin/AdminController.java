@@ -5,6 +5,7 @@ import model.opta.OptaMatchEvent;
 import model.opta.OptaPlayer;
 import model.opta.OptaTeam;
 import model.opta.OptaEvent;
+import org.jongo.Find;
 import org.bson.types.ObjectId;
 import java.util.Date;
 import org.joda.time.DateTime;
@@ -307,6 +308,18 @@ public class AdminController extends Controller {
             contest.maxUsers = 10;
             Model.contests().insert(contest);
         }
+    }
+
+    public static Result deleteContest(String contestId) {
+        Contest contest = Model.contest(new ObjectId(contestId));
+        Model.deleteContest(contest);
+        return redirect(routes.AdminController.contests());
+    }
+
+    public static Result deleteTemplateContest(String templateContestId) {
+        TemplateContest templateContest = Model.templateContest(new ObjectId(templateContestId));
+        Model.deleteTemplateContest(templateContest);
+        return redirect(routes.AdminController.templateContests());
     }
 
     public static Result templateContests() {

@@ -22,6 +22,7 @@
             <th>Entry Fee</th>
             <th>Prize Type</th>
             <th>Start Date</th>
+            <th></th>
             <!--
             @for(i <- 0 to 10) {
             <th>Match Event @i</th>
@@ -42,6 +43,9 @@
             <td>@p.entryFee</td>
             <td>@p.prizeType</td>
             <td>@p.startDate.format("yyyy/MM/dd hh:mm:ss")</td>
+            <td>
+                <a href="@AdminController.deleteTemplateContest(p.templateContestId.toString())"><button class="btn btn-danger">-</button></a>
+            </td>
         </tr>
         }
         </tbody>

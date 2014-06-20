@@ -34,12 +34,14 @@ GET         /contest_entries                                   controllers.admin
 GET         /contest_enter/:contestId                          controllers.admin.AdminController.enterContest(contestId : String)
 GET         /contests                                          controllers.admin.AdminController.contests()
 GET         /contest/instantiate                               controllers.admin.AdminController.instantiateContests()
+GET         /contest/delete/:contestId                         controllers.admin.AdminController.deleteContest(contestId : String)
 GET         /contest/:contestId                                controllers.admin.AdminController.contest(contestId : String)
 
 GET         /template_contests                                 controllers.admin.AdminController.templateContests()
 GET         /template_contest/create_all                       controllers.admin.AdminController.createAllTemplateContests()
 GET         /template_contest/add                              controllers.admin.AdminController.addTemplateContest()
-POST        /template_constet/add                              controllers.admin.AdminController.submitTemplateContest()
+POST        /template_contest/add                              controllers.admin.AdminController.submitTemplateContest()
+GET         /template_contest/delete/:templateContestId        controllers.admin.AdminController.deleteTemplateContest(templateContestId : String)
 GET         /template_contest/:templateContestId               controllers.admin.AdminController.templateContest(templateContestId : String)
 
 GET         /template_match_events                             controllers.admin.AdminController.templateMatchEvents()

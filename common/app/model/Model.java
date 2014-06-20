@@ -294,6 +294,52 @@ public class Model {
     }
 
     /**
+     *  Eliminar un contest entry y sus dependencias
+     */
+    public static boolean deleteContestEntry(ContestEntry contestEntry) {
+        Logger.info("delete ContestEntry ({})", contestEntry.contestEntryId);
+        contestEntries().remove(contestEntry.contestEntryId);
+
+        return true;
+    }
+
+    /**
+     * Eliminar un contest y sus dependencias
+     */
+    public static boolean deleteContest(Contest contest) {
+        Logger.info("delete Contest ({}): {}", contest.contestId, contest.name);
+
+        // Eliminar los contest entries de ese contest
+        contestEntries().remove("{contestId: #}", contest.contestId);
+
+        // Eliminar el contest
+        contests().remove(contest.contestId);
+
+        return true;
+    }
+
+    /**
+     *  Eliminar un template contest y sus dependencias
+     */
+    public static boolean deleteTemplateContest(TemplateContest templateContest) {
+        Logger.info("delete TemplateContest({}): {}", templateContest.templateContestId, templateContest.name);
+
+        // Buscar los Contests que instancian el template contest
+        Iterable<Contest> contestResults = Model.contests().find("{templateContestId : #}", templateContest.templateContestId).as(Contest.class);
+        List<Contest> contestList = ListUtils.asList(contestResults);
+
+        List<ObjectId> contestIds = new ArrayList<>();
+        for (Contest contest : contestList) {
+            deleteContest(contest);
+        }
+
+        // Eliminar el template contest
+        templateContests().remove(templateContest.templateContestId);
+
+        return true;
+    }
+
+    /**
      * Creacion de un contest entry (se añade a la base de datos)
      * @param userId        Usuario al que pertenece el equipo
      * @param contestId     Contest al que se apunta
