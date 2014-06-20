@@ -8,8 +8,8 @@ GET         /import_teams_and_soccers                          controllers.admin
 GET         /import_match_events                               controllers.admin.AdminController.importMatchEvents()
 
 GET         /points_translation/create                         controllers.admin.AdminController.createPointsTranslation()
-GET         /contest_entry/add                                 controllers.admin.AdminController.addPointsTranslation()
-POST        /contest_entry/add                                 controllers.admin.AdminController.submitPointsTranslation()
+GET         /points_translation/add                            controllers.admin.AdminController.addPointsTranslation()
+POST        /points_translation/add                            controllers.admin.AdminController.submitPointsTranslation()
 GET         /points_translations                               controllers.admin.AdminController.pointsTranslations()
 
 GET         /lobby                                             controllers.admin.AdminController.lobby()
