@@ -23,9 +23,10 @@ public class OptaEvent {
     public String optaPlayerId;
     //ObjectId?
     public int parentId;
+    public int periodId;
     // <DEBUG>
     public int outcome;
-    public ArrayList<Integer> qualifiers;
+    public ArrayList<Integer> qualifiers = new ArrayList<>();
     // </DEBUG>
     public Date timestamp;
     //TODO: Remove

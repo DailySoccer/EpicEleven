@@ -52,6 +52,8 @@ public final class MockData {
                 {1410, -30},  // penalty fallado
                 {1680, -10},  // Gol al portero
                 {1058, 30},   // penalty parado por el portero
+                {2000, 40},   // clean sheet
+                {2001, -10},  // Gol al defensa
         };
         //TODO: Gol en contra:
         for (int i = 0; i < pointsTable.length; i++){
