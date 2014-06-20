@@ -5,10 +5,9 @@ import org.bson.types.ObjectId;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 // https://github.com/playframework/playframework/tree/master/samples/java/forms
 public class TemplateContestForm {
@@ -37,10 +36,13 @@ public class TemplateContestForm {
     public Date startDate = new Date();
 
     public static HashMap<String, String> matchEventsOptions() {
-        HashMap<String, String> options = new HashMap<>();
-        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.templateMatchEvents().find().as(TemplateMatchEvent.class);
+        HashMap<String, String> options = new LinkedHashMap<>();
+        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.templateMatchEvents().find().sort("{startDate : 1}").as(TemplateMatchEvent.class);
         for (TemplateMatchEvent matchEvent: templateMatchEventsResults) {
-            options.put(matchEvent.optaMatchEventId, String.format("%s vs %s", matchEvent.soccerTeamA.name, matchEvent.soccerTeamB.name));
+            options.put(matchEvent.optaMatchEventId, String.format("%s - %s vs %s",
+                    // new SimpleDateFormat("yy/MM/dd").format(matchEvent.startDate),
+                    DateFormat.getDateInstance(DateFormat.SHORT).format(matchEvent.startDate),
+                    matchEvent.soccerTeamA.name, matchEvent.soccerTeamB.name));
         }
         return options;
     }
