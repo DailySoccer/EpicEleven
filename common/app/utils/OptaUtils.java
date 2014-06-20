@@ -117,9 +117,29 @@ public class OptaUtils {
                 myEvent.outcome==0 && myEvent.qualifiers.contains(9)){
             myEvent.typeId = 1410;
         }
-        // Gol en contra -> 1699
-        if (myEvent.typeId==16 && myEvent.outcome==1 && myEvent.qualifiers.contains(28)){
-            myEvent.typeId = 1699;
+        if (myEvent.typeId==16 && myEvent.outcome==1) {
+            // Gol en contra -> 1699
+            if (myEvent.qualifiers.contains(28)) {
+                myEvent.typeId = 1699;
+            } else {
+            // Diferencias en goles:
+                OptaPlayer scorer = Model.optaPlayers().findOne("{id: p#}", myEvent.optaPlayerId).as(OptaPlayer.class);
+                if (scorer.position == "Goalkeeper"){
+                    // Gol del portero
+                    myEvent.typeId = 1601;
+                } else if (scorer.position == "Defender"){
+                    // Gol del defensa
+                    myEvent.typeId = 1602;
+                } else if (scorer.position == "Midfielder"){
+                    // Gol del medio
+                    myEvent.typeId = 1603;
+                } else if (scorer.position == "Forward"){
+                    // Gol del delantero
+                    myEvent.typeId = 1604;
+                }
+
+            }
+
         }
         // Gol al portero -> 1860
         if ((myEvent.typeId==10 || myEvent.typeId==11 || myEvent.typeId==12) &&
