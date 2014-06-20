@@ -123,7 +123,7 @@ public class OptaUtils {
                 myEvent.typeId = 1699;
             } else {
             // Diferencias en goles:
-                OptaPlayer scorer = Model.optaPlayers().findOne("{id: p#}", myEvent.optaPlayerId).as(OptaPlayer.class);
+                OptaPlayer scorer = Model.optaPlayers().findOne("{id: #}", "p"+myEvent.optaPlayerId).as(OptaPlayer.class);
                 if (scorer.position == "Goalkeeper"){
                     // Gol del portero
                     myEvent.typeId = 1601;

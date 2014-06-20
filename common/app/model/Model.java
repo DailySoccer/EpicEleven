@@ -155,12 +155,15 @@ public class Model {
         sessions.createIndex(new BasicDBObject("sessionToken", 1), new BasicDBObject("unique", true));
 
         DBCollection optaDB = theMongoDB.getCollection("optaDB");
+        optaDB.createIndex(new BasicDBObject("startDate", 1));
+        optaDB.createIndex(new BasicDBObject("startDate", -1));
         DBCollection optaEvents = theMongoDB.getCollection("optaEvents");
         optaEvents.createIndex(new BasicDBObject("parentId", 1));
         optaEvents.createIndex(new BasicDBObject("eventId", 1));
         optaEvents.createIndex(new BasicDBObject("gameId", 1));
         optaEvents.createIndex(new BasicDBObject("optaPlayerId", 1));
         DBCollection optaPlayers = theMongoDB.getCollection("optaPlayers");
+        optaEvents.createIndex(new BasicDBObject("optaPlayerId", 1));
         DBCollection optaTeams = theMongoDB.getCollection("optaTeams");
         DBCollection optaMatchEvents = theMongoDB.getCollection("optaMatchEvents");
         DBCollection pointsTranslation = theMongoDB.getCollection("pointsTranslation");
