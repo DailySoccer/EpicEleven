@@ -1,8 +1,23 @@
 @(contest_entry: model.ContestEntry, soccer_players: List[model.SoccerPlayer])
 
-@main("Contest Entry - Admin") {
+@scripts = {
+    <script type="text/javascript">
 
-<h1 class="page-header">Contest Entry: @contest_entry.contestEntryId</h1>
+        function updatePage() {
+            console.log("reload");
+            window.location.reload(true);
+        }
+
+        $(document).ready( function(){
+            window.setInterval(updatePage, 10000);
+        })
+
+    </script>
+}
+
+@main("Live Contest Entry - Admin", scripts) {
+
+<h1 class="page-header">Live Contest Entry: @contest_entry.contestEntryId</h1>
 
 <h2 class="sub-header"></h2>
 <div class="table-responsive">

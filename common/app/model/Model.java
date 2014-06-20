@@ -187,6 +187,10 @@ public class Model {
      *
      */
 
+    static public ContestEntry contestEntry(ObjectId contestEntryId) {
+        return contestEntries().findOne("{_id : #}", contestEntryId).as(ContestEntry.class);
+    }
+
     static public Contest contest(ObjectId contestId) {
         return contests().findOne("{_id : #}", contestId).as(Contest.class);
     }
@@ -563,6 +567,22 @@ public class Model {
         }
 
         Logger.info("END: updateLiveFantasyPoints: {}", System.currentTimeMillis() - startTime);
+    }
+
+    /**
+     *  Calcular y actualizar los puntos fantasy de un contest
+     */
+    static public void updateLiveFantasyPoints(Contest contest) {
+        TemplateContest templateContest = templateContest(contest.templateContestId);
+        updateLiveFantasyPoints(templateContest.templateMatchEventIds);
+    }
+
+    /**
+     *  Calcular y actualizar los puntos fantasy de un contest entry
+     */
+    static public void updateLiveFantasyPoints(ContestEntry contestEntry) {
+        Contest contest = Model.contest(contestEntry.contestId);
+        updateLiveFantasyPoints(contest);
     }
 
     /**

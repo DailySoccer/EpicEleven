@@ -133,12 +133,19 @@ public class AdminController extends Controller {
     }
 
     public static Result updateContestEntriesLive() {
-        updateLive();
+        Iterable<ContestEntry> contestEntryResults = Model.contestEntries().find().as(ContestEntry.class);
+        for(ContestEntry contestEntry : contestEntryResults) {
+            Model.updateLiveFantasyPoints(contestEntry);
+        }
+
         return redirect(routes.AdminController.liveContestEntries());
     }
 
     public static Result liveContestEntry(String contestEntryId) {
-        ContestEntry contestEntry = Model.contestEntries().findOne("{ _id : # }", new ObjectId(contestEntryId)).as(ContestEntry.class);
+        ContestEntry contestEntry = Model.contestEntry(new ObjectId(contestEntryId));
+        Contest contest = Model.contest(contestEntry.contestId);
+        Model.updateLiveFantasyPoints(contest);
+
         List<SoccerPlayer> soccer_players = Model.getSoccerPlayersInContestEntry(contestEntryId);
         return ok(views.html.live_contest_entry.render(contestEntry, soccer_players));
     }

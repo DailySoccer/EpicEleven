@@ -1,5 +1,20 @@
 @(soccer_player: model.TemplateSoccerPlayer, opta_events: List[model.opta.OptaEvent])
 
+@scripts = {
+<script type="text/javascript">
+
+        function updatePage() {
+            console.log("reload");
+            window.location.reload(true);
+        }
+
+        $(document).ready( function(){
+            window.setInterval(updatePage, 10000);
+        })
+
+    </script>
+}
+
 @total_points() = {
     @{
         var total = 0
@@ -10,7 +25,7 @@
     }
 }
 
-@main("Player Fantasy Points - Admin") {
+@main("Player Fantasy Points - Admin", scripts) {
 
 <h1 class="page-header">Player Fantasy Points</h1>
 
