@@ -1,4 +1,4 @@
-@(title: String)(content: Html)
+@(title: String, scripts: Html = Html(""))(content: Html)
 
 @import controllers.admin.FlashMessage
 
@@ -132,5 +132,7 @@
             $('#table_id').DataTable();
         } );
 </script>
+@scripts
+
 </body>
 </html>
