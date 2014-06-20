@@ -5,7 +5,10 @@ import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
+import java.util.HashSet;
 
 // https://github.com/playframework/playframework/tree/master/samples/java/forms
 public class ContestEntryForm {
@@ -26,6 +29,23 @@ public class ContestEntryForm {
 
     @Constraints.Required
     public String forward1, forward2;
+
+    public Map<String, String> getTeamMap() {
+        HashMap<String, String> teamMap = new HashMap<String, String>(){{
+            put("goalkeeper", goalkeeper);
+            put("defense1", defense1);
+            put("defense2", defense2);
+            put("defense3", defense3);
+            put("defense4", defense4);
+            put("middle1", middle1);
+            put("middle2", middle2);
+            put("middle3", middle3);
+            put("middle4", middle4);
+            put("forward1", forward1);
+            put("forward2", forward2);
+        }};
+        return teamMap;
+    }
 
     public List<String> getTeam() {
         List<String> list = new ArrayList<>();
@@ -73,49 +93,30 @@ public class ContestEntryForm {
             errors.add(new ValidationError("contestId", "Contest invalid"));
         }
 
-        // Validar cada uno de los futbolistas
-        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", goalkeeper).as(TemplateSoccerPlayer.class) == null) {
-            errors.add(new ValidationError("goalkeeper", "Goalkeeper invalid"));
+        Map<String, String> teamMap = getTeamMap();
+
+        // Validar que existan cada uno de los futbolistas
+        for (Map.Entry<String, String> entry : teamMap.entrySet()) {
+            String key      = entry.getKey();
+            String value    = entry.getValue();
+
+            if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", value).as(TemplateSoccerPlayer.class) == null) {
+                errors.add(new ValidationError(key, key + " invalid"));
+            }
         }
 
-        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", defense1).as(TemplateSoccerPlayer.class) == null) {
-            errors.add(new ValidationError("defense1", "Defense invalid"));
-        }
+        // Validar que no esten repetidos
+        HashMap<String, String>  teamSet = new HashMap<String, String>();
+        for (Map.Entry<String, String> entry : teamMap.entrySet()) {
+            String key      = entry.getKey();
+            String value    = entry.getValue();
 
-        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", defense2).as(TemplateSoccerPlayer.class) == null) {
-            errors.add(new ValidationError("defense2", "Defense invalid"));
-        }
-
-        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", defense3).as(TemplateSoccerPlayer.class) == null) {
-            errors.add(new ValidationError("defense3", "Defense invalid"));
-        }
-
-        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", defense4).as(TemplateSoccerPlayer.class) == null) {
-            errors.add(new ValidationError("defense4", "Defense invalid"));
-        }
-
-        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", middle1).as(TemplateSoccerPlayer.class) == null) {
-            errors.add(new ValidationError("middle1", "Middle invalid"));
-        }
-
-        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", middle2).as(TemplateSoccerPlayer.class) == null) {
-            errors.add(new ValidationError("middle2", "Middle invalid"));
-        }
-
-        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", middle3).as(TemplateSoccerPlayer.class) == null) {
-            errors.add(new ValidationError("middle3", "Middle invalid"));
-        }
-
-        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", middle4).as(TemplateSoccerPlayer.class) == null) {
-            errors.add(new ValidationError("middle4", "Middle invalid"));
-        }
-
-        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", forward1).as(TemplateSoccerPlayer.class) == null) {
-            errors.add(new ValidationError("forward1", "Forward invalid"));
-        }
-
-        if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", forward2).as(TemplateSoccerPlayer.class) == null) {
-            errors.add(new ValidationError("forward2", "Forward invalid"));
+            if (teamSet.containsKey(value)) {
+                errors.add(new ValidationError(key, key + " duplicated"));
+            }
+            else {
+                teamSet.put(value, key);
+            }
         }
 
         if(errors.size() > 0)

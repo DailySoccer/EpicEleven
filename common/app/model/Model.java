@@ -284,16 +284,30 @@ public class Model {
     /**
      * Creacion de un contest entry (se añade a la base de datos)
      * @param user      Usuario al que pertenece el equipo
-     * @param contest   Contest al que se apunta
+     * @param contestId   Contest al que se apunta
      * @param soccers   Lista de futbolistas con la que se apunta
      * @return Si se ha realizado correctamente su creacion
      */
-    public static boolean createContestEntry(ObjectId user, ObjectId contest, List<ObjectId> soccers) {
+    public static boolean createContestEntry(ObjectId user, ObjectId contestId, List<ObjectId> soccers) {
         boolean bRet = true;
 
         try {
-            ContestEntry aContestEntry = new ContestEntry(user, contest, soccers);
-            Model.contestEntries().insert(aContestEntry);
+            Contest contest = contests().findOne("{ _id: # }", contestId).as(Contest.class);
+            if (contest != null) {
+                ContestEntry aContestEntry = new ContestEntry(user, contestId, soccers);
+                Model.contestEntries().withWriteConcern(WriteConcern.SAFE).insert(aContestEntry);
+
+                if (!contest.currentUserIds.contains(contest.contestId)) {
+                    contest.currentUserIds.add(contest.contestId);
+                    Model.contests().update(contest.contestId).with(contest);
+                }
+            }
+            else {
+                bRet = false;
+            }
+
+
+
         } catch (MongoException exc) {
             Logger.error("createContestEntry: ", exc);
             bRet = false;

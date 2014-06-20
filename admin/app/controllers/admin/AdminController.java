@@ -180,7 +180,7 @@ public class AdminController extends Controller {
             return badRequest(views.html.contest_entry_add.render(contestEntryForm, templateMatchEvents));
         }
 
-        Logger.info("UserId({}) Contest({})Goalkeeper({}) Defenses({}, {}, {}, {}) Middles({}, {}, {}, {}), Forwards({}, {})",
+        Logger.info("UserId({}) Contest({}) Goalkeeper({}) Defenses({}, {}, {}, {}) Middles({}, {}, {}, {}), Forwards({}, {})",
                 params.userId, params.contestId,
                 params.goalkeeper,
                 params.defense1, params.defense2, params.defense3, params.defense4,
