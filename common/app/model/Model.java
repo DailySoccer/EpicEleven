@@ -183,6 +183,37 @@ public class Model {
     }
 
     /**
+     *  Utilidades para acceder a los datos
+     *
+     */
+
+    static public Contest contest(ObjectId contestId) {
+        return contests().findOne("{_id : #}", contestId).as(Contest.class);
+    }
+
+    static public TemplateContest templateContest(ObjectId templateContestId) {
+        return templateContests().findOne("{_id : #}", templateContestId).as(TemplateContest.class);
+    }
+
+    static public TemplateSoccerPlayer templateSoccerPlayer(ObjectId templateSoccerPlayerId) {
+        return templateSoccerPlayers().findOne("{_id : #}", templateSoccerPlayerId).as(TemplateSoccerPlayer.class);
+    }
+
+    static public List<TemplateMatchEvent> templateMatchEvents(TemplateContest templateContest) {
+        Iterable<TemplateMatchEvent> templateMatchEventResults = findTemplateMatchEventFromIds("_id", templateContest.templateMatchEventIds);
+        return ListUtils.asList(templateMatchEventResults);
+    }
+
+    static public List<OptaEvent> optaEvents(String optaMatchId, String optaPlayerId) {
+        String playerId = getPlayerIdFromOpta(optaPlayerId);
+        String matchId = getMatchEventIdFromOpta(optaMatchId);
+
+        Iterable<OptaEvent> optaEventResults = optaEvents().find("{optaPlayerId: #, gameId: #}",
+                playerId, matchId).as(OptaEvent.class);
+        return ListUtils.asList(optaEventResults);
+    }
+
+    /**
      * Inicializar la coleccion de equipos y futbolistas (que usaremos para crear los match events)
      * a partir de la coleccion de datos actualizada desde optaDB
      */

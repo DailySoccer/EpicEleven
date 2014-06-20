@@ -89,6 +89,21 @@ public class AdminController extends Controller {
         return ok(views.html.user_list.render(userList));
     }
 
+    public static Result showPlayerFantasyPoints(String contestId, String playerId) {
+        List<OptaEvent> optaEventList = new ArrayList<>();
+
+        TemplateSoccerPlayer templateSoccerPlayer = Model.templateSoccerPlayer( new ObjectId(playerId) );
+        Contest contest = Model.contest( new ObjectId(contestId) );
+        TemplateContest templateContest = Model.templateContest(contest.templateContestId);
+        List<TemplateMatchEvent> templateMatchEvents = Model.templateMatchEvents(templateContest);
+
+        for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
+            optaEventList.addAll(Model.optaEvents(templateMatchEvent.optaMatchEventId, templateSoccerPlayer.optaPlayerId));
+        }
+
+        return ok(views.html.player_fantasy_points.render(templateSoccerPlayer, optaEventList));
+    }
+
     public static Result updateLive() {
         // Obtenemos la lista de TemplateMatchEvents
         Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.templateMatchEvents().find().as(TemplateMatchEvent.class);

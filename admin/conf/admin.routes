@@ -16,6 +16,8 @@ GET         /lobby                                             controllers.admin
 
 GET         /users                                             controllers.admin.AdminController.users()
 
+GET         /player_fantasy_points/:contestId/:playerId        controllers.admin.AdminController.showPlayerFantasyPoints(contestId : String, playerId : String)
+
 GET         /live_contest_entry/:contestEntryId                controllers.admin.AdminController.liveContestEntry(contestEntryId : String)
 GET         /live_contest_entries/update                       controllers.admin.AdminController.updateContestEntriesLive()
 GET         /live_contest_entries                              controllers.admin.AdminController.liveContestEntries()

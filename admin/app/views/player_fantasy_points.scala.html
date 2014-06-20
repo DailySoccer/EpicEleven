@@ -1,0 +1,45 @@
+@(soccer_player: model.TemplateSoccerPlayer, opta_events: List[model.opta.OptaEvent])
+
+@main("Player Fantasy Points - Admin") {
+
+<h1 class="page-header">Player Fantasy Points</h1>
+
+<h2 class="sub-header">@soccer_player.name</h2>
+<div class="table-responsive">
+    <table id="table_id" class="table table-striped">
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>CompetitionId</th>
+            <th>GameId</th>
+            <th>HomeTeamId</th>
+            <th>AwayTeamId</th>
+            <th>OptaPlayerId</th>
+            <th>TypeId</th>
+            <th>Points</th>
+            <th>TimeStamp</th>
+            <th>LastModified</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(p <- opta_events) {
+        <tr>
+            <td>@p._id</td>
+            <td>@p.competitionId</td>
+            <td>@p.gameId</td>
+            <td>@p.homeTeamId</td>
+            <td>@p.awayTeamId</td>
+            <td>@p.optaPlayerId</td>
+            <td>@p.typeId</td>
+            <td>@p.points</td>
+            <td>@p.timestamp.format("yyyy/MM/dd hh:mm:ss")</td>
+            <td>@p.lastModified.format("yyyy/MM/dd hh:mm:ss")</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+<a href='@AdminController.contestEntries'>Back to Contest Entries</a>
+
+}
