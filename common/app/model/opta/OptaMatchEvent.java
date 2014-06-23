@@ -7,6 +7,7 @@ import java.util.Date;
  */
 public class OptaMatchEvent {
 
+    //TODO: Poner objectid
     public String id;
     public int competitionId;
     public int seasonId;

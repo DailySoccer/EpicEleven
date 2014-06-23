@@ -457,6 +457,7 @@ public class Model {
         }
         templateMatchEvent.soccerTeamB = newTeamB;
 
+        // TODO: Eliminar condicion (optaMatchEventId == null)
         if (optaMatchEventId != null) {
             // Insertar o actualizar
             Model.templateMatchEvents().update("{optaMatchEventId: #}", optaMatchEventId).upsert().with(templateMatchEvent);
@@ -725,6 +726,19 @@ public class Model {
 
     public static String getMatchEventIdFromOpta(String optaId) {
         return (optaId.charAt(0) == 'g') ? optaId.substring(1) : optaId;
+    }
+
+    /**
+     *  Estado del partido
+     *
+     *  TODO: Incluirlo en una clase diferente?
+     */
+    public static boolean isMatchEventStarted(TemplateMatchEvent templateMatchEvent) {
+        return false;
+    }
+
+    public static boolean isMatchEventFinished(TemplateMatchEvent templateMatchEvent) {
+        return false;
     }
 
     /**
