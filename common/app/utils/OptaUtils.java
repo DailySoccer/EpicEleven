@@ -1,7 +1,6 @@
 package utils;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.WriteResult;
 import model.Model;
 import model.PointsTranslation;
 import model.opta.OptaEvent;
@@ -10,7 +9,6 @@ import model.opta.OptaPlayer;
 import model.opta.OptaTeam;
 import org.bson.types.ObjectId;
 
-import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -290,64 +288,59 @@ public class OptaUtils {
 
     public static void processFinishedMatch(LinkedHashMap F9){
         String gameId = (String) F9.get("uID");
-        ArrayList<LinkedHashMap> teamDatas =  (ArrayList)((LinkedHashMap)F9.get("MatchData")).get("TeamData");
+        ArrayList<LinkedHashMap> teamDatas =  (ArrayList<LinkedHashMap>)((LinkedHashMap)F9.get("MatchData")).get("TeamData");
         for (LinkedHashMap teamData: teamDatas){
-            ArrayList<LinkedHashMap> teamStats = (ArrayList) teamData.get("Stat");
-
-            for (LinkedHashMap teamStat: teamStats){
+            for (LinkedHashMap teamStat: (ArrayList<LinkedHashMap>) teamData.get("Stat")){
                 if (teamStat.get("Type").equals("goals_conceded")) {
                     if ((int) teamStat.get("content") == 0) {
-                        ArrayList<LinkedHashMap> matchPlayers = (ArrayList) ((LinkedHashMap) teamData.get("PlayerLineUp")).
-                                                                                                      get("MatchPlayer");
-                        for (LinkedHashMap matchPlayer : matchPlayers) {
-                            if (matchPlayer.get("Position").equals("Goalkeeper") || matchPlayer.get("Position").equals("Defender")) {
-                                ArrayList<LinkedHashMap> stats = (ArrayList) matchPlayer.get("Stat");
-                                for (LinkedHashMap stat : stats) {
-                                    if (stat.get("Type").equals("mins_played")) {
-                                        if ((int) stat.get("content") > 59) {
-                                            String playerId = (String) matchPlayer.get("PlayerRef");
-                                            OptaEvent cleanSheet = new OptaEvent();
-                                            cleanSheet.typeId = 2000;
-                                            cleanSheet.eventId = 2000;
-                                            cleanSheet.optaPlayerId = playerId.startsWith("p")? playerId.substring(1): playerId;
-                                            cleanSheet.gameId = gameId.startsWith("f")? gameId.substring(1): gameId;
-                                            cleanSheet.timestamp = parseDate((String)((LinkedHashMap)F9.get("MatchData")).get("MatchInfo"));
-                                            cleanSheet.unixtimestamp = cleanSheet.timestamp.getTime();
-                                            cleanSheet.qualifiers = new ArrayList<>();
-                                            Model.optaEvents().insert(cleanSheet);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        processCleanSheet(F9, gameId, teamData);
                     }else {
-                        ArrayList<LinkedHashMap> matchPlayers = (ArrayList) ((LinkedHashMap) teamData.get("PlayerLineUp")).
-                                get("MatchPlayer");
-                        for (LinkedHashMap matchPlayer : matchPlayers) {
-                            if (matchPlayer.get("Position").equals("Defender")) {
-                                ArrayList<LinkedHashMap> stats = (ArrayList) matchPlayer.get("Stat");
-                                for (LinkedHashMap stat : stats) {
-                                    if (stat.get("Type").equals("goals_conceded")) {
-                                        if ((int) stat.get("content") > 0) {
-                                            String playerId = (String) matchPlayer.get("PlayerRef");
-                                            OptaEvent goalsConceded = new OptaEvent();
-                                            goalsConceded.typeId = 2001;
-                                            goalsConceded.eventId = 20001;
-                                            goalsConceded.optaPlayerId = playerId.startsWith("p")? playerId.substring(1): playerId;
-                                            goalsConceded.gameId = gameId.startsWith("f")? gameId.substring(1): gameId;
-                                            goalsConceded.timestamp = parseDate((String) ((LinkedHashMap) ((LinkedHashMap) F9.get("MatchData")).get("MatchInfo")).get("TimeStamp"));
-                                            goalsConceded.unixtimestamp = goalsConceded.timestamp.getTime();
-                                            goalsConceded.qualifiers = new ArrayList<>();
-                                            Model.optaEvents().insert(goalsConceded);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        processGoalsAgainst(F9, gameId, teamData);
                     }
                 }
             }
         }
+    }
+
+    public static void processGoalsAgainst(LinkedHashMap F9, String gameId, LinkedHashMap teamData) {
+        ArrayList<LinkedHashMap> matchPlayers = (ArrayList) ((LinkedHashMap) teamData.get("PlayerLineUp")).
+                                                                                      get("MatchPlayer");
+        for (LinkedHashMap matchPlayer : matchPlayers) {
+            if (matchPlayer.get("Position").equals("Defender")) {
+                for (LinkedHashMap stat : (ArrayList<LinkedHashMap>) matchPlayer.get("Stat")) {
+                    if (stat.get("Type").equals("goals_conceded") && ((int) stat.get("content") > 0)) {
+                        createEvent(F9, gameId, matchPlayer, 2001, 20001);
+                    }
+                }
+            }
+        }
+    }
+
+    public static void processCleanSheet(LinkedHashMap F9, String gameId, LinkedHashMap teamData) {
+        ArrayList<LinkedHashMap> matchPlayers = (ArrayList) ((LinkedHashMap) teamData.get("PlayerLineUp")).
+                                                                                      get("MatchPlayer");
+        for (LinkedHashMap matchPlayer : matchPlayers) {
+            if (matchPlayer.get("Position").equals("Goalkeeper") || matchPlayer.get("Position").equals("Defender")) {
+                for (LinkedHashMap stat : (ArrayList<LinkedHashMap>) matchPlayer.get("Stat")) {
+                    if (stat.get("Type").equals("mins_played") && ((int) stat.get("content") > 59)) {
+                        createEvent(F9, gameId, matchPlayer, 2000, 20000);
+                    }
+                }
+            }
+        }
+    }
+
+    public static void createEvent(LinkedHashMap F9, String gameId, LinkedHashMap matchPlayer, int typeId, int eventId) {
+        String playerId = (String) matchPlayer.get("PlayerRef");
+        OptaEvent myEvent = new OptaEvent();
+        myEvent.typeId = typeId;
+        myEvent.eventId = eventId;
+        myEvent.optaPlayerId = playerId.startsWith("p")? playerId.substring(1): playerId;
+        myEvent.gameId = gameId.startsWith("f")? gameId.substring(1): gameId;
+        myEvent.timestamp = parseDate((String) ((LinkedHashMap) ((LinkedHashMap) F9.get("MatchData")).get("MatchInfo")).get("TimeStamp"));
+        myEvent.unixtimestamp = myEvent.timestamp.getTime();
+        myEvent.qualifiers = new ArrayList<>();
+        Model.optaEvents().insert(myEvent);
     }
 
     public static OptaPlayer createPlayer(LinkedHashMap playerObject, LinkedHashMap teamObject){
