@@ -2,12 +2,15 @@ package model.opta;
 
 
 import com.mongodb.DBObject;
+import org.bson.types.ObjectId;
+
 import java.util.Map;
 
 /**
  * Created by gnufede on 30/05/14.
  */
 public class OptaDB {
+    public ObjectId optaDBId;
     public String xml;
     public String name;
     public DBObject json;

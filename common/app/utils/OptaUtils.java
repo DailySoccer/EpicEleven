@@ -64,7 +64,7 @@ public class OptaUtils {
 
     private static void processEvent(LinkedHashMap event, LinkedHashMap game) {
         OptaEvent myEvent = new OptaEvent();
-        myEvent._id = new ObjectId();
+        myEvent.optaEventid = new ObjectId();
         myEvent.gameId = game.get("id").toString();
         myEvent.homeTeamId = game.get("home_team_id").toString();
         myEvent.awayTeamId = game.get("away_team_id").toString();
