@@ -169,8 +169,10 @@ public class OptaUtils {
         }
 
         PointsTranslation pointsTranslation = getPointsTranslation(myEvent.typeId, myEvent.timestamp);
-        myEvent.pointsTranslationId = pointsTranslation.pointsTranslationId;
-        myEvent.points = pointsTranslation.points;
+        if (pointsTranslation != null) {
+            myEvent.pointsTranslationId = pointsTranslation.pointsTranslationId;
+            myEvent.points = pointsTranslation.points;
+        }
 
         Model.optaEvents().update("{eventId: #, gameId: #}", myEvent.eventId, myEvent.gameId).upsert().with(myEvent);
     }
