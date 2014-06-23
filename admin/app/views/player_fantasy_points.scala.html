@@ -37,6 +37,7 @@
             <th>Id</th>
             <th>CompetitionId</th>
             <th>GameId</th>
+            <th>EventId</th>
             <th>HomeTeamId</th>
             <th>AwayTeamId</th>
             <th>OptaPlayerId</th>
@@ -52,13 +53,18 @@
             <td>@p._id</td>
             <td>@p.competitionId</td>
             <td>@p.gameId</td>
+            <td>@p.eventId</td>
             <td>@p.homeTeamId</td>
             <td>@p.awayTeamId</td>
             <td>@p.optaPlayerId</td>
             <td>@p.typeId</td>
             <td>@p.points</td>
             <td>@p.timestamp.format("yyyy/MM/dd hh:mm:ss")</td>
+        @if(p.lastModified != null) {
             <td>@p.lastModified.format("yyyy/MM/dd hh:mm:ss")</td>
+        } else {
+            <td></td>
+        }
         </tr>
         }
         </tbody>
