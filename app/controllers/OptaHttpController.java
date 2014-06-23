@@ -75,7 +75,7 @@ public class OptaHttpController extends Controller {
     }
 
     public static void childEvent(OptaEvent child, OptaEvent origin){
-        child._id = new ObjectId();
+        child.optaEventId = new ObjectId();
         child.parentId = origin.eventId;
 
         child.gameId = origin.gameId;

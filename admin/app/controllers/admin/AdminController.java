@@ -120,13 +120,15 @@ public class AdminController extends Controller {
         // Obtenemos la lista de TemplateMatchEvents
         Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.templateMatchEvents().find().as(TemplateMatchEvent.class);
 
-        // Existira un live Match Event por cada template Match Event
+        // Existira un live Match Event por cada template Match Event que haya comenzado
         for (TemplateMatchEvent templateMatchEvent : templateMatchEventsResults) {
-            LiveMatchEvent liveMatchEvent = new LiveMatchEvent(templateMatchEvent);
-            Model.liveMatchEvents().update("{templateMatchEventId: #}", templateMatchEvent.templateMatchEventId).upsert().with(liveMatchEvent);
+            if (Model.isMatchEventStarted(templateMatchEvent)) {
+                LiveMatchEvent liveMatchEvent = new LiveMatchEvent(templateMatchEvent);
+                Model.liveMatchEvents().update("{templateMatchEventId: #}", templateMatchEvent.templateMatchEventId).upsert().with(liveMatchEvent);
 
-            // Actualizar los fantasy points de cada live match event
-            Model.updateLiveFantasyPoints(liveMatchEvent);
+                // Actualizar los fantasy points de cada live match event
+                Model.updateLiveFantasyPoints(liveMatchEvent);
+            }
         }
 
         return redirect(routes.AdminController.liveMatchEvents());
@@ -471,15 +473,6 @@ public class AdminController extends Controller {
         TemplateMatchEvent templateMatchEvent = Model.templateMatchEvents().findOne("{ _id : # }",
                 new ObjectId(templateMatchEventId)).as(TemplateMatchEvent.class);
         return ok(views.html.template_match_event.render(templateMatchEvent));
-    }
-
-    public static Result createTemplateMatchEvent() {
-        //TODO: En que fecha tendriamos que generar el partido?
-        DateTime currentCreationDay =  new DateTime(2014, 10, 14, 12, 0, DateTimeZone.UTC);
-
-        MockData.createTemplateMatchEvent(currentCreationDay);
-
-        return redirect(routes.AdminController.templateMatchEvents());
     }
 
     public static Result templateSoccerTeams() {

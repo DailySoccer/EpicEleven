@@ -485,7 +485,7 @@ public class Model {
      *
      * @param optaMatchId Identificador del partido
      * @param soccerPlayerId Identificador del futbolista
-     * @param strPoints      Puntos fantasy
+     * @param points      Puntos fantasy
      */
     static public void setLiveFantasyPointsOfSoccerPlayer(String optaMatchId, ObjectId soccerPlayerId, int points) {
         //Logger.info("setLiveFantasyPoints: {} = {} fantasy points", soccerPlayerId, strPoints);
@@ -741,16 +741,30 @@ public class Model {
 
     /**
      *  Estado del partido
-     *
-     *  TODO: Incluirlo en una clase diferente?
      */
     public static boolean isMatchEventStarted(TemplateMatchEvent templateMatchEvent) {
-        return false;
+        String optaMatchEventId = getMatchEventIdFromOpta(templateMatchEvent.optaMatchEventId);
+
+        // Inicio del partido?
+        OptaEvent optaEvent = optaEvents().findOne("{gameId: #, typeId: 32, periodId: 1}", optaMatchEventId).as(OptaEvent.class);
+        if (optaEvent == null) {
+            // Kick Off Pass?
+            optaEvent = optaEvents().findOne("{gameId: #, typeId: 1, periodId: 1, qualifiers: 278}", optaMatchEventId).as(OptaEvent.class);
+        }
+
+        Logger.info("isStarted? {}({}) = {}",
+                templateMatchEvent.soccerTeamA.name + " vs " + templateMatchEvent.soccerTeamB.name, templateMatchEvent.optaMatchEventId, (optaEvent!= null));
+        return (optaEvent != null);
     }
 
     public static boolean isMatchEventFinished(TemplateMatchEvent templateMatchEvent) {
+        String optaMatchEventId = getMatchEventIdFromOpta(templateMatchEvent.optaMatchEventId);
 
-        return false;
+        OptaEvent optaEvent = optaEvents().findOne("{gameId: #, typeId: 30, periodId: 14}", optaMatchEventId).as(OptaEvent.class);
+
+        Logger.info("isFinished? {}({}) = {}",
+                templateMatchEvent.soccerTeamA.name + " vs " + templateMatchEvent.soccerTeamB.name, templateMatchEvent.optaMatchEventId, (optaEvent!= null));
+        return (optaEvent != null);
     }
 
     /**

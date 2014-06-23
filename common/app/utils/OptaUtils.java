@@ -64,7 +64,7 @@ public class OptaUtils {
 
     private static void processEvent(LinkedHashMap event, LinkedHashMap game) {
         OptaEvent myEvent = new OptaEvent();
-        myEvent.optaEventid = new ObjectId();
+        myEvent.optaEventId = new ObjectId();
         myEvent.gameId = game.get("id").toString();
         myEvent.homeTeamId = game.get("home_team_id").toString();
         myEvent.awayTeamId = game.get("away_team_id").toString();
@@ -158,7 +158,7 @@ public class OptaUtils {
         PointsTranslation pointsTranslation = null;
         if (pointsTranslations.iterator().hasNext()){
             pointsTranslation = pointsTranslations.iterator().next();
-            myEvent.pointsTranslationId = pointsTranslation._id;
+            myEvent.pointsTranslationId = pointsTranslation.pointsTranslationId;
             myEvent.points = pointsTranslation.points;
         }
 

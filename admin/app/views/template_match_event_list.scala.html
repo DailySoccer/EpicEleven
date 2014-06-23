@@ -1,5 +1,21 @@
 @(match_events: List[model.TemplateMatchEvent])
 
+@import model._
+
+@match_event_state(mach_event : model.TemplateMatchEvent) = {
+    @{
+        if(Model.isMatchEventFinished(mach_event)) {
+            <button class="btn btn-danger">Finished</button>
+        } else {
+            if(Model.isMatchEventStarted(mach_event)) {
+                <button class="btn btn-success">Live</button>
+            } else {
+                <button class="btn btn-warning">Waiting</button>
+            }
+        }
+    }
+}
+
 @main("Template Mach Events - Admin") {
 
 <h1 class="page-header">Template Match Events</h1>
@@ -15,6 +31,7 @@
             <th>OptaTeamBId</th>
             <th>Teams</th>
             <th>Start Date</th>
+            <th>State</th>
         </tr>
         </thead>
         <tbody>
@@ -28,6 +45,7 @@
                 <a href="@AdminController.templateMatchEvent(p.templateMatchEventId.toString())">
                     @p.soccerTeamA.name vS @p.soccerTeamB.name</a></td>
             <td>@p.startDate.format("yyyy/MM/dd hh:mm:ss")</td>
+            <td>@match_event_state(p)</td>
         </tr>
         }
         </tbody>

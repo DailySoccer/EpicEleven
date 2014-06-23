@@ -45,7 +45,6 @@ GET         /template_contest/delete/:templateContestId        controllers.admin
 GET         /template_contest/:templateContestId               controllers.admin.AdminController.templateContest(templateContestId : String)
 
 GET         /template_match_events                             controllers.admin.AdminController.templateMatchEvents()
-GET         /template_match_event/create                       controllers.admin.AdminController.createTemplateMatchEvent()
 GET         /template_match_event/:templateMatchEventId        controllers.admin.AdminController.templateMatchEvent(templateMatchEventId : String)
 
 GET         /template_soccer_teams                             controllers.admin.AdminController.templateSoccerTeams()

@@ -12,7 +12,7 @@ import java.util.Date;
  */
 public class OptaEvent {
 
-    public ObjectId optaEventid;
+    public ObjectId optaEventId;
     public String gameId;
     public String homeTeamId;
     public String awayTeamId;
