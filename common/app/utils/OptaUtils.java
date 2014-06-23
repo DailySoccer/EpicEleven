@@ -8,6 +8,7 @@ import model.opta.OptaMatchEvent;
 import model.opta.OptaPlayer;
 import model.opta.OptaTeam;
 import org.bson.types.ObjectId;
+import org.jongo.Find;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -332,7 +333,7 @@ public class OptaUtils {
             if (matchPlayer.get("Position").equals("Defender")) {
                 for (LinkedHashMap stat : (ArrayList<LinkedHashMap>) matchPlayer.get("Stat")) {
                     if (stat.get("Type").equals("goals_conceded") && ((int) stat.get("content") > 0)) {
-                        createEvent(F9, gameId, matchPlayer, 2001, 20001);
+                        createEvent(F9, gameId, matchPlayer, 2001, 20001, (int) stat.get("content"));
                     }
                 }
             }
@@ -346,27 +347,38 @@ public class OptaUtils {
             if (matchPlayer.get("Position").equals("Goalkeeper") || matchPlayer.get("Position").equals("Defender")) {
                 for (LinkedHashMap stat : (ArrayList<LinkedHashMap>) matchPlayer.get("Stat")) {
                     if (stat.get("Type").equals("mins_played") && ((int) stat.get("content") > 59)) {
-                        createEvent(F9, gameId, matchPlayer, 2000, 20000);
+                        createEvent(F9, gameId, matchPlayer, 2000, 20000, 1);
                     }
                 }
             }
         }
     }
 
-    public static void createEvent(LinkedHashMap F9, String gameId, LinkedHashMap matchPlayer, int typeId, int eventId) {
+    public static void createEvent(LinkedHashMap F9, String gameId, LinkedHashMap matchPlayer,
+                                   int typeId, int eventId, int times) {
         String playerId = (String) matchPlayer.get("PlayerRef");
         OptaEvent myEvent = new OptaEvent();
         myEvent.typeId = typeId;
         myEvent.eventId = eventId;
         myEvent.optaPlayerId = playerId.startsWith("p")? playerId.substring(1): playerId;
         myEvent.gameId = gameId.startsWith("f")? gameId.substring(1): gameId;
+        myEvent.competitionId = (String)((LinkedHashMap)F9.get("Competition")).get("uID");
+        //TODO: Extraer SeasonID de Competition->Stat->Type==season_id->content
         myEvent.timestamp = parseDate((String) ((LinkedHashMap) ((LinkedHashMap) F9.get("MatchData")).get("MatchInfo")).get("TimeStamp"));
         myEvent.unixtimestamp = myEvent.timestamp.getTime();
         myEvent.qualifiers = new ArrayList<>();
         PointsTranslation pointsTranslation = getPointsTranslation(myEvent.typeId, myEvent.timestamp);
         myEvent.pointsTranslationId = pointsTranslation.pointsTranslationId;
         myEvent.points = pointsTranslation.points;
-        Model.optaEvents().insert(myEvent);
+
+        Iterable<OptaEvent> alreadySavedEvents = Model.optaEvents().find("{typeId: #, eventId: #, optaPlayerId: #, gameId: #, competitionId: #}",
+                typeId, eventId, myEvent.optaPlayerId, myEvent.gameId, myEvent.competitionId).as(OptaEvent.class);
+        while (alreadySavedEvents.iterator().hasNext()){
+            alreadySavedEvents.iterator().remove();
+        }
+        for (int i = 0; i < times; i++) {
+            Model.optaEvents().insert(myEvent);
+        }
     }
 
     public static OptaPlayer createPlayer(LinkedHashMap playerObject, LinkedHashMap teamObject){
