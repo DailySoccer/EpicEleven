@@ -13,6 +13,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 /**
@@ -63,18 +64,19 @@ public class OptaUtils {
     }
 
     public static void recalculateAllEvents(){
-        ArrayList<OptaEvent> optaEvents = (ArrayList<OptaEvent>) Model.optaEvents().find().as(OptaEvent.class);
-        for (OptaEvent optaEvent: optaEvents){
-            recalculateEvent(optaEvent);
+        Iterator<OptaEvent> optaEvents = (Iterator<OptaEvent>)Model.optaEvents().find().as(OptaEvent.class);
+        while (optaEvents.hasNext()){
+            recalculateEvent(optaEvents.next());
         }
     }
 
     private static void recalculateEvent(OptaEvent optaEvent){
         PointsTranslation pointsTranslation = getPointsTranslation(optaEvent.typeId, optaEvent.timestamp);
-        optaEvent.pointsTranslationId = pointsTranslation.pointsTranslationId;
-        optaEvent.points = pointsTranslation.points;
-
-        Model.optaEvents().update("{eventId: #, gameId: #}", optaEvent.eventId, optaEvent.gameId).upsert().with(optaEvent);
+        if (pointsTranslation != null) {
+            optaEvent.pointsTranslationId = pointsTranslation.pointsTranslationId;
+            optaEvent.points = pointsTranslation.points;
+            Model.optaEvents().update("{eventId: #, gameId: #}", optaEvent.eventId, optaEvent.gameId).upsert().with(optaEvent);
+        }
     }
 
     private static void processEvent(LinkedHashMap event, LinkedHashMap game) {
