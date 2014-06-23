@@ -158,8 +158,13 @@ public class AdminController extends Controller {
     }
 
     public static Result liveMatchEvent(String liveMatchEventId) {
-        LiveMatchEvent liveMatchEvent = Model.liveMatchEvents().findOne("{ _id : # }",
-                new ObjectId(liveMatchEventId)).as(LiveMatchEvent.class);
+        ObjectId id = new ObjectId(liveMatchEventId);
+
+        // Actualizar el live match event con los fantasy points (de optaEvents)
+        Model.updateLiveFantasyPoints( Model.liveMatchEvent(id));
+
+        // Obtener la version actualizada
+        LiveMatchEvent liveMatchEvent = Model.liveMatchEvent(id);
         return ok(views.html.live_match_event.render(liveMatchEvent));
     }
 

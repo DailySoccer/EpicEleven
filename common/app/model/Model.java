@@ -182,10 +182,21 @@ public class Model {
         ensureContestsDB(_mongoDB);
     }
 
+    static public void resetOpta() {
+        optaEvents().remove();
+        optaPlayers().remove();
+        optaTeams().remove();
+        optaMatchEvents().remove();
+    }
+
     /**
      *  Utilidades para acceder a los datos
      *
      */
+
+    static public LiveMatchEvent liveMatchEvent(ObjectId liveMatchEventId) {
+        return liveMatchEvents().findOne("{_id : #}", liveMatchEventId).as(LiveMatchEvent.class);
+    }
 
     static public ContestEntry contestEntry(ObjectId contestEntryId) {
         return contestEntries().findOne("{_id : #}", contestEntryId).as(ContestEntry.class);
@@ -476,7 +487,7 @@ public class Model {
      * @param soccerPlayerId Identificador del futbolista
      * @param strPoints      Puntos fantasy
      */
-    static public void setLiveFantasyPointsOfSoccerPlayer(String optaMatchId, ObjectId soccerPlayerId, String strPoints) {
+    static public void setLiveFantasyPointsOfSoccerPlayer(String optaMatchId, ObjectId soccerPlayerId, int points) {
         //Logger.info("setLiveFantasyPoints: {} = {} fantasy points", soccerPlayerId, strPoints);
 
         long startTime = System.currentTimeMillis();
@@ -485,13 +496,13 @@ public class Model {
         Model.liveMatchEvents()
                 .update("{optaMatchEventId: #, soccerTeamA.soccerPlayers.templateSoccerPlayerId: #}", optaMatchId, soccerPlayerId)
                 .multi()
-                .with("{$set: {soccerTeamA.soccerPlayers.$.fantasyPoints: #}}", strPoints);
+                .with("{$set: {soccerTeamA.soccerPlayers.$.fantasyPoints: #}}", points);
 
         // Actualizar jugador si aparece en TeamB
         Model.liveMatchEvents()
                 .update("{optaMatchEventId: #, soccerTeamB.soccerPlayers.templateSoccerPlayerId: #}", optaMatchId, soccerPlayerId)
                 .multi()
-                .with("{$set: {soccerTeamB.soccerPlayers.$.fantasyPoints: #}}", strPoints);
+                .with("{$set: {soccerTeamB.soccerPlayers.$.fantasyPoints: #}}", points);
 
         //Logger.info("END: setLiveFantasyPoints: {}", System.currentTimeMillis() - startTime);
     }
@@ -526,7 +537,7 @@ public class Model {
         // optaEvents().aggregate("{$match: {optaPlayerId: #}}", soccerPlayer.optaPlayerId);
 
         // Actualizar sus puntos en cada LiverMatchEvent en el que participe
-        setLiveFantasyPointsOfSoccerPlayer(optaMatchId, soccerPlayer.templateSoccerPlayerId, String.valueOf(points));
+        setLiveFantasyPointsOfSoccerPlayer(optaMatchId, soccerPlayer.templateSoccerPlayerId, points);
     }
 
     /**
@@ -689,9 +700,9 @@ public class Model {
     }
 
     public static List<SoccerPlayer> getSoccerPlayersInContestEntry(String contestEntryId) {
-        ContestEntry contestEntry = Model.contestEntries().findOne("{ _id : # }", new ObjectId(contestEntryId)).as(ContestEntry.class);
-        Contest contest = Model.contests().findOne("{ _id: # }", contestEntry.contestId).as(Contest.class);
-        TemplateContest templateContest = Model.templateContests().findOne("{ _id: # }", contest.templateContestId).as(TemplateContest.class);
+        ContestEntry contestEntry = contestEntry(new ObjectId(contestEntryId));
+        Contest contest = contest(contestEntry.contestId);
+        TemplateContest templateContest = templateContest(contest.templateContestId);
         List<ObjectId> templateMatchEventIds = templateContest.templateMatchEventIds;
 
         //Iterable<LiveMatchEvent> liveMatchEventsResults = Model.liveMatchEvents().find().as(LiveMatchEvent.class);
@@ -738,6 +749,7 @@ public class Model {
     }
 
     public static boolean isMatchEventFinished(TemplateMatchEvent templateMatchEvent) {
+
         return false;
     }
 
@@ -762,11 +774,4 @@ public class Model {
 
     // Jongo is thread safe too: https://groups.google.com/forum/#!topic/jongo-user/KwukXi5Vm7c
     static private Jongo _jongo;
-
-    public static void resetOpta() {
-        optaEvents().remove();
-        optaPlayers().remove();
-        optaTeams().remove();
-        optaMatchEvents().remove();
-    }
 }
