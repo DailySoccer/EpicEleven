@@ -374,7 +374,7 @@ public class OptaUtils {
         Iterable<OptaEvent> alreadySavedEvents = Model.optaEvents().find("{typeId: #, eventId: #, optaPlayerId: #, gameId: #, competitionId: #}",
                 typeId, eventId, myEvent.optaPlayerId, myEvent.gameId, myEvent.competitionId).as(OptaEvent.class);
         while (alreadySavedEvents.iterator().hasNext()){
-            alreadySavedEvents.iterator().remove();
+            Model.optaEvents().remove(alreadySavedEvents.iterator().next().optaEventId);
         }
         for (int i = 0; i < times; i++) {
             Model.optaEvents().insert(myEvent);
