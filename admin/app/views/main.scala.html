@@ -131,7 +131,9 @@
 <script type="text/javascript" charset="utf-8">
         $(document).ready( function () {
 //            console.log( "DataTable init" );
-            $('#table_id').DataTable();
+            $('#table_id').dataTable( {
+                stateSave: true
+            } );
         } );
 </script>
 
