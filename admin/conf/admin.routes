@@ -66,3 +66,4 @@ GET         /pause_simulator                                   controllers.admin
 GET         /resume_simulator                                  controllers.admin.AdminController.resumeSimulator()
 
 GET         /opta_events                                       controllers.admin.AdminController.optaEvents()
+GET         /opta_events/update                                controllers.admin.AdminController.updateOptaEvents()

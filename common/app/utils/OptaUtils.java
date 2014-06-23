@@ -62,6 +62,21 @@ public class OptaUtils {
 
     }
 
+    public static void recalculateAllEvents(){
+        ArrayList<OptaEvent> optaEvents = (ArrayList<OptaEvent>) Model.optaEvents().find().as(OptaEvent.class);
+        for (OptaEvent optaEvent: optaEvents){
+            recalculateEvent(optaEvent);
+        }
+    }
+
+    private static void recalculateEvent(OptaEvent optaEvent){
+        PointsTranslation pointsTranslation = getPointsTranslation(optaEvent.typeId, optaEvent.timestamp);
+        optaEvent.pointsTranslationId = pointsTranslation.pointsTranslationId;
+        optaEvent.points = pointsTranslation.points;
+
+        Model.optaEvents().update("{eventId: #, gameId: #}", optaEvent.eventId, optaEvent.gameId).upsert().with(optaEvent);
+    }
+
     private static void processEvent(LinkedHashMap event, LinkedHashMap game) {
         OptaEvent myEvent = new OptaEvent();
         myEvent.optaEventId = new ObjectId();
@@ -151,19 +166,23 @@ public class OptaUtils {
             myEvent.typeId = 1058;
         }
 
+        PointsTranslation pointsTranslation = getPointsTranslation(myEvent.typeId, myEvent.timestamp);
+        myEvent.pointsTranslationId = pointsTranslation.pointsTranslationId;
+        myEvent.points = pointsTranslation.points;
+
+        Model.optaEvents().update("{eventId: #, gameId: #}", myEvent.eventId, myEvent.gameId).upsert().with(myEvent);
+    }
+
+    public static PointsTranslation getPointsTranslation(int typeId, Date timestamp){
         Iterable<PointsTranslation> pointsTranslations = Model.pointsTranslation().
                 find("{eventTypeId: #, timestamp: {$lte: #}}",
-                        myEvent.typeId, myEvent.timestamp).sort("{timestamp: -1}").as(PointsTranslation.class);
+                        typeId, timestamp).sort("{timestamp: -1}").as(PointsTranslation.class);
 
         PointsTranslation pointsTranslation = null;
         if (pointsTranslations.iterator().hasNext()){
             pointsTranslation = pointsTranslations.iterator().next();
-            myEvent.pointsTranslationId = pointsTranslation.pointsTranslationId;
-            myEvent.points = pointsTranslation.points;
         }
-
-
-        Model.optaEvents().update("{eventId: #, gameId: #}", myEvent.eventId, myEvent.gameId).upsert().with(myEvent);
+        return pointsTranslation;
     }
 
     private static Date parseDate(String timestamp) {
@@ -340,6 +359,9 @@ public class OptaUtils {
         myEvent.timestamp = parseDate((String) ((LinkedHashMap) ((LinkedHashMap) F9.get("MatchData")).get("MatchInfo")).get("TimeStamp"));
         myEvent.unixtimestamp = myEvent.timestamp.getTime();
         myEvent.qualifiers = new ArrayList<>();
+        PointsTranslation pointsTranslation = getPointsTranslation(myEvent.typeId, myEvent.timestamp);
+        myEvent.pointsTranslationId = pointsTranslation.pointsTranslationId;
+        myEvent.points = pointsTranslation.points;
         Model.optaEvents().insert(myEvent);
     }
 

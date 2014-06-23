@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static play.data.Form.form;
+import static utils.OptaUtils.recalculateAllEvents;
 
 
 public class AdminController extends Controller {
@@ -539,6 +540,11 @@ public class AdminController extends Controller {
         return ok(views.html.opta_match_event_list.render(optaMatchEventList));
     }
 
+    public static Result updateOptaEvents() {
+        recalculateAllEvents();
+        FlashMessage.success("Events recalculated");
+        return redirect(routes.AdminController.pointsTranslations());
+    }
     public static Result simulator() {
         return ok(views.html.simulator.render());
     }
