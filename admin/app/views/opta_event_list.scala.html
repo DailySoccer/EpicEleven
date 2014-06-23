@@ -33,7 +33,11 @@
             <td>@p.typeId</td>
             <td>@p.points</td>
             <td>@p.timestamp.format("yyyy/MM/dd hh:mm:ss")</td>
+         @if(p.lastModified != null) {
             <td>@p.lastModified.format("yyyy/MM/dd hh:mm:ss")</td>
+         } else {
+            <td></td>
+         }
         </tr>
         }
         </tbody>

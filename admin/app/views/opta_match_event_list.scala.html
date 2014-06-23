@@ -33,7 +33,11 @@
             <td>@p.awayTeamId</td>
             <td>@p.matchDate.format("yyyy/MM/dd hh:mm:ss")</td>
             <td>@p.timeZone</td>
+        @if(p.lastModified != null) {
             <td>@p.lastModified.format("yyyy/MM/dd hh:mm:ss")</td>
+        } else {
+            <td></td>
+        }
         </tr>
         }
         </tbody>
