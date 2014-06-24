@@ -12,10 +12,7 @@ import org.jongo.Find;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
+import java.util.*;
 
 /**
  * Created by gnufede on 16/06/14.
@@ -52,6 +49,7 @@ public class OptaUtils {
             LinkedHashMap game = (LinkedHashMap) games.get("Game");
 
             Object events = game.get("Event");
+            resetPointsTranslationCache();
             if (events instanceof ArrayList) {
                 for (Object event : (ArrayList) events) {
                     processEvent((LinkedHashMap) event, game);
@@ -73,12 +71,9 @@ public class OptaUtils {
     }
 
     private static void recalculateEvent(OptaEvent optaEvent){
-        PointsTranslation pointsTranslation = getPointsTranslation(optaEvent.typeId, optaEvent.timestamp);
-        if (pointsTranslation != null) {
-            optaEvent.pointsTranslationId = pointsTranslation.pointsTranslationId;
-            optaEvent.points = pointsTranslation.points;
-            Model.optaEvents().update("{eventId: #, gameId: #}", optaEvent.eventId, optaEvent.gameId).upsert().with(optaEvent);
-        }
+        optaEvent.points = getPoints(optaEvent.typeId, optaEvent.timestamp);
+        optaEvent.pointsTranslationId = pointsTranslationTableCache.get(optaEvent.typeId);
+        Model.optaEvents().update("{eventId: #, gameId: #}", optaEvent.eventId, optaEvent.gameId).upsert().with(optaEvent);
     }
 
     private static void processEvent(LinkedHashMap event, LinkedHashMap game) {
@@ -170,13 +165,17 @@ public class OptaUtils {
             myEvent.typeId = 1058;
         }
 
-        PointsTranslation pointsTranslation = getPointsTranslation(myEvent.typeId, myEvent.timestamp);
-        if (pointsTranslation != null) {
-            myEvent.pointsTranslationId = pointsTranslation.pointsTranslationId;
-            myEvent.points = pointsTranslation.points;
-        }
+        myEvent.points = getPoints(myEvent.typeId, myEvent.timestamp);
+        myEvent.pointsTranslationId = pointsTranslationTableCache.get(myEvent.typeId);
 
         Model.optaEvents().update("{eventId: #, gameId: #}", myEvent.eventId, myEvent.gameId).upsert().with(myEvent);
+    }
+
+    public static int getPoints(int typeId, Date timestamp) {
+        if (!pointsTranslationCache.containsKey(typeId)){
+            getPointsTranslation(typeId, timestamp);
+        }
+        return pointsTranslationCache.get(typeId);
     }
 
     public static PointsTranslation getPointsTranslation(int typeId, Date timestamp){
@@ -187,6 +186,11 @@ public class OptaUtils {
         PointsTranslation pointsTranslation = null;
         if (pointsTranslations.iterator().hasNext()){
             pointsTranslation = pointsTranslations.iterator().next();
+            pointsTranslationCache.put(typeId, pointsTranslation.points);
+            pointsTranslationTableCache.put(typeId, pointsTranslation.pointsTranslationId);
+        } else {
+            pointsTranslationCache.put(typeId, 0);
+            pointsTranslationTableCache.put(typeId, null);
         }
         return pointsTranslation;
     }
@@ -368,9 +372,8 @@ public class OptaUtils {
         myEvent.timestamp = parseDate((String) ((LinkedHashMap) ((LinkedHashMap) F9.get("MatchData")).get("MatchInfo")).get("TimeStamp"));
         myEvent.unixtimestamp = myEvent.timestamp.getTime();
         myEvent.qualifiers = new ArrayList<>();
-        PointsTranslation pointsTranslation = getPointsTranslation(myEvent.typeId, myEvent.timestamp);
-        myEvent.pointsTranslationId = pointsTranslation.pointsTranslationId;
-        myEvent.points = pointsTranslation.points;
+        myEvent.points = getPoints(myEvent.typeId, myEvent.timestamp);
+        myEvent.pointsTranslationId = pointsTranslationTableCache.get(myEvent.typeId);
 
         Model.optaEvents().remove("{typeId: #, eventId: #, optaPlayerId: #, gameId: #, competitionId: #}",
                 typeId, eventId, myEvent.optaPlayerId, myEvent.gameId, myEvent.competitionId);
@@ -399,4 +402,15 @@ public class OptaUtils {
         myPlayer.updatedTime = System.currentTimeMillis();
         return myPlayer;
     }
+
+    private static void resetPointsTranslationCache() {
+        pointsTranslationCache = new HashMap<Integer, Integer>();
+        pointsTranslationTableCache = new HashMap<Integer, ObjectId>();
+    }
+
+    private static HashMap<Integer, Integer> pointsTranslationCache;
+    private static HashMap<Integer, ObjectId> pointsTranslationTableCache;
+
+
+
 }
