@@ -4,8 +4,8 @@
 <h1 class="page-header">Simulator</h1>
 @if(!OptaSimulator.existsInstance() || OptaSimulator.stoppedInstance()){
 <div>
-    <a href="@AdminController.startSimulator"><button class="btn btn-primary">Start</button></a>
-    <a href="@AdminController.launchSimulator"><button class="btn btn-success">Launch</button></a>
+    <a href="@AdminController.startSimulator"><button class="btn btn-primary">Start step-by-step</button></a>
+    <a href="@AdminController.launchSimulator"><button class="btn btn-success">Run</button></a>
 </div>
 <br/>
 }
@@ -21,7 +21,7 @@
 <br/>
 <div>
     @if(OptaSimulator.pausedInstance()){
-        <a href="@AdminController.simulatorNext"><button class="btn btn-primary">Next</button></a>
+        <a href="@AdminController.simulatorNext"><button class="btn btn-primary">Next step</button></a>
     }
     <a href="@AdminController.stopSimulator"><button class="btn btn-danger">Stop</button></a>
 </div>
