@@ -50,7 +50,7 @@ public final class MockData {
                 {1017, -200}, // tarjeta roja
                 {1409, -30},  // penalty infligido
                 {1410, -30},  // penalty fallado
-                {1680, -10},  // Gol al portero
+                {1860, -10},  // Gol al portero
                 {1058, 30},   // penalty parado por el portero
                 {2000, 40},   // clean sheet
                 {2001, -10},  // Gol al defensa
