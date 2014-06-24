@@ -1,10 +1,23 @@
 @(match_events: List[model.LiveMatchEvent])
 
-@main("Live Mach Events - Admin") {
+@scripts = {
+    <script type="text/javascript">
+
+        function updatePage() {
+            console.log("reload");
+            window.location.reload(true);
+        }
+
+        $(document).ready( function(){
+            window.setInterval(updatePage, 10000);
+        })
+
+    </script>
+}
+
+@main("Live Mach Events - Admin", scripts) {
 
 <h1 class="page-header">Live Match Events</h1>
-
-<a href="@AdminController.updateLive"><button class="btn btn-success">Update Live</button></a>
 
 <h2 class="sub-header"></h2>
 <div class="table-responsive">

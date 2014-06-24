@@ -117,38 +117,8 @@ public class AdminController extends Controller {
         return ok(views.html.player_fantasy_points.render(templateSoccerPlayer, optaEventList));
     }
 
-    public static Result updateLive() {
-        // Obtenemos la lista de TemplateMatchEvents
-        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.templateMatchEvents().find().as(TemplateMatchEvent.class);
-
-        // Existira un live Match Event por cada template Match Event que haya comenzado
-        for (TemplateMatchEvent templateMatchEvent : templateMatchEventsResults) {
-            if (Model.isMatchEventStarted(templateMatchEvent)) {
-                LiveMatchEvent liveMatchEvent = new LiveMatchEvent(templateMatchEvent);
-                Model.liveMatchEvents().update("{templateMatchEventId: #}", templateMatchEvent.templateMatchEventId).upsert().with(liveMatchEvent);
-
-                // Actualizar los fantasy points de cada live match event
-                Model.updateLiveFantasyPoints(liveMatchEvent);
-            }
-        }
-
-        return redirect(routes.AdminController.liveMatchEvents());
-    }
-
-    public static Result updateContestEntriesLive() {
-        Iterable<ContestEntry> contestEntryResults = Model.contestEntries().find().as(ContestEntry.class);
-        for(ContestEntry contestEntry : contestEntryResults) {
-            Model.updateLiveFantasyPoints(contestEntry);
-        }
-
-        return redirect(routes.AdminController.liveContestEntries());
-    }
-
     public static Result liveContestEntry(String contestEntryId) {
         ContestEntry contestEntry = Model.contestEntry(new ObjectId(contestEntryId));
-        Contest contest = Model.contest(contestEntry.contestId);
-        Model.updateLiveFantasyPoints(contest);
-
         List<SoccerPlayer> soccer_players = Model.getSoccerPlayersInContestEntry(contestEntryId);
         return ok(views.html.live_contest_entry.render(contestEntry, soccer_players));
     }
@@ -162,9 +132,6 @@ public class AdminController extends Controller {
 
     public static Result liveMatchEvent(String liveMatchEventId) {
         ObjectId id = new ObjectId(liveMatchEventId);
-
-        // Actualizar el live match event con los fantasy points (de optaEvents)
-        Model.updateLiveFantasyPoints( Model.liveMatchEvent(id));
 
         // Obtener la version actualizada
         LiveMatchEvent liveMatchEvent = Model.liveMatchEvent(id);

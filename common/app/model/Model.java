@@ -187,6 +187,7 @@ public class Model {
         optaPlayers().remove();
         optaTeams().remove();
         optaMatchEvents().remove();
+        liveMatchEvents().remove();
     }
 
     /**
@@ -219,6 +220,12 @@ public class Model {
     }
 
     static public LiveMatchEvent liveMatchEvent(TemplateMatchEvent templateMatchEvent) {
+        // Buscamos el "live" a partir de su "template"
+        LiveMatchEvent liveMatchEvent = liveMatchEvents().findOne("{templateMatchEventId: #}", templateMatchEvent.templateMatchEventId).as(LiveMatchEvent.class);
+        return liveMatchEvent;
+    }
+
+    static public LiveMatchEvent liveMatchEventIfStarted(TemplateMatchEvent templateMatchEvent) {
         // Buscamos el "live" a partir de su "template"
         LiveMatchEvent liveMatchEvent = liveMatchEvents().findOne("{templateMatchEventId: #}", templateMatchEvent.templateMatchEventId).as(LiveMatchEvent.class);
         if (liveMatchEvent == null) {
@@ -546,9 +553,11 @@ public class Model {
         for (OptaEvent point: optaEventResults) {
             points += point.points;
         }
+        /*
         if (points > 0) {
             Logger.info("--> {}: {} = {}", soccerPlayer.optaPlayerId, soccerPlayer.name, points);
         }
+        */
 
         // optaEvents().aggregate("{$match: {optaPlayerId: #}}", soccerPlayer.optaPlayerId);
 
@@ -574,6 +583,16 @@ public class Model {
         // Actualizamos los jugadores del TeamB
         for (SoccerPlayer soccer : liveMatchEvent.soccerTeamB.soccerPlayers) {
             updateLiveFantasyPoints(liveMatchEvent.optaMatchEventId, soccer);
+        }
+    }
+
+    /**
+     *  Actualizar todos los live match Events
+     */
+    static public void updateLiveFantasyPoints() {
+        Iterable<LiveMatchEvent> liveMatchEvents = liveMatchEvents().find().as(LiveMatchEvent.class);
+        for(LiveMatchEvent liveMatchEvent : liveMatchEvents) {
+            updateLiveFantasyPoints(liveMatchEvent);
         }
     }
 
@@ -793,6 +812,40 @@ public class Model {
 
     public static boolean isMatchEventFinished(String templateMatchEventId) {
         return isMatchEventFinished(templateMatchEvent(new ObjectId(templateMatchEventId)));
+    }
+
+    public static boolean isContestStarted(String templateContestId) {
+        boolean started = false;
+
+        TemplateContest templateContest = templateContest(new ObjectId(templateContestId));
+
+        // El Contest ha comenzado si cualquiera de sus partidos ha comenzado
+        Iterable<TemplateMatchEvent> templateContestResults = Model.findTemplateMatchEventFromIds("_id", templateContest.templateMatchEventIds);
+        for(TemplateMatchEvent templateMatchEvent : templateContestResults) {
+            if (isMatchEventStarted(templateMatchEvent)) {
+                started = true;
+                break;
+            }
+        }
+
+        return started;
+    }
+
+    public static boolean isContestFinished(String templateContestId) {
+        boolean finished = true;
+
+        TemplateContest templateContest = templateContest(new ObjectId(templateContestId));
+
+        // El Contest ha terminado si TODOS sus partidos han terminado
+        Iterable<TemplateMatchEvent> templateContestResults = Model.findTemplateMatchEventFromIds("_id", templateContest.templateMatchEventIds);
+        for(TemplateMatchEvent templateMatchEvent : templateContestResults) {
+            if (!isMatchEventFinished(templateMatchEvent)) {
+                finished = false;
+                break;
+            }
+        }
+
+        return finished;
     }
 
     /**

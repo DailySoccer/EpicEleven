@@ -3,6 +3,8 @@ package utils;
 import com.mongodb.BasicDBObject;
 import model.Model;
 import model.PointsTranslation;
+import model.TemplateMatchEvent;
+import model.LiveMatchEvent;
 import model.opta.OptaEvent;
 import model.opta.OptaMatchEvent;
 import model.opta.OptaPlayer;
@@ -13,6 +15,7 @@ import org.jongo.Find;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import play.Logger;
 
 /**
  * Created by gnufede on 16/06/14.
@@ -21,6 +24,8 @@ public class OptaUtils {
 
 
     public static void processOptaDBInput(String feedType, BasicDBObject requestBody){
+        resetChanges();
+
         if (feedType.equals("F9")){
             processF9(requestBody);
         }
@@ -31,6 +36,7 @@ public class OptaUtils {
             processF1(requestBody);
         }
 
+        applyChanges();
     }
 
     public static void processEvents(BasicDBObject gamesObj){
@@ -60,7 +66,7 @@ public class OptaUtils {
         } catch (NullPointerException e){
             e.printStackTrace();
         }
-
+        
     }
 
     public static void recalculateAllEvents(){
@@ -184,6 +190,7 @@ public class OptaUtils {
         myEvent.pointsTranslationId = pointsTranslationTableCache.get(myEvent.typeId);
 
         Model.optaEvents().update("{eventId: #, gameId: #}", myEvent.eventId, myEvent.gameId).upsert().with(myEvent);
+        registerChange(myEvent.gameId);
     }
 
     public static int getPoints(int typeId, Date timestamp) {
@@ -364,6 +371,7 @@ public class OptaUtils {
                 }
             }
         }
+        registerChange(gameId);
     }
 
     public static void processGoalsAgainst(LinkedHashMap F9, String gameId, LinkedHashMap teamData) {
@@ -465,6 +473,41 @@ public class OptaUtils {
         }
         return optaMatchDataCache.get(key);
     }
+
+    private static void resetChanges() {
+        dirtyMatchEvents = new HashSet<>();
+    }
+
+    private static void registerChange(String gameId) {
+        dirtyMatchEvents.add(gameId);
+    }
+
+    private static void applyChanges() {
+        if (dirtyMatchEvents.isEmpty())
+            return;
+
+        for(String change : dirtyMatchEvents) {
+            //Logger.info("change in gameId({})", change);
+
+            // Buscamos todos los template Match Events asociados con ese partido de Opta
+            Iterable<TemplateMatchEvent> templateMatchEvents = Model.templateMatchEvents().find("{optaMatchEventId : #}", "g"+change).as(TemplateMatchEvent.class);
+            while(templateMatchEvents.iterator().hasNext()) {
+                TemplateMatchEvent templateMatchEvent = templateMatchEvents.iterator().next();
+
+                // Obtener el "live" del template
+                LiveMatchEvent liveMatchEvent = Model.liveMatchEventIfStarted(templateMatchEvent);
+                if (liveMatchEvent != null) {
+                    Model.updateLiveFantasyPoints(liveMatchEvent);
+
+                    //Logger.info("fantasyPoints in liveMatchEvent({})", liveMatchEvent.liveMatchEventId);
+                }
+
+                //Logger.info("change in templateMatchEvent({})", templateMatchEvent.templateMatchEventId);
+            }
+        }
+    }
+
+    private static HashSet<String> dirtyMatchEvents;
 
     private static HashMap<Integer, Integer> pointsTranslationCache;
     private static HashMap<Integer, ObjectId> pointsTranslationTableCache;
