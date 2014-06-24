@@ -64,6 +64,7 @@ public class OptaUtils {
     }
 
     public static void recalculateAllEvents(){
+        resetPointsTranslationCache();
         Iterator<OptaEvent> optaEvents = (Iterator<OptaEvent>)Model.optaEvents().find().as(OptaEvent.class);
         while (optaEvents.hasNext()){
             recalculateEvent(optaEvents.next());
@@ -77,6 +78,20 @@ public class OptaUtils {
     }
 
     private static void processEvent(LinkedHashMap event, LinkedHashMap game) {
+        HashMap<Integer, Date> eventsCache = getOptaEventsCache(game.get("id").toString());
+        int eventId = (int) event.get("event_id");
+        Date timestamp = parseDate((String) event.get("timestamp"));
+        if (eventsCache.containsKey(eventId)) {
+            if (timestamp.after(eventsCache.get(eventId))) {
+                updateOrInsertEvent(event, game);
+                eventsCache.put(eventId, timestamp);
+            }
+        } else {
+            updateOrInsertEvent(event, game);
+            eventsCache.put(eventId, timestamp);
+        }
+    }
+    private static void updateOrInsertEvent(LinkedHashMap event, LinkedHashMap game) {
         OptaEvent myEvent = new OptaEvent();
         myEvent.optaEventId = new ObjectId();
         myEvent.gameId = game.get("id").toString();
@@ -408,9 +423,20 @@ public class OptaUtils {
         pointsTranslationTableCache = new HashMap<Integer, ObjectId>();
     }
 
+    private static HashMap getOptaEventsCache(String key) {
+        if (optaEventsCache == null){
+            optaEventsCache = new HashMap<String, HashMap>();
+        }
+        if (!optaEventsCache.containsKey(key)){
+            optaEventsCache.put(key, new HashMap<Integer, Date>());
+        }
+        return optaEventsCache.get(key);
+    }
+
     private static HashMap<Integer, Integer> pointsTranslationCache;
     private static HashMap<Integer, ObjectId> pointsTranslationTableCache;
 
+    private static HashMap<String, HashMap> optaEventsCache;
 
 
 }
