@@ -171,6 +171,12 @@ public class AdminController extends Controller {
         return ok(views.html.live_match_event.render(liveMatchEvent));
     }
 
+    public static Result liveMatchEventWithTemplate(String templateMatchEventId) {
+        TemplateMatchEvent templateMatchEvent = Model.templateMatchEvent(new ObjectId(templateMatchEventId));
+        LiveMatchEvent liveMatchEvent = Model.liveMatchEvent(templateMatchEvent);
+        return liveMatchEvent(liveMatchEvent.liveMatchEventId.toString());
+    }
+
     public static Result liveMatchEvents() {
         Iterable<LiveMatchEvent> liveMatchEventResults = Model.liveMatchEvents().find().as(LiveMatchEvent.class);
         List<LiveMatchEvent> liveMatchEventList = ListUtils.asList(liveMatchEventResults);

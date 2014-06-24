@@ -24,6 +24,7 @@ GET         /live_contest_entries/update                       controllers.admin
 GET         /live_contest_entries                              controllers.admin.AdminController.liveContestEntries()
 
 GET         /live_match_event/:liveMatchEventId                controllers.admin.AdminController.liveMatchEvent(liveMatchEventId : String)
+GET         /live_match_event/template/:templateMatchEventId   controllers.admin.AdminController.liveMatchEventWithTemplate(templateMatchEventId : String)
 GET         /live_match_events/update                          controllers.admin.AdminController.updateLive()
 GET         /live_match_events                                 controllers.admin.AdminController.liveMatchEvents()
 

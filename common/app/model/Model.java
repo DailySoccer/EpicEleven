@@ -218,6 +218,22 @@ public class Model {
         return templateSoccerPlayers().findOne("{_id : #}", templateSoccerPlayerId).as(TemplateSoccerPlayer.class);
     }
 
+    static public LiveMatchEvent liveMatchEvent(TemplateMatchEvent templateMatchEvent) {
+        // Buscamos el "live" a partir de su "template"
+        LiveMatchEvent liveMatchEvent = liveMatchEvents().findOne("{templateMatchEventId: #}", templateMatchEvent.templateMatchEventId).as(LiveMatchEvent.class);
+        if (liveMatchEvent == null) {
+            // Si no existe y el partido "ha comenzado"...
+            if (Model.isMatchEventStarted(templateMatchEvent)) {
+                // ... creamos su version "live"
+                liveMatchEvent = new LiveMatchEvent(templateMatchEvent);
+                // Generamos el objectId para poder devolverlo correctamente
+                liveMatchEvent.liveMatchEventId = new ObjectId();
+                liveMatchEvents().insert(liveMatchEvent);
+            }
+        }
+        return liveMatchEvent;
+    }
+
     static public List<TemplateMatchEvent> templateMatchEvents(TemplateContest templateContest) {
         Iterable<TemplateMatchEvent> templateMatchEventResults = findTemplateMatchEventFromIds("_id", templateContest.templateMatchEventIds);
         return ListUtils.asList(templateMatchEventResults);
@@ -752,9 +768,15 @@ public class Model {
             optaEvent = optaEvents().findOne("{gameId: #, typeId: 1, periodId: 1, qualifiers: 278}", optaMatchEventId).as(OptaEvent.class);
         }
 
+        /*
         Logger.info("isStarted? {}({}) = {}",
                 templateMatchEvent.soccerTeamA.name + " vs " + templateMatchEvent.soccerTeamB.name, templateMatchEvent.optaMatchEventId, (optaEvent!= null));
+        */
         return (optaEvent != null);
+    }
+
+    public static boolean isMatchEventStarted(String templateMatchEventId) {
+        return isMatchEventStarted(templateMatchEvent(new ObjectId(templateMatchEventId)));
     }
 
     public static boolean isMatchEventFinished(TemplateMatchEvent templateMatchEvent) {
@@ -762,9 +784,38 @@ public class Model {
 
         OptaEvent optaEvent = optaEvents().findOne("{gameId: #, typeId: 30, periodId: 14}", optaMatchEventId).as(OptaEvent.class);
 
+        /*
         Logger.info("isFinished? {}({}) = {}",
                 templateMatchEvent.soccerTeamA.name + " vs " + templateMatchEvent.soccerTeamB.name, templateMatchEvent.optaMatchEventId, (optaEvent!= null));
+        */
         return (optaEvent != null);
+    }
+
+    public static boolean isMatchEventFinished(String templateMatchEventId) {
+        return isMatchEventFinished(templateMatchEvent(new ObjectId(templateMatchEventId)));
+    }
+
+    /**
+     * Buscar el tiempo actual del partido
+     * @param templateMatchEventId
+     * @return Tiempo transcurrido
+     */
+    public static Date matchEventTime(String templateMatchEventId) {
+        TemplateMatchEvent templateMatchEvent = templateMatchEvent(new ObjectId(templateMatchEventId));
+        Date dateNow = templateMatchEvent.startDate;
+
+        String optaMatchEventId = getMatchEventIdFromOpta(templateMatchEvent.optaMatchEventId);
+
+        // Buscar el ultimo evento registrado por el partido
+        Iterable<OptaEvent> optaEvents = optaEvents().find("{gameId: #}", optaMatchEventId).sort("{timestamp: -1}").limit(1).as(OptaEvent.class);
+        if (optaEvents.iterator().hasNext()) {
+            OptaEvent event = optaEvents.iterator().next();
+            dateNow = event.timestamp;
+            Logger.info("matchEventTime from optaEvent: gameId({}) id({})", optaMatchEventId, event.eventId);
+        }
+
+        Logger.info("matchEventTime ({}): {}", templateMatchEvent.optaMatchEventId, dateNow);
+        return dateNow;
     }
 
     /**
