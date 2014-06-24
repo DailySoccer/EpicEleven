@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
  */
 public class OptaUtils {
 
+
     public static void processOptaDBInput(String feedType, BasicDBObject requestBody){
         if (feedType.equals("F9")){
             processF9(requestBody);
@@ -142,16 +143,16 @@ public class OptaUtils {
             } else {
             // Diferencias en goles:
                 OptaPlayer scorer = Model.optaPlayers().findOne("{id: #}", "p"+myEvent.optaPlayerId).as(OptaPlayer.class);
-                if (scorer.position == "Goalkeeper"){
+                if (scorer.position.equals("Goalkeeper")){
                     // Gol del portero
                     myEvent.typeId = 1601;
-                } else if (scorer.position == "Defender"){
+                } else if (scorer.position.equals("Defender")){
                     // Gol del defensa
                     myEvent.typeId = 1602;
-                } else if (scorer.position == "Midfielder"){
+                } else if (scorer.position.equals("Midfielder")){
                     // Gol del medio
                     myEvent.typeId = 1603;
-                } else if (scorer.position == "Forward"){
+                } else if (scorer.position.equals("Forward")){
                     // Gol del delantero
                     myEvent.typeId = 1604;
                 }
@@ -330,7 +331,7 @@ public class OptaUtils {
         ArrayList<LinkedHashMap> matchPlayers = (ArrayList) ((LinkedHashMap) teamData.get("PlayerLineUp")).
                                                                                       get("MatchPlayer");
         for (LinkedHashMap matchPlayer : matchPlayers) {
-            if (matchPlayer.get("Position").equals("Defender")) {
+            if (matchPlayer.get("Position").equals("Goalkeeper") || matchPlayer.get("Position").equals("Defender")) {
                 for (LinkedHashMap stat : (ArrayList<LinkedHashMap>) matchPlayer.get("Stat")) {
                     if (stat.get("Type").equals("goals_conceded") && ((int) stat.get("content") > 0)) {
                         createEvent(F9, gameId, matchPlayer, 2001, 20001, (int) stat.get("content"));
@@ -371,11 +372,8 @@ public class OptaUtils {
         myEvent.pointsTranslationId = pointsTranslation.pointsTranslationId;
         myEvent.points = pointsTranslation.points;
 
-        Iterable<OptaEvent> alreadySavedEvents = Model.optaEvents().find("{typeId: #, eventId: #, optaPlayerId: #, gameId: #, competitionId: #}",
-                typeId, eventId, myEvent.optaPlayerId, myEvent.gameId, myEvent.competitionId).as(OptaEvent.class);
-        while (alreadySavedEvents.iterator().hasNext()){
-            Model.optaEvents().remove(alreadySavedEvents.iterator().next().optaEventId);
-        }
+        Model.optaEvents().remove("{typeId: #, eventId: #, optaPlayerId: #, gameId: #, competitionId: #}",
+                typeId, eventId, myEvent.optaPlayerId, myEvent.gameId, myEvent.competitionId);
         for (int i = 0; i < times; i++) {
             Model.optaEvents().insert(myEvent);
         }
