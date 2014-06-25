@@ -175,11 +175,6 @@ public class OptaUtils {
             }
 
         }
-        // Gol al portero -> 1860
-        if ((myEvent.typeId==10 || myEvent.typeId==11 || myEvent.typeId==12) &&
-               myEvent.qualifiers.contains(186)){
-            myEvent.typeId = 1860;
-        }
         // Penalty parado -> 1058
         if (myEvent.typeId==58 && !myEvent.qualifiers.contains(186)){
             myEvent.typeId = 1058;
