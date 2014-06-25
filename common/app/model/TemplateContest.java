@@ -48,4 +48,6 @@ public class TemplateContest {
     public List<ObjectId> templateMatchEventIds;  // We rather have it here that normalize it in a N:N table
 
     public TemplateContest() {}
+
+    public boolean isActive() { return (state == State.ACTIVE); }
 }

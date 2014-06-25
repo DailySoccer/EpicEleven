@@ -28,6 +28,7 @@
 
     <input type="hidden" name="id" value='@templateContestForm("id").value' >
 
+    <div class="col-md-6">
     @select(
         templateContestForm("state"),
         options(model.TemplateContest.State.options()),
@@ -75,6 +76,7 @@
         options(model.PrizeType.options()),
         '_label -> "Prize Type"
     )
+    </div>
 
     <!--
     @inputDate(
@@ -83,6 +85,7 @@
     )
     -->
 
+    <div class="col-md-6">
     @select(
         templateContestForm("templateMatchEvents"),
         options(matchEventsOptions),
@@ -90,6 +93,7 @@
         'size -> 50,
         'multiple -> true
     )
+    </div>
 
     <!-- Button (Double) -->
     <div class="control-group">

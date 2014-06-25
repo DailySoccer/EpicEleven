@@ -288,6 +288,10 @@ public class AdminController extends Controller {
     }
 
     public static void instantiateTemplateContest(TemplateContest templateContest) {
+        // No instanciamos template contests que no esten activos
+        if (!templateContest.isActive())
+            return;
+
         // Cuantas instancias tenemos creadas?
         long instances = Model.contests().count("{templateContestId: #}", templateContest.templateContestId);
 
