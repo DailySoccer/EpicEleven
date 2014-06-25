@@ -5,10 +5,7 @@ import model.Model;
 import model.opta.OptaDB;
 import utils.OptaUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by gnufede on 13/06/14.
@@ -24,6 +21,7 @@ public class OptaSimulator implements Runnable {
     //Iterable<OptaDB> optaDBCollection;
     volatile boolean stopLoop;
     volatile boolean pauseLoop;
+    TreeSet<Date> pauses;
     Iterator<OptaDB> optaIterator;
 
 
@@ -53,6 +51,7 @@ public class OptaSimulator implements Runnable {
     public OptaSimulator () {
         this.stopLoop = true;
         this.pauseLoop = true;
+        this.pauses = new TreeSet<Date>();
     }
 
     public void launch(long initialDate, long endDate, int waitMillisecondsBetweenEvents, boolean fast,
@@ -103,6 +102,7 @@ public class OptaSimulator implements Runnable {
         while (!stopLoop && (pauseLoop || next())) {
             try {
                 Thread.sleep(this.waitMillisecondsBetweenEvents);
+                checkDate();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -110,14 +110,19 @@ public class OptaSimulator implements Runnable {
 
     }
 
-    public boolean isBefore (long date){
-        return lastParsedDate<date;
+    public void addPause(Date date){
+        pauses.add(date);
     }
 
-    public void goTo (long endDate){
-        while (endDate > lastParsedDate){
-            next();
+    public void checkDate(){
+        if (!pauses.isEmpty() && lastParsedDate >= pauses.first().getTime()){
+            pauseLoop = true;
+            pauses.remove(pauses.first());
         }
+    }
+
+    public boolean isBefore (long date){
+        return lastParsedDate<date;
     }
 
     public void stop() {

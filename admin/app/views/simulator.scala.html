@@ -9,10 +9,6 @@
 
             <a href="@AdminController.startSimulator"><button class="btn btn-primary">Start step-by-step</button></a>
             <a href="@AdminController.launchSimulator"><button class="btn btn-success">Run</button></a>
-            @helper.form(action = AdminController.gotoSimulator) {
-                <input type="date" name="date">
-                <button id="ok" name="ok" type="submit" class="btn btn-success">Go to</button>
-            }
         </div>
         <br/>
     }
@@ -22,6 +18,12 @@
                     <a href="@AdminController.resumeSimulator"><button class="btn btn-success">Resume</button></a>
                 } else {
                     <a href="@AdminController.pauseSimulator"><button class="btn btn-warning">Pause</button></a>
+                }
+                @helper.form(action = AdminController.gotoSimulator) {
+                <div>
+                    <input type="date" name="date">
+                    <button id="ok" name="ok" type="submit" class="btn btn-success">Add pause</button>
+                </div>
                 }
         </div>
         <br/>

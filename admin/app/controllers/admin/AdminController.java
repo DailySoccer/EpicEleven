@@ -535,6 +535,7 @@ public class AdminController extends Controller {
         if (OptaSimulator.stoppedInstance()){
             OptaSimulator mySimulator = OptaSimulator.getInstance();
             mySimulator.launch(0L, System.currentTimeMillis(), 0, false, true, null);
+            mySimulator.start();
             mySimulator.pause();
             FlashMessage.success("Simulator started");
             return ok(views.html.simulator.render());
@@ -600,9 +601,7 @@ public class AdminController extends Controller {
         if (!gotoForm.hasErrors()){
             GotoSimParams params = gotoForm.get();
             OptaSimulator mySimulator = OptaSimulator.getInstance();
-            mySimulator.halt();
-            mySimulator.launch(0L, System.currentTimeMillis(), 0, false, true, null);
-            mySimulator.goTo(params.date.getTime());
+            mySimulator.addPause(params.date);
             FlashMessage.success("Simulator going");
             return ok(views.html.simulator.render());
         } else {
