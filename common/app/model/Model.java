@@ -191,7 +191,12 @@ public class Model {
         liveMatchEvents().remove();
 
         // Reset del estado de los contests (excepto los "no activos" = OFF)
-        templateContests().update("{state: {$ne: \"OFF\"}}").with("{$set: {state: \"ACTIVE\"}}");
+        templateContests()
+                .update("{state: {$ne: \"OFF\"}}")
+                .multi()
+                .with("{$set: {state: \"ACTIVE\"}}");
+
+        instantiateContests();
     }
 
     /**
@@ -387,6 +392,28 @@ public class Model {
         templateContests().remove(templateContest.templateContestId);
 
         return true;
+    }
+
+    public static void instantiateContests() {
+        Iterable<TemplateContest> templateContests = Model.templateContests().find().as(TemplateContest.class);
+        for(TemplateContest template : templateContests) {
+            instantiateTemplateContest(template);
+        }
+    }
+
+    public static void instantiateTemplateContest(TemplateContest templateContest) {
+        // No instanciamos template contests que no esten activos
+        if (!templateContest.isActive())
+            return;
+
+        // Cuantas instancias tenemos creadas?
+        long instances = Model.contests().count("{templateContestId: #}", templateContest.templateContestId);
+
+        for(long i=instances; i<templateContest.minInstances; i++) {
+            Contest contest = new Contest(templateContest);
+            contest.maxUsers = 10;
+            Model.contests().insert(contest);
+        }
     }
 
     /**
@@ -885,8 +912,10 @@ public class Model {
      */
     public static void actionWhenMatchEventIsStarted(TemplateMatchEvent templateMatchEvent) {
         // Los template contests (que incluyan este match event y que esten "activos") tendrian que ser marcados como "live"
-        templateContests().update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}",
-                templateMatchEvent.templateMatchEventId).with("{$set: {state: \"LIVE\"}}");
+        templateContests()
+                .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}", templateMatchEvent.templateMatchEventId)
+                .multi()
+                .with("{$set: {state: \"LIVE\"}}");
     }
 
     public static void actionWhenMatchEventIsFinished(TemplateMatchEvent templateMatchEvent) {

@@ -279,27 +279,8 @@ public class AdminController extends Controller {
     }
 
     public static Result instantiateContests() {
-        Iterable<TemplateContest> templateContests = Model.templateContests().find().as(TemplateContest.class);
-        for(TemplateContest template : templateContests) {
-            instantiateTemplateContest(template);
-        }
-
+        Model.instantiateContests();
         return redirect(routes.AdminController.contests());
-    }
-
-    public static void instantiateTemplateContest(TemplateContest templateContest) {
-        // No instanciamos template contests que no esten activos
-        if (!templateContest.isActive())
-            return;
-
-        // Cuantas instancias tenemos creadas?
-        long instances = Model.contests().count("{templateContestId: #}", templateContest.templateContestId);
-
-        for(long i=instances; i<templateContest.minInstances; i++) {
-            Contest contest = new Contest(templateContest);
-            contest.maxUsers = 10;
-            Model.contests().insert(contest);
-        }
     }
 
     public static Result deleteContest(String contestId) {
@@ -331,6 +312,7 @@ public class AdminController extends Controller {
 
         TemplateContest templateContest = new TemplateContest();
 
+        templateContest.templateContestId = params.id.isEmpty() ? new ObjectId() : new ObjectId(params.id);
         templateContest.state = params.state;
         templateContest.name = params.name;
         templateContest.postName = params.postName;
@@ -363,7 +345,11 @@ public class AdminController extends Controller {
             Model.templateContests().insert(templateContest);
         }
         else {
-            Model.templateContests().update("{_id: #}", new ObjectId(params.id)).with(templateContest);
+            Model.templateContests().update("{_id: #}", templateContest.templateContestId).with(templateContest);
+        }
+
+        if (templateContest.isActive()) {
+            Model.instantiateTemplateContest(templateContest);
         }
 
         return redirect(routes.AdminController.templateContests());
