@@ -64,6 +64,7 @@ GET         /stop_simulator                                    controllers.admin
 GET         /simulator_next                                    controllers.admin.AdminController.simulatorNext()
 GET         /pause_simulator                                   controllers.admin.AdminController.pauseSimulator()
 GET         /resume_simulator                                  controllers.admin.AdminController.resumeSimulator()
+POST        /goto_simulator                                    controllers.admin.AdminController.gotoSimulator()
 
 GET         /opta_events                                       controllers.admin.AdminController.optaEvents()
 GET         /opta_events/update                                controllers.admin.AdminController.updateOptaEvents()

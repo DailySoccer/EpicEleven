@@ -22,6 +22,8 @@ import java.util.List;
 
 import static play.data.Form.form;
 import static utils.OptaUtils.recalculateAllEvents;
+import play.data.Form;
+import play.data.validation.Constraints.Required;
 
 
 public class AdminController extends Controller {
@@ -533,6 +535,7 @@ public class AdminController extends Controller {
         if (OptaSimulator.stoppedInstance()){
             OptaSimulator mySimulator = OptaSimulator.getInstance();
             mySimulator.launch(0L, System.currentTimeMillis(), 0, false, true, null);
+            mySimulator.start();
             mySimulator.pause();
             FlashMessage.success("Simulator started");
             return ok(views.html.simulator.render());
@@ -585,6 +588,25 @@ public class AdminController extends Controller {
             FlashMessage.danger("Simulator not running");
             return ok(views.html.simulator.render());
             //return ok("Simulator not running");
+        }
+
+    }
+
+    public static class GotoSimParams {
+        @Required public Date date;
+    }
+
+    public static Result gotoSimulator(){
+        Form<GotoSimParams> gotoForm = form(GotoSimParams.class).bindFromRequest();
+        if (!gotoForm.hasErrors()){
+            GotoSimParams params = gotoForm.get();
+            OptaSimulator mySimulator = OptaSimulator.getInstance();
+            mySimulator.addPause(params.date);
+            FlashMessage.success("Simulator going");
+            return ok(views.html.simulator.render());
+        } else {
+            FlashMessage.danger("Wrong button pressed");
+            return ok(views.html.simulator.render());
         }
 
     }

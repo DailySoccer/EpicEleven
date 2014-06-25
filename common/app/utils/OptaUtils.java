@@ -404,24 +404,33 @@ public class OptaUtils {
     public static void createEvent(LinkedHashMap F9, String gameId, LinkedHashMap matchPlayer,
                                    int typeId, int eventId, int times) {
         String playerId = (String) matchPlayer.get("PlayerRef");
-        OptaEvent myEvent = new OptaEvent();
-        myEvent.typeId = typeId;
-        myEvent.eventId = eventId;
-        myEvent.optaPlayerId = playerId.startsWith("p")? playerId.substring(1): playerId;
-        myEvent.gameId = gameId.startsWith("f")? gameId.substring(1): gameId;
-        myEvent.competitionId = (String)((LinkedHashMap)F9.get("Competition")).get("uID");
-        //TODO: Extraer SeasonID de Competition->Stat->Type==season_id->content
-        myEvent.timestamp = parseDate((String) ((LinkedHashMap) ((LinkedHashMap) F9.get("MatchData")).get("MatchInfo")).get("TimeStamp"));
-        myEvent.unixtimestamp = myEvent.timestamp.getTime();
-        myEvent.qualifiers = new ArrayList<>();
-        myEvent.points = getPoints(myEvent.typeId, myEvent.timestamp);
-        myEvent.pointsTranslationId = pointsTranslationTableCache.get(myEvent.typeId);
+        playerId = playerId.startsWith("p")? playerId.substring(1): playerId;
+        String competitionId = (String)((LinkedHashMap)F9.get("Competition")).get("uID");
+        competitionId = competitionId.startsWith("c")? competitionId.substring(1): competitionId;
+        gameId = gameId.startsWith("f")? gameId.substring(1): gameId;
+        Date timestamp = parseDate((String) ((LinkedHashMap) ((LinkedHashMap) F9.get("MatchData")).get("MatchInfo")).get("TimeStamp"));
+        long unixtimestamp = timestamp.getTime();
 
         Model.optaEvents().remove("{typeId: #, eventId: #, optaPlayerId: #, gameId: #, competitionId: #}",
-                typeId, eventId, myEvent.optaPlayerId, myEvent.gameId, myEvent.competitionId);
+                typeId, eventId, playerId, gameId, competitionId);
+
 
         OptaEvent[] events = new OptaEvent[times];
+        OptaEvent myEvent;
         for (int i = 0; i < times; i++) {
+            myEvent = new OptaEvent();
+            myEvent.typeId = typeId;
+            myEvent.eventId = eventId;
+            myEvent.optaPlayerId = playerId;
+            myEvent.gameId = gameId;
+            myEvent.competitionId = competitionId;
+            //TODO: Extraer SeasonID de Competition->Stat->Type==season_id->content
+            myEvent.timestamp = timestamp;
+            myEvent.unixtimestamp = unixtimestamp;
+            myEvent.qualifiers = new ArrayList<>();
+            myEvent.points = getPoints(myEvent.typeId, myEvent.timestamp);
+            myEvent.pointsTranslationId = pointsTranslationTableCache.get(myEvent.typeId);
+
             events[i] = myEvent;
         }
         Model.optaEvents().insert(events);
