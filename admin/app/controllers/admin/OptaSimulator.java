@@ -110,6 +110,16 @@ public class OptaSimulator implements Runnable {
 
     }
 
+    public boolean isBefore (long date){
+        return lastParsedDate<date;
+    }
+
+    public void goTo (long endDate){
+        while (endDate > lastParsedDate){
+            next();
+        }
+    }
+
     public void stop() {
         this.halt();
         optaThread = null;
