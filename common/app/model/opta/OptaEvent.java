@@ -1,6 +1,7 @@
 package model.opta;
 
 import org.bson.types.ObjectId;
+import org.jongo.marshall.jackson.oid.Id;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -12,6 +13,7 @@ import java.util.Date;
  */
 public class OptaEvent {
 
+    @Id
     public ObjectId optaEventId;
     public String gameId;
     public String homeTeamId;

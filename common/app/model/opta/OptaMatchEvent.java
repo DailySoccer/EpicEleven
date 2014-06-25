@@ -1,6 +1,7 @@
 package model.opta;
 
 import org.bson.types.ObjectId;
+import org.jongo.marshall.jackson.oid.Id;
 
 import java.util.Date;
 
@@ -9,6 +10,7 @@ import java.util.Date;
  */
 public class OptaMatchEvent {
 
+    @Id
     public ObjectId optaMatchEventId;
     public String id;
     public int competitionId;
