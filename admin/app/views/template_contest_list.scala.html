@@ -41,7 +41,8 @@
     <table id="table_id" class="table table-striped">
         <thead>
         <tr>
-            <th>Id</th>
+            <!--th>Id</th-->
+            <th>State</th>
             <th>Name</th>
             <th>PostName</th>
             <th>Num. Matches</th>
@@ -63,7 +64,8 @@
         <tbody>
         @for(p <- template_contests) {
         <tr>
-            <td>@p.templateContestId</td>
+            <!--td>@p.templateContestId</td-->
+            <td>@p.state</td>
             <td>@p.name</td>
             <td>@p.postName</td>
             <td>@p.templateMatchEventIds.size()</td>
@@ -75,6 +77,7 @@
             <td>@p.startDate.format("yyyy/MM/dd HH:mm:ss")</td>
             <td>@contest_state(p.templateContestId.toString())</td>
             <td>
+                <a href="@AdminController.editTemplateContest(p.templateContestId.toString())"><button class="btn btn-success">Edit</button></a>
                 <a href="@AdminController.deleteTemplateContest(p.templateContestId.toString())"><button class="btn btn-danger">-</button></a>
             </td>
         </tr>

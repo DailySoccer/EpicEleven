@@ -11,6 +11,11 @@ import java.util.*;
 
 // https://github.com/playframework/playframework/tree/master/samples/java/forms
 public class TemplateContestForm {
+    public String id;
+
+    @Constraints.Required
+    public TemplateContest.State state;
+
     @Constraints.Required
     public String name;             // Auto-gen if blank
 
@@ -34,6 +39,28 @@ public class TemplateContestForm {
     public List<String> templateMatchEvents = new ArrayList<>();  // We rather have it here that normalize it in a N:N table
 
     public Date startDate = new Date();
+
+    public TemplateContestForm() {
+    }
+
+    public TemplateContestForm(TemplateContest templateContest) {
+        id = templateContest.templateContestId.toString();
+        state = templateContest.state;
+        name = templateContest.name;
+        postName = templateContest.postName;
+        minInstances = templateContest.minInstances;
+        maxEntries = templateContest.maxEntries;
+        salaryCap = templateContest.salaryCap;
+        entryFee = templateContest.entryFee;
+        prizeType = templateContest.prizeType;
+
+        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.findTemplateMatchEventFromIds("_id", templateContest.templateMatchEventIds);
+        for(TemplateMatchEvent matchEvent : templateMatchEventsResults) {
+            templateMatchEvents.add(matchEvent.optaMatchEventId);
+        }
+
+        startDate = templateContest.startDate;
+    }
 
     public static HashMap<String, String> matchEventsOptions() {
         HashMap<String, String> options = new LinkedHashMap<>();

@@ -26,6 +26,14 @@
     <!-- Form Name -->
     <legend>Template Contest</legend>
 
+    <input type="hidden" name="id" value='@templateContestForm("id").value' >
+
+    @select(
+        templateContestForm("state"),
+        options(model.TemplateContest.State.options()),
+        '_label -> "State"
+    )
+
     @inputText(
         templateContestForm("name"),
         '_label -> "Name",
@@ -87,7 +95,7 @@
     <div class="control-group">
         <label class="control-label" for="ok"></label>
         <div class="controls">
-            <button id="ok" name="ok" class="btn btn-success">Create</button>
+            <button id="ok" name="ok" class="btn btn-success">Save</button>
             <a href="@AdminController.templateContests" class="btn btn-danger">Cancel</a>
         </div>
     </div>

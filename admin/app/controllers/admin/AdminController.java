@@ -95,7 +95,7 @@ public class AdminController extends Controller {
         List<OptaEvent> optaEventList = new ArrayList<>();
 
         TemplateSoccerPlayer templateSoccerPlayer = Model.templateSoccerPlayer( new ObjectId(playerId) );
-        Contest contest = Model.contest( new ObjectId(contestId) );
+        Contest contest = Model.contest(new ObjectId(contestId));
         TemplateContest templateContest = Model.templateContest(contest.templateContestId);
         List<TemplateMatchEvent> templateMatchEvents = Model.templateMatchEvents(templateContest);
 
@@ -109,7 +109,7 @@ public class AdminController extends Controller {
     public static Result showPlayerFantasyPointsInMatchEvent(String templateMatchEventId, String playerId) {
         List<OptaEvent> optaEventList = new ArrayList<>();
 
-        TemplateSoccerPlayer templateSoccerPlayer = Model.templateSoccerPlayer( new ObjectId(playerId) );
+        TemplateSoccerPlayer templateSoccerPlayer = Model.templateSoccerPlayer(new ObjectId(playerId));
         TemplateMatchEvent templateMatchEvent = Model.templateMatchEvent( new ObjectId(templateMatchEventId) );
 
         optaEventList.addAll(Model.optaEvents(templateMatchEvent.optaMatchEventId, templateSoccerPlayer.optaPlayerId));
@@ -326,6 +326,8 @@ public class AdminController extends Controller {
         TemplateContestForm params = templateContestForm.get();
 
         TemplateContest templateContest = new TemplateContest();
+
+        templateContest.state = params.state;
         templateContest.name = params.name;
         templateContest.postName = params.postName;
         templateContest.minInstances = params.minInstances;
@@ -347,17 +349,32 @@ public class AdminController extends Controller {
         }
         templateContest.startDate = startDate;
 
+        /*
         for(String p: params.templateMatchEvents) {
             Logger.info("{}", p);
         }
+        */
 
-        Model.templateContests().insert(templateContest);
+        if (params.id.isEmpty()) {
+            Model.templateContests().insert(templateContest);
+        }
+        else {
+            Model.templateContests().update("{_id: #}", new ObjectId(params.id)).with(templateContest);
+        }
 
         return redirect(routes.AdminController.templateContests());
     }
 
     public static Result addTemplateContest() {
         Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class);
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
+    }
+
+    public static Result editTemplateContest(String templateContestId) {
+        TemplateContest templateContest = Model.templateContest(new ObjectId(templateContestId));
+        TemplateContestForm params = new TemplateContestForm(templateContest);
+
+        Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
         return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
     }
 

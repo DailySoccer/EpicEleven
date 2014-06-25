@@ -38,8 +38,9 @@ GET         /contest/:contestId                                controllers.admin
 
 GET         /template_contests                                 controllers.admin.AdminController.templateContests()
 GET         /template_contest/create_all                       controllers.admin.AdminController.createAllTemplateContests()
-GET         /template_contest/add                              controllers.admin.AdminController.addTemplateContest()
-POST        /template_contest/add                              controllers.admin.AdminController.submitTemplateContest()
+GET         /template_contest/save/:templateContestId          controllers.admin.AdminController.editTemplateContest(templateContestId : String)
+GET         /template_contest/save                             controllers.admin.AdminController.addTemplateContest()
+POST        /template_contest/save                             controllers.admin.AdminController.submitTemplateContest()
 GET         /template_contest/delete/:templateContestId        controllers.admin.AdminController.deleteTemplateContest(templateContestId : String)
 GET         /template_contest/:templateContestId               controllers.admin.AdminController.templateContest(templateContestId : String)
 
