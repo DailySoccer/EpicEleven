@@ -41,13 +41,13 @@ public class ContestController extends Controller {
 
         HashMap<String, Object> contest = new HashMap<>();
 
-        // Obtenemos los contests activos
-        Iterable<Contest> contestsResults = Model.contests().find().as(Contest.class);
-        List<Contest> contests = ListUtils.asList(contestsResults);
-
-        // Template Contests <- Contest Activos
-        Iterable<TemplateContest> templateContestResults = Model.findTemplateContests(contests).as(TemplateContest.class);
+        // Obtenemos la lista de Template Contests activos
+        Iterable<TemplateContest> templateContestResults = Model.templateContests().find("{state: \"ACTIVE\"}").as(TemplateContest.class);
         List<TemplateContest> templateContests = ListUtils.asList(templateContestResults);
+
+        // Contests <- Template Contests
+        Iterable<Contest> contestsResults = Model.findContests(templateContests).as(Contest.class);
+        List<Contest> contests = ListUtils.asList(contestsResults);
 
         // Match Events <- Template Contests
         Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.findTemplateMatchEvents(templateContests).as(TemplateMatchEvent.class);

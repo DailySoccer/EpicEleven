@@ -675,6 +675,17 @@ public class Model {
     }
 
     /**
+     *  Query de la lista de Contests correspondientes a una lista de Template Contests
+     */
+    static public Find findContests(List<TemplateContest> templateContests) {
+        List<ObjectId> templateContestObjectIds = new ArrayList<>(templateContests.size());
+        for (TemplateContest template: templateContests) {
+            templateContestObjectIds.add(template.templateContestId);
+        }
+        return findObjectIds(contests(), "templateContestId", templateContestObjectIds);
+    }
+
+    /**
      *  Query de la lista de Template Contests correspondientes a una lista de contests
      */
     static public Find findTemplateContests(List<Contest> contests) {
