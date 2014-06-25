@@ -15,7 +15,6 @@ import org.jongo.Find;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import play.Logger;
 
 /**
  * Created by gnufede on 16/06/14.
@@ -486,23 +485,37 @@ public class OptaUtils {
         if (dirtyMatchEvents.isEmpty())
             return;
 
-        for(String change : dirtyMatchEvents) {
-            //Logger.info("change in gameId({})", change);
+        for(String optaGameId : dirtyMatchEvents) {
+            //Logger.info("optaGameId in gameId({})", optaGameId);
 
             // Buscamos todos los template Match Events asociados con ese partido de Opta
-            Iterable<TemplateMatchEvent> templateMatchEvents = Model.templateMatchEvents().find("{optaMatchEventId : #}", "g"+change).as(TemplateMatchEvent.class);
+            Iterable<TemplateMatchEvent> templateMatchEvents = Model.templateMatchEvents().find("{optaMatchEventId : #}", "g" + optaGameId).as(TemplateMatchEvent.class);
             while(templateMatchEvents.iterator().hasNext()) {
                 TemplateMatchEvent templateMatchEvent = templateMatchEvents.iterator().next();
 
-                // Obtener el "live" del template
-                LiveMatchEvent liveMatchEvent = Model.liveMatchEventIfStarted(templateMatchEvent);
+                // Existe la version "live" del match event?
+                LiveMatchEvent liveMatchEvent = Model.liveMatchEvent(templateMatchEvent);
+                if (liveMatchEvent == null) {
+                    // Deberia existir? (true si el partido ha comenzado)
+                    if (Model.isMatchEventStarted(templateMatchEvent)) {
+                        liveMatchEvent = Model.createLiveMatchEvent(templateMatchEvent);
+                    }
+                }
+
                 if (liveMatchEvent != null) {
                     Model.updateLiveFantasyPoints(liveMatchEvent);
 
                     //Logger.info("fantasyPoints in liveMatchEvent({})", liveMatchEvent.liveMatchEventId);
+
+                    if (Model.isMatchEventFinished(templateMatchEvent)) {
+                        Model.actionWhenMatchEventIsFinished(templateMatchEvent);
+                    }
+                    else {
+                        Model.actionWhenMatchEventIsStarted(templateMatchEvent);
+                    }
                 }
 
-                //Logger.info("change in templateMatchEvent({})", templateMatchEvent.templateMatchEventId);
+                //Logger.info("optaGameId in templateMatchEvent({})", templateMatchEvent.templateMatchEventId);
             }
         }
     }

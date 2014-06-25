@@ -187,7 +187,11 @@ public class Model {
         optaPlayers().remove();
         optaTeams().remove();
         optaMatchEvents().remove();
+
         liveMatchEvents().remove();
+
+        // Reset del estado de los contests (excepto los "no activos" = OFF)
+        templateContests().update("{state: {$ne: \"OFF\"}}").with("{$set: {state: \"ACTIVE\"}}");
     }
 
     /**
@@ -225,17 +229,25 @@ public class Model {
         return liveMatchEvent;
     }
 
+    static public LiveMatchEvent createLiveMatchEvent(TemplateMatchEvent templateMatchEvent) {
+        // Creamos la version "live" del template Match Event
+        LiveMatchEvent liveMatchEvent = new LiveMatchEvent(templateMatchEvent);
+
+        // Generamos el objectId para poder devolverlo correctamente
+        liveMatchEvent.liveMatchEventId = new ObjectId();
+        liveMatchEvents().withWriteConcern(WriteConcern.SAFE).insert(liveMatchEvent);
+
+        return liveMatchEvent;
+    }
+
     static public LiveMatchEvent liveMatchEventIfStarted(TemplateMatchEvent templateMatchEvent) {
         // Buscamos el "live" a partir de su "template"
-        LiveMatchEvent liveMatchEvent = liveMatchEvents().findOne("{templateMatchEventId: #}", templateMatchEvent.templateMatchEventId).as(LiveMatchEvent.class);
+        LiveMatchEvent liveMatchEvent = liveMatchEvent(templateMatchEvent);
         if (liveMatchEvent == null) {
             // Si no existe y el partido "ha comenzado"...
             if (Model.isMatchEventStarted(templateMatchEvent)) {
                 // ... creamos su version "live"
-                liveMatchEvent = new LiveMatchEvent(templateMatchEvent);
-                // Generamos el objectId para poder devolverlo correctamente
-                liveMatchEvent.liveMatchEventId = new ObjectId();
-                liveMatchEvents().insert(liveMatchEvent);
+                liveMatchEvent = createLiveMatchEvent(templateMatchEvent);
             }
         }
         return liveMatchEvent;
@@ -814,10 +826,8 @@ public class Model {
         return isMatchEventFinished(templateMatchEvent(new ObjectId(templateMatchEventId)));
     }
 
-    public static boolean isContestStarted(String templateContestId) {
+    public static boolean isContestStarted(TemplateContest templateContest) {
         boolean started = false;
-
-        TemplateContest templateContest = templateContest(new ObjectId(templateContestId));
 
         // El Contest ha comenzado si cualquiera de sus partidos ha comenzado
         Iterable<TemplateMatchEvent> templateContestResults = Model.findTemplateMatchEventFromIds("_id", templateContest.templateMatchEventIds);
@@ -831,10 +841,13 @@ public class Model {
         return started;
     }
 
-    public static boolean isContestFinished(String templateContestId) {
-        boolean finished = true;
-
+    public static boolean isContestStarted(String templateContestId) {
         TemplateContest templateContest = templateContest(new ObjectId(templateContestId));
+        return isContestStarted(templateContest);
+    }
+
+    public static boolean isContestFinished(TemplateContest templateContest) {
+        boolean finished = true;
 
         // El Contest ha terminado si TODOS sus partidos han terminado
         Iterable<TemplateMatchEvent> templateContestResults = Model.findTemplateMatchEventFromIds("_id", templateContest.templateMatchEventIds);
@@ -846,6 +859,38 @@ public class Model {
         }
 
         return finished;
+    }
+
+    public static boolean isContestFinished(String templateContestId) {
+        TemplateContest templateContest = templateContest(new ObjectId(templateContestId));
+        return isContestFinished(templateContest);
+    }
+
+    /**
+     * Actualizar cuando se produzca un evento de inicio o fin de partido
+     * @param templateMatchEvent
+     *
+     * TODO: Eventos?
+     */
+    public static void actionWhenMatchEventIsStarted(TemplateMatchEvent templateMatchEvent) {
+        // Los template contests (que incluyan este match event y que esten "activos") tendrian que ser marcados como "live"
+        templateContests().update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}",
+                templateMatchEvent.templateMatchEventId).with("{$set: {state: \"LIVE\"}}");
+    }
+
+    public static void actionWhenMatchEventIsFinished(TemplateMatchEvent templateMatchEvent) {
+        // Buscamos los template contests que incluyan ese partido y que esten en "LIVE"
+        Iterable<TemplateContest> templateContests = templateContests().find("{templateMatchEventIds: {$in:[#]}, state: \"LIVE\"}",
+                templateMatchEvent.templateMatchEventId).as(TemplateContest.class);
+
+        for (TemplateContest templateContest : templateContests) {
+            // Si el contest ha terminado (true si todos sus partidos han terminado)
+            if (isContestFinished(templateContest)) {
+                // Cambiar el estado del contest a "HISTORY"
+                templateContests().update("{_id: #, state: \"LIVE\"}",
+                        templateContest.templateContestId).with("{$set: {state: \"HISTORY\"}}");
+            }
+        }
     }
 
     /**
