@@ -80,7 +80,12 @@ public class OptaUtils {
     private static void processEvent(LinkedHashMap event, LinkedHashMap game) {
         HashMap<Integer, Date> eventsCache = getOptaEventsCache(game.get("id").toString());
         int eventId = (int) event.get("event_id");
-        Date timestamp = parseDate((String) event.get("timestamp"));
+        Date timestamp;
+        if (event.containsKey("last_modified")){
+            timestamp = parseDate((String) event.get("last_modified"));
+        } else {
+            timestamp = parseDate((String) event.get("timestamp"));
+        }
         if (eventsCache.containsKey(eventId)) {
             if (timestamp.after(eventsCache.get(eventId))) {
                 updateOrInsertEvent(event, game);
@@ -242,44 +247,64 @@ public class OptaUtils {
     public static void processF1(BasicDBObject f1) {
         try {
             LinkedHashMap myF1 = (LinkedHashMap) ((LinkedHashMap) f1.get("SoccerFeed")).get("SoccerDocument");
-
             int competitionId = myF1.containsKey("competition_id")? (int) myF1.get("competition_id"): -1;
-            int seasonId = myF1.containsKey("season_id")? (int) myF1.get("season_id"): -1;
-            String seasonName = myF1.containsKey("season_name")? (String) myF1.get("season_name"): "NO SEASON NAME";
-            String competitionName = myF1.containsKey("competition_name")?
-                    (String) myF1.get("competition_name"): "NO COMPETITION NAME";
-
 
             ArrayList matches = myF1.containsKey("MatchData")? (ArrayList) myF1.get("MatchData"): null;
             if (matches != null){
                 for (Object match: matches){
-                    OptaMatchEvent myOptaMatchEvent = new OptaMatchEvent();
 
                     LinkedHashMap matchObject = (LinkedHashMap)match;
-                    LinkedHashMap matchInfo = (LinkedHashMap) matchObject.get("MatchInfo");
-                    myOptaMatchEvent.id = (String) matchObject.get("uID");
-                    myOptaMatchEvent.lastModified = parseDate((String) matchObject.get("last_modified"));
-                    myOptaMatchEvent.matchDate = parseDate((String) matchInfo.get("Date"));
-                    myOptaMatchEvent.competitionId = competitionId;
-                    myOptaMatchEvent.seasonId = seasonId;
-                    myOptaMatchEvent.seasonName = seasonName;
-                    myOptaMatchEvent.competitionName = competitionName;
-                    myOptaMatchEvent.timeZone = (String) matchInfo.get("TZ");
-                    ArrayList teams = matchObject.containsKey("TeamData")? (ArrayList)matchObject.get("TeamData"): null;
-                    if (teams != null)
-                        for (Object team: teams){
-                            if (((LinkedHashMap)team).get("Side").equals("Home")) {
-                                myOptaMatchEvent.homeTeamId = (String) ((LinkedHashMap)team).get("TeamRef");
-                            } else {
-                                myOptaMatchEvent.awayTeamId = (String) ((LinkedHashMap)team).get("TeamRef");
-                            }
-                        }
-                    Model.optaMatchEvents().update("{id: #}", myOptaMatchEvent.id).upsert().with(myOptaMatchEvent);
+                    processMatchData(matchObject, competitionId, myF1);
                 }
 
             }
         }catch (NullPointerException e){
             e.printStackTrace();
+        }
+    }
+
+    public static void updateOrInsertMatchData(LinkedHashMap myF1, LinkedHashMap matchObject) {
+        OptaMatchEvent myOptaMatchEvent = new OptaMatchEvent();
+        int competitionId = myF1.containsKey("competition_id")? (int) myF1.get("competition_id"): -1;
+        int seasonId = myF1.containsKey("season_id")? (int) myF1.get("season_id"): -1;
+        String seasonName = myF1.containsKey("season_name")? (String) myF1.get("season_name"): "NO SEASON NAME";
+        String competitionName = myF1.containsKey("competition_name")?
+                (String) myF1.get("competition_name"): "NO COMPETITION NAME";
+        LinkedHashMap matchInfo = (LinkedHashMap) matchObject.get("MatchInfo");
+        myOptaMatchEvent.id = (String) matchObject.get("uID");
+        myOptaMatchEvent.lastModified = parseDate((String) matchObject.get("last_modified"));
+        myOptaMatchEvent.matchDate = parseDate((String) matchInfo.get("Date"));
+        myOptaMatchEvent.competitionId = competitionId;
+        myOptaMatchEvent.seasonId = seasonId;
+        myOptaMatchEvent.seasonName = seasonName;
+        myOptaMatchEvent.competitionName = competitionName;
+        myOptaMatchEvent.timeZone = (String) matchInfo.get("TZ");
+        ArrayList teams = matchObject.containsKey("TeamData")? (ArrayList)matchObject.get("TeamData"): null;
+        if (teams != null)
+            for (Object team: teams){
+                if (((LinkedHashMap)team).get("Side").equals("Home")) {
+                    myOptaMatchEvent.homeTeamId = (String) ((LinkedHashMap)team).get("TeamRef");
+                } else {
+                    myOptaMatchEvent.awayTeamId = (String) ((LinkedHashMap)team).get("TeamRef");
+                }
+            }
+        Model.optaMatchEvents().update("{id: #}", myOptaMatchEvent.id).upsert().with(myOptaMatchEvent);
+    }
+
+    private static void processMatchData(LinkedHashMap matchObject, int competitionId, LinkedHashMap myF1) {
+        HashMap<String, Date> optaMatchDatas = getOptaMatchDataCache(competitionId);
+        String matchId = (String) matchObject.get("uID");
+        Date timestamp = parseDate((String) matchObject.get("last_modified"));
+        if (optaMatchDatas.containsKey(matchId)) {
+            if (timestamp.after(optaMatchDatas.get(matchId))) {
+                updateOrInsertMatchData(myF1, matchObject);
+                //updateOrInsertMatchData(matchObject, competitionId);
+                optaMatchDatas.put(matchId, timestamp);
+            }
+        } else {
+            updateOrInsertMatchData(myF1, matchObject);
+            //updateOrInsertMatchData(matchObject, competitionId);
+            optaMatchDatas.put(matchId, timestamp);
         }
     }
 
@@ -392,9 +417,12 @@ public class OptaUtils {
 
         Model.optaEvents().remove("{typeId: #, eventId: #, optaPlayerId: #, gameId: #, competitionId: #}",
                 typeId, eventId, myEvent.optaPlayerId, myEvent.gameId, myEvent.competitionId);
+
+        OptaEvent[] events = new OptaEvent[times];
         for (int i = 0; i < times; i++) {
-            Model.optaEvents().insert(myEvent);
+            events[i] = myEvent;
         }
+        Model.optaEvents().insert(events);
     }
 
     public static OptaPlayer createPlayer(LinkedHashMap playerObject, LinkedHashMap teamObject){
@@ -433,10 +461,21 @@ public class OptaUtils {
         return optaEventsCache.get(key);
     }
 
+    private static HashMap getOptaMatchDataCache(int key) {
+        if (optaMatchDataCache == null){
+            optaMatchDataCache = new HashMap<Integer, HashMap>();
+        }
+        if (!optaMatchDataCache.containsKey(key)){
+            optaMatchDataCache.put(key, new HashMap<String, Date>());
+        }
+        return optaMatchDataCache.get(key);
+    }
+
     private static HashMap<Integer, Integer> pointsTranslationCache;
     private static HashMap<Integer, ObjectId> pointsTranslationTableCache;
 
     private static HashMap<String, HashMap> optaEventsCache;
 
+    private static HashMap<Integer, HashMap> optaMatchDataCache;
 
 }
