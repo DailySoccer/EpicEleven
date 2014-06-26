@@ -12,6 +12,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import play.Logger;
 import play.data.Form;
+import play.data.format.Formats;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
@@ -96,7 +97,7 @@ public class AdminController extends Controller {
     public static Result showPlayerFantasyPointsInContest(String contestId, String playerId) {
         List<OptaEvent> optaEventList = new ArrayList<>();
 
-        TemplateSoccerPlayer templateSoccerPlayer = Model.templateSoccerPlayer( new ObjectId(playerId) );
+        TemplateSoccerPlayer templateSoccerPlayer = Model.templateSoccerPlayer(new ObjectId(playerId));
         Contest contest = Model.contest(new ObjectId(contestId));
         TemplateContest templateContest = Model.templateContest(contest.templateContestId);
         List<TemplateMatchEvent> templateMatchEvents = Model.templateMatchEvents(templateContest);
@@ -593,7 +594,8 @@ public class AdminController extends Controller {
     }
 
     public static class GotoSimParams {
-        @Required public Date date;
+        @Required @Formats.DateTime (pattern = "yyyy-MM-dd'T'HH:mm")
+        public Date date;
     }
 
     public static Result gotoSimulator(){
