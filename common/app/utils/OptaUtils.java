@@ -21,6 +21,48 @@ import java.util.*;
  */
 public class OptaUtils {
 
+    public static enum OptaEventType {
+        PASE                    (1),
+        REGATE                  (3),
+        FALTA_RECIBIDA          (4),
+        ENTRADA_RECUPERACION    (7),
+        INTERCEPCION            (8),
+        PARADA_1                (10),
+        PARADA_2                (12),
+        CAPTURA_BALON           (11),
+        TIRO_A_PUERTA_1         (13),
+        TIRO_A_PUERTA_2         (14),
+        TIRO_A_PUERTA_3         (15),
+        ASISTENCIA              (210),
+        GOL_PORTERO             (1601),
+        GOL_DEFENSA             (1602),
+        GOL_MEDIO               (1603),
+        GOL_DELANTERO           (1604),
+        GOL_EN_CONTRA           (1699),
+        TARJETA_AMARILLA        (17),
+        DESPEJE_PUNOS           (41),
+        PERDIDA_BALON_1         (50),
+        PERDIDA_BALON_2         (51),
+        FUERA_DE_JUEGO          (75),
+        FALTA_INFLIGIDA         (1004),
+        TARJETA_ROJA            (1017),
+        PENALTY_INFLIGIDO       (1409),
+        PENALTY_FALLADO         (1410),
+        PORTERO_PARA_PENALTY    (1458),
+        CLEAN_SHEET             (2000),
+        GOL_ENCAJADO            (2001);
+
+        public final int code;
+
+        private OptaEventType(int c){
+            code = c;
+        }
+
+        public int getCode(){
+            return code;
+        }
+    }
+
 
     public static void processOptaDBInput(String feedType, BasicDBObject requestBody){
         resetChanges();
