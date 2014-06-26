@@ -433,7 +433,7 @@ public class OptaUtils {
 
             events[i] = myEvent;
         }
-        Model.optaEvents().insert(events);
+        Model.optaEvents().insert((Object[]) events);
     }
 
     public static OptaPlayer createPlayer(LinkedHashMap playerObject, LinkedHashMap teamObject){
