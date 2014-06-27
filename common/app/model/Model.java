@@ -277,69 +277,6 @@ public class Model {
     }
 
     /**
-     * Inicializar la coleccion de equipos y futbolistas (que usaremos para crear los match events)
-     * a partir de la coleccion de datos actualizada desde optaDB
-     */
-    static public void importTeamsAndSoccersFromOptaDB() {
-        long startTime = System.currentTimeMillis();
-
-        try {
-
-            HashMap<String, TemplateSoccerTeam> teamsMap = new HashMap<>();
-            Iterable<OptaTeam> optaTeams = Model.optaTeams().find().as(OptaTeam.class);
-            for (OptaTeam optaTeam : optaTeams) {
-                TemplateSoccerTeam templateTeam = new TemplateSoccerTeam(optaTeam);
-                templateTeam.templateSoccerTeamId = new ObjectId();
-                Model.templateSoccerTeams().withWriteConcern(WriteConcern.SAFE).insert(templateTeam);
-
-                teamsMap.put(templateTeam.optaTeamId, templateTeam);
-            }
-
-            Iterable<OptaPlayer> optaPlayers = Model.optaPlayers().find().as(OptaPlayer.class);
-            for (OptaPlayer optaPlayer : optaPlayers) {
-                ObjectId teamId = null;
-                if (teamsMap.containsKey(optaPlayer.teamId)) {
-                    teamId = teamsMap.get(optaPlayer.teamId).templateSoccerTeamId;
-
-                    TemplateSoccerPlayer templatePlayer = new TemplateSoccerPlayer(optaPlayer, teamId);
-                    Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).insert(templatePlayer);
-                }
-            }
-
-        } catch (MongoException exc) {
-            Logger.error("importTeamsAndSoccersFromOptaDB: ", exc);
-        }
-
-        Logger.info("import Teams&Soccers: {}", System.currentTimeMillis() - startTime);
-    }
-
-    /**
-     * Inicializar la coleccion de partidos
-     *  a partir de la coleccion de datos actualizada desde optaDB
-     */
-    static public void importMatchEventsFromOptaDB() {
-        long startTime = System.currentTimeMillis();
-
-        try {
-            Iterable<OptaMatchEvent> optaMatchEvents = Model.optaMatchEvents().find().as(OptaMatchEvent.class);
-            for (OptaMatchEvent optaMatch: optaMatchEvents) {
-                TemplateSoccerTeam teamA = templateSoccerTeams().findOne("{optaTeamId: #}", optaMatch.homeTeamId).as(TemplateSoccerTeam.class);
-                TemplateSoccerTeam teamB = templateSoccerTeams().findOne("{optaTeamId: #}", optaMatch.awayTeamId).as(TemplateSoccerTeam.class);
-                if (teamA != null && teamB != null) {
-                    createTemplateMatchEvent(optaMatch.id, teamA, teamB, optaMatch.matchDate);
-                }
-                else {
-                    Logger.info("Ignorando OptaMatchEvent: {} ({})", optaMatch.id, optaMatch.matchDate);
-                }
-            }
-        } catch (MongoException exc) {
-            Logger.error("importTeamsAndSoccersFromOptaDB: ", exc);
-        }
-
-        Logger.info("import Teams&Soccers: {}", System.currentTimeMillis() - startTime);
-    }
-
-    /**
      * Importar un optaTeam
      * @param optaTeam
      * @return
