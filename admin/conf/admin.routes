@@ -11,6 +11,7 @@ GET         /points_translation/create                         controllers.admin
 GET         /points_translation/add                            controllers.admin.AdminController.addPointsTranslation()
 POST        /points_translation/add                            controllers.admin.AdminController.submitPointsTranslation()
 GET         /points_translations                               controllers.admin.AdminController.pointsTranslations()
+GET         /points_translations/:eventType                    controllers.admin.AdminController.pointsTranslationsHistory(eventType: Integer)
 
 GET         /lobby                                             controllers.admin.AdminController.lobby()
 
