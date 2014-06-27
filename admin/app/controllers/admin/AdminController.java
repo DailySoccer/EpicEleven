@@ -7,7 +7,9 @@ import model.opta.OptaTeam;
 import model.opta.OptaEvent;
 import org.jongo.Find;
 import org.bson.types.ObjectId;
-import java.util.Date;
+
+import java.util.*;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import play.Logger;
@@ -16,10 +18,6 @@ import play.data.format.Formats;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 
 import static play.data.Form.form;
 import static utils.OptaUtils.recalculateAllEvents;
@@ -182,6 +180,14 @@ public class AdminController extends Controller {
         Model.pointsTranslation().remove();
         MockData.createPointsTranslation();
         return redirect(routes.AdminController.pointsTranslations());
+    }
+
+    public static Result pointsTranslationsHistory(int eventType) {
+        Iterable<PointsTranslation> pointsTranslationList = Model.pointsTranslation().find("{eventTypeId: #}", eventType).
+                                                            sort("{timestamp: -1}").as(PointsTranslation.class);
+
+        List<PointsTranslation> pointsTranslationResult = ListUtils.asList(pointsTranslationList);
+        return ok(views.html.points_translation_list.render(pointsTranslationResult));
     }
 
     public static Result pointsTranslations() {

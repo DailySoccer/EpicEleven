@@ -23,7 +23,7 @@
         <tbody>
         @for(p <- points_translation) {
         <tr>
-            <td>@OptaEventType.getEnum(p.eventTypeId).name()</td>
+            <td><a href="@AdminController.pointsTranslationsHistory(p.eventTypeId)">@OptaEventType.getEnum(p.eventTypeId).name()</td>
             <td>@OptaEventType.getEnum(p.eventTypeId).description</td>
             <td>@p.points</td>
             <td>@p.timestamp.format("yyyy/MM/dd HH:mm:ss")</td>
