@@ -21,6 +21,76 @@ import java.util.*;
  */
 public class OptaUtils {
 
+    public static enum OptaEventType {
+        PASS                    (1, "Any pass attempted from one player to another."),
+        TAKE_ON                 (3, "Attempted dribble past an opponent" ),
+        FOUL_RECIBED            (4, "Player who was fouled"),
+        TACKLE                  (7, "Tackle: dispossesses an opponent of the ball, both retaining possession or not"),
+        INTERCEPTION            (8, "When a player intercepts any pass event between opposition players and prevents the ball reaching its target"),
+        SAVE                    (10, "Goalkeeper saves a shot on goal."),
+        CLAIM                   (11, "Goalkeeper catches a crossed ball"),
+        CLEARANCE               (12, "Player under pressure hits ball clear of the defensive zone or/and out of play"),
+        MISS                    (13, "Shot on goal which goes wide over the goal"),
+        POST                    (14, "The ball hits the frame of the goal"),
+        ATTEMPT_SAVED           (15, "Shot saved, event for the player who shot the ball"),
+        YELLOW_CARD             (17, "Yellow card shown to player"),
+        PUNCH                   (41, "Ball is punched clear by Goalkeeper"),
+        DISPOSSESSED            (50, "Player is successfully tacked and loses possession of the ball"),
+        ERROR                   (51, "Mistake by player losing the ball"),
+        CAUGHT_OFFSIDE          (72, "Player who is offside"),
+        ASSIST                  (1210, "The pass was an assist for a shot"),
+        GOAL_SCORED_BY_GOALKEEPER   (1601, "Goal scored by the goalkeeper"),
+        GOAL_SCORED_BY_DEFENDER     (1602, "Goal scored by a defender"),
+        GOAL_SCORED_BY_MIDFIELDER   (1603, "Goal scored by a midfielder"),
+        GOAL_SCORED_BY_FORWARD      (1604, "Goal scored by a forward"),
+        OWN_GOAL                (1699, "Own goal scored by the player"),
+        FOUL_COMMITTED          (1004, "Player who committed the foul"),
+        RED_CARD                (1017, "Red card shown to player"),
+        PENALTY_COMMITTED       (1409, "Player who committed the foul (penalty)"),
+        PENALTY_FAILED          (1410, "Player who shots penalty and fails"),
+        GOALKEEPER_SAVES_PENALTY(1458, "Goalkeeper saves a penalty shot"),
+        CLEAN_SHEET             (2000, "Clean sheet: More than 60 min played without conceding any goal"),
+        GOAL_CONCEDED           (2001, "Goal conceded while player is on the field"),
+        _INVALID_               (9999, "Clean sheet: More than 60 min played without conceding any goal");
+
+        public final int code;
+        public final String description;
+
+        private OptaEventType(int c, String description){
+            code = c;
+            this.description = description;
+        }
+
+        public int getCode(){
+            return code;
+        }
+
+        public String getDescription(){
+            return description;
+        }
+
+        public static OptaEventType getEnum(int code){
+            System.out.println(code);
+            for (OptaEventType optaEventType: OptaEventType.values()){
+                if (optaEventType.code == code) {
+                    return optaEventType;
+                }
+            }
+            return _INVALID_;
+        }
+
+        public static Map<String, String> options(){
+            LinkedHashMap<String, String> vals = new LinkedHashMap<String, String>();
+            for (OptaEventType eType : OptaEventType.values()) {
+                if (!eType.equals(OptaEventType._INVALID_)){
+                    vals.put(eType.name(), eType.name().concat(": ".concat(eType.description)));
+                }
+            }
+            return vals;
+        }
+
+    }
+
 
     public static void processOptaDBInput(String feedType, BasicDBObject requestBody){
         resetChanges();
@@ -139,50 +209,55 @@ public class OptaUtils {
         /*
         DERIVED EVENTS GO HERE
          */
+        // Asistencia
+        if (myEvent.typeId==OptaEventType.PASS.code && myEvent.qualifiers.contains(210)){
+                myEvent.typeId = OptaEventType.ASSIST.code;  //Asistencia -> 1210
+        }
         // Falta/Penalty infligido
-        if (myEvent.typeId==4 && myEvent.outcome==0){
+        else if (myEvent.typeId==OptaEventType.FOUL_RECIBED.code && myEvent.outcome==0){
             if (myEvent.qualifiers.contains(9)){
-                myEvent.typeId = 1409;  //Penalty infligido -> 1409
+                myEvent.typeId = OptaEventType.PENALTY_COMMITTED.code;  //Penalty infligido -> 1409
             } else {
-                myEvent.typeId = 1004;  // Falta infligida -> 1004
+                myEvent.typeId = OptaEventType.FOUL_COMMITTED.code;  // Falta infligida -> 1004
             }
         }
         // Tarjeta roja -> 1017
-        if (myEvent.typeId==17 && myEvent.qualifiers.contains(33)){
-            myEvent.typeId = 1017;
+        else if (myEvent.typeId==OptaEventType.YELLOW_CARD.code && myEvent.qualifiers.contains(33)){
+            myEvent.typeId = OptaEventType.RED_CARD.code;
         }
         // Penalty miss -> 1410
-        if ((myEvent.typeId==13 || myEvent.typeId==14 || myEvent.typeId==15) &&
+        else if ((myEvent.typeId==OptaEventType.MISS.code || myEvent.typeId==OptaEventType.POST.code ||
+                  myEvent.typeId==OptaEventType.ATTEMPT_SAVED.code) &&
                 myEvent.outcome==0 && myEvent.qualifiers.contains(9)){
-            myEvent.typeId = 1410;
+            myEvent.typeId = OptaEventType.PENALTY_FAILED.code;
         }
-        if (myEvent.typeId==16 && myEvent.outcome==1) {
+        else if (myEvent.typeId==16 && myEvent.outcome==1) {
             // Gol en contra -> 1699
             if (myEvent.qualifiers.contains(28)) {
-                myEvent.typeId = 1699;
+                myEvent.typeId = OptaEventType.OWN_GOAL.code;
             } else {
             // Diferencias en goles:
                 OptaPlayer scorer = Model.optaPlayers().findOne("{id: #}", "p"+myEvent.optaPlayerId).as(OptaPlayer.class);
                 if (scorer.position.equals("Goalkeeper")){
                     // Gol del portero
-                    myEvent.typeId = 1601;
+                    myEvent.typeId = OptaEventType.GOAL_SCORED_BY_GOALKEEPER.code;
                 } else if (scorer.position.equals("Defender")){
                     // Gol del defensa
-                    myEvent.typeId = 1602;
+                    myEvent.typeId = OptaEventType.GOAL_SCORED_BY_DEFENDER.code;
                 } else if (scorer.position.equals("Midfielder")){
                     // Gol del medio
-                    myEvent.typeId = 1603;
+                    myEvent.typeId = OptaEventType.GOAL_SCORED_BY_MIDFIELDER.code;
                 } else if (scorer.position.equals("Forward")){
                     // Gol del delantero
-                    myEvent.typeId = 1604;
+                    myEvent.typeId = OptaEventType.GOAL_SCORED_BY_FORWARD.code;
                 }
 
             }
 
         }
         // Penalty parado -> 1058
-        if (myEvent.typeId==58 && !myEvent.qualifiers.contains(186)){
-            myEvent.typeId = 1058;
+        else if (myEvent.typeId==58 && !myEvent.qualifiers.contains(186)){
+            myEvent.typeId = OptaEventType.GOALKEEPER_SAVES_PENALTY.code;
         }
 
         myEvent.points = getPoints(myEvent.typeId, myEvent.timestamp);

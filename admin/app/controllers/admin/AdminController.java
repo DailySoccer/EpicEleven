@@ -162,7 +162,7 @@ public class AdminController extends Controller {
 
         PointsTranslationForm params = pointsTranslationForm.get();
 
-        boolean success = Model.createPointsTranslation(params.eventType, params.points);
+        boolean success = Model.createPointsTranslation(params.eventType.code, params.points);
         if ( !success ) {
             FlashMessage.warning("Points Translation invalid");
             return badRequest(views.html.points_translation_add.render(pointsTranslationForm));

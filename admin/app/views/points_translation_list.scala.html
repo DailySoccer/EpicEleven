@@ -1,5 +1,5 @@
 @(points_translation: List[model.PointsTranslation])
-
+@import utils.OptaUtils.OptaEventType
 
 @main("Contests - Admin") {
 
@@ -14,17 +14,17 @@
     <table id="table_id" class="table table-striped">
         <thead>
         <tr>
-            <th>Id</th>
             <th>Event Type</th>
+            <th>Event Description</th>
             <th>Points</th>
-            <th>Timestamp</th>
+            <th>Active since</th>
         </tr>
         </thead>
         <tbody>
         @for(p <- points_translation) {
         <tr>
-            <td>@p.pointsTranslationId</td>
-            <td>@p.eventTypeId</td>
+            <td>@OptaEventType.getEnum(p.eventTypeId).name()</td>
+            <td>@OptaEventType.getEnum(p.eventTypeId).description</td>
             <td>@p.points</td>
             <td>@p.timestamp.format("yyyy/MM/dd HH:mm:ss")</td>
         </tr>
