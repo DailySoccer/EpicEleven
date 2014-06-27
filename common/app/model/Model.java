@@ -224,6 +224,10 @@ public class Model {
         return templateMatchEvents().findOne("{_id : #}", templateMatchEventId).as(TemplateMatchEvent.class);
     }
 
+    static public TemplateSoccerTeam templateSoccerTeam(ObjectId templateSoccerTeamId) {
+        return templateSoccerTeams().findOne("{_id : #}", templateSoccerTeamId).as(TemplateSoccerTeam.class);
+    }
+
     static public TemplateSoccerPlayer templateSoccerPlayer(ObjectId templateSoccerPlayerId) {
         return templateSoccerPlayers().findOne("{_id : #}", templateSoccerPlayerId).as(TemplateSoccerPlayer.class);
     }
@@ -333,6 +337,83 @@ public class Model {
         }
 
         Logger.info("import Teams&Soccers: {}", System.currentTimeMillis() - startTime);
+    }
+
+    /**
+     * Importar un optaTeam
+     * @param optaTeam
+     * @return
+     */
+    static public boolean importTeam(OptaTeam optaTeam) {
+        TemplateSoccerTeam templateTeam = new TemplateSoccerTeam(optaTeam);
+        Model.templateSoccerTeams().withWriteConcern(WriteConcern.SAFE).insert(templateTeam);
+
+        Model.optaTeams().update("{id: #}", optaTeam.id).with("{$set: {dirty: false}}");
+
+        return true;
+    }
+
+    /**
+     * Importar un optaPlayer
+     * @param optaPlayer
+     * @return
+     */
+    static public boolean importSoccer(OptaPlayer optaPlayer) {
+        TemplateSoccerTeam templateTeam = templateSoccerTeams().findOne("{optaTeamId: #}", optaPlayer.teamId).as(TemplateSoccerTeam.class);
+        if (templateTeam != null) {
+            TemplateSoccerPlayer templateSoccer = new TemplateSoccerPlayer(optaPlayer, templateTeam.templateSoccerTeamId);
+            Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).insert(templateSoccer);
+
+            Model.optaPlayers().update("{id: #}", optaPlayer.id).with("{$set: {dirty: false}}");
+        }
+        else {
+            Logger.error("importSoccer ({}): invalid teamID({})", optaPlayer.id, optaPlayer.teamId);
+            return false;
+        }
+        return true;
+    }
+
+    static public boolean isInvalid(OptaPlayer optaPlayer) {
+        boolean invalid = (optaPlayer.teamId == null) || optaPlayer.teamId.isEmpty();
+
+        if (!invalid) {
+            TemplateSoccerTeam templateTeam = templateSoccerTeams().findOne("{optaTeamId: #}", optaPlayer.teamId).as(TemplateSoccerTeam.class);
+            invalid = (templateTeam == null);
+        }
+
+        return invalid;
+    }
+
+    /**
+     * Importar un optaMatchEvent
+     * @param optaMatchEvent
+     * @return
+     */
+    static public boolean importMatchEvent(OptaMatchEvent optaMatchEvent) {
+        TemplateSoccerTeam teamA = templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.homeTeamId).as(TemplateSoccerTeam.class);
+        TemplateSoccerTeam teamB = templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.awayTeamId).as(TemplateSoccerTeam.class);
+        if (teamA != null && teamB != null) {
+            createTemplateMatchEvent(optaMatchEvent.id, teamA, teamB, optaMatchEvent.matchDate);
+
+            Model.optaMatchEvents().update("{id: #}", optaMatchEvent.id).with("{$set: {dirty: false}}");
+        }
+        else {
+            Logger.error("Ignorando OptaMatchEvent: {} ({})", optaMatchEvent.id, optaMatchEvent.matchDate);
+            return false;
+        }
+        return true;
+    }
+
+    static public boolean isInvalid(OptaMatchEvent optaMatchEvent) {
+        boolean invalid = (optaMatchEvent.homeTeamId == null) || optaMatchEvent.homeTeamId.isEmpty() || (optaMatchEvent.awayTeamId == null) || optaMatchEvent.awayTeamId.isEmpty();
+
+        if (!invalid) {
+            TemplateSoccerTeam teamA = templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.homeTeamId).as(TemplateSoccerTeam.class);
+            TemplateSoccerTeam teamB = templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.awayTeamId).as(TemplateSoccerTeam.class);
+            invalid = (teamA == null) || (teamB == null);
+        }
+
+        return invalid;
     }
 
     /**

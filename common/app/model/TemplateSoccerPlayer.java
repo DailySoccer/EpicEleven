@@ -36,4 +36,10 @@ public class TemplateSoccerPlayer {
         else                                    optaFieldPos = FieldPos.FORWARD;
         return optaFieldPos;
     }
+
+    public boolean isEqual(OptaPlayer optaPlayer) {
+        return optaPlayerId.equals(optaPlayer.id) &&
+               name.equals(optaPlayer.name) &&
+               fieldPos.equals(getFieldPostFromOpta(optaPlayer.position));
+    }
 }

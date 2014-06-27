@@ -17,4 +17,5 @@ public class OptaPlayer {
     public String teamId;
     public String teamName;
     public long updatedTime;
+    public boolean dirty = true;
 }

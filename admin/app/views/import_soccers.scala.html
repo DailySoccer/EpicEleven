@@ -1,0 +1,108 @@
+@(soccers_new: List[model.opta.OptaPlayer], soccers_changed: List[model.opta.OptaPlayer], soccers_invalid: List[model.opta.OptaPlayer])
+
+@main("Import Soccers - Admin") {
+
+<h1 class="page-header">Import Soccers</h1>
+
+<h2 class="sub-header"></h2>
+
+<!--div class="col-md-12">
+    @if((soccers_new != null && !soccers_new.isEmpty) || (soccers_changed != null && !soccers_changed.isEmpty)) {
+    <a href="@AdminController.importAllSoccers"><button name="ok" type="submit" class="btn btn-success">Import All</button></a>
+    }
+</div-->
+
+<div class="col-md-6">
+    @if(soccers_new != null && !soccers_new.isEmpty) {
+    <table class="table table-striped datatable">
+        <thead>
+        <caption class="bg-primary">NEW</caption>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Team ID</th>
+            <th>Team Name</th>
+
+        </tr>
+        </thead>
+        <tbody>
+        @for(p <- soccers_new) {
+        <tr>
+            <td>@p.id</td>
+            <td>@p.name</td>
+            <td>@p.position</td>
+            <td>@p.teamId</td>
+            <td>@p.teamName</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+
+    <div><a href="@AdminController.importAllNewSoccers"><button name="ok" type="submit" class="btn btn-success">Import New (@soccers_new.size)</button></a></div>
+    <br/>
+    }
+</div>
+
+<div class="col-md-6">
+    @if(soccers_changed != null && !soccers_changed.isEmpty) {
+    <table class="table table-striped datatable">
+        <thead>
+        <caption class="bg-info">CHANGED</caption>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Team ID</th>
+            <th>Team Name</th>
+
+        </tr>
+        </thead>
+        <tbody>
+        @for(p <- soccers_changed) {
+        <tr>
+            <td>@p.id</td>
+            <td>@p.name</td>
+            <td>@p.position</td>
+            <td>@p.teamId</td>
+            <td>@p.teamName</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+
+    <div><a href="@AdminController.importAllChangedSoccers"><button name="ok" type="submit" class="btn btn-success">Import Changed (@soccers_changed.size)</button></a></div>
+    <br/>
+    }
+</div>
+
+<div class="col-md-12">
+    @if(soccers_invalid != null && !soccers_invalid.isEmpty) {
+    <table class="table table-striped datatable">
+        <thead>
+        <caption class="bg-danger">INVALID</caption>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Position</th>
+            <th>Team ID</th>
+            <th>Team Name</th>
+
+        </tr>
+        </thead>
+        <tbody>
+        @for(p <- soccers_invalid) {
+        <tr>
+            <td>@p.id</td>
+            <td>@p.name</td>
+            <td>@p.position</td>
+            <td>@p.teamId</td>
+            <td>@p.teamName</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+    }
+</div>
+
+}

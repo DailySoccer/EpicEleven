@@ -20,4 +20,9 @@ public class TemplateSoccerTeam {
         optaTeamId = optaTeam.id;
         name = optaTeam.name;
     }
+
+    public boolean isEqual(OptaTeam optaTeam) {
+        return optaTeamId.equals(optaTeam.id) &&
+               name.equals(optaTeam.name);
+    }
 }
