@@ -185,10 +185,15 @@ public class AdminController extends Controller {
     }
 
     public static Result pointsTranslations() {
-        Iterable<PointsTranslation> pointsTranslationsResults = Model.pointsTranslation().find().as(PointsTranslation.class);
-        List<PointsTranslation> pointsTranslationsList = ListUtils.asList(pointsTranslationsResults);
+        List<Integer> differentTypes = Model.pointsTranslation().distinct("eventTypeId").as(Integer.class);
+        List<PointsTranslation> pointsTranslationList = new ArrayList<PointsTranslation>();
+        for (Integer differentType: differentTypes){
+            pointsTranslationList.add((PointsTranslation)Model.pointsTranslation().
+                                       find("{eventTypeId: #}", differentType).sort("{timestamp: -1}").limit(1).
+                                       as(PointsTranslation.class).iterator().next());
+        }
 
-        return ok(views.html.points_translation_list.render(pointsTranslationsList));
+        return ok(views.html.points_translation_list.render(pointsTranslationList));
     }
 
     public static Result addContestEntry() {
