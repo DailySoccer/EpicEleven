@@ -7,6 +7,7 @@ import play.Play;
 import java.util.Date;
 
 import java.util.ArrayList;
+import utils.OptaUtils.OptaEventType;
 
 
 public final class MockData {
@@ -23,38 +24,37 @@ public final class MockData {
 
     public static void createPointsTranslation() {
         int[][] pointsTable = {
-                {1, 2},       // pase
-                {3, 10},      // regate
-                {4, 15},      // falta recibida
-                {7, 15},      // recuperacion/entrada
-                {8, 15},      // intercepcion
-                {10, 20},     // parada
-                {11, 20},     // captura balon
-                {12, 10},     // parada
-                {13, 20},     // tiro a puerta
-                {14, 20},     // tiro a puerta
-                {15, 20},     // tiro a puerta
-                {210, 20},    // asistencia
+                {OptaEventType.PASS.code, 2},       // pase
+                {OptaEventType.TAKE_ON.code, 10},      // regate
+                {OptaEventType.FOUL_RECIBED.code, 15},      // falta recibida
+                {OptaEventType.TACKLE.code, 15},      // recuperacion/entrada
+                {OptaEventType.INTERCEPTION.code, 15},      // intercepcion
+                {OptaEventType.SAVE.code, 20},     // parada
+                {OptaEventType.CLAIM.code, 20},     // captura balon
+                {OptaEventType.CLEARANCE.code, 10},     // parada
+                {OptaEventType.MISS.code, 20},     // tiro a puerta
+                {OptaEventType.POST.code, 20},     // tiro a puerta
+                {OptaEventType.ATTEMPT_SAVED.code, 20},     // tiro a puerta
+                {OptaEventType.ASSIST.code, 20},    // asistencia
                 //{16, 100},    // gol
-                {1601, 100},    // gol del portero
-                {1602, 80},    // gol del defensa
-                {1603, 60},    // gol del medio
-                {1604, 40},    // gol del delantero
-                {1699, -10},  // gol en contra
-                {17, -50},    // tarjeta amarilla
-                {41, 10},     // despeje puños
-                {50, -20},    // perdida de balon
-                {51, -20},    // perdida de balon
-                {72, -5},     // fuera de juego
-                {1004, -5},   // falta infligida
-                {1017, -200}, // tarjeta roja
-                {1409, -30},  // penalty infligido
-                {1410, -30},  // penalty fallado
-                {1058, 30},   // penalty parado por el portero
-                {2000, 40},   // clean sheet
-                {2001, -10},  // Gol al defensa
+                {OptaEventType.GOAL_SCORED_BY_GOALKEEPER.code, 100},    // gol del portero
+                {OptaEventType.GOAL_SCORED_BY_DEFENDER.code, 80},    // gol del defensa
+                {OptaEventType.GOAL_SCORED_BY_MIDFIELDER.code, 60},    // gol del medio
+                {OptaEventType.GOAL_SCORED_BY_FORWARD.code, 40},    // gol del delantero
+                {OptaEventType.OWN_GOAL.code, -10},  // gol en contra
+                {OptaEventType.YELLOW_CARD.code, -50},    // tarjeta amarilla
+                {OptaEventType.PUNCH.code, 10},     // despeje puños
+                {OptaEventType.DISPOSSESSED.code, -20},    // perdida de balon
+                {OptaEventType.ERROR.code, -20},    // perdida de balon
+                {OptaEventType.CAUGHT_OFFSIDE.code, -5},     // fuera de juego
+                {OptaEventType.FOUL_COMMITTED.code, -5},   // falta infligida
+                {OptaEventType.RED_CARD.code, -200}, // tarjeta roja
+                {OptaEventType.PENALTY_COMMITTED.code, -30},  // penalty infligido
+                {OptaEventType.PENALTY_FAILED.code, -30},  // penalty fallado
+                {OptaEventType.GOALKEEPER_SAVES_PENALTY.code, 30},   // penalty parado por el portero
+                {OptaEventType.CLEAN_SHEET.code, 40},   // clean sheet
+                {OptaEventType.GOAL_CONCEDED.code, -10},  // Gol al defensa
         };
-        //TODO: Gol en contra:
         for (int i = 0; i < pointsTable.length; i++){
             PointsTranslation myPointsTranslation = new PointsTranslation();
             myPointsTranslation.eventTypeId = pointsTable[i][0];

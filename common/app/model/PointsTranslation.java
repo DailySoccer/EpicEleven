@@ -1,6 +1,7 @@
 package model;
 
 import org.bson.types.ObjectId;
+import utils.OptaUtils;
 
 import java.util.Date;
 /**
