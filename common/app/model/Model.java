@@ -286,18 +286,6 @@ public class Model {
         }
     }
 
-    /**
-     * Obtener un elemento aleatorio de una coleccion de MongoDB
-     * IMPORTANTE: Muy lento
-     * @param collection MongoCollection de la que obtener el elemento
-     * @return Un elemento aleatorio
-     */
-    public static Find getRandomDocument(MongoCollection collection) {
-        long count = collection.count();
-        int rand = (int) Math.floor(Math.random() * count);
-        return collection.find().limit(1).skip(rand);
-    }
-
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/
     static private MongoClient _mongoClient;
 
