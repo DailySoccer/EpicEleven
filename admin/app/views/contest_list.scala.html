@@ -19,10 +19,10 @@
 
 
 @contest_state(template_contest_id : String) = {
-    @if(Model.isContestFinished(template_contest_id)) {
+    @if(TemplateContest.isFinished(template_contest_id)) {
         <button class="btn btn-danger" value="@template_contest_id">Finished</button>
     } else {
-        @if(Model.isContestStarted(template_contest_id)) {
+        @if(TemplateContest.isStarted(template_contest_id)) {
             <button class="btn btn-success" value="@template_contest_id">Live</button>
         } else {
             <button class="btn btn-warning" value="@template_contest_id">Waiting</button>

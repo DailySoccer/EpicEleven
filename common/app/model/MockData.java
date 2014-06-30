@@ -3,7 +3,7 @@ package model;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import play.Logger;
-import play.Play;
+
 import java.util.Date;
 
 import java.util.ArrayList;
@@ -172,7 +172,7 @@ public final class MockData {
         TemplateSoccerTeam teamA = Model.templateSoccerTeams().findOne("{ name: '#' }", nameTeamA).as(TemplateSoccerTeam.class);
         TemplateSoccerTeam teamB = Model.templateSoccerTeams().findOne("{ name: '#' }", nameTeamB).as(TemplateSoccerTeam.class);
 
-        return Model.createTemplateMatchEvent(teamA, teamB, dateTime.toDate());
+        return TemplateMatchEvent.create(teamA, teamB, dateTime.toDate());
     }
 
     static private void instantiateContests() {

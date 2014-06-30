@@ -1,12 +1,10 @@
 package controllers.admin;
 
 import model.*;
-import org.bson.types.ObjectId;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 // https://github.com/playframework/playframework/tree/master/samples/java/forms
@@ -54,7 +52,7 @@ public class TemplateContestForm {
         entryFee = templateContest.entryFee;
         prizeType = templateContest.prizeType;
 
-        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.findTemplateMatchEventFromIds("_id", templateContest.templateMatchEventIds);
+        Iterable<TemplateMatchEvent> templateMatchEventsResults = TemplateMatchEvent.find("_id", templateContest.templateMatchEventIds);
         for(TemplateMatchEvent matchEvent : templateMatchEventsResults) {
             templateMatchEvents.add(matchEvent.optaMatchEventId);
         }

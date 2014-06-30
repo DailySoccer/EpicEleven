@@ -5,13 +5,11 @@ import model.opta.OptaMatchEvent;
 import model.opta.OptaPlayer;
 import model.opta.OptaTeam;
 import model.opta.OptaEvent;
-import org.jongo.Find;
 import org.bson.types.ObjectId;
 
 import java.util.*;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import play.Logger;
 import play.data.Form;
 import play.data.format.Formats;
@@ -21,7 +19,7 @@ import utils.ListUtils;
 
 import static play.data.Form.form;
 import static utils.OptaUtils.recalculateAllEvents;
-import play.data.Form;
+
 import play.data.validation.Constraints.Required;
 import views.html.points_translation_add;
 
@@ -71,7 +69,7 @@ public class AdminController extends Controller {
         for(OptaTeam optaTeam : teamsDirty) {
             TemplateSoccerTeam template = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaTeam.id).as(TemplateSoccerTeam.class);
             if (template == null) {
-                if (Model.isInvalid(optaTeam)) {
+                if (TemplateSoccerTeam.isInvalid(optaTeam)) {
                     if (invalidates != null)
                         invalidates.add(optaTeam);
                 }
@@ -87,7 +85,7 @@ public class AdminController extends Controller {
 
     public static int importTeams(List<OptaTeam> teams) {
         for(OptaTeam optaTeam : teams) {
-            Model.importTeam(optaTeam);
+            TemplateSoccerTeam.importTeam(optaTeam);
         }
         return teams.size();
     }
@@ -140,7 +138,7 @@ public class AdminController extends Controller {
         for(OptaPlayer optaSoccer : soccersDirty) {
             TemplateSoccerPlayer template = Model.templateSoccerPlayers().findOne("{optaPlayerId: #}", optaSoccer.id).as(TemplateSoccerPlayer.class);
             if (template == null) {
-                if (Model.isInvalid(optaSoccer)) {
+                if (TemplateSoccerPlayer.isInvalid(optaSoccer)) {
                     if (invalidates != null)
                         invalidates.add(optaSoccer);
                 }
@@ -157,7 +155,7 @@ public class AdminController extends Controller {
     public static int importSoccers(List<OptaPlayer> soccers) {
         int numImported = 0;
         for(OptaPlayer optaSoccer : soccers) {
-            if (Model.importSoccer(optaSoccer)) {
+            if (TemplateSoccerPlayer.importSoccer(optaSoccer)) {
                 numImported++;
             }
         }
@@ -213,7 +211,7 @@ public class AdminController extends Controller {
         for(OptaMatchEvent optaMatch : matchesDirty) {
             TemplateMatchEvent template = Model.templateMatchEvents().findOne("{optaMatchEventId: #}", optaMatch.id).as(TemplateMatchEvent.class);
             if (template == null) {
-                if (Model.isInvalid(optaMatch)) {
+                if (TemplateMatchEvent.isInvalid(optaMatch)) {
                     if (invalidates != null)
                         invalidates.add(optaMatch);
                 }
@@ -230,7 +228,7 @@ public class AdminController extends Controller {
     public static int importMatchEvents(List<OptaMatchEvent> matches) {
         int numImported = 0;
         for(OptaMatchEvent optaMatchEvent : matches) {
-            if (Model.importMatchEvent(optaMatchEvent)) {
+            if (TemplateMatchEvent.importMatchEvent(optaMatchEvent)) {
                 numImported++;
             }
         }
@@ -295,13 +293,13 @@ public class AdminController extends Controller {
     public static Result showPlayerFantasyPointsInContest(String contestId, String playerId) {
         List<OptaEvent> optaEventList = new ArrayList<>();
 
-        TemplateSoccerPlayer templateSoccerPlayer = Model.templateSoccerPlayer(new ObjectId(playerId));
-        Contest contest = Model.contest(new ObjectId(contestId));
-        TemplateContest templateContest = Model.templateContest(contest.templateContestId);
-        List<TemplateMatchEvent> templateMatchEvents = Model.templateMatchEvents(templateContest);
+        TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.find(new ObjectId(playerId));
+        Contest contest = Contest.find(new ObjectId(contestId));
+        TemplateContest templateContest = TemplateContest.find(contest.templateContestId);
+        List<TemplateMatchEvent> templateMatchEvents = templateContest.templateMatchEvents();
 
         for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
-            optaEventList.addAll(Model.optaEvents(templateMatchEvent.optaMatchEventId, templateSoccerPlayer.optaPlayerId));
+            optaEventList.addAll(OptaEvent.filter(templateMatchEvent.optaMatchEventId, templateSoccerPlayer.optaPlayerId));
         }
 
         return ok(views.html.player_fantasy_points.render(templateSoccerPlayer, optaEventList));
@@ -310,17 +308,17 @@ public class AdminController extends Controller {
     public static Result showPlayerFantasyPointsInMatchEvent(String templateMatchEventId, String playerId) {
         List<OptaEvent> optaEventList = new ArrayList<>();
 
-        TemplateSoccerPlayer templateSoccerPlayer = Model.templateSoccerPlayer(new ObjectId(playerId));
-        TemplateMatchEvent templateMatchEvent = Model.templateMatchEvent( new ObjectId(templateMatchEventId) );
+        TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.find(new ObjectId(playerId));
+        TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.find(new ObjectId(templateMatchEventId));
 
-        optaEventList.addAll(Model.optaEvents(templateMatchEvent.optaMatchEventId, templateSoccerPlayer.optaPlayerId));
+        optaEventList.addAll(OptaEvent.filter(templateMatchEvent.optaMatchEventId, templateSoccerPlayer.optaPlayerId));
 
         return ok(views.html.player_fantasy_points.render(templateSoccerPlayer, optaEventList));
     }
 
     public static Result liveContestEntry(String contestEntryId) {
-        ContestEntry contestEntry = Model.contestEntry(new ObjectId(contestEntryId));
-        List<SoccerPlayer> soccer_players = Model.getSoccerPlayersInContestEntry(contestEntryId);
+        ContestEntry contestEntry = ContestEntry.find(new ObjectId(contestEntryId));
+        List<SoccerPlayer> soccer_players = ContestEntry.getSoccerPlayers(contestEntryId);
         return ok(views.html.live_contest_entry.render(contestEntry, soccer_players));
     }
 
@@ -335,13 +333,13 @@ public class AdminController extends Controller {
         ObjectId id = new ObjectId(liveMatchEventId);
 
         // Obtener la version actualizada
-        LiveMatchEvent liveMatchEvent = Model.liveMatchEvent(id);
+        LiveMatchEvent liveMatchEvent = LiveMatchEvent.find(id);
         return ok(views.html.live_match_event.render(liveMatchEvent));
     }
 
     public static Result liveMatchEventWithTemplate(String templateMatchEventId) {
-        TemplateMatchEvent templateMatchEvent = Model.templateMatchEvent(new ObjectId(templateMatchEventId));
-        LiveMatchEvent liveMatchEvent = Model.liveMatchEvent(templateMatchEvent);
+        TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.find(new ObjectId(templateMatchEventId));
+        LiveMatchEvent liveMatchEvent = LiveMatchEvent.find(templateMatchEvent);
         return liveMatchEvent(liveMatchEvent.liveMatchEventId.toString());
     }
 
@@ -360,8 +358,8 @@ public class AdminController extends Controller {
 
         PointsTranslationForm params = pointsTranslationForm.get();
 
-        boolean success = params.id.isEmpty()? Model.createPointsTranslation(params.eventType.code, params.points):
-                                               Model.editPointForEvent(new ObjectId(params.id), params.points);
+        boolean success = params.id.isEmpty()? PointsTranslation.createPointForEvent(params.eventType.code, params.points):
+                                               PointsTranslation.editPointForEvent(new ObjectId(params.id), params.points);
 
         if (!success) {
             FlashMessage.warning("Points Translation invalid");
@@ -375,7 +373,7 @@ public class AdminController extends Controller {
 
     public static Result editPointForEvent(String pointsTranslationId) {
         PointsTranslation pointsTranslation = Model.pointsTranslation().findOne("{_id: #}",
-                                              new ObjectId(pointsTranslationId)).as(PointsTranslation.class);
+                new ObjectId(pointsTranslationId)).as(PointsTranslation.class);
         Form<PointsTranslationForm> pointsTranslationForm = Form.form(PointsTranslationForm.class).
                                                             fill(new PointsTranslationForm(pointsTranslation));
         return ok(points_translation_add.render(pointsTranslationForm));
@@ -422,7 +420,7 @@ public class AdminController extends Controller {
         Contest contest = Model.contests().findOne("{_id: #}", new ObjectId(contestId)).as(Contest.class);
         TemplateContest templateContest = Model.templateContests().findOne("{_id: #}", contest.templateContestId).as(TemplateContest.class);
 
-        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.findTemplateMatchEventFromIds("_id", templateContest.templateMatchEventIds);
+        Iterable<TemplateMatchEvent> templateMatchEventsResults = TemplateMatchEvent.find("_id", templateContest.templateMatchEventIds);
         return ListUtils.asList(templateMatchEventsResults);
     }
 
@@ -436,7 +434,7 @@ public class AdminController extends Controller {
 
         ContestEntryForm params = contestEntryForm.get();
 
-        boolean success = Model.createContestEntryFromOptaIds(params.userId, params.contestId, params.getTeam());
+        boolean success = ContestEntry.createFromOptaIds(params.userId, params.contestId, params.getTeam());
         if ( !success ) {
             FlashMessage.warning("Contest Entry invalid");
             String contestId = contestEntryForm.field("contestId").value();
@@ -480,7 +478,7 @@ public class AdminController extends Controller {
         Contest contest = Model.contests().findOne("{_id: #}", new ObjectId(contestId)).as(Contest.class);
         TemplateContest templateContest = Model.templateContests().findOne("{_id: #}", contest.templateContestId).as(TemplateContest.class);
 
-        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.findTemplateMatchEventFromIds("_id", templateContest.templateMatchEventIds);
+        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.find("_id", templateContest.templateMatchEventIds);
         List<TemplateMatchEvent> templateMatchEventsList = ListUtils.asList(templateMatchEventsResults);
 
         return ok(views.html.contest_entry_add.render(contestEntryForm, templateMatchEventsList));
@@ -508,14 +506,14 @@ public class AdminController extends Controller {
     }
 
     public static Result deleteContest(String contestId) {
-        Contest contest = Model.contest(new ObjectId(contestId));
-        Model.deleteContest(contest);
+        Contest contest = Contest.find(new ObjectId(contestId));
+        Contest.remove(contest);
         return redirect(routes.AdminController.contests());
     }
 
     public static Result deleteTemplateContest(String templateContestId) {
-        TemplateContest templateContest = Model.templateContest(new ObjectId(templateContestId));
-        Model.deleteTemplateContest(templateContest);
+        TemplateContest templateContest = TemplateContest.find(new ObjectId(templateContestId));
+        TemplateContest.remove(templateContest);
         return redirect(routes.AdminController.templateContests());
     }
 
@@ -573,7 +571,7 @@ public class AdminController extends Controller {
         }
 
         if (templateContest.isActive()) {
-            Model.instantiateTemplateContest(templateContest);
+            templateContest.instantiate();
         }
 
         return redirect(routes.AdminController.templateContests());
@@ -585,7 +583,7 @@ public class AdminController extends Controller {
     }
 
     public static Result editTemplateContest(String templateContestId) {
-        TemplateContest templateContest = Model.templateContest(new ObjectId(templateContestId));
+        TemplateContest templateContest = TemplateContest.find(new ObjectId(templateContestId));
         TemplateContestForm params = new TemplateContestForm(templateContest);
 
         Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
@@ -711,7 +709,7 @@ public class AdminController extends Controller {
         }
 
         // Obtenemos las lista de TemplateContest de todos los Ids
-        Iterable<TemplateContest> templateContestResults = Model.findTemplateContestsFromIds("_id", idsList);
+        Iterable<TemplateContest> templateContestResults = TemplateContest.find("_id", idsList);
 
         // Convertirlo a map
         HashMap<ObjectId, TemplateContest> ret = new HashMap<>();

@@ -3,7 +3,6 @@ package controllers;
 import actions.AllowCors;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mongodb.MongoException;
 import model.*;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
@@ -46,11 +45,11 @@ public class ContestController extends Controller {
         List<TemplateContest> templateContests = ListUtils.asList(templateContestResults);
 
         // Contests <- Template Contests
-        Iterable<Contest> contestsResults = Model.findContests(templateContests).as(Contest.class);
+        Iterable<Contest> contestsResults = Contest.find(templateContests).as(Contest.class);
         List<Contest> contests = ListUtils.asList(contestsResults);
 
         // Match Events <- Template Contests
-        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.findTemplateMatchEvents(templateContests).as(TemplateMatchEvent.class);
+        Iterable<TemplateMatchEvent> templateMatchEventsResults = TemplateMatchEvent.find(templateContests).as(TemplateMatchEvent.class);
 
         contest.put("match_events", templateMatchEventsResults);
         contest.put("template_contests", templateContests);
@@ -107,13 +106,13 @@ public class ContestController extends Controller {
             Logger.info("addContestEntry: userId({}) contestId({}) soccerTeam({})", params.userId, params.contestId, params.soccerTeam);
 
             // Obtener el userId : ObjectId
-            User aUser = Model.findUserId(params.userId);
+            User aUser = User.find(params.userId);
             if (aUser == null) {
                 contestEntryForm.reject("userId", "User invalid");
             }
 
             // Obtener el contestId : ObjectId
-            Contest aContest = Model.findContestId(params.contestId);
+            Contest aContest = Contest.find(params.contestId);
             if (aContest == null) {
                 contestEntryForm.reject("contestId", "Contest invalid");
             }
@@ -122,7 +121,7 @@ public class ContestController extends Controller {
             List<ObjectId> soccerIds = new ArrayList<>();
 
             List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
-            Iterable<TemplateSoccerPlayer> soccers = Model.findTemplateSoccerPlayersFromIds("_id", idsList);
+            Iterable<TemplateSoccerPlayer> soccers = TemplateSoccerPlayer.find("_id", idsList);
 
             String soccerNames = "";    // Requerido para Logger.info
             for (TemplateSoccerPlayer soccer : soccers) {
@@ -134,7 +133,7 @@ public class ContestController extends Controller {
                 Logger.info("contestEntry: Contest[{}] / User[{}] = ({}) => {}", aContest.name, aUser.nickName, soccerIds.size(), soccerNames);
 
                 // Crear el equipo en mongoDb.contestEntryCollection
-                Model.createContestEntry(new ObjectId(params.userId), new ObjectId(params.contestId), soccerIds);
+                ContestEntry.create(new ObjectId(params.userId), new ObjectId(params.contestId), soccerIds);
             }
         }
 
@@ -161,13 +160,13 @@ public class ContestController extends Controller {
             Logger.info("addContestEntry: userId({}) contestId({}) soccerTeam({})", params.userId, params.contestId, params.soccerTeam);
 
             // Obtener el userId : ObjectId
-            User aUser = Model.findUserId(params.userId);
+            User aUser = User.find(params.userId);
             if (aUser == null) {
                 contestEntryForm.reject("userId", "User invalid");
             }
 
             // Obtener el contestId : ObjectId
-            Contest aContest = Model.findContestId(params.contestId);
+            Contest aContest = Contest.find(params.contestId);
             if (aContest == null) {
                 contestEntryForm.reject("contestId", "Contest invalid");
             }
@@ -188,7 +187,7 @@ public class ContestController extends Controller {
                 Logger.info("contestEntry: Contest[{}] / User[{}] = ({}) => {}", aContest.name, aUser.nickName, soccerIds.size(), soccerNames);
 
                 // Crear el equipo en mongoDb.contestEntryCollection
-                Model.createContestEntry(new ObjectId(params.userId), new ObjectId(params.contestId), soccerIds);
+                ContestEntry.create(new ObjectId(params.userId), new ObjectId(params.contestId), soccerIds);
             }
         }
 
@@ -227,7 +226,7 @@ public class ContestController extends Controller {
         }
 
         // Consultar por los partidos del TemplateContest (queremos su version "live")
-        Iterable<LiveMatchEvent> liveMatchEventResults = Model.findLiveMatchEventsFromIds("templateMatchEventId", templateContest.templateMatchEventIds);
+        Iterable<LiveMatchEvent> liveMatchEventResults = LiveMatchEvent.find("templateMatchEventId", templateContest.templateMatchEventIds);
         List<LiveMatchEvent> liveMatchEventList = ListUtils.asList(liveMatchEventResults);
 
         // TODO: Si no encontramos ningun LiveMatchEvent, los creamos
@@ -235,7 +234,7 @@ public class ContestController extends Controller {
             Logger.info("create liveMatchEvents from TemplateContest({})", templateContest.templateContestId);
 
             // Obtenemos la lista de TemplateMatchEvents correspondientes al TemplateContest
-            Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.findTemplateMatchEventFromIds("_id", templateContest.templateMatchEventIds);
+            Iterable<TemplateMatchEvent> templateMatchEventsResults = TemplateMatchEvent.find("_id", templateContest.templateMatchEventIds);
 
             // Creamos un LiveMatchEvent correspondiente a un TemplateMatchEvent
             for (TemplateMatchEvent templateMatchEvent : templateMatchEventsResults) {
@@ -280,7 +279,7 @@ public class ContestController extends Controller {
         // Convertir las strings en ObjectId
         List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.matchEvents);
 
-        Iterable<LiveMatchEvent> liveMatchEventResults = Model.findLiveMatchEventsFromIds("templateMatchEventId", idsList);
+        Iterable<LiveMatchEvent> liveMatchEventResults = LiveMatchEvent.find("templateMatchEventId", idsList);
         List<LiveMatchEvent> liveMatchEventList = ListUtils.asList(liveMatchEventResults);
 
         Logger.info("END: getLiveMatchEventsFromMatchEvents: {}", System.currentTimeMillis() - startTime);
@@ -322,7 +321,7 @@ public class ContestController extends Controller {
         // Convertir las stringsIds de partidos en ObjectId (de mongoDB)
         List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.matchEvents);
 
-        Model.updateLiveFantasyPoints(idsList);
+        LiveMatchEvent.updateLiveFantasyPoints(idsList);
 
         return ok();
     }

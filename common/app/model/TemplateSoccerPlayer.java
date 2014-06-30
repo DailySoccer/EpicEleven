@@ -1,9 +1,13 @@
 package model;
 
 
+import com.mongodb.WriteConcern;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import model.opta.*;
+import play.Logger;
+
+import java.util.List;
 
 public class TemplateSoccerPlayer {
     @Id
@@ -37,9 +41,49 @@ public class TemplateSoccerPlayer {
         return optaFieldPos;
     }
 
+    static public TemplateSoccerPlayer find(ObjectId templateSoccerPlayerId) {
+        return Model.templateSoccerPlayers().findOne("{_id : #}", templateSoccerPlayerId).as(TemplateSoccerPlayer.class);
+    }
+
+    public static Iterable<TemplateSoccerPlayer> find(String fieldId, List<ObjectId> idList) {
+        return Model.findObjectIds(Model.templateSoccerPlayers(), fieldId, idList).as(TemplateSoccerPlayer.class);
+    }
+
     public boolean isEqual(OptaPlayer optaPlayer) {
         return optaPlayerId.equals(optaPlayer.id) &&
                name.equals(optaPlayer.name) &&
                fieldPos.equals(getFieldPostFromOpta(optaPlayer.position));
     }
+
+    /**
+     * Importar un optaPlayer
+     * @param optaPlayer
+     * @return
+     */
+    static public boolean importSoccer(OptaPlayer optaPlayer) {
+        TemplateSoccerTeam templateTeam = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaPlayer.teamId).as(TemplateSoccerTeam.class);
+        if (templateTeam != null) {
+            TemplateSoccerPlayer templateSoccer = new TemplateSoccerPlayer(optaPlayer, templateTeam.templateSoccerTeamId);
+            Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).insert(templateSoccer);
+
+            Model.optaPlayers().update("{id: #}", optaPlayer.id).with("{$set: {dirty: false}}");
+        }
+        else {
+            Logger.error("importSoccer ({}): invalid teamID({})", optaPlayer.id, optaPlayer.teamId);
+            return false;
+        }
+        return true;
+    }
+
+    static public boolean isInvalid(OptaPlayer optaPlayer) {
+        boolean invalid = (optaPlayer.teamId == null) || optaPlayer.teamId.isEmpty();
+
+        if (!invalid) {
+            TemplateSoccerTeam templateTeam = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaPlayer.teamId).as(TemplateSoccerTeam.class);
+            invalid = (templateTeam == null);
+        }
+
+        return invalid;
+    }
+
 }
