@@ -195,12 +195,12 @@ public class OptaHttpController extends Controller {
         Iterable<OptaPlayer> myPlayers = Model.optaPlayers().find().as(OptaPlayer.class);
         String allplayers = "<ul>";
         for (OptaPlayer myPlayer: myPlayers){
-            Iterable<OptaEvent> optaEvents = Model.optaEvents().find("{optaPlayerId: #}", myPlayer.id).as(OptaEvent.class);
+            Iterable<OptaEvent> optaEvents = Model.optaEvents().find("{optaPlayerId: #}", myPlayer.optaPlayerId).as(OptaEvent.class);
             int totalPoints = 0;
             for (OptaEvent optaEvent: optaEvents){
                 totalPoints += optaEvent.points;
             }
-            allplayers += "<li>"+myPlayer.name+"'s (<a href='/player/"+myPlayer.id+"'>"+myPlayer.id+"</a>) points: "+totalPoints+"</li>\n";
+            allplayers += "<li>"+myPlayer.name+"'s (<a href='/player/"+myPlayer.optaPlayerId+"'>"+myPlayer.optaPlayerId+"</a>) points: "+totalPoints+"</li>\n";
         }
         allplayers += "</ul>";
         return ok(allplayers).as("text/html");

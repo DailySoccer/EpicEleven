@@ -26,7 +26,7 @@ public class TemplateSoccerPlayer {
     public TemplateSoccerPlayer() {}
 
     public TemplateSoccerPlayer(OptaPlayer optaPlayer, ObjectId aTemplateTeamId) {
-        optaPlayerId = optaPlayer.id;
+        optaPlayerId = optaPlayer.optaPlayerId;
         name = optaPlayer.name;
         fieldPos = getFieldPostFromOpta(optaPlayer.position);
         templateTeamId = aTemplateTeamId;
@@ -50,7 +50,7 @@ public class TemplateSoccerPlayer {
     }
 
     public boolean isEqual(OptaPlayer optaPlayer) {
-        return optaPlayerId.equals(optaPlayer.id) &&
+        return optaPlayerId.equals(optaPlayer.optaPlayerId) &&
                name.equals(optaPlayer.name) &&
                fieldPos.equals(getFieldPostFromOpta(optaPlayer.position));
     }

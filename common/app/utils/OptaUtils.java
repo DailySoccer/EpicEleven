@@ -235,7 +235,7 @@ public class OptaUtils {
                 myEvent.typeId = OptaEventType.OWN_GOAL.code;
             } else {
             // Diferencias en goles:
-                OptaPlayer scorer = Model.optaPlayers().findOne("{id: #}", "p"+myEvent.optaPlayerId).as(OptaPlayer.class);
+                OptaPlayer scorer = Model.optaPlayers().findOne("{optaPlayerId: #}", "p"+myEvent.optaPlayerId).as(OptaPlayer.class);
                 if (scorer.position.equals("Goalkeeper")){
                     // Gol del portero
                     myEvent.typeId = OptaEventType.GOAL_SCORED_BY_GOALKEEPER.code;
@@ -418,7 +418,7 @@ public class OptaUtils {
                         // First search if player already exists:
                         if (playerId != null) {
                             OptaPlayer myPlayer = createPlayer(playerObject, teamObject);
-                            Model.optaPlayers().update("{id: #}", playerId).upsert().with(myPlayer);
+                            Model.optaPlayers().update("{optaPlayerId: #}", playerId).upsert().with(myPlayer);
                         }
                     }
                 }
@@ -513,14 +513,14 @@ public class OptaUtils {
         OptaPlayer myPlayer = new OptaPlayer();
 
         if (playerObject.containsKey("firstname")){
-            myPlayer.id = (String) playerObject.get("id");
+            myPlayer.optaPlayerId = (String) playerObject.get("id");
             myPlayer.firstname = (String) playerObject.get("firstname");
             myPlayer.lastname = (String) playerObject.get("lastname");
             myPlayer.position = (String) playerObject.get("position");
             myPlayer.teamId = (String) teamObject.get("id");
             myPlayer.teamName = (String) teamObject.get("name");
         }else if (playerObject.containsKey("Name")){
-            myPlayer.id = (String) playerObject.get("uID");
+            myPlayer.optaPlayerId = (String) playerObject.get("uID");
             myPlayer.name = (String) playerObject.get("Name");
             myPlayer.position = (String) playerObject.get("Position");
             myPlayer.teamId = (String) teamObject.get("uID");
