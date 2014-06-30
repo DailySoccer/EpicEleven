@@ -207,7 +207,7 @@ public class OptaHttpController extends Controller {
 
     public static Result playerPoints(int player){
         Iterable<OptaEvent> playerEvents = Model.optaEvents().find("{optaPlayerId: #}", player).as(OptaEvent.class);
-        OptaPlayer myPlayer = Model.optaPlayers().findOne("{id: #}", player).as(OptaPlayer.class);
+        OptaPlayer myPlayer = Model.optaPlayers().findOne("{optaPlayerId: #}", player).as(OptaPlayer.class);
         int totalPoints = 0;
         LinkedHashMap events = new LinkedHashMap();
         LinkedHashMap points = new LinkedHashMap();
@@ -267,7 +267,7 @@ public class OptaHttpController extends Controller {
                 LinkedHashMap playerObject = (LinkedHashMap)player;
                 int playerId = (int) playerObject.get("id");
                 OptaPlayer myPlayer = OptaUtils.createPlayer(playerObject, teamObject);
-                Model.optaPlayers().update("{optaTeamId: #}", playerId).upsert().with(myPlayer);
+                Model.optaPlayers().update("{optaPlayerId: #}", playerId).upsert().with(myPlayer);
             }
         }
     }
