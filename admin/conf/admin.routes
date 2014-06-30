@@ -19,6 +19,7 @@ GET         /import_all_match_events                           controllers.admin
 
 GET         /points_translation/create                         controllers.admin.AdminController.createPointsTranslation()
 GET         /points_translation/add                            controllers.admin.AdminController.addPointsTranslation()
+GET         /points_translation/edit/:pointsTranslationId      controllers.admin.AdminController.editPointForEvent(pointsTranslationId)
 POST        /points_translation/add                            controllers.admin.AdminController.submitPointsTranslation()
 GET         /points_translations                               controllers.admin.AdminController.pointsTranslations()
 GET         /points_translations/:eventType                    controllers.admin.AdminController.pointsTranslationsHistory(eventType: Integer)

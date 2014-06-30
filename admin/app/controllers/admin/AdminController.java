@@ -23,6 +23,7 @@ import static play.data.Form.form;
 import static utils.OptaUtils.recalculateAllEvents;
 import play.data.Form;
 import play.data.validation.Constraints.Required;
+import views.html.points_translation_add;
 
 
 public class AdminController extends Controller {
@@ -359,8 +360,10 @@ public class AdminController extends Controller {
 
         PointsTranslationForm params = pointsTranslationForm.get();
 
-        boolean success = Model.createPointsTranslation(params.eventType.code, params.points);
-        if ( !success ) {
+        boolean success = params.id.isEmpty()? Model.createPointsTranslation(params.eventType.code, params.points):
+                                               Model.editPointForEvent(new ObjectId(params.id), params.points);
+
+        if (!success) {
             FlashMessage.warning("Points Translation invalid");
             return badRequest(views.html.points_translation_add.render(pointsTranslationForm));
         }
@@ -368,6 +371,14 @@ public class AdminController extends Controller {
         Logger.info("Event Type ({}) = {} points", params.eventType, params.points);
 
         return redirect(routes.AdminController.pointsTranslations());
+    }
+
+    public static Result editPointForEvent(String pointsTranslationId) {
+        PointsTranslation pointsTranslation = Model.pointsTranslation().findOne("{_id: #}",
+                                              new ObjectId(pointsTranslationId)).as(PointsTranslation.class);
+        Form<PointsTranslationForm> pointsTranslationForm = Form.form(PointsTranslationForm.class).
+                                                            fill(new PointsTranslationForm(pointsTranslation));
+        return ok(points_translation_add.render(pointsTranslationForm));
     }
 
     public static Result addPointsTranslation() {
