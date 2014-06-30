@@ -6,33 +6,42 @@
 <h1 class="page-header">Simulator</h1>
     @if(!OptaSimulator.existsInstance() || OptaSimulator.stoppedInstance()){
         <div>
-
-            <a href="@AdminController.startSimulator"><button class="btn btn-primary">Start step-by-step</button></a>
-            <a href="@AdminController.launchSimulator"><button class="btn btn-success">Run</button></a>
+            <a href="@AdminController.startSimulator"><button class="btn btn-primary">Start</button></a>
         </div>
-        <br/>
     }
     @if(OptaSimulator.launchedInstance()){
-        <div>
-                @if(OptaSimulator.pausedInstance()){
-                    <a href="@AdminController.resumeSimulator"><button class="btn btn-success">Resume</button></a>
-                } else {
-                    <a href="@AdminController.pauseSimulator"><button class="btn btn-warning">Pause</button></a>
-                }
-                @helper.form(action = AdminController.gotoSimulator) {
-                <div>
-                    <input type="datetime-local" name="date">
-                    <button id="ok" name="ok" type="submit" class="btn btn-success">Add pause</button>
-                </div>
-                }
-        </div>
-        <br/>
-        <br/>
-        <div>
+        <div class="btn-group">
+        <!--div class="btn-group"-->
             @if(OptaSimulator.pausedInstance()){
-                <a href="@AdminController.simulatorNext"><button class="btn btn-primary">Next step</button></a>
+                <a class="btn btn-primary" href="@AdminController.resumeSimulator">
+                    <i class="glyphicon glyphicon-play"></i> Play
+                </a>
+            } else {
+                <a class="btn btn-primary" href="@AdminController.pauseSimulator">
+                    <i class="glyphicon glyphicon-pause"></i> Pause
+                </a>
             }
-            <a href="@AdminController.stopSimulator"><button class="btn btn-danger">Stop</button></a>
+            @if(OptaSimulator.pausedInstance()){
+                <a class="btn btn-primary" href="@AdminController.simulatorNext">
+                <i class="glyphicon glyphicon-step-forward"></i> Next step
+                </a>
+            } else {
+                <a class="btn btn-primary disabled" href="@AdminController.simulatorNext">
+                    <i class="glyphicon glyphicon-step-forward"></i> Next step
+                </a>
+            }
+            <a class="btn btn-primary" href="@AdminController.stopSimulator">
+                <i class="glyphicon glyphicon-stop"></i> Stop
+            </a>
         </div>
+        <hr>
+        @if(OptaSimulator.pausedInstance()){
+            @helper.form(action = AdminController.gotoSimulator) {
+                <input type="datetime-local" value="2014-06-14T00:00" name="date">
+                <button id="ok" name="ok" type="submit" class="btn btn-primary">
+                    <i class="glyphicon glyphicon-fast-forward"></i> Go To
+                </button>
+            }
+        }
     }
 }
