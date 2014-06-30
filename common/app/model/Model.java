@@ -180,7 +180,7 @@ public class Model {
         ensureContestsDB(_mongoDB);
     }
 
-    static public void resetOpta() {
+    static public void cleanOpta() {
         OptaUtils.resetCache();
 
         optaEvents().remove();
