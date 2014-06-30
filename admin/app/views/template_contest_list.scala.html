@@ -77,8 +77,8 @@
             <td>@p.startDate.format("yyyy/MM/dd HH:mm:ss")</td>
             <td>@contest_state(p.templateContestId.toString())</td>
             <td>
-                <a href="@AdminController.editTemplateContest(p.templateContestId.toString())"><button class="btn btn-success">Edit</button></a>
-                <a href="@AdminController.deleteTemplateContest(p.templateContestId.toString())"><button class="btn btn-danger">-</button></a>
+                <a href="@AdminController.editTemplateContest(p.templateContestId.toString())" class="btn btn-small btn-success">Edit</a>
+                <a href="@AdminController.deleteTemplateContest(p.templateContestId.toString())" class="btn btn-small btn-danger">Remove</a>
             </td>
         </tr>
         }
