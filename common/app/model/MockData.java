@@ -26,15 +26,15 @@ public final class MockData {
         int[][] pointsTable = {
                 {OptaEventType.PASS.code, 2},       // pase
                 {OptaEventType.TAKE_ON.code, 10},      // regate
-                {OptaEventType.FOUL_RECIBED.code, 15},      // falta recibida
+                {OptaEventType.FOUL_RECEIVED.code, 10},      // falta recibida
                 {OptaEventType.TACKLE.code, 15},      // recuperacion/entrada
                 {OptaEventType.INTERCEPTION.code, 15},      // intercepcion
-                {OptaEventType.SAVE.code, 20},     // parada
-                {OptaEventType.CLAIM.code, 20},     // captura balon
+                {OptaEventType.SAVE.code, 10},     // parada
+                {OptaEventType.CLAIM.code, 10},     // captura balon
                 {OptaEventType.CLEARANCE.code, 10},     // parada
-                {OptaEventType.MISS.code, 20},     // tiro a puerta
-                {OptaEventType.POST.code, 20},     // tiro a puerta
-                {OptaEventType.ATTEMPT_SAVED.code, 20},     // tiro a puerta
+                {OptaEventType.MISS.code, 15},     // tiro a puerta
+                {OptaEventType.POST.code, 15},     // tiro a puerta
+                {OptaEventType.ATTEMPT_SAVED.code, 15},     // tiro a puerta
                 {OptaEventType.ASSIST.code, 20},    // asistencia
                 //{16, 100},    // gol
                 {OptaEventType.GOAL_SCORED_BY_GOALKEEPER.code, 100},    // gol del portero
@@ -42,13 +42,13 @@ public final class MockData {
                 {OptaEventType.GOAL_SCORED_BY_MIDFIELDER.code, 60},    // gol del medio
                 {OptaEventType.GOAL_SCORED_BY_FORWARD.code, 40},    // gol del delantero
                 {OptaEventType.OWN_GOAL.code, -10},  // gol en contra
-                {OptaEventType.YELLOW_CARD.code, -50},    // tarjeta amarilla
+                {OptaEventType.YELLOW_CARD.code, -30},    // tarjeta amarilla
                 {OptaEventType.PUNCH.code, 10},     // despeje puños
-                {OptaEventType.DISPOSSESSED.code, -20},    // perdida de balon
+                {OptaEventType.DISPOSSESSED.code, -10},    // perdida de balon
                 {OptaEventType.ERROR.code, -20},    // perdida de balon
                 {OptaEventType.CAUGHT_OFFSIDE.code, -5},     // fuera de juego
                 {OptaEventType.FOUL_COMMITTED.code, -5},   // falta infligida
-                {OptaEventType.RED_CARD.code, -200}, // tarjeta roja
+                {OptaEventType.RED_CARD.code, -100}, // tarjeta roja
                 {OptaEventType.PENALTY_COMMITTED.code, -30},  // penalty infligido
                 {OptaEventType.PENALTY_FAILED.code, -30},  // penalty fallado
                 {OptaEventType.GOALKEEPER_SAVES_PENALTY.code, 30},   // penalty parado por el portero

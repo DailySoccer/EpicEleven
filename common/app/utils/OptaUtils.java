@@ -25,7 +25,7 @@ public class OptaUtils {
     public static enum OptaEventType {
         PASS                    (1, "Any pass attempted from one player to another."),
         TAKE_ON                 (3, "Attempted dribble past an opponent" ),
-        FOUL_RECIBED            (4, "Player who was fouled"),
+        FOUL_RECEIVED           (4, "Player who was fouled"),
         TACKLE                  (7, "Tackle: dispossesses an opponent of the ball, both retaining possession or not"),
         INTERCEPTION            (8, "When a player intercepts any pass event between opposition players and prevents the ball reaching its target"),
         SAVE                    (10, "Goalkeeper saves a shot on goal."),
