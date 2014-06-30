@@ -63,28 +63,9 @@ public class Model {
                 Logger.error("Error initializating MongoDB {}/{}: {}", mongoClientURI.getHosts(),
                                                                        mongoClientURI.getDatabase(), exc.toString());
 
-                if (exc instanceof MongoServerSelectionException && !Play.isProd()) {
-                    try {
-                        Logger.info("Mongodb seems to be off. Attempting to start it up.");
-                        LogInputStream(Runtime.getRuntime().exec("mongod run --config /usr/local/etc/mongod.conf"));
-                        WaitSeconds(2, "Waiting for mongod to start");
-                    }
-                    catch (Exception e) {
-                        WaitSeconds(10, "Trying to initialize MongoDB again");
-                    }
-                }
-                else {
-                    WaitSeconds(10, "Trying to recover from an unknown exception");
-                }
+                WaitSeconds(10, "Trying to initialize MongoDB again");
             }
         }
-    }
-
-    static void LogInputStream(Process p) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-        String line = "";
-        while ((line = reader.readLine())!= null)
-            Logger.info(line);
     }
 
     static void WaitSeconds(int seconds, String message) {
@@ -126,7 +107,7 @@ public class Model {
     }
 
     static private void clearDB(DB theMongoDB) {
-        // Indicamos las collections a borrar (no incluidas como "contestCollection"
+        // Indicamos las collections a borrar (no incluidas como "contestCollection")
         final String[] collectionNames = {
                 "users",
                 "sessions"
