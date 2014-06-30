@@ -10,9 +10,7 @@ import java.util.Date;
  */
 public class OptaMatchEvent {
 
-    @Id
-    public ObjectId optaMatchEventId;
-    public String id;
+    public String optaMatchEventId;
     public int competitionId;
     public int seasonId;
     public String competitionName;

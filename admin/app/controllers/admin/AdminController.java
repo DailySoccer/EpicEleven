@@ -209,7 +209,7 @@ public class AdminController extends Controller {
     public static void evaluateDirtyMatchEvents(List<OptaMatchEvent> news, List<OptaMatchEvent> changes, List<OptaMatchEvent> invalidates) {
         Iterable<OptaMatchEvent> matchesDirty = Model.optaMatchEvents().find("{dirty: true}").as(OptaMatchEvent.class);
         for(OptaMatchEvent optaMatch : matchesDirty) {
-            TemplateMatchEvent template = Model.templateMatchEvents().findOne("{optaMatchEventId: #}", optaMatch.id).as(TemplateMatchEvent.class);
+            TemplateMatchEvent template = Model.templateMatchEvents().findOne("{optaMatchEventId: #}", optaMatch.optaMatchEventId).as(TemplateMatchEvent.class);
             if (template == null) {
                 if (TemplateMatchEvent.isInvalid(optaMatch)) {
                     if (invalidates != null)
