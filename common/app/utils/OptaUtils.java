@@ -345,7 +345,7 @@ public class OptaUtils {
         String competitionName = myF1.containsKey("competition_name")?
                 (String) myF1.get("competition_name"): "NO COMPETITION NAME";
         LinkedHashMap matchInfo = (LinkedHashMap) matchObject.get("MatchInfo");
-        myOptaMatchEvent.id = (String) matchObject.get("uID");
+        myOptaMatchEvent.optaMatchEventId = (String) matchObject.get("uID");
         myOptaMatchEvent.lastModified = parseDate((String) matchObject.get("last_modified"));
         myOptaMatchEvent.matchDate = parseDate((String) matchInfo.get("Date"));
         myOptaMatchEvent.competitionId = competitionId;
@@ -362,7 +362,7 @@ public class OptaUtils {
                     myOptaMatchEvent.awayTeamId = (String) ((LinkedHashMap)team).get("TeamRef");
                 }
             }
-        Model.optaMatchEvents().update("{id: #}", myOptaMatchEvent.id).upsert().with(myOptaMatchEvent);
+        Model.optaMatchEvents().update("{optaMatchEventId: #}", myOptaMatchEvent.optaMatchEventId).upsert().with(myOptaMatchEvent);
     }
 
     private static void processMatchData(LinkedHashMap matchObject, int competitionId, LinkedHashMap myF1) {

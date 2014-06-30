@@ -30,7 +30,7 @@ public class TemplateMatchEvent {
     }
 
     public boolean isEqual(OptaMatchEvent optaMatchEvent) {
-        return optaMatchEventId.equals(optaMatchEvent.id) &&
+        return optaMatchEventId.equals(optaMatchEvent.optaMatchEventId) &&
                 soccerTeamA.optaTeamId.equals(optaMatchEvent.homeTeamId) &&
                 soccerTeamB.optaTeamId.equals(optaMatchEvent.awayTeamId) &&
                 startDate.equals(optaMatchEvent.matchDate);
@@ -134,12 +134,12 @@ public class TemplateMatchEvent {
         TemplateSoccerTeam teamA = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.homeTeamId).as(TemplateSoccerTeam.class);
         TemplateSoccerTeam teamB = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.awayTeamId).as(TemplateSoccerTeam.class);
         if (teamA != null && teamB != null) {
-            create(optaMatchEvent.id, teamA, teamB, optaMatchEvent.matchDate);
+            create(optaMatchEvent.optaMatchEventId, teamA, teamB, optaMatchEvent.matchDate);
 
-            Model.optaMatchEvents().update("{id: #}", optaMatchEvent.id).with("{$set: {dirty: false}}");
+            Model.optaMatchEvents().update("{id: #}", optaMatchEvent.optaMatchEventId).with("{$set: {dirty: false}}");
         }
         else {
-            Logger.error("Ignorando OptaMatchEvent: {} ({})", optaMatchEvent.id, optaMatchEvent.matchDate);
+            Logger.error("Ignorando OptaMatchEvent: {} ({})", optaMatchEvent.optaMatchEventId, optaMatchEvent.matchDate);
             return false;
         }
         return true;
