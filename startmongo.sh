@@ -1,2 +1,2 @@
 #!/bin/bash
-mongod run --config /usr/local/etc/mongod.conf &
+killall -9 mongod && mongod run --config /usr/local/etc/mongod.conf &
