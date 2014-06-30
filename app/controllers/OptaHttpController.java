@@ -3,7 +3,6 @@ package controllers;
 import actions.AllowCors;
 import com.mongodb.*;
 import com.mongodb.util.JSON;
-import controllers.admin.OptaSimulator;
 import model.Model;
 import model.opta.*;
 import org.bson.types.ObjectId;
@@ -259,16 +258,16 @@ public class OptaHttpController extends Controller {
             LinkedHashMap teamObject = (LinkedHashMap)team;
             ArrayList playersList = (ArrayList)teamObject.get("Player");
             OptaTeam myTeam = new OptaTeam();
-            myTeam.id = (String)teamObject.get("id");
+            myTeam.optaTeamId = (String)teamObject.get("id");
             myTeam.name = (String)teamObject.get("name");
             myTeam.updatedTime = System.currentTimeMillis();
-            Model.optaTeams().update("{id: #}", myTeam.id).upsert().with(myTeam);
+            Model.optaTeams().update("{optaTeamId: #}", myTeam.optaTeamId).upsert().with(myTeam);
 
             for (Object player: playersList){
                 LinkedHashMap playerObject = (LinkedHashMap)player;
                 int playerId = (int) playerObject.get("id");
                 OptaPlayer myPlayer = OptaUtils.createPlayer(playerObject, teamObject);
-                Model.optaPlayers().update("{id: #}", playerId).upsert().with(myPlayer);
+                Model.optaPlayers().update("{optaTeamId: #}", playerId).upsert().with(myPlayer);
             }
         }
     }

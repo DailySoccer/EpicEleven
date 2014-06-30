@@ -66,10 +66,10 @@ public class TemplateSoccerPlayer {
             TemplateSoccerPlayer templateSoccer = new TemplateSoccerPlayer(optaPlayer, templateTeam.templateSoccerTeamId);
             Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).insert(templateSoccer);
 
-            Model.optaPlayers().update("{id: #}", optaPlayer.id).with("{$set: {dirty: false}}");
+            Model.optaPlayers().update("{id: #}", optaPlayer.optaPlayerId).with("{$set: {dirty: false}}");
         }
         else {
-            Logger.error("importSoccer ({}): invalid teamID({})", optaPlayer.id, optaPlayer.teamId);
+            Logger.error("importSoccer ({}): invalid teamID({})", optaPlayer.optaPlayerId, optaPlayer.teamId);
             return false;
         }
         return true;
