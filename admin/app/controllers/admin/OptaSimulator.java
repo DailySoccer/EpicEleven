@@ -87,7 +87,7 @@ public class OptaSimulator implements Runnable {
             }
         }
         if (resetOpta) {
-            Model.resetOpta();
+            Model.cleanOpta();
         }
     }
 
