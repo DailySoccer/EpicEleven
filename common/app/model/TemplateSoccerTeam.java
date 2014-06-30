@@ -19,7 +19,7 @@ public class TemplateSoccerTeam {
     public TemplateSoccerTeam() {}
 
     public TemplateSoccerTeam(OptaTeam optaTeam) {
-        optaTeamId = optaTeam.id;
+        optaTeamId = optaTeam.optaTeamId;
         name = optaTeam.name;
         shortName = optaTeam.shortName;
     }
@@ -29,7 +29,7 @@ public class TemplateSoccerTeam {
     }
 
     public boolean isEqual(OptaTeam optaTeam) {
-        return optaTeamId.equals(optaTeam.id) &&
+        return optaTeamId.equals(optaTeam.optaTeamId) &&
                name.equals(optaTeam.name) &&
                shortName.equals(optaTeam.shortName);
     }
@@ -43,7 +43,7 @@ public class TemplateSoccerTeam {
         TemplateSoccerTeam templateTeam = new TemplateSoccerTeam(optaTeam);
         Model.templateSoccerTeams().withWriteConcern(WriteConcern.SAFE).insert(templateTeam);
 
-        Model.optaTeams().update("{id: #}", optaTeam.id).with("{$set: {dirty: false}}");
+        Model.optaTeams().update("{id: #}", optaTeam.optaTeamId).with("{$set: {dirty: false}}");
         return true;
     }
 

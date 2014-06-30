@@ -67,7 +67,7 @@ public class AdminController extends Controller {
     public static void evaluateDirtyTeams(List<OptaTeam> news, List<OptaTeam> changes, List<OptaTeam> invalidates) {
         Iterable<OptaTeam> teamsDirty = Model.optaTeams().find("{dirty: true}").as(OptaTeam.class);
         for(OptaTeam optaTeam : teamsDirty) {
-            TemplateSoccerTeam template = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaTeam.id).as(TemplateSoccerTeam.class);
+            TemplateSoccerTeam template = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaTeam.optaTeamId).as(TemplateSoccerTeam.class);
             if (template == null) {
                 if (TemplateSoccerTeam.isInvalid(optaTeam)) {
                     if (invalidates != null)

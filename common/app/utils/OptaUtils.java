@@ -406,12 +406,12 @@ public class OptaUtils {
                 LinkedHashMap teamObject = (LinkedHashMap) team;
                 ArrayList playersList = (ArrayList) teamObject.get("Player");
                 OptaTeam myTeam = new OptaTeam();
-                myTeam.id = (String) teamObject.get("uID");
+                myTeam.optaTeamId = (String) teamObject.get("uID");
                 myTeam.name = (String) teamObject.get("Name");
                 myTeam.shortName = (String) teamObject.get("SYMID");
                 myTeam.updatedTime = System.currentTimeMillis();
                 if (playersList != null) { //Si no es un equipo placeholder
-                    Model.optaTeams().update("{id: #}", myTeam.id).upsert().with(myTeam);
+                    Model.optaTeams().update("{optaTeamId: #}", myTeam.optaTeamId).upsert().with(myTeam);
                     for (Object player : playersList) {
                         LinkedHashMap playerObject = (LinkedHashMap) player;
                         String playerId = (String) playerObject.get("uID");
