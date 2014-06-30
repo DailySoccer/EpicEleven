@@ -1,5 +1,7 @@
 @(soccers: List[model.opta.OptaPlayer])
 
+@import controllers.admin.DashboardController
+
 @main("Opta Soccer Players - Admin") {
 
 <h1 class="page-header">Opta Soccer Players</h1>
@@ -33,6 +35,6 @@
     </table>
 </div>
 
-<a href='@AdminController.dashBoard'>Back to Dashboard</a>
+<a href='@DashboardController.index'>Back to Dashboard</a>
 
 }

@@ -1,6 +1,7 @@
 @(title: String, scripts: Html = Html(""))(content: Html)
 
 @import controllers.admin.FlashMessage
+@import controllers.admin.DashboardController
 
 @flash_message() = {
     @for(message <- FlashMessage.list) {
@@ -65,7 +66,7 @@
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="@AdminController.dashBoard">Dashboard</a></li>
+                <li><a href="@DashboardController.index">Dashboard</a></li>
                 <li><a href="#">Settings</a></li>
                 <li><a href="#">Profile</a></li>
                 <li><a href="#">Help</a></li>
@@ -81,7 +82,7 @@
     <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
             <ul class="nav nav-sidebar">
-                <li class="active"><a href="@AdminController.dashBoard">Overview</a></li>
+                <li class="active"><a href="@DashboardController.index">Overview</a></li>
                 <!--li><a href="#">Reports</a></li>
                 <li><a href="#">Analytics</a></li>
                 <li><a href="#">Export</a></li-->

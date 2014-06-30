@@ -1,6 +1,7 @@
 @(template_contests: List[model.TemplateContest])
 
 @import model._
+@import controllers.admin.DashboardController
 
 @scripts = {
     <script type="text/javascript">
@@ -86,6 +87,6 @@
     </table>
 </div>
 
-<a href='@AdminController.dashBoard'>Back to Dashboard</a>
+<a href='@DashboardController.index'>Back to Dashboard</a>
 
 }

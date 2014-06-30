@@ -1,5 +1,7 @@
 @(contests: List[model.Contest], templateMap: HashMap[org.bson.types.ObjectId, model.TemplateContest])
 
+@import controllers.admin.DashboardController
+
 @main("Lobby - Admin") {
 
 <h1 class="page-header">Lobby</h1>
@@ -31,6 +33,6 @@
     </table>
 </div>
 
-<div><a href='@AdminController.dashBoard'>Back to Dashboard</a></div>
+<div><a href='@DashboardController.index'>Back to Dashboard</a></div>
 
 }

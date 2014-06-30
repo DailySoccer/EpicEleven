@@ -1,18 +1,20 @@
 @()
 
+@import controllers.admin.DashboardController
+
 @main("DailySoccer - Admin") {
 
 <h1 class="page-header">Dashboard</h1>
 
 <div>
-    <a href="@AdminController.resetDB"><button class="btn btn-danger">Reset DB</button></a>
-    <a href="@AdminController.createMockDataDB"><button class="btn btn-danger">Reset DB with Mock Data</button></a>
+    <a href="@DashboardController.resetDB"><button class="btn btn-danger">Reset DB</button></a>
+    <a href="@DashboardController.createMockDataDB"><button class="btn btn-danger">Reset DB with Mock Data</button></a>
 </div>
 <br/>
 <br/>
 <div>
-    <a href="@AdminController.resetContests"><button class="btn btn-danger">Reset Contests</button></a>
-    <a href="@AdminController.createMockDataContests"><button class="btn btn-danger">Reset Contests with Mock data</button></a>
+    <a href="@DashboardController.resetContests"><button class="btn btn-danger">Reset Contests</button></a>
+    <a href="@DashboardController.createMockDataContests"><button class="btn btn-danger">Reset Contests with Mock data</button></a>
 </div>
 <br/>
 <br/>

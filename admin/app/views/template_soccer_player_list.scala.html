@@ -1,5 +1,7 @@
 @(soccers: List[model.TemplateSoccerPlayer])
 
+@import controllers.admin.DashboardController
+        
 @main("Template Soccer Players - Admin") {
 
 <h1 class="page-header">Template Soccer Players</h1>
@@ -34,6 +36,6 @@
     </table>
 </div>
 
-<a href='@AdminController.dashBoard'>Back to Dashboard</a>
+<a href='@DashboardController.index'>Back to Dashboard</a>
 
 }
