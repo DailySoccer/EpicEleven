@@ -7,9 +7,7 @@ import org.jongo.marshall.jackson.oid.Id;
  * Created by gnufede on 02/06/14.
  */
 public class OptaPlayer {
-    @Id
-    public ObjectId optaPlayerId;
-    public String id;
+    public String optaPlayerId;
     public String name;
     public String firstname;
     public String lastname;

@@ -136,7 +136,7 @@ public class AdminController extends Controller {
     public static void evaluateDirtySoccers(List<OptaPlayer> news, List<OptaPlayer> changes, List<OptaPlayer> invalidates) {
         Iterable<OptaPlayer> soccersDirty = Model.optaPlayers().find("{dirty: true}").as(OptaPlayer.class);
         for(OptaPlayer optaSoccer : soccersDirty) {
-            TemplateSoccerPlayer template = Model.templateSoccerPlayers().findOne("{optaPlayerId: #}", optaSoccer.id).as(TemplateSoccerPlayer.class);
+            TemplateSoccerPlayer template = Model.templateSoccerPlayers().findOne("{optaPlayerId: #}", optaSoccer.optaPlayerId).as(TemplateSoccerPlayer.class);
             if (template == null) {
                 if (TemplateSoccerPlayer.isInvalid(optaSoccer)) {
                     if (invalidates != null)
