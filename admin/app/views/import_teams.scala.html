@@ -1,0 +1,92 @@
+@(teams_new: List[model.opta.OptaTeam], teams_changed: List[model.opta.OptaTeam], teams_invalid: List[model.opta.OptaTeam])
+
+@main("Import Teams - Admin") {
+
+<h1 class="page-header">Import Teams</h1>
+
+<h2 class="sub-header"></h2>
+
+<!--div class="col-md-12">
+@if((teams_new != null && !teams_new.isEmpty) || (teams_changed != null && !teams_changed.isEmpty)) {
+<a href="@AdminController.importAllTeams"><button name="ok" type="submit" class="btn btn-success">Import All</button></a>
+}
+</div-->
+
+<div class="col-md-6">
+    @if(teams_new != null && !teams_new.isEmpty) {
+    <table class="table table-striped datatable">
+        <thead>
+        <caption class="bg-primary">NEW</caption>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>ShortName</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(p <- teams_new) {
+        <tr>
+            <td>@p.id</td>
+            <td>@p.name</td>
+            <td>@p.shortName</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+
+    <div><a href="@AdminController.importAllNewTeams"><button name="ok" type="submit" class="btn btn-success">Import New (@teams_new.size)</button></a></div>
+    <br/>
+    }
+</div>
+
+<div class="col-md-6">
+    @if(teams_changed != null && !teams_changed.isEmpty) {
+    <table class="table table-striped datatable">
+        <thead>
+        <caption class="bg-info">CHANGED</caption>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>ShortName</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(p <- teams_changed) {
+        <tr>
+            <td>@p.id</td>
+            <td>@p.name</td>
+            <td>@p.shortName</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+
+    <div><a href="@AdminController.importAllChangedTeams"><button name="ok" type="submit" class="btn btn-success">Import Changed (@teams_changed.size)</button></a></div>
+    }
+</div>
+
+<div class="col-md-12">
+    @if(teams_invalid != null && !teams_invalid.isEmpty) {
+    <table class="table table-striped datatable">
+        <thead>
+        <caption class="bg-danger">INVALID</caption>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>ShortName</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(p <- teams_invalid) {
+        <tr>
+            <td>@p.id</td>
+            <td>@p.name</td>
+            <td>@p.shortName</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+    }
+</div>
+
+}

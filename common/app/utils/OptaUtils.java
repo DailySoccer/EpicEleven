@@ -15,6 +15,7 @@ import org.jongo.Find;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import play.Logger;
 
 /**
  * Created by gnufede on 16/06/14.
@@ -532,6 +533,13 @@ public class OptaUtils {
         return myPlayer;
     }
 
+    public static void resetCache() {
+        optaEventsCache = new HashMap<String, HashMap>();
+        optaMatchDataCache = new HashMap<Integer, HashMap>();
+
+        resetPointsTranslationCache();
+    }
+
     private static void resetPointsTranslationCache() {
         pointsTranslationCache = new HashMap<Integer, Integer>();
         pointsTranslationTableCache = new HashMap<Integer, ObjectId>();
@@ -570,7 +578,7 @@ public class OptaUtils {
             return;
 
         for(String optaGameId : dirtyMatchEvents) {
-            //Logger.info("optaGameId in gameId({})", optaGameId);
+            // Logger.info("optaGameId in gameId({})", optaGameId);
 
             // Buscamos todos los template Match Events asociados con ese partido de Opta
             Iterable<TemplateMatchEvent> templateMatchEvents = Model.templateMatchEvents().find("{optaMatchEventId : #}", "g" + optaGameId).as(TemplateMatchEvent.class);
@@ -589,7 +597,7 @@ public class OptaUtils {
                 if (liveMatchEvent != null) {
                     Model.updateLiveFantasyPoints(liveMatchEvent);
 
-                    //Logger.info("fantasyPoints in liveMatchEvent({})", liveMatchEvent.liveMatchEventId);
+                    // Logger.info("fantasyPoints in liveMatchEvent({})", liveMatchEvent.liveMatchEventId);
 
                     if (Model.isMatchEventFinished(templateMatchEvent)) {
                         Model.actionWhenMatchEventIsFinished(templateMatchEvent);
@@ -599,7 +607,7 @@ public class OptaUtils {
                     }
                 }
 
-                //Logger.info("optaGameId in templateMatchEvent({})", templateMatchEvent.templateMatchEventId);
+                // Logger.info("optaGameId in templateMatchEvent({})", templateMatchEvent.templateMatchEventId);
             }
         }
     }

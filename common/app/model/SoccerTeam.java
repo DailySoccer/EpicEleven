@@ -6,8 +6,8 @@ import java.util.ArrayList;
 public class SoccerTeam {
     public ObjectId templateSoccerTeamId;
     public String optaTeamId;
-    //TODO: shortName
     public String name;
+    public String shortName;
     public ArrayList<SoccerPlayer> soccerPlayers = new ArrayList<>();
 
     public int getFantasyPoints() {

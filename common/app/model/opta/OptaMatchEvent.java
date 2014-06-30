@@ -22,6 +22,7 @@ public class OptaMatchEvent {
     public Date matchDate;
     public String timeZone;
     public Date lastModified;
+    public boolean dirty = true;
 
     public OptaMatchEvent(){}
 }

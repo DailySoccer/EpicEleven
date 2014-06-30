@@ -12,6 +12,7 @@
             <th>Id</th>
             <th>OptaId</th>
             <th>Name</th>
+            <th>ShortName</th>
         </tr>
         </thead>
         <tbody>
@@ -20,6 +21,7 @@
             <td>@p.templateSoccerTeamId</td>
             <td>@p.optaTeamId</td>
             <td><a href="@AdminController.templateSoccerTeam(p.templateSoccerTeamId.toString())">@p.name</a></td>
+            <td>@p.shortName</td>
         </tr>
         }
         </tbody>

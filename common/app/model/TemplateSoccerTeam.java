@@ -12,6 +12,7 @@ public class TemplateSoccerTeam {
     public String optaTeamId;
 
     public String name;
+    public String shortName;
 
     // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
     public TemplateSoccerTeam() {}
@@ -19,5 +20,12 @@ public class TemplateSoccerTeam {
     public TemplateSoccerTeam(OptaTeam optaTeam) {
         optaTeamId = optaTeam.id;
         name = optaTeam.name;
+        shortName = optaTeam.shortName;
+    }
+
+    public boolean isEqual(OptaTeam optaTeam) {
+        return optaTeamId.equals(optaTeam.id) &&
+               name.equals(optaTeam.name) &&
+               shortName.equals(optaTeam.shortName);
     }
 }

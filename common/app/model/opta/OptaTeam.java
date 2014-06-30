@@ -16,4 +16,5 @@ public class OptaTeam {
     public String shortName;
     //public ArrayList<Integer> competitionIds;
     public long updatedTime;
+    public boolean dirty = true;
 }
