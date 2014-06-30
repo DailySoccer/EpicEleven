@@ -214,7 +214,7 @@ public class OptaUtils {
                 myEvent.typeId = OptaEventType.ASSIST.code;  //Asistencia -> 1210
         }
         // Falta/Penalty infligido
-        else if (myEvent.typeId==OptaEventType.FOUL_RECIBED.code && myEvent.outcome==0){
+        else if (myEvent.typeId==OptaEventType.FOUL_RECEIVED.code && myEvent.outcome==0){
             if (myEvent.qualifiers.contains(9)){
                 myEvent.typeId = OptaEventType.PENALTY_COMMITTED.code;  //Penalty infligido -> 1409
             } else {
