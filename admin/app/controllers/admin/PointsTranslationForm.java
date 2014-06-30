@@ -1,6 +1,7 @@
 package controllers.admin;
 
 import model.*;
+import org.bson.types.ObjectId;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
 import utils.OptaUtils;
@@ -19,6 +20,8 @@ public class PointsTranslationForm {
     @Constraints.Required
     public Integer points;
 
+    public String id;
+
     public List<ValidationError> validate() {
 
         List<ValidationError> errors = new ArrayList<>();
@@ -28,4 +31,13 @@ public class PointsTranslationForm {
 
         return null;
     }
+
+    public PointsTranslationForm() {}
+
+    public PointsTranslationForm(PointsTranslation pointsTranslation) {
+        id = pointsTranslation.pointsTranslationId.toString();
+        points = pointsTranslation.points;
+        eventType = OptaUtils.OptaEventType.getEnum(pointsTranslation.eventTypeId);
+    }
+
 }

@@ -374,6 +374,14 @@ public class Model {
     }
 
     /**
+     * Edicion de una entrada de Points Translation
+     */
+    public static boolean editPointForEvent(ObjectId pointsTranslationId, int points) {
+        pointsTranslation().update(pointsTranslationId).with("{$set: {points: #}}", points);
+        return true;
+    }
+
+    /**
      *  Eliminar un contest entry y sus dependencias
      */
     public static boolean deleteContestEntry(ContestEntry contestEntry) {

@@ -71,7 +71,6 @@ public class OptaUtils {
         }
 
         public static OptaEventType getEnum(int code){
-            System.out.println(code);
             for (OptaEventType optaEventType: OptaEventType.values()){
                 if (optaEventType.code == code) {
                     return optaEventType;
