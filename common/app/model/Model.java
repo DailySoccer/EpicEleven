@@ -17,6 +17,7 @@ import java.util.ArrayList;
 
 import model.opta.*;
 import utils.ListUtils;
+import utils.OptaUtils;
 import java.util.Date;
 
 
@@ -183,6 +184,8 @@ public class Model {
     }
 
     static public void resetOpta() {
+        OptaUtils.resetCache();
+
         optaEvents().remove();
         optaPlayers().remove();
         optaTeams().remove();
@@ -288,6 +291,10 @@ public class Model {
         Model.optaTeams().update("{id: #}", optaTeam.id).with("{$set: {dirty: false}}");
 
         return true;
+    }
+
+    static public boolean isInvalid(OptaTeam optaTeam) {
+        return (optaTeam.name == null || optaTeam.name.isEmpty() || optaTeam.shortName == null || optaTeam.shortName.isEmpty());
     }
 
     /**
@@ -509,6 +516,25 @@ public class Model {
     }
 
     /**
+     * Setup Team (incrustando a los futbolistas en el equipo)
+     * @param templateTeam
+     * @return
+     */
+    static private SoccerTeam createSoccerTeam(TemplateSoccerTeam templateTeam) {
+        SoccerTeam team = new SoccerTeam();
+        team.templateSoccerTeamId = templateTeam.templateSoccerTeamId;
+        team.optaTeamId = templateTeam.optaTeamId;
+        team.name       = templateTeam.name;
+        team.shortName  = templateTeam.shortName;
+
+        Iterable<TemplateSoccerPlayer> playersTeamA = Model.templateSoccerPlayers().find("{ templateTeamId: # }", templateTeam.templateSoccerTeamId).as(TemplateSoccerPlayer.class);
+        for(TemplateSoccerPlayer templateSoccer : playersTeamA) {
+            team.soccerPlayers.add(new SoccerPlayer(templateSoccer));
+        }
+        return team;
+    }
+
+    /**
      * Crea un template match event
      * @param teamA     TeamA
      * @param teamB     TeamB
@@ -525,28 +551,8 @@ public class Model {
         TemplateMatchEvent templateMatchEvent = new TemplateMatchEvent();
         templateMatchEvent.startDate = startDate;
         templateMatchEvent.optaMatchEventId = optaMatchEventId;
-
-        // setup Team A (incrustando a los futbolistas en el equipo)
-        SoccerTeam newTeamA = new SoccerTeam();
-        newTeamA.templateSoccerTeamId = teamA.templateSoccerTeamId;
-        newTeamA.optaTeamId = teamA.optaTeamId;
-        newTeamA.name = teamA.name;
-        Iterable<TemplateSoccerPlayer> playersTeamA = Model.templateSoccerPlayers().find("{ templateTeamId: # }", teamA.templateSoccerTeamId).as(TemplateSoccerPlayer.class);
-        for(TemplateSoccerPlayer templateSoccer : playersTeamA) {
-            newTeamA.soccerPlayers.add(new SoccerPlayer(templateSoccer));
-        }
-        templateMatchEvent.soccerTeamA = newTeamA;
-
-        // setup Team B (incrustando a los futbolistas en el equipo)
-        SoccerTeam newTeamB = new SoccerTeam();
-        newTeamB.templateSoccerTeamId = teamB.templateSoccerTeamId;
-        newTeamB.optaTeamId = teamB.optaTeamId;
-        newTeamB.name = teamB.name;
-        Iterable<TemplateSoccerPlayer> playersTeamB = Model.templateSoccerPlayers().find("{ templateTeamId: # }", teamB.templateSoccerTeamId).as(TemplateSoccerPlayer.class);
-        for(TemplateSoccerPlayer templateSoccer : playersTeamB) {
-            newTeamB.soccerPlayers.add(new SoccerPlayer(templateSoccer));
-        }
-        templateMatchEvent.soccerTeamB = newTeamB;
+        templateMatchEvent.soccerTeamA = createSoccerTeam(teamA);
+        templateMatchEvent.soccerTeamB = createSoccerTeam(teamB);
 
         // TODO: Eliminar condicion (optaMatchEventId == null)
         if (optaMatchEventId != null) {

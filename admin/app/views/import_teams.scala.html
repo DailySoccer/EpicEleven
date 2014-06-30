@@ -1,4 +1,4 @@
-@(teams_new: List[model.opta.OptaTeam], teams_changed: List[model.opta.OptaTeam])
+@(teams_new: List[model.opta.OptaTeam], teams_changed: List[model.opta.OptaTeam], teams_invalid: List[model.opta.OptaTeam])
 
 @main("Import Teams - Admin") {
 
@@ -62,6 +62,30 @@
     </table>
 
     <div><a href="@AdminController.importAllChangedTeams"><button name="ok" type="submit" class="btn btn-success">Import Changed (@teams_changed.size)</button></a></div>
+    }
+</div>
+
+<div class="col-md-12">
+    @if(teams_invalid != null && !teams_invalid.isEmpty) {
+    <table class="table table-striped datatable">
+        <thead>
+        <caption class="bg-danger">INVALID</caption>
+        <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>ShortName</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(p <- teams_invalid) {
+        <tr>
+            <td>@p.id</td>
+            <td>@p.name</td>
+            <td>@p.shortName</td>
+        </tr>
+        }
+        </tbody>
+    </table>
     }
 </div>
 

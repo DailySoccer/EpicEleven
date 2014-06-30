@@ -65,12 +65,18 @@ public class AdminController extends Controller {
      * IMPORT TEAMS from OPTA
      *
      */
-    public static void evaluateDirtyTeams(List<OptaTeam> news, List<OptaTeam> changes) {
+    public static void evaluateDirtyTeams(List<OptaTeam> news, List<OptaTeam> changes, List<OptaTeam> invalidates) {
         Iterable<OptaTeam> teamsDirty = Model.optaTeams().find("{dirty: true}").as(OptaTeam.class);
         for(OptaTeam optaTeam : teamsDirty) {
             TemplateSoccerTeam template = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaTeam.id).as(TemplateSoccerTeam.class);
             if (template == null) {
-                if (news != null) news.add(optaTeam);
+                if (Model.isInvalid(optaTeam)) {
+                    if (invalidates != null)
+                        invalidates.add(optaTeam);
+                }
+                else if (news != null) {
+                    news.add(optaTeam);
+                }
             }
             else if (changes != null && !template.isEqual(optaTeam)) {
                 changes.add(optaTeam);
@@ -88,17 +94,18 @@ public class AdminController extends Controller {
     public static Result showImportTeams() {
         List<OptaTeam> teamsNew = new ArrayList<>();
         List<OptaTeam> teamsChanged = new ArrayList<>();
-        evaluateDirtyTeams(teamsNew, teamsChanged);
-        return ok(views.html.import_teams.render(teamsNew, teamsChanged));
+        List<OptaTeam> teamsInvalidated = new ArrayList<>();
+        evaluateDirtyTeams(teamsNew, teamsChanged, teamsInvalidated);
+        return ok(views.html.import_teams.render(teamsNew, teamsChanged, teamsInvalidated));
     }
 
     public static Result importAllTeams() {
         List<OptaTeam> teamsNew = new ArrayList<>();
         List<OptaTeam> teamsChanged = new ArrayList<>();
-        evaluateDirtyTeams(teamsNew, teamsChanged);
+        evaluateDirtyTeams(teamsNew, teamsChanged, null);
 
         int news = importTeams(teamsNew);
-        FlashMessage.success( String.format("Imported %d teams New", news) );
+        FlashMessage.success(String.format("Imported %d teams New", news));
 
         int changes = importTeams(teamsChanged);
         FlashMessage.success( String.format("Imported %d teams Changed", changes) );
@@ -107,7 +114,7 @@ public class AdminController extends Controller {
 
     public static Result importAllNewTeams() {
         List<OptaTeam> teamsNew = new ArrayList<>();
-        evaluateDirtyTeams(teamsNew, null);
+        evaluateDirtyTeams(teamsNew, null, null);
 
         int news = importTeams(teamsNew);
         FlashMessage.success( String.format("Imported %d teams New", news) );
@@ -116,7 +123,7 @@ public class AdminController extends Controller {
 
     public static Result importAllChangedTeams() {
         List<OptaTeam> teamsChanged = new ArrayList<>();
-        evaluateDirtyTeams(null, teamsChanged);
+        evaluateDirtyTeams(null, teamsChanged, null);
 
         int changes = importTeams(teamsChanged);
         FlashMessage.success( String.format("Imported %d teams Changed", changes) );
