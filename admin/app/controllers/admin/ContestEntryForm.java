@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
-import java.util.HashSet;
 
 // https://github.com/playframework/playframework/tree/master/samples/java/forms
 public class ContestEntryForm {
@@ -82,13 +81,13 @@ public class ContestEntryForm {
         List<ValidationError> errors = new ArrayList<>();
 
         // Validar user
-        User aUser = Model.findUserId(userId);
+        User aUser = User.find(userId);
         if (aUser == null) {
             errors.add(new ValidationError("userId", "User invalid"));
         }
 
         // Validar contest
-        Contest aContest = Model.findContestId(contestId);
+        Contest aContest = Contest.find(contestId);
         if (aContest == null) {
             errors.add(new ValidationError("contestId", "Contest invalid"));
         }

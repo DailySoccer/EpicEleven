@@ -10,7 +10,6 @@ public class User {
 	public String email;
 	public String password;
 
-
 	public User(String firstName, String lastName, String nickName, String email, String password)
 	{
 		this.firstName = firstName;
@@ -22,6 +21,20 @@ public class User {
 
     public User() {}
 
+    /**
+     * Query de un usuario por su identificador en mongoDB (verifica la validez del mismo)
+     *
+     * @param userId Identificador del usuario
+     * @return User
+     */
+    static public User find(String userId) {
+        User aUser = null;
+        Boolean userValid = ObjectId.isValid(userId);
+        if (userValid) {
+            aUser = Model.users().findOne(new ObjectId(userId)).as(User.class);
+        }
+        return aUser;
+    }
 
     @JsonView(JsonViews.NotForClient.class)
     public ObjectId _id;

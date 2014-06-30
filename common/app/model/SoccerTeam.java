@@ -17,4 +17,23 @@ public class SoccerTeam {
         }
         return totalFantasyPoints;
     }
+
+    /**
+     * Setup Team (incrustando a los futbolistas en el equipo)
+     * @param templateTeam
+     * @return
+     */
+    public static SoccerTeam create(TemplateSoccerTeam templateTeam) {
+        SoccerTeam team = new SoccerTeam();
+        team.templateSoccerTeamId = templateTeam.templateSoccerTeamId;
+        team.optaTeamId = templateTeam.optaTeamId;
+        team.name       = templateTeam.name;
+        team.shortName  = templateTeam.shortName;
+
+        Iterable<TemplateSoccerPlayer> playersTeamA = Model.templateSoccerPlayers().find("{ templateTeamId: # }", templateTeam.templateSoccerTeamId).as(TemplateSoccerPlayer.class);
+        for(TemplateSoccerPlayer templateSoccer : playersTeamA) {
+            team.soccerPlayers.add(new SoccerPlayer(templateSoccer));
+        }
+        return team;
+    }
 }

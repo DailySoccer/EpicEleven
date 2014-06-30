@@ -10,12 +10,10 @@ import model.opta.OptaMatchEvent;
 import model.opta.OptaPlayer;
 import model.opta.OptaTeam;
 import org.bson.types.ObjectId;
-import org.jongo.Find;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import play.Logger;
 
 /**
  * Created by gnufede on 16/06/14.
@@ -585,20 +583,20 @@ public class OptaUtils {
                 TemplateMatchEvent templateMatchEvent = templateMatchEvents.iterator().next();
 
                 // Existe la version "live" del match event?
-                LiveMatchEvent liveMatchEvent = Model.liveMatchEvent(templateMatchEvent);
+                LiveMatchEvent liveMatchEvent = LiveMatchEvent.find(templateMatchEvent);
                 if (liveMatchEvent == null) {
                     // Deberia existir? (true si el partido ha comenzado)
-                    if (Model.isMatchEventStarted(templateMatchEvent)) {
-                        liveMatchEvent = Model.createLiveMatchEvent(templateMatchEvent);
+                    if (templateMatchEvent.isStarted()) {
+                        liveMatchEvent = LiveMatchEvent.create(templateMatchEvent);
                     }
                 }
 
                 if (liveMatchEvent != null) {
-                    Model.updateLiveFantasyPoints(liveMatchEvent);
+                    LiveMatchEvent.updateLiveFantasyPoints(liveMatchEvent);
 
-                    // Logger.info("fantasyPoints in liveMatchEvent({})", liveMatchEvent.liveMatchEventId);
+                    // Logger.info("fantasyPoints in liveMatchEvent({})", find.liveMatchEventId);
 
-                    if (Model.isMatchEventFinished(templateMatchEvent)) {
+                    if (templateMatchEvent.isFinished()) {
                         Model.actionWhenMatchEventIsFinished(templateMatchEvent);
                     }
                     else {
@@ -606,7 +604,7 @@ public class OptaUtils {
                     }
                 }
 
-                // Logger.info("optaGameId in templateMatchEvent({})", templateMatchEvent.templateMatchEventId);
+                // Logger.info("optaGameId in templateMatchEvent({})", find.templateMatchEventId);
             }
         }
     }

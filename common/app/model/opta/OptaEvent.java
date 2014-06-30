@@ -1,11 +1,13 @@
 package model.opta;
 
+import model.Model;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
+import utils.ListUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
-
+import java.util.List;
 
 
 /**
@@ -50,4 +52,12 @@ public class OptaEvent {
         return this.lastModified.before(other.lastModified);
     }
 
+    static public List<OptaEvent> filter(String optaMatchId, String optaPlayerId) {
+        String playerId = Model.getPlayerIdFromOpta(optaPlayerId);
+        String matchId = Model.getMatchEventIdFromOpta(optaMatchId);
+
+        Iterable<OptaEvent> optaEventResults = Model.optaEvents().find("{optaPlayerId: #, gameId: #}",
+                playerId, matchId).as(OptaEvent.class);
+        return ListUtils.asList(optaEventResults);
+    }
 }

@@ -2,8 +2,10 @@ package model;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.jongo.Find;
+import org.jongo.MongoCollection;
 import play.Logger;
-import play.Play;
+
 import java.util.Date;
 
 import java.util.ArrayList;
@@ -157,10 +159,10 @@ public final class MockData {
         TemplateMatchEvent templateMatchEvent = new TemplateMatchEvent();
         templateMatchEvent.startDate = dateTime.toDate();
 
-        Iterable<TemplateSoccerTeam> randomTeamA = Model.getRandomDocument(Model.templateSoccerTeams()).as(TemplateSoccerTeam.class);
+        Iterable<TemplateSoccerTeam> randomTeamA = getRandomDocument(Model.templateSoccerTeams()).as(TemplateSoccerTeam.class);
         TemplateSoccerTeam teamA = (randomTeamA.iterator().hasNext()) ? randomTeamA.iterator().next() : null;
 
-        Iterable<TemplateSoccerTeam> randomTeamB = Model.getRandomDocument(Model.templateSoccerTeams()).as(TemplateSoccerTeam.class);
+        Iterable<TemplateSoccerTeam> randomTeamB = getRandomDocument(Model.templateSoccerTeams()).as(TemplateSoccerTeam.class);
         TemplateSoccerTeam teamB = (randomTeamB.iterator().hasNext()) ? randomTeamB.iterator().next() : null;
 
         return (teamA != null && teamB != null)
@@ -168,11 +170,23 @@ public final class MockData {
                 : null;
     }
 
+    /**
+     * Obtener un elemento aleatorio de una coleccion de MongoDB
+     * IMPORTANTE: Muy lento
+     * @param collection MongoCollection de la que obtener el elemento
+     * @return Un elemento aleatorio
+     */
+    static private Find getRandomDocument(MongoCollection collection) {
+        long count = collection.count();
+        int rand = (int) Math.floor(Math.random() * count);
+        return collection.find().limit(1).skip(rand);
+    }
+
     static private TemplateMatchEvent createTemplateMatchEvent(final String nameTeamA, final String nameTeamB, final DateTime dateTime) {
         TemplateSoccerTeam teamA = Model.templateSoccerTeams().findOne("{ name: '#' }", nameTeamA).as(TemplateSoccerTeam.class);
         TemplateSoccerTeam teamB = Model.templateSoccerTeams().findOne("{ name: '#' }", nameTeamB).as(TemplateSoccerTeam.class);
 
-        return Model.createTemplateMatchEvent(teamA, teamB, dateTime.toDate());
+        return TemplateMatchEvent.create(teamA, teamB, dateTime.toDate());
     }
 
     static private void instantiateContests() {
