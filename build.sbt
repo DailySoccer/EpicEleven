@@ -16,6 +16,8 @@ libraryDependencies ++= Seq(
   "org.mongodb" % "mongo-java-driver" % "2.12.0",                  // https://github.com/mongodb/mongo-java-driver
   "org.jongo" % "jongo" % "1.0",                                   // http://jongo.org/
   "org.json" % "json" % "20140107",
+  javaJdbc,
+  "postgresql" % "postgresql" % "9.1-901-1.jdbc4",
   "org.seleniumhq.selenium" % "selenium-java" % "2.41.0" % "test",
   "org.scalatestplus" % "play_2.10" % "1.0.0" % "test",
   "com.saucelabs" % "sauce_junit" % "2.0.5" % "test"

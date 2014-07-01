@@ -5,6 +5,8 @@ version := "1.0-SNAPSHOT"
 libraryDependencies ++= Seq(
   "org.mongodb" % "mongo-java-driver" % "2.12.0",
   "org.jongo" % "jongo" % "1.0",
+  javaJdbc,
+  "postgresql" % "postgresql" % "9.1-901-1.jdbc4",
   "com.typesafe.play" %% "play" % play.core.PlayVersion.current
 )
 

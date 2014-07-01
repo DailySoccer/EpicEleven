@@ -11,10 +11,14 @@ import org.bson.types.ObjectId;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 import model.opta.*;
 import utils.OptaUtils;
+
+import javax.sql.DataSource;
 import java.util.Date;
 
 
@@ -66,6 +70,37 @@ public class Model {
                 WaitSeconds(10, "Trying to initialize MongoDB again");
             }
         }
+
+
+        DataSource ds = play.db.DB.getDataSource();
+        java.sql.Connection connection = play.db.DB.getConnection();
+        Statement stmt = null;
+        try {
+            stmt = connection.createStatement();
+            boolean result = stmt.execute("CREATE TABLE IF NOT EXISTS optadb (" +
+                                           " id serial PRIMARY KEY, " +
+                                           " created_at timestamp, " +
+                                           " xml varchar" +
+                                           " );");
+            if (result){
+                Logger.info("Base de datos OptaDB creada");
+            }
+        }
+        catch (java.sql.SQLException e) {
+            Logger.error("SQL Exception creating OptaDB table");
+            e.printStackTrace();
+        }
+        finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    Logger.error("SQL Exception closing Postgres statement");
+                    e.printStackTrace();
+                }
+            }
+        }
+
     }
 
     static void WaitSeconds(int seconds, String message) {

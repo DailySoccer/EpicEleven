@@ -7,16 +7,21 @@ import model.Model;
 import model.opta.*;
 import org.bson.types.ObjectId;
 import org.json.XML;
+import play.Logger;
 import play.libs.F;
 import play.libs.WS;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.OptaUtils;
+import play.db.DB;
 
 
+import javax.sql.DataSource;
+import java.sql.*;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
+import java.util.Date;
 
 /**
  * Created by gnufede on 30/05/14.
@@ -25,6 +30,7 @@ import java.util.*;
 public class OptaHttpController extends Controller {
     @BodyParser.Of(value = BodyParser.TolerantText.class, maxLength = 4 * 1024 * 1024)
     public static Result optaXmlInput(){
+
         long startDate = System.currentTimeMillis();
         String bodyText = request().body().asText();
         try {
@@ -53,6 +59,32 @@ public class OptaHttpController extends Controller {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        Connection connection = DB.getConnection();
+        Statement stmt = null;
+        String insertString = "INSERT INTO optadb VALUES ( "+new Date(startDate).toString()+", "+bodyText+" ) "
+        try {
+            stmt = connection.prepareStatement(insertString);
+            boolean result = stmt.execute();
+            if (result){
+                Logger.info("Inserción en OptaDB");
+            }
+        }
+        catch (java.sql.SQLException e) {
+            Logger.error("SQL Exception connecting to OptaDB");
+            e.printStackTrace();
+        }
+        finally {
+            if (stmt != null) {
+                try {
+                    stmt.close();
+                } catch (SQLException e) {
+                    Logger.error("SQL Exception closing Postgres statement");
+                    e.printStackTrace();
+                }
+            }
+        }
+
         Model.optaDB().insert(new OptaDB(bodyText,
                 bodyAsJSON,
                 name,
