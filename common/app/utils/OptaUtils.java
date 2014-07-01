@@ -258,6 +258,10 @@ public class OptaUtils {
         else if (myEvent.typeId==58 && !myEvent.qualifiers.contains(186)){
             myEvent.typeId = OptaEventType.GOALKEEPER_SAVES_PENALTY.code;
         }
+        // Effective Tackle -> 1007
+        else if (myEvent.typeId==OptaEventType.TACKLE.code && myEvent.outcome==1) {
+            myEvent.typeId = OptaEventType.TACKLE_EFFECTIVE.code;
+        }
 
         myEvent.points = getPoints(myEvent.typeId, myEvent.timestamp);
         myEvent.pointsTranslationId = pointsTranslationTableCache.get(myEvent.typeId);
