@@ -29,7 +29,7 @@ public final class MockData {
                 {OptaEventType.PASS.code, 2},       // pase
                 {OptaEventType.TAKE_ON.code, 10},      // regate
                 {OptaEventType.FOUL_RECEIVED.code, 10},      // falta recibida
-                {OptaEventType.TACKLE.code, 15},      // recuperacion/entrada
+                {OptaEventType.TACKLE_EFFECTIVE.code, 15},   // recuperacion/entrada con posesion
                 {OptaEventType.INTERCEPTION.code, 15},      // intercepcion
                 {OptaEventType.SAVE.code, 10},     // parada
                 {OptaEventType.CLAIM.code, 10},     // captura balon
