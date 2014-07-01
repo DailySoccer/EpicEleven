@@ -18,7 +18,7 @@ public class ContestController extends Controller {
         return ok(views.html.contest_list.render(contestList));
     }
 
-    public static Result contest(String contestId) {
+    public static Result show(String contestId) {
         Contest contest = Model.contests().findOne("{ _id : # }", new ObjectId(contestId)).as(Contest.class);
         HashMap<Integer, String> map = new HashMap<>();
         map.put(0, "hola");
@@ -26,13 +26,13 @@ public class ContestController extends Controller {
         return ok(views.html.contest.render(contest, map));
     }
 
-    public static Result deleteContest(String contestId) {
+    public static Result destroy(String contestId) {
         Contest contest = Contest.find(new ObjectId(contestId));
         Contest.remove(contest);
         return redirect(routes.ContestController.index());
     }
 
-    public static Result instantiateContests() {
+    public static Result instantiateAll() {
         Model.instantiateContests();
         return redirect(routes.ContestController.index());
     }

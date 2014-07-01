@@ -35,7 +35,7 @@
 
 <h1 class="page-header">Contests</h1>
 
-<a href="@ContestController.instantiateContests"><button class="btn btn-success">Instantiate</button></a>
+<a href="@ContestController.instantiateAll"><button class="btn btn-success">Instantiate</button></a>
 
 <h2 class="sub-header"></h2>
 <div class="table-responsive">
@@ -55,14 +55,14 @@
         @for(p <- contests) {
         <tr>
             <td>@p.contestId</td>
-            <td><a href="@ContestController.contest(p.contestId.toString())">@p.name</a></td>
+            <td><a href="@ContestController.show(p.contestId.toString())">@p.name</a></td>
             <td>@p.currentUserIds.size()</td>
             <td>@p.maxUsers</td>
-            <td><a href="@TemplateContestController.templateContest(p.templateContestId.toString())">@p.templateContestId</a></td>
+            <td><a href="@TemplateContestController.show(p.templateContestId.toString())">@p.templateContestId</a></td>
             <td>@contest_state(p.templateContestId.toString())</td>
             <td>
                 <a href="@ContestEntryController.enterContest(p.contestId.toString())"><button class="btn btn-success">Enter</button></a>
-                <a href="@ContestController.deleteContest(p.contestId.toString())"><button class="btn btn-danger">-</button></a>
+                <a href="@ContestController.destroy(p.contestId.toString())"><button class="btn btn-danger">-</button></a>
             </td>
         </tr>
         }

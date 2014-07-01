@@ -17,7 +17,38 @@ import java.util.List;
 import static play.data.Form.form;
 
 public class PointsTranslationController extends Controller {
-    public static Result submitPointsTranslation() {
+    public static Result index() {
+        List<Integer> differentTypes = Model.pointsTranslation().distinct("eventTypeId").as(Integer.class);
+        List<PointsTranslation> pointsTranslationList = new ArrayList<PointsTranslation>();
+        for (Integer differentType: differentTypes){
+            pointsTranslationList.add((PointsTranslation)Model.pointsTranslation().
+                    find("{eventTypeId: #}", differentType).sort("{timestamp: -1}").limit(1).
+                    as(PointsTranslation.class).iterator().next());
+        }
+
+        return ok(views.html.points_translation_list.render(pointsTranslationList));
+    }
+
+    public static Result newForm() {
+        Form<PointsTranslationForm> pointsTranslationForm = Form.form(PointsTranslationForm.class);
+        return ok(points_translation_add.render(pointsTranslationForm));
+    }
+
+    public static Result edit(String pointsTranslationId) {
+        PointsTranslation pointsTranslation = Model.pointsTranslation().findOne("{_id: #}",
+                new ObjectId(pointsTranslationId)).as(PointsTranslation.class);
+        Form<PointsTranslationForm> pointsTranslationForm = Form.form(PointsTranslationForm.class).
+                                                            fill(new PointsTranslationForm(pointsTranslation));
+        return ok(points_translation_add.render(pointsTranslationForm));
+    }
+
+    public static Result resetToDefault(){
+        Model.pointsTranslation().remove();
+        MockData.createPointsTranslation();
+        return redirect(routes.PointsTranslationController.index());
+    }
+
+    public static Result create() {
         Form<PointsTranslationForm> pointsTranslationForm = form(PointsTranslationForm.class).bindFromRequest();
         if (pointsTranslationForm.hasErrors()) {
             return badRequest(views.html.points_translation_add.render(pointsTranslationForm));
@@ -26,7 +57,7 @@ public class PointsTranslationController extends Controller {
         PointsTranslationForm params = pointsTranslationForm.get();
 
         boolean success = params.id.isEmpty()? PointsTranslation.createPointForEvent(params.eventType.code, params.points):
-                                               PointsTranslation.editPointForEvent(new ObjectId(params.id), params.points);
+                PointsTranslation.editPointForEvent(new ObjectId(params.id), params.points);
 
         if (!success) {
             FlashMessage.warning("Points Translation invalid");
@@ -38,42 +69,11 @@ public class PointsTranslationController extends Controller {
         return redirect(routes.PointsTranslationController.index());
     }
 
-    public static Result editPointForEvent(String pointsTranslationId) {
-        PointsTranslation pointsTranslation = Model.pointsTranslation().findOne("{_id: #}",
-                new ObjectId(pointsTranslationId)).as(PointsTranslation.class);
-        Form<PointsTranslationForm> pointsTranslationForm = Form.form(PointsTranslationForm.class).
-                                                            fill(new PointsTranslationForm(pointsTranslation));
-        return ok(points_translation_add.render(pointsTranslationForm));
-    }
-
-    public static Result addPointsTranslation() {
-        Form<PointsTranslationForm> pointsTranslationForm = Form.form(PointsTranslationForm.class);
-        return ok(points_translation_add.render(pointsTranslationForm));
-    }
-
-    public static Result createPointsTranslation(){
-        Model.pointsTranslation().remove();
-        MockData.createPointsTranslation();
-        return redirect(routes.PointsTranslationController.index());
-    }
-
-    public static Result pointsTranslationsHistory(int eventType) {
+    public static Result history(int eventType) {
         Iterable<PointsTranslation> pointsTranslationList = Model.pointsTranslation().find("{eventTypeId: #}", eventType).
-                                                            sort("{timestamp: -1}").as(PointsTranslation.class);
+                sort("{timestamp: -1}").as(PointsTranslation.class);
 
         List<PointsTranslation> pointsTranslationResult = ListUtils.asList(pointsTranslationList);
         return ok(views.html.points_translation_list.render(pointsTranslationResult));
-    }
-
-    public static Result index() {
-        List<Integer> differentTypes = Model.pointsTranslation().distinct("eventTypeId").as(Integer.class);
-        List<PointsTranslation> pointsTranslationList = new ArrayList<PointsTranslation>();
-        for (Integer differentType: differentTypes){
-            pointsTranslationList.add((PointsTranslation)Model.pointsTranslation().
-                                       find("{eventTypeId: #}", differentType).sort("{timestamp: -1}").limit(1).
-                                       as(PointsTranslation.class).iterator().next());
-        }
-
-        return ok(views.html.points_translation_list.render(pointsTranslationList));
     }
 }

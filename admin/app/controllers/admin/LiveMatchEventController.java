@@ -11,7 +11,14 @@ import utils.ListUtils;
 import java.util.List;
 
 public class LiveMatchEventController extends Controller {
-    public static Result liveMatchEvent(String liveMatchEventId) {
+    public static Result index() {
+        Iterable<LiveMatchEvent> liveMatchEventResults = Model.liveMatchEvents().find().as(LiveMatchEvent.class);
+        List<LiveMatchEvent> liveMatchEventList = ListUtils.asList(liveMatchEventResults);
+
+        return ok(views.html.live_match_event_list.render(liveMatchEventList));
+    }
+
+    public static Result show(String liveMatchEventId) {
         ObjectId id = new ObjectId(liveMatchEventId);
 
         // Obtener la version actualizada
@@ -19,16 +26,9 @@ public class LiveMatchEventController extends Controller {
         return ok(views.html.live_match_event.render(liveMatchEvent));
     }
 
-    public static Result liveMatchEventWithTemplate(String templateMatchEventId) {
+    public static Result showWithTemplate(String templateMatchEventId) {
         TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.find(new ObjectId(templateMatchEventId));
         LiveMatchEvent liveMatchEvent = LiveMatchEvent.find(templateMatchEvent);
-        return liveMatchEvent(liveMatchEvent.liveMatchEventId.toString());
-    }
-
-    public static Result index() {
-        Iterable<LiveMatchEvent> liveMatchEventResults = Model.liveMatchEvents().find().as(LiveMatchEvent.class);
-        List<LiveMatchEvent> liveMatchEventList = ListUtils.asList(liveMatchEventResults);
-
-        return ok(views.html.live_match_event_list.render(liveMatchEventList));
+        return show(liveMatchEvent.liveMatchEventId.toString());
     }
 }

@@ -1,28 +1,13 @@
 package controllers.admin;
 
 import model.*;
-import model.opta.OptaMatchEvent;
-import model.opta.OptaPlayer;
-import model.opta.OptaTeam;
-import model.opta.OptaEvent;
 import org.bson.types.ObjectId;
 
 import java.util.*;
 
-import org.joda.time.DateTime;
-import play.Logger;
-import play.data.Form;
-import play.data.format.Formats;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
-
-import static play.data.Form.form;
-import static utils.OptaUtils.recalculateAllEvents;
-
-import play.data.validation.Constraints.Required;
-import views.html.points_translation_add;
-
 
 public class AdminController extends Controller {
 

@@ -18,7 +18,7 @@ public class TemplateSoccerTeamController extends Controller {
         return ok(views.html.template_soccer_team_list.render(soccerTeamList));
     }
 
-    public static Result templateSoccerTeam(String templateSoccerTeamId) {
+    public static Result show(String templateSoccerTeamId) {
         TemplateSoccerTeam templateSoccerTeam = Model.templateSoccerTeams().findOne("{ _id : # }",
                 new ObjectId(templateSoccerTeamId)).as(TemplateSoccerTeam.class);
         Iterable<TemplateSoccerPlayer> soccerPlayerResults = Model.templateSoccerPlayers().find("{ templateTeamId: # }",

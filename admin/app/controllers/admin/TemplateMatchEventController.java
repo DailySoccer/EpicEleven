@@ -17,7 +17,7 @@ public class TemplateMatchEventController extends Controller {
         return ok(views.html.template_match_event_list.render(matchEventList));
     }
 
-    public static Result templateMatchEvent(String templateMatchEventId) {
+    public static Result show(String templateMatchEventId) {
         TemplateMatchEvent templateMatchEvent = Model.templateMatchEvents().findOne("{ _id : # }",
                 new ObjectId(templateMatchEventId)).as(TemplateMatchEvent.class);
         return ok(views.html.template_match_event.render(templateMatchEvent));

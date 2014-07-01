@@ -10,7 +10,7 @@
 <h1 class="page-header">Simulator</h1>
     @if(!OptaSimulator.existsInstance() || OptaSimulator.stoppedInstance()){
         <div>
-            <a href="@SimulatorController.startSimulator"><button class="btn btn-primary">Start</button></a>
+            <a href="@SimulatorController.start"><button class="btn btn-primary">Start</button></a>
         </div>
     }
     @if(OptaSimulator.launchedInstance()){

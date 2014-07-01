@@ -18,7 +18,7 @@ public class TemplateSoccerPlayerController extends Controller {
         return ok(views.html.template_soccer_player_list.render(soccerPlayerList));
     }
 
-    public static Result showPlayerFantasyPointsInContest(String contestId, String playerId) {
+    public static Result showFantasyPointsInContest(String contestId, String playerId) {
         List<OptaEvent> optaEventList = new ArrayList<>();
 
         TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.find(new ObjectId(playerId));
@@ -33,7 +33,7 @@ public class TemplateSoccerPlayerController extends Controller {
         return ok(views.html.player_fantasy_points.render(templateSoccerPlayer, optaEventList));
     }
 
-    public static Result showPlayerFantasyPointsInMatchEvent(String templateMatchEventId, String playerId) {
+    public static Result showFantasyPointsInMatchEvent(String templateMatchEventId, String playerId) {
         List<OptaEvent> optaEventList = new ArrayList<>();
 
         TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.find(new ObjectId(playerId));

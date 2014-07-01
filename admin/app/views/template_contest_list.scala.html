@@ -34,8 +34,8 @@
 
 <h1 class="page-header">Template Contests</h1>
 
-<a href="@TemplateContestController.addTemplateContest"><button class="btn btn-success">Add Contest</button></a>
-<a href="@TemplateContestController.createAllTemplateContests"><button class="btn btn-danger">Create All Contests</button></a>
+<a href="@TemplateContestController.newForm"><button class="btn btn-success">Add Contest</button></a>
+<a href="@TemplateContestController.createAll"><button class="btn btn-danger">Create All Contests</button></a>
 
 <h2 class="sub-header"></h2>
 <div class="table-responsive">
@@ -79,7 +79,7 @@
             <td>@contest_state(p.templateContestId.toString())</td>
             <td>
                 <a href="@TemplateContestController.edit(p.templateContestId.toString())"><button class="btn btn-success">Edit</button></a>
-                <a href="@TemplateContestController.delete(p.templateContestId.toString())"><button class="btn btn-danger">-</button></a>
+                <a href="@TemplateContestController.destroy(p.templateContestId.toString())"><button class="btn btn-danger">-</button></a>
             </td>
         </tr>
         }

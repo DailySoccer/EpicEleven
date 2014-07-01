@@ -15,7 +15,7 @@ public class SimulatorController extends Controller {
         return ok(views.html.simulator.render());
     }
 
-    public static Result startSimulator(){
+    public static Result start(){
         if (OptaSimulator.stoppedInstance()){
             OptaSimulator mySimulator = OptaSimulator.getInstance();
             mySimulator.launch(0L, System.currentTimeMillis(), 0, false, true, null);
@@ -28,10 +28,9 @@ public class SimulatorController extends Controller {
         FlashMessage.warning("Simulator already started");
         return ok(views.html.simulator.render());
         //return ok("Simulator already started");
-
     }
 
-    public static Result launchSimulator(){
+    public static Result launch(){
         OptaSimulator mySimulator = OptaSimulator.getInstance();
         if (OptaSimulator.stoppedInstance()){
             mySimulator.launch(0L, System.currentTimeMillis(), 0, false, true, null);
@@ -46,14 +45,14 @@ public class SimulatorController extends Controller {
         //return ok("Simulator already started");
     }
 
-    public static Result pauseSimulator(){
+    public static Result pause(){
         OptaSimulator.getInstance().pause();
         FlashMessage.success("Simulator paused");
         return ok(views.html.simulator.render());
         //return ok("Simulator paused");
     }
 
-    public static Result resumeSimulator(){
+    public static Result resume(){
         OptaSimulator mySimulator = OptaSimulator.getInstance();
         mySimulator.resumeLoop();
         FlashMessage.success("Simulator resumed");
@@ -61,7 +60,7 @@ public class SimulatorController extends Controller {
         //return ok("Simulator resumed");
     }
 
-    public static Result simulatorNext(){
+    public static Result next(){
         if (OptaSimulator.existsInstance()) {
             OptaSimulator mySimulator = OptaSimulator.getInstance();
             mySimulator.next();
@@ -81,7 +80,7 @@ public class SimulatorController extends Controller {
         public Date date;
     }
 
-    public static Result gotoSimulator(){
+    public static Result gotoNextPause(){
         Form<GotoSimParams> gotoForm = form(GotoSimParams.class).bindFromRequest();
         if (!gotoForm.hasErrors()){
             GotoSimParams params = gotoForm.get();
@@ -95,7 +94,7 @@ public class SimulatorController extends Controller {
         }
     }
 
-    public static Result stopSimulator(){
+    public static Result stop(){
         OptaSimulator mySimulator = OptaSimulator.getInstance();
         mySimulator.halt();
         FlashMessage.success("Simulator stopped");

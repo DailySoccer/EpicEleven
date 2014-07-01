@@ -6,8 +6,8 @@
 
 <h1 class="page-header">Event-Point Translation List</h1>
 
-<a href="@PointsTranslationController.addPointsTranslation"><button class="btn btn-success">Add Score for Event</button></a>
-<a href="@PointsTranslationController.createPointsTranslation"><button class="btn btn-danger">Reset Events to Factory</button></a>
+<a href="@PointsTranslationController.newForm"><button class="btn btn-success">Add Score for Event</button></a>
+<a href="@PointsTranslationController.resetToDefault"><button class="btn btn-danger">Reset Events to Factory</button></a>
 <a href="@OptaController.updateOptaEvents"><button class="btn btn-danger">Recalculate Scores of All Events</button></a>
 
 <h2 class="sub-header"></h2>
@@ -24,9 +24,9 @@
         <tbody>
         @for(p <- points_translation) {
         <tr>
-            <td><a href="@PointsTranslationController.pointsTranslationsHistory(p.eventTypeId)">@OptaEventType.getEnum(p.eventTypeId).name()</td>
+            <td><a href="@PointsTranslationController.history(p.eventTypeId)">@OptaEventType.getEnum(p.eventTypeId).name()</td>
             <td>@OptaEventType.getEnum(p.eventTypeId).description</td>
-            <td><a href="@PointsTranslationController.editPointForEvent(p.pointsTranslationId.toString())">@p.points</td>
+            <td><a href="@PointsTranslationController.edit(p.pointsTranslationId.toString())">@p.points</td>
             <td>@p.timestamp.format("yyyy/MM/dd HH:mm:ss")</td>
         </tr>
         }

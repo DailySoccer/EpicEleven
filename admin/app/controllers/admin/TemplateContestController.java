@@ -19,12 +19,6 @@ import java.util.List;
 import static play.data.Form.form;
 
 public class TemplateContestController extends Controller {
-    public static Result deleteTemplateContest(String templateContestId) {
-        TemplateContest templateContest = TemplateContest.find(new ObjectId(templateContestId));
-        TemplateContest.remove(templateContest);
-        return redirect(routes.TemplateContestController.index());
-    }
-
     public static Result index() {
         Iterable<TemplateContest> templateContestResults = Model.templateContests().find().as(TemplateContest.class);
         List<TemplateContest> templateContestList = ListUtils.asList(templateContestResults);
@@ -32,7 +26,30 @@ public class TemplateContestController extends Controller {
         return ok(views.html.template_contest_list.render(templateContestList));
     }
 
-    public static Result submitTemplateContest() {
+    public static Result show(String templateContestId) {
+        return TODO;
+    }
+
+    public static Result newForm() {
+        Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class);
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
+    }
+
+    public static Result edit(String templateContestId) {
+        TemplateContest templateContest = TemplateContest.find(new ObjectId(templateContestId));
+        TemplateContestForm params = new TemplateContestForm(templateContest);
+
+        Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
+    }
+
+    public static Result destroy(String templateContestId) {
+        TemplateContest templateContest = TemplateContest.find(new ObjectId(templateContestId));
+        TemplateContest.remove(templateContest);
+        return redirect(routes.TemplateContestController.index());
+    }
+
+    public static Result create() {
         Form<TemplateContestForm> templateContestForm = form(TemplateContestForm.class).bindFromRequest();
         if (templateContestForm.hasErrors()) {
             return badRequest(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
@@ -85,24 +102,7 @@ public class TemplateContestController extends Controller {
         return redirect(routes.TemplateContestController.index());
     }
 
-    public static Result addTemplateContest() {
-        Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class);
-        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
-    }
-
-    public static Result editTemplateContest(String templateContestId) {
-        TemplateContest templateContest = TemplateContest.find(new ObjectId(templateContestId));
-        TemplateContestForm params = new TemplateContestForm(templateContest);
-
-        Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
-        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
-    }
-
-    public static Result templateContest(String templateContestId) {
-        return TODO;
-    }
-
-    public static Result createAllTemplateContests() {
+    public static Result createAll() {
         Model.templateContests().remove();
 
         Iterable<TemplateMatchEvent> matchEventResults = Model.templateMatchEvents().find().sort("{startDate: 1}").as(TemplateMatchEvent.class);
@@ -123,7 +123,7 @@ public class TemplateContestController extends Controller {
                 if (matchEvents.size() >= 2) {
 
                     // crear el contest
-                    createTemplateContest(matchEvents);
+                    create(matchEvents);
 
                     // empezar a registrar los partidos del nuevo contest
                     matchEvents.clear();
@@ -136,16 +136,16 @@ public class TemplateContestController extends Controller {
 
         // Tenemos partidos sin incluir en un contest?
         if (matchEvents.size() > 0) {
-            createTemplateContest(matchEvents);
+            create(matchEvents);
         }
 
 
         return redirect(routes.TemplateContestController.index());
     }
 
-    public static void createTemplateContest(List<TemplateMatchEvent> templateMatchEvents) {
+    public static void create(List<TemplateMatchEvent> templateMatchEvents) {
         if (templateMatchEvents.size() == 0) {
-            Logger.error("createTemplateContest: templateMatchEvents is empty");
+            Logger.error("create: templateMatchEvents is empty");
             return;
         }
 
