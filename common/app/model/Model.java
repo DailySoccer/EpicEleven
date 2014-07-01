@@ -101,8 +101,9 @@ public class Model {
 
     static private void ensureContestsDB(DB theMongoDB) {
         for (String name : contestCollectionNames) {
-            if (!theMongoDB.collectionExists(name))
+            if (!theMongoDB.collectionExists(name)) {
                 theMongoDB.createCollection(name, new BasicDBObject());
+            }
         }
     }
 
@@ -242,7 +243,6 @@ public class Model {
      * Actualizar cuando se produzca un evento de inicio o fin de partido
      * @param templateMatchEvent
      *
-     * TODO: Eventos?
      */
     public static void actionWhenMatchEventIsStarted(TemplateMatchEvent templateMatchEvent) {
         // Los template contests (que incluyan este match event y que esten "activos") tendrian que ser marcados como "live"

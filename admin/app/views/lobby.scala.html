@@ -1,6 +1,6 @@
 @(contests: List[model.Contest], templateMap: HashMap[org.bson.types.ObjectId, model.TemplateContest])
 
-@import controllers.admin.DashboardController
+@import controllers.admin.routes._
 
 @main("Lobby - Admin") {
 
@@ -22,10 +22,10 @@
         @for(p <- contests) {
         <tr>
             <td>@p.contestId</td>
-            <td><a href="@AdminController.contest(p.contestId.toString())">@p.name</a></td>
+            <td><a href="@ContestController.contest(p.contestId.toString())">@p.name</a></td>
             <td>@p.currentUserIds</td>
             <td>@p.maxUsers</td>
-            <td><a href="@AdminController.templateContest(p.templateContestId.toString())">
+            <td><a href="@TemplateContestController.templateContest(p.templateContestId.toString())">
                 @templateMap(p.templateContestId).name (@p.templateContestId)</a></td>
         </tr>
         }

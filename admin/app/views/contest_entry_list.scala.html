@@ -1,12 +1,12 @@
 @(contest_entries: List[model.ContestEntry])
 
-@import controllers.admin.DashboardController
+@import controllers.admin.routes._
 
 @main("Contest Entry - Admin") {
 
 <h1 class="page-header">Contest Entries</h1>
 
-<a href="@AdminController.addContestEntry"><button class="btn btn-success">Add Contest Entry</button></a>
+<a href="@ContestEntryController.addContestEntry"><button class="btn btn-success">Add Contest Entry</button></a>
 
 <h2 class="sub-header"></h2>
 <div class="table-responsive">

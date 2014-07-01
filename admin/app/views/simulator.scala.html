@@ -1,36 +1,40 @@
+@()
+
 @import controllers.admin.OptaSimulator
 @import helper._
 @import helper.twitterBootstrap._
+@import controllers.admin.routes._
+
 @main("Simulator - Admin") {
 
 <h1 class="page-header">Simulator</h1>
     @if(!OptaSimulator.existsInstance() || OptaSimulator.stoppedInstance()){
         <div>
-            <a href="@AdminController.startSimulator"><button class="btn btn-primary">Start</button></a>
+            <a href="@SimulatorController.startSimulator"><button class="btn btn-primary">Start</button></a>
         </div>
     }
     @if(OptaSimulator.launchedInstance()){
         <div class="btn-group">
         <!--div class="btn-group"-->
             @if(OptaSimulator.pausedInstance()){
-                <a class="btn btn-primary" href="@AdminController.resumeSimulator">
+                <a class="btn btn-primary" href="@SimulatorController.resume">
                     <i class="glyphicon glyphicon-play"></i> Play
                 </a>
             } else {
-                <a class="btn btn-primary" href="@AdminController.pauseSimulator">
+                <a class="btn btn-primary" href="@SimulatorController.pause">
                     <i class="glyphicon glyphicon-pause"></i> Pause
                 </a>
             }
             @if(OptaSimulator.pausedInstance()){
-                <a class="btn btn-primary" href="@AdminController.simulatorNext">
+                <a class="btn btn-primary" href="@SimulatorController.next">
                 <i class="glyphicon glyphicon-step-forward"></i> Next step
                 </a>
             } else {
-                <a class="btn btn-primary disabled" href="@AdminController.simulatorNext">
+                <a class="btn btn-primary disabled" href="@SimulatorController.next">
                     <i class="glyphicon glyphicon-step-forward"></i> Next step
                 </a>
             }
-            <a class="btn btn-primary" href="@AdminController.stopSimulator">
+            <a class="btn btn-primary" href="@SimulatorController.stop">
                 <i class="glyphicon glyphicon-stop"></i> Stop
             </a>
         </div>

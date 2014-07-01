@@ -1,6 +1,6 @@
 @(teams: List[model.TemplateSoccerTeam])
 
-@import controllers.admin.DashboardController
+@import controllers.admin.routes._
         
 @main("Template Soccer Teams - Admin") {
 
@@ -22,7 +22,7 @@
         <tr>
             <td>@p.templateSoccerTeamId</td>
             <td>@p.optaTeamId</td>
-            <td><a href="@AdminController.templateSoccerTeam(p.templateSoccerTeamId.toString())">@p.name</a></td>
+            <td><a href="@TemplateSoccerTeamController.templateSoccerTeam(p.templateSoccerTeamId.toString())">@p.name</a></td>
             <td>@p.shortName</td>
         </tr>
         }

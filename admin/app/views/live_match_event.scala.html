@@ -1,6 +1,7 @@
 @(match_event: model.LiveMatchEvent)
 
 @import model._
+@import controllers.admin.routes._
 
 @scripts = {
     <script type="text/javascript">
@@ -56,7 +57,7 @@
             <td>@p.name</td>
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
-            <td><a href="@AdminController.showPlayerFantasyPointsInMatchEvent(match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
+            <td><a href="@TemplateSoccerPlayerController.showPlayerFantasyPointsInMatchEvent(match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
         </tr>
         }
         </tbody>
@@ -79,13 +80,13 @@
             <td>@p.name</td>
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
-            <td><a href="@AdminController.showPlayerFantasyPointsInMatchEvent(match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
+            <td><a href="@TemplateSoccerPlayerController.showPlayerFantasyPointsInMatchEvent(match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
         </tr>
         }
         </tbody>
     </table>
 </div>
 
-<a href='@AdminController.liveMatchEvents'>Back to Live Match Events</a>
+<a href='@LiveMatchEventController.index'>Back to Live Match Events</a>
 
 }

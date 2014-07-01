@@ -1,7 +1,7 @@
 @(match_events: List[model.TemplateMatchEvent])
 
 @import model._
-@import controllers.admin.DashboardController
+@import controllers.admin.routes._
 
 @scripts = {
     <script type="text/javascript">
@@ -23,7 +23,7 @@
         <button class="btn btn-danger state_match_event" value="@match_event_id">Finished</button>
     } else {
         @if(TemplateMatchEvent.isStarted(match_event_id)) {
-            <a href="@AdminController.liveMatchEventWithTemplate(match_event_id)"><button class="btn btn-success state_match_event" value="@match_event_id">Live</button></a>
+            <a href="@LiveMatchEventController.liveMatchEventWithTemplate(match_event_id)"><button class="btn btn-success state_match_event" value="@match_event_id">Live</button></a>
         } else {
             <button class="btn btn-warning state_match_event" value="@match_event_id">Waiting</button>
         }
@@ -56,7 +56,7 @@
             <td>@p.soccerTeamA.optaTeamId</td>
             <td>@p.soccerTeamB.optaTeamId</td>
             <td>
-                <a href="@AdminController.templateMatchEvent(p.templateMatchEventId.toString())">
+                <a href="@TemplateMatchEventController.templateMatchEvent(p.templateMatchEventId.toString())">
                     @p.soccerTeamA.name vS @p.soccerTeamB.name</a></td>
             <td>@p.startDate.format("yyyy/MM/dd HH:mm:ss")</td>
             <td>@match_event_state(p.templateMatchEventId.toString())</td>

@@ -2,7 +2,7 @@
 
 @import helper._
 @import helper.twitterBootstrap._
-@import controllers.admin.DashboardController
+@import controllers.admin.routes._
 
 @if(templateContestForm.hasErrors) {
     @controllers.admin.FlashMessage.danger("Template MatchEvent Form has errors")
@@ -21,7 +21,7 @@
 
 <h2 class="sub-header"></h2>
 
-@helper.form(action = AdminController.submitTemplateContest, 'class -> "form-horizontal") {
+@helper.form(action = TemplateContestController.submitTemplateContest, 'class -> "form-horizontal") {
 <fieldset>
 
     <!-- Form Name -->
@@ -101,7 +101,7 @@
         <label class="control-label" for="ok"></label>
         <div class="controls">
             <button id="ok" name="ok" class="btn btn-success">Save</button>
-            <a href="@AdminController.templateContests" class="btn btn-danger">Cancel</a>
+            <a href="@TemplateContestController.index" class="btn btn-danger">Cancel</a>
         </div>
     </div>
 

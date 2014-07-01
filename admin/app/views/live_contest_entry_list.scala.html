@@ -1,6 +1,6 @@
 @(contest_entries: List[model.ContestEntry])
 
-@import controllers.admin.DashboardController
+@import controllers.admin.routes._
 
 @main("Live Contest Entries - Admin") {
 
@@ -21,7 +21,7 @@
         <tr>
             <td>@p.contestEntryId</td>
             <td>@p.userId</td>
-            <td><a href="@AdminController.liveContestEntry(p.contestEntryId.toString())">@p.contestId</a></td>
+            <td><a href="@LiveContestEntryController.liveContestEntry(p.contestEntryId.toString())">@p.contestId</a></td>
         </tr>
         }
         </tbody>

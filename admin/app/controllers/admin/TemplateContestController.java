@@ -1,6 +1,174 @@
 package controllers.admin;
 
+import model.Model;
+import model.PrizeType;
+import model.TemplateContest;
+import model.TemplateMatchEvent;
+import org.bson.types.ObjectId;
+import org.joda.time.DateTime;
+import play.Logger;
+import play.data.Form;
 import play.mvc.Controller;
+import play.mvc.Result;
+import utils.ListUtils;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import static play.data.Form.form;
 
 public class TemplateContestController extends Controller {
+    public static Result deleteTemplateContest(String templateContestId) {
+        TemplateContest templateContest = TemplateContest.find(new ObjectId(templateContestId));
+        TemplateContest.remove(templateContest);
+        return redirect(routes.TemplateContestController.index());
+    }
+
+    public static Result index() {
+        Iterable<TemplateContest> templateContestResults = Model.templateContests().find().as(TemplateContest.class);
+        List<TemplateContest> templateContestList = ListUtils.asList(templateContestResults);
+
+        return ok(views.html.template_contest_list.render(templateContestList));
+    }
+
+    public static Result submitTemplateContest() {
+        Form<TemplateContestForm> templateContestForm = form(TemplateContestForm.class).bindFromRequest();
+        if (templateContestForm.hasErrors()) {
+            return badRequest(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
+        }
+
+        TemplateContestForm params = templateContestForm.get();
+
+        TemplateContest templateContest = new TemplateContest();
+
+        templateContest.templateContestId = params.id.isEmpty() ? new ObjectId() : new ObjectId(params.id);
+        templateContest.state = params.state;
+        templateContest.name = params.name;
+        templateContest.postName = params.postName;
+        templateContest.minInstances = params.minInstances;
+        templateContest.maxEntries = params.maxEntries;
+        templateContest.salaryCap = params.salaryCap;
+        templateContest.entryFee = params.entryFee;
+        templateContest.prizeType = params.prizeType;
+
+        Date startDate = null;
+        templateContest.templateMatchEventIds = new ArrayList<>();
+        for (String optaMatchEventId: params.templateMatchEvents) {
+            TemplateMatchEvent templateMatchEvent = Model.templateMatchEvents().findOne(
+                    "{optaMatchEventId: #}", optaMatchEventId).as(TemplateMatchEvent.class);
+            templateContest.templateMatchEventIds.add(templateMatchEvent.templateMatchEventId);
+
+            if (startDate == null || templateMatchEvent.startDate.before(startDate)) {
+                startDate = templateMatchEvent.startDate;
+            }
+        }
+        templateContest.startDate = startDate;
+
+        /*
+        for(String p: params.templateMatchEvents) {
+            Logger.info("{}", p);
+        }
+        */
+
+        if (params.id.isEmpty()) {
+            Model.templateContests().insert(templateContest);
+        }
+        else {
+            Model.templateContests().update("{_id: #}", templateContest.templateContestId).with(templateContest);
+        }
+
+        if (templateContest.isActive()) {
+            templateContest.instantiate();
+        }
+
+        return redirect(routes.TemplateContestController.index());
+    }
+
+    public static Result addTemplateContest() {
+        Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class);
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
+    }
+
+    public static Result editTemplateContest(String templateContestId) {
+        TemplateContest templateContest = TemplateContest.find(new ObjectId(templateContestId));
+        TemplateContestForm params = new TemplateContestForm(templateContest);
+
+        Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
+    }
+
+    public static Result templateContest(String templateContestId) {
+        return TODO;
+    }
+
+    public static Result createAllTemplateContests() {
+        Model.templateContests().remove();
+
+        Iterable<TemplateMatchEvent> matchEventResults = Model.templateMatchEvents().find().sort("{startDate: 1}").as(TemplateMatchEvent.class);
+
+        DateTime dateTime = null;
+        List<TemplateMatchEvent> matchEvents = new ArrayList<>();   // Partidos que juntaremos en el mismo contests
+        for (TemplateMatchEvent match: matchEventResults) {
+            DateTime matchDateTime = new DateTime(match.startDate);
+            if (dateTime == null) {
+                dateTime = matchDateTime;
+            }
+
+            // El partido es de un dia distinto?
+            if (dateTime.dayOfYear().get() != matchDateTime.dayOfYear().get()) {
+                Logger.info("{} != {}", dateTime.dayOfYear().get(), matchDateTime.dayOfYear().get());
+
+                // El dia anterior tenia un numero suficiente de partidos? (minimo 2)
+                if (matchEvents.size() >= 2) {
+
+                    // crear el contest
+                    createTemplateContest(matchEvents);
+
+                    // empezar a registrar los partidos del nuevo contest
+                    matchEvents.clear();
+                }
+            }
+
+            dateTime = matchDateTime;
+            matchEvents.add(match);
+        }
+
+        // Tenemos partidos sin incluir en un contest?
+        if (matchEvents.size() > 0) {
+            createTemplateContest(matchEvents);
+        }
+
+
+        return redirect(routes.TemplateContestController.index());
+    }
+
+    public static void createTemplateContest(List<TemplateMatchEvent> templateMatchEvents) {
+        if (templateMatchEvents.size() == 0) {
+            Logger.error("createTemplateContest: templateMatchEvents is empty");
+            return;
+        }
+
+        Date startDate = templateMatchEvents.get(0).startDate;
+
+        TemplateContest templateContest = new TemplateContest();
+
+        templateContest.name = String.format("Contest date %s", startDate);
+        templateContest.postName = "Late evening";
+        templateContest.minInstances = 3;
+        templateContest.maxEntries = 10;
+        templateContest.prizeType = PrizeType.STANDARD;
+        templateContest.entryFee = 10000;
+        templateContest.salaryCap = 100000;
+        templateContest.startDate = startDate;
+        templateContest.templateMatchEventIds = new ArrayList<>();
+
+        for (TemplateMatchEvent match: templateMatchEvents) {
+            templateContest.templateMatchEventIds.add(match.templateMatchEventId);
+        }
+
+        Logger.info("MockData: Template Contest: {} ({})", templateContest.templateMatchEventIds, startDate);
+
+        Model.templateContests().insert(templateContest);
+    }
 }

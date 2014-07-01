@@ -1,5 +1,7 @@
 @(contest_entry: model.ContestEntry, soccer_players: List[model.SoccerPlayer])
 
+@import controllers.admin.routes._
+
 @scripts = {
     <script type="text/javascript">
 
@@ -37,7 +39,7 @@
             <td>@p.optaPlayerId</td>
             <td>@p.fieldPos</td>
             <td>@p.name</td>
-            <td><a href="@AdminController.showPlayerFantasyPointsInContest(contest_entry.contestId.toString(), p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
+            <td><a href="@TemplateSoccerPlayerController.showPlayerFantasyPointsInContest(contest_entry.contestId.toString(), p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
         </tr>
         }
         </tbody>
@@ -45,6 +47,6 @@
     </table>
 </div>
 
-<a href='@AdminController.liveContestEntries'>Back to Live Contest Entries</a>
+<a href='@LiveContestEntryController.index'>Back to Live Contest Entries</a>
 
 }

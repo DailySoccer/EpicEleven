@@ -1,6 +1,6 @@
 @(soccers: List[model.TemplateSoccerPlayer])
 
-@import controllers.admin.DashboardController
+@import controllers.admin.routes._
         
 @main("Template Soccer Players - Admin") {
 
@@ -29,7 +29,7 @@
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
             <td>@p.fantasyPoints</td>
-            <td><a href="@AdminController.templateSoccerTeam(p.templateTeamId.toString())">@p.templateTeamId</a></td>
+            <td><a href="@TemplateSoccerTeamController.templateSoccerTeam(p.templateTeamId.toString())">@p.templateTeamId</a></td>
         </tr>
         }
         </tbody>

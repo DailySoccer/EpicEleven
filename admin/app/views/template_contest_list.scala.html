@@ -1,7 +1,7 @@
 @(template_contests: List[model.TemplateContest])
 
 @import model._
-@import controllers.admin.DashboardController
+@import controllers.admin.routes._
 
 @scripts = {
     <script type="text/javascript">
@@ -34,8 +34,8 @@
 
 <h1 class="page-header">Template Contests</h1>
 
-<a href="@AdminController.addTemplateContest"><button class="btn btn-success">Add Contest</button></a>
-<a href="@AdminController.createAllTemplateContests"><button class="btn btn-danger">Create All Contests</button></a>
+<a href="@TemplateContestController.addTemplateContest"><button class="btn btn-success">Add Contest</button></a>
+<a href="@TemplateContestController.createAllTemplateContests"><button class="btn btn-danger">Create All Contests</button></a>
 
 <h2 class="sub-header"></h2>
 <div class="table-responsive">
@@ -78,8 +78,8 @@
             <td>@p.startDate.format("yyyy/MM/dd HH:mm:ss")</td>
             <td>@contest_state(p.templateContestId.toString())</td>
             <td>
-                <a href="@AdminController.editTemplateContest(p.templateContestId.toString())" class="btn btn-small btn-success">Edit</a>
-                <a href="@AdminController.deleteTemplateContest(p.templateContestId.toString())" class="btn btn-small btn-danger">Remove</a>
+                <a href="@TemplateContestController.edit(p.templateContestId.toString())"><button class="btn btn-success">Edit</button></a>
+                <a href="@TemplateContestController.delete(p.templateContestId.toString())"><button class="btn btn-danger">-</button></a>
             </td>
         </tr>
         }

@@ -1,5 +1,7 @@
 @(match_event: model.TemplateMatchEvent)
 
+@import controllers.admin.routes._
+
 @main("Mach Event - Admin") {
 
 <h1 class="page-header">Match Event: @match_event.templateMatchEventId</h1>
@@ -54,6 +56,6 @@
     </table>
 </div>
 
-<a href='@AdminController.templateMatchEvents'>Back to Template Match Events</a>
+<a href='@TemplateMatchEventController.index'>Back to Template Match Events</a>
 
 }
