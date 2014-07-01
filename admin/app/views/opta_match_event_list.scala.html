@@ -1,5 +1,7 @@
 @(match_events: List[model.opta.OptaMatchEvent])
 
+@import controllers.admin.routes._
+
 @main("Opta Match Events - Admin") {
 
 <h1 class="page-header">Opta Match Events</h1>
@@ -44,6 +46,6 @@
     </table>
 </div>
 
-<a href='@AdminController.dashBoard'>Back to Dashboard</a>
+<a href='@DashboardController.index'>Back to Dashboard</a>
 
 }

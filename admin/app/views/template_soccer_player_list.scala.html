@@ -1,5 +1,7 @@
 @(soccers: List[model.TemplateSoccerPlayer])
 
+@import controllers.admin.routes._
+        
 @main("Template Soccer Players - Admin") {
 
 <h1 class="page-header">Template Soccer Players</h1>
@@ -27,13 +29,13 @@
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
             <td>@p.fantasyPoints</td>
-            <td><a href="@AdminController.templateSoccerTeam(p.templateTeamId.toString())">@p.templateTeamId</a></td>
+            <td><a href="@TemplateSoccerTeamController.show(p.templateTeamId.toString())">@p.templateTeamId</a></td>
         </tr>
         }
         </tbody>
     </table>
 </div>
 
-<a href='@AdminController.dashBoard'>Back to Dashboard</a>
+<a href='@DashboardController.index'>Back to Dashboard</a>
 
 }

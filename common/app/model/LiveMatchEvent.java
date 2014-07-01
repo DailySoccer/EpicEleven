@@ -85,6 +85,7 @@ public class LiveMatchEvent {
 
         long startTime = System.currentTimeMillis();
 
+        // TODO: Pasar el equipo del futbolista para simplificar la query
         // Actualizar jugador si aparece en TeamA
         Model.liveMatchEvents()
                 .update("{optaMatchEventId: #, soccerTeamA.soccerPlayers.templateSoccerPlayerId: #}", optaMatchId, soccerPlayerId)

@@ -1,5 +1,7 @@
 @(contest_entries: List[model.ContestEntry])
 
+@import controllers.admin.routes._
+
 @main("Live Contest Entries - Admin") {
 
 <h1 class="page-header">Live Contest Entries</h1>
@@ -19,13 +21,13 @@
         <tr>
             <td>@p.contestEntryId</td>
             <td>@p.userId</td>
-            <td><a href="@AdminController.liveContestEntry(p.contestEntryId.toString())">@p.contestId</a></td>
+            <td><a href="@LiveContestEntryController.show(p.contestEntryId.toString())">@p.contestId</a></td>
         </tr>
         }
         </tbody>
     </table>
 </div>
 
-<a href='@AdminController.dashBoard'>Back to Dashboard</a>
+<a href='@DashboardController.index'>Back to Dashboard</a>
 
 }

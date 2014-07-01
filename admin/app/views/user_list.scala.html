@@ -1,10 +1,12 @@
 @(users: List[model.User])
 
+@import controllers.admin.routes.DashboardController
+
 @main("Users - Admin") {
 
 <h1 class="page-header">Users</h1>
 
-<a href="@AdminController.dashBoard"><button class="btn btn-success">Add User</button></a>
+<a href=""><button class="btn btn-success">Add User</button></a>
 
 <h2 class="sub-header"></h2>
 <div class="table-responsive">
@@ -34,6 +36,6 @@
     </table>
 </div>
 
-<a href='@AdminController.dashBoard'>Back to Dashboard</a>
+<a href='@DashboardController.index'>Back to Dashboard</a>
 
 }

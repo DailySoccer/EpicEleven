@@ -1,5 +1,7 @@
 @(teams_new: List[model.opta.OptaTeam], teams_changed: List[model.opta.OptaTeam], teams_invalid: List[model.opta.OptaTeam])
 
+@import controllers.admin.routes.ImportController
+
 @main("Import Teams - Admin") {
 
 <h1 class="page-header">Import Teams</h1>
@@ -8,7 +10,7 @@
 
 <!--div class="col-md-12">
 @if((teams_new != null && !teams_new.isEmpty) || (teams_changed != null && !teams_changed.isEmpty)) {
-<a href="@AdminController.importAllTeams"><button name="ok" type="submit" class="btn btn-success">Import All</button></a>
+<a href="@ImportController.importAllTeams"><button name="ok" type="submit" class="btn btn-success">Import All</button></a>
 }
 </div-->
 
@@ -34,7 +36,7 @@
         </tbody>
     </table>
 
-    <div><a href="@AdminController.importAllNewTeams"><button name="ok" type="submit" class="btn btn-success">Import New (@teams_new.size)</button></a></div>
+    <div><a href="@ImportController.importAllNewTeams"><button name="ok" type="submit" class="btn btn-success">Import New (@teams_new.size)</button></a></div>
     <br/>
     }
 </div>
@@ -61,7 +63,7 @@
         </tbody>
     </table>
 
-    <div><a href="@AdminController.importAllChangedTeams"><button name="ok" type="submit" class="btn btn-success">Import Changed (@teams_changed.size)</button></a></div>
+    <div><a href="@ImportController.importAllChangedTeams"><button name="ok" type="submit" class="btn btn-success">Import Changed (@teams_changed.size)</button></a></div>
     }
 </div>
 
