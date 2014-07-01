@@ -137,14 +137,18 @@ public class Model {
         DBCollection optaDB = theMongoDB.getCollection("optaDB");
         optaDB.createIndex(new BasicDBObject("startDate", 1));
         optaDB.createIndex(new BasicDBObject("startDate", -1));
+
         DBCollection optaEvents = theMongoDB.getCollection("optaEvents");
         optaEvents.createIndex(new BasicDBObject("parentId", 1));
         optaEvents.createIndex(new BasicDBObject("eventId", 1));
         optaEvents.createIndex(new BasicDBObject("gameId", 1));
         optaEvents.createIndex(new BasicDBObject("optaPlayerId", 1));
+
         DBCollection optaPlayers = theMongoDB.getCollection("optaPlayers");
         optaPlayers.createIndex(new BasicDBObject("optaPlayerId", 1));
+
         DBCollection optaTeams = theMongoDB.getCollection("optaTeams");
+
         DBCollection optaMatchEvents = theMongoDB.getCollection("optaMatchEvents");
         DBCollection pointsTranslation = theMongoDB.getCollection("pointsTranslation");
         pointsTranslation.createIndex(new BasicDBObject("eventTypeId", 1));
