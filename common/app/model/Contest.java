@@ -16,7 +16,7 @@ public class Contest {
     public String name;
 
     public List<ObjectId> currentUserIds = new ArrayList<>();
-    public int maxUsers;
+    public int maxEntries;
 
     public ObjectId templateContestId;
 
@@ -27,6 +27,7 @@ public class Contest {
     public Contest(TemplateContest template) {
         templateContestId = template.templateContestId;
         name = template.name;
+        maxEntries = template.maxEntries;
     }
 
     static public Contest find(ObjectId contestId) {

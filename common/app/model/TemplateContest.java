@@ -108,7 +108,6 @@ public class TemplateContest {
 
         for(long i=instances; i<minInstances; i++) {
             Contest contest = new Contest(this);
-            contest.maxUsers = 10;
             Model.contests().insert(contest);
         }
     }

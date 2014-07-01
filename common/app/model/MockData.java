@@ -201,7 +201,6 @@ public final class MockData {
         for(TemplateContest template : templateContests) {
             for(int i=0; i<template.minInstances; i++) {
                 Contest contest = new Contest(template);
-                contest.maxUsers = 10;
                 Model.contests().insert(contest);
             }
         }

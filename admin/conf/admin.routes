@@ -50,11 +50,11 @@ GET         /contest/destroy/:contestId                        controllers.admin
 
 GET         /template_contests                                 controllers.admin.TemplateContestController.index()
 GET         /template_contest/create_all                       controllers.admin.TemplateContestController.createAll()
-GET         /template_contest/:templateContestId               controllers.admin.TemplateContestController.show(templateContestId : String)
 GET         /template_contest/save/:templateContestId          controllers.admin.TemplateContestController.edit(templateContestId : String)
 GET         /template_contest/save                             controllers.admin.TemplateContestController.newForm()
 POST        /template_contest/save                             controllers.admin.TemplateContestController.create()
 GET         /template_contest/delete/:templateContestId        controllers.admin.TemplateContestController.destroy(templateContestId : String)
+GET         /template_contest/:templateContestId               controllers.admin.TemplateContestController.show(templateContestId : String)
 
 GET         /template_match_events                             controllers.admin.TemplateMatchEventController.index()
 GET         /template_match_event/:templateMatchEventId        controllers.admin.TemplateMatchEventController.show(templateMatchEventId : String)
