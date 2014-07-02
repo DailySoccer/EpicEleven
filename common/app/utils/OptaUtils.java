@@ -324,18 +324,16 @@ public class OptaUtils {
     public static void processF1(BasicDBObject f1) {
         try {
             LinkedHashMap myF1 = (LinkedHashMap) ((LinkedHashMap) f1.get("SoccerFeed")).get("SoccerDocument");
-            int competitionId = myF1.containsKey("competition_id")? (int) myF1.get("competition_id"): -1;
+            ArrayList matches = (ArrayList) myF1.get("MatchData");
 
-            ArrayList matches = myF1.containsKey("MatchData")? (ArrayList) myF1.get("MatchData"): null;
-            if (matches != null){
-                for (Object match: matches){
+            if (matches != null) {
+                int competitionId = myF1.containsKey("competition_id")? (int) myF1.get("competition_id") : -1;
 
-                    LinkedHashMap matchObject = (LinkedHashMap)match;
-                    processMatchData(matchObject, competitionId, myF1);
+                for (Object match : matches) {
+                    processMatchData((LinkedHashMap)match, competitionId, myF1);
                 }
-
             }
-        }catch (NullPointerException e){
+        } catch (NullPointerException e){
             e.printStackTrace();
         }
     }
