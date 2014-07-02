@@ -152,20 +152,18 @@ public class OptaUtils {
     }
 
     private static void processEvent(LinkedHashMap event, LinkedHashMap game) {
-        HashMap<Integer, Date> eventsCache = getOptaEventsCache(game.get("id").toString());
-        int eventId = (int) event.get("event_id");
+
         Date timestamp;
-        if (event.containsKey("last_modified")){
+        if (event.containsKey("last_modified")) {
             timestamp = parseDate((String) event.get("last_modified"));
         } else {
             timestamp = parseDate((String) event.get("timestamp"));
         }
-        if (eventsCache.containsKey(eventId)) {
-            if (timestamp.after(eventsCache.get(eventId))) {
-                updateOrInsertEvent(event, game);
-                eventsCache.put(eventId, timestamp);
-            }
-        } else {
+
+        HashMap<Integer, Date> eventsCache = getOptaEventsCache(game.get("id").toString());
+        int eventId = (int) event.get("event_id");
+
+        if (!eventsCache.containsKey(eventId) || timestamp.after(eventsCache.get(eventId))) {
             updateOrInsertEvent(event, game);
             eventsCache.put(eventId, timestamp);
         }
@@ -271,7 +269,7 @@ public class OptaUtils {
     }
 
     public static int getPoints(int typeId, Date timestamp) {
-        if (!pointsTranslationCache.containsKey(typeId)){
+        if (!pointsTranslationCache.containsKey(typeId)) {
             getPointsTranslation(typeId, timestamp);
         }
         return pointsTranslationCache.get(typeId);
@@ -547,14 +545,14 @@ public class OptaUtils {
         pointsTranslationTableCache = new HashMap<Integer, ObjectId>();
     }
 
-    private static HashMap getOptaEventsCache(String key) {
-        if (optaEventsCache == null){
+    private static HashMap getOptaEventsCache(String gameId) {
+        if (optaEventsCache == null) {
             optaEventsCache = new HashMap<String, HashMap>();
         }
-        if (!optaEventsCache.containsKey(key)){
-            optaEventsCache.put(key, new HashMap<Integer, Date>());
+        if (!optaEventsCache.containsKey(gameId)) {
+            optaEventsCache.put(gameId, new HashMap<Integer, Date>());
         }
-        return optaEventsCache.get(key);
+        return optaEventsCache.get(gameId);
     }
 
     private static HashMap getOptaMatchDataCache(int key) {
