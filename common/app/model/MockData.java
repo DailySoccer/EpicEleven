@@ -9,7 +9,7 @@ import play.Logger;
 import java.util.Date;
 
 import java.util.ArrayList;
-import model.opta.OptaProcessor.OptaEventType;
+import model.opta.OptaEventType;
 
 
 public final class MockData {
