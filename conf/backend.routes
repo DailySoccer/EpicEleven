@@ -24,6 +24,7 @@ GET     /get_live_contest_entries/:contest               controllers.ContestCont
 # Test
 POST    /live_fantasy_points/match_events                controllers.ContestController.updateLiveFantasyPoints()
 GET     /optatest               controllers.OptaHttpController.optaXmlTest()
+GET     /migrate               controllers.OptaHttpController.migrate()
 
 # Opta
 POST    /opta                       controllers.OptaHttpController.optaXmlInput()
