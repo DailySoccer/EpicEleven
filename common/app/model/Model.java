@@ -77,7 +77,7 @@ public class Model {
         Statement stmt = null;
         try {
             stmt = connection.createStatement();
-            boolean result = stmt.execute("CREATE TABLE IF NOT EXISTS optadb (" +
+            boolean result = stmt.execute("CREATE TABLE IF NOT EXISTS dailysoccerdb (" +
                                            " id serial PRIMARY KEY, " +
                                            " xml xml, " +
                                            " headers text, " +
@@ -90,11 +90,11 @@ public class Model {
                                            " last_updated timestamp " +
                                            " );");
             if (result){
-                Logger.info("Base de datos OptaDB creada");
+                Logger.info("Base de datos DailySoccerDB creada");
             }
         }
         catch (java.sql.SQLException e) {
-            Logger.error("SQL Exception creating OptaDB table");
+            Logger.error("SQL Exception creating DailySoccerDB table");
             e.printStackTrace();
         }
         finally {

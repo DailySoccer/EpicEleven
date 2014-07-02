@@ -13,8 +13,8 @@ if [ $? -eq 0 ]
     
     /Applications/Postgres.app/Contents/Versions/9.3/bin/psql -c \
         "CREATE USER postgres WITH PASSWORD 'postgres';
-         CREATE DATABASE optadbi WITH ENCODING 'UTF8';
-         GRANT ALL PRIVILEGES ON DATABASE optadb to postgres;"
+         CREATE DATABASE dailysoccerdb WITH ENCODING 'UTF8';
+         GRANT ALL PRIVILEGES ON DATABASE dailysoccerdb to postgres;"
   else
     echo "Necesitas instalar brew: $ ruby -e \"\$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)\""
     echo "Y también puedes usar brew cask: $ brew install caskroom/cask/brew-cask"

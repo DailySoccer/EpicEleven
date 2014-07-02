@@ -148,7 +148,7 @@ public class OptaHttpController extends Controller {
             return;
         }
         PreparedStatement stmt = null;
-        String insertString = "INSERT INTO optadb (xml, headers, created_at, name, feed_type, game_id, competition_id,"+
+        String insertString = "INSERT INTO dailysoccerdb (xml, headers, created_at, name, feed_type, game_id, competition_id,"+
                               "season_id, last_updated) VALUES ( XMLPARSE (DOCUMENT ?),?,?,?,?,?,?,?,?)";
 
         try {
@@ -165,11 +165,11 @@ public class OptaHttpController extends Controller {
 
             boolean result = stmt.execute();
             if (result){
-                Logger.info("Inserción en OptaDB");
+                Logger.info("Inserción en DailySoccerDB");
             }
         }
         catch (java.sql.SQLException e) {
-            Logger.error("SQL Exception connecting to OptaDB");
+            Logger.error("SQL Exception connecting to DailySoccerDB");
             e.printStackTrace();
         }
         finally {
