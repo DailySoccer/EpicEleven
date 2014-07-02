@@ -11,7 +11,7 @@ import utils.ListUtils;
 
 import java.util.List;
 
-import static utils.OptaUtils.recalculateAllEvents;
+import static model.opta.OptaProcessor.recalculateAllEvents;
 
 public class OptaController extends Controller {
     public static Result optaSoccerPlayers() {

@@ -3,7 +3,7 @@ package controllers.admin;
 import com.mongodb.BasicDBObject;
 import model.Model;
 import model.opta.OptaDB;
-import utils.OptaUtils;
+import model.opta.OptaProcessor;
 
 import java.util.*;
 
@@ -167,7 +167,7 @@ public class OptaSimulator implements Runnable {
             String feedType = nextDoc.getFeedType();
             this.lastParsedDate = nextDoc.startDate;
             if (feedType != null){
-                OptaUtils.processOptaDBInput(feedType, (BasicDBObject) nextDoc.json);
+                OptaProcessor.processOptaDBInput(feedType, (BasicDBObject) nextDoc.json);
             }
         }
         else {

@@ -8,14 +8,9 @@ import play.Logger;
 import play.Play;
 import org.bson.types.ObjectId;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
 
-import model.opta.*;
-import utils.OptaUtils;
-import java.util.Date;
+import model.opta.OptaProcessor;
 
 
 public class Model {
@@ -167,7 +162,7 @@ public class Model {
     }
 
     static public void cleanOpta() {
-        OptaUtils.resetCache();
+        OptaProcessor.resetCache();
 
         optaEvents().remove();
         optaPlayers().remove();

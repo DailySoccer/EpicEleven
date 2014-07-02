@@ -5,18 +5,14 @@ import com.mongodb.*;
 import com.mongodb.util.JSON;
 import model.Model;
 import model.opta.*;
-import org.bson.types.ObjectId;
 import org.json.XML;
-import play.libs.F;
-import play.libs.WS;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utils.OptaUtils;
+import model.opta.OptaProcessor;
 
 
 import java.io.UnsupportedEncodingException;
-import java.util.*;
 
 /**
  * Created by gnufede on 30/05/14.
@@ -62,7 +58,7 @@ public class OptaHttpController extends Controller {
         String feedType = null;
         if (request().headers().containsKey("X-Meta-Feed-Type")) {
             feedType = request().headers().get("X-Meta-Feed-Type")[0];
-            OptaUtils.processOptaDBInput(feedType, bodyAsJSON);
+            OptaProcessor.processOptaDBInput(feedType, bodyAsJSON);
         }
         return ok("Yeah, XML processed");
     }

@@ -2,7 +2,6 @@ package model;
 
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
-import utils.OptaUtils;
 
 import java.util.Date;
 /**

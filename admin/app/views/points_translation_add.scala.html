@@ -1,8 +1,9 @@
 @(pointsTranslationForm: Form[controllers.admin.PointsTranslationForm])
+@import model.opta.OptaProcessor
 
 @import helper._
 @import helper.twitterBootstrap._
-@import utils.OptaUtils.OptaEventType
+@import OptaProcessor.OptaEventType
 @import controllers.admin.routes._
 
 @if(pointsTranslationForm.hasErrors) {

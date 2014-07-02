@@ -1,4 +1,4 @@
-package utils;
+package model.opta;
 
 import com.mongodb.BasicDBObject;
 import model.Model;
@@ -18,7 +18,7 @@ import java.util.*;
 /**
  * Created by gnufede on 16/06/14.
  */
-public class OptaUtils {
+public class OptaProcessor {
 
     public static enum OptaEventType {
         PASS                    (1, "Any pass attempted from one player to another."),
@@ -114,8 +114,6 @@ public class OptaUtils {
         } catch (NullPointerException e){
             e.printStackTrace();
         }
-
-
     }
 
     public static void processEvents(LinkedHashMap games){
