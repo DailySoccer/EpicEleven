@@ -22,8 +22,11 @@ public class TemplateMatchEvent {
     public SoccerTeam soccerTeamB;
 
     public Date startDate;
+    public Date createdAt;
 
-    public TemplateMatchEvent() {}
+    public TemplateMatchEvent() {
+        createdAt = Global.currentTime();
+    }
 
     static public TemplateMatchEvent find(ObjectId templateMatchEventId) {
         return Model.templateMatchEvents().findOne("{_id : #}", templateMatchEventId).as(TemplateMatchEvent.class);

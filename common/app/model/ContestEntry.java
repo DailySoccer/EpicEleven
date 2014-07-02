@@ -8,6 +8,7 @@ import play.Logger;
 import utils.ListUtils;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class ContestEntry {
@@ -20,14 +21,19 @@ public class ContestEntry {
 
     public List<ObjectId> soccerIds;
 
+    public Date createdAt;
+
+    // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
+    public ContestEntry() {
+        createdAt = Global.currentTime();
+    }
+
     public ContestEntry(ObjectId userId, ObjectId contestId, List<ObjectId> soccerIds) {
+        this();
         this.userId = userId;
         this.contestId = contestId;
         this.soccerIds = soccerIds;
     }
-
-    // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
-    public ContestEntry() {}
 
     static public ContestEntry find(ObjectId contestEntryId) {
         return Model.contestEntries().findOne("{_id : #}", contestEntryId).as(ContestEntry.class);

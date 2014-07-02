@@ -6,6 +6,8 @@ import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import model.opta.*;
 
+import java.util.Date;
+
 public class TemplateSoccerTeam {
     @Id
     public ObjectId templateSoccerTeamId;
@@ -15,10 +17,15 @@ public class TemplateSoccerTeam {
     public String name;
     public String shortName;
 
+    public Date createdAt;
+
     // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
-    public TemplateSoccerTeam() {}
+    public TemplateSoccerTeam() {
+        createdAt = Global.currentTime();
+    }
 
     public TemplateSoccerTeam(OptaTeam optaTeam) {
+        this();
         optaTeamId = optaTeam.optaTeamId;
         name = optaTeam.name;
         shortName = optaTeam.shortName;

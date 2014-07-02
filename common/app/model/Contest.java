@@ -5,6 +5,7 @@ import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 
+import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -20,11 +21,15 @@ public class Contest {
 
     public ObjectId templateContestId;
 
+    public Date createdAt;
+
     // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
     public Contest() {
+        createdAt = Global.currentTime();
     }
 
     public Contest(TemplateContest template) {
+        this();
         templateContestId = template.templateContestId;
         name = template.name;
         maxEntries = template.maxEntries;

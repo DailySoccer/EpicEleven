@@ -23,10 +23,14 @@ public class LiveMatchEvent {
     public SoccerTeam soccerTeamB;
 
     public Date startDate;
+    public Date createdAt;
 
-    public LiveMatchEvent() {}
+    public LiveMatchEvent() {
+        createdAt = Global.currentTime();
+    }
 
     public LiveMatchEvent(TemplateMatchEvent templateMatchEvent) {
+        this();
         templateMatchEventId = templateMatchEvent.templateMatchEventId;
         optaMatchEventId = templateMatchEvent.optaMatchEventId;
         soccerTeamA = templateMatchEvent.soccerTeamA;

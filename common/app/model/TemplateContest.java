@@ -6,7 +6,6 @@ import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
 
-import java.util.Date;
 import java.util.*;
 
 public class TemplateContest {
@@ -42,7 +41,11 @@ public class TemplateContest {
 
     public List<ObjectId> templateMatchEventIds;  // We rather have it here that normalize it in a N:N table
 
-    public TemplateContest() {}
+    public Date createdAt;
+
+    public TemplateContest() {
+        createdAt = Global.currentTime();
+    }
 
     public boolean isActive() { return (state == State.ACTIVE); }
 

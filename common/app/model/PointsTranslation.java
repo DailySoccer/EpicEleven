@@ -16,6 +16,12 @@ public class PointsTranslation {
     public Date timestamp;
     public long unixtimestamp;
 
+    public Date createdAt;
+
+    public PointsTranslation() {
+        createdAt = Global.currentTime();
+    }
+
     /**
      * Creacion de una entrada de Points Translation
      */

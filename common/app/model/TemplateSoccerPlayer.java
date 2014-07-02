@@ -7,6 +7,7 @@ import org.jongo.marshall.jackson.oid.Id;
 import model.opta.*;
 import play.Logger;
 
+import java.util.Date;
 import java.util.List;
 
 public class TemplateSoccerPlayer {
@@ -22,10 +23,15 @@ public class TemplateSoccerPlayer {
 
     public ObjectId templateTeamId;
 
+    public Date createdAt;
+
     // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
-    public TemplateSoccerPlayer() {}
+    public TemplateSoccerPlayer() {
+        createdAt = Global.currentTime();
+    }
 
     public TemplateSoccerPlayer(OptaPlayer optaPlayer, ObjectId aTemplateTeamId) {
+        this();
         optaPlayerId = optaPlayer.optaPlayerId;
         name = optaPlayer.name;
         fieldPos = getFieldPostFromOpta(optaPlayer.position);
