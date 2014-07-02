@@ -60,9 +60,42 @@ public class OptaHttpController extends Controller {
             e.printStackTrace();
         }
 
+        insertXML(bodyText,
+                  request().headers().toString(),
+                  new Date(startDate).toString(),
+                  getHeader("X-Meta-Default-Filename", request().headers()),
+                  getHeader("X-Meta-Feed-Type", request().headers()),
+                  getHeader("X-Meta-Game-Id", request().headers()),
+                  getHeader("X-Meta-Competition-Id", request().headers()),
+                  getHeader("X-Meta-Season-Id", request().headers()),
+                  getHeader("X-Meta-Last-Updated", request().headers())
+                 );
+
+        Model.optaDB().insert(new OptaDB(bodyText,
+                bodyAsJSON,
+                name,
+                request().headers(),
+                startDate,
+                System.currentTimeMillis()));
+        OptaUtils.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyAsJSON);
+        return ok("Yeah, XML processed");
+    }
+
+    public static String getHeader(String key, Map<String, String[]> headers) {
+        return headers.containsKey(key)? headers.get(key)[0]: headers.get(key.toLowerCase())[0];
+    }
+
+    public static Result optaXmlTest(){
+        insertXML("<xml></xml>", "headers", new Date().toString(), "name", "feedType", "game", "competition", "season", "Sun Jun 15 02:00:53 BST 2014");
+        return ok("Yeah, XML inserted");
+    }
+
+    public static void insertXML(String xml, String headers, String timestamp, String name, String feedType,
+                                 String gameId, String competitionId, String seasonId, String lastUpdated){
         Connection connection = DB.getConnection();
-        Statement stmt = null;
-        String insertString = "INSERT INTO optadb VALUES ( "+new Date(startDate).toString()+", "+bodyText+" ) "
+        PreparedStatement stmt = null;
+        String insertString = "INSERT INTO optadb (xml, headers, created_at, name, feed_type, game_id, competition_id, season_id, last_updated) VALUES ( '"+
+                              xml+"', '"+headers+"', '"+timestamp+"', '"+name+"', '"+feedType+"', '"+gameId+"', '"+competitionId+"', '"+seasonId+"', '"+lastUpdated+"' ) ";
         try {
             stmt = connection.prepareStatement(insertString);
             boolean result = stmt.execute();
@@ -84,18 +117,5 @@ public class OptaHttpController extends Controller {
                 }
             }
         }
-
-        Model.optaDB().insert(new OptaDB(bodyText,
-                bodyAsJSON,
-                name,
-                request().headers(),
-                startDate,
-                System.currentTimeMillis()));
-        String feedType = null;
-        if (request().headers().containsKey("X-Meta-Feed-Type")) {
-            feedType = request().headers().get("X-Meta-Feed-Type")[0];
-            OptaUtils.processOptaDBInput(feedType, bodyAsJSON);
-        }
-        return ok("Yeah, XML processed");
     }
 }

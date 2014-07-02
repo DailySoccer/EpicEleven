@@ -79,8 +79,15 @@ public class Model {
             stmt = connection.createStatement();
             boolean result = stmt.execute("CREATE TABLE IF NOT EXISTS optadb (" +
                                            " id serial PRIMARY KEY, " +
+                                           " xml xml, " +
+                                           " headers text, " +
                                            " created_at timestamp, " +
-                                           " xml varchar" +
+                                           " name text, " +
+                                           " feed_type text, " +
+                                           " game_id text, " +
+                                           " competition_id text, " +
+                                           " season_id text, " +
+                                           " last_updated timestamp " +
                                            " );");
             if (result){
                 Logger.info("Base de datos OptaDB creada");
