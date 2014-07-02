@@ -92,19 +92,21 @@ public class OptaUtils {
 
 
     public static void processOptaDBInput(String feedType, BasicDBObject requestBody){
-        resetChanges();
+        if (feedType != null){
+            resetChanges();
 
-        if (feedType.equals("F9")){
-            processF9(requestBody);
-        }
-        else if (feedType.equals("F24")){
-            processEvents(requestBody);
-        }
-        else if (feedType.equals("F1")){
-            processF1(requestBody);
-        }
+            if (feedType.equals("F9")){
+                processF9(requestBody);
+            }
+            else if (feedType.equals("F24")){
+                processEvents(requestBody);
+            }
+            else if (feedType.equals("F1")){
+                processF1(requestBody);
+            }
 
-        applyChanges();
+            applyChanges();
+        }
     }
 
     public static void processEvents(BasicDBObject gamesObj){
