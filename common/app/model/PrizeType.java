@@ -13,12 +13,4 @@ public enum PrizeType {
     PrizeType(int id) {
         this.id = id;
     }
-
-    public static Map<String, String> options(){
-        LinkedHashMap<String, String> vals = new LinkedHashMap<String, String>();
-        for (PrizeType cType : PrizeType.values()) {
-            vals.put(cType.name(), cType.name());
-        }
-        return vals;
-    }
 }

@@ -2,6 +2,8 @@
 
 @import helper._
 @import helper.twitterBootstrap._
+@import model._
+@import utils.EnumUtils
 @import controllers.admin.routes._
 
 @if(templateContestForm.hasErrors) {
@@ -30,53 +32,53 @@
     <input type="hidden" name="id" value='@templateContestForm("id").value' >
 
     <div class="col-md-6">
-    @select(
-        templateContestForm("state"),
-        options(model.TemplateContest.State.options()),
-        '_label -> "State"
-    )
+        @select(
+            templateContestForm("state"),
+            options(EnumUtils.toMap(classOf[TemplateContest.State])),
+            '_label -> "State"
+        )
 
-    @inputText(
-        templateContestForm("name"),
-        '_label -> "Name",
-        'size -> 100
-    )
+        @inputText(
+            templateContestForm("name"),
+            '_label -> "Name",
+            'size -> 100
+        )
 
-    @inputText(
-        templateContestForm("postName"),
-        '_label -> "Post Name",
-        'size -> 40
-    )
+        @inputText(
+            templateContestForm("postName"),
+            '_label -> "Post Name",
+            'size -> 40
+        )
 
-    @inputText(
-        templateContestForm("minInstances"),
-        '_label -> "Min Instances",
-        'size -> 10
-    )
+        @inputText(
+            templateContestForm("minInstances"),
+            '_label -> "Min Instances",
+            'size -> 10
+        )
 
-    @inputText(
-        templateContestForm("maxEntries"),
-        '_label -> "Max Entries",
-        'size -> 10
-    )
+        @inputText(
+            templateContestForm("maxEntries"),
+            '_label -> "Max Entries",
+            'size -> 10
+        )
 
-    @inputText(
-        templateContestForm("salaryCap"),
-        '_label -> "Salary Cap",
-        'size -> 10
-    )
+        @inputText(
+            templateContestForm("salaryCap"),
+            '_label -> "Salary Cap",
+            'size -> 10
+        )
 
-    @inputText(
-        templateContestForm("entryFee"),
-        '_label -> "Entry Fee",
-        'size -> 10
-    )
+        @inputText(
+            templateContestForm("entryFee"),
+            '_label -> "Entry Fee",
+            'size -> 10
+        )
 
-    @select(
-        templateContestForm("prizeType"),
-        options(model.PrizeType.options()),
-        '_label -> "Prize Type"
-    )
+        @select(
+            templateContestForm("prizeType"),
+            options(EnumUtils.toMap(classOf[PrizeType])),
+            '_label -> "Prize Type"
+        )
     </div>
 
     <!--

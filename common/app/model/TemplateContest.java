@@ -21,14 +21,6 @@ public class TemplateContest {
         State(int id) {
             this.id = id;
         }
-
-        public static Map<String, String> options(){
-            LinkedHashMap<String, String> vals = new LinkedHashMap<String, String>();
-            for (State cType : State.values()) {
-                vals.put(cType.name(), cType.name());
-            }
-            return vals;
-        }
     }
 
     @Id
