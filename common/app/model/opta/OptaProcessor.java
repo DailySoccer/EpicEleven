@@ -32,7 +32,7 @@ public class OptaProcessor {
         applyChanges();
     }
 
-    public static void processEvents(BasicDBObject gamesObj){
+    public static void processEvents(BasicDBObject gamesObj) {
         try {
             processEvents((LinkedHashMap) gamesObj.get("Games"));
         } catch (NullPointerException e){
@@ -40,11 +40,11 @@ public class OptaProcessor {
         }
     }
 
-    public static void processEvents(LinkedHashMap games){
+    public static void processEvents(LinkedHashMap games) {
         try {
             LinkedHashMap game = (LinkedHashMap) games.get("Game");
-
             Object events = game.get("Event");
+
             resetPointsTranslationCache();
 
             if (events instanceof ArrayList) {
@@ -59,7 +59,7 @@ public class OptaProcessor {
         }
     }
 
-    public static void recalculateAllEvents(){
+    public static void recalculateAllEvents() {
         resetPointsTranslationCache();
         Iterator<OptaEvent> optaEvents = Model.optaEvents().find().as(OptaEvent.class).iterator();
         while (optaEvents.hasNext()) {
@@ -67,7 +67,7 @@ public class OptaProcessor {
         }
     }
 
-    private static void recalculateEvent(OptaEvent optaEvent){
+    private static void recalculateEvent(OptaEvent optaEvent) {
         optaEvent.points = getPoints(optaEvent.typeId, optaEvent.timestamp);
         optaEvent.pointsTranslationId = pointsTranslationTableCache.get(optaEvent.typeId);
         Model.optaEvents().update("{eventId: #, gameId: #}", optaEvent.eventId, optaEvent.gameId).upsert().with(optaEvent);
@@ -352,31 +352,46 @@ public class OptaProcessor {
     }
 
 
-    public static void processFinishedMatch(LinkedHashMap F9){
+    public static void processFinishedMatch(LinkedHashMap F9) {
         String gameId = (String) F9.get("uID");
-        ArrayList<LinkedHashMap> teamDatas =  (ArrayList<LinkedHashMap>)((LinkedHashMap)F9.get("MatchData")).get("TeamData");
-        for (LinkedHashMap teamData: teamDatas){
-            for (LinkedHashMap teamStat: (ArrayList<LinkedHashMap>) teamData.get("Stat")){
-                if (teamStat.get("Type").equals("goals_conceded")) {
-                    if ((int) teamStat.get("content") == 0) {
-                        processCleanSheet(F9, gameId, teamData);
-                    }else {
-                        processGoalsAgainst(F9, gameId, teamData);
+
+        ArrayList teamDatas = (ArrayList)((LinkedHashMap)F9.get("MatchData")).get("TeamData");
+
+        for (Object teamData : teamDatas) {
+            LinkedHashMap teamDataAsHashMap = ((LinkedHashMap) teamData);
+
+            ArrayList teamStats = (ArrayList)teamDataAsHashMap.get("Stat");
+
+            for (Object teamStat : teamStats) {
+                LinkedHashMap teamStatAsHashMap = ((LinkedHashMap) teamStat);
+
+                if (teamStatAsHashMap.get("Type").equals("goals_conceded")) {
+                    if ((int) teamStatAsHashMap.get("content") == 0) {
+                        processCleanSheet(F9, gameId, teamDataAsHashMap);
+                    } else {
+                        processGoalsAgainst(F9, gameId, teamDataAsHashMap);
                     }
                 }
             }
         }
+
         registerChange(gameId);
     }
 
     public static void processGoalsAgainst(LinkedHashMap F9, String gameId, LinkedHashMap teamData) {
-        ArrayList<LinkedHashMap> matchPlayers = (ArrayList) ((LinkedHashMap) teamData.get("PlayerLineUp")).
-                                                                                      get("MatchPlayer");
-        for (LinkedHashMap matchPlayer : matchPlayers) {
-            if (matchPlayer.get("Position").equals("Goalkeeper") || matchPlayer.get("Position").equals("Defender")) {
-                for (LinkedHashMap stat : (ArrayList<LinkedHashMap>) matchPlayer.get("Stat")) {
-                    if (stat.get("Type").equals("goals_conceded") && ((int) stat.get("content") > 0)) {
-                        createEvent(F9, gameId, matchPlayer, 2001, 20001, (int) stat.get("content"));
+
+        ArrayList matchPlayers = (ArrayList) ((LinkedHashMap) teamData.get("PlayerLineUp")).get("MatchPlayer");
+
+        for (Object matchPlayer : matchPlayers) {
+            LinkedHashMap matchPlayerAsHashMap = (LinkedHashMap)matchPlayer;
+
+            if (matchPlayerAsHashMap.get("Position").equals("Goalkeeper") || matchPlayerAsHashMap.get("Position").equals("Defender")) {
+                ArrayList stats = (ArrayList) matchPlayerAsHashMap.get("Stat");
+                for (Object stat : stats) {
+                    LinkedHashMap statAsHashMap = (LinkedHashMap)stat;
+
+                    if (statAsHashMap.get("Type").equals("goals_conceded") && ((int) statAsHashMap.get("content") > 0)) {
+                        createEvent(F9, gameId, matchPlayerAsHashMap, 2001, 20001, (int) statAsHashMap.get("content"));
                     }
                 }
             }
@@ -384,13 +399,19 @@ public class OptaProcessor {
     }
 
     public static void processCleanSheet(LinkedHashMap F9, String gameId, LinkedHashMap teamData) {
-        ArrayList<LinkedHashMap> matchPlayers = (ArrayList) ((LinkedHashMap) teamData.get("PlayerLineUp")).
-                                                                                      get("MatchPlayer");
-        for (LinkedHashMap matchPlayer : matchPlayers) {
-            if (matchPlayer.get("Position").equals("Goalkeeper") || matchPlayer.get("Position").equals("Defender")) {
-                for (LinkedHashMap stat : (ArrayList<LinkedHashMap>) matchPlayer.get("Stat")) {
-                    if (stat.get("Type").equals("mins_played") && ((int) stat.get("content") > 59)) {
-                        createEvent(F9, gameId, matchPlayer, 2000, 20000, 1);
+
+        ArrayList matchPlayers = (ArrayList) ((LinkedHashMap) teamData.get("PlayerLineUp")).get("MatchPlayer");
+
+        for (Object matchPlayer : matchPlayers) {
+            LinkedHashMap matchPlayerAsHashMap = (LinkedHashMap)matchPlayer;
+
+            if (matchPlayerAsHashMap.get("Position").equals("Goalkeeper") || matchPlayerAsHashMap.get("Position").equals("Defender")) {
+                ArrayList stats = (ArrayList) matchPlayerAsHashMap.get("Stat");
+                for (Object stat : stats) {
+                    LinkedHashMap statAsHashMap = (LinkedHashMap)stat;
+
+                    if (statAsHashMap.get("Type").equals("mins_played") && ((int) statAsHashMap.get("content") > 59)) {
+                        createEvent(F9, gameId, matchPlayerAsHashMap, 2000, 20000, 1);
                     }
                 }
             }
@@ -454,8 +475,8 @@ public class OptaProcessor {
     }
 
     public static void resetCache() {
-        optaEventsCache = new HashMap<String, HashMap>();
-        optaMatchDataCache = new HashMap<Integer, HashMap>();
+        optaEventsCache = new HashMap<String, HashMap<Integer, Date>>();
+        optaMatchDataCache = new HashMap<Integer, HashMap<String, Date>>();
 
         resetPointsTranslationCache();
     }
@@ -465,9 +486,9 @@ public class OptaProcessor {
         pointsTranslationTableCache = new HashMap<Integer, ObjectId>();
     }
 
-    private static HashMap getOptaEventsCache(String gameId) {
+    private static HashMap<Integer, Date> getOptaEventsCache(String gameId) {
         if (optaEventsCache == null) {
-            optaEventsCache = new HashMap<String, HashMap>();
+            optaEventsCache = new HashMap<String, HashMap<Integer, Date>>();
         }
         if (!optaEventsCache.containsKey(gameId)) {
             optaEventsCache.put(gameId, new HashMap<Integer, Date>());
@@ -475,14 +496,14 @@ public class OptaProcessor {
         return optaEventsCache.get(gameId);
     }
 
-    private static HashMap getOptaMatchDataCache(int key) {
-        if (optaMatchDataCache == null){
-            optaMatchDataCache = new HashMap<Integer, HashMap>();
+    private static HashMap<String, Date> getOptaMatchDataCache(int competitionId) {
+        if (optaMatchDataCache == null) {
+            optaMatchDataCache = new HashMap<Integer, HashMap<String, Date>>();
         }
-        if (!optaMatchDataCache.containsKey(key)){
-            optaMatchDataCache.put(key, new HashMap<String, Date>());
+        if (!optaMatchDataCache.containsKey(competitionId)) {
+            optaMatchDataCache.put(competitionId, new HashMap<String, Date>());
         }
-        return optaMatchDataCache.get(key);
+        return optaMatchDataCache.get(competitionId);
     }
 
     private static void resetChanges() {
@@ -537,8 +558,7 @@ public class OptaProcessor {
     private static HashMap<Integer, Integer> pointsTranslationCache;
     private static HashMap<Integer, ObjectId> pointsTranslationTableCache;
 
-    private static HashMap<String, HashMap> optaEventsCache;
-
-    private static HashMap<Integer, HashMap> optaMatchDataCache;
+    private static HashMap<String, HashMap<Integer, Date>> optaEventsCache;
+    private static HashMap<Integer, HashMap<String, Date>> optaMatchDataCache;
 
 }
