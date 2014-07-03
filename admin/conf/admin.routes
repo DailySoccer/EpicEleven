@@ -73,9 +73,7 @@ GET         /opta_events/update                                controllers.admin
 GET         /simulator                                         controllers.admin.SimulatorController.index()
 
 GET         /start_simulator                                   controllers.admin.SimulatorController.start()
-GET         /launch_simulator                                  controllers.admin.SimulatorController.launch()
-GET         /stop_simulator                                    controllers.admin.SimulatorController.stop()
+GET         /reset_simulator                                   controllers.admin.SimulatorController.reset()
 GET         /simulator_next                                    controllers.admin.SimulatorController.next()
 GET         /pause_simulator                                   controllers.admin.SimulatorController.pause()
-GET         /resume_simulator                                  controllers.admin.SimulatorController.resume()
 POST        /goto_simulator                                    controllers.admin.SimulatorController.gotoNextPause()

@@ -4,6 +4,7 @@ import actions.AllowCors;
 import com.mongodb.*;
 import com.mongodb.util.JSON;
 import model.Model;
+import model.ModelCoreLoop;
 import model.opta.*;
 import org.json.XML;
 import play.mvc.BodyParser;
@@ -13,6 +14,7 @@ import model.opta.OptaProcessor;
 
 
 import java.io.UnsupportedEncodingException;
+import java.util.HashSet;
 
 /**
  * Created by gnufede on 30/05/14.
@@ -25,11 +27,14 @@ public class OptaHttpController extends Controller {
         String bodyText = request().body().asText();
         try {
             bodyText = new String(bodyText.getBytes("ISO-8859-1"));
-        } catch (UnsupportedEncodingException e) {
+        }
+        catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
+
         BasicDBObject bodyAsJSON = (BasicDBObject) JSON.parse("{}");
         String name = "default-filename";
+
         try {
             if (request().headers().containsKey("x-meta-default-filename")){
                 name = request().headers().get("x-meta-default-filename")[0];
@@ -37,28 +42,30 @@ public class OptaHttpController extends Controller {
             else if (request().headers().containsKey("X-Meta-Default-Filename")){
                 name = request().headers().get("X-Meta-Default-Filename")[0];
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
+
         try {
             bodyText = bodyText.substring(bodyText.indexOf('<'));
             // No hay manera de pasar de JSON a BSON directamente al parecer, sin pasar por String,
             // o por un hashmap (que tampoco parece trivial)
             // http://stackoverflow.com/questions/5699323/using-json-with-mongodb
             bodyAsJSON = (BasicDBObject) JSON.parse(XML.toJSONObject(bodyText).toString());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
-        Model.optaDB().insert(new OptaDB(bodyText,
-                bodyAsJSON,
-                name,
-                request().headers(),
-                startDate,
-                System.currentTimeMillis()));
-        String feedType = null;
+
+        Model.optaDB().insert(new OptaDB(bodyText, bodyAsJSON, name, request().headers(), startDate, System.currentTimeMillis()));
+
         if (request().headers().containsKey("X-Meta-Feed-Type")) {
-            feedType = request().headers().get("X-Meta-Feed-Type")[0];
-            OptaProcessor.processOptaDBInput(feedType, bodyAsJSON);
+            String feedType = request().headers().get("X-Meta-Feed-Type")[0];
+
+            OptaProcessor theProcessor = new OptaProcessor();
+            HashSet<String> dirtyMatchEvents = theProcessor.processOptaDBInput(feedType, bodyAsJSON);
+            ModelCoreLoop.onOptaMatchEventsChanged(dirtyMatchEvents);
         }
         return ok("Yeah, XML processed");
     }

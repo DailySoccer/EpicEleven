@@ -16,8 +16,10 @@ import java.util.*;
  */
 public class OptaProcessor {
 
-    public static void processOptaDBInput(String feedType, BasicDBObject requestBody){
-        resetChanges();
+    // Retorna los Ids de opta (gameIds, optaMachEventId) de los partidos que han cambiado
+    public HashSet<String> processOptaDBInput(String feedType, BasicDBObject requestBody) {
+
+        dirtyMatchEvents = new HashSet<>();
 
         if (feedType.equals("F9")){
             processF9(requestBody);
@@ -29,10 +31,10 @@ public class OptaProcessor {
             processF1(requestBody);
         }
 
-        applyChanges();
+        return dirtyMatchEvents;
     }
 
-    private static void processEvents(BasicDBObject gamesObj) {
+    private void processEvents(BasicDBObject gamesObj) {
         try {
             resetPointsTranslationCache();
 
@@ -51,7 +53,7 @@ public class OptaProcessor {
         }
     }
 
-    private static void processEvent(LinkedHashMap event, LinkedHashMap game) {
+    private void processEvent(LinkedHashMap event, LinkedHashMap game) {
 
         Date timestamp;
         if (event.containsKey("last_modified")) {
@@ -68,7 +70,8 @@ public class OptaProcessor {
             eventsCache.put(eventId, timestamp);
         }
     }
-    private static void updateOrInsertEvent(LinkedHashMap event, LinkedHashMap game) {
+
+    private void updateOrInsertEvent(LinkedHashMap event, LinkedHashMap game) {
         OptaEvent myEvent = new OptaEvent();
         myEvent.optaEventId = new ObjectId();
         myEvent.gameId = game.get("id").toString();
@@ -164,11 +167,11 @@ public class OptaProcessor {
         myEvent.pointsTranslationId = pointsTranslationTableCache.get(myEvent.typeId);
 
         Model.optaEvents().update("{eventId: #, gameId: #}", myEvent.eventId, myEvent.gameId).upsert().with(myEvent);
-        registerChange(myEvent.gameId);
+        dirtyMatchEvents.add(myEvent.gameId);
     }
 
 
-    public static void recalculateAllEvents() {
+    public void recalculateAllEvents() {
         resetPointsTranslationCache();
         Iterator<OptaEvent> optaEvents = Model.optaEvents().find().as(OptaEvent.class).iterator();
         while (optaEvents.hasNext()) {
@@ -176,24 +179,23 @@ public class OptaProcessor {
         }
     }
 
-    private static void recalculateEvent(OptaEvent optaEvent) {
+    private void recalculateEvent(OptaEvent optaEvent) {
         optaEvent.points = getPoints(optaEvent.typeId, optaEvent.timestamp);
         optaEvent.pointsTranslationId = pointsTranslationTableCache.get(optaEvent.typeId);
         Model.optaEvents().update("{eventId: #, gameId: #}", optaEvent.eventId, optaEvent.gameId).upsert().with(optaEvent);
     }
 
 
-    private static int getPoints(int typeId, Date timestamp) {
+    private int getPoints(int typeId, Date timestamp) {
         if (!pointsTranslationCache.containsKey(typeId)) {
             getPointsTranslation(typeId, timestamp);
         }
         return pointsTranslationCache.get(typeId);
     }
 
-    private static PointsTranslation getPointsTranslation(int typeId, Date timestamp){
+    private PointsTranslation getPointsTranslation(int typeId, Date timestamp){
         Iterable<PointsTranslation> pointsTranslations = Model.pointsTranslation().
-                find("{eventTypeId: #, timestamp: {$lte: #}}",
-                        typeId, timestamp).sort("{timestamp: -1}").as(PointsTranslation.class);
+                find("{eventTypeId: #, timestamp: {$lte: #}}", typeId, timestamp).sort("{timestamp: -1}").as(PointsTranslation.class);
 
         PointsTranslation pointsTranslation = null;
         if (pointsTranslations.iterator().hasNext()){
@@ -207,7 +209,7 @@ public class OptaProcessor {
         return pointsTranslation;
     }
 
-    private static Date parseDate(String timestamp) {
+    private Date parseDate(String timestamp) {
         String dateConfig = "";
         SimpleDateFormat dateFormat;
         if (timestamp.indexOf('-') > 0) {
@@ -236,7 +238,7 @@ public class OptaProcessor {
         return myDate;
     }
 
-    private static void processF1(BasicDBObject f1) {
+    private void processF1(BasicDBObject f1) {
         try {
             LinkedHashMap myF1 = (LinkedHashMap) ((LinkedHashMap) f1.get("SoccerFeed")).get("SoccerDocument");
             ArrayList matches = (ArrayList) myF1.get("MatchData");
@@ -253,7 +255,7 @@ public class OptaProcessor {
         }
     }
 
-    private static void processMatchData(LinkedHashMap matchObject, int competitionId, LinkedHashMap myF1) {
+    private void processMatchData(LinkedHashMap matchObject, int competitionId, LinkedHashMap myF1) {
 
         HashMap<String, Date> optaMatchDatas = getOptaMatchDataCache(competitionId);
         String matchId = (String) matchObject.get("uID");
@@ -266,7 +268,7 @@ public class OptaProcessor {
         }
     }
 
-    private static void updateOrInsertMatchData(LinkedHashMap myF1, LinkedHashMap matchObject) {
+    private void updateOrInsertMatchData(LinkedHashMap myF1, LinkedHashMap matchObject) {
 
         LinkedHashMap matchInfo = (LinkedHashMap) matchObject.get("MatchInfo");
 
@@ -293,7 +295,7 @@ public class OptaProcessor {
         Model.optaMatchEvents().update("{optaMatchEventId: #}", optaMatchEvent.optaMatchEventId).upsert().with(optaMatchEvent);
     }
 
-    private static void processF9(BasicDBObject f9) {
+    private void processF9(BasicDBObject f9) {
 
         try {
             LinkedHashMap myF9 = (LinkedHashMap)((LinkedHashMap) f9.get("SoccerFeed")).get("SoccerDocument");
@@ -335,7 +337,7 @@ public class OptaProcessor {
         }
     }
 
-    private static ArrayList getTeamsFromF9(LinkedHashMap myF9) {
+    private ArrayList getTeamsFromF9(LinkedHashMap myF9) {
         ArrayList teams = new ArrayList();
 
         if (myF9.containsKey("Team")) {
@@ -351,7 +353,7 @@ public class OptaProcessor {
     }
 
 
-    private static void processFinishedMatch(LinkedHashMap F9) {
+    private void processFinishedMatch(LinkedHashMap F9) {
         String gameId = (String) F9.get("uID");
 
         ArrayList teamDatas = (ArrayList)((LinkedHashMap)F9.get("MatchData")).get("TeamData");
@@ -374,10 +376,10 @@ public class OptaProcessor {
             }
         }
 
-        registerChange(gameId);
+        dirtyMatchEvents.add(gameId);
     }
 
-    private static void processGoalsAgainst(LinkedHashMap F9, String gameId, LinkedHashMap teamData) {
+    private void processGoalsAgainst(LinkedHashMap F9, String gameId, LinkedHashMap teamData) {
 
         ArrayList matchPlayers = (ArrayList) ((LinkedHashMap) teamData.get("PlayerLineUp")).get("MatchPlayer");
 
@@ -397,7 +399,7 @@ public class OptaProcessor {
         }
     }
 
-    private static void processCleanSheet(LinkedHashMap F9, String gameId, LinkedHashMap teamData) {
+    private void processCleanSheet(LinkedHashMap F9, String gameId, LinkedHashMap teamData) {
 
         ArrayList matchPlayers = (ArrayList) ((LinkedHashMap) teamData.get("PlayerLineUp")).get("MatchPlayer");
 
@@ -417,24 +419,26 @@ public class OptaProcessor {
         }
     }
 
-    private static void createEvent(LinkedHashMap F9, String gameId, LinkedHashMap matchPlayer,
-                                   int typeId, int eventId, int times) {
+    private void createEvent(LinkedHashMap F9, String gameId, LinkedHashMap matchPlayer, int typeId, int eventId, int times) {
+
         String playerId = (String) matchPlayer.get("PlayerRef");
         playerId = playerId.startsWith("p")? playerId.substring(1): playerId;
+
         String competitionId = (String)((LinkedHashMap)F9.get("Competition")).get("uID");
         competitionId = competitionId.startsWith("c")? competitionId.substring(1): competitionId;
+
         gameId = gameId.startsWith("f")? gameId.substring(1): gameId;
+
         Date timestamp = parseDate((String) ((LinkedHashMap) ((LinkedHashMap) F9.get("MatchData")).get("MatchInfo")).get("TimeStamp"));
         long unixtimestamp = timestamp.getTime();
 
         Model.optaEvents().remove("{typeId: #, eventId: #, optaPlayerId: #, gameId: #, competitionId: #}",
                 typeId, eventId, playerId, gameId, competitionId);
 
-
         OptaEvent[] events = new OptaEvent[times];
-        OptaEvent myEvent;
+
         for (int i = 0; i < times; i++) {
-            myEvent = new OptaEvent();
+            OptaEvent myEvent = new OptaEvent();
             myEvent.typeId = typeId;
             myEvent.eventId = eventId;
             myEvent.optaPlayerId = playerId;
@@ -452,7 +456,7 @@ public class OptaProcessor {
         Model.optaEvents().insert((Object[]) events);
     }
 
-    private static OptaPlayer createPlayer(LinkedHashMap playerObject, LinkedHashMap teamObject){
+    private OptaPlayer createPlayer(LinkedHashMap playerObject, LinkedHashMap teamObject){
         OptaPlayer myPlayer = new OptaPlayer();
 
         if (playerObject.containsKey("firstname")){
@@ -462,7 +466,8 @@ public class OptaProcessor {
             myPlayer.position = (String) playerObject.get("position");
             myPlayer.teamId = (String) teamObject.get("id");
             myPlayer.teamName = (String) teamObject.get("name");
-        }else if (playerObject.containsKey("Name")){
+        }
+        else if (playerObject.containsKey("Name")){
             myPlayer.optaPlayerId = (String) playerObject.get("uID");
             myPlayer.name = (String) playerObject.get("Name");
             myPlayer.position = (String) playerObject.get("Position");
@@ -473,19 +478,12 @@ public class OptaProcessor {
         return myPlayer;
     }
 
-    public static void resetCache() {
-        optaEventsCache = new HashMap<String, HashMap<Integer, Date>>();
-        optaMatchDataCache = new HashMap<Integer, HashMap<String, Date>>();
-
-        resetPointsTranslationCache();
-    }
-
-    private static void resetPointsTranslationCache() {
+    private void resetPointsTranslationCache() {
         pointsTranslationCache = new HashMap<Integer, Integer>();
         pointsTranslationTableCache = new HashMap<Integer, ObjectId>();
     }
 
-    private static HashMap<Integer, Date> getOptaEventsCache(String gameId) {
+    private HashMap<Integer, Date> getOptaEventsCache(String gameId) {
         if (optaEventsCache == null) {
             optaEventsCache = new HashMap<String, HashMap<Integer, Date>>();
         }
@@ -495,7 +493,7 @@ public class OptaProcessor {
         return optaEventsCache.get(gameId);
     }
 
-    private static HashMap<String, Date> getOptaMatchDataCache(int competitionId) {
+    private HashMap<String, Date> getOptaMatchDataCache(int competitionId) {
         if (optaMatchDataCache == null) {
             optaMatchDataCache = new HashMap<Integer, HashMap<String, Date>>();
         }
@@ -505,59 +503,12 @@ public class OptaProcessor {
         return optaMatchDataCache.get(competitionId);
     }
 
-    private static void resetChanges() {
-        dirtyMatchEvents = new HashSet<>();
-    }
+    private HashSet<String> dirtyMatchEvents;
 
-    private static void registerChange(String gameId) {
-        dirtyMatchEvents.add(gameId);
-    }
+    private HashMap<Integer, Integer> pointsTranslationCache;
+    private HashMap<Integer, ObjectId> pointsTranslationTableCache;
 
-    private static void applyChanges() {
-        if (dirtyMatchEvents.isEmpty())
-            return;
-
-        for(String optaGameId : dirtyMatchEvents) {
-            // Logger.info("optaGameId in gameId({})", optaGameId);
-
-            // Buscamos todos los template Match Events asociados con ese partido de Opta
-            Iterable<TemplateMatchEvent> templateMatchEvents = Model.templateMatchEvents().find("{optaMatchEventId : #}", "g" + optaGameId).as(TemplateMatchEvent.class);
-            while(templateMatchEvents.iterator().hasNext()) {
-                TemplateMatchEvent templateMatchEvent = templateMatchEvents.iterator().next();
-
-                // Existe la version "live" del match event?
-                LiveMatchEvent liveMatchEvent = LiveMatchEvent.find(templateMatchEvent);
-                if (liveMatchEvent == null) {
-                    // Deberia existir? (true si el partido ha comenzado)
-                    if (templateMatchEvent.isStarted()) {
-                        liveMatchEvent = LiveMatchEvent.create(templateMatchEvent);
-                    }
-                }
-
-                if (liveMatchEvent != null) {
-                    LiveMatchEvent.updateLiveFantasyPoints(liveMatchEvent);
-
-                    // Logger.info("fantasyPoints in liveMatchEvent({})", find.liveMatchEventId);
-
-                    if (templateMatchEvent.isFinished()) {
-                        Model.actionWhenMatchEventIsFinished(templateMatchEvent);
-                    }
-                    else {
-                        Model.actionWhenMatchEventIsStarted(templateMatchEvent);
-                    }
-                }
-
-                // Logger.info("optaGameId in templateMatchEvent({})", find.templateMatchEventId);
-            }
-        }
-    }
-
-    private static HashSet<String> dirtyMatchEvents;
-
-    private static HashMap<Integer, Integer> pointsTranslationCache;
-    private static HashMap<Integer, ObjectId> pointsTranslationTableCache;
-
-    private static HashMap<String, HashMap<Integer, Date>> optaEventsCache;
-    private static HashMap<Integer, HashMap<String, Date>> optaMatchDataCache;
+    private HashMap<String, HashMap<Integer, Date>> optaEventsCache;
+    private HashMap<Integer, HashMap<String, Date>> optaMatchDataCache;
 
 }
