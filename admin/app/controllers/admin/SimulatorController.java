@@ -18,7 +18,7 @@ public class SimulatorController extends Controller {
 
     public static Result start() {
 
-        boolean wasResumed = OptaSimulator.start(0L, System.currentTimeMillis(), null);
+        boolean wasResumed = OptaSimulator.start();
 
         if (wasResumed) {
             FlashMessage.success("Simulator resumed");
@@ -36,17 +36,9 @@ public class SimulatorController extends Controller {
         return ok(views.html.simulator.render());
     }
 
-    public static Result next() {
-        /*
-        if (OptaSimulator.existsInstance()) {
-            OptaSimulator mySimulator = OptaSimulator.getInstance();
-            mySimulator.next();
-            FlashMessage.success("Simulator resumed");
-        } else {
-            FlashMessage.danger("Simulator not running");
-        }
-        */
-
+    public static Result nextStep() {
+        OptaSimulator.nextStep();
+        FlashMessage.success("Simulator next step");
         return ok(views.html.simulator.render());
     }
 
@@ -56,18 +48,17 @@ public class SimulatorController extends Controller {
         public Date date;
     }
 
-    public static Result gotoNextPause(){
-        /*
+    public static Result gotoNextPause() {
+
         Form<GotoSimParams> gotoForm = form(GotoSimParams.class).bindFromRequest();
-        if (!gotoForm.hasErrors()){
+
+        if (!gotoForm.hasErrors()) {
             GotoSimParams params = gotoForm.get();
-            OptaSimulator mySimulator = OptaSimulator.getInstance();
-            mySimulator.addPause(params.date);
-            FlashMessage.success("Simulator going");
+            OptaSimulator.addPause(params.date);
+            FlashMessage.success("Pause added. Press play to continue.");
         } else {
             FlashMessage.danger("Wrong button pressed");
         }
-        */
 
         return ok(views.html.simulator.render());
     }

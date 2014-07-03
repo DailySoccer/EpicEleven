@@ -29,7 +29,7 @@ public class OptaSimulator implements Runnable {
     private OptaSimulator(long initialDate, long endDate, boolean fast, boolean resetOpta, String competitionId) {
         this.pauses = new TreeSet<Date>();
         this.stopLoop = false;
-        this.pauseLoop = false;
+        this.pauseLoop = true;
         this.initialDate = initialDate;
         this.endDate = endDate;
         this.lastParsedDate = 0L;
@@ -67,20 +67,30 @@ public class OptaSimulator implements Runnable {
         if (resetOpta) {
             Model.cleanOpta();
         }
-
-        startThread();
     }
 
-    public static boolean start(long initialDate, long endDate, String competitionId) {
+    public static boolean start() {
 
-        if (instance != null) {
-            OptaSimulator.resume();
-            return true;
+        boolean wasResumed = true;
+
+        // Es la primera vez q lo creamos?
+        if (instance == null) {
+            instance = new OptaSimulator(0L, System.currentTimeMillis(), false, true, null);
+            wasResumed = false;
         }
-        else {
-            instance = new OptaSimulator(initialDate, endDate, false, true, competitionId);
-            return false;
+
+        instance.pauseLoop = false;
+        instance.startThread();
+
+        return wasResumed;
+    }
+
+
+    static public void nextStep() {
+        if (instance == null) {
+            instance = new OptaSimulator(0L, System.currentTimeMillis(), false, true, null);
         }
+        instance.next();
     }
 
     static public void reset() {
@@ -91,7 +101,14 @@ public class OptaSimulator implements Runnable {
         }
     }
 
-    public static boolean isPaused () {
+    static public void addPause(Date date) {
+        if (instance == null) {
+            instance = new OptaSimulator(0L, System.currentTimeMillis(), false, true, null);
+        }
+        instance.pauses.add(date);
+    }
+
+    public static boolean isPaused() {
         return instance == null || instance.pauseLoop;
     }
 
@@ -111,29 +128,25 @@ public class OptaSimulator implements Runnable {
     }
 
     @Override
-    public void run () {
+    public void run() {
         this.stopLoop = false;
         while (!stopLoop && (pauseLoop || next())) {
             checkDate();
         }
     }
 
-    public void addPause(Date date) {
-        pauses.add(date);
-    }
-
-    public void checkDate() {
-        if (!pauses.isEmpty() && lastParsedDate >= pauses.first().getTime()){
+    private void checkDate() {
+        if (!pauses.isEmpty() && lastParsedDate >= pauses.first().getTime()) {
             pauseLoop = true;
             pauses.remove(pauses.first());
         }
     }
 
-    public boolean isBefore (long date) {
+    private boolean isBefore(long date) {
         return lastParsedDate < date;
     }
 
-    private boolean next () {
+    private boolean next() {
         OptaDB nextDoc = optaIterator.hasNext()? optaIterator.next(): null;
 
         if (nextDoc != null) {

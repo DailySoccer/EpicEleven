@@ -29,7 +29,7 @@ import java.util.Date;
 @AllowCors.Origin
 public class OptaHttpController extends Controller {
     @BodyParser.Of(value = BodyParser.TolerantText.class, maxLength = 4 * 1024 * 1024)
-    public static Result optaXmlInput(){
+    public static Result optaXmlInput() {
 
         long startDate = System.currentTimeMillis();
         String bodyText = request().body().asText();

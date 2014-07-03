@@ -19,11 +19,11 @@
             </a>
         }
         @if(OptaSimulator.isPaused()){
-            <a class="btn btn-primary" href="@SimulatorController.next">
+            <a class="btn btn-primary" href="@SimulatorController.nextStep">
             <i class="glyphicon glyphicon-step-forward"></i> Next step
             </a>
         } else {
-            <a class="btn btn-primary disabled" href="@SimulatorController.next">
+            <a class="btn btn-primary disabled" href="@SimulatorController.nextStep">
                 <i class="glyphicon glyphicon-step-forward"></i> Next step
             </a>
         }
