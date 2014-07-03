@@ -68,19 +68,6 @@ public class ContestController extends Controller {
         return new ReturnHelper(contest).toResult();
     }
 
-    /*
-     * Devuelve la lista de partidos (match events) activos (referenciados por los contests activos)
-     */
-    public static Result getActiveMatchEvents() {
-        // User theUser = (User)ctx().args.get("User");
-
-        Date startDate = new DateTime(2014, 10, 14, 12, 0, DateTimeZone.UTC).toDate();
-        return new ReturnHelper(Model.templateMatchEvents().find(
-            //"{startDate: {$lte : #}}", startDate
-            "{startDate: #}", startDate
-        ).as(TemplateMatchEvent.class)).toResult();
-    }
-
     // https://github.com/playframework/playframework/tree/master/samples/java/forms
     public static class ContestEntryParams {
         @Constraints.Required
