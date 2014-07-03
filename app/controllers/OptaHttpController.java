@@ -127,11 +127,7 @@ public class OptaHttpController extends Controller {
         Connection connection = DB.getConnection();
 
         for (OptaDB document: allOptaDBs) {
-            if (getHeader("X-Meta-Feed-Type", document.headers) != null &&
-                getHeader("X-Meta-Competition-Id", document.headers) != null &&
-                getHeader("X-Meta-Season-Id", document.headers) != null &&
-                getHeader("X-Meta-Last-Updated", document.headers) != null
-                ) {
+            if (getHeader("X-Meta-Feed-Type", document.headers) != null) {
 
                 insertXML(connection, document.xml, getHeadersString(document.headers), new Date(document.startDate), document.name,
                         getHeader("X-Meta-Feed-Type", document.headers), getHeader("X-Meta-Game-Id", document.headers),
