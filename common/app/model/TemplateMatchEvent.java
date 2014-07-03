@@ -17,6 +17,8 @@ public class TemplateMatchEvent {
     public ObjectId templateMatchEventId;
 
     public String optaMatchEventId;
+    public String optaCompetitionId;
+    public String optaSeasonId;
 
     public SoccerTeam soccerTeamA;
     public SoccerTeam soccerTeamB;
@@ -107,19 +109,21 @@ public class TemplateMatchEvent {
         return create(null, teamA, teamB, startDate);
     }
 
-    static public TemplateMatchEvent create(String optaMatchEventId, TemplateSoccerTeam teamA, TemplateSoccerTeam teamB, Date startDate) {
+    static public TemplateMatchEvent create(OptaMatchEvent optaMatchEvent, TemplateSoccerTeam teamA, TemplateSoccerTeam teamB, Date startDate) {
         Logger.info("Template MatchEvent: {} vs {} ({})", teamA.name, teamB.name, startDate);
 
         TemplateMatchEvent templateMatchEvent = new TemplateMatchEvent();
         templateMatchEvent.startDate = startDate;
-        templateMatchEvent.optaMatchEventId = optaMatchEventId;
-        templateMatchEvent.soccerTeamA = SoccerTeam.create(teamA);
-        templateMatchEvent.soccerTeamB = SoccerTeam.create(teamB);
+        templateMatchEvent.optaMatchEventId = optaMatchEvent.optaMatchEventId;
+        templateMatchEvent.optaCompetitionId = optaMatchEvent.competitionId;
+        templateMatchEvent.optaSeasonId = optaMatchEvent.seasonId;
+        templateMatchEvent.soccerTeamA = SoccerTeam.create(templateMatchEvent, teamA);
+        templateMatchEvent.soccerTeamB = SoccerTeam.create(templateMatchEvent, teamB);
 
         // TODO: Eliminar condicion (optaMatchEventId == null)
-        if (optaMatchEventId != null) {
+        if (optaMatchEvent != null) {
             // Insertar o actualizar
-            Model.templateMatchEvents().update("{optaMatchEventId: #}", optaMatchEventId).upsert().with(templateMatchEvent);
+            Model.templateMatchEvents().update("{optaMatchEventId: #}", optaMatchEvent.optaMatchEventId).upsert().with(templateMatchEvent);
         }
         else {
             Model.templateMatchEvents().insert(templateMatchEvent);
@@ -137,7 +141,7 @@ public class TemplateMatchEvent {
         TemplateSoccerTeam teamA = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.homeTeamId).as(TemplateSoccerTeam.class);
         TemplateSoccerTeam teamB = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.awayTeamId).as(TemplateSoccerTeam.class);
         if (teamA != null && teamB != null) {
-            create(optaMatchEvent.optaMatchEventId, teamA, teamB, optaMatchEvent.matchDate);
+            create(optaMatchEvent, teamA, teamB, optaMatchEvent.matchDate);
 
             Model.optaMatchEvents().update("{id: #}", optaMatchEvent.optaMatchEventId).with("{$set: {dirty: false}}");
         }
