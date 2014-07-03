@@ -16,6 +16,10 @@
 
 <div class="col-md-6">
     @if(soccers_new != null && !soccers_new.isEmpty) {
+
+    <div><a href="@ImportController.importAllNewSoccers"><button name="ok" type="submit" class="btn btn-success">Import New (@soccers_new.size)</button></a></div>
+    <br/>
+
     <table class="table table-striped datatable">
         <thead>
         <caption class="bg-primary">NEW</caption>
@@ -41,13 +45,15 @@
         </tbody>
     </table>
 
-    <div><a href="@ImportController.importAllNewSoccers"><button name="ok" type="submit" class="btn btn-success">Import New (@soccers_new.size)</button></a></div>
-    <br/>
     }
 </div>
 
 <div class="col-md-6">
     @if(soccers_changed != null && !soccers_changed.isEmpty) {
+
+    <div><a href="@ImportController.importAllChangedSoccers"><button name="ok" type="submit" class="btn btn-success">Import Changed (@soccers_changed.size)</button></a></div>
+    <br/>
+
     <table class="table table-striped datatable">
         <thead>
         <caption class="bg-info">CHANGED</caption>
@@ -73,8 +79,6 @@
         </tbody>
     </table>
 
-    <div><a href="@ImportController.importAllChangedSoccers"><button name="ok" type="submit" class="btn btn-success">Import Changed (@soccers_changed.size)</button></a></div>
-    <br/>
     }
 </div>
 
