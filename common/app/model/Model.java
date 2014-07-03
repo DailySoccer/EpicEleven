@@ -16,7 +16,6 @@ import java.sql.Statement;
 import java.util.List;
 
 import model.opta.*;
-import utils.OptaUtils;
 
 import javax.sql.DataSource;
 import java.util.Date;
@@ -209,7 +208,6 @@ public class Model {
     }
 
     static public void cleanOpta() {
-        OptaUtils.resetCache();
 
         optaEvents().remove();
         optaPlayers().remove();
@@ -224,14 +222,7 @@ public class Model {
                 .multi()
                 .with("{$set: {state: \"ACTIVE\"}}");
 
-        instantiateContests();
-    }
-
-    public static void instantiateContests() {
-        Iterable<TemplateContest> templateContests = Model.templateContests().find().as(TemplateContest.class);
-        for(TemplateContest template : templateContests) {
-            template.instantiate();
-        }
+        ModelCoreLoop.instantiateContests();
     }
 
     /**
@@ -285,33 +276,6 @@ public class Model {
         return (optaId.charAt(0) == 'g') ? optaId.substring(1) : optaId;
     }
 
-    /**
-     * Actualizar cuando se produzca un evento de inicio o fin de partido
-     * @param templateMatchEvent
-     *
-     */
-    public static void actionWhenMatchEventIsStarted(TemplateMatchEvent templateMatchEvent) {
-        // Los template contests (que incluyan este match event y que esten "activos") tendrian que ser marcados como "live"
-        templateContests()
-                .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}", templateMatchEvent.templateMatchEventId)
-                .multi()
-                .with("{$set: {state: \"LIVE\"}}");
-    }
-
-    public static void actionWhenMatchEventIsFinished(TemplateMatchEvent templateMatchEvent) {
-        // Buscamos los template contests que incluyan ese partido y que esten en "LIVE"
-        Iterable<TemplateContest> templateContests = templateContests().find("{templateMatchEventIds: {$in:[#]}, state: \"LIVE\"}",
-                templateMatchEvent.templateMatchEventId).as(TemplateContest.class);
-
-        for (TemplateContest templateContest : templateContests) {
-            // Si el contest ha terminado (true si todos sus partidos han terminado)
-            if (templateContest.isFinished()) {
-                // Cambiar el estado del contest a "HISTORY"
-                templateContests().update("{_id: #, state: \"LIVE\"}",
-                        templateContest.templateContestId).with("{$set: {state: \"HISTORY\"}}");
-            }
-        }
-    }
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/
     static private MongoClient _mongoClient;
