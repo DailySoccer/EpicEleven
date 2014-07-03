@@ -1,12 +1,19 @@
 package controllers.admin;
 
 import com.mongodb.BasicDBObject;
+import com.mongodb.util.JSON;
 import model.Model;
 import model.ModelCoreLoop;
 import model.opta.OptaDB;
 import model.opta.OptaProcessor;
-
+import play.Logger;
+import play.api.libs.json.JsPath;
+import play.db.DB;
+//import play.libs.XML;
+import org.json.XML;
+import java.sql.*;
 import java.util.*;
+import java.util.Date;
 
 /**
  * Created by gnufede on 13/06/14.
@@ -24,7 +31,11 @@ public class OptaSimulator implements Runnable {
     long endDate;
     long lastParsedDate;
     String competitionId;
-    Iterator<OptaDB> optaIterator;
+    //Iterator<OptaDB> optaIterator; //TODO:DELETE
+    ResultSet optaResultSet;
+    Connection connection;
+    Statement stmt;
+
 
     private OptaSimulator(long initialDate, long endDate, boolean fast, boolean resetOpta, String competitionId) {
         this.pauses = new TreeSet<Date>();
@@ -48,9 +59,12 @@ public class OptaSimulator implements Runnable {
                     OptaDBs.add(docIterator.next());
                 }
             }
-            this.optaIterator = OptaDBs.iterator();
+            //this.optaIterator = OptaDBs.iterator();
+
         }
         else {
+            this.optaResultSet = getOptaResultSet();
+            /*
             if (competitionId != null) {
                 this.optaIterator = Model.optaDB().find("{startDate: {$gte: #, $lte: #}, headers.X-Meta-Competition-Id: #}",
                                                         initialDate, endDate, competitionId)
@@ -62,6 +76,7 @@ public class OptaSimulator implements Runnable {
                                                   .sort("{startDate: 1}")
                                                   .as(OptaDB.class).iterator();
             }
+            */
         }
 
         if (resetOpta) {
@@ -133,6 +148,7 @@ public class OptaSimulator implements Runnable {
         while (!stopLoop && (pauseLoop || next())) {
             checkDate();
         }
+        // ? closeDBConnection();
     }
 
     private void checkDate() {
@@ -147,22 +163,51 @@ public class OptaSimulator implements Runnable {
     }
 
     private boolean next() {
-        OptaDB nextDoc = optaIterator.hasNext()? optaIterator.next(): null;
-
-        if (nextDoc != null) {
-            System.out.println(nextDoc.name + " " + (new Date(nextDoc.startDate)).toString());
-
-            this.lastParsedDate = nextDoc.startDate;
-            String feedType = nextDoc.getFeedType();
-
-            if (feedType != null) {
-                HashSet<String> dirtyMatchEvents = optaProcessor.processOptaDBInput(feedType, (BasicDBObject) nextDoc.json);
-                ModelCoreLoop.onOptaMatchEventsChanged(dirtyMatchEvents);
+        try {
+            if (optaResultSet.next()) {
+                SQLXML sqlxml = optaResultSet.getSQLXML("xml");
+                Date createdAt = optaResultSet.getDate("created_at");
+                String name = optaResultSet.getString("name");
+                String feedType = optaResultSet.getString("feed_type");
+                System.out.println(name + " " + createdAt.toString());
+                BasicDBObject json = (BasicDBObject) JSON.parse(XML.toJSONObject(sqlxml.getString()).toString());
+                if (feedType != null) {
+                    HashSet<String> dirtyMatchEvents = optaProcessor.processOptaDBInput(feedType, json );
+                    ModelCoreLoop.onOptaMatchEventsChanged(dirtyMatchEvents);
+                }
+                return true;
             }
+            else {
+                System.out.println("NULL");
+            }
+        } catch (SQLException e) {
+            Logger.error(e.getMessage());
+            e.printStackTrace();
         }
-        else {
-            System.out.println("NULL");
-        }
-        return nextDoc != null;
+        return false;
     }
+
+    private void closeDBConnection(){
+        try {
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private ResultSet getOptaResultSet(){
+        connection = DB.getConnection();
+        String selectString = "SELECT * FROM dailysoccerdb ORDER BY created_at;";
+        ResultSet results = null;
+        try  {
+            stmt = connection.createStatement();
+            results = stmt.executeQuery(selectString);
+        }
+        catch (java.sql.SQLException e) {
+            Logger.error("SQL Exception connecting to DailySoccerDB");
+            e.printStackTrace();
+        }
+        return results;
+    }
+
 }
