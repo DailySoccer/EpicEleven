@@ -6,6 +6,7 @@ import model.PointsTranslation;
 import model.TemplateMatchEvent;
 import model.LiveMatchEvent;
 import org.bson.types.ObjectId;
+import play.Logger;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -137,19 +138,23 @@ public class OptaProcessor {
                 myEvent.typeId = OptaEventType.OWN_GOAL.code;
             } else {
             // Diferencias en goles:
-                OptaPlayer scorer = Model.optaPlayers().findOne("{optaPlayerId: #}", "p"+myEvent.optaPlayerId).as(OptaPlayer.class);
-                if (scorer.position.equals("Goalkeeper")){
-                    // Gol del portero
-                    myEvent.typeId = OptaEventType.GOAL_SCORED_BY_GOALKEEPER.code;
-                } else if (scorer.position.equals("Defender")){
-                    // Gol del defensa
-                    myEvent.typeId = OptaEventType.GOAL_SCORED_BY_DEFENDER.code;
-                } else if (scorer.position.equals("Midfielder")){
-                    // Gol del medio
-                    myEvent.typeId = OptaEventType.GOAL_SCORED_BY_MIDFIELDER.code;
-                } else if (scorer.position.equals("Forward")){
-                    // Gol del delantero
-                    myEvent.typeId = OptaEventType.GOAL_SCORED_BY_FORWARD.code;
+                try {
+                    OptaPlayer scorer = Model.optaPlayers().findOne("{optaPlayerId: #}", "p"+myEvent.optaPlayerId).as(OptaPlayer.class);
+                    if (scorer.position.equals("Goalkeeper")){
+                        // Gol del portero
+                        myEvent.typeId = OptaEventType.GOAL_SCORED_BY_GOALKEEPER.code;
+                    } else if (scorer.position.equals("Defender")){
+                        // Gol del defensa
+                        myEvent.typeId = OptaEventType.GOAL_SCORED_BY_DEFENDER.code;
+                    } else if (scorer.position.equals("Midfielder")){
+                        // Gol del medio
+                        myEvent.typeId = OptaEventType.GOAL_SCORED_BY_MIDFIELDER.code;
+                    } else if (scorer.position.equals("Forward")){
+                        // Gol del delantero
+                        myEvent.typeId = OptaEventType.GOAL_SCORED_BY_FORWARD.code;
+                    }
+                } catch (NullPointerException e) {
+                    Logger.error("Player not found: "+myEvent.optaPlayerId);
                 }
 
             }
@@ -467,10 +472,23 @@ public class OptaProcessor {
             myPlayer.teamId = (String) teamObject.get("id");
             myPlayer.teamName = (String) teamObject.get("name");
         }
-        else if (playerObject.containsKey("Name")){
-            myPlayer.optaPlayerId = (String) playerObject.get("uID");
-            myPlayer.name = (String) playerObject.get("Name");
-            myPlayer.position = (String) playerObject.get("Position");
+        else {
+            if (playerObject.containsKey("Name")){
+                myPlayer.name = (String) playerObject.get("Name");
+            } else if (playerObject.containsKey("PersonName")){
+                if (((BasicDBObject)playerObject.get("PersonName")).containsKey("Known")) {
+                    myPlayer.name = (String) ((BasicDBObject)playerObject.get("PersonName")).get("Known");
+                } else {
+                    myPlayer.name = (String) ((BasicDBObject)playerObject.get("PersonName")).get("First")+" "+
+                            (String) ((BasicDBObject)playerObject.get("PersonName")).get("Last");
+                }
+            }
+            if (playerObject.containsKey("uID")){
+                myPlayer.optaPlayerId = (String) playerObject.get("uID");
+            }
+            if (playerObject.containsKey("Position")){
+                myPlayer.position = (String) playerObject.get("Position");
+            }
             myPlayer.teamId = (String) teamObject.get("uID");
             myPlayer.teamName = (String) teamObject.get("Name");
         }

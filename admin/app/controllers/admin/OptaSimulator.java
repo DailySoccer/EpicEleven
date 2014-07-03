@@ -31,7 +31,6 @@ public class OptaSimulator implements Runnable {
     long endDate;
     long lastParsedDate;
     String competitionId;
-    //Iterator<OptaDB> optaIterator; //TODO:DELETE
     ResultSet optaResultSet;
     Connection connection;
     Statement stmt;
@@ -59,24 +58,10 @@ public class OptaSimulator implements Runnable {
                     OptaDBs.add(docIterator.next());
                 }
             }
-            //this.optaIterator = OptaDBs.iterator();
 
         }
         else {
             this.optaResultSet = getOptaResultSet();
-            /*
-            if (competitionId != null) {
-                this.optaIterator = Model.optaDB().find("{startDate: {$gte: #, $lte: #}, headers.X-Meta-Competition-Id: #}",
-                                                        initialDate, endDate, competitionId)
-                                                  .sort("{startDate: 1}")
-                                                  .as(OptaDB.class).iterator();
-            } else {
-                this.optaIterator = Model.optaDB().find("{startDate: {$gte: #, $lte: #}}",
-                                                        initialDate, endDate)
-                                                  .sort("{startDate: 1}")
-                                                  .as(OptaDB.class).iterator();
-            }
-            */
         }
 
         if (resetOpta) {
