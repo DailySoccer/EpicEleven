@@ -276,8 +276,8 @@ public class OptaProcessor {
         optaMatchEvent.optaMatchEventId = (String) matchObject.get("uID");
         optaMatchEvent.lastModified = parseDate((String) matchObject.get("last_modified"));
         optaMatchEvent.matchDate = parseDate((String) matchInfo.get("Date"));
-        optaMatchEvent.competitionId = myF1.containsKey("competition_id")? (int) myF1.get("competition_id"): -1;
-        optaMatchEvent.seasonId = myF1.containsKey("season_id")? (int) myF1.get("season_id"): -1;
+        optaMatchEvent.competitionId = myF1.containsKey("competition_id")? (String) myF1.get("competition_id"): "";
+        optaMatchEvent.seasonId = myF1.containsKey("season_id")? (String) myF1.get("season_id"): "";
         optaMatchEvent.seasonName = myF1.containsKey("season_name")? (String) myF1.get("season_name"): "NO SEASON NAME";
         optaMatchEvent.competitionName = myF1.containsKey("competition_name")? (String) myF1.get("competition_name"): "NO COMPETITION NAME";
         optaMatchEvent.timeZone = (String) matchInfo.get("TZ");
