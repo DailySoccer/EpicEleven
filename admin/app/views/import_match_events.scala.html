@@ -16,6 +16,10 @@
 
 <div class="col-md-6">
     @if(matchs_new != null && !matchs_new.isEmpty) {
+
+    <div><a href="@ImportController.importAllNewMatchEvents"><button name="ok" type="submit" class="btn btn-success">Import New (@matchs_new.size)</button></a></div>
+    <br/>
+
     <table class="table table-striped datatable">
         <thead>
         <caption class="bg-primary">NEW</caption>
@@ -43,14 +47,15 @@
         }
         </tbody>
     </table>
-
-    <div><a href="@ImportController.importAllNewMatchEvents"><button name="ok" type="submit" class="btn btn-success">Import New (@matchs_new.size)</button></a></div>
-    <br/>
     }
 </div>
 
 <div class="col-md-6">
     @if(matchs_changed != null && !matchs_changed.isEmpty) {
+
+    <div><a href="@ImportController.importAllChangedMatchEvents"><button name="ok" type="submit" class="btn btn-success">Import Changed (@matchs_changed.size)</button></a></div>
+    <br/>
+
     <table class="table table-striped datatable">
         <thead>
         <caption class="bg-info">CHANGED</caption>
@@ -73,8 +78,6 @@
         </tbody>
     </table>
 
-    <div><a href="@ImportController.importAllChangedMatchEvents"><button name="ok" type="submit" class="btn btn-success">Import Changed (@matchs_changed.size)</button></a></div>
-    <br/>
     }
 </div>
 

@@ -11,8 +11,8 @@ import java.util.Date;
 public class OptaMatchEvent {
 
     public String optaMatchEventId;
-    public int competitionId;
-    public int seasonId;
+    public String competitionId;
+    public String seasonId;
     public String competitionName;
     public String seasonName;
     public String homeTeamId;

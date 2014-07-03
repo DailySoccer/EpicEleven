@@ -12,9 +12,7 @@ GET     /get_user_profile           controllers.LoginController.getUserProfile()
 
 # Active contests
 GET     /get_active_contests        controllers.ContestController.getActiveContests()
-GET     /get_active_match_events    controllers.ContestController.getActiveMatchEvents()
 POST    /add_contest_entry          controllers.ContestController.addContestEntry()
-POST    /add_contest_entry/opta     controllers.ContestController.addContestEntryFromOptaIds()
 
 # Live contests
 GET     /get_live_match_events/template_contest/:contest controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)
