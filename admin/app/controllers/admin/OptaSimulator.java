@@ -27,14 +27,14 @@ public class OptaSimulator implements Runnable {
     Iterator<OptaDB> optaIterator;
 
     private OptaSimulator(long initialDate, long endDate, boolean fast, boolean resetOpta, String competitionId) {
-        pauses = new TreeSet<Date>();
-        stopLoop = false;
-        pauseLoop = false;
-        initialDate = initialDate;
-        endDate = endDate;
-        lastParsedDate = 0L;
-        competitionId = competitionId;
-        optaProcessor = new OptaProcessor();
+        this.pauses = new TreeSet<Date>();
+        this.stopLoop = false;
+        this.pauseLoop = false;
+        this.initialDate = initialDate;
+        this.endDate = endDate;
+        this.lastParsedDate = 0L;
+        this.competitionId = competitionId;
+        this.optaProcessor = new OptaProcessor();
 
         if (fast) {
             List<String> names = Model.optaDB().distinct("name").as(String.class);
