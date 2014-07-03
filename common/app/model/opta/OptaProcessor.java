@@ -21,18 +21,15 @@ public class OptaProcessor {
     
         dirtyMatchEvents = new HashSet<>();
 
-        if (feedType == null)
-    		return dirtyMatchEvents;
-
-            if (feedType.equals("F9")){
+        if (feedType != null) {
+            if (feedType.equals("F9")) {
                 processF9(requestBody);
-            }
-            else if (feedType.equals("F24")){
+            } else if (feedType.equals("F24")) {
                 processEvents(requestBody);
-            }
-            else if (feedType.equals("F1")){
+            } else if (feedType.equals("F1")) {
                 processF1(requestBody);
             }
+        }
 
         return dirtyMatchEvents;
     }
