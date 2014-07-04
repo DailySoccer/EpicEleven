@@ -34,6 +34,7 @@ public class OptaSimulator implements Runnable {
     ResultSet optaResultSet;
     Connection connection;
     Statement stmt;
+    int docParsed;
 
 
     private OptaSimulator(long initialDate, long endDate, boolean fast, boolean resetOpta, String competitionId) {
@@ -43,6 +44,7 @@ public class OptaSimulator implements Runnable {
         this.initialDate = initialDate;
         this.endDate = endDate;
         this.lastParsedDate = 0L;
+        this.docParsed = 0;
         this.competitionId = competitionId;
         this.optaProcessor = new OptaProcessor();
 
@@ -61,7 +63,8 @@ public class OptaSimulator implements Runnable {
 
         }
         else {
-            this.optaResultSet = getOptaResultSet();
+            createConnection();
+            //this.optaResultSet = getOptaResultSet();
         }
 
         if (resetOpta) {
@@ -77,6 +80,7 @@ public class OptaSimulator implements Runnable {
         if (instance == null) {
             instance = new OptaSimulator(0L, System.currentTimeMillis(), false, true, null);
             wasResumed = false;
+            instance.docParsed = 0;
         }
 
         instance.pauseLoop = false;
@@ -149,6 +153,8 @@ public class OptaSimulator implements Runnable {
 
     private boolean next() {
         try {
+            optaResultSet = getOptaResultSet(docParsed);
+            docParsed += 1;
             if (optaResultSet.next()) {
                 SQLXML sqlxml = optaResultSet.getSQLXML("xml");
                 Date createdAt = optaResultSet.getDate("created_at");
@@ -172,7 +178,7 @@ public class OptaSimulator implements Runnable {
         return false;
     }
 
-    private void closeDBConnection(){
+    private void closeDBStatement(){
         try {
             stmt.close();
         } catch (SQLException e) {
@@ -180,13 +186,30 @@ public class OptaSimulator implements Runnable {
         }
     }
 
-    private ResultSet getOptaResultSet(){
+    private void createConnection(){
         connection = DB.getConnection();
-        String selectString = "SELECT * FROM dailysoccerdb ORDER BY created_at;";
+        try {
+            connection.setAutoCommit(false);
+        } catch (SQLException e) {
+            Logger.error("WTF SQL 1");
+        }
+
+    }
+
+    private ResultSet getOptaResultSet(int offset){
+        String selectString = "SELECT * FROM dailysoccerdb ORDER BY created_at LIMIT 1 OFFSET "+offset+";";
         ResultSet results = null;
         try  {
-            stmt = connection.createStatement();
+            stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                                              ResultSet.CONCUR_READ_ONLY);
+
+            //stmt.setFetchSize(1); // Integer.MIN_VALUE);
+            //logMemory();
+//            Logger.debug("Query pre - executed");
             results = stmt.executeQuery(selectString);
+ //           Logger.debug("Query executed");
+            //logMemory();
+
         }
         catch (java.sql.SQLException e) {
             Logger.error("SQL Exception connecting to DailySoccerDB");
