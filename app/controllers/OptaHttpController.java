@@ -107,7 +107,7 @@ public class OptaHttpController extends Controller {
         if (dateStr == null) {
             return null;
         }
-        DateFormat formatter = new SimpleDateFormat("E MMM dd HH:mm:ss Z yyyy");
+        DateFormat formatter = new SimpleDateFormat("E MMM dd HH:mm:ss Z yyyy", Locale.ENGLISH);
         Date date = null;
         try {
             date = (Date)formatter.parse(dateStr);
