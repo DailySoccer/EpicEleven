@@ -26,16 +26,15 @@ public class LiveMatchEvent {
     public Date createdAt;
 
     public LiveMatchEvent() {
-        createdAt = Global.currentTime();
     }
 
     public LiveMatchEvent(TemplateMatchEvent templateMatchEvent) {
-        this();
         templateMatchEventId = templateMatchEvent.templateMatchEventId;
         optaMatchEventId = templateMatchEvent.optaMatchEventId;
         soccerTeamA = templateMatchEvent.soccerTeamA;
         soccerTeamB = templateMatchEvent.soccerTeamB;
         startDate = templateMatchEvent.startDate;
+        createdAt = Global.currentTime();
     }
 
     static public LiveMatchEvent create(TemplateMatchEvent templateMatchEvent) {

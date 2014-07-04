@@ -44,7 +44,6 @@ public class TemplateContest {
     public Date createdAt;
 
     public TemplateContest() {
-        createdAt = Global.currentTime();
     }
 
     public boolean isActive() { return (state == State.ACTIVE); }

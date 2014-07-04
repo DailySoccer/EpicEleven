@@ -1,9 +1,6 @@
 package controllers.admin;
 
-import model.Model;
-import model.PrizeType;
-import model.TemplateContest;
-import model.TemplateMatchEvent;
+import model.*;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
 import play.Logger;
@@ -68,6 +65,7 @@ public class TemplateContestController extends Controller {
         templateContest.salaryCap = params.salaryCap;
         templateContest.entryFee = params.entryFee;
         templateContest.prizeType = params.prizeType;
+        templateContest.createdAt = Global.currentTime();
 
         Date startDate = null;
         templateContest.templateMatchEventIds = new ArrayList<>();
@@ -162,6 +160,7 @@ public class TemplateContestController extends Controller {
         templateContest.salaryCap = 100000;
         templateContest.startDate = startDate;
         templateContest.templateMatchEventIds = new ArrayList<>();
+        templateContest.createdAt = Global.currentTime();
 
         for (TemplateMatchEvent match: templateMatchEvents) {
             templateContest.templateMatchEventIds.add(match.templateMatchEventId);

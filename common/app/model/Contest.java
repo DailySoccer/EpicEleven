@@ -24,15 +24,13 @@ public class Contest {
     public Date createdAt;
 
     // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
-    public Contest() {
-        createdAt = Global.currentTime();
-    }
+    public Contest() {}
 
     public Contest(TemplateContest template) {
-        this();
         templateContestId = template.templateContestId;
         name = template.name;
         maxEntries = template.maxEntries;
+        createdAt = Global.currentTime();
     }
 
     static public Contest find(ObjectId contestId) {

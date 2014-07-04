@@ -21,14 +21,13 @@ public class TemplateSoccerTeam {
 
     // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
     public TemplateSoccerTeam() {
-        createdAt = Global.currentTime();
     }
 
     public TemplateSoccerTeam(OptaTeam optaTeam) {
-        this();
         optaTeamId = optaTeam.optaTeamId;
         name = optaTeam.name;
         shortName = optaTeam.shortName;
+        createdAt = Global.currentTime();
     }
 
     static public TemplateSoccerTeam find(ObjectId templateSoccerTeamId) {

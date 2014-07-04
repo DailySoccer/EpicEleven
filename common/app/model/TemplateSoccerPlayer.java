@@ -27,15 +27,14 @@ public class TemplateSoccerPlayer {
 
     // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
     public TemplateSoccerPlayer() {
-        createdAt = Global.currentTime();
     }
 
     public TemplateSoccerPlayer(OptaPlayer optaPlayer, ObjectId aTemplateTeamId) {
-        this();
         optaPlayerId = optaPlayer.optaPlayerId;
         name = optaPlayer.name;
         fieldPos = getFieldPostFromOpta(optaPlayer.position);
         templateTeamId = aTemplateTeamId;
+        createdAt = Global.currentTime();
     }
 
     static FieldPos getFieldPostFromOpta (String optaPosition) {

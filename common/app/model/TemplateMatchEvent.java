@@ -27,7 +27,6 @@ public class TemplateMatchEvent {
     public Date createdAt;
 
     public TemplateMatchEvent() {
-        createdAt = Global.currentTime();
     }
 
     static public TemplateMatchEvent find(ObjectId templateMatchEventId) {
@@ -119,6 +118,7 @@ public class TemplateMatchEvent {
         templateMatchEvent.optaSeasonId = optaMatchEvent.seasonId;
         templateMatchEvent.soccerTeamA = SoccerTeam.create(templateMatchEvent, teamA);
         templateMatchEvent.soccerTeamB = SoccerTeam.create(templateMatchEvent, teamB);
+        templateMatchEvent.createdAt = Global.currentTime();
 
         // TODO: Eliminar condicion (optaMatchEventId == null)
         if (optaMatchEvent != null) {

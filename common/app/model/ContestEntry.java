@@ -24,15 +24,13 @@ public class ContestEntry {
     public Date createdAt;
 
     // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
-    public ContestEntry() {
-        createdAt = Global.currentTime();
-    }
+    public ContestEntry() {}
 
     public ContestEntry(ObjectId userId, ObjectId contestId, List<ObjectId> soccerIds) {
-        this();
         this.userId = userId;
         this.contestId = contestId;
         this.soccerIds = soccerIds;
+        this.createdAt = Global.currentTime();
     }
 
     static public ContestEntry find(ObjectId contestEntryId) {

@@ -18,7 +18,6 @@ public class PointsTranslation {
     public Date createdAt;
 
     public PointsTranslation() {
-        createdAt = Global.currentTime();
     }
 
     /**
@@ -30,6 +29,7 @@ public class PointsTranslation {
         pointsTranslation.points = points;
         pointsTranslation.timestamp = new Date();
         pointsTranslation.unixtimestamp = pointsTranslation.timestamp.getTime();
+        pointsTranslation.createdAt = Global.currentTime();
         Model.pointsTranslation().insert(pointsTranslation);
         return true;
     }
