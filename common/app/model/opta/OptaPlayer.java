@@ -11,6 +11,7 @@ public class OptaPlayer {
     public String name;
     public String firstname;
     public String lastname;
+    public String nickname;
     public String position;
     public String teamId;
     public String teamName;
