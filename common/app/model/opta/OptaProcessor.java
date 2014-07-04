@@ -3,8 +3,6 @@ package model.opta;
 import com.mongodb.BasicDBObject;
 import model.Model;
 import model.PointsTranslation;
-import model.TemplateMatchEvent;
-import model.LiveMatchEvent;
 import org.bson.types.ObjectId;
 import play.Logger;
 
@@ -178,9 +176,9 @@ public class OptaProcessor {
 
     public void recalculateAllEvents() {
         resetPointsTranslationCache();
-        Iterator<OptaEvent> optaEvents = Model.optaEvents().find().as(OptaEvent.class).iterator();
-        while (optaEvents.hasNext()) {
-            recalculateEvent(optaEvents.next());
+
+        for (OptaEvent event : Model.optaEvents().find().as(OptaEvent.class)) {
+            recalculateEvent(event);
         }
     }
 
@@ -215,7 +213,7 @@ public class OptaProcessor {
     }
 
     private Date parseDate(String timestamp) {
-        String dateConfig = "";
+        String dateConfig;
         SimpleDateFormat dateFormat;
         if (timestamp.indexOf('-') > 0) {
             dateConfig = timestamp.indexOf('T') > 0 ? "yyyy-MM-dd'T'hh:mm:ss.SSSz" : "yyyy-MM-dd hh:mm:ss.SSSz";

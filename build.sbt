@@ -31,3 +31,7 @@ lazy val common = project
 lazy val admin = project.dependsOn(common)
 
 lazy val backend = project.in(file(".")).aggregate(common, admin).dependsOn(common, admin)
+
+// javacOptions ++= Seq("-Xlint:deprecation")
+
+// scalacOptions ++= Seq("-feature")
