@@ -316,36 +316,38 @@ public class OptaProcessor {
 
             if (myF9.get("Type").equals("Result")) {
                 processFinishedMatch(myF9);
-            }
+            } else if (myF9.get("Type").equals("STANDINGS Latest") || myF9.get("Type").equals("SQUADS Latest") ) {
+                ArrayList teams = getTeamsFromF9(myF9);
 
-            ArrayList teams = getTeamsFromF9(myF9);
+                for (Object team : teams) {
+                    LinkedHashMap teamAsHashMap = (LinkedHashMap) team;
 
-            for (Object team : teams) {
-                LinkedHashMap teamAsHashMap = (LinkedHashMap) team;
+                    OptaTeam myTeam = new OptaTeam();
+                    myTeam.optaTeamId = (String) teamAsHashMap.get("uID");
+                    myTeam.name = (String) teamAsHashMap.get("Name");
+                    myTeam.shortName = (String) teamAsHashMap.get("SYMID");
+                    myTeam.updatedTime = System.currentTimeMillis();
 
-                OptaTeam myTeam = new OptaTeam();
-                myTeam.optaTeamId = (String) teamAsHashMap.get("uID");
-                myTeam.name = (String) teamAsHashMap.get("Name");
-                myTeam.shortName = (String) teamAsHashMap.get("SYMID");
-                myTeam.updatedTime = System.currentTimeMillis();
+                    ArrayList playersList = (ArrayList) teamAsHashMap.get("Player");
 
-                ArrayList playersList = (ArrayList) teamAsHashMap.get("Player");
+                    if (playersList != null) { // Si no es un equipo placeholder
+                        Model.optaTeams().update("{optaTeamId: #}", myTeam.optaTeamId).upsert().with(myTeam);
 
-                if (playersList != null) { // Si no es un equipo placeholder
-                    Model.optaTeams().update("{optaTeamId: #}", myTeam.optaTeamId).upsert().with(myTeam);
+                        for (Object player : playersList) {
+                            LinkedHashMap playerObject = (LinkedHashMap) player;
+                            String playerId = (String) playerObject.get("uID");
 
-                    for (Object player : playersList) {
-                        LinkedHashMap playerObject = (LinkedHashMap) player;
-                        String playerId = (String) playerObject.get("uID");
-
-                        // First search if player already exists:
-                        if (playerId != null) {
-                            OptaPlayer myPlayer = createPlayer(playerObject, teamAsHashMap);
-                            Model.optaPlayers().update("{optaPlayerId: #}", playerId).upsert().with(myPlayer);
+                            // First search if player already exists:
+                            if (playerId != null) { // && !playerObject.containsKey("PersonName")) {
+                                OptaPlayer myPlayer = createPlayer(playerObject, teamAsHashMap);
+                                Model.optaPlayers().update("{optaPlayerId: #}", playerId).upsert().with(myPlayer);
+                            }
                         }
                     }
                 }
+
             }
+
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
@@ -472,34 +474,47 @@ public class OptaProcessor {
 
     private OptaPlayer createPlayer(LinkedHashMap playerObject, LinkedHashMap teamObject){
         OptaPlayer myPlayer = new OptaPlayer();
+        /*
+        for (Object a: playerObject.keySet()){
+            Logger.info((String) a);
+        }
+        */
 
         if (playerObject.containsKey("firstname")){
             myPlayer.optaPlayerId = (String) playerObject.get("id");
             myPlayer.firstname = (String) playerObject.get("firstname");
             myPlayer.lastname = (String) playerObject.get("lastname");
+            myPlayer.name = myPlayer.firstname+" "+myPlayer.lastname;
             myPlayer.position = (String) playerObject.get("position");
             myPlayer.teamId = (String) teamObject.get("id");
             myPlayer.teamName = (String) teamObject.get("name");
         }
         else {
-            if (playerObject.containsKey("Name")){
+            if (playerObject.containsKey("Name")) {
                 myPlayer.name = (String) playerObject.get("Name");
+                //
+                myPlayer.optaPlayerId = (String) playerObject.get("uID");
+                myPlayer.position = (String) playerObject.get("Position");
             } else if (playerObject.containsKey("PersonName")){
                 if (((BasicDBObject)playerObject.get("PersonName")).containsKey("Known")) {
-                    myPlayer.name = (String) ((BasicDBObject)playerObject.get("PersonName")).get("Known");
-                } else {
-                    myPlayer.name = (String) ((BasicDBObject)playerObject.get("PersonName")).get("First")+" "+
-                            (String) ((BasicDBObject)playerObject.get("PersonName")).get("Last");
+                    myPlayer.nickname = (String) ((BasicDBObject)playerObject.get("PersonName")).get("Known");
                 }
+                myPlayer.firstname = (String) ((BasicDBObject)playerObject.get("PersonName")).get("First");
+                myPlayer.lastname = (String) ((BasicDBObject)playerObject.get("PersonName")).get("Last");
+                myPlayer.name = myPlayer.firstname+" "+myPlayer.lastname;
             }
             if (playerObject.containsKey("uID")){
                 myPlayer.optaPlayerId = (String) playerObject.get("uID");
             }
             if (playerObject.containsKey("Position")){
                 myPlayer.position = (String) playerObject.get("Position");
+                if (myPlayer.position.equals("Substitute")) {
+                    Logger.error("Sustituto! {}", myPlayer.name );
+                }
             }
             myPlayer.teamId = (String) teamObject.get("uID");
             myPlayer.teamName = (String) teamObject.get("Name");
+
         }
         myPlayer.updatedTime = System.currentTimeMillis();
         return myPlayer;
