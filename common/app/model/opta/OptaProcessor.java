@@ -271,6 +271,16 @@ public class OptaProcessor {
         }
     }
 
+    private String getStringValue(LinkedHashMap document, String key, String defaultValue){
+        String value = defaultValue;
+        if (document.get(key) instanceof String) {
+            value = (String) document.get(key);
+        } else {
+            value = ((Integer) document.get(key)).toString();
+        }
+        return value;
+    }
+
     private void updateOrInsertMatchData(LinkedHashMap myF1, LinkedHashMap matchObject) {
 
         LinkedHashMap matchInfo = (LinkedHashMap) matchObject.get("MatchInfo");
@@ -279,8 +289,9 @@ public class OptaProcessor {
         optaMatchEvent.optaMatchEventId = (String) matchObject.get("uID");
         optaMatchEvent.lastModified = parseDate((String) matchObject.get("last_modified"));
         optaMatchEvent.matchDate = parseDate((String) matchInfo.get("Date"));
-        optaMatchEvent.competitionId = myF1.containsKey("competition_id")? (String) myF1.get("competition_id"): "NO COMPETITION ID";
-        optaMatchEvent.seasonId = myF1.containsKey("season_id")? (String) myF1.get("season_id"): "NO SEASON NAME";
+        optaMatchEvent.competitionId = getStringValue(myF1, "competition_id", "NO COMPETITION ID");
+        optaMatchEvent.seasonId = getStringValue(myF1, "season_id", "NO SEASON ID");
+
         optaMatchEvent.seasonName = myF1.containsKey("season_name")? (String) myF1.get("season_name"): "NO SEASON NAME";
         optaMatchEvent.competitionName = myF1.containsKey("competition_name")? (String) myF1.get("competition_name"): "NO COMPETITION NAME";
         optaMatchEvent.timeZone = (String) matchInfo.get("TZ");

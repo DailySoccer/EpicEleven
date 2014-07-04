@@ -134,17 +134,16 @@ public class OptaHttpController extends Controller {
                         getHeader("X-Meta-Competition-Id", document.headers), getHeader("X-Meta-Season-Id", document.headers),
                         getDateFromHeader(getHeader("X-Meta-Last-Updated", document.headers)));
             }
+            else {
+                Logger.debug("IGNORANDO: "+document.name);
+
+            }
         }
         return ok("Migrating...");
     }
 
     public static void insertXML(Connection connection, String xml, String headers, Date timestamp, String name, String feedType,
                                  String gameId, String competitionId, String seasonId, Date lastUpdated){
-        if (xml == null || headers == null || timestamp == null || name == null || feedType == null ||
-            competitionId == null || seasonId == null || lastUpdated == null ){
-            Logger.error("Somethings null");
-            return;
-        }
         PreparedStatement stmt = null;
         String insertString = "INSERT INTO dailysoccerdb (xml, headers, created_at, name, feed_type, game_id, competition_id,"+
                               "season_id, last_updated) VALUES ( XMLPARSE (DOCUMENT ?),?,?,?,?,?,?,?,?)";
@@ -159,7 +158,11 @@ public class OptaHttpController extends Controller {
             stmt.setString(6, gameId);
             stmt.setString(7, competitionId);
             stmt.setString(8, seasonId);
-            stmt.setTimestamp(9, new java.sql.Timestamp(lastUpdated.getTime()));
+            if (lastUpdated != null){
+                stmt.setTimestamp(9, new java.sql.Timestamp(lastUpdated.getTime()));
+            } else {
+                stmt.setTimestamp(9, null);
+            }
 
             boolean result = stmt.execute();
             if (result){
