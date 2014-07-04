@@ -1,6 +1,7 @@
 package controllers;
 
 import actions.AllowCors;
+import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.*;
@@ -81,6 +82,7 @@ public class ContestController extends Controller {
      * Añadir un contest entry
      *      (participacion de un usuario en un contest, por medio de la seleccion de un equipo de futbolistas)
      */
+    @UserAuthenticated
     public static Result addContestEntry() {
         Form<ContestEntryParams> contestEntryForm = form(ContestEntryParams.class).bindFromRequest();
 
