@@ -134,6 +134,123 @@ public class OptaHttpController extends Controller {
         return ok("Migrating...");
     }
 
+    public static Result importFromLast() {
+        Date last_date = findLastDate();
+        importXML(last_date.getTime());
+        while (last_imported.getTime() > 0L) {
+            importXML(last_imported.getTime());
+        }
+        return ok("Finished importing");
+    }
+
+    public static F.Promise<Result> importXML(final long last_timestamp){
+        F.Promise<Result> resultPromise = WS.url("http://localhost:9000/return_xml/"+last_timestamp).get().map(
+                new F.Function<WS.Response, Result>(){
+                    public Result apply(WS.Response response){
+                        String bodyText  = response.getBody();
+                        Date createdAt = new Date(0L);
+                        Date lastUpdated = new Date(0L);
+                        if (bodyText.equals("NULL")){
+                            last_imported = lastUpdated;
+                            return ok("-1");
+                        } else {
+                            Connection connection = DB.getConnection();
+                            String headers = response.getHeader("headers");
+                            String feedType = response.getHeader("feed-type");
+                            String gameId = response.getHeader("game-id");
+                            String competitionId = response.getHeader("competition-id");
+                            String seasonId = response.getHeader("season-id");
+                            createdAt = getDateFromHeader(response.getHeader("created-at"));
+                            lastUpdated = getDateFromHeader(response.getHeader("last-updated"));
+                            String name = response.getHeader("name");
+
+                            insertXML(connection, bodyText, headers, createdAt, name, feedType, gameId,
+                                      competitionId, seasonId, lastUpdated);
+
+                        }
+                        last_imported = createdAt;
+                        return ok((createdAt).toString());
+                    }
+                }
+        );
+        return resultPromise;
+    }
+
+    public static Result returnXML(long last_timestamp){
+        ResultSet nextOptaData = findXML(last_timestamp);
+        String headers = "";
+        Date createdAt, lastUpdated;
+        String name, feedType, gameId, competitionId, seasonId, xml = "";
+        try {
+            if (nextOptaData.next()){
+                headers = nextOptaData.getString("headers");
+                feedType = nextOptaData.getString("feed_type");
+                name = nextOptaData.getString("name");
+                gameId = nextOptaData.getString("game_id");
+                competitionId = nextOptaData.getString("competition_id");
+                seasonId = nextOptaData.getString("season_id");
+                lastUpdated = nextOptaData.getDate("last_updated");
+                createdAt = nextOptaData.getDate("created_at");
+                xml = nextOptaData.getSQLXML("xml").getString();
+
+                response().setHeader("headers", headers);
+                response().setHeader("name", name);
+                response().setHeader("game-id", gameId);
+                response().setHeader("competition-id", competitionId);
+                response().setHeader("season-id", seasonId);
+                response().setHeader("feed-type", feedType);
+                response().setHeader("created-at", createdAt.toString());
+                response().setHeader("last-updated", lastUpdated.toString());
+
+            }
+        } catch (SQLException e) {
+            Logger.error("WTF SQL 5683");
+        }
+        if (nextOptaData == null) {
+            return ok("NULL");
+        }
+        response().setContentType("text/html");
+
+        return ok(xml);
+    }
+
+    public static Date findLastDate() {
+        Statement stmt = null;
+        Connection connection = DB.getConnection();
+        String selectString = "SELECT created_at FROM dailysoccerdb ORDER BY created_at DESC LIMIT 1;";
+        ResultSet results = null;
+        try {
+            stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                    ResultSet.CONCUR_READ_ONLY);
+            results = stmt.executeQuery(selectString);
+            if (results.next()) {
+                return results.getDate("created_at");
+            }
+        } catch (java.sql.SQLException e) {
+            Logger.error("WTF SQL 92374");
+        }
+        return null;
+    }
+
+    public static ResultSet findXML(long last_timestamp) {
+        Statement stmt = null;
+        Connection connection = DB.getConnection();
+        Date last_date = new Date(last_timestamp);
+        String selectString = "SELECT * FROM dailysoccerdb WHERE created_at > "+last_date+" ORDER BY created_at LIMIT 1;";
+        ResultSet results = null;
+        try {
+            stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                    ResultSet.CONCUR_READ_ONLY);
+
+            results = stmt.executeQuery(selectString);
+
+        } catch (java.sql.SQLException e) {
+            Logger.error("SQL Exception connecting to DailySoccerDB");
+            e.printStackTrace();
+        }
+        return results;
+    }
+
     public static void insertXML(Connection connection, String xml, String headers, Date timestamp, String name, String feedType,
                                  String gameId, String competitionId, String seasonId, Date lastUpdated) {
 
@@ -166,4 +283,5 @@ public class OptaHttpController extends Controller {
             Logger.error("WTF 56312: ", e);
         }
     }
+    private static Date last_imported;
 }
