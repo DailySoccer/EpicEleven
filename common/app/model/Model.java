@@ -65,48 +65,35 @@ public class Model {
             catch (Exception exc) {
                 Logger.error("Error initializating MongoDB {}/{}: {}", mongoClientURI.getHosts(),
                                                                        mongoClientURI.getDatabase(), exc.toString());
-
                 WaitSeconds(10, "Trying to initialize MongoDB again");
             }
         }
 
-
         DataSource ds = play.db.DB.getDataSource();
         java.sql.Connection connection = play.db.DB.getConnection();
-        Statement stmt = null;
+
         try {
-            stmt = connection.createStatement();
-            boolean result = stmt.execute("CREATE TABLE IF NOT EXISTS dailysoccerdb (" +
-                                           " id serial PRIMARY KEY, " +
-                                           " xml xml, " +
-                                           " headers text, " +
-                                           " created_at timestamp, " +
-                                           " name text, " +
-                                           " feed_type text, " +
-                                           " game_id text, " +
-                                           " competition_id text, " +
-                                           " season_id text, " +
-                                           " last_updated timestamp " +
-                                           " );");
-            if (result){
-                Logger.info("Base de datos DailySoccerDB creada");
-            }
-        }
-        catch (java.sql.SQLException e) {
-            Logger.error("SQL Exception creating DailySoccerDB table");
-            e.printStackTrace();
-        }
-        finally {
-            if (stmt != null) {
-                try {
-                    stmt.close();
-                } catch (SQLException e) {
-                    Logger.error("SQL Exception closing Postgres statement");
-                    e.printStackTrace();
+            try (Statement stmt = connection.createStatement()) {
+                boolean result = stmt.execute("CREATE TABLE IF NOT EXISTS dailysoccerdb (" +
+                                              " id serial PRIMARY KEY, " +
+                                              " xml xml, " +
+                                              " headers text, " +
+                                              " created_at timestamp, " +
+                                              " name text, " +
+                                              " feed_type text, " +
+                                              " game_id text, " +
+                                              " competition_id text, " +
+                                              " season_id text, " +
+                                              " last_updated timestamp " +
+                                              " );");
+                if (result) {
+                    Logger.info("Base de datos DailySoccerDB creada");
                 }
             }
         }
-
+        catch (SQLException e) {
+            Logger.error("SQL Exception creating DailySoccerDB table", e);
+        }
     }
 
     static void WaitSeconds(int seconds, String message) {
