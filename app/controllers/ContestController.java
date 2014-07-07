@@ -123,7 +123,7 @@ public class ContestController extends Controller {
                 Logger.info("contestEntry: User[{}] / Contest[{}] = ({}) => {}", theUser.nickName, aContest.name, soccerIds.size(), soccerNames);
 
                 // Crear el equipo en mongoDb.contestEntryCollection
-                ContestEntry.create(theUser._id, new ObjectId(params.contestId), soccerIds);
+                ContestEntry.create(theUser.userId, new ObjectId(params.contestId), soccerIds);
             }
         }
 

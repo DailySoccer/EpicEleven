@@ -2,19 +2,26 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import org.bson.types.ObjectId;
+import org.jongo.marshall.jackson.oid.Id;
 
 import java.util.Date;
 
 public class User {
+    @Id
+    public ObjectId userId;
+
 	public String firstName;
 	public String lastName;
     public String nickName;
 	public String email;
+
+    @JsonView(JsonViews.NotForClient.class)
 	public String password;
+
+    @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
     public User() {
-        createdAt = GlobalDate.getCurrentDate();
     }
 
 	public User(String firstName, String lastName, String nickName, String email, String password) {
@@ -24,6 +31,7 @@ public class User {
         this.nickName = nickName;
 		this.email = email;
 		this.password = password;
+        createdAt = GlobalDate.getCurrentDate();
 	}
 
     /**
@@ -41,6 +49,8 @@ public class User {
         return aUser;
     }
 
+    /*
     @JsonView(JsonViews.NotForClient.class)
     public ObjectId _id;
+    */
 }
