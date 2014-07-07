@@ -27,19 +27,19 @@ public class SimulatorController extends Controller {
             FlashMessage.success("Simulator started");
         }
 
-        return ok(views.html.simulator.render());
+        return redirect(routes.SimulatorController.index());
     }
 
     public static Result pause() {
         OptaSimulator.pause();
         FlashMessage.success("Simulator paused");
-        return ok(views.html.simulator.render());
+        return redirect(routes.SimulatorController.index());
     }
 
     public static Result nextStep() {
         OptaSimulator.nextStep();
         FlashMessage.success("Simulator next step");
-        return ok(views.html.simulator.render());
+        return redirect(routes.SimulatorController.index());
     }
 
     public static class GotoSimParams {
@@ -60,13 +60,13 @@ public class SimulatorController extends Controller {
             FlashMessage.danger("Wrong button pressed");
         }
 
-        return ok(views.html.simulator.render());
+        return redirect(routes.SimulatorController.index());
     }
 
     public static Result reset(){
         OptaSimulator.reset();
         FlashMessage.success("Simulator reset");
-        return ok(views.html.simulator.render());
+        return redirect(routes.SimulatorController.index());
     }
 
 }

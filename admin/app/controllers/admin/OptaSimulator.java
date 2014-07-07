@@ -167,7 +167,7 @@ public class OptaSimulator implements Runnable {
 
             if (optaResultSet.next()) {
                 SQLXML sqlxml = optaResultSet.getSQLXML("xml");
-                Date createdAt = optaResultSet.getDate("created_at");
+                Date createdAt = optaResultSet.getTimestamp("created_at");
                 String name = optaResultSet.getString("name");
                 String feedType = optaResultSet.getString("feed_type");
 
