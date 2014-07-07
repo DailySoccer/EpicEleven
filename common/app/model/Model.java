@@ -8,17 +8,11 @@ import play.Logger;
 import play.Play;
 import org.bson.types.ObjectId;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-import model.opta.*;
-
 import javax.sql.DataSource;
-import java.util.Date;
 
 
 public class Model {
@@ -35,7 +29,6 @@ public class Model {
     static public MongoCollection contestEntries() { return _jongo.getCollection("contestEntries"); }
 
     static public MongoCollection contests() { return _jongo.getCollection("contests"); }
-    static public MongoCollection matchEvents() { return _jongo.getCollection("matchEvents"); }
 
     static public MongoCollection optaDB() { return _jongo.getCollection("optaDB"); }
     static public MongoCollection optaEvents() { return _jongo.getCollection("optaEvents"); }
@@ -110,6 +103,17 @@ public class Model {
             _mongoClient.close();
     }
 
+
+    static public void resetDB() {
+        dropDB(_mongoDB);
+        ensureDB(_mongoDB);
+    }
+
+    static public void resetContests() {
+        dropContestsDB(_mongoDB);
+        ensureContestsDB(_mongoDB);
+    }
+
     static private String[] contestCollectionNames = {
             "templateContests",
             "templateMatchEvents",
@@ -121,33 +125,25 @@ public class Model {
             "contestEntries"
     };
 
-    static private void clearContestsDB(DB theMongoDB) {
+    static private void dropDB(DB theMongoDB) {
+        theMongoDB.getCollection("users").drop();
+        theMongoDB.getCollection("sessions").drop();
+
+        dropContestsDB(theMongoDB);
+        dropOpta(theMongoDB);
+    }
+
+    static private void dropContestsDB(DB theMongoDB) {
         for (String name : contestCollectionNames) {
             theMongoDB.getCollection(name).drop();
         }
     }
 
-    static private void ensureContestsDB(DB theMongoDB) {
-        for (String name : contestCollectionNames) {
-            if (!theMongoDB.collectionExists(name)) {
-                theMongoDB.createCollection(name, new BasicDBObject());
-            }
-        }
-    }
-
-    static private void clearDB(DB theMongoDB) {
-        // Indicamos las collections a borrar (no incluidas como "contestCollection")
-        final String[] collectionNames = {
-                "users",
-                "sessions"
-        };
-
-        // Eliminar las collections genericas
-        for (String name : collectionNames) {
-            theMongoDB.getCollection(name).drop();
-        }
-
-        clearContestsDB(theMongoDB);
+    static private void dropOpta(DB theMongoDB) {
+        theMongoDB.getCollection("optaEvents").drop();
+        theMongoDB.getCollection("optaPlayers").drop();
+        theMongoDB.getCollection("optaTeams").drop();
+        theMongoDB.getCollection("optaMatchEvents").drop();
     }
 
     static private void ensureDB(DB theMongoDB) {
@@ -162,9 +158,19 @@ public class Model {
         DBCollection sessions = theMongoDB.getCollection("sessions");
         sessions.createIndex(new BasicDBObject("sessionToken", 1), new BasicDBObject("unique", true));
 
-        DBCollection optaDB = theMongoDB.getCollection("optaDB");
-        optaDB.createIndex(new BasicDBObject("startDate", 1));
-        optaDB.createIndex(new BasicDBObject("startDate", -1));
+        ensureOptaDB(theMongoDB);
+        ensureContestsDB(theMongoDB);
+    }
+
+    static private void ensureContestsDB(DB theMongoDB) {
+        for (String name : contestCollectionNames) {
+            if (!theMongoDB.collectionExists(name)) {
+                theMongoDB.createCollection(name, new BasicDBObject());
+            }
+        }
+    }
+
+    private static void ensureOptaDB(DB theMongoDB) {
 
         DBCollection optaEvents = theMongoDB.getCollection("optaEvents");
         optaEvents.createIndex(new BasicDBObject("parentId", 1));
@@ -176,40 +182,10 @@ public class Model {
         optaPlayers.createIndex(new BasicDBObject("optaPlayerId", 1));
 
         DBCollection optaTeams = theMongoDB.getCollection("optaTeams");
-
         DBCollection optaMatchEvents = theMongoDB.getCollection("optaMatchEvents");
+
         DBCollection pointsTranslation = theMongoDB.getCollection("pointsTranslation");
         pointsTranslation.createIndex(new BasicDBObject("eventTypeId", 1));
-
-        ensureContestsDB(theMongoDB);
-    }
-
-    static public void resetDB() {
-        clearDB(_mongoDB);
-        ensureDB(_mongoDB);
-    }
-
-    static public void resetContests() {
-        clearContestsDB(_mongoDB);
-        ensureContestsDB(_mongoDB);
-    }
-
-    static public void cleanOpta() {
-
-        optaEvents().remove();
-        optaPlayers().remove();
-        optaTeams().remove();
-        optaMatchEvents().remove();
-
-        liveMatchEvents().remove();
-
-        // Reset del estado de los contests (excepto los "no activos" = OFF)
-        templateContests()
-                .update("{state: {$ne: \"OFF\"}}")
-                .multi()
-                .with("{$set: {state: \"ACTIVE\"}}");
-
-        ModelCoreLoop.instantiateContests();
     }
 
     /**

@@ -4,12 +4,9 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.util.JSON;
 import model.Model;
 import model.ModelCoreLoop;
-import model.opta.OptaDB;
 import model.opta.OptaProcessor;
 import play.Logger;
-import play.api.libs.json.JsPath;
 import play.db.DB;
-//import play.libs.XML;
 import org.json.XML;
 import java.sql.*;
 import java.util.*;
@@ -31,44 +28,29 @@ public class OptaSimulator implements Runnable {
     long endDate;
     long lastParsedDate;
     String competitionId;
-    ResultSet optaResultSet;
+
+    final int RESULTS_PER_QUERY = 500;
     Connection connection;
+    ResultSet optaResultSet;
     Statement stmt;
-    int docParsed;
+    int nextDocToParseIndex;
 
 
-    private OptaSimulator(long initialDate, long endDate, boolean fast, boolean resetOpta, String competitionId) {
+    private OptaSimulator(long initialDate, long endDate, boolean resetDB, String competitionId) {
         this.pauses = new TreeSet<Date>();
         this.stopLoop = false;
         this.pauseLoop = true;
         this.initialDate = initialDate;
         this.endDate = endDate;
         this.lastParsedDate = 0L;
-        this.docParsed = 0;
+        this.nextDocToParseIndex = 0;
         this.competitionId = competitionId;
         this.optaProcessor = new OptaProcessor();
 
-        if (fast) {
-            List<String> names = Model.optaDB().distinct("name").as(String.class);
-            ArrayList<OptaDB> OptaDBs = new ArrayList<OptaDB>(names.size());
-            for (String name: names) {
-                Iterator<OptaDB> docIterator = Model.optaDB().find("{name: #, startDate: {$gte: #, $lte: #}}",
-                                                                    name, initialDate, endDate)
-                                                             .sort("{startDate: -1}").limit(1)
-                                                             .as(OptaDB.class).iterator();
-                if (docIterator.hasNext()){
-                    OptaDBs.add(docIterator.next());
-                }
-            }
+        createConnection();
 
-        }
-        else {
-            createConnection();
-            //this.optaResultSet = getOptaResultSet();
-        }
-
-        if (resetOpta) {
-            Model.cleanOpta();
+        if (resetDB) {
+            Model.resetDB();
         }
     }
 
@@ -78,13 +60,15 @@ public class OptaSimulator implements Runnable {
 
         // Es la primera vez q lo creamos?
         if (instance == null) {
-            instance = new OptaSimulator(0L, System.currentTimeMillis(), false, true, null);
+            instance = new OptaSimulator(0L, System.currentTimeMillis(), true, null);
             wasResumed = false;
-            instance.docParsed = 0;
-        }
 
-        instance.pauseLoop = false;
-        instance.startThread();
+            instance.pauseLoop = false;
+            instance.startThread();
+        }
+        else {
+            instance.pauseLoop = false;
+        }
 
         return wasResumed;
     }
@@ -92,7 +76,7 @@ public class OptaSimulator implements Runnable {
 
     static public void nextStep() {
         if (instance == null) {
-            instance = new OptaSimulator(0L, System.currentTimeMillis(), false, true, null);
+            instance = new OptaSimulator(0L, System.currentTimeMillis(), true, null);
         }
         instance.next();
     }
@@ -107,7 +91,7 @@ public class OptaSimulator implements Runnable {
 
     static public void addPause(Date date) {
         if (instance == null) {
-            instance = new OptaSimulator(0L, System.currentTimeMillis(), false, true, null);
+            instance = new OptaSimulator(0L, System.currentTimeMillis(), true, null);
         }
         instance.pauses.add(date);
     }
@@ -121,11 +105,6 @@ public class OptaSimulator implements Runnable {
             instance.pauseLoop = true;
     }
 
-    static public void resume () {
-        if (instance != null)
-            instance.pauseLoop = false;
-    }
-
     private void startThread() {
         optaThread = new Thread(this);
         optaThread.start();
@@ -133,11 +112,29 @@ public class OptaSimulator implements Runnable {
 
     @Override
     public void run() {
+
         this.stopLoop = false;
-        while (!stopLoop && (pauseLoop || next())) {
-            checkDate();
+
+        while (!stopLoop) {
+            if (!pauseLoop) {
+                boolean isFinished = next();
+
+                // Si hemos llegado al final, nos quedamos pausados
+                if (isFinished)
+                    pauseLoop = true;
+
+                checkDate();
+            }
+            else {                       // Durante la pausa reevaluamos cada X ms si continuamos
+                try {
+                    Thread.sleep(10);
+                }  catch (InterruptedException e) {};
+            }
         }
-        // ? closeDBConnection();
+
+        closeConnection();
+
+        Logger.info("Simulator reset");
     }
 
     private void checkDate() {
@@ -152,70 +149,70 @@ public class OptaSimulator implements Runnable {
     }
 
     private boolean next() {
+        boolean isFinished = false;
+
         try {
-            optaResultSet = getOptaResultSet(docParsed);
-            docParsed += 1;
+            if (nextDocToParseIndex % RESULTS_PER_QUERY == 0) {
+                if (stmt != null) {
+                    stmt.close();
+                }
+
+                stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                optaResultSet = stmt.executeQuery("SELECT * FROM dailysoccerdb ORDER BY created_at LIMIT " +
+                                                  RESULTS_PER_QUERY + " OFFSET " + nextDocToParseIndex + ";");
+            }
+
+            nextDocToParseIndex += 1;
+
             if (optaResultSet.next()) {
                 SQLXML sqlxml = optaResultSet.getSQLXML("xml");
                 Date createdAt = optaResultSet.getDate("created_at");
                 String name = optaResultSet.getString("name");
                 String feedType = optaResultSet.getString("feed_type");
-                System.out.println(name + " " + createdAt.toString());
-                BasicDBObject json = (BasicDBObject) JSON.parse(XML.toJSONObject(sqlxml.getString()).toString());
+
+                Logger.debug(name + " " + createdAt.toString());
+
                 if (feedType != null) {
-                    HashSet<String> dirtyMatchEvents = optaProcessor.processOptaDBInput(feedType, json );
+                    BasicDBObject json = (BasicDBObject) JSON.parse(XML.toJSONObject(sqlxml.getString()).toString());
+
+                    HashSet<String> dirtyMatchEvents = optaProcessor.processOptaDBInput(feedType, json);
                     ModelCoreLoop.onOptaMatchEventsChanged(dirtyMatchEvents);
                 }
-                return true;
             }
             else {
-                System.out.println("NULL");
+                isFinished = true;
+                Logger.info("Hemos llegado al final de la simulacion");
             }
         } catch (SQLException e) {
-            Logger.error(e.getMessage());
-            e.printStackTrace();
+            Logger.error("WTF 1533 SQLException: ", e);
         }
-        return false;
+
+        return isFinished;
     }
 
-    private void closeDBStatement(){
-        try {
-            stmt.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void createConnection(){
+    private void createConnection() {
         connection = DB.getConnection();
         try {
             connection.setAutoCommit(false);
         } catch (SQLException e) {
-            Logger.error("WTF SQL 1");
+            Logger.error("WTF 1231 SQLException: ", e);
         }
-
     }
 
-    private ResultSet getOptaResultSet(int offset){
-        String selectString = "SELECT * FROM dailysoccerdb ORDER BY created_at LIMIT 1 OFFSET "+offset+";";
-        ResultSet results = null;
-        try  {
-            stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-                                              ResultSet.CONCUR_READ_ONLY);
+    private void closeConnection() {
+        try {
+            if (stmt != null) {
+                stmt.close();
 
-            //stmt.setFetchSize(1); // Integer.MIN_VALUE);
-            //logMemory();
-//            Logger.debug("Query pre - executed");
-            results = stmt.executeQuery(selectString);
- //           Logger.debug("Query executed");
-            //logMemory();
+                stmt = null;
+                optaResultSet = null;
+            }
 
+            connection.close();
+            connection = null;
         }
-        catch (java.sql.SQLException e) {
-            Logger.error("SQL Exception connecting to DailySoccerDB");
-            e.printStackTrace();
+        catch (SQLException e) {
+            Logger.error("WTF 742 SQLException: ", e);
         }
-        return results;
     }
-
 }
