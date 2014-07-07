@@ -4,8 +4,14 @@ import com.mongodb.BasicDBObject;
 import model.Model;
 import model.PointsTranslation;
 import org.bson.types.ObjectId;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.SAXBuilder;
 import play.Logger;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -15,9 +21,22 @@ import java.util.*;
  */
 public class OptaProcessor {
 
+    public HashSet<String> processOptaDBInput(String feedType, String requestBody) {
+        SAXBuilder builder = new SAXBuilder();
+        Document document = null;
+        try {
+            document = (Document) builder.build(new StringReader(requestBody));
+        } catch (JDOMException e) {
+            Logger.error("WTF JDOM 956213", e);
+        } catch (IOException e) {
+            Logger.error("WTF IO 956213", e);
+        }
+        Element rootNode = document.getRootElement();
+        return processOptaDBInput(feedType, rootNode);
+    }
+
     // Retorna los Ids de opta (gameIds, optaMachEventId) de los partidos que han cambiado
-    public HashSet<String> processOptaDBInput(String feedType, BasicDBObject requestBody) {
-    
+    public HashSet<String> processOptaDBInput(String feedType, Element requestBody) {
         dirtyMatchEvents = new HashSet<>();
 
         if (feedType != null) {
@@ -33,6 +52,25 @@ public class OptaProcessor {
         return dirtyMatchEvents;
     }
 
+    public HashSet<String> processOptaDBInput(String feedType, BasicDBObject requestBody) {
+        dirtyMatchEvents = new HashSet<>();
+
+        if (feedType != null) {
+            if (feedType.equals("F9")) {
+                processF9(requestBody);
+            } else if (feedType.equals("F24")) {
+                processEvents(requestBody);
+            } else if (feedType.equals("F1")) {
+                processF1(requestBody);
+            }
+        }
+
+        return dirtyMatchEvents;
+    }
+
+    private void processEvents(Element gamesObj) {
+
+    }
     private void processEvents(BasicDBObject gamesObj) {
         try {
             resetPointsTranslationCache();
@@ -241,6 +279,9 @@ public class OptaProcessor {
         return myDate;
     }
 
+    private void processF1(Element f1) {
+
+    }
     private void processF1(BasicDBObject f1) {
         try {
             LinkedHashMap myF1 = (LinkedHashMap) ((LinkedHashMap) f1.get("SoccerFeed")).get("SoccerDocument");
@@ -309,6 +350,49 @@ public class OptaProcessor {
         Model.optaMatchEvents().update("{optaMatchEventId: #}", optaMatchEvent.optaMatchEventId).upsert().with(optaMatchEvent);
     }
 
+    private void processF9(Element f9) {
+        try {
+            Element myF9 = f9.getChild("SoccerDocument");
+            if (myF9.getAttribute("Type").equals("Result")) {
+                processFinishedMatch(myF9);
+            } else if (myF9.getChild("Type").getValue().equals("STANDINGS Latest") || myF9.getChild("Type").getValue().equals("SQUADS Latest") ) {
+                List teams = getTeamsFromF9(myF9);
+
+                for (Object team : teams) {
+                    LinkedHashMap teamAsHashMap = (LinkedHashMap) team;
+
+                    OptaTeam myTeam = new OptaTeam();
+                    myTeam.optaTeamId = (String) teamAsHashMap.get("uID");
+                    myTeam.name = (String) teamAsHashMap.get("Name");
+                    myTeam.shortName = (String) teamAsHashMap.get("SYMID");
+                    myTeam.updatedTime = System.currentTimeMillis();
+
+                    ArrayList playersList = (ArrayList) teamAsHashMap.get("Player");
+
+                    if (playersList != null) { // Si no es un equipo placeholder
+                        Model.optaTeams().update("{optaTeamId: #}", myTeam.optaTeamId).upsert().with(myTeam);
+
+                        for (Object player : playersList) {
+                            LinkedHashMap playerObject = (LinkedHashMap) player;
+                            String playerId = (String) playerObject.get("uID");
+
+                            // First search if player already exists:
+                            if (playerId != null) { // && !playerObject.containsKey("PersonName")) {
+                                OptaPlayer myPlayer = createPlayer(playerObject, teamAsHashMap);
+                                Model.optaPlayers().update("{optaPlayerId: #}", playerId).upsert().with(myPlayer);
+                            }
+                        }
+                    }
+                }
+
+            }
+
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     private void processF9(BasicDBObject f9) {
 
         try {
@@ -353,6 +437,21 @@ public class OptaProcessor {
         }
     }
 
+    private List<Element> getTeamsFromF9(Element myF9) {
+        List<Element> teams = new ArrayList();
+
+        if (null!=myF9.getChild("Team")) {
+            teams = myF9.getChildren("Team");
+        } else {
+            if (null!=myF9.getChild("Match")) {
+                teams = myF9.getChild("Match").getChildren("Team");
+            } else {
+                System.out.println("no match");
+            }
+        }
+        return teams;
+    }
+
     private ArrayList getTeamsFromF9(LinkedHashMap myF9) {
         ArrayList teams = new ArrayList();
 
@@ -368,6 +467,28 @@ public class OptaProcessor {
         return teams;
     }
 
+
+    private void processFinishedMatch(Element F9) {
+        String gameId = F9.getChild("uID").getValue();
+
+        List<Element> teamDatas = F9.getChild("MatchData").getChildren("TeamData");
+
+        for (Element teamData : teamDatas) {
+            List<Element> teamStats = teamData.getChildren("Stat");
+
+            for (Element teamStat : teamStats) {
+                if (teamStat.getChild("Type").getValue().equals("goals_conceded")) {
+                    if ((int) Integer.parseInt(teamStat.getChild("content").getValue()) == 0) {
+                        processCleanSheet(F9, gameId, teamData);
+                    } else {
+                        processGoalsAgainst(F9, gameId, teamData);
+                    }
+                }
+            }
+        }
+
+        dirtyMatchEvents.add(gameId);
+    }
 
     private void processFinishedMatch(LinkedHashMap F9) {
         String gameId = (String) F9.get("uID");
@@ -395,6 +516,21 @@ public class OptaProcessor {
         dirtyMatchEvents.add(gameId);
     }
 
+    private void processGoalsAgainst(Element F9, String gameId, Element teamData) {
+        List<Element> matchPlayers = teamData.getChild("PlayerLineUp").getChildren("MatchPlayer");
+
+        for (Element matchPlayer : matchPlayers) {
+            if (matchPlayer.getChild("Position").getValue().equals("Goalkeeper") || matchPlayer.getChild("Position").getValue().equals("Defender")) {
+                List<Element> stats = matchPlayer.getChildren("Stat");
+                for (Element stat : stats) {
+                    if (stat.getChild("Type").getValue().equals("goals_conceded") && ((int) Integer.parseInt(stat.getAttributeValue("content")) > 0)) {
+                        createEvent(F9, gameId, matchPlayer, 2001, 20001,(int) Integer.parseInt(stat.getAttributeValue("content")));
+                    }
+                }
+            }
+        }
+    }
+
     private void processGoalsAgainst(LinkedHashMap F9, String gameId, LinkedHashMap teamData) {
 
         ArrayList matchPlayers = (ArrayList) ((LinkedHashMap) teamData.get("PlayerLineUp")).get("MatchPlayer");
@@ -415,6 +551,21 @@ public class OptaProcessor {
         }
     }
 
+    private void processCleanSheet(Element F9, String gameId, Element teamData) {
+        List<Element> matchPlayers = teamData.getChild("PlayerLineUp").getChildren("MatchPlayer");
+
+        for (Element matchPlayer : matchPlayers) {
+            if (matchPlayer.getChild("Position").getValue().equals("Goalkeeper") || matchPlayer.getChild("Position").getValue().equals("Defender")) {
+                List<Element> stats = matchPlayer.getChildren("Stat");
+                for (Element stat : stats) {
+                    if (stat.getChild("Type").getValue().equals("mins_played") && ((int) Integer.parseInt(stat.getAttributeValue("content")) > 59)) {
+                        createEvent(F9, gameId, matchPlayer, 2000, 20000, 1);
+                    }
+                }
+            }
+        }
+
+    }
     private void processCleanSheet(LinkedHashMap F9, String gameId, LinkedHashMap teamData) {
 
         ArrayList matchPlayers = (ArrayList) ((LinkedHashMap) teamData.get("PlayerLineUp")).get("MatchPlayer");
@@ -433,6 +584,10 @@ public class OptaProcessor {
                 }
             }
         }
+    }
+
+    private void createEvent(Element F9, String gameId, Element matchPlayer, int typeId, int eventId, int times) {
+
     }
 
     private void createEvent(LinkedHashMap F9, String gameId, LinkedHashMap matchPlayer, int typeId, int eventId, int times) {
