@@ -2,12 +2,13 @@ package controllers.admin;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.util.JSON;
+import model.Global;
 import model.Model;
 import model.ModelCoreLoop;
 import model.opta.OptaProcessor;
+import org.json.XML;
 import play.Logger;
 import play.db.DB;
-import org.json.XML;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
@@ -166,7 +167,7 @@ public class OptaSimulator implements Runnable {
 
             if (optaResultSet.next()) {
                 SQLXML sqlxml = optaResultSet.getSQLXML("xml");
-                Date createdAt = optaResultSet.getDate("created_at");
+                Date createdAt = optaResultSet.getTimestamp("created_at");
                 String name = optaResultSet.getString("name");
                 String feedType = optaResultSet.getString("feed_type");
 
@@ -178,6 +179,7 @@ public class OptaSimulator implements Runnable {
                     HashSet<String> dirtyMatchEvents = optaProcessor.processOptaDBInput(feedType, json);
                     ModelCoreLoop.onOptaMatchEventsChanged(dirtyMatchEvents);
                 }
+                Global.setFakeTime(createdAt);
             }
             else {
                 isFinished = true;

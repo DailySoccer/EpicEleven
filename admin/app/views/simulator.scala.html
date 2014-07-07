@@ -4,39 +4,59 @@
 @import helper._
 @import helper.twitterBootstrap._
 @import controllers.admin.routes._
+@import model.Global
 
-@main("Simulator - Admin") {
+@scripts = {
+<script type="text/javascript">
 
-<h1 class="page-header">Simulator</h1>
+        function updatePage() {
+            window.location.reload(true);
+        }
+
+        function updateTime() {
+            $("#result").load("ajax/test.html");
+        }
+
+        $(document).ready( function(){
+           window.setInterval(updatePage, 1000);
+        })
+
+    </script>
+}
+
+
+@main("Simulator - Admin", scripts) {
+
+<h1 class="page-header">Simulator:  @Global.currentTimeString</h1>
     <div class="btn-group">
         @if(OptaSimulator.isPaused()){
-            <a class="btn btn-primary" href="@SimulatorController.start">
-                <i class="glyphicon glyphicon-play"></i> Play
+            <a class="btn btn-primary play" href="@SimulatorController.start">
+                Play
             </a>
         } else {
-            <a class="btn btn-primary" href="@SimulatorController.pause">
-                <i class="glyphicon glyphicon-pause"></i> Pause
+            <a class="btn btn-primary pause" href="@SimulatorController.pause">
+                Pause
             </a>
         }
         @if(OptaSimulator.isPaused()){
-            <a class="btn btn-primary" href="@SimulatorController.nextStep">
-            <i class="glyphicon glyphicon-step-forward"></i> Next step
+            <a class="btn btn-primary forward" href="@SimulatorController.nextStep">
+             Next step
             </a>
         } else {
-            <a class="btn btn-primary disabled" href="@SimulatorController.nextStep">
-                <i class="glyphicon glyphicon-step-forward"></i> Next step
+            <a class="btn btn-primary disabled forward" href="@SimulatorController.nextStep">
+             Next step
             </a>
         }
-        <a class="btn btn-primary" href="@SimulatorController.reset">
-            <i class="glyphicon glyphicon-stop"></i> Reset
+        <a class="btn btn-primary stop" href="@SimulatorController.reset">
+             Reset
         </a>
     </div>
     <hr>
     @if(OptaSimulator.isPaused()){
         @helper.form(action = SimulatorController.gotoNextPause) {
             <input type="datetime-local" value="2014-06-14T00:00" name="date">
-            <button id="ok" name="ok" type="submit" class="btn btn-primary">
-                <i class="glyphicon glyphicon-fast-forward"></i> Go To
+            <button id="ok" name="ok" type="submit" class="btn btn-primary fforward">
+                Go To
             </button>
         }
     }
