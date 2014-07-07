@@ -14,11 +14,11 @@
         }
 
         function updateTime() {
-            $("#result").load("ajax/test.html");
+            $("#time").load("/admin/time_simulator");
         }
 
         $(document).ready( function(){
-           window.setInterval(updatePage, 1000);
+           window.setInterval(updateTime, 100);
         })
 
     </script>
@@ -27,7 +27,9 @@
 
 @main("Simulator - Admin", scripts) {
 
-<h1 class="page-header">Simulator:  @Global.currentTimeString</h1>
+<h1 class="page-header">Simulator</h1>
+ <div id="time" style="font-weight:700"></div>
+
     <div class="btn-group">
         @if(OptaSimulator.isPaused()){
             <a class="btn btn-primary play" href="@SimulatorController.start">
