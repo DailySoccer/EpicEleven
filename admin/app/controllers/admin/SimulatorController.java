@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import model.Global;
 import play.data.Form;
 import play.data.format.Formats;
 import play.data.validation.Constraints;
@@ -14,6 +15,10 @@ public class SimulatorController extends Controller {
 
     public static Result index() {
         return ok(views.html.simulator.render());
+    }
+
+    public static Result time() {
+        return ok(Global.currentTimeString());
     }
 
     public static Result start() {

@@ -77,3 +77,5 @@ GET         /reset_simulator                                   controllers.admin
 GET         /simulator_nextstep                                controllers.admin.SimulatorController.nextStep()
 GET         /pause_simulator                                   controllers.admin.SimulatorController.pause()
 POST        /goto_simulator                                    controllers.admin.SimulatorController.gotoNextPause()
+
+GET         /time_simulator                                   controllers.admin.SimulatorController.time()
