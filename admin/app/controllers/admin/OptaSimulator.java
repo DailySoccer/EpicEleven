@@ -1,17 +1,16 @@
 package controllers.admin;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.util.JSON;
 import model.Global;
 import model.Model;
 import model.ModelCoreLoop;
 import model.opta.OptaProcessor;
-import org.json.XML;
 import play.Logger;
 import play.db.DB;
+
 import java.sql.*;
-import java.util.*;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.TreeSet;
 
 /**
  * Created by gnufede on 13/06/14.
@@ -174,7 +173,7 @@ public class OptaSimulator implements Runnable {
                 Logger.debug(name + " " + createdAt.toString());
 
                 if (feedType != null) {
-                    BasicDBObject json = (BasicDBObject) JSON.parse(XML.toJSONObject(sqlxml.getString()).toString());
+                    //BasicDBObject json = (BasicDBObject) JSON.parse(XML.toJSONObject(sqlxml.getString()).toString());
 
 
                     HashSet<String> dirtyMatchEvents = optaProcessor.processOptaDBInput(feedType, sqlxml.getString());

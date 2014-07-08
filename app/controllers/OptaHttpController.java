@@ -1,27 +1,26 @@
 package controllers;
 
 import actions.AllowCors;
-import com.mongodb.*;
+import com.mongodb.BasicDBObject;
 import com.mongodb.util.JSON;
 import model.Model;
 import model.ModelCoreLoop;
-import model.opta.*;
-import org.json.XML;
+import model.opta.OptaDB;
+import model.opta.OptaProcessor;
 import play.Logger;
+import play.db.DB;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
-import play.db.DB;
 
-
-import javax.sql.DataSource;
-import java.sql.*;
 import java.io.UnsupportedEncodingException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.Date;
 
 /**
  * Created by gnufede on 30/05/14.
@@ -60,7 +59,7 @@ public class OptaHttpController extends Controller {
             // No hay manera de pasar de JSON a BSON directamente al parecer, sin pasar por String,
             // o por un hashmap (que tampoco parece trivial)
             // http://stackoverflow.com/questions/5699323/using-json-with-mongodb
-            bodyAsJSON = (BasicDBObject) JSON.parse(XML.toJSONObject(bodyText).toString());
+            //bodyAsJSON = (BasicDBObject) JSON.parse(XML.toJSONObject(bodyText).toString());
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -81,7 +80,8 @@ public class OptaHttpController extends Controller {
         Model.optaDB().insert(new OptaDB(bodyText, bodyAsJSON, name, request().headers(), startDate, System.currentTimeMillis()));
 
         OptaProcessor theProcessor = new OptaProcessor();
-        HashSet<String> dirtyMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyAsJSON);
+        //HashSet<String> dirtyMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyAsJSON);
+        HashSet<String> dirtyMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyText);
         ModelCoreLoop.onOptaMatchEventsChanged(dirtyMatchEvents);
 
         return ok("Yeah, XML processed");
