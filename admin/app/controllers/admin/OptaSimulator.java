@@ -92,6 +92,8 @@ public class OptaSimulator implements Runnable {
     static public void addPause(Date date) {
         if (instance == null) {
             instance = new OptaSimulator(0L, System.currentTimeMillis(), true, null);
+            instance.pauseLoop = true;
+            instance.startThread();
         }
         instance.pauses.add(date);
     }
@@ -167,6 +169,7 @@ public class OptaSimulator implements Runnable {
             if (optaResultSet.next()) {
                 SQLXML sqlxml = optaResultSet.getSQLXML("xml");
                 Date createdAt = optaResultSet.getTimestamp("created_at");
+                lastParsedDate = createdAt.getTime();
                 String name = optaResultSet.getString("name");
                 String feedType = optaResultSet.getString("feed_type");
 
