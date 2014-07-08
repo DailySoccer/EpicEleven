@@ -1,5 +1,6 @@
 package model;
 
+import com.mongodb.MongoException;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.jongo.Find;
@@ -15,6 +16,7 @@ import model.opta.OptaEventType;
 public final class MockData {
 
     static public void ensureMockDataAll() {
+        ensureMockDataUsers();
         ensureMockDataContests();
     }
 
@@ -22,6 +24,18 @@ public final class MockData {
         createTemplateSoccerTeamsAndPlayers();
         createTemplateContests();
         instantiateContests();
+    }
+
+    static public void ensureMockDataUsers() {
+        createUser("Fran",      "Galvez",       "Fran",         "fran@test.com", "");
+        createUser("Victor",    "Mendiluce",    "Zincoontrin",  "zincoontrin@test.com", "");
+        createUser("Santiago",  "Gonzalez",     "Flaco",        "flaco@test.com", "");
+        createUser("Santiago",  "Revelo",       "Revelo",       "revelo@test.com", "");
+        createUser("Javier",    "Lajara",       "Javi",         "javi@test.com", "");
+        createUser("Ximo",      "Martinez",     "Ximo",         "ximo@test.com", "");
+        createUser("Santiago",  "R. Bedate",    "Neo",          "neo@test.com", "");
+        createUser("Federico",  "Mon",          "Fede",         "fede@test.com", "");
+        createUser("Jesús",     "Tapial",       "Machus",       "machus@test.com", "");
     }
 
     public static void createPointsTranslation() {
@@ -67,6 +81,14 @@ public final class MockData {
                 myPointsTranslation.points = pointsTable[i][1];
                 Model.pointsTranslation().insert(myPointsTranslation);
             }
+        }
+    }
+
+    static private void createUser(String firstName, String lastName, String nickName, String email, String password) {
+        try {
+            Model.users().insert(new User(firstName, lastName, nickName, email, password));
+        } catch (MongoException exc) {
+            Logger.error("createUser: ", exc);
         }
     }
 

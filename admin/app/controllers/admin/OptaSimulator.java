@@ -1,6 +1,7 @@
 package controllers.admin;
 
 import model.Global;
+import model.MockData;
 import model.Model;
 import model.ModelCoreLoop;
 import model.opta.OptaProcessor;
@@ -51,6 +52,7 @@ public class OptaSimulator implements Runnable {
 
         if (resetDB) {
             Model.resetDB();
+            MockData.ensureMockDataUsers();
         }
     }
 
