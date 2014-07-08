@@ -237,8 +237,29 @@ public class ContestController extends Controller {
             return new ReturnHelper(false, "Contest invalid").toResult();
         }
 
+        HashMap<String, Object> result = new HashMap<>();
+
+        // Obtener los contest entries
         ObjectId contestId = new ObjectId(contest);
-        return new ReturnHelper(Model.contestEntries().find("{contestId: #}", contestId).as(ContestEntry.class)).toResult();
+        Iterable<ContestEntry> contestEntriesResults = Model.contestEntries().find("{contestId: #}", contestId).as(ContestEntry.class);
+        List<ContestEntry> contestEntriesList = ListUtils.asList(contestEntriesResults);
+
+        // Obtener la informacion de los usuarios que participan en los contests
+        List<UserInfo> usersInfoInContest = new ArrayList<>();
+
+        List<ObjectId> userIds = new ArrayList<>();
+        for (ContestEntry contestEntry : contestEntriesList) {
+            userIds.add(contestEntry.userId);
+        }
+        Iterable<User> users = Model.findObjectIds(Model.users(), "_id", userIds).as(User.class);
+        for (User user : users) {
+            usersInfoInContest.add(user.info());
+        }
+
+        result.put("users_info", usersInfoInContest);
+        result.put("contest_entries", contestEntriesList);
+
+        return new ReturnHelper(result).toResult();
     }
 
     /**

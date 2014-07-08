@@ -25,7 +25,6 @@ public class User {
     }
 
 	public User(String firstName, String lastName, String nickName, String email, String password) {
-        this();
 		this.firstName = firstName;
 		this.lastName = lastName;
         this.nickName = nickName;
@@ -33,6 +32,10 @@ public class User {
 		this.password = password;
         createdAt = GlobalDate.getCurrentDate();
 	}
+
+    public UserInfo info() {
+        return new UserInfo(userId, firstName, lastName, nickName);
+    }
 
     /**
      * Query de un usuario por su identificador en mongoDB (verifica la validez del mismo)
