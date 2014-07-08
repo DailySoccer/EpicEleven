@@ -280,7 +280,7 @@ public class OptaProcessor {
 
 
     private List<Element> getTeamsFromF9(Element myF9) {
-        List<Element> teams = new ArrayList();
+        List<Element> teams = new ArrayList<Element>();
 
         if (null != myF9.getChild("Team")) {
             teams = myF9.getChildren("Team");

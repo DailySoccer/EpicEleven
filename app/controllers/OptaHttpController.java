@@ -1,8 +1,6 @@
 package controllers;
 
 import actions.AllowCors;
-import com.mongodb.BasicDBObject;
-import com.mongodb.util.JSON;
 import model.Model;
 import model.ModelCoreLoop;
 import model.opta.OptaDB;
@@ -36,10 +34,9 @@ public class OptaHttpController extends Controller {
             bodyText = new String(bodyText.getBytes("ISO-8859-1"));
         }
         catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            Logger.error("WTF 4345141313489, Encoding");
         }
 
-        BasicDBObject bodyAsJSON = (BasicDBObject) JSON.parse("{}");
         String name = "default-filename";
 
         try {
@@ -51,7 +48,7 @@ public class OptaHttpController extends Controller {
             }
         }
         catch (Exception e) {
-            e.printStackTrace();
+            Logger.error("WTF 438592155483457");
         }
 
         try {
@@ -77,8 +74,6 @@ public class OptaHttpController extends Controller {
                   getDateFromHeader(getHeader("X-Meta-Last-Updated", request().headers()))
                  );
 
-        Model.optaDB().insert(new OptaDB(bodyText, bodyAsJSON, name, request().headers(), startDate, System.currentTimeMillis()));
-
         OptaProcessor theProcessor = new OptaProcessor();
         //HashSet<String> dirtyMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyAsJSON);
         HashSet<String> dirtyMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyText);
@@ -96,11 +91,14 @@ public class OptaHttpController extends Controller {
     }
 
     public static String getHeader(String key, Map<String, String[]> headers) {
-        if (headers != null) {
-            return headers.containsKey(key)? headers.get(key)[0]: headers.containsKey(key.toLowerCase())? headers.get(key.toLowerCase())[0]: null;
-        } else {
+        if (null == headers) {
             return null;
         }
+        return headers.containsKey(key)?
+                    headers.get(key)[0]:
+                    headers.containsKey(key.toLowerCase())?
+                            headers.get(key.toLowerCase())[0]:
+                            null;
     }
 
     public static Date getDateFromHeader(String dateStr) {
@@ -112,14 +110,9 @@ public class OptaHttpController extends Controller {
         try {
             date = (Date)formatter.parse(dateStr);
         } catch (ParseException e) {
-            e.printStackTrace();
+            Logger.error("WTF 238155443290389 Data parsing");
         }
         return date;
-    }
-
-    public static Result optaXmlTest(){
-        //insertXML("<xml></xml>", "headers", new Date(), "name", "feedType", "game", "competition", "season", getDateFromHeader("Sun Jun 15 02:00:53 BST 2014"));
-        return ok("Yeah, XML inserted");
     }
 
     public static Result migrate(){

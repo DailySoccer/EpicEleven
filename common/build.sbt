@@ -38,3 +38,8 @@ unmanagedResourceDirectories in Test ~= { _.filter(_.exists) }
 
 // Necesitamos acentos
 javacOptions := List("-encoding", "utf-8")
+//javacOptions := List("-encoding", "utf-8", "-Xlint:unchecked")
+
+//scalacOptions ++= {
+//  Seq("-feature", "-language:reflectiveCalls", "-Xlint:unchecked")
+//}
