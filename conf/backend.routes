@@ -12,6 +12,7 @@ GET     /get_user_profile           controllers.LoginController.getUserProfile()
 
 # Contests
 GET     /get_user_contests          controllers.ContestController.getUserContests()
+GET     /get_contest/:contest       controllers.ContestController.getContest(contest)
 
 # Active contests
 GET     /get_active_contests        controllers.ContestController.getActiveContests()

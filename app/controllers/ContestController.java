@@ -104,6 +104,53 @@ public class ContestController extends Controller {
         return new ReturnHelper(content).toResult();
     }
 
+    /**
+     * Obtener toda la información necesaria para mostrar un Contest
+     * @param contestId
+     * @return
+     */
+    @UserAuthenticated
+    public static Result getContest(String contestId) {
+        long startTime = System.currentTimeMillis();
+
+        /*
+        // Obtener el User de la session
+        User theUser = utils.SessionUtils.getUserFromRequest(request());
+        */
+
+        // Obtenemos el contest
+        Contest contest = Contest.find(contestId);
+
+        // Obtenermos los contest Entry
+        Iterable<ContestEntry> contestEntryRestuls = Model.contestEntries().find("{contestId: #}", contest.contestId).as(ContestEntry.class);
+        List<ContestEntry> contestEntries = ListUtils.asList(contestEntryRestuls);
+
+        // Obtener la informacion de los usuarios que participan en el contest
+        List<UserInfo> usersInfoInContest = new ArrayList<>();
+        Iterable<User> users = User.find(contestEntries).as(User.class);
+        for (User user : users) {
+            usersInfoInContest.add(user.info());
+        }
+
+        // Obtenemos el templateContest
+        TemplateContest templateContest = TemplateContest.find(contest.templateContestId);
+
+        // Obtener los match Events
+        Iterable<TemplateMatchEvent> matchEvents = Model.findObjectIds(Model.templateMatchEvents(), "_id", templateContest.templateMatchEventIds).as(TemplateMatchEvent.class);
+
+        HashMap<String, Object> content = new HashMap<>();
+
+        content.put("contest", contest);
+        content.put("users_info", usersInfoInContest);
+        content.put("contest_entries", contestEntries);
+        content.put("template_contest", templateContest);
+        content.put("match_events", matchEvents);
+
+        Logger.info("getContest: {}", System.currentTimeMillis() - startTime);
+
+        return new ReturnHelper(content).toResult();
+    }
+
     // https://github.com/playframework/playframework/tree/master/samples/java/forms
     public static class ContestEntryParams {
         @Constraints.Required
