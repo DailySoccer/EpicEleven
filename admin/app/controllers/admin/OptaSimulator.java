@@ -32,9 +32,11 @@ public class OptaSimulator implements Runnable {
     ResultSet _optaResultSet;
     Statement _stmt;
     int _nextDocToParseIndex;
+    boolean _isFinished;
 
 
     private OptaSimulator(String competitionId) {
+        this._isFinished = false;
         this._stopLoop = false;
         this._pauseLoop = true;
         this._lastParsedDate = 0L;
@@ -117,6 +119,10 @@ public class OptaSimulator implements Runnable {
         return _instance != null;
     }
 
+    public static boolean isFinished() {
+        return _instance == null || _instance._isFinished;
+    }
+
     public static boolean isPaused() {
         return _instance == null || _instance._pauseLoop;
     }
@@ -171,7 +177,7 @@ public class OptaSimulator implements Runnable {
 
 
     private boolean next() {
-        boolean isFinished = false;
+        _isFinished = false;
 
         try {
             if (_nextDocToParseIndex % RESULTS_PER_QUERY == 0) {
@@ -202,14 +208,16 @@ public class OptaSimulator implements Runnable {
                 GlobalDate.setFakeDate(createdAt);
             }
             else {
-                isFinished = true;
+                _isFinished = true;
                 Logger.info("Hemos llegado al final de la simulacion");
+                GlobalDate.setFakeDate(null);
+
             }
         } catch (SQLException e) {
             Logger.error("WTF 1533 SQLException: ", e);
         }
 
-        return isFinished;
+        return _isFinished;
     }
 
     private void createConnection() {

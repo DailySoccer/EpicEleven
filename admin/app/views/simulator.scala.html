@@ -9,9 +9,33 @@
 @scripts = {
 <script type="text/javascript">
         var was_paused = "@OptaSimulator.isPaused";
+        var is_running = "@{!OptaSimulator.isFinished}";
 
         function updatePage() {
             window.location.reload(true);
+        }
+
+        function repaintButtons() {
+            if (is_running == "true") {
+                $(".btn-sim").removeClass("btn-primary");
+                $(".btn-sim").addClass("btn-success");
+            } else {
+                $(".btn-sim").removeClass("btn-success");
+                $(".btn-sim").addClass("btn-primary");
+            }
+        }
+
+        function checkRunning() {
+            var temp =  $.ajax({
+                url: "/admin/is_running",
+                success: function(result) {
+                        var was_running = is_running
+                        is_running = result;
+                        if (is_running !== was_running){
+                            repaintButtons();
+                        }
+                }
+            });
         }
 
         function checkReload() {
@@ -25,6 +49,15 @@
             });
         }
 
+        function validateForm() {
+            if ((new Date($("#time").text()) < new Date($("#date-pause").val())) || is_running == "false") {
+                return true;
+            } else {
+                alert("Error: La fecha introducida es anterior");
+            }
+            return false;
+        }
+
         function updateFields() {
             $("#time").load("/admin/current_date_simulator");
             $("#nextStepDesc").load("/admin/next_step_desc_simulator");
@@ -32,7 +65,9 @@
         }
 
         $(document).ready( function(){
+           repaintButtons();
            window.setInterval(updateFields, 100);
+           window.setInterval(checkRunning, 100);
            window.setInterval(checkReload, 500);
         })
 
@@ -81,8 +116,8 @@
     </div>
     <hr>
     @if(OptaSimulator.isPaused()){
-        @helper.form(action = SimulatorController.gotoDate) {
-            <input type="datetime-local" value="2014-06-14T00:00" name="date">
+        @helper.form(action = SimulatorController.gotoDate, 'onsubmit -> "return validateForm()") {
+            <input type="datetime-local" value="2014-06-14T00:00" id="date-pause" name="date">
             <button id="ok" name="ok" type="submit" class="btn btn-primary fforward">
                 Go to Date
             </button>

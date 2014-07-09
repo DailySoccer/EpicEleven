@@ -38,6 +38,10 @@ public class SimulatorController extends Controller {
         return redirect(routes.SimulatorController.index());
     }
 
+    public static Result isRunning() {
+        return ok(((Boolean)!OptaSimulator.isFinished()).toString());
+    }
+
     public static Result isPaused() {
         return ok(((Boolean)OptaSimulator.isPaused()).toString());
     }
