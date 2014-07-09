@@ -44,11 +44,11 @@ public class TemplateMatchEvent {
      *  Query de la lista de Template Match Events correspondientes a una lista de template contests
      */
     static public Find find(List<TemplateContest> templateContests) {
-        List<ObjectId> templateContestObjectIds = new ArrayList<>(templateContests.size());
+        List<ObjectId> templateMatchEventObjectIds = new ArrayList<>(templateContests.size());
         for (TemplateContest templateContest: templateContests) {
-            templateContestObjectIds.addAll(templateContest.templateMatchEventIds);
+            templateMatchEventObjectIds.addAll(templateContest.templateMatchEventIds);
         }
-        return Model.findObjectIds(Model.templateMatchEvents(), "_id", templateContestObjectIds);
+        return Model.findObjectIds(Model.templateMatchEvents(), "_id", templateMatchEventObjectIds);
     }
 
     public static Iterable<TemplateMatchEvent> find(String fieldId, List<ObjectId> idList) {
