@@ -27,7 +27,7 @@ public class TemplateSoccerTeam {
         optaTeamId = optaTeam.optaTeamId;
         name = optaTeam.name;
         shortName = optaTeam.shortName;
-        createdAt = Global.currentTime();
+        createdAt = GlobalDate.getCurrentDate();
     }
 
     static public TemplateSoccerTeam find(ObjectId templateSoccerTeamId) {

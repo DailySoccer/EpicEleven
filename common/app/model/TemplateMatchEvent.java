@@ -118,7 +118,7 @@ public class TemplateMatchEvent {
         templateMatchEvent.optaSeasonId = optaMatchEvent.seasonId;
         templateMatchEvent.soccerTeamA = SoccerTeam.create(templateMatchEvent, teamA);
         templateMatchEvent.soccerTeamB = SoccerTeam.create(templateMatchEvent, teamB);
-        templateMatchEvent.createdAt = Global.currentTime();
+        templateMatchEvent.createdAt = GlobalDate.getCurrentDate();
 
         // TODO: Eliminar condicion (optaMatchEventId == null)
         if (optaMatchEvent != null) {

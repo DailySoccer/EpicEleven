@@ -14,7 +14,7 @@ public class User {
     public Date createdAt;
 
     public User() {
-        createdAt = Global.currentTime();
+        createdAt = GlobalDate.getCurrentDate();
     }
 
 	public User(String firstName, String lastName, String nickName, String email, String password) {

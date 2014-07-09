@@ -29,7 +29,7 @@ public class PointsTranslation {
         pointsTranslation.points = points;
         pointsTranslation.timestamp = new Date();
         pointsTranslation.unixtimestamp = pointsTranslation.timestamp.getTime();
-        pointsTranslation.createdAt = Global.currentTime();
+        pointsTranslation.createdAt = GlobalDate.getCurrentDate();
         Model.pointsTranslation().insert(pointsTranslation);
         return true;
     }

@@ -34,7 +34,7 @@ public class LiveMatchEvent {
         soccerTeamA = templateMatchEvent.soccerTeamA;
         soccerTeamB = templateMatchEvent.soccerTeamB;
         startDate = templateMatchEvent.startDate;
-        createdAt = Global.currentTime();
+        createdAt = GlobalDate.getCurrentDate();
     }
 
     static public LiveMatchEvent create(TemplateMatchEvent templateMatchEvent) {

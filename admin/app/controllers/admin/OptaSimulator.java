@@ -1,6 +1,6 @@
 package controllers.admin;
 
-import model.Global;
+import model.GlobalDate;
 import model.MockData;
 import model.Model;
 import model.ModelCoreLoop;
@@ -25,8 +25,6 @@ public class OptaSimulator implements Runnable {
     TreeSet<Date> pauses;
     OptaProcessor optaProcessor;
 
-    long initialDate;
-    long endDate;
     long lastParsedDate;
     String competitionId;
 
@@ -37,23 +35,16 @@ public class OptaSimulator implements Runnable {
     int nextDocToParseIndex;
 
 
-    private OptaSimulator(long initialDate, long endDate, boolean resetDB, String competitionId) {
+    private OptaSimulator(String competitionId) {
         this.pauses = new TreeSet<Date>();
         this.stopLoop = false;
         this.pauseLoop = true;
-        this.initialDate = initialDate;
-        this.endDate = endDate;
         this.lastParsedDate = 0L;
         this.nextDocToParseIndex = 0;
         this.competitionId = competitionId;
         this.optaProcessor = new OptaProcessor();
 
         createConnection();
-
-        if (resetDB) {
-            Model.resetDB();
-            MockData.ensureMockDataUsers();
-        }
     }
 
     public static boolean start() {
@@ -62,7 +53,7 @@ public class OptaSimulator implements Runnable {
 
         // Es la primera vez q lo creamos?
         if (instance == null) {
-            instance = new OptaSimulator(0L, System.currentTimeMillis(), true, null);
+            instance = new OptaSimulator(null);
             wasResumed = false;
 
             instance.pauseLoop = false;
@@ -70,15 +61,18 @@ public class OptaSimulator implements Runnable {
         }
         else {
             instance.pauseLoop = false;
+
+            if (instance.optaThread == null) {
+                instance.startThread();
+            }
         }
 
         return wasResumed;
     }
 
-
     static public void nextStep() {
         if (instance == null) {
-            instance = new OptaSimulator(0L, System.currentTimeMillis(), true, null);
+            instance = new OptaSimulator(null);
         }
         instance.next();
     }
@@ -86,18 +80,38 @@ public class OptaSimulator implements Runnable {
     static public void reset() {
         if (instance != null) {
             instance.stopLoop = true;
+
+            if (instance.optaThread != null) {
+                try {
+                    // Esperamos a que muera para que no haga un nuevo setFakeDate despues de que salgamos de aqui!
+                    instance.optaThread.join();
+                }
+                catch (InterruptedException e) { }
+            }
+
             instance.optaThread = null;
             instance = null;
         }
+
+        GlobalDate.setFakeDate(null);
+        Model.resetDB();
     }
 
-    static public void addPause(Date date) {
+    static public void gotoDate(Date date) {
         if (instance == null) {
-            instance = new OptaSimulator(0L, System.currentTimeMillis(), true, null);
+            instance = new OptaSimulator(null);
             instance.pauseLoop = true;
             instance.startThread();
         }
         instance.pauses.add(date);
+    }
+
+    static public String getNextStepDescription() {
+        return "Next file index: " + (instance != null? "" + instance.nextDocToParseIndex : "0");
+    }
+
+    public static boolean isCreated() {
+        return instance != null;
     }
 
     public static boolean isPaused() {
@@ -132,7 +146,7 @@ public class OptaSimulator implements Runnable {
             else {                       // Durante la pausa reevaluamos cada X ms si continuamos
                 try {
                     Thread.sleep(10);
-                }  catch (InterruptedException e) {};
+                }  catch (InterruptedException e) {}
             }
         }
 
@@ -151,6 +165,7 @@ public class OptaSimulator implements Runnable {
     private boolean isBefore(long date) {
         return lastParsedDate < date;
     }
+
 
     private boolean next() {
         boolean isFinished = false;
@@ -181,7 +196,7 @@ public class OptaSimulator implements Runnable {
                     HashSet<String> dirtyMatchEvents = optaProcessor.processOptaDBInput(feedType, sqlxml.getString());
                     ModelCoreLoop.onOptaMatchEventsChanged(dirtyMatchEvents);
                 }
-                Global.setFakeTime(createdAt);
+                GlobalDate.setFakeDate(createdAt);
             }
             else {
                 isFinished = true;

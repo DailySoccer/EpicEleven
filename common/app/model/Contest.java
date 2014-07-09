@@ -30,7 +30,7 @@ public class Contest {
         templateContestId = template.templateContestId;
         name = template.name;
         maxEntries = template.maxEntries;
-        createdAt = Global.currentTime();
+        createdAt = GlobalDate.getCurrentDate();
     }
 
     static public Contest find(ObjectId contestId) {

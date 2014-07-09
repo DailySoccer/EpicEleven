@@ -34,7 +34,7 @@ public class TemplateSoccerPlayer {
         name = optaPlayer.name;
         fieldPos = getFieldPostFromOpta(optaPlayer.position);
         templateTeamId = aTemplateTeamId;
-        createdAt = Global.currentTime();
+        createdAt = GlobalDate.getCurrentDate();
     }
 
     static FieldPos getFieldPostFromOpta (String optaPosition) {

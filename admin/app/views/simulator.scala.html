@@ -4,7 +4,7 @@
 @import helper._
 @import helper.twitterBootstrap._
 @import controllers.admin.routes._
-@import model.Global
+@import model.GlobalDate
 
 @scripts = {
 <script type="text/javascript">
@@ -13,12 +13,13 @@
             window.location.reload(true);
         }
 
-        function updateTime() {
-            $("#time").load("/admin/time_simulator");
+        function updateFields() {
+            $("#time").load("/admin/current_date_simulator");
+            $("#nextStepDesc").load("/admin/next_step_desc_simulator");
         }
 
         $(document).ready( function(){
-           window.setInterval(updateTime, 100);
+           window.setInterval(updateFields, 100);
         })
 
     </script>
@@ -28,37 +29,47 @@
 @main("Simulator - Admin", scripts) {
 
 <h1 class="page-header">Simulator</h1>
- <div id="time" style="font-weight:700"></div>
+    <div id="time" style="font-weight:700">@GlobalDate.getCurrentDateString()</div>
+    <div id="nextStepDesc" style="font-weight:700">@OptaSimulator.getNextStepDescription()</div>
 
     <div class="btn-group">
-        @if(OptaSimulator.isPaused()){
-            <a class="btn btn-primary play" href="@SimulatorController.start">
-                Play
+        @if(OptaSimulator.isPaused()) {
+            <a class="btn btn-primary play" href="@SimulatorController.start" title="Starts the simulator at the beginning of time (the first date sent by Opta) or resumes execution from the current date.">
+                @if(!OptaSimulator.isCreated()) {
+                    Start
+                } else {
+                    Resume
+                }
             </a>
         } else {
             <a class="btn btn-primary pause" href="@SimulatorController.pause">
                 Pause
             </a>
         }
-        @if(OptaSimulator.isPaused()){
-            <a class="btn btn-primary forward" href="@SimulatorController.nextStep">
-             Next step
+
+        @if(OptaSimulator.isPaused()) {
+            <a class="btn btn-primary forward" href="@SimulatorController.nextStep" title="Process the next Opta file (or first if we are at the beginning of time)">
+                @if(OptaSimulator.isCreated()) {
+                    Next step
+                } else {
+                    First step
+                }
             </a>
         } else {
-            <a class="btn btn-primary disabled forward" href="@SimulatorController.nextStep">
+            <a class="btn btn-primary disabled forward" href="@SimulatorController.nextStep" title="Disabled">
              Next step
             </a>
         }
-        <a class="btn btn-primary stop" href="@SimulatorController.reset">
+        <a class="btn btn-primary stop" href="@SimulatorController.reset" title="Erases the whole Database and resets to the beginning of time.">
              Reset
         </a>
     </div>
     <hr>
     @if(OptaSimulator.isPaused()){
-        @helper.form(action = SimulatorController.gotoNextPause) {
+        @helper.form(action = SimulatorController.gotoDate) {
             <input type="datetime-local" value="2014-06-14T00:00" name="date">
             <button id="ok" name="ok" type="submit" class="btn btn-primary fforward">
-                Go To
+                Go to Date
             </button>
         }
     }

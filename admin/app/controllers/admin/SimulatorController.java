@@ -1,6 +1,6 @@
 package controllers.admin;
 
-import model.Global;
+import model.GlobalDate;
 import play.data.Form;
 import play.data.format.Formats;
 import play.data.validation.Constraints;
@@ -17,34 +17,29 @@ public class SimulatorController extends Controller {
         return ok(views.html.simulator.render());
     }
 
-    public static Result time() {
-        return ok(Global.currentTimeString());
+    public static Result currentDate() {
+        return ok(GlobalDate.getCurrentDateString());
     }
 
     public static Result start() {
 
         boolean wasResumed = OptaSimulator.start();
 
-        if (wasResumed) {
-            FlashMessage.success("Simulator resumed");
-        }
-        else {
-            FlashMessage.success("Simulator started");
-        }
-
         return redirect(routes.SimulatorController.index());
     }
 
     public static Result pause() {
         OptaSimulator.pause();
-        FlashMessage.success("Simulator paused");
         return redirect(routes.SimulatorController.index());
     }
 
     public static Result nextStep() {
         OptaSimulator.nextStep();
-        FlashMessage.success("Simulator next step");
         return redirect(routes.SimulatorController.index());
+    }
+
+    public static Result nextStepDescription() {
+        return ok(OptaSimulator.getNextStepDescription());
     }
 
     public static class GotoSimParams {
@@ -53,17 +48,13 @@ public class SimulatorController extends Controller {
         public Date date;
     }
 
-    public static Result gotoNextPause() {
+    public static Result gotoDate() {
 
         Form<GotoSimParams> gotoForm = form(GotoSimParams.class).bindFromRequest();
 
-        if (!gotoForm.hasErrors()) {
-            GotoSimParams params = gotoForm.get();
-            OptaSimulator.addPause(params.date);
-            FlashMessage.success("Pause added. Press play to continue.");
-        } else {
-            FlashMessage.danger("Wrong button pressed");
-        }
+        GotoSimParams params = gotoForm.get();
+        OptaSimulator.gotoDate(params.date);
+        FlashMessage.success("Pause added. Press play to continue.");
 
         return redirect(routes.SimulatorController.index());
     }
@@ -71,6 +62,7 @@ public class SimulatorController extends Controller {
     public static Result reset(){
         OptaSimulator.reset();
         FlashMessage.success("Simulator reset");
+        FlashMessage.info("The DB was totally erased. If you press Start now, the simulation will start at the beginning of time (the first file Opta sent).");
         return redirect(routes.SimulatorController.index());
     }
 
