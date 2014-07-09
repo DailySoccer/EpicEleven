@@ -1,0 +1,4 @@
+#!/bin/sh
+# Para empezar a usar este script, renombrar a 'heroku_dump.sh' y substituir XXXXXXX por la pass. 
+# 'heroku_dump.sh' no se subira a git porque esta añadido al '.gitignore'
+mongodump -h lamppost.3.mongolayer.com:10073 -d app23671191 -u "admin" -p "XXXXXXXX" -o dump_heroku
