@@ -33,11 +33,11 @@ public class TemplateMatchEvent {
         return Model.templateMatchEvents().findOne("{_id : #}", templateMatchEventId).as(TemplateMatchEvent.class);
     }
 
-    public boolean isEqual(OptaMatchEvent optaMatchEvent) {
-        return optaMatchEventId.equals(optaMatchEvent.optaMatchEventId) &&
-                soccerTeamA.optaTeamId.equals(optaMatchEvent.homeTeamId) &&
-                soccerTeamB.optaTeamId.equals(optaMatchEvent.awayTeamId) &&
-                startDate.equals(optaMatchEvent.matchDate);
+    public boolean hasChanged(OptaMatchEvent optaMatchEvent) {
+        return !optaMatchEventId.equals(optaMatchEvent.optaMatchEventId) ||
+               !soccerTeamA.optaTeamId.equals(optaMatchEvent.homeTeamId) ||
+               !soccerTeamB.optaTeamId.equals(optaMatchEvent.awayTeamId) ||
+               !startDate.equals(optaMatchEvent.matchDate);
     }
 
     /**

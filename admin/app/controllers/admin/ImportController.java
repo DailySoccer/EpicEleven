@@ -31,7 +31,7 @@ public class ImportController extends Controller {
                     news.add(optaTeam);
                 }
             }
-            else if (changes != null && !template.isEqual(optaTeam)) {
+            else if (changes != null && template.hasChanged(optaTeam)) {
                 changes.add(optaTeam);
             }
         }
@@ -100,7 +100,7 @@ public class ImportController extends Controller {
                     news.add(optaSoccer);
                 }
             }
-            else if (changes != null && !template.isEqual(optaSoccer)) {
+            else if (changes != null && template.hasChanged(optaSoccer)) {
                 changes.add(optaSoccer);
             }
         }
@@ -172,7 +172,7 @@ public class ImportController extends Controller {
                     news.add(optaMatch);
                 }
             }
-            else if (changes != null && !template.isEqual(optaMatch)) {
+            else if (changes != null && template.hasChanged(optaMatch)) {
                 changes.add(optaMatch);
             }
         }

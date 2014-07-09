@@ -54,10 +54,10 @@ public class TemplateSoccerPlayer {
         return Model.findObjectIds(Model.templateSoccerPlayers(), fieldId, idList).as(TemplateSoccerPlayer.class);
     }
 
-    public boolean isEqual(OptaPlayer optaPlayer) {
-        return optaPlayerId.equals(optaPlayer.optaPlayerId) &&
-               name.equals(optaPlayer.name) &&
-               fieldPos.equals(getFieldPostFromOpta(optaPlayer.position));
+    public boolean hasChanged(OptaPlayer optaPlayer) {
+        return !optaPlayerId.equals(optaPlayer.optaPlayerId) ||
+               !name.equals(optaPlayer.name) ||
+               !fieldPos.equals(getFieldPostFromOpta(optaPlayer.position));
     }
 
     /**

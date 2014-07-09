@@ -34,10 +34,10 @@ public class TemplateSoccerTeam {
         return Model.templateSoccerTeams().findOne("{_id : #}", templateSoccerTeamId).as(TemplateSoccerTeam.class);
     }
 
-    public boolean isEqual(OptaTeam optaTeam) {
-        return optaTeamId.equals(optaTeam.optaTeamId) &&
-               name.equals(optaTeam.name) &&
-               shortName.equals(optaTeam.shortName);
+    public boolean hasChanged(OptaTeam optaTeam) {
+        return !optaTeamId.equals(optaTeam.optaTeamId) ||
+               !name.equals(optaTeam.name) ||
+               !shortName.equals(optaTeam.shortName);
     }
 
     /**
