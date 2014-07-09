@@ -67,7 +67,7 @@ public class Model {
 
         try {
             try (Statement stmt = connection.createStatement()) {
-                boolean result = stmt.execute("CREATE TABLE IF NOT EXISTS dailysoccerdb (" +
+                boolean result = stmt.execute("CREATE TABLE IF NOT EXISTS optaxml (" +
                                               " id serial PRIMARY KEY, " +
                                               " xml xml, " +
                                               " headers text, " +
@@ -80,7 +80,7 @@ public class Model {
                                               " last_updated timestamp " +
                                               " );");
                 if (result) {
-                    Logger.info("Base de datos DailySoccerDB creada");
+                    Logger.info("Tabla OptaXML creada");
                 }
             }
         }

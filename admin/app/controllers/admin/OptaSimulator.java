@@ -180,7 +180,7 @@ public class OptaSimulator implements Runnable {
                 }
 
                 _stmt = _connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-                _optaResultSet = _stmt.executeQuery("SELECT * FROM dailysoccerdb ORDER BY created_at LIMIT " +
+                _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml ORDER BY created_at LIMIT " +
                                                   RESULTS_PER_QUERY + " OFFSET " + _nextDocToParseIndex + ";");
             }
 

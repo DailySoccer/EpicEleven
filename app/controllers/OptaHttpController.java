@@ -14,7 +14,6 @@ import play.mvc.Result;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -138,7 +137,7 @@ public class OptaHttpController extends Controller {
     public static void insertXML(Connection connection, String xml, String headers, Date timestamp, String name, String feedType,
                                  String gameId, String competitionId, String seasonId, Date lastUpdated) {
 
-        String insertString = "INSERT INTO dailysoccerdb (xml, headers, created_at, name, feed_type, game_id, competition_id," +
+        String insertString = "INSERT INTO optaxml (xml, headers, created_at, name, feed_type, game_id, competition_id," +
                               "season_id, last_updated) VALUES ( XMLPARSE (DOCUMENT ?),?,?,?,?,?,?,?,?)";
 
         try {
