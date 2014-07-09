@@ -70,59 +70,59 @@ public class OptaEvent {
         }
         //DERIVED EVENTS GO HERE
         // Asistencia
-        if (this.typeId == OptaEventType.PASS.code && this.qualifiers.contains(210)) {
-            this.typeId = OptaEventType.ASSIST.code;  //Asistencia -> 1210
+        if (this.typeId == OptaEventType.PASS._code && this.qualifiers.contains(210)) {
+            this.typeId = OptaEventType.ASSIST._code;  //Asistencia -> 1210
         }
         // Falta/Penalty infligido
-        else if (this.typeId == OptaEventType.FOUL_RECEIVED.code && this.outcome == 0) {
+        else if (this.typeId == OptaEventType.FOUL_RECEIVED._code && this.outcome == 0) {
             if (this.qualifiers.contains(9)) {
-                this.typeId = OptaEventType.PENALTY_COMMITTED.code;  //Penalty infligido -> 1409
+                this.typeId = OptaEventType.PENALTY_COMMITTED._code;  //Penalty infligido -> 1409
             } else {
-                this.typeId = OptaEventType.FOUL_COMMITTED.code;  // Falta infligida -> 1004
+                this.typeId = OptaEventType.FOUL_COMMITTED._code;  // Falta infligida -> 1004
             }
         }
         // Tarjeta roja -> 1017
-        else if (this.typeId == OptaEventType.YELLOW_CARD.code && this.qualifiers.contains(33)) {
-            this.typeId = OptaEventType.RED_CARD.code;
+        else if (this.typeId == OptaEventType.YELLOW_CARD._code && this.qualifiers.contains(33)) {
+            this.typeId = OptaEventType.RED_CARD._code;
         }
         // Penalty miss -> 1410
-        else if ((this.typeId == OptaEventType.MISS.code || this.typeId == OptaEventType.POST.code ||
-                this.typeId == OptaEventType.ATTEMPT_SAVED.code) &&
+        else if ((this.typeId == OptaEventType.MISS._code || this.typeId == OptaEventType.POST._code ||
+                this.typeId == OptaEventType.ATTEMPT_SAVED._code) &&
                 this.outcome == 0 && this.qualifiers.contains(9)) {
-            this.typeId = OptaEventType.PENALTY_FAILED.code;
+            this.typeId = OptaEventType.PENALTY_FAILED._code;
         } else if (this.typeId == 16 && this.outcome == 1) {
             // Gol en contra -> 1699
             if (this.qualifiers.contains(28)) {
-                this.typeId = OptaEventType.OWN_GOAL.code;
+                this.typeId = OptaEventType.OWN_GOAL._code;
             } else {
                 // Diferencias en goles:
                 try {
                     OptaPlayer scorer = Model.optaPlayers().findOne("{optaPlayerId: #}", "p" + this.optaPlayerId).as(OptaPlayer.class);
                     if (scorer.position.equals("Goalkeeper")) {
                         // Gol del portero
-                        this.typeId = OptaEventType.GOAL_SCORED_BY_GOALKEEPER.code;
+                        this.typeId = OptaEventType.GOAL_SCORED_BY_GOALKEEPER._code;
                     } else if (scorer.position.equals("Defender")) {
                         // Gol del defensa
-                        this.typeId = OptaEventType.GOAL_SCORED_BY_DEFENDER.code;
+                        this.typeId = OptaEventType.GOAL_SCORED_BY_DEFENDER._code;
                     } else if (scorer.position.equals("Midfielder")) {
                         // Gol del medio
-                        this.typeId = OptaEventType.GOAL_SCORED_BY_MIDFIELDER.code;
+                        this.typeId = OptaEventType.GOAL_SCORED_BY_MIDFIELDER._code;
                     } else if (scorer.position.equals("Forward")) {
                         // Gol del delantero
-                        this.typeId = OptaEventType.GOAL_SCORED_BY_FORWARD.code;
+                        this.typeId = OptaEventType.GOAL_SCORED_BY_FORWARD._code;
                     }
                 } catch (NullPointerException e) {
-                    Logger.error("Player not found: " + this.optaPlayerId);
+                    Logger.info("Player not found: " + this.optaPlayerId);
                 }
             }
         }
         // Penalty parado -> 1058
         else if (this.typeId == 58 && !this.qualifiers.contains(186)) {
-            this.typeId = OptaEventType.GOALKEEPER_SAVES_PENALTY.code;
+            this.typeId = OptaEventType.GOALKEEPER_SAVES_PENALTY._code;
         }
         // Effective Tackle -> 1007
-        else if (this.typeId == OptaEventType.TACKLE.code && this.outcome == 1) {
-            this.typeId = OptaEventType.TACKLE_EFFECTIVE.code;
+        else if (this.typeId == OptaEventType.TACKLE._code && this.outcome == 1) {
+            this.typeId = OptaEventType.TACKLE_EFFECTIVE._code;
         }
     }
 
@@ -161,7 +161,7 @@ public class OptaEvent {
                 timestamp = timestamp.substring(0, plusPos);
                 dateFormat = new SimpleDateFormat(dateConfig.substring(0, timestamp.length()));
             } else {
-                Logger.error("Cant parse this date: " + timestamp);
+                Logger.info("Cant parse this date: " + timestamp);
             }
         }
 

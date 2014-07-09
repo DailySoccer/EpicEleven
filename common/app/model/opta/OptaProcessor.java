@@ -261,7 +261,7 @@ public class OptaProcessor {
                 if (playerObject.getChild("Position") != null){
                     myPlayer.position = playerObject.getChild("Position").getContent().get(0).getValue();
                     if (myPlayer.position.equals("Substitute")) {
-                        Logger.error("WTF 23344: Sustituto! {}", myPlayer.name );
+                        Logger.info("WTF 23344: Sustituto! {}", myPlayer.name );
                     }
                 }
 
@@ -282,7 +282,7 @@ public class OptaProcessor {
             if (null != myF9.getChild("Match")) {
                 teams = myF9.getChild("Match").getChildren("Team");
             } else {
-                Logger.error("WTF 34825: No match");
+                Logger.info("WTF 34825: No match");
             }
         }
         return teams;

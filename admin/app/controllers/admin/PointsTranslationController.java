@@ -56,7 +56,7 @@ public class PointsTranslationController extends Controller {
 
         PointsTranslationForm params = pointsTranslationForm.get();
 
-        boolean success = params.id.isEmpty()? PointsTranslation.createPointForEvent(params.eventType.code, params.points):
+        boolean success = params.id.isEmpty()? PointsTranslation.createPointForEvent(params.eventType._code, params.points):
                 PointsTranslation.editPointForEvent(new ObjectId(params.id), params.points);
 
         if (!success) {
