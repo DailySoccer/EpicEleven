@@ -95,6 +95,7 @@ public class OptaSimulator implements Runnable {
 
         GlobalDate.setFakeDate(null);
         Model.resetDB();
+        MockData.ensureMockDataUsers();
     }
 
     static public void gotoDate(Date date) {
