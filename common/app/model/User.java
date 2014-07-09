@@ -2,9 +2,12 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import org.bson.types.ObjectId;
+import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class User {
     @Id
@@ -51,6 +54,15 @@ public class User {
         }
         return aUser;
     }
+
+    static public Find find(List<ContestEntry> contestEntries) {
+        List<ObjectId> userObjectIds = new ArrayList<>(contestEntries.size());
+        for (ContestEntry entry: contestEntries) {
+            userObjectIds.add(entry.userId);
+        }
+        return Model.findObjectIds(Model.users(), "_id", userObjectIds);
+    }
+
 
     /*
     @JsonView(JsonViews.NotForClient.class)

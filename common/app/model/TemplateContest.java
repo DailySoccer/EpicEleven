@@ -46,7 +46,9 @@ public class TemplateContest {
     public TemplateContest() {
     }
 
-    public boolean isActive() { return (state == State.ACTIVE); }
+    public boolean isActive()   { return (state == State.ACTIVE); }
+    public boolean isLive()     { return (state == State.LIVE); }
+    public boolean isHistory()  { return (state == State.HISTORY); }
 
     public List<TemplateMatchEvent> templateMatchEvents() {
         Iterable<TemplateMatchEvent> templateMatchEventResults = TemplateMatchEvent.find("_id", templateMatchEventIds);
