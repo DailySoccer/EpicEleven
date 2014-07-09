@@ -65,7 +65,7 @@ public class TemplateContestController extends Controller {
         templateContest.salaryCap = params.salaryCap;
         templateContest.entryFee = params.entryFee;
         templateContest.prizeType = params.prizeType;
-        templateContest.createdAt = Global.currentTime();
+        templateContest.createdAt = GlobalDate.getCurrentDate();
 
         Date startDate = null;
         templateContest.templateMatchEventIds = new ArrayList<>();
@@ -160,7 +160,7 @@ public class TemplateContestController extends Controller {
         templateContest.salaryCap = 100000;
         templateContest.startDate = startDate;
         templateContest.templateMatchEventIds = new ArrayList<>();
-        templateContest.createdAt = Global.currentTime();
+        templateContest.createdAt = GlobalDate.getCurrentDate();
 
         for (TemplateMatchEvent match: templateMatchEvents) {
             templateContest.templateMatchEventIds.add(match.templateMatchEventId);

@@ -30,7 +30,7 @@ public class ContestEntry {
         this.userId = userId;
         this.contestId = contestId;
         this.soccerIds = soccerIds;
-        this.createdAt = Global.currentTime();
+        this.createdAt = GlobalDate.getCurrentDate();
     }
 
     static public ContestEntry find(ObjectId contestEntryId) {

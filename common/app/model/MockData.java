@@ -28,7 +28,7 @@ public final class MockData {
 
     static public void ensureMockDataUsers() {
         createUser("Fran",      "Galvez",       "Fran",         "fran@test.com", "");
-        createUser("Victor",    "Mendiluce",    "Zincoontrin",  "zincoontrin@test.com", "");
+        createUser("Victor",    "Mendiluce",    "Zincoontrin",  "vmendi@test.com", "");
         createUser("Santiago",  "Gonzalez",     "Flaco",        "flaco@test.com", "");
         createUser("Santiago",  "Revelo",       "Revelo",       "revelo@test.com", "");
         createUser("Javier",    "Lajara",       "Javi",         "javi@test.com", "");
@@ -103,7 +103,7 @@ public final class MockData {
             TemplateSoccerTeam soccerTeam = new TemplateSoccerTeam();
             soccerTeam.optaTeamId = String.valueOf(++optaTeamId);
             soccerTeam.name = String.format("Team%02d", teamCounter);
-            soccerTeam.createdAt = Global.currentTime();
+            soccerTeam.createdAt = GlobalDate.getCurrentDate();
 
             Model.templateSoccerTeams().insert(soccerTeam);
 
@@ -114,7 +114,7 @@ public final class MockData {
                 soccerPlayer.fieldPos = pos[playerCounter];
                 soccerPlayer.salary = (playerCounter + 1) * 10000;
                 soccerPlayer.templateTeamId = soccerTeam.templateSoccerTeamId;
-                soccerPlayer.createdAt = Global.currentTime();
+                soccerPlayer.createdAt = GlobalDate.getCurrentDate();
 
                 Model.templateSoccerPlayers().insert(soccerPlayer);
             }
@@ -139,7 +139,7 @@ public final class MockData {
                 templateContest.salaryCap = 100000;
                 templateContest.startDate = currentCreationDay.toDate();
                 templateContest.templateMatchEventIds = new ArrayList<>();
-                templateContest.createdAt = Global.currentTime();
+                templateContest.createdAt = GlobalDate.getCurrentDate();
 
                 for (int teamCounter = 0; teamCounter < 20; teamCounter += 2) {
                     TemplateMatchEvent newMatch = createTemplateMatchEvent(String.format("Team%02d", teamCounter),
@@ -168,7 +168,7 @@ public final class MockData {
         templateContest.salaryCap = 100000;
         templateContest.startDate = dateTime.toDate();
         templateContest.templateMatchEventIds = new ArrayList<>();
-        templateContest.createdAt = Global.currentTime();
+        templateContest.createdAt = GlobalDate.getCurrentDate();
 
         // Buscar todos los template match events que jueguen ese dia
         Iterable<TemplateMatchEvent> lMatchEvents = Model.templateMatchEvents().find("{startDate: #}", dateTime.toDate()).as(TemplateMatchEvent.class);
