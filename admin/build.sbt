@@ -6,9 +6,5 @@ play.Project.playJavaSettings
 
 libraryDependencies ++= Seq(
   cache,
-  filters,
-  "org.json" % "json" % "20140107"
+  filters
 )
-
-// Un @import comun a todas las view templates, para que quede mas compacto
-templatesImport += "admin.routes.AdminController"

@@ -178,11 +178,7 @@ public class OptaSimulator implements Runnable {
                 Logger.debug(name + " " + createdAt.toString());
 
                 if (feedType != null) {
-                    //BasicDBObject json = (BasicDBObject) JSON.parse(XML.toJSONObject(sqlxml.getString()).toString());
-
-
                     HashSet<String> dirtyMatchEvents = optaProcessor.processOptaDBInput(feedType, sqlxml.getString());
-                    //HashSet<String> dirtyMatchEvents = optaProcessor.processOptaDBInput(feedType, json);
                     ModelCoreLoop.onOptaMatchEventsChanged(dirtyMatchEvents);
                 }
                 Global.setFakeTime(createdAt);

@@ -15,7 +15,6 @@ libraryDependencies ++= Seq(
   filters,
   "org.mongodb" % "mongo-java-driver" % "2.12.0",                  // https://github.com/mongodb/mongo-java-driver
   "org.jongo" % "jongo" % "1.0",                                   // http://jongo.org/
-  "org.json" % "json" % "20140107",
   javaJdbc,
   "postgresql" % "postgresql" % "9.1-901-1.jdbc4",
   "org.seleniumhq.selenium" % "selenium-java" % "2.41.0" % "test",
@@ -34,4 +33,8 @@ lazy val backend = project.in(file(".")).aggregate(common, admin).dependsOn(comm
 
 // javacOptions ++= Seq("-Xlint:deprecation")
 
-// scalacOptions ++= Seq("-feature")
+// Hacemos el hook de las rutas hijas (por ejemplo, admin/) dentro del fichero de routas ('backend.routes'), como
+// esta documentado que hay que hacerlo, con la sintaxis de flecha "-> /admin admin.routes". Esto genera un warning
+// sobre que debemos activar las reflectiveCalls en Scala. Pero como no sabemos las implicaciones de hacer esto,
+// preferimos dejarlo sin activar hasta que investiguemos mas.
+//scalacOptions ++= { Seq("-feature", "-language:reflectiveCalls") }
