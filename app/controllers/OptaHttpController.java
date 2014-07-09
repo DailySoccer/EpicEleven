@@ -34,7 +34,7 @@ public class OptaHttpController extends Controller {
             bodyText = new String(bodyText.getBytes("ISO-8859-1"));
         }
         catch (UnsupportedEncodingException e) {
-            Logger.error("WTF 4345141313489, Encoding");
+            Logger.error("WTF 43451: ", e);
         }
 
         String name = "default-filename";
@@ -48,7 +48,7 @@ public class OptaHttpController extends Controller {
             }
         }
         catch (Exception e) {
-            Logger.error("WTF 438592155483457");
+            Logger.error("WTF 43859: ", e);
         }
 
         try {
@@ -110,7 +110,7 @@ public class OptaHttpController extends Controller {
         try {
             date = (Date)formatter.parse(dateStr);
         } catch (ParseException e) {
-            Logger.error("WTF 238155443290389 Data parsing");
+            Logger.error("WTF 23815 Data parsing: ", e);
         }
         return date;
     }
@@ -128,7 +128,7 @@ public class OptaHttpController extends Controller {
                         getDateFromHeader(getHeader("X-Meta-Last-Updated", document.headers)));
             }
             else {
-                Logger.debug("IGNORANDO: "+document.name);
+                Logger.debug("IGNORANDO: " + document.name);
 
             }
         }
@@ -136,45 +136,35 @@ public class OptaHttpController extends Controller {
     }
 
     public static void insertXML(Connection connection, String xml, String headers, Date timestamp, String name, String feedType,
-                                 String gameId, String competitionId, String seasonId, Date lastUpdated){
-        PreparedStatement stmt = null;
-        String insertString = "INSERT INTO dailysoccerdb (xml, headers, created_at, name, feed_type, game_id, competition_id,"+
+                                 String gameId, String competitionId, String seasonId, Date lastUpdated) {
+
+        String insertString = "INSERT INTO dailysoccerdb (xml, headers, created_at, name, feed_type, game_id, competition_id," +
                               "season_id, last_updated) VALUES ( XMLPARSE (DOCUMENT ?),?,?,?,?,?,?,?,?)";
 
         try {
-            stmt = connection.prepareStatement(insertString);
-            stmt.setString(1, xml);
-            stmt.setString(2, headers);
-            stmt.setTimestamp(3, new java.sql.Timestamp(timestamp.getTime()));
-            stmt.setString(4, name);
-            stmt.setString(5, feedType);
-            stmt.setString(6, gameId);
-            stmt.setString(7, competitionId);
-            stmt.setString(8, seasonId);
-            if (lastUpdated != null){
-                stmt.setTimestamp(9, new java.sql.Timestamp(lastUpdated.getTime()));
-            } else {
-                stmt.setTimestamp(9, null);
-            }
+            try (PreparedStatement stmt = connection.prepareStatement(insertString)) {
+                stmt.setString(1, xml);
+                stmt.setString(2, headers);
+                stmt.setTimestamp(3, new java.sql.Timestamp(timestamp.getTime()));
+                stmt.setString(4, name);
+                stmt.setString(5, feedType);
+                stmt.setString(6, gameId);
+                stmt.setString(7, competitionId);
+                stmt.setString(8, seasonId);
 
-            boolean result = stmt.execute();
-            if (result){
-                Logger.info("Inserción en DailySoccerDB");
+                if (lastUpdated != null) {
+                    stmt.setTimestamp(9, new java.sql.Timestamp(lastUpdated.getTime()));
+                } else {
+                    stmt.setTimestamp(9, null);
+                }
+
+                if (stmt.execute()) {
+                    Logger.info("Successful insert in OptaXML");
+                }
             }
         }
         catch (java.sql.SQLException e) {
-            Logger.error("SQL Exception connecting to DailySoccerDB");
-            e.printStackTrace();
-        }
-        finally {
-            if (stmt != null) {
-                try {
-                    stmt.close();
-                } catch (SQLException e) {
-                    Logger.error("SQL Exception closing Postgres statement");
-                    e.printStackTrace();
-                }
-            }
+            Logger.error("WTF 56312: ", e);
         }
     }
 }
