@@ -8,9 +8,21 @@
 
 @scripts = {
 <script type="text/javascript">
+        var was_paused = "@OptaSimulator.isPaused";
 
         function updatePage() {
             window.location.reload(true);
+        }
+
+        function checkReload() {
+            var temp =  $.ajax({
+                url: "/admin/is_paused",
+                success: function(result) {
+                        if (result !== was_paused) {
+                            updatePage();
+                        }
+                }
+            });
         }
 
         function updateFields() {
@@ -21,6 +33,7 @@
 
         $(document).ready( function(){
            window.setInterval(updateFields, 100);
+           window.setInterval(checkReload, 500);
         })
 
     </script>

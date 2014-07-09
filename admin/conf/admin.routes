@@ -78,4 +78,6 @@ GET         /nextstep_simulator                                        controlle
 GET         /pause_simulator                                           controllers.admin.SimulatorController.pause()
 POST        /goto_date_simulator                                       controllers.admin.SimulatorController.gotoDate()
 GET         /next_step_desc_simulator                                  controllers.admin.SimulatorController.nextStepDescription()
+GET         /next_stop_simulator                                       controllers.admin.SimulatorController.getNextStop()
+GET         /is_paused                                                 controllers.admin.SimulatorController.isPaused()
 GET         /current_date_simulator                                    controllers.admin.SimulatorController.currentDate()
