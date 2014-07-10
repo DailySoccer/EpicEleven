@@ -108,7 +108,7 @@ public class OptaSimulator implements Runnable {
     }
 
     static public String getNextStepDescription() {
-        return "Next file index: " + (_instance != null? "" + _instance._nextDocToParseIndex : "0");
+        return _instance != null? "" + _instance._nextDocToParseIndex : "0";
     }
 
     static public String getNextStop() {
