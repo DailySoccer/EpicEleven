@@ -1,17 +1,12 @@
 package controllers.admin;
 
 import model.Model;
-import model.opta.OptaEvent;
-import model.opta.OptaMatchEvent;
-import model.opta.OptaPlayer;
-import model.opta.OptaTeam;
+import model.opta.*;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
 
 import java.util.List;
-
-//import static model.opta.OptaProcessor.recalculateAllEvents;
 
 public class OptaController extends Controller {
     public static Result optaSoccerPlayers() {
@@ -43,12 +38,10 @@ public class OptaController extends Controller {
    }
 
     public static Result updateOptaEvents() {
-        /*
-        recalculateAllEvents();
-        */
-        //FlashMessage.success("Events recalculated");
-        FlashMessage.success("TODO");
 
+        new OptaProcessor().recalculateAllEvents();
+
+        FlashMessage.success("All OptaEvents recalculated with the current points translation table");
         return redirect(routes.PointsTranslationController.index());
     }
 }

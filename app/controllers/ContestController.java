@@ -412,25 +412,4 @@ public class ContestController extends Controller {
 
         return new ReturnHelper(content).toResult();
     }
-
-    /**
-     * Actualizar los puntos obtenidos por todos los futbolistas que participan en unos partidos (POST.matchEvents)
-     *  TEMPORAL: Usado para realizar tests.
-     * @return Ok
-     */
-    public static Result updateLiveFantasyPoints() {
-        Form<MatchEventsListParams> matchEventForm = form(MatchEventsListParams.class).bindFromRequest();
-        if (matchEventForm.hasErrors()) {
-            return new ReturnHelper(false, "Form has errors").toResult();
-        }
-
-        MatchEventsListParams params = matchEventForm.get();
-
-        // Convertir las stringsIds de partidos en ObjectId (de mongoDB)
-        List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.matchEvents);
-
-        LiveMatchEvent.updateLiveFantasyPoints(idsList);
-
-        return ok();
-    }
 }

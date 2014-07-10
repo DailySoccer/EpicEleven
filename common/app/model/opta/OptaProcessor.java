@@ -84,17 +84,15 @@ public class OptaProcessor {
 
 
     public void recalculateAllEvents() {
+
         resetPointsTranslationCache();
 
-        for (OptaEvent event : Model.optaEvents().find().as(OptaEvent.class)) {
-            recalculateEvent(event);
-        }
-    }
+        for (OptaEvent optaEvent : Model.optaEvents().find().as(OptaEvent.class)) {
 
-    private void recalculateEvent(OptaEvent optaEvent) {
-        optaEvent.points = getPoints(optaEvent.typeId, optaEvent.timestamp);
-        optaEvent.pointsTranslationId = _pointsTranslationTableCache.get(optaEvent.typeId);
-        Model.optaEvents().update("{eventId: #, gameId: #}", optaEvent.eventId, optaEvent.gameId).upsert().with(optaEvent);
+            optaEvent.points = getPoints(optaEvent.typeId, optaEvent.timestamp);
+            optaEvent.pointsTranslationId = _pointsTranslationTableCache.get(optaEvent.typeId);
+            Model.optaEvents().update("{eventId: #, gameId: #}", optaEvent.eventId, optaEvent.gameId).upsert().with(optaEvent);
+        }
     }
 
     private int getPoints(int typeId, Date timestamp) {
@@ -106,7 +104,8 @@ public class OptaProcessor {
 
     private PointsTranslation getPointsTranslation(int typeId, Date timestamp){
         Iterable<PointsTranslation> pointsTranslations = Model.pointsTranslation().
-                find("{eventTypeId: #, timestamp: {$lte: #}}", typeId, timestamp).sort("{timestamp: -1}").as(PointsTranslation.class);
+                                                         find("{eventTypeId: #, timestamp: {$lte: #}}", typeId, timestamp).
+                                                         sort("{timestamp: -1}").as(PointsTranslation.class);
 
         PointsTranslation pointsTranslation = null;
         if (pointsTranslations.iterator().hasNext()){
