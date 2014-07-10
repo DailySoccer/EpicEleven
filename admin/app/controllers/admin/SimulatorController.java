@@ -66,8 +66,7 @@ public class SimulatorController extends Controller {
 
         GotoSimParams params = gotoForm.get();
         OptaSimulator.gotoDate(params.date);
-        FlashMessage.success("Pause added: "+params.date.toString());
-        boolean wasResumed = OptaSimulator.start();
+        OptaSimulator.start();
 
         return redirect(routes.SimulatorController.index());
     }

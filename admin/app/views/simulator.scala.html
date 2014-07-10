@@ -78,9 +78,10 @@
 @main("Simulator - Admin", scripts) {
 
 <h1 class="page-header">Simulator</h1>
-    <div style="display:inline-block">Current date: <div id="time" style="font-weight:700">@GlobalDate.getCurrentDateString()</div></div>
-    <div>Next stop: <div id="nextSop" style="font-weight:700">@OptaSimulator.getNextStop()</div>
-    <div id="nextStepDesc" style="font-weight:700">@OptaSimulator.getNextStepDescription()</div>
+    <div><span>Current date:</span><span style="font-weight:700; margin-left: 0.5em;" id="time">@GlobalDate.getCurrentDateString()</span></div>
+    <div><span>Next stop:</span><span style="font-weight:700;margin-left: 0.5em;" id="nextStop">@OptaSimulator.getNextStop()</span></div>
+    <div><span>Next file index:</span><span style="font-weight:700;margin-left: 0.5em;" id="nextStepDesc">@OptaSimulator.getNextStepDescription()</span></div>
+    <br/>
 
     <div class="btn-group">
         @if(OptaSimulator.isPaused()) {

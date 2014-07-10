@@ -76,41 +76,31 @@ public class LiveMatchEvent {
         return Model.findObjectIds(Model.liveMatchEvents(), fieldId, idList).as(LiveMatchEvent.class);
     }
 
+
     /**
-     * Actualizar los puntos fantasy de un determinado futbolista en los partidos "live"
-     *
-     * @param optaMatchId Identificador del partido
-     * @param soccerPlayerId Identificador del futbolista
-     * @param points      Puntos fantasy
+     * Calcular y actualizar los puntos fantasy de un determinado partido "live"
+     * Opera sobre cada uno de los futbolistas del partido (teamA y teamB)
      */
-    static public void setLiveFantasyPointsOfSoccerPlayer(String optaMatchId, ObjectId soccerPlayerId, int points) {
-        //Logger.info("setLiveFantasyPoints: {} = {} fantasy points", soccerPlayerId, strPoints);
+    static public void updateLiveFantasyPoints(LiveMatchEvent liveMatchEvent) {
+        Logger.info("update Live: {} vs {} ({})", liveMatchEvent.soccerTeamA.name, liveMatchEvent.soccerTeamB.name, liveMatchEvent.startDate);
 
-        long startTime = System.currentTimeMillis();
+        // Actualizamos los jugadores del TeamA
+        for (SoccerPlayer soccer : liveMatchEvent.soccerTeamA.soccerPlayers) {
+            updateLiveFantasyPoints(liveMatchEvent.optaMatchEventId, soccer);
+        }
 
-        // TODO: Pasar el equipo del futbolista para simplificar la query
-        // Actualizar jugador si aparece en TeamA
-        Model.liveMatchEvents()
-                .update("{optaMatchEventId: #, soccerTeamA.soccerPlayers.templateSoccerPlayerId: #}", optaMatchId, soccerPlayerId)
-                .multi()
-                .with("{$set: {soccerTeamA.soccerPlayers.$.fantasyPoints: #}}", points);
-
-        // Actualizar jugador si aparece en TeamB
-        Model.liveMatchEvents()
-                .update("{optaMatchEventId: #, soccerTeamB.soccerPlayers.templateSoccerPlayerId: #}", optaMatchId, soccerPlayerId)
-                .multi()
-                .with("{$set: {soccerTeamB.soccerPlayers.$.fantasyPoints: #}}", points);
-
-        //Logger.info("END: setLiveFantasyPoints: {}", System.currentTimeMillis() - startTime);
+        // Actualizamos los jugadores del TeamB
+        for (SoccerPlayer soccer : liveMatchEvent.soccerTeamB.soccerPlayers) {
+            updateLiveFantasyPoints(liveMatchEvent.optaMatchEventId, soccer);
+        }
     }
 
     /**
      * Calcular y actualizar los puntos fantasy de un determinado futbolista en los partidos "live"
      *
-     * @param optaMatchId Partido que se ha jugado
-     * @param soccerPlayer Futbolista
+     * @param optaMatchId  Partido que se ha jugado
      */
-    static public void updateLiveFantasyPoints(String optaMatchId, SoccerPlayer soccerPlayer) {
+    static private void updateLiveFantasyPoints(String optaMatchId, SoccerPlayer soccerPlayer) {
         // Logger.info("search points: {}: optaId({})", soccerPlayer.name, soccerPlayer.optaPlayerId);
 
         // TODO: Quitamos el primer caracter ("p": player / "g": "match")
@@ -140,75 +130,34 @@ public class LiveMatchEvent {
     }
 
     /**
-     * Calcular y actualizar los puntos fantasy de un determinado partido "live"
-     * Opera sobre cada uno de los futbolistas del partido (teamA y teamB)
-     *
-     * @param liveMatchEvent Partido "live"
+     * Actualizar los puntos fantasy de un determinado futbolista en los partidos "live"
      */
-    static public void updateLiveFantasyPoints(LiveMatchEvent liveMatchEvent) {
-        Logger.info("update Live: {} vs {} ({})", liveMatchEvent.soccerTeamA.name, liveMatchEvent.soccerTeamB.name, liveMatchEvent.startDate);
-
-        // Actualizamos los jugadores del TeamA
-        for (SoccerPlayer soccer : liveMatchEvent.soccerTeamA.soccerPlayers) {
-            updateLiveFantasyPoints(liveMatchEvent.optaMatchEventId, soccer);
-        }
-
-        // Actualizamos los jugadores del TeamB
-        for (SoccerPlayer soccer : liveMatchEvent.soccerTeamB.soccerPlayers) {
-            updateLiveFantasyPoints(liveMatchEvent.optaMatchEventId, soccer);
-        }
-    }
-
-    /**
-     *  Actualizar todos los live match Events
-     */
-    static public void updateLiveFantasyPoints() {
-        Iterable<LiveMatchEvent> liveMatchEvents = Model.liveMatchEvents().find().as(LiveMatchEvent.class);
-        for(LiveMatchEvent liveMatchEvent : liveMatchEvents) {
-            updateLiveFantasyPoints(liveMatchEvent);
-        }
-    }
-
-    /**
-     * Calcular y actualizar los puntos fantasy de una lista de partidos "live"
-     *
-     * @param matchEventIdsList Lista de partidos "live"
-     */
-    static public void updateLiveFantasyPoints(List<ObjectId> matchEventIdsList) {
-        Logger.info("updateLiveFantasyPoints: {}", matchEventIdsList);
+    static private void setLiveFantasyPointsOfSoccerPlayer(String optaMatchId, ObjectId soccerPlayerId, int points) {
+        //Logger.info("setLiveFantasyPoints: {} = {} fantasy points", soccerPlayerId, strPoints);
 
         long startTime = System.currentTimeMillis();
 
-        Iterable<LiveMatchEvent> liveMatchEventResults = find("templateMatchEventId", matchEventIdsList);
-        List<LiveMatchEvent> liveMatchEventList = ListUtils.asList(liveMatchEventResults);
+        // TODO: Pasar el equipo del futbolista para simplificar la query
+        // Actualizar jugador si aparece en TeamA
+        Model.liveMatchEvents()
+                .update("{optaMatchEventId: #, soccerTeamA.soccerPlayers.templateSoccerPlayerId: #}", optaMatchId, soccerPlayerId)
+                .multi()
+                .with("{$set: {soccerTeamA.soccerPlayers.$.fantasyPoints: #}}", points);
 
-        for (LiveMatchEvent liveMatchEvent : liveMatchEventList) {
-            updateLiveFantasyPoints(liveMatchEvent);
-        }
+        // Actualizar jugador si aparece en TeamB
+        Model.liveMatchEvents()
+                .update("{optaMatchEventId: #, soccerTeamB.soccerPlayers.templateSoccerPlayerId: #}", optaMatchId, soccerPlayerId)
+                .multi()
+                .with("{$set: {soccerTeamB.soccerPlayers.$.fantasyPoints: #}}", points);
 
-        Logger.info("END: updateLiveFantasyPoints: {}", System.currentTimeMillis() - startTime);
+        //Logger.info("END: setLiveFantasyPoints: {}", System.currentTimeMillis() - startTime);
     }
 
-    /**
-     *  Calcular y actualizar los puntos fantasy de un contest
-     */
-    static public void updateLiveFantasyPoints(Contest contest) {
-        TemplateContest templateContest = TemplateContest.find(contest.templateContestId);
-        updateLiveFantasyPoints(templateContest.templateMatchEventIds);
-    }
-
-    /**
-     *  Calcular y actualizar los puntos fantasy de un contest entry
-     */
-    static public void updateLiveFantasyPoints(ContestEntry contestEntry) {
-        Contest contest = Contest.find(contestEntry.contestId);
-        updateLiveFantasyPoints(contest);
-    }
 
     /**
      * Buscar el tiempo actual del partido
-     * @param liveMatchEventId
-     * @return Tiempo transcurrido
+     *
+     * @return TODO: Tiempo transcurrido
      */
     public static Date currentTime(String liveMatchEventId) {
         LiveMatchEvent liveMatchEvent = find(new ObjectId(liveMatchEventId));
