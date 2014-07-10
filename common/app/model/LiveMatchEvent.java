@@ -25,8 +25,7 @@ public class LiveMatchEvent {
     public Date startDate;
     public Date createdAt;
 
-    public LiveMatchEvent() {
-    }
+    public LiveMatchEvent() { }
 
     public LiveMatchEvent(TemplateMatchEvent templateMatchEvent) {
         templateMatchEventId = templateMatchEvent.templateMatchEventId;
@@ -62,10 +61,11 @@ public class LiveMatchEvent {
         return null;
     }
 
+    /**
+     * Buscamos el "live" a partir de su "template"
+     */
     static public LiveMatchEvent find(TemplateMatchEvent templateMatchEvent) {
-        // Buscamos el "live" a partir de su "template"
-        LiveMatchEvent liveMatchEvent = Model.liveMatchEvents().findOne("{templateMatchEventId: #}", templateMatchEvent.templateMatchEventId).as(LiveMatchEvent.class);
-        return liveMatchEvent;
+        return Model.liveMatchEvents().findOne("{templateMatchEventId: #}", templateMatchEvent.templateMatchEventId).as(LiveMatchEvent.class);
     }
 
     static public LiveMatchEvent find(ObjectId liveMatchEventId) {
@@ -146,8 +146,7 @@ public class LiveMatchEvent {
      * @param liveMatchEvent Partido "live"
      */
     static public void updateLiveFantasyPoints(LiveMatchEvent liveMatchEvent) {
-        Logger.info("update Live: {} vs {} ({})",
-                liveMatchEvent.soccerTeamA.name, liveMatchEvent.soccerTeamB.name, liveMatchEvent.startDate);
+        Logger.info("update Live: {} vs {} ({})", liveMatchEvent.soccerTeamA.name, liveMatchEvent.soccerTeamB.name, liveMatchEvent.startDate);
 
         // Actualizamos los jugadores del TeamA
         for (SoccerPlayer soccer : liveMatchEvent.soccerTeamA.soccerPlayers) {

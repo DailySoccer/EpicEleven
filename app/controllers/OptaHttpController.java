@@ -2,7 +2,7 @@ package controllers;
 
 import actions.AllowCors;
 import model.Model;
-import model.ModelCoreLoop;
+import model.ModelEvents;
 import model.opta.OptaDB;
 import model.opta.OptaProcessor;
 import play.Logger;
@@ -76,7 +76,7 @@ public class OptaHttpController extends Controller {
         OptaProcessor theProcessor = new OptaProcessor();
         //HashSet<String> dirtyMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyAsJSON);
         HashSet<String> dirtyMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyText);
-        ModelCoreLoop.onOptaMatchEventsChanged(dirtyMatchEvents);
+        ModelEvents.onOptaMatchEventIdsChanged(dirtyMatchEvents);
 
         return ok("Yeah, XML processed");
     }
