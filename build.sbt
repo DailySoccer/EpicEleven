@@ -23,7 +23,8 @@ libraryDependencies ++= Seq(
 )
 
 resolvers ++= Seq("saucelabs-repository" at "http://repository-saucelabs.forge.cloudbees.com/release",
-                  "Online Play Repository" at "http://repo.typesafe.com/typesafe/simple/maven-releases/")
+                  "typesafe" at "http://repo.typesafe.com/typesafe/releases",
+                  "maven-rels" at "http://repo.typesafe.com/typesafe/simple/maven-releases/")
 
 // Definimos nuestros projectos y las dependencias entre ellos
 lazy val common = project

@@ -29,8 +29,14 @@ git commit -am "Including build in deploy branch"
 # Push a heroku
 git push "$1" deploy:master --force
 
-# Vuelta a la rama principal
-git checkout master
+if [[ "$1" == "staging" ]]; then 
+    # Vuelta a la rama develop
+    git checkout develop
+elif [[ "$1" == "production" ]] ; then
+    # Vuelta a la rama principal
+    git checkout master
+fi
+
 git branch -D deploy
 git stash pop
 
