@@ -103,18 +103,15 @@ public class Model {
             _mongoClient.close();
     }
 
-
     static public void resetDB() {
         dropDB(_mongoDB);
         ensureDB(_mongoDB);
     }
 
-    static public void resetContests() {
-        dropContestsDB(_mongoDB);
-        ensureContestsDB(_mongoDB);
-    }
+    static private String[] allCollectionNames = {
+            "users",
+            "sessions",
 
-    static private String[] contestCollectionNames = {
             "templateContests",
             "templateMatchEvents",
             "templateSoccerTeams",
@@ -122,31 +119,28 @@ public class Model {
             "contests",
             "matchEvents",
             "liveMatchEvents",
-            "contestEntries"
+            "contestEntries",
+            "pointsTranslation",
+
+            "optaEvents",
+            "optaPlayers",
+            "optaTeams",
+            "optaMatchEvents"
     };
 
     static private void dropDB(DB theMongoDB) {
-        theMongoDB.getCollection("users").drop();
-        theMongoDB.getCollection("sessions").drop();
-
-        dropContestsDB(theMongoDB);
-        dropOpta(theMongoDB);
-    }
-
-    static private void dropContestsDB(DB theMongoDB) {
-        for (String name : contestCollectionNames) {
+        for (String name : allCollectionNames) {
             theMongoDB.getCollection(name).drop();
         }
     }
 
-    static private void dropOpta(DB theMongoDB) {
-        theMongoDB.getCollection("optaEvents").drop();
-        theMongoDB.getCollection("optaPlayers").drop();
-        theMongoDB.getCollection("optaTeams").drop();
-        theMongoDB.getCollection("optaMatchEvents").drop();
+    static private void ensureDB(DB theMongoDB) {
+        ensureUsersDB(theMongoDB);
+        ensureOptaDB(theMongoDB);
+        ensureContestsDB(theMongoDB);
     }
 
-    static private void ensureDB(DB theMongoDB) {
+    static private void ensureUsersDB(DB theMongoDB) {
         DBCollection users = theMongoDB.getCollection("users");
 
         // Si creando nuevo indice sobre datos que ya existan => .append("dropDups", true)
@@ -157,17 +151,6 @@ public class Model {
         // http://www.kodyaz.com/images/pics/random-number-generator-dilbert-comic.jpg
         DBCollection sessions = theMongoDB.getCollection("sessions");
         sessions.createIndex(new BasicDBObject("sessionToken", 1), new BasicDBObject("unique", true));
-
-        ensureOptaDB(theMongoDB);
-        ensureContestsDB(theMongoDB);
-    }
-
-    static private void ensureContestsDB(DB theMongoDB) {
-        for (String name : contestCollectionNames) {
-            if (!theMongoDB.collectionExists(name)) {
-                theMongoDB.createCollection(name, new BasicDBObject());
-            }
-        }
     }
 
     private static void ensureOptaDB(DB theMongoDB) {
@@ -187,6 +170,35 @@ public class Model {
         DBCollection pointsTranslation = theMongoDB.getCollection("pointsTranslation");
         pointsTranslation.createIndex(new BasicDBObject("eventTypeId", 1));
     }
+
+    static private void ensureContestsDB(DB theMongoDB) {
+
+        // TODO: Creacion de indexes
+        if (!theMongoDB.collectionExists("templateContests"))
+            theMongoDB.createCollection("templateContests", new BasicDBObject());
+
+        if (!theMongoDB.collectionExists("templateMatchEvents"))
+            theMongoDB.createCollection("templateMatchEvents", new BasicDBObject());
+
+        if (!theMongoDB.collectionExists("templateSoccerTeams"))
+            theMongoDB.createCollection("templateSoccerTeams", new BasicDBObject());
+
+        if (!theMongoDB.collectionExists("templateSoccerPlayers"))
+            theMongoDB.createCollection("templateSoccerPlayers", new BasicDBObject());
+
+        if (!theMongoDB.collectionExists("contests"))
+            theMongoDB.createCollection("contests", new BasicDBObject());
+
+        if (!theMongoDB.collectionExists("matchEvents"))
+            theMongoDB.createCollection("matchEvents", new BasicDBObject());
+
+        if (!theMongoDB.collectionExists("liveMatchEvents"))
+            theMongoDB.createCollection("liveMatchEvents", new BasicDBObject());
+
+        if (!theMongoDB.collectionExists("contestEntries"))
+            theMongoDB.createCollection("contestEntries", new BasicDBObject());
+    }
+
 
     /**
      * Query de una lista de ObjectIds (en una misma query)

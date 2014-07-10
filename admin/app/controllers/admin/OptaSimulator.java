@@ -3,7 +3,7 @@ package controllers.admin;
 import model.GlobalDate;
 import model.MockData;
 import model.Model;
-import model.ModelCoreLoop;
+import model.ModelEvents;
 import model.opta.OptaProcessor;
 import play.Logger;
 import play.db.DB;
@@ -202,8 +202,8 @@ public class OptaSimulator implements Runnable {
                 Logger.debug(name + " " + createdAt.toString());
 
                 if (feedType != null) {
-                    HashSet<String> dirtyMatchEvents = _optaProcessor.processOptaDBInput(feedType, sqlxml.getString());
-                    ModelCoreLoop.onOptaMatchEventsChanged(dirtyMatchEvents);
+                    HashSet<String> changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, sqlxml.getString());
+                    ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
                 }
                 GlobalDate.setFakeDate(createdAt);
             }

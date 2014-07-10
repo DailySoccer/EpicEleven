@@ -2,7 +2,7 @@ package controllers.admin;
 
 import model.Contest;
 import model.Model;
-import model.ModelCoreLoop;
+import model.ModelEvents;
 import org.bson.types.ObjectId;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -34,7 +34,7 @@ public class ContestController extends Controller {
     }
 
     public static Result instantiateAll() {
-        ModelCoreLoop.instantiateContests();
+        ModelEvents.instantiateContests();
         return redirect(routes.ContestController.index());
     }
 }

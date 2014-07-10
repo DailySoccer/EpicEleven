@@ -26,18 +26,17 @@ public class TemplateMatchEvent {
     public Date startDate;
     public Date createdAt;
 
-    public TemplateMatchEvent() {
-    }
-
-    static public TemplateMatchEvent find(ObjectId templateMatchEventId) {
-        return Model.templateMatchEvents().findOne("{_id : #}", templateMatchEventId).as(TemplateMatchEvent.class);
-    }
+    public TemplateMatchEvent() { }
 
     public boolean hasChanged(OptaMatchEvent optaMatchEvent) {
         return !optaMatchEventId.equals(optaMatchEvent.optaMatchEventId) ||
                !soccerTeamA.optaTeamId.equals(optaMatchEvent.homeTeamId) ||
                !soccerTeamB.optaTeamId.equals(optaMatchEvent.awayTeamId) ||
                !startDate.equals(optaMatchEvent.matchDate);
+    }
+
+    static public TemplateMatchEvent find(ObjectId templateMatchEventId) {
+        return Model.templateMatchEvents().findOne("{_id : #}", templateMatchEventId).as(TemplateMatchEvent.class);
     }
 
     /**
@@ -97,49 +96,11 @@ public class TemplateMatchEvent {
         return templateMatch.isFinished();
     }
 
-    /**
-     * Crea un template match event
-     * @param teamA     TeamA
-     * @param teamB     TeamB
-     * @param startDate Cuando se jugara el partido
-     * @return El template match event creado
-     */
-    static public TemplateMatchEvent create(TemplateSoccerTeam teamA, TemplateSoccerTeam teamB, Date startDate) {
-        return create(null, teamA, teamB, startDate);
-    }
 
-    static public TemplateMatchEvent create(OptaMatchEvent optaMatchEvent, TemplateSoccerTeam teamA, TemplateSoccerTeam teamB, Date startDate) {
-        Logger.info("Template MatchEvent: {} vs {} ({})", teamA.name, teamB.name, startDate);
-
-        TemplateMatchEvent templateMatchEvent = new TemplateMatchEvent();
-        templateMatchEvent.startDate = startDate;
-        templateMatchEvent.optaMatchEventId = optaMatchEvent.optaMatchEventId;
-        templateMatchEvent.optaCompetitionId = optaMatchEvent.competitionId;
-        templateMatchEvent.optaSeasonId = optaMatchEvent.seasonId;
-        templateMatchEvent.soccerTeamA = SoccerTeam.create(templateMatchEvent, teamA);
-        templateMatchEvent.soccerTeamB = SoccerTeam.create(templateMatchEvent, teamB);
-        templateMatchEvent.createdAt = GlobalDate.getCurrentDate();
-
-        // TODO: Eliminar condicion (optaMatchEventId == null)
-        if (optaMatchEvent != null) {
-            // Insertar o actualizar
-            Model.templateMatchEvents().update("{optaMatchEventId: #}", optaMatchEvent.optaMatchEventId).upsert().with(templateMatchEvent);
-        }
-        else {
-            Model.templateMatchEvents().insert(templateMatchEvent);
-        }
-
-        return templateMatchEvent;
-    }
-
-    /**
-     * Importar un optaMatchEvent
-     * @param optaMatchEvent
-     * @return
-     */
     static public boolean importMatchEvent(OptaMatchEvent optaMatchEvent) {
         TemplateSoccerTeam teamA = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.homeTeamId).as(TemplateSoccerTeam.class);
         TemplateSoccerTeam teamB = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.awayTeamId).as(TemplateSoccerTeam.class);
+
         if (teamA != null && teamB != null) {
             create(optaMatchEvent, teamA, teamB, optaMatchEvent.matchDate);
 
@@ -152,8 +113,26 @@ public class TemplateMatchEvent {
         return true;
     }
 
+    static private TemplateMatchEvent create(OptaMatchEvent optaMatchEvent, TemplateSoccerTeam teamA, TemplateSoccerTeam teamB, Date startDate) {
+        Logger.info("Template MatchEvent: {} vs {} ({})", teamA.name, teamB.name, startDate);
+
+        TemplateMatchEvent templateMatchEvent = new TemplateMatchEvent();
+        templateMatchEvent.startDate = startDate;
+        templateMatchEvent.optaMatchEventId = optaMatchEvent.optaMatchEventId;
+        templateMatchEvent.optaCompetitionId = optaMatchEvent.competitionId;
+        templateMatchEvent.optaSeasonId = optaMatchEvent.seasonId;
+        templateMatchEvent.soccerTeamA = SoccerTeam.create(templateMatchEvent, teamA);
+        templateMatchEvent.soccerTeamB = SoccerTeam.create(templateMatchEvent, teamB);
+        templateMatchEvent.createdAt = GlobalDate.getCurrentDate();
+
+        Model.templateMatchEvents().update("{optaMatchEventId: #}", optaMatchEvent.optaMatchEventId).upsert().with(templateMatchEvent);
+
+        return templateMatchEvent;
+    }
+
     static public boolean isInvalid(OptaMatchEvent optaMatchEvent) {
-        boolean invalid = (optaMatchEvent.homeTeamId == null) || optaMatchEvent.homeTeamId.isEmpty() || (optaMatchEvent.awayTeamId == null) || optaMatchEvent.awayTeamId.isEmpty();
+        boolean invalid = (optaMatchEvent.homeTeamId == null) || optaMatchEvent.homeTeamId.isEmpty() ||
+                          (optaMatchEvent.awayTeamId == null) || optaMatchEvent.awayTeamId.isEmpty();
 
         if (!invalid) {
             TemplateSoccerTeam teamA = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.homeTeamId).as(TemplateSoccerTeam.class);

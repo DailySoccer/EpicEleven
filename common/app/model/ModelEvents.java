@@ -1,43 +1,38 @@
 package model;
 
-
 import java.util.HashSet;
 
-public class ModelCoreLoop {
 
-    public static void onOptaMatchEventsChanged(HashSet<String> dirtyMatchEvents) {
+public class ModelEvents {
 
-        if (dirtyMatchEvents.isEmpty())
+    public static void onOptaMatchEventIdsChanged(HashSet<String> changedOptaMatchEventIds) {
+
+        if (changedOptaMatchEventIds.isEmpty())
             return;
 
-        for(String optaGameId : dirtyMatchEvents) {
+        for(String optaGameId : changedOptaMatchEventIds) {
             // Logger.info("optaGameId in gameId({})", optaGameId);
 
             // Buscamos todos los template Match Events asociados con ese partido de Opta
-            Iterable<TemplateMatchEvent> templateMatchEvents = Model.templateMatchEvents().find("{optaMatchEventId : #}", "g" + optaGameId).as(TemplateMatchEvent.class);
-            while(templateMatchEvents.iterator().hasNext()) {
-                TemplateMatchEvent templateMatchEvent = templateMatchEvents.iterator().next();
+            for (TemplateMatchEvent templateMatchEvent :  Model.templateMatchEvents().find("{optaMatchEventId : #}", "g" + optaGameId).as(TemplateMatchEvent.class)) {
 
                 // Existe la version "live" del match event?
                 LiveMatchEvent liveMatchEvent = LiveMatchEvent.find(templateMatchEvent);
-                if (liveMatchEvent == null) {
-                    // Deberia existir? (true si el partido ha comenzado)
-                    if (templateMatchEvent.isStarted()) {
-                        liveMatchEvent = LiveMatchEvent.create(templateMatchEvent);
-                    }
+
+                // Si no existe y el partido ya ha comenzado, tenemos que crearlo!
+                if (liveMatchEvent == null && templateMatchEvent.isStarted()) {
+                    liveMatchEvent = LiveMatchEvent.create(templateMatchEvent);
                 }
 
-                if (liveMatchEvent != null) {
-                    LiveMatchEvent.updateLiveFantasyPoints(liveMatchEvent);
+                LiveMatchEvent.updateLiveFantasyPoints(liveMatchEvent);
 
-                    // Logger.info("fantasyPoints in liveMatchEvent({})", find.liveMatchEventId);
+                // Logger.info("fantasyPoints in liveMatchEvent({})", find.liveMatchEventId);
 
-                    if (templateMatchEvent.isFinished()) {
-                        actionWhenMatchEventIsFinished(templateMatchEvent);
-                    }
-                    else {
-                        actionWhenMatchEventIsStarted(templateMatchEvent);
-                    }
+                if (templateMatchEvent.isFinished()) {
+                    actionWhenMatchEventIsFinished(templateMatchEvent);
+                }
+                else {
+                    actionWhenMatchEventIsStarted(templateMatchEvent);
                 }
 
                 // Logger.info("optaGameId in templateMatchEvent({})", find.templateMatchEventId);
