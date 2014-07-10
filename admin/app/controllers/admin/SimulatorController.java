@@ -1,6 +1,7 @@
 package controllers.admin;
 
 import model.GlobalDate;
+import model.Snapshot;
 import play.data.Form;
 import play.data.format.Formats;
 import play.data.validation.Constraints;
@@ -75,6 +76,15 @@ public class SimulatorController extends Controller {
         OptaSimulator.reset();
         FlashMessage.success("Simulator reset");
         FlashMessage.info("The DB was totally erased. If you press Start now, the simulation will start at the beginning of time (the first file Opta sent).");
+        return redirect(routes.SimulatorController.index());
+    }
+
+    public static Result replayLast() {
+        Snapshot snapshot = Snapshot.create();
+        OptaSimulator.reset();
+        OptaSimulator.useSnapshot(snapshot);
+
+        FlashMessage.success("Simulator replay with last snapshot");
         return redirect(routes.SimulatorController.index());
     }
 
