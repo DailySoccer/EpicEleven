@@ -31,6 +31,8 @@
 
     <input type="hidden" name="id" value='@templateContestForm("id").value' >
 
+    <div class="col-md-12">
+
     <div class="col-md-6">
         @select(
             templateContestForm("state"),
@@ -89,13 +91,19 @@
     -->
 
     <div class="col-md-6">
-    @select(
-        templateContestForm("templateMatchEvents"),
-        options(matchEventsOptions),
-        '_label -> "Template Match Events",
-        'size -> 50,
-        'multiple -> true
-    )
+    @if(matchEventsOptions.isEmpty) {
+        <span>No existen MatchEvents</span>
+    } else {
+        @select(
+            templateContestForm("templateMatchEvents"),
+            options(matchEventsOptions),
+            '_label -> "Template Match Events",
+            'size -> 50,
+            'multiple -> true
+        )
+    }
+    </div>
+
     </div>
 
     <!-- Button (Double) -->

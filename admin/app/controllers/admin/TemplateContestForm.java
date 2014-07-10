@@ -62,7 +62,9 @@ public class TemplateContestForm {
 
     public static HashMap<String, String> matchEventsOptions() {
         HashMap<String, String> options = new LinkedHashMap<>();
-        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.templateMatchEvents().find().sort("{startDate : 1}").as(TemplateMatchEvent.class);
+
+        Date now = GlobalDate.getCurrentDate();
+        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.templateMatchEvents().find("{startDate: {$gte: #}}", now).sort("{startDate : 1}").as(TemplateMatchEvent.class);
         for (TemplateMatchEvent matchEvent: templateMatchEventsResults) {
             options.put(matchEvent.optaMatchEventId, String.format("%s - %s vs %s",
                     // new SimpleDateFormat("yy/MM/dd").format(matchEvent.startDate),
