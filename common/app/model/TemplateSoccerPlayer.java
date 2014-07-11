@@ -49,7 +49,11 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         if      (optaPosition.startsWith("G"))  optaFieldPos = FieldPos.GOALKEEPER;
         else if (optaPosition.startsWith("D"))  optaFieldPos = FieldPos.DEFENSE;
         else if (optaPosition.startsWith("M"))  optaFieldPos = FieldPos.MIDDLE;
-        else                                    optaFieldPos = FieldPos.FORWARD;
+        else if (optaPosition.startsWith("F"))  optaFieldPos = FieldPos.FORWARD;
+        else {
+            Logger.error("Opta Position not registered yet: {}", optaPosition);
+            optaFieldPos = FieldPos.FORWARD;
+        }
         return optaFieldPos;
     }
 
@@ -60,6 +64,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
     public static Iterable<TemplateSoccerPlayer> find(String fieldId, List<ObjectId> idList) {
         return Model.findObjectIds(Model.templateSoccerPlayers(), fieldId, idList).as(TemplateSoccerPlayer.class);
     }
+
 
     public boolean hasChanged(OptaPlayer optaPlayer) {
         return !optaPlayerId.equals(optaPlayer.optaPlayerId) ||
