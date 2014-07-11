@@ -74,7 +74,7 @@ public class OptaProcessor {
 
     private void updateOrInsertEvent(Element event, Element game) {
         OptaEvent myEvent = new OptaEvent(event, game);
-        myEvent.points = getPoints(myEvent.typeId, myEvent.timestamp);
+        myEvent.points = getPointsTranslation(myEvent.typeId, myEvent.timestamp);
         myEvent.pointsTranslationId = _pointsTranslationTableCache.get(myEvent.typeId);
 
         Model.optaEvents().update("{eventId: #, gameId: #}", myEvent.eventId, myEvent.gameId).upsert().with(myEvent);
@@ -88,20 +88,16 @@ public class OptaProcessor {
         resetPointsTranslationCache();
 
         for (OptaEvent optaEvent : Model.optaEvents().find().as(OptaEvent.class)) {
-            optaEvent.points = getPoints(optaEvent.typeId, optaEvent.timestamp);
+            optaEvent.points = getPointsTranslation(optaEvent.typeId, optaEvent.timestamp);
             optaEvent.pointsTranslationId = _pointsTranslationTableCache.get(optaEvent.typeId);
             Model.optaEvents().update("{eventId: #, gameId: #}", optaEvent.eventId, optaEvent.gameId).upsert().with(optaEvent);
         }
     }
 
-    private int getPoints(int typeId, Date timestamp) {
-        if (!_pointsTranslationCache.containsKey(typeId)) {
-            getPointsTranslation(typeId, timestamp);
+    private int getPointsTranslation(int typeId, Date timestamp){
+        if (_pointsTranslationCache.containsKey(typeId)) {
+            return _pointsTranslationCache.get(typeId);
         }
-        return _pointsTranslationCache.get(typeId);
-    }
-
-    private PointsTranslation getPointsTranslation(int typeId, Date timestamp){
         Iterable<PointsTranslation> pointsTranslations = Model.pointsTranslation().
                                                          find("{eventTypeId: #, timestamp: {$lte: #}}", typeId, timestamp).
                                                          sort("{timestamp: -1}").as(PointsTranslation.class);
@@ -115,7 +111,7 @@ public class OptaProcessor {
             _pointsTranslationCache.put(typeId, 0);
             _pointsTranslationTableCache.put(typeId, null);
         }
-        return pointsTranslation;
+        return pointsTranslation.points;
     }
 
     private void processF1(Element f1) {
@@ -373,7 +369,7 @@ public class OptaProcessor {
             //TODO: Extraer SeasonID de Competition->Stat->Type==season_id->content
             myEvent.timestamp = timestamp;
             myEvent.qualifiers = new ArrayList<>();
-            myEvent.points = getPoints(myEvent.typeId, myEvent.timestamp);
+            myEvent.points = getPointsTranslation(myEvent.typeId, myEvent.timestamp);
             myEvent.pointsTranslationId = _pointsTranslationTableCache.get(myEvent.typeId);
 
             events[i] = myEvent;
