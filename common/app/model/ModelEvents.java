@@ -53,15 +53,16 @@ public class ModelEvents {
                     liveMatchEvent = LiveMatchEvent.create(templateMatchEvent);
                 }
 
-                LiveMatchEvent.updateLiveFantasyPoints(liveMatchEvent);
+                if (liveMatchEvent != null) {
+                    LiveMatchEvent.updateLiveFantasyPoints(liveMatchEvent);
 
-                // Logger.info("fantasyPoints in liveMatchEvent({})", find.liveMatchEventId);
+                    // Logger.info("fantasyPoints in liveMatchEvent({})", find.liveMatchEventId);
 
-                if (templateMatchEvent.isFinished()) {
-                    actionWhenMatchEventIsFinished(templateMatchEvent);
-                }
-                else {
-                    actionWhenMatchEventIsStarted(templateMatchEvent);
+                    if (templateMatchEvent.isFinished()) {
+                        actionWhenMatchEventIsFinished(templateMatchEvent);
+                    } else {
+                        actionWhenMatchEventIsStarted(templateMatchEvent);
+                    }
                 }
 
                 // Logger.info("optaGameId in templateMatchEvent({})", find.templateMatchEventId);
