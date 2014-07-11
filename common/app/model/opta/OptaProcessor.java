@@ -88,7 +88,6 @@ public class OptaProcessor {
         resetPointsTranslationCache();
 
         for (OptaEvent optaEvent : Model.optaEvents().find().as(OptaEvent.class)) {
-
             optaEvent.points = getPoints(optaEvent.typeId, optaEvent.timestamp);
             optaEvent.pointsTranslationId = _pointsTranslationTableCache.get(optaEvent.typeId);
             Model.optaEvents().update("{eventId: #, gameId: #}", optaEvent.eventId, optaEvent.gameId).upsert().with(optaEvent);

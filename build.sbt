@@ -22,9 +22,7 @@ libraryDependencies ++= Seq(
   "com.saucelabs" % "sauce_junit" % "2.0.5" % "test"
 )
 
-resolvers ++= Seq("saucelabs-repository" at "http://repository-saucelabs.forge.cloudbees.com/release",
-                  "typesafe" at "http://repo.typesafe.com/typesafe/releases",
-                  "maven-rels" at "http://repo.typesafe.com/typesafe/simple/maven-releases/")
+resolvers += "saucelabs-repository" at "http://repository-saucelabs.forge.cloudbees.com/release"
 
 // Definimos nuestros projectos y las dependencias entre ellos
 lazy val common = project
