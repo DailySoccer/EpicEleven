@@ -32,7 +32,7 @@ public class Snapshot {
     }
 
     public void update(Date nextDate) {
-        Logger.info("snapshot: update: start: {} - end: {}", updatedDate, nextDate);
+        // Logger.info("snapshot: update: start: {} - end: {}", updatedDate, nextDate);
 
         // update(nextDate, "pointsTranslations", Model.pointsTranslation(), PointsTranslation.class);
         update(nextDate, "templateContests", TemplateContest.class);
@@ -45,7 +45,11 @@ public class Snapshot {
         updatedDate = nextDate;
     }
 
-    private <T> void update(Date nextDate, String collectionName, Class<T> classType) {
+    //
+    // Se necesita que las clases puedan proporcionar el "ObjectId" de Jongo
+    //  dado que cada clase sobreescribe el nombre por defecto "_id", no es posible obtenerlo de forma genérica
+    //
+    private <T extends JongoId> void update(Date nextDate, String collectionName, Class<T> classType) {
         String snapshotName = String.format("snapshot-%s", collectionName);
 
         MongoCollection collectionSource = Model.jongo().getCollection(snapshotName);
@@ -55,119 +59,18 @@ public class Snapshot {
         List<T> list = utils.ListUtils.asList(results);
          if (!list.isEmpty()) {
             for (T elem : list) {
-                collectionTarget.insert(elem);
+                collectionTarget.update("{_id: #}", elem.getId()).upsert().with(elem);
             }
             Logger.info("snapshot: update {}: {} documents", collectionName, list.size());
         }
     }
 
-    /*
-    public void update(Date nextDate) {
-        Logger.info("snapshot: update: start: {} - end: {}", updatedDate, nextDate);
-
-        // updateTranslations(nextDate);
-        updateTemplateContests(nextDate);
-        updateTemplateMatchEvents(nextDate);
-
-        update(nextDate, "pointsTranslations", Model.pointsTranslation(), DataSnapshot<PointsTranslation>.class);
-        update(nextDate, "templateContests", Model.templateContests(), TemplateContest.class);
-        update(nextDate, "templateMatchEvents", Model.templateMatchEvents(), TemplateMatchEvent.class);
-        update(nextDate, "templateSoccerTeams", Model.templateSoccerTeams(), TemplateSoccerTeam.class);
-        update(nextDate, "templateSoccerPlayers", Model.templateSoccerPlayers(), TemplateSoccerPlayer.class);
-        update(nextDate, "contestEntries", Model.contestEntries(), ContestEntry.class);
-        update(nextDate, "contest", Model.contests(), Contest.class);
-
-
-        updatedDate = nextDate;
-    }
-
-    void updateTranslations(Date nextDate) {
-        class Data {
-            public PointsTranslation pointsTranslations;
-        }
-        Iterable<Data> results = collection()
-                .aggregate("{$unwind: '$pointsTranslations'}")
-                .and("{$project: {pointsTranslations: 1}}")
-                .and("{$match: {'pointsTranslations.createdAt': {$gte: #, $lt: #}}}", updatedDate, nextDate)
-                .as(Data.class);
-        List<PointsTranslation> list = new ArrayList<>();
-        for (Data data : results) {
-            list.add(data.pointsTranslations);
-        }
-        if (!list.isEmpty()) {
-            Model.pointsTranslation().insert(list);
-            Logger.info("snapshot: points: {}", list);
-        }
-    }
-
-    void updateTemplateContests(Date nextDate) {
-        class Data {
-            public TemplateContest templateContests;
-        }
-        Iterable<Data> results = collection()
-                .aggregate("{$unwind: '$templateContests'}")
-                .and("{$project: {templateContests: 1}}")
-                .and("{$match: {'templateContests.createdAt': {$gte: #, $lt: #}}}", updatedDate, nextDate)
-                .as(Data.class);
-        List<TemplateContest> list = new ArrayList<>();
-        for (Data data : results) {
-            list.add(data.templateContests);
-        }
-        if (!list.isEmpty()) {
-            Model.templateContests().insert(list);
-            Logger.info("snapshot: templateContests: {}", list);
-        }
-    }
-
-    class DataTemplateMatchEvent {
-        public TemplateMatchEvent templateMatchEvents;
-    }
-    void updateTemplateMatchEvents(Date nextDate) {
-        Iterable<DataTemplateMatchEvent> results = collection()
-                .aggregate("{$unwind: '$templateMatchEvents'}")
-                .and("{$project: {templateMatchEvents: 1}}")
-                //.and("{$match: {'templateMatchEvents.createdAt': {$gte: #, $lt: #}}}", updatedDate, nextDate)
-                .as(DataTemplateMatchEvent.class);
-        List<TemplateMatchEvent> list = new ArrayList<>();
-        for (DataTemplateMatchEvent data : results) {
-            list.add(data.templateMatchEvents);
-        }
-        if (!list.isEmpty()) {
-            Model.templateMatchEvents().insert(list);
-            Logger.info("snapshot: templateMatchEvents: {}", list);
-        }
-    }
-
     static public Snapshot create() {
         if (!Model.mongoDB().collectionExists(snapshotDBName)) {
             Model.mongoDB().createCollection(snapshotDBName, new BasicDBObject());
         }
 
-        // TODO: Lo borramos todo. Únicamente almacenamos uno
         collection().remove();
-
-        Snapshot snapshot   = new Snapshot();
-
-        snapshot.pointsTranslations = asList(Model.pointsTranslation(), PointsTranslation.class);
-        snapshot.templateContests = asList(Model.templateContests(), TemplateContest.class);
-        snapshot.templateMatchEvents = asList(Model.templateMatchEvents(), TemplateMatchEvent.class);
-        snapshot.templateSoccerTeams = asList(Model.templateSoccerTeams(), TemplateSoccerTeam.class);
-        snapshot.templateSoccerPlayers = asList(Model.templateSoccerPlayers(), TemplateSoccerPlayer.class);
-        snapshot.contestEntries = asList(Model.contestEntries(), ContestEntry.class);
-        snapshot.contest = asList(Model.contests(), Contest.class);
-
-        snapshot.createdAt  = GlobalDate.getCurrentDate();
-
-        collection().insert(snapshot);
-
-        return snapshot;
-    }
-    */
-
-    static public Snapshot create() {
-        if (!Model.mongoDB().collectionExists(snapshotDBName)) {
-            Model.mongoDB().createCollection(snapshotDBName, new BasicDBObject());
-        }
 
         Snapshot snapshot   = new Snapshot();
 
@@ -178,6 +81,8 @@ public class Snapshot {
         create("templateSoccerPlayers", TemplateSoccerPlayer.class);
         //create("contestEntries", ContestEntry.class);
         //create("contests", Contest.class);
+
+        snapshot.createdAt = GlobalDate.getCurrentDate();
 
         collection().insert(snapshot);
 
@@ -200,6 +105,11 @@ public class Snapshot {
                 collectionTarget.insert(elem);
             }
         }
+    }
+
+    static public String getName() {
+        Snapshot snapshot = getLast();
+        return (snapshot != null) ? snapshot.createdAt.toString() : "none";
     }
 
     static public Snapshot getLast() {

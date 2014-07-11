@@ -34,12 +34,6 @@
     <div class="col-md-12">
 
     <div class="col-md-6">
-        @select(
-            templateContestForm("state"),
-            options(EnumUtils.toMap(classOf[TemplateContest.State])),
-            '_label -> "State"
-        )
-
         @inputText(
             templateContestForm("name"),
             '_label -> "Name",
@@ -80,6 +74,11 @@
             templateContestForm("prizeType"),
             options(EnumUtils.toMap(classOf[PrizeType])),
             '_label -> "Prize Type"
+        )
+
+        @inputDate(
+            templateContestForm("activationAt"),
+            '_label -> "Activation At"
         )
     </div>
 

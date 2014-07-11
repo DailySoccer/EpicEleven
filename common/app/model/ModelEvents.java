@@ -1,9 +1,38 @@
 package model;
 
+import java.util.List;
 import java.util.HashSet;
-
+import utils.ListUtils;
 
 public class ModelEvents {
+
+    /**
+     *  Tarea que se ejecutará periódicamente
+     */
+    public static void runTasks() {
+        instantiateContestsTask();
+    }
+
+    /**
+     * Instanciar los Contests necesarios
+     *
+     * Condiciones:
+     * - los template contests que esten apagados y cuya fecha de activacion sean validas
+     */
+    public static void instantiateContestsTask() {
+        Iterable<TemplateContest> templateContestsResults = Model.templateContests()
+                .find("{state: \"OFF\", activationAt: {$lte: #}}", GlobalDate.getCurrentDate())
+                .as(TemplateContest.class);
+        List<TemplateContest> templateContestsOff = ListUtils.asList(templateContestsResults);
+
+        for (TemplateContest templateContest : templateContestsOff) {
+            templateContest.state = TemplateContest.State.ACTIVE;
+
+            templateContest.instantiate();
+
+            Model.templateContests().update("{_id: #, state: \"OFF\"}", templateContest.templateContestId).with("{$set: {state: \"ACTIVE\"}}");
+        }
+    }
 
     public static void onOptaMatchEventIdsChanged(HashSet<String> changedOptaMatchEventIds) {
 
@@ -39,7 +68,6 @@ public class ModelEvents {
             }
         }
     }
-
 
     private static void actionWhenMatchEventIsStarted(TemplateMatchEvent templateMatchEvent) {
         // Los template contests (que incluyan este match event y que esten "activos") tendrian que ser marcados como "live"

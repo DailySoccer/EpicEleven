@@ -1,6 +1,8 @@
 package model;
 
+import com.mongodb.WriteConcern;
 import org.bson.types.ObjectId;
+import org.joda.time.DateTime;
 import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
@@ -8,7 +10,7 @@ import utils.ListUtils;
 
 import java.util.*;
 
-public class TemplateContest {
+public class TemplateContest implements JongoId {
     public enum State {
         OFF(0),
         ACTIVE(1),
@@ -41,9 +43,14 @@ public class TemplateContest {
 
     public List<ObjectId> templateMatchEventIds;  // We rather have it here that normalize it in a N:N table
 
+    public Date activationAt;
     public Date createdAt;
 
     public TemplateContest() {
+    }
+
+    public ObjectId getId() {
+        return templateContestId;
     }
 
     public boolean isActive()   { return (state == State.ACTIVE); }
@@ -99,12 +106,14 @@ public class TemplateContest {
         if (!isActive())
             return;
 
+        Logger.info("instantiate: {}: activationAt: {}", name, activationAt );
+
         // Cuantas instancias tenemos creadas?
         long instances = Model.contests().count("{templateContestId: #}", templateContestId);
 
         for(long i=instances; i<minInstances; i++) {
             Contest contest = new Contest(this);
-            Model.contests().insert(contest);
+            Model.contests().withWriteConcern(WriteConcern.SAFE).insert(contest);
         }
     }
 

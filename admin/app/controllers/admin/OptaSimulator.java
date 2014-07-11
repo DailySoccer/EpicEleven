@@ -187,6 +187,8 @@ public class OptaSimulator implements Runnable {
         if (isSnapshotEnabled()) {
             _snapshot.update(currentDate);
         }
+
+        ModelCoreLoop.runTasks();
     }
 
     private boolean isBefore(long date) {
