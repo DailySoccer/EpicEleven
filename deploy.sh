@@ -22,7 +22,7 @@ fi
 
 if [ $# -eq 0 ]
     then
-        if [["$branch_name" != "master" && "$branch_name" != "develop" ]]
+        if [[ "$branch_name" != "master" && "$branch_name" != "develop" ]]
             then
                 echo "You need to supply the Heroku remote. $remotes_allowed_message"
                 exit 1
