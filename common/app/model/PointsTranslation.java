@@ -7,7 +7,7 @@ import java.util.Date;
 /**
  * Created by gnufede on 02/06/14.
  */
-public class PointsTranslation {
+public class PointsTranslation implements JongoId, Initializer {
     @Id
     public ObjectId pointsTranslationId;
     public int eventTypeId;
@@ -18,6 +18,13 @@ public class PointsTranslation {
     public Date createdAt;
 
     public PointsTranslation() {
+    }
+
+    public void Initialize() {
+    }
+
+    public ObjectId getId() {
+        return pointsTranslationId;
     }
 
     /**

@@ -34,7 +34,7 @@ public class Snapshot {
         if (nextDate.after(updatedDate)) {
             // Logger.info("snapshot: update: start: {} - end: {}", updatedDate, nextDate);
 
-            // update(nextDate, "pointsTranslations", Model.pointsTranslation(), PointsTranslation.class);
+            update(nextDate, "pointsTranslation", PointsTranslation.class);
             update(nextDate, "templateContests", TemplateContest.class);
             update(nextDate, "templateMatchEvents", TemplateMatchEvent.class);
             update(nextDate, "templateSoccerTeams", TemplateSoccerTeam.class);
@@ -76,7 +76,7 @@ public class Snapshot {
 
         Snapshot snapshot   = new Snapshot();
 
-        //create("pointsTranslations", PointsTranslation.class);
+        create("pointsTranslation", PointsTranslation.class);
         create("templateContests", TemplateContest.class);
         create("templateMatchEvents", TemplateMatchEvent.class);
         create("templateSoccerTeams", TemplateSoccerTeam.class);

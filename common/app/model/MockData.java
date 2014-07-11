@@ -68,6 +68,7 @@ public final class MockData {
                 myPointsTranslation.unixtimestamp = 0L;
                 myPointsTranslation.timestamp = new Date(myPointsTranslation.unixtimestamp);
                 myPointsTranslation.points = pointsTable[i][1];
+                myPointsTranslation.createdAt = GlobalDate.getCurrentDate();
                 Model.pointsTranslation().insert(myPointsTranslation);
             }
         }
