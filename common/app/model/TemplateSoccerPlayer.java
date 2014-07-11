@@ -10,7 +10,7 @@ import play.Logger;
 import java.util.Date;
 import java.util.List;
 
-public class TemplateSoccerPlayer implements JongoId {
+public class TemplateSoccerPlayer implements JongoId, Initializer {
     @Id
     public ObjectId templateSoccerPlayerId;
 
@@ -35,6 +35,9 @@ public class TemplateSoccerPlayer implements JongoId {
         fieldPos = getFieldPostFromOpta(optaPlayer.position);
         templateTeamId = aTemplateTeamId;
         createdAt = GlobalDate.getCurrentDate();
+    }
+
+    public void Initialize() {
     }
 
     public ObjectId getId() {

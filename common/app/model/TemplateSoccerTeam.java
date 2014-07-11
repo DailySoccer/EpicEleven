@@ -8,7 +8,7 @@ import model.opta.*;
 
 import java.util.Date;
 
-public class TemplateSoccerTeam implements JongoId {
+public class TemplateSoccerTeam implements JongoId, Initializer {
     @Id
     public ObjectId templateSoccerTeamId;
 
@@ -28,6 +28,9 @@ public class TemplateSoccerTeam implements JongoId {
         name = optaTeam.name;
         shortName = optaTeam.shortName;
         createdAt = GlobalDate.getCurrentDate();
+    }
+
+    public void Initialize() {
     }
 
     public ObjectId getId() {

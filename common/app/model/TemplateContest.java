@@ -10,7 +10,7 @@ import utils.ListUtils;
 
 import java.util.*;
 
-public class TemplateContest implements JongoId {
+public class TemplateContest implements JongoId, Initializer {
     public enum State {
         OFF(0),
         ACTIVE(1),
@@ -47,6 +47,10 @@ public class TemplateContest implements JongoId {
     public Date createdAt;
 
     public TemplateContest() {
+    }
+
+    public void Initialize() {
+        state = State.OFF;
     }
 
     public ObjectId getId() {

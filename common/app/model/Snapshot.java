@@ -2,7 +2,6 @@ package model;
 
 import com.mongodb.*;
 import org.jongo.MongoCollection;
-import org.bson.types.ObjectId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import play.Logger;
@@ -32,25 +31,27 @@ public class Snapshot {
     }
 
     public void update(Date nextDate) {
-        // Logger.info("snapshot: update: start: {} - end: {}", updatedDate, nextDate);
+        if (nextDate.after(updatedDate)) {
+            // Logger.info("snapshot: update: start: {} - end: {}", updatedDate, nextDate);
 
-        // update(nextDate, "pointsTranslations", Model.pointsTranslation(), PointsTranslation.class);
-        update(nextDate, "templateContests", TemplateContest.class);
-        update(nextDate, "templateMatchEvents", TemplateMatchEvent.class);
-        update(nextDate, "templateSoccerTeams", TemplateSoccerTeam.class);
-        update(nextDate, "templateSoccerPlayers", TemplateSoccerPlayer.class);
-        //update(nextDate, "contestEntries", ContestEntry.class);
-        //update(nextDate, "contest", Contest.class);
+            // update(nextDate, "pointsTranslations", Model.pointsTranslation(), PointsTranslation.class);
+            update(nextDate, "templateContests", TemplateContest.class);
+            update(nextDate, "templateMatchEvents", TemplateMatchEvent.class);
+            update(nextDate, "templateSoccerTeams", TemplateSoccerTeam.class);
+            update(nextDate, "templateSoccerPlayers", TemplateSoccerPlayer.class);
+            //update(nextDate, "contestEntries", ContestEntry.class);
+            //update(nextDate, "contest", Contest.class);
 
-        updatedDate = nextDate;
+            updatedDate = nextDate;
+        }
     }
 
     //
     // Se necesita que las clases puedan proporcionar el "ObjectId" de Jongo
     //  dado que cada clase sobreescribe el nombre por defecto "_id", no es posible obtenerlo de forma genérica
     //
-    private <T extends JongoId> void update(Date nextDate, String collectionName, Class<T> classType) {
-        String snapshotName = String.format("snapshot-%s", collectionName);
+    private <T extends JongoId & Initializer> void update(Date nextDate, String collectionName, Class<T> classType) {
+        String snapshotName = String.format("%s-%s", snapshotDBName, collectionName);
 
         MongoCollection collectionSource = Model.jongo().getCollection(snapshotName);
         MongoCollection collectionTarget = Model.jongo().getCollection(collectionName);
@@ -59,6 +60,7 @@ public class Snapshot {
         List<T> list = utils.ListUtils.asList(results);
          if (!list.isEmpty()) {
             for (T elem : list) {
+                elem.Initialize();
                 collectionTarget.update("{_id: #}", elem.getId()).upsert().with(elem);
             }
             Logger.info("snapshot: update {}: {} documents", collectionName, list.size());
@@ -74,7 +76,7 @@ public class Snapshot {
 
         Snapshot snapshot   = new Snapshot();
 
-        create("pointsTranslations", PointsTranslation.class);
+        //create("pointsTranslations", PointsTranslation.class);
         create("templateContests", TemplateContest.class);
         create("templateMatchEvents", TemplateMatchEvent.class);
         create("templateSoccerTeams", TemplateSoccerTeam.class);
@@ -90,7 +92,7 @@ public class Snapshot {
     }
 
     static private <T> void create(String collectionName, Class<T> classType) {
-        String snapshotName = String.format("snapshot-%s", collectionName);
+        String snapshotName = String.format("%s-%s", snapshotDBName, collectionName);
 
         MongoCollection collectionSource = Model.jongo().getCollection(collectionName);
         MongoCollection collectionTarget = Model.jongo().getCollection(snapshotName);

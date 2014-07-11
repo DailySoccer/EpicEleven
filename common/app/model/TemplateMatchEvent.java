@@ -15,7 +15,7 @@ import java.util.List;
 import model.opta.*;
 import play.Logger;
 
-public class TemplateMatchEvent implements JongoId {
+public class TemplateMatchEvent implements JongoId, Initializer {
     @Id
     public ObjectId templateMatchEventId;
 
@@ -30,6 +30,9 @@ public class TemplateMatchEvent implements JongoId {
     public Date createdAt;
 
     public TemplateMatchEvent() { }
+
+    public void Initialize() {
+    }
 
     public ObjectId getId() {
         return templateMatchEventId;
