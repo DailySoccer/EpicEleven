@@ -4,7 +4,7 @@
 @import helper._
 @import helper.twitterBootstrap._
 @import controllers.admin.routes._
-@import model.GlobalDate
+@import model._
 
 @scripts = {
 <script type="text/javascript">
@@ -81,6 +81,13 @@
     <div><span>Current date:</span><span style="font-weight:700; margin-left: 0.5em;" id="time">@GlobalDate.getCurrentDateString()</span></div>
     <div><span>Next stop:</span><span style="font-weight:700;margin-left: 0.5em;" id="nextStop">@OptaSimulator.getNextStop()</span></div>
     <div><span>Next file index:</span><span style="font-weight:700;margin-left: 0.5em;" id="nextStepDesc">@OptaSimulator.getNextStepDescription()</span></div>
+    <div><strong>Last Snapshot</strong> (@Snapshot.getName()):
+        @if(OptaSimulator.isSnapshotEnabled()) {
+            On
+        } else {
+            Off
+        }
+    </div>
     <br/>
 
     <div class="btn-group">
@@ -113,6 +120,12 @@
         }
         <a class="btn btn-sim btn-primary stop" href="@SimulatorController.reset" title="Erases the whole Database and resets to the beginning of time.">
              Reset
+        </a>
+        <a class="btn btn-sim btn-primary stop" href="@SimulatorController.replayLast" title="Erases the whole Database and plays using a last snapshot.">
+            Replay Last Snapshot
+        </a>
+        <a class="btn btn-sim btn-primary" href="@SimulatorController.snapshot" title="Create a snapshot.">
+            Create Snapshot
         </a>
     </div>
     <hr>

@@ -1,6 +1,8 @@
 package controllers.admin;
 
 import model.*;
+import org.joda.time.DateTime;
+import play.data.format.Formats;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
 
@@ -11,7 +13,6 @@ import java.util.*;
 public class TemplateContestForm {
     public String id;
 
-    @Constraints.Required
     public TemplateContest.State state;
 
     @Constraints.Required
@@ -36,9 +37,13 @@ public class TemplateContestForm {
     @Constraints.Required
     public List<String> templateMatchEvents = new ArrayList<>();  // We rather have it here that normalize it in a N:N table
 
-    public Date startDate = new Date();
+    public Date activationAt;
+    public Date createdAt;
 
     public TemplateContestForm() {
+        state = TemplateContest.State.OFF;
+        activationAt = GlobalDate.getCurrentDate();
+        createdAt = GlobalDate.getCurrentDate();
     }
 
     public TemplateContestForm(TemplateContest templateContest) {
@@ -57,7 +62,8 @@ public class TemplateContestForm {
             templateMatchEvents.add(matchEvent.optaMatchEventId);
         }
 
-        startDate = templateContest.startDate;
+        activationAt = templateContest.activationAt;
+        createdAt = templateContest.createdAt;
     }
 
     public static HashMap<String, String> matchEventsOptions() {

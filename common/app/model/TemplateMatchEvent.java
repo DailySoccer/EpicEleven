@@ -12,7 +12,7 @@ import java.util.List;
 import model.opta.*;
 import play.Logger;
 
-public class TemplateMatchEvent {
+public class TemplateMatchEvent implements JongoId {
     @Id
     public ObjectId templateMatchEventId;
 
@@ -27,6 +27,10 @@ public class TemplateMatchEvent {
     public Date createdAt;
 
     public TemplateMatchEvent() { }
+
+    public ObjectId getId() {
+        return templateMatchEventId;
+    }
 
     public boolean hasChanged(OptaMatchEvent optaMatchEvent) {
         return !optaMatchEventId.equals(optaMatchEvent.optaMatchEventId) ||

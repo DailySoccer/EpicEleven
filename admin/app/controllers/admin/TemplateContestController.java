@@ -28,7 +28,9 @@ public class TemplateContestController extends Controller {
     }
 
     public static Result newForm() {
-        Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class);
+        TemplateContestForm params = new TemplateContestForm();
+
+        Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
         return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
     }
 
@@ -54,9 +56,11 @@ public class TemplateContestController extends Controller {
 
         TemplateContestForm params = templateContestForm.get();
 
+        boolean isNew = params.id.isEmpty();
+
         TemplateContest templateContest = new TemplateContest();
 
-        templateContest.templateContestId = params.id.isEmpty() ? new ObjectId() : new ObjectId(params.id);
+        templateContest.templateContestId = isNew ? new ObjectId() : new ObjectId(params.id);
         templateContest.state = params.state;
         templateContest.name = params.name;
         templateContest.postName = params.postName;
@@ -65,7 +69,17 @@ public class TemplateContestController extends Controller {
         templateContest.salaryCap = params.salaryCap;
         templateContest.entryFee = params.entryFee;
         templateContest.prizeType = params.prizeType;
-        templateContest.createdAt = GlobalDate.getCurrentDate();
+
+        templateContest.activationAt = params.activationAt;
+        templateContest.createdAt = params.createdAt;
+
+        /*
+        // Si está activo y la fecha de activación se ha puesto en un futuro
+        if (templateContest.isActive() && templateContest.activationAt.after(GlobalDate.getCurrentDate())) {
+            // Lo apagamos... hasta que suceda esa fecha
+            templateContest.state = TemplateContest.State.OFF;
+        }
+        */
 
         Date startDate = null;
         templateContest.templateMatchEventIds = new ArrayList<>();
@@ -86,7 +100,7 @@ public class TemplateContestController extends Controller {
         }
         */
 
-        if (params.id.isEmpty()) {
+        if (isNew) {
             Model.templateContests().insert(templateContest);
         }
         else {

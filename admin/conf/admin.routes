@@ -71,6 +71,8 @@ GET         /simulator                                                 controlle
 
 GET         /start_simulator                                           controllers.admin.SimulatorController.start()
 GET         /reset_simulator                                           controllers.admin.SimulatorController.reset()
+GET         /replay_last_simulator                                     controllers.admin.SimulatorController.replayLast()
+GET         /snapshot_simulator                                        controllers.admin.SimulatorController.snapshot()
 GET         /nextstep_simulator                                        controllers.admin.SimulatorController.nextStep()
 GET         /pause_simulator                                           controllers.admin.SimulatorController.pause()
 POST        /goto_date_simulator                                       controllers.admin.SimulatorController.gotoDate()

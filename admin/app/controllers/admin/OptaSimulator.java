@@ -4,6 +4,7 @@ import model.GlobalDate;
 import model.MockData;
 import model.Model;
 import model.ModelEvents;
+import model.Snapshot;
 import model.opta.OptaProcessor;
 import play.Logger;
 import play.db.DB;
@@ -93,9 +94,18 @@ public class OptaSimulator implements Runnable {
             _instance = null;
         }
 
+        _snapshot = null;
         GlobalDate.setFakeDate(null);
         Model.resetDB();
         MockData.ensureMockDataUsers();
+    }
+
+    static public boolean isSnapshotEnabled() {
+        return _snapshot != null;
+    }
+
+    static public void useSnapshot(Snapshot aSnapshot) {
+        _snapshot = aSnapshot;
     }
 
     static public void gotoDate(Date date) {
@@ -171,6 +181,16 @@ public class OptaSimulator implements Runnable {
         }
     }
 
+    private void updateDate(Date currentDate) {
+        GlobalDate.setFakeDate(currentDate);
+
+        if (isSnapshotEnabled()) {
+            _snapshot.update(currentDate);
+        }
+
+        ModelCoreLoop.runTasks();
+    }
+
     private boolean isBefore(long date) {
         return _lastParsedDate < date;
     }
@@ -205,7 +225,7 @@ public class OptaSimulator implements Runnable {
                     HashSet<String> changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, sqlxml.getString());
                     ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
                 }
-                GlobalDate.setFakeDate(createdAt);
+                updateDate(createdAt);
             }
             else {
                 _isFinished = true;
@@ -245,4 +265,6 @@ public class OptaSimulator implements Runnable {
             Logger.error("WTF 742 SQLException: ", e);
         }
     }
+
+    static Snapshot _snapshot;
 }

@@ -1,6 +1,7 @@
 package controllers.admin;
 
 import model.GlobalDate;
+import model.Snapshot;
 import play.data.Form;
 import play.data.format.Formats;
 import play.data.validation.Constraints;
@@ -78,4 +79,18 @@ public class SimulatorController extends Controller {
         return redirect(routes.SimulatorController.index());
     }
 
+    public static Result replayLast() {
+        OptaSimulator.reset();
+        OptaSimulator.useSnapshot( Snapshot.getLast() );
+
+        FlashMessage.success("Simulator replay with last snapshot");
+        return redirect(routes.SimulatorController.index());
+    }
+
+    public static Result snapshot() {
+        Snapshot.create();
+
+        FlashMessage.success("Snapshot created");
+        return redirect(routes.SimulatorController.index());
+    }
 }
