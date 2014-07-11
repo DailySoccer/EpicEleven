@@ -4,10 +4,21 @@ branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
 branch_name="(unnamed branch)"     # detached HEAD
 branch_name=${branch_name##refs/heads/}
 
+destination=$1
+
+
 remotes_allowed_message="The only allowed Heroku remotes are: staging/production."
 
 # Cambiamos a la rama de deploy, asegurandonos de que esta creada/reseateada
-git stash
+
+if [[ $(git diff --shortstat ) != "" || $(git diff --shortstat --cached) != "" ]]
+    then
+        stash="done"
+        git stash
+    else
+        stash=""
+fi
+
 
 if [ $# -eq 0 ]
     then
@@ -15,25 +26,26 @@ if [ $# -eq 0 ]
             then
                 echo "You need to supply the Heroku remote. $remotes_allowed_message"
                 exit 1
-            else
         elif [[ "$branch_name" == "master" ]]
-            1 = "production"
+            then
+                destination="production"
         elif [[ "$branch_name" == "develop" ]]
-            1 = "staging"
+            then 
+                destination="staging"
         fi
     else
         if [[ "$1" != "staging" && "$1" != "production" ]]
             then
                 echo $remotes_allowed_message
                 exit 1
-        elif [[ "$1" == "staging" ]]
-            git checkout develop
-        elif [[ "$1" != "production" ]]
-            git checkout master
+        elif [[ "$1" == "staging" && "$branch_name" != "develop" ]]
+            then
+                git checkout develop
+        elif [[ "$1" != "production" && "$branch_name" != "master" ]]
+            then
+                git checkout master
         fi
 fi
-
-
 
 git checkout -B deploy
 
@@ -48,18 +60,17 @@ git add .
 git commit -am "Including build in deploy branch"
 
 # Push a heroku
-git push "$1" deploy:master --force
+git push "$destination" deploy:master --force
 
-if [[ "$1" == "staging" ]]; then 
-    # Vuelta a la rama develop
-    git checkout develop
-elif [[ "$1" == "production" ]] ; then
-    # Vuelta a la rama principal
-    git checkout master
-fi
+# Vuelta adonde estabamos
+git checkout $branch_name
 
 git branch -D deploy
-git stash pop
+
+if [[ "$stash" != "" ]]
+    then
+        git stash pop
+fi
 
 # Restauramos el symlink borrado
 git checkout public
