@@ -1,18 +1,17 @@
 package model;
 
 import com.mongodb.*;
-import org.jongo.Jongo;
+import org.bson.types.ObjectId;
 import org.jongo.Find;
+import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import play.Logger;
 import play.Play;
-import org.bson.types.ObjectId;
 
+import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-
-import javax.sql.DataSource;
 
 
 public class Model {
@@ -233,24 +232,6 @@ public class Model {
         String pattern = String.format("{%s: {$in: [%s]}}", fieldId, patternParams);
         return collection.find(pattern, fieldList.toArray());
     }
-
-    /**
-     * Elimina el caracter inicial del identificador incluido por Opta (de existir)
-     * @param optaId
-     * @return
-     */
-    public static String getPlayerIdFromOpta(String optaId) {
-        return (optaId.charAt(0) == 'p') ? optaId.substring(1) : optaId;
-    }
-
-    public static String getTeamIdFromOpta(String optaId) {
-        return (optaId.charAt(0) == 't') ? optaId.substring(1) : optaId;
-    }
-
-    public static String getMatchEventIdFromOpta(String optaId) {
-        return (optaId.charAt(0) == 'g') ? optaId.substring(1) : optaId;
-    }
-
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/
     static private MongoClient _mongoClient;

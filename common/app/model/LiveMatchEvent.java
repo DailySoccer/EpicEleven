@@ -6,7 +6,6 @@ import model.opta.OptaEvent;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
-import utils.ListUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -103,14 +102,10 @@ public class LiveMatchEvent {
     static private void updateLiveFantasyPoints(String optaMatchId, SoccerPlayer soccerPlayer) {
         // Logger.info("search points: {}: optaId({})", soccerPlayer.name, soccerPlayer.optaPlayerId);
 
-        // TODO: Quitamos el primer caracter ("p": player / "g": "match")
-        String playerId = Model.getPlayerIdFromOpta(soccerPlayer.optaPlayerId);
-        String matchId = Model.getMatchEventIdFromOpta(optaMatchId);
-
         //TODO: ¿ $sum (aggregation) ?
         // Obtener los puntos fantasy obtenidos por el futbolista en un partido
         Iterable<OptaEvent> optaEventResults = Model.optaEvents().find("{optaPlayerId: #, gameId: #}",
-                playerId, matchId).as(OptaEvent.class);
+                soccerPlayer.optaPlayerId, optaMatchId).as(OptaEvent.class);
 
         // Sumarlos
         int points = 0;
@@ -163,14 +158,12 @@ public class LiveMatchEvent {
         LiveMatchEvent liveMatchEvent = find(new ObjectId(liveMatchEventId));
         Date dateNow = liveMatchEvent.startDate;
 
-        String optaId = Model.getMatchEventIdFromOpta(liveMatchEvent.optaMatchEventId);
-
         // Buscar el ultimo evento registrado por el partido
-        Iterable<OptaEvent> optaEvents = Model.optaEvents().find("{gameId: #}", optaId).sort("{timestamp: -1}").limit(1).as(OptaEvent.class);
+        Iterable<OptaEvent> optaEvents = Model.optaEvents().find("{gameId: #}", liveMatchEvent.optaMatchEventId).sort("{timestamp: -1}").limit(1).as(OptaEvent.class);
         if (optaEvents.iterator().hasNext()) {
             OptaEvent event = optaEvents.iterator().next();
             dateNow = event.timestamp;
-            Logger.info("currentTime from optaEvent: gameId({}) id({})", optaId, event.eventId);
+            Logger.info("currentTime from optaEvent: gameId({}) id({})", liveMatchEvent.optaMatchEventId, event.eventId);
         }
 
         Logger.info("currentTime ({}): {}", liveMatchEvent.optaMatchEventId, dateNow);

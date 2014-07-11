@@ -1,7 +1,6 @@
 package model;
 
 import model.opta.OptaEvent;
-import model.opta.OptaMatchEvent;
 import org.bson.types.ObjectId;
 
 import java.util.List;
@@ -35,13 +34,11 @@ public class SoccerPlayer {
      * @return
      */
     public void updatePlayedMatches(String seasonId, String competitionId) {
-        String id = Model.getPlayerIdFromOpta(optaPlayerId);
-
         // Buscar el numero de partidos de un jugador en particular
         //  dado que hay multiples eventos de un mismo jugador en un mismo partido, se busca que sean "distintos partidos"
         List<OptaEvent> partidos = Model.optaEvents()
                 .distinct("gameId")
-                .query("{optaPlayerId: #, seasonId: #, competitionId: #}", id, seasonId, competitionId)
+                .query("{optaPlayerId: #, seasonId: #, competitionId: #}", optaPlayerId, seasonId, competitionId)
                 .as(OptaEvent.class);
 
         playedMatches = partidos.size();

@@ -137,11 +137,8 @@ public class OptaEvent {
     }
 
     static public List<OptaEvent> filter(String optaMatchId, String optaPlayerId) {
-        String playerId = Model.getPlayerIdFromOpta(optaPlayerId);
-        String matchId = Model.getMatchEventIdFromOpta(optaMatchId);
-
         Iterable<OptaEvent> optaEventResults = Model.optaEvents().find("{optaPlayerId: #, gameId: #}",
-                playerId, matchId).as(OptaEvent.class);
+                optaPlayerId, optaMatchId).as(OptaEvent.class);
         return ListUtils.asList(optaEventResults);
     }
 

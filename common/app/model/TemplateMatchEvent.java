@@ -1,9 +1,12 @@
 package model;
 
 
+import model.opta.OptaEvent;
+import model.opta.OptaMatchEvent;
 import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
+import play.Logger;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -62,13 +65,11 @@ public class TemplateMatchEvent implements JongoId {
      *  Estado del partido
      */
     public boolean isStarted() {
-        String optaId = Model.getMatchEventIdFromOpta(optaMatchEventId);
-
         // Inicio del partido?
-        OptaEvent optaEvent = Model.optaEvents().findOne("{gameId: #, typeId: 32, periodId: 1}", optaId).as(OptaEvent.class);
+        OptaEvent optaEvent = Model.optaEvents().findOne("{gameId: #, typeId: 32, periodId: 1}", optaMatchEventId).as(OptaEvent.class);
         if (optaEvent == null) {
             // Kick Off Pass?
-            optaEvent = Model.optaEvents().findOne("{gameId: #, typeId: 1, periodId: 1, qualifiers: 278}", optaId).as(OptaEvent.class);
+            optaEvent = Model.optaEvents().findOne("{gameId: #, typeId: 1, periodId: 1, qualifiers: 278}", optaMatchEventId).as(OptaEvent.class);
         }
 
         /*
@@ -84,9 +85,7 @@ public class TemplateMatchEvent implements JongoId {
     }
 
     public boolean isFinished() {
-        String optaId = Model.getMatchEventIdFromOpta(optaMatchEventId);
-
-        OptaEvent optaEvent = Model.optaEvents().findOne("{gameId: #, typeId: 30, periodId: 14}", optaId).as(OptaEvent.class);
+        OptaEvent optaEvent = Model.optaEvents().findOne("{gameId: #, typeId: 30, periodId: 14}", optaMatchEventId).as(OptaEvent.class);
 
         /*
         Logger.info("isFinished? {}({}) = {}",
