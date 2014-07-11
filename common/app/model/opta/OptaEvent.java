@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 
 /**
@@ -148,15 +149,18 @@ public class OptaEvent {
         if (timestamp.indexOf('-') > 0) {
             dateConfig = timestamp.indexOf('T') > 0 ? "yyyy-MM-dd'T'hh:mm:ss.SSSz" : "yyyy-MM-dd hh:mm:ss.SSSz";
             dateFormat = new SimpleDateFormat(dateConfig.substring(0, timestamp.length()));
+            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         }else{
             dateConfig = timestamp.indexOf('T') > 0 ? "yyyyMMdd'T'hhmmssZ" : "yyyyMMdd hhmmssZ";
             dateFormat = new SimpleDateFormat(dateConfig);
+            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         }
         int plusPos = timestamp.indexOf('+');
         if (plusPos>=19) {
             if (timestamp.substring(plusPos, timestamp.length()).equals("+00:00")) {
                 timestamp = timestamp.substring(0, plusPos);
                 dateFormat = new SimpleDateFormat(dateConfig.substring(0, timestamp.length()));
+                dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
             } else {
                 Logger.info("Cant parse this date: " + timestamp);
             }

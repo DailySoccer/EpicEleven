@@ -198,7 +198,7 @@ public class OptaProcessor {
                 OptaTeam myTeam = new OptaTeam();
                 myTeam.optaTeamId = getStringId(team, "uID", "_NO TEAM UID");
                 myTeam.name = team.getChild("Name").getContent().get(0).getValue();// AttributeValue("Name");
-                myTeam.updatedTime = System.currentTimeMillis();
+                myTeam.updatedTime = new Date(System.currentTimeMillis());
 
                 if (null != team.getChild("SYMID") && team.getChild("SYMID").getContentSize() > 0) {
                     myTeam.shortName = team.getChild("SYMID").getContent().get(0).getValue();//getAttributeValue("SYMID");
@@ -268,7 +268,7 @@ public class OptaProcessor {
                 myPlayer.teamId = getStringId(teamObject, "uID", "_NO TEAM ID");
                 myPlayer.teamName = teamObject.getChild("Name").getContent().get(0).getValue();
             }
-            myPlayer.updatedTime = System.currentTimeMillis();
+            myPlayer.updatedTime = new Date(System.currentTimeMillis());
             return myPlayer;
     }
 

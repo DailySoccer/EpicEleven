@@ -1,8 +1,5 @@
 package model.opta;
 
-import org.bson.types.ObjectId;
-import org.jongo.marshall.jackson.oid.Id;
-
 import java.util.Date;
 
 /**
