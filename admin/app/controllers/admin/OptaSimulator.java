@@ -100,6 +100,10 @@ public class OptaSimulator implements Runnable {
         MockData.ensureMockDataUsers();
     }
 
+    static public boolean isSnapshotEnabled() {
+        return _snapshot != null;
+    }
+
     static public void useSnapshot(Snapshot aSnapshot) {
         _snapshot = aSnapshot;
     }
@@ -180,7 +184,7 @@ public class OptaSimulator implements Runnable {
     private void updateDate(Date currentDate) {
         GlobalDate.setFakeDate(currentDate);
 
-        if (_snapshot != null) {
+        if (isSnapshotEnabled()) {
             _snapshot.update(currentDate);
         }
     }

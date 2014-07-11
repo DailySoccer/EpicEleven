@@ -80,12 +80,17 @@ public class SimulatorController extends Controller {
     }
 
     public static Result replayLast() {
-        Snapshot snapshot = Snapshot.create();
         OptaSimulator.reset();
-        OptaSimulator.useSnapshot(snapshot);
+        OptaSimulator.useSnapshot( Snapshot.getLast() );
 
         FlashMessage.success("Simulator replay with last snapshot");
         return redirect(routes.SimulatorController.index());
     }
 
+    public static Result snapshot() {
+        Snapshot.create();
+
+        FlashMessage.success("Snapshot created");
+        return redirect(routes.SimulatorController.index());
+    }
 }

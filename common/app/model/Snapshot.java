@@ -39,8 +39,8 @@ public class Snapshot {
         update(nextDate, "templateMatchEvents", TemplateMatchEvent.class);
         update(nextDate, "templateSoccerTeams", TemplateSoccerTeam.class);
         update(nextDate, "templateSoccerPlayers", TemplateSoccerPlayer.class);
-        update(nextDate, "contestEntries", ContestEntry.class);
-        update(nextDate, "contest", Contest.class);
+        //update(nextDate, "contestEntries", ContestEntry.class);
+        //update(nextDate, "contest", Contest.class);
 
         updatedDate = nextDate;
     }
@@ -51,7 +51,7 @@ public class Snapshot {
         MongoCollection collectionSource = Model.jongo().getCollection(snapshotName);
         MongoCollection collectionTarget = Model.jongo().getCollection(collectionName);
 
-        Iterable<T> results = collectionSource.find("{createdAt: {$gte: #, $lt: #}}", updatedDate, nextDate).as(classType);
+        Iterable<T> results = collectionSource.find("{createdAt: {$gte: #, $lte: #}}", updatedDate, nextDate).as(classType);
         List<T> list = utils.ListUtils.asList(results);
          if (!list.isEmpty()) {
             for (T elem : list) {
@@ -171,12 +171,13 @@ public class Snapshot {
 
         Snapshot snapshot   = new Snapshot();
 
+        create("pointsTranslations", PointsTranslation.class);
         create("templateContests", TemplateContest.class);
         create("templateMatchEvents", TemplateMatchEvent.class);
         create("templateSoccerTeams", TemplateSoccerTeam.class);
         create("templateSoccerPlayers", TemplateSoccerPlayer.class);
-        create("contestEntries", ContestEntry.class);
-        create("contests", Contest.class);
+        //create("contestEntries", ContestEntry.class);
+        //create("contests", Contest.class);
 
         collection().insert(snapshot);
 
@@ -188,6 +189,8 @@ public class Snapshot {
 
         MongoCollection collectionSource = Model.jongo().getCollection(collectionName);
         MongoCollection collectionTarget = Model.jongo().getCollection(snapshotName);
+
+        // Vaciar la collection (unicamente mantenemos 1 snapshot)
         collectionTarget.remove();
 
         Iterable<T> results = collectionSource.find().as(classType);

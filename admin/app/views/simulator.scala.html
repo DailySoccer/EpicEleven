@@ -81,6 +81,13 @@
     <div><span>Current date:</span><span style="font-weight:700; margin-left: 0.5em;" id="time">@GlobalDate.getCurrentDateString()</span></div>
     <div><span>Next stop:</span><span style="font-weight:700;margin-left: 0.5em;" id="nextStop">@OptaSimulator.getNextStop()</span></div>
     <div><span>Next file index:</span><span style="font-weight:700;margin-left: 0.5em;" id="nextStepDesc">@OptaSimulator.getNextStepDescription()</span></div>
+    <div><strong>Snapshot</strong>:
+        @if(OptaSimulator.isSnapshotEnabled()) {
+            On
+        } else {
+            Off
+        }
+    </div>
     <br/>
 
     <div class="btn-group">
@@ -115,7 +122,10 @@
              Reset
         </a>
         <a class="btn btn-sim btn-primary stop" href="@SimulatorController.replayLast" title="Erases the whole Database and resets to the beginning of time.">
-            Replay Last
+            Replay Last Snapshot
+        </a>
+        <a class="btn btn-sim btn-primary" href="@SimulatorController.snapshot" title="Erases the whole Database and resets to the beginning of time.">
+            Create Snapshot
         </a>
     </div>
     <hr>
