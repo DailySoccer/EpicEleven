@@ -322,7 +322,7 @@ public class OptaProcessor {
                 for (Element stat : stats) {
                     if (stat.getAttribute("Type").getValue().equals("goals_conceded") &&
                         ((int) Integer.parseInt(stat.getContent().get(0).getValue()) > 0)) {
-                        createEvent(F9, gameId, matchPlayer, 2001, 20001,
+                        createEvent(F9, gameId, matchPlayer, OptaEventType.GOAL_CONCEDED._code, 20001,
                                     (int) Integer.parseInt(stat.getContent().get(0).getValue()));
                     }
                 }
@@ -341,7 +341,7 @@ public class OptaProcessor {
                 for (Element stat : stats) {
                     if (stat.getAttribute("Type").getValue().equals("mins_played") &&
                         ((int) Integer.parseInt(stat.getContent().get(0).getValue()) > 59)) {
-                        createEvent(F9, gameId, matchPlayer, 2000, 20000, 1);
+                        createEvent(F9, gameId, matchPlayer, OptaEventType.CLEAN_SHEET._code, 20000, 1);
                     }
                 }
             }
