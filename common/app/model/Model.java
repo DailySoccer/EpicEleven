@@ -213,6 +213,14 @@ public class Model {
         return collection.find(String.format("{%s: {$in: #}}", fieldId), ListUtils.asList(objectIdsIterable));
     }
 
+    /**
+     * Igual que la anterior pero añadiendo un filtro
+     */
+    public static Find findObjectIds(MongoCollection collection, String fieldId, String filter, Iterable<ObjectId> objectIdsIterable) {
+        return collection.find(String.format("{%s: {$in: #}, %s}", fieldId, filter), ListUtils.asList(objectIdsIterable));
+    }
+
+
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/
     static private MongoClient _mongoClient;

@@ -3,6 +3,7 @@ package model;
 import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
 import org.bson.types.ObjectId;
+import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
@@ -11,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class ContestEntry {
+public class ContestEntry implements JongoId {
     @Id
     public ObjectId contestEntryId;
     public ObjectId userId;             // Usuario que creo el equipo
@@ -29,8 +30,18 @@ public class ContestEntry {
         this.createdAt = GlobalDate.getCurrentDate();
     }
 
+    public ObjectId getId() { return contestEntryId; }
+
     static public ContestEntry findOne(ObjectId contestEntryId) {
         return Model.contestEntries().findOne("{_id : #}", contestEntryId).as(ContestEntry.class);
+    }
+
+    static public Find findAllForUser(ObjectId userId) {
+        return Model.contestEntries().find("{userId: #}", userId);
+    }
+
+    static public Find findAllFromContests(Iterable<Contest> contests) {
+        return Model.findObjectIds(Model.contestEntries(), "contestId", ListUtils.convertToIdList(contests));
     }
 
     /**

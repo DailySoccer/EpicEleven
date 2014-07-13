@@ -4,6 +4,7 @@ import actions.AllowCors;
 import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import model.*;
 import org.bson.types.ObjectId;
 import play.Logger;
@@ -33,43 +34,44 @@ public class ContestController extends Controller {
         long startTime = System.currentTimeMillis();
 
         // Obtenemos la lista de TemplateContests activos
-        Iterable<TemplateContest> templateContests = Model.templateContests().find("{state: \"ACTIVE\"}").as(TemplateContest.class);
+        Iterable<TemplateContest> templateContests = TemplateContest.findAllActive().as(TemplateContest.class);
 
-        // De unos cuantos TemplateContests activos pasamos a cientos de miles de instancias Contest activas
+        // Tambien necesitamos devolver todos los concursos instancias asociados a los templates
         Iterable<Contest> contests = Contest.findAllFromTemplateContests(templateContests).as(Contest.class);
 
-        // Partidos asociados al TemplateContest
-        Iterable<TemplateMatchEvent> templateMatchEventsResults = TemplateMatchEvent.findAllFromTemplateContests(templateContests).as(TemplateMatchEvent.class);
-
-        HashMap<String, Object> content = new HashMap<>();
-
-        content.put("match_events", templateMatchEventsResults);
-        content.put("template_contests", templateContests);
-        content.put("contests", contests);
+        // Todos los partidos asociados a todos los TemplateContests
+        Iterable<TemplateMatchEvent> templateMatchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests).as(TemplateMatchEvent.class);
 
         Logger.info("getActiveContests: {}", System.currentTimeMillis() - startTime);
 
-        return new ReturnHelper(content).toResult();
+        return new ReturnHelper(ImmutableMap.of("match_events", templateMatchEvents,
+                                                "template_contests", templateContests,
+                                                "contests", contests)).toResult();
     }
 
     @UserAuthenticated
     public static Result getWaitingContests() {
         User theUser = utils.SessionUtils.getUserFromRequest(request());
 
-        // Obtenemos la lista de content entries que el usuario alguna vez ha creado
-        Iterable<ContestEntry> contestEntries = Model.contestEntries().find("{userId: #}", theUser.userId).as(ContestEntry.class);
-
-        // De estas entries, obtenemos los concursos
+        // Obtenemos la lista de content entries que el usuario alguna vez ha creado, y hacemos el join de los Contests
+        Iterable<ContestEntry> contestEntries = ContestEntry.findAllForUser(theUser.userId).as(ContestEntry.class);
         Iterable<Contest> contests = Contest.findAllFromContestEntries(contestEntries).as(Contest.class);
 
-        //List<TemplateContest> templateContests = ListUtils.asList(TemplateContest.find(contests).as(TemplateContest.class));
+        // Filtramos los concursos para obtener solo los TemplateContests activos
+        Iterable<TemplateContest> templateContests = TemplateContest.findAllFromContestsOnlyActive(contests).as(TemplateContest.class);
 
-        HashMap<String, Object> content = new HashMap<>();
+        // Y ahora que estan filtrados, obtenemos sus concursos y entradas (solo de este usuario) asociadas
+        contests = Contest.findAllFromTemplateContests(templateContests).as(Contest.class);
+        contestEntries = ContestEntry.findAllFromContests(contests).as(ContestEntry.class);
 
-        return new ReturnHelper(content).toResult();
+        // Necesitamos devolver los partidos asociados a estos concursos
+        Iterable<TemplateMatchEvent> templateMatchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests).as(TemplateMatchEvent.class);
+
+        return new ReturnHelper(ImmutableMap.of("match_events", templateMatchEvents,
+                                                "template_contests", templateContests,
+                                                "contests", contests,
+                                                "contest_entries", contestEntries)).toResult();
     }
-
-
 
     @UserAuthenticated
     public static Result getUserContests() {

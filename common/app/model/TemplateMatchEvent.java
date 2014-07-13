@@ -49,11 +49,13 @@ public class TemplateMatchEvent implements JongoId, Initializer {
         return Model.findObjectIds(Model.templateMatchEvents(), "_id", idList).as(TemplateMatchEvent.class);
     }
 
-    static public Find findAllFromTemplateContests(Iterable<TemplateContest> templateContests) {
+    static public Find gatherFromTemplateContests(Iterable<TemplateContest> templateContests) {
         List<ObjectId> templateMatchEventObjectIds = new ArrayList<>();
+
         for (TemplateContest templateContest: templateContests) {
             templateMatchEventObjectIds.addAll(templateContest.templateMatchEventIds);
         }
+
         return Model.findObjectIds(Model.templateMatchEvents(), "_id", templateMatchEventObjectIds);
     }
 

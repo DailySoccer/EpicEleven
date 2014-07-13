@@ -1,38 +1,42 @@
-GET     /test                       controllers.MainController.test()
-GET     /ping                       controllers.MainController.ping()
-GET     /jsontest                   controllers.MainController.jsonTest()
+GET         /test                                                   controllers.MainController.test()
+GET         /ping                                                   controllers.MainController.ping()
+GET         /jsontest                                               controllers.MainController.jsonTest()
 
 # Enganche de la zona de administracion
-->      /admin                      admin.Routes
+->          /admin                                                  admin.Routes
 
 # Login
-POST    /login                      controllers.LoginController.login()
-POST    /signup                     controllers.LoginController.signup()
-GET     /get_user_profile           controllers.LoginController.getUserProfile()
+POST        /login                                                  controllers.LoginController.login()
+POST        /signup                                                 controllers.LoginController.signup()
+GET         /get_user_profile                                       controllers.LoginController.getUserProfile()
 
-# Contests
-GET     /get_user_contests          controllers.ContestController.getUserContests()
-GET     /get_contest/:contest       controllers.ContestController.getContest(contest)
+# Concursos globales activos
+GET         /get_active_contests                                    controllers.ContestController.getActiveContests()
 
-# Active contests
-GET     /get_active_contests        controllers.ContestController.getActiveContests()
-POST    /add_contest_entry          controllers.ContestController.addContestEntry()
+# Concursos asociados a usuario
+GET         /get_waiting_contests                                   controllers.ContestController.getWaitingContests()
+GET         /get_user_contests                                      controllers.ContestController.getUserContests()
+GET         /get_contest/:contest                                   controllers.ContestController.getContest(contest)
 
-# Live contests
-GET     /get_live_contests                               controllers.ContestController.getLiveContests()
-GET     /get_live_contest/:contest                       controllers.ContestController.getLiveContest(contest)
-GET     /get_live_match_events/template_contest/:contest controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)
-POST    /get_live_match_events/match_events              controllers.ContestController.getLiveMatchEventsFromMatchEvents()
-GET     /get_live_contest_entries/:contest               controllers.ContestController.getLiveContestEntries(contest)
+# Live contests asociados a usuario
+GET         /get_live_contests                                      controllers.ContestController.getLiveContests()
+GET         /get_live_contest/:contest                              controllers.ContestController.getLiveContest(contest)
+GET         /get_live_match_events/template_contest/:contest        controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)
+POST        /get_live_match_events/match_events                     controllers.ContestController.getLiveMatchEventsFromMatchEvents()
+GET         /get_live_contest_entries/:contest                      controllers.ContestController.getLiveContestEntries(contest)
+
+# Entrar en concurso
+POST        /add_contest_entry                                      controllers.ContestController.addContestEntry()
+
 
 # Debug
-GET     /migrate                    controllers.OptaHttpController.migrate()
+GET         /migrate                                                controllers.OptaHttpController.migrate()
 
 # Por aqui nos entran todos nuestros datos de opta
-POST    /opta                       controllers.OptaHttpController.optaXmlInput()
+POST        /opta                                                   controllers.OptaHttpController.optaXmlInput()
 
 
 # Static assets
-GET     /                           controllers.Assets.at(path="/public", file="index.html")
-GET     /*file                      controllers.Assets.at(path="/public", file)
+GET         /                                                       controllers.Assets.at(path="/public", file="index.html")
+GET         /*file                                                  controllers.Assets.at(path="/public", file)
 

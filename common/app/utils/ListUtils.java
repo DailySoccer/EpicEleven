@@ -1,11 +1,13 @@
 package utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import play.libs.Json;
+import model.JongoId;
 import org.bson.types.ObjectId;
-import java.util.List;
+import play.libs.Json;
+
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class ListUtils {
     /**
@@ -74,5 +76,14 @@ public class ListUtils {
             list.add(iter.next().asText());
 
         return list;
+    }
+
+    public static <T extends JongoId> List<ObjectId> convertToIdList(Iterable<T> listOfPojos) {
+        List<ObjectId> ret = new ArrayList<>();
+
+        for (T pojo: listOfPojos)
+            ret.add(pojo.getId());
+
+        return ret;
     }
 }

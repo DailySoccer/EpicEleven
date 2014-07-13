@@ -4,13 +4,14 @@ import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
+import utils.ListUtils;
 
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 
-public class Contest {
+public class Contest implements JongoId {
 
     @Id
     public ObjectId contestId;
@@ -32,37 +33,27 @@ public class Contest {
         createdAt = GlobalDate.getCurrentDate();
     }
 
+    public ObjectId getId() { return contestId; }
+
+
     static public Contest findOne(ObjectId contestId) {
         return Model.contests().findOne("{_id : #}", contestId).as(Contest.class);
     }
 
     static public Contest findOne(String contestId) {
         Contest aContest = null;
-        Boolean userValid = ObjectId.isValid(contestId);
-        if (userValid) {
+        if (ObjectId.isValid(contestId)) {
             aContest = Model.contests().findOne(new ObjectId(contestId)).as(Contest.class);
         }
         return aContest;
     }
 
     public static Find findAllFromContestEntries(Iterable<ContestEntry> contestEntries) {
-        List<ObjectId> contestIds = new ArrayList<>();
-
-        for (ContestEntry contestEntry : contestEntries) {
-            contestIds.add(contestEntry.contestId);
-        }
-
-        return Model.findObjectIds(Model.contests(), "_id", contestIds);
+        return Model.findObjectIds(Model.contests(), "_id", ListUtils.convertToIdList(contestEntries));
     }
 
     static public Find findAllFromTemplateContests(Iterable<TemplateContest> templateContests) {
-        List<ObjectId> templateContestObjectIds = new ArrayList<>();
-
-        for (TemplateContest template: templateContests) {
-            templateContestObjectIds.add(template.templateContestId);
-        }
-
-        return Model.findObjectIds(Model.contests(), "templateContestId", templateContestObjectIds);
+        return Model.findObjectIds(Model.contests(), "templateContestId", ListUtils.convertToIdList(templateContests));
     }
 
     /**
