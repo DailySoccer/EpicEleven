@@ -22,14 +22,8 @@ public class AdminController extends Controller {
     }
 
     public static HashMap<ObjectId, TemplateContest> getTemplateContestsFromList(List<Contest> contestList) {
-        // Obtener la lista de Ids de los TemplateContests
-        ArrayList<ObjectId> idsList = new ArrayList<>();
-        for (Contest contest : contestList) {
-            idsList.add(contest.templateContestId);
-        }
 
-        // Obtenemos las lista de TemplateContest de todos los Ids
-        Iterable<TemplateContest> templateContestResults = TemplateContest.find("_id", idsList);
+        Iterable<TemplateContest> templateContestResults = TemplateContest.findAllFromContests(contestList).as(TemplateContest.class);
 
         // Convertirlo a map
         HashMap<ObjectId, TemplateContest> ret = new HashMap<>();

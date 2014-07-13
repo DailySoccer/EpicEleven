@@ -27,7 +27,7 @@ public class LiveMatchEventController extends Controller {
     }
 
     public static Result showWithTemplate(String templateMatchEventId) {
-        TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.find(new ObjectId(templateMatchEventId));
+        TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId));
         LiveMatchEvent liveMatchEvent = LiveMatchEvent.find(templateMatchEvent);
         return show(liveMatchEvent.liveMatchEventId.toString());
     }

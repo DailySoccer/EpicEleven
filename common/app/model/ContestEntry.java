@@ -29,7 +29,7 @@ public class ContestEntry {
         this.createdAt = GlobalDate.getCurrentDate();
     }
 
-    static public ContestEntry find(ObjectId contestEntryId) {
+    static public ContestEntry findOne(ObjectId contestEntryId) {
         return Model.contestEntries().findOne("{_id : #}", contestEntryId).as(ContestEntry.class);
     }
 
@@ -48,8 +48,8 @@ public class ContestEntry {
      * @return lista de Soccer Players
      */
     public List<SoccerPlayer> getSoccerPlayers() {
-        Contest contest = Contest.find(contestId);
-        TemplateContest templateContest = TemplateContest.find(contest.templateContestId);
+        Contest contest = Contest.findOne(contestId);
+        TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
         List<ObjectId> templateMatchEventIds = templateContest.templateMatchEventIds;
 
         //Iterable<LiveMatchEvent> liveMatchEventsResults = Model.liveMatchEvents().find().as(LiveMatchEvent.class);

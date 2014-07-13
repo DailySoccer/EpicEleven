@@ -2,7 +2,6 @@ package controllers.admin;
 
 import model.*;
 import org.bson.types.ObjectId;
-import play.Logger;
 import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -88,7 +87,7 @@ public class ContestEntryController extends Controller {
         Contest contest = Model.contests().findOne("{_id: #}", new ObjectId(contestId)).as(Contest.class);
         TemplateContest templateContest = Model.templateContests().findOne("{_id: #}", contest.templateContestId).as(TemplateContest.class);
 
-        Iterable<TemplateMatchEvent> templateMatchEventsResults = TemplateMatchEvent.find("_id", templateContest.templateMatchEventIds);
+        Iterable<TemplateMatchEvent> templateMatchEventsResults = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
         return ListUtils.asList(templateMatchEventsResults);
     }
 }

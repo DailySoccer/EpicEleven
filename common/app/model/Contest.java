@@ -32,8 +32,37 @@ public class Contest {
         createdAt = GlobalDate.getCurrentDate();
     }
 
-    static public Contest find(ObjectId contestId) {
+    static public Contest findOne(ObjectId contestId) {
         return Model.contests().findOne("{_id : #}", contestId).as(Contest.class);
+    }
+
+    static public Contest findOne(String contestId) {
+        Contest aContest = null;
+        Boolean userValid = ObjectId.isValid(contestId);
+        if (userValid) {
+            aContest = Model.contests().findOne(new ObjectId(contestId)).as(Contest.class);
+        }
+        return aContest;
+    }
+
+    public static Find findAllFromContestEntries(Iterable<ContestEntry> contestEntries) {
+        List<ObjectId> contestIds = new ArrayList<>();
+
+        for (ContestEntry contestEntry : contestEntries) {
+            contestIds.add(contestEntry.contestId);
+        }
+
+        return Model.findObjectIds(Model.contests(), "_id", contestIds);
+    }
+
+    static public Find findAllFromTemplateContests(Iterable<TemplateContest> templateContests) {
+        List<ObjectId> templateContestObjectIds = new ArrayList<>();
+
+        for (TemplateContest template: templateContests) {
+            templateContestObjectIds.add(template.templateContestId);
+        }
+
+        return Model.findObjectIds(Model.contests(), "templateContestId", templateContestObjectIds);
     }
 
     /**
@@ -49,32 +78,5 @@ public class Contest {
         Model.contests().remove(contest.contestId);
 
         return true;
-    }
-
-    /**
-     * Query de un contest por su identificador en mongoDB (verifica la validez del mismo)
-     *
-     * @param contestId Identficador del contest
-     * @return Contest
-     */
-    static public Contest find(String contestId) {
-        Contest aContest = null;
-        Boolean userValid = ObjectId.isValid(contestId);
-        if (userValid) {
-            aContest = Model.contests().findOne(new ObjectId(contestId)).as(Contest.class);
-        }
-        return aContest;
-    }
-
-    /**
-     *  Query de la lista de Contests correspondientes a una lista de Template Contests
-     */
-    static public Find find(Iterable<TemplateContest> templateContests) {
-        List<ObjectId> templateContestObjectIds = new ArrayList<>();
-        for (TemplateContest template: templateContests) {
-            templateContestObjectIds.add(template.templateContestId);
-        }
-
-        return Model.findObjectIds(Model.contests(), "templateContestId", templateContestObjectIds);
     }
 }

@@ -2,7 +2,6 @@ package model;
 
 import com.mongodb.WriteConcern;
 import org.bson.types.ObjectId;
-import org.joda.time.DateTime;
 import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
@@ -60,28 +59,23 @@ public class TemplateContest implements JongoId, Initializer {
     public boolean isLive()     { return (state == State.LIVE); }
     public boolean isHistory()  { return (state == State.HISTORY); }
 
-    public List<TemplateMatchEvent> templateMatchEvents() {
-        Iterable<TemplateMatchEvent> templateMatchEventResults = TemplateMatchEvent.find("_id", templateMatchEventIds);
-        return ListUtils.asList(templateMatchEventResults);
+
+    public List<TemplateMatchEvent> getTemplateMatchEvents() {
+        return ListUtils.asList(TemplateMatchEvent.findAll(templateMatchEventIds));
     }
 
-    static public TemplateContest find(ObjectId templateContestId) {
+    static public TemplateContest findOne(ObjectId templateContestId) {
         return Model.templateContests().findOne("{_id : #}", templateContestId).as(TemplateContest.class);
     }
 
-    /**
-     *  Query de la lista de Template Contests correspondientes a una lista de contests
-     */
-    static public Find find(List<Contest> contests) {
-        List<ObjectId> contestObjectIds = new ArrayList<>(contests.size());
-        for (Contest contest: contests) {
-            contestObjectIds.add(contest.templateContestId);
-        }
-        return Model.findObjectIds(Model.templateContests(), "_id", contestObjectIds);
-    }
 
-    public static Iterable<TemplateContest> find(String fieldId, List<ObjectId> idList) {
-        return Model.findObjectIds(Model.templateContests(), fieldId, idList).as(TemplateContest.class);
+    static public Find findAllFromContests(Iterable<Contest> contests) {
+        List<ObjectId> contestObjectIds = new ArrayList<>();
+
+        for (Contest contest: contests)
+            contestObjectIds.add(contest.templateContestId);
+
+        return Model.findObjectIds(Model.templateContests(), "_id", contestObjectIds);
     }
 
     /**
@@ -127,7 +121,7 @@ public class TemplateContest implements JongoId, Initializer {
         boolean started = false;
 
         // El Contest ha comenzado si cualquiera de sus partidos ha comenzado
-        Iterable<TemplateMatchEvent> templateContestResults = TemplateMatchEvent.find("_id", templateMatchEventIds);
+        Iterable<TemplateMatchEvent> templateContestResults = TemplateMatchEvent.findAll(templateMatchEventIds);
         for(TemplateMatchEvent templateMatchEvent : templateContestResults) {
             if (templateMatchEvent.isStarted()) {
                 started = true;
@@ -139,7 +133,7 @@ public class TemplateContest implements JongoId, Initializer {
     }
 
     public static boolean isStarted(String templateContestId) {
-        TemplateContest templateContest = find(new ObjectId(templateContestId));
+        TemplateContest templateContest = findOne(new ObjectId(templateContestId));
         return templateContest.isStarted();
     }
 
@@ -147,7 +141,7 @@ public class TemplateContest implements JongoId, Initializer {
         boolean finished = true;
 
         // El Contest ha terminado si TODOS sus partidos han terminado
-        Iterable<TemplateMatchEvent> templateContestResults = TemplateMatchEvent.find("_id", templateMatchEventIds);
+        Iterable<TemplateMatchEvent> templateContestResults = TemplateMatchEvent.findAll(templateMatchEventIds);
         for(TemplateMatchEvent templateMatchEvent : templateContestResults) {
             if (!templateMatchEvent.isFinished()) {
                 finished = false;
@@ -159,7 +153,7 @@ public class TemplateContest implements JongoId, Initializer {
     }
 
     public static boolean isFinished(String templateContestId) {
-        TemplateContest templateContest = find(new ObjectId(templateContestId));
+        TemplateContest templateContest = findOne(new ObjectId(templateContestId));
         return templateContest.isFinished();
     }
 }

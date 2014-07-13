@@ -35,7 +35,7 @@ public class TemplateContestController extends Controller {
     }
 
     public static Result edit(String templateContestId) {
-        TemplateContest templateContest = TemplateContest.find(new ObjectId(templateContestId));
+        TemplateContest templateContest = TemplateContest.findOne(new ObjectId(templateContestId));
         TemplateContestForm params = new TemplateContestForm(templateContest);
 
         Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
@@ -43,7 +43,7 @@ public class TemplateContestController extends Controller {
     }
 
     public static Result destroy(String templateContestId) {
-        TemplateContest templateContest = TemplateContest.find(new ObjectId(templateContestId));
+        TemplateContest templateContest = TemplateContest.findOne(new ObjectId(templateContestId));
         TemplateContest.remove(templateContest);
         return redirect(routes.TemplateContestController.index());
     }

@@ -57,11 +57,11 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         return optaFieldPos;
     }
 
-    static public TemplateSoccerPlayer find(ObjectId templateSoccerPlayerId) {
+    static public TemplateSoccerPlayer findOne(ObjectId templateSoccerPlayerId) {
         return Model.templateSoccerPlayers().findOne("{_id : #}", templateSoccerPlayerId).as(TemplateSoccerPlayer.class);
     }
 
-    public static Iterable<TemplateSoccerPlayer> find(String fieldId, List<ObjectId> idList) {
+    public static Iterable<TemplateSoccerPlayer> findAll(String fieldId, List<ObjectId> idList) {
         return Model.findObjectIds(Model.templateSoccerPlayers(), fieldId, idList).as(TemplateSoccerPlayer.class);
     }
 
