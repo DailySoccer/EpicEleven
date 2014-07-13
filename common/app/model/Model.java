@@ -7,11 +7,11 @@ import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import play.Logger;
 import play.Play;
+import utils.ListUtils;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.List;
 
 
 public class Model {
@@ -188,6 +188,7 @@ public class Model {
         if (!theMongoDB.collectionExists("contests"))
             theMongoDB.createCollection("contests", new BasicDBObject());
 
+        // TODO: Podemos quitar esto?
         if (!theMongoDB.collectionExists("matchEvents"))
             theMongoDB.createCollection("matchEvents", new BasicDBObject());
 
@@ -203,34 +204,11 @@ public class Model {
      * Query de una lista de ObjectIds (en una misma query)
      *
      * @param collection: MongoCollection a la que hacer la query
-     * @param fieldId:    Identificador del campo a buscar
-     * @param idList:     Lista de ObjectId (de mongoDb)
-     * @return Find (de jongo)
+     * @param fieldId:    Identificador del campo a buscar (p ej, 'templateContestId')
+     * @param objectIdsIterable: Lista de ObjectId (de mongoDb)
      */
-    public static Find findObjectIds(MongoCollection collection, String fieldId, List<ObjectId> idList) {
-        // Jongo necesita que le proporcionemos el patrón de "#, #, #" (según el número de parámetros)
-        String patternParams = "";
-        for (ObjectId id : idList) {
-            if (patternParams != "") patternParams += ",";
-            patternParams += "#";
-        }
-
-        // Componer la query según el número de parámetros
-        String pattern = String.format("{%s: {$in: [%s]}}", fieldId, patternParams);
-        return collection.find(pattern, idList.toArray());
-    }
-
-    public static Find findFields(MongoCollection collection, String fieldId, List<String> fieldList) {
-        // Jongo necesita que le proporcionemos el patrón de "#, #, #" (según el número de parámetros)
-        String patternParams = "";
-        for (String field : fieldList) {
-            if (patternParams != "") patternParams += ",";
-            patternParams += "#";
-        }
-
-        // Componer la query según el número de parámetros
-        String pattern = String.format("{%s: {$in: [%s]}}", fieldId, patternParams);
-        return collection.find(pattern, fieldList.toArray());
+    public static Find findObjectIds(MongoCollection collection, String fieldId, Iterable<ObjectId> objectIdsIterable) {
+        return collection.find(String.format("{%s: {$in: #}}", fieldId), ListUtils.asList(objectIdsIterable));
     }
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/

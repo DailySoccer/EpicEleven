@@ -6,6 +6,7 @@ import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -13,17 +14,15 @@ public class Contest {
 
     @Id
     public ObjectId contestId;
+    public ObjectId templateContestId;
 
+    public Date createdAt;
     public String name;
 
     public List<ObjectId> currentUserIds = new ArrayList<>();
     public int maxEntries;
 
-    public ObjectId templateContestId;
 
-    public Date createdAt;
-
-    // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
     public Contest() {}
 
     public Contest(TemplateContest template) {
@@ -70,11 +69,12 @@ public class Contest {
     /**
      *  Query de la lista de Contests correspondientes a una lista de Template Contests
      */
-    static public Find find(List<TemplateContest> templateContests) {
-        List<ObjectId> templateContestObjectIds = new ArrayList<>(templateContests.size());
+    static public Find find(Iterable<TemplateContest> templateContests) {
+        List<ObjectId> templateContestObjectIds = new ArrayList<>();
         for (TemplateContest template: templateContests) {
             templateContestObjectIds.add(template.templateContestId);
         }
+
         return Model.findObjectIds(Model.contests(), "templateContestId", templateContestObjectIds);
     }
 }

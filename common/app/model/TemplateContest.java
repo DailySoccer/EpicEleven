@@ -46,8 +46,7 @@ public class TemplateContest implements JongoId, Initializer {
     public Date activationAt;
     public Date createdAt;
 
-    public TemplateContest() {
-    }
+    public TemplateContest() { }
 
     public void Initialize() {
         state = State.OFF;

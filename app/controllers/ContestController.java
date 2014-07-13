@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.*;
 import org.bson.types.ObjectId;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import play.Logger;
 import play.data.Form;
 import play.data.validation.Constraints;
@@ -17,52 +15,36 @@ import utils.ListUtils;
 import utils.ReturnHelper;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 import static play.data.Form.form;
 
-//@UserAuthenticated
+
 @AllowCors.Origin
 public class ContestController extends Controller {
 
     /*
      * Devuelve la lista de contests activos (aquellos a los que un usuario puede apuntarse)
-     *  Incluye los datos referenciados por cada uno de los contest (sus templates y sus match events)
-     *      de forma que el cliente tenga todos los datos referenciados por un determinado contest
-     *
-     * TODO: ¿De donde obtendremos las fechas con las que filtar los contests? (las fechas que determinan que algo sea "activo")
+     * Incluye los datos referenciados por cada uno de los contest (sus templates y sus match events)
+     * de forma que el cliente tenga todos los datos referenciados por un determinado contest
      */
     public static Result getActiveContests() {
-        // User theUser = (User)ctx().args.get("User");
-
         long startTime = System.currentTimeMillis();
 
-        HashMap<String, Object> content = new HashMap<>();
+        // Obtenemos la lista de TemplateContests activos
+        Iterable<TemplateContest> templateContests = Model.templateContests().find("{state: \"ACTIVE\"}").as(TemplateContest.class);
 
-        // Obtenemos la lista de Template Contests activos
-        Iterable<TemplateContest> templateContestResults = Model.templateContests().find("{state: \"ACTIVE\"}").as(TemplateContest.class);
-        List<TemplateContest> templateContests = ListUtils.asList(templateContestResults);
+        // De unos cuantos TemplateContests activos, pasamos a cientos de miles de instancias Contest activas
+        Iterable<Contest> contests = Contest.find(templateContests).as(Contest.class);
 
-        // Contests <- Template Contests
-        Iterable<Contest> contestsResults = Contest.find(templateContests).as(Contest.class);
-        List<Contest> contests = ListUtils.asList(contestsResults);
-
-        // Match Events <- Template Contests
+        // Partidos asociados al TemplateContest
         Iterable<TemplateMatchEvent> templateMatchEventsResults = TemplateMatchEvent.find(templateContests).as(TemplateMatchEvent.class);
 
+        HashMap<String, Object> content = new HashMap<>();
         content.put("match_events", templateMatchEventsResults);
         content.put("template_contests", templateContests);
         content.put("contests", contests);
-
-        // TODO: Determinar mediante la fecha qué documentos enviar
-        /*
-        Date startDate = new DateTime(2014, 10, 14, 12, 0, DateTimeZone.UTC).toDate();
-        content.put("match_events", Model.templateMatchEvents().find("{startDate: #}", startDate).as(TemplateMatchEvent.class));
-        content.put("template_contests", Model.templateContests().find("{startDate: #}", startDate).as(TemplateContest.class));
-        content.put("contests", contests);
-        */
 
         Logger.info("getActiveContests: {}", System.currentTimeMillis() - startTime);
 

@@ -12,9 +12,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import model.opta.*;
-import play.Logger;
-
 public class TemplateMatchEvent implements JongoId, Initializer {
     @Id
     public ObjectId templateMatchEventId;
@@ -31,8 +28,7 @@ public class TemplateMatchEvent implements JongoId, Initializer {
 
     public TemplateMatchEvent() { }
 
-    public void Initialize() {
-    }
+    public void Initialize() { }
 
     public ObjectId getId() {
         return templateMatchEventId;
@@ -52,8 +48,8 @@ public class TemplateMatchEvent implements JongoId, Initializer {
     /**
      *  Query de la lista de Template Match Events correspondientes a una lista de template contests
      */
-    static public Find find(List<TemplateContest> templateContests) {
-        List<ObjectId> templateMatchEventObjectIds = new ArrayList<>(templateContests.size());
+    static public Find find(Iterable<TemplateContest> templateContests) {
+        List<ObjectId> templateMatchEventObjectIds = new ArrayList<>();
         for (TemplateContest templateContest: templateContests) {
             templateMatchEventObjectIds.addAll(templateContest.templateMatchEventIds);
         }

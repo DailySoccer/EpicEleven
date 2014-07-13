@@ -22,19 +22,6 @@ public class ListUtils {
     }
 
     /**
-     * Extraer los campos de una cadena (proporcionada como CSV)
-     * @param regex Caracteres usados para separar campos
-     * @param params Cadena con formato tipo CSV (comma-separated values) ej. "valor1,valor2,valor3"
-     * @return La lista de campos ej. [valor1, valor2, valor3]
-     */
-    public static List<String> listFromCSV(String regex, String params) {
-        List<String> strIdsList = new ArrayList<>();
-        for (String strId: params.split(regex))
-            strIdsList.add(strId);
-        return strIdsList;
-    }
-
-    /**
      * Convertir un iterator a una lista  (Iterator -> List>
      * @param iter Iterator
      * @param <T> Tipo del iterator

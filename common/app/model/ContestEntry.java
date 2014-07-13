@@ -14,16 +14,12 @@ import java.util.List;
 public class ContestEntry {
     @Id
     public ObjectId contestEntryId;
-
-    public ObjectId userId;     // Usuario que creo el equipo
-
-    public ObjectId contestId;  // Contest en el que se ha inscrito el equipo
-
-    public List<ObjectId> soccerIds;
+    public ObjectId userId;             // Usuario que creo el equipo
+    public ObjectId contestId;          // Contest en el que se ha inscrito el usuario
+    public List<ObjectId> soccerIds;    // Fantasy team
 
     public Date createdAt;
 
-    // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
     public ContestEntry() {}
 
     public ContestEntry(ObjectId userId, ObjectId contestId, List<ObjectId> soccerIds) {
@@ -73,44 +69,6 @@ public class ContestEntry {
         return soccerPlayers;
     }
 
-    /**
-     * Creacion de un contest entry (se añade a la base de datos)
-     * @param userId        Usuario al que pertenece el equipo
-     * @param contestId     Contest al que se apunta
-     * @param optaIdsList   Lista de identificadores de los futbolistas de Opta
-     * @return Si se ha realizado correctamente su creacion
-     */
-    public static boolean createFromOptaIds(String userId, String contestId, List<String> optaIdsList) {
-        Logger.info("create: userId({}) contestId({}) soccerTeam({})", userId, contestId, optaIdsList);
-
-        // Obtener el userId : ObjectId
-        User aUser = User.find(userId);
-        if (aUser == null) {
-            return false;
-        }
-
-        // Obtener el contestId : ObjectId
-        Contest aContest = Contest.find(contestId);
-        if (aContest == null) {
-            return false;
-        }
-
-        // Obtener los soccerIds de los futbolistas : List<ObjectId>
-        List<ObjectId> soccerIds = new ArrayList<>();
-
-        Iterable<TemplateSoccerPlayer> soccers = Model.findFields(Model.templateSoccerPlayers(), "optaPlayerId", optaIdsList).as(TemplateSoccerPlayer.class);
-
-        String soccerNames = "";    // Requerido para Logger.info
-        for (TemplateSoccerPlayer soccer : soccers) {
-            soccerNames += soccer.name + " / ";
-            soccerIds.add(soccer.templateSoccerPlayerId);
-        }
-
-        Logger.info("contestEntry: Contest[{}] / User[{}] = ({}) => {}", aContest.name, aUser.nickName, soccerIds.size(), soccerNames);
-
-        // Crear el equipo en mongoDb.contestEntryCollection
-        return create(new ObjectId(userId), new ObjectId(contestId), soccerIds);
-    }
 
     /**
      * Creacion de un contest entry (se añade a la base de datos)
@@ -120,10 +78,12 @@ public class ContestEntry {
      * @return Si se ha realizado correctamente su creacion
      */
     public static boolean create(ObjectId user, ObjectId contestId, List<ObjectId> soccers) {
-        boolean bRet = true;
+
+        boolean bRet = false;
 
         try {
             Contest contest = Model.contests().findOne("{ _id: # }", contestId).as(Contest.class);
+
             if (contest != null) {
                 ContestEntry aContestEntry = new ContestEntry(user, contestId, soccers);
                 Model.contestEntries().withWriteConcern(WriteConcern.SAFE).insert(aContestEntry);
@@ -132,16 +92,12 @@ public class ContestEntry {
                     contest.currentUserIds.add(contest.contestId);
                     Model.contests().update(contest.contestId).with(contest);
                 }
+
+                bRet = true;
             }
-            else {
-                bRet = false;
-            }
-
-
-
-        } catch (MongoException exc) {
-            Logger.error("create: ", exc);
-            bRet = false;
+        }
+        catch (MongoException exc) {
+            Logger.error("WTF 2032: ", exc);
         }
 
         return bRet;
