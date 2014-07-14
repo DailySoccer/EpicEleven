@@ -17,6 +17,7 @@ import utils.ReturnHelper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 
 import static play.data.Form.form;
@@ -34,13 +35,13 @@ public class ContestController extends Controller {
         long startTime = System.currentTimeMillis();
 
         // Obtenemos la lista de TemplateContests activos
-        Iterable<TemplateContest> templateContests = TemplateContest.findAllActive().as(TemplateContest.class);
+        List<TemplateContest> templateContests = TemplateContest.findAllActive();
 
         // Tambien necesitamos devolver todos los concursos instancias asociados a los templates
-        Iterable<Contest> contests = Contest.findAllFromTemplateContests(templateContests).as(Contest.class);
+        List<Contest> contests = Contest.findAllFromTemplateContests(templateContests);
 
         // Todos los partidos asociados a todos los TemplateContests
-        Iterable<TemplateMatchEvent> templateMatchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests).as(TemplateMatchEvent.class);
+        List<TemplateMatchEvent> templateMatchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests);
 
         Logger.info("getActiveContests: {}", System.currentTimeMillis() - startTime);
 
@@ -56,12 +57,12 @@ public class ContestController extends Controller {
         User theUser = utils.SessionUtils.getUserFromRequest(request());
 
         // Obtenermos la lista de Contest Entries que el usuario ha creado y sus joins adicionales
-        Iterable<ContestEntry> contestEntries = ContestEntry.findAllForUser(theUser.userId).as(ContestEntry.class);
-        Iterable<Contest> contests = Contest.findAllFromContestEntries(contestEntries).as(Contest.class);
-        Iterable<TemplateContest> templateContests = TemplateContest.findAllFromContests(contests).as(TemplateContest.class);
+        List<ContestEntry> contestEntries = ContestEntry.findAllForUser(theUser.userId);
+        List<Contest> contests = Contest.findAllFromContestEntries(contestEntries);
+        List<TemplateContest> templateContests = TemplateContest.findAllFromContests(contests);
 
         // Necesitamos devolver los partidos asociados a estos concursos
-        Iterable<TemplateMatchEvent> templateMatchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests).as(TemplateMatchEvent.class);
+        List<TemplateMatchEvent> templateMatchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests);
 
         Logger.info("getUserContests: {}", System.currentTimeMillis() - startTime);
 
@@ -187,36 +188,21 @@ public class ContestController extends Controller {
     public static Result getLiveContests() {
         long startTime = System.currentTimeMillis();
 
-        /*// Obtener el User de la session
         User theUser = utils.SessionUtils.getUserFromRequest(request());
 
-        // Averiguar la lista de Live Contests en los que el usuario participa
-        List<ObjectId> contestIds = new ArrayList<>();
+        // A partir de las contest entries del usuario, hacemos joins con el resto de colecciones
+        List<ContestEntry> contestEntries = ContestEntry.findAllForUser(theUser.userId);
 
-        // Obtenermos la lista de Contest Entries que el usuario ha creado
-        Iterable<ContestEntry> contestEntries = Model.contestEntries().find("{userId: #}", theUser.userId).as(ContestEntry.class);
-        for (ContestEntry contestEntry : contestEntries) {
-            contestIds.add(contestEntry.contestId);
-        }
-
-        Iterable<Contest> liveContestResults = Model.findObjectIds(Model.contests(), "_id", contestIds).as(Contest.class);
-        List<Contest> liveContests = ListUtils.asList(liveContestResults);
-
-        Iterable<TemplateContest> liveTemplateContestResults = TemplateContest.find(liveContests).as(TemplateContest.class);
-        List<TemplateContest> liveTemplateContests = ListUtils.asList(liveTemplateContestResults);
-
-        Iterable<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.find(liveTemplateContests).as(TemplateMatchEvent.class);
-
-        HashMap<String, Object> content = new HashMap<>();
-
-        content.put("match_events", liveMatchEvents);
-        content.put("template_contests", liveTemplateContests);
-        content.put("live_contests", liveContests);
+        // TODO: No estamos restringiendo a Live
+        List<Contest> liveContests = Contest.findAllFromContestEntries(contestEntries);
+        List<TemplateContest> liveTemplateContests = TemplateContest.findAllFromContests(liveContests);
+        List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.gatherFromTemplateContests(liveTemplateContests);
 
         Logger.info("getLiveContests: {}", System.currentTimeMillis() - startTime);
 
-        return new ReturnHelper(content).toResult();*/
-        return ok();
+        return new ReturnHelper(ImmutableMap.of("match_events", liveMatchEvents,
+                                                "template_contests", liveTemplateContests,
+                                                "contests", liveContests)).toResult();
     }
 
     /**

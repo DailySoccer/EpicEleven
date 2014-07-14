@@ -48,12 +48,12 @@ public class Contest implements JongoId {
         return aContest;
     }
 
-    public static Find findAllFromContestEntries(Iterable<ContestEntry> contestEntries) {
-        return Model.findObjectIds(Model.contests(), "_id", ListUtils.convertToIdList(contestEntries));
+    public static List<Contest> findAllFromContestEntries(Iterable<ContestEntry> contestEntries) {
+        return ListUtils.asList(Model.findObjectIds(Model.contests(), "_id", ListUtils.convertToIdList(contestEntries)).as(Contest.class));
     }
 
-    static public Find findAllFromTemplateContests(Iterable<TemplateContest> templateContests) {
-        return Model.findObjectIds(Model.contests(), "templateContestId", ListUtils.convertToIdList(templateContests));
+    static public List<Contest> findAllFromTemplateContests(Iterable<TemplateContest> templateContests) {
+        return ListUtils.asList(Model.findObjectIds(Model.contests(), "templateContestId", ListUtils.convertToIdList(templateContests)).as(Contest.class));
     }
 
     /**

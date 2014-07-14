@@ -87,7 +87,6 @@ public class ContestEntryController extends Controller {
         Contest contest = Model.contests().findOne("{_id: #}", new ObjectId(contestId)).as(Contest.class);
         TemplateContest templateContest = Model.templateContests().findOne("{_id: #}", contest.templateContestId).as(TemplateContest.class);
 
-        Iterable<TemplateMatchEvent> templateMatchEventsResults = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
-        return ListUtils.asList(templateMatchEventsResults);
+        return TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
     }
 }

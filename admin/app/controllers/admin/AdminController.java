@@ -23,7 +23,7 @@ public class AdminController extends Controller {
 
     public static HashMap<ObjectId, TemplateContest> getTemplateContestsFromList(List<Contest> contestList) {
 
-        Iterable<TemplateContest> templateContestResults = TemplateContest.findAllFromContests(contestList).as(TemplateContest.class);
+        Iterable<TemplateContest> templateContestResults = TemplateContest.findAllFromContests(contestList);
 
         // Convertirlo a map
         HashMap<ObjectId, TemplateContest> ret = new HashMap<>();

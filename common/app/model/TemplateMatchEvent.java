@@ -7,6 +7,7 @@ import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
+import utils.ListUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,18 +46,18 @@ public class TemplateMatchEvent implements JongoId, Initializer {
         return Model.templateMatchEvents().findOne("{_id : #}", templateMatchEventId).as(TemplateMatchEvent.class);
     }
 
-    public static Iterable<TemplateMatchEvent> findAll(List<ObjectId> idList) {
-        return Model.findObjectIds(Model.templateMatchEvents(), "_id", idList).as(TemplateMatchEvent.class);
+    public static List<TemplateMatchEvent> findAll(List<ObjectId> idList) {
+        return ListUtils.asList(Model.findObjectIds(Model.templateMatchEvents(), "_id", idList).as(TemplateMatchEvent.class));
     }
 
-    static public Find gatherFromTemplateContests(Iterable<TemplateContest> templateContests) {
+    static public List<TemplateMatchEvent> gatherFromTemplateContests(Iterable<TemplateContest> templateContests) {
         List<ObjectId> templateMatchEventObjectIds = new ArrayList<>();
 
         for (TemplateContest templateContest: templateContests) {
             templateMatchEventObjectIds.addAll(templateContest.templateMatchEventIds);
         }
 
-        return Model.findObjectIds(Model.templateMatchEvents(), "_id", templateMatchEventObjectIds);
+        return ListUtils.asList(Model.findObjectIds(Model.templateMatchEvents(), "_id", templateMatchEventObjectIds).as(TemplateMatchEvent.class));
     }
 
     /**
