@@ -81,7 +81,14 @@ public class TemplateContest implements JongoId, Initializer {
     }
 
     static public List<TemplateContest> findAllFromContests(Iterable<Contest> contests) {
-        return ListUtils.asList(Model.findObjectIds(Model.templateContests(), "_id", ListUtils.convertToIdList(contests)).as(TemplateContest.class));
+
+        ArrayList<ObjectId> templateContestIds = new ArrayList<>();
+
+        for (Contest contest : contests) {
+            templateContestIds.add(contest.templateContestId);
+        }
+
+        return ListUtils.asList(Model.findObjectIds(Model.templateContests(), "_id", templateContestIds).as(TemplateContest.class));
     }
 
     /**

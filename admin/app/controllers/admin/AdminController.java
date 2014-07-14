@@ -13,8 +13,8 @@ public class AdminController extends Controller {
 
 
     public static Result lobby() {
-        Iterable<Contest> contestsResults = Model.contests().find().as(Contest.class);
-        List<Contest> contestList = ListUtils.asList(contestsResults);
+
+        List<Contest> contestList = ListUtils.asList(Model.contests().find().as(Contest.class));
 
         HashMap<ObjectId, TemplateContest> templateContestMap = getTemplateContestsFromList(contestList);
 
