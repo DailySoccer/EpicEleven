@@ -81,3 +81,6 @@ GET         /next_stop_simulator                                       controlle
 GET         /is_running                                                controllers.admin.SimulatorController.isRunning()
 GET         /is_paused                                                 controllers.admin.SimulatorController.isPaused()
 GET         /current_date_simulator                                    controllers.admin.SimulatorController.currentDate()
+
+GET         /import_from_last                                          controllers.admin.OptaController.importFromLast()
+
