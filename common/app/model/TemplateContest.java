@@ -76,10 +76,6 @@ public class TemplateContest implements JongoId, Initializer {
         return Model.findObjectIds(Model.templateContests(), "_id", ListUtils.convertToIdList(contests));
     }
 
-    static public Find findAllFromContestsOnlyActive(Iterable<Contest> contests) {
-        return Model.findObjectIds(Model.templateContests(), "_id", "state: \"ACTIVE\"", ListUtils.convertToIdList(contests));
-    }
-
     /**
      *  Eliminar un template contest y sus dependencias
      */

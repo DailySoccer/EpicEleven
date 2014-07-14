@@ -221,7 +221,6 @@ public class Model {
     }
 
 
-
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/
     static private MongoClient _mongoClient;
 

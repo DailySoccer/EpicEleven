@@ -14,7 +14,6 @@ GET         /get_user_profile                                       controllers.
 GET         /get_active_contests                                    controllers.ContestController.getActiveContests()
 
 # Concursos asociados a usuario
-GET         /get_waiting_contests                                   controllers.ContestController.getWaitingContests()
 GET         /get_user_contests                                      controllers.ContestController.getUserContests()
 GET         /get_contest/:contest                                   controllers.ContestController.getContest(contest)
 
@@ -22,8 +21,6 @@ GET         /get_contest/:contest                                   controllers.
 GET         /get_live_contests                                      controllers.ContestController.getLiveContests()
 GET         /get_live_contest/:contest                              controllers.ContestController.getLiveContest(contest)
 GET         /get_live_match_events/template_contest/:contest        controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)
-POST        /get_live_match_events/match_events                     controllers.ContestController.getLiveMatchEventsFromMatchEvents()
-GET         /get_live_contest_entries/:contest                      controllers.ContestController.getLiveContestEntries(contest)
 
 # Entrar en concurso
 POST        /add_contest_entry                                      controllers.ContestController.addContestEntry()
