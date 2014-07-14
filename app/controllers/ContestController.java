@@ -82,37 +82,19 @@ public class ContestController extends Controller {
 
         // User theUser = (User)ctx().args.get("User");
 
-        // Obtenemos el contest
         Contest contest = Contest.findOne(contestId);
-
-        // Obtenermos los contest Entry
-        Iterable<ContestEntry> contestEntryRestuls = Model.contestEntries().find("{contestId: #}", contest.contestId).as(ContestEntry.class);
-        List<ContestEntry> contestEntries = ListUtils.asList(contestEntryRestuls);
-
-        // Obtener la informacion de los usuarios que participan en el contest
-        List<UserInfo> usersInfoInContest = new ArrayList<>();
-        Iterable<User> users = User.find(contestEntries).as(User.class);
-        for (User user : users) {
-            usersInfoInContest.add(user.info());
-        }
-
-        // Obtenemos el templateContest
+        List<ContestEntry> contestEntries = ContestEntry.findAllFromContest(contest.contestId);
+        List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntry(contestEntries);
         TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
-
-        // Obtener los match Events
-        Iterable<TemplateMatchEvent> matchEvents = Model.findObjectIds(Model.templateMatchEvents(), "_id", templateContest.templateMatchEventIds).as(TemplateMatchEvent.class);
-
-        HashMap<String, Object> content = new HashMap<>();
-
-        content.put("contest", contest);
-        content.put("users_info", usersInfoInContest);
-        content.put("contest_entries", contestEntries);
-        content.put("template_contest", templateContest);
-        content.put("match_events", matchEvents);
+        List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
 
         Logger.info("getContest: {}", System.currentTimeMillis() - startTime);
 
-        return new ReturnHelper(content).toResult();
+        return new ReturnHelper(ImmutableMap.of("contest", contest,
+                                                "users_info", usersInfoInContest,
+                                                "contest_entries", contestEntries,
+                                                "template_contest", templateContest,
+                                                "match_events", matchEvents)).toResult();
     }
 
     // https://github.com/playframework/playframework/tree/master/samples/java/forms
@@ -146,22 +128,20 @@ public class ContestController extends Controller {
             }
 
             // Obtener los soccerIds de los futbolistas : List<ObjectId>
-            List<ObjectId> soccerIds = new ArrayList<>();
-
             List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
-            Iterable<TemplateSoccerPlayer> soccers = TemplateSoccerPlayer.findAll("_id", idsList);
+            List<TemplateSoccerPlayer> soccers = TemplateSoccerPlayer.findAll(idsList);
+            List<ObjectId> soccerIds = ListUtils.convertToIdList(soccers);
 
-            String soccerNames = "";    // Requerido para Logger.info
-            for (TemplateSoccerPlayer soccer : soccers) {
-                soccerNames += soccer.name + " / ";
-                soccerIds.add(soccer.templateSoccerPlayerId);
-            }
             // Si no hemos podido encontrar todos los futbolistas referenciados por el contest entry
             if (soccerIds.size() != idsList.size()) {
                 contestEntryForm.reject("contestId", "SoccerTeam invalid");
             }
 
             if (!contestEntryForm.hasErrors()) {
+                String soccerNames = "";    // Requerido para Logger.info
+                for (TemplateSoccerPlayer soccer : soccers) {
+                    soccerNames += soccer.name + " / ";
+                }
                 Logger.info("contestEntry: User[{}] / Contest[{}] = ({}) => {}", theUser.nickName, aContest.name, soccerIds.size(), soccerNames);
 
                 // Crear el equipo en mongoDb.contestEntryCollection
@@ -209,37 +189,19 @@ public class ContestController extends Controller {
 
         // User theUser = (User)ctx().args.get("User");
 
-        // Obtenemos el contest
         Contest contest = Contest.findOne(contestId);
-
-        // Obtenermos los contest Entry
-        Iterable<ContestEntry> contestEntryRestuls = Model.contestEntries().find("{contestId: #}", contest.contestId).as(ContestEntry.class);
-        List<ContestEntry> contestEntries = ListUtils.asList(contestEntryRestuls);
-
-        // Obtener la informacion de los usuarios que participan en el contest
-        List<UserInfo> usersInfoInContest = new ArrayList<>();
-        Iterable<User> users = User.find(contestEntries).as(User.class);
-        for (User user : users) {
-            usersInfoInContest.add(user.info());
-        }
-
-        // Obtenemos el templateContest
+        List<ContestEntry> contestEntries = ContestEntry.findAllFromContest(contest.contestId);
+        List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntry(contestEntries);
         TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
+        List<LiveMatchEvent> liveMatchEvents = LiveMatchEvent.findAllFromTemplateMatchEvents(templateContest.templateMatchEventIds);
 
-        // Obtener los live Match Events
-        Iterable<TemplateMatchEvent> liveMatchEvents = Model.findObjectIds(Model.liveMatchEvents(), "_id", templateContest.templateMatchEventIds).as(TemplateMatchEvent.class);
+         Logger.info("getLiveContest: {}", System.currentTimeMillis() - startTime);
 
-        HashMap<String, Object> content = new HashMap<>();
-
-        content.put("contest", contest);
-        content.put("users_info", usersInfoInContest);
-        content.put("contest_entries", contestEntries);
-        content.put("template_contest", templateContest);
-        content.put("live_match_events", liveMatchEvents);
-
-        Logger.info("getLiveContest: {}", System.currentTimeMillis() - startTime);
-
-        return new ReturnHelper(content).toResult();
+        return new ReturnHelper(ImmutableMap.of("contest", contest,
+                                                "users_info", usersInfoInContest,
+                                                "contest_entries", contestEntries,
+                                                "template_contest", templateContest,
+                                                "live_match_events", liveMatchEvents)).toResult();
     }
 
     /**

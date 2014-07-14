@@ -71,7 +71,7 @@ public class TemplateContest implements JongoId, Initializer {
     static public TemplateContest findOne(String templateContestId) {
         TemplateContest theTemplateContest = null;
         if (ObjectId.isValid(templateContestId)) {
-            theTemplateContest = Model.templateContests().findOne("{_id : #}", templateContestId).as(TemplateContest.class);
+            theTemplateContest = Model.templateContests().findOne("{_id : #}", new ObjectId(templateContestId)).as(TemplateContest.class);
         }
         return theTemplateContest;
     }

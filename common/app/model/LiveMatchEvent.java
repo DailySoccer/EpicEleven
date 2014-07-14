@@ -73,8 +73,6 @@ public class LiveMatchEvent {
         return Model.liveMatchEvents().findOne("{templateMatchEventId: #}", templateMatchEvent.templateMatchEventId).as(LiveMatchEvent.class);
     }
 
-
-
     /**
      * Calcular y actualizar los puntos fantasy de un determinado partido "live"
      * Opera sobre cada uno de los futbolistas del partido (teamA y teamB)

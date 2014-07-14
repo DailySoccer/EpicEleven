@@ -6,6 +6,7 @@ import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import model.opta.*;
 import play.Logger;
+import utils.ListUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -60,8 +61,8 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         return Model.templateSoccerPlayers().findOne("{_id : #}", templateSoccerPlayerId).as(TemplateSoccerPlayer.class);
     }
 
-    public static Iterable<TemplateSoccerPlayer> findAll(String fieldId, List<ObjectId> idList) {
-        return Model.findObjectIds(Model.templateSoccerPlayers(), fieldId, idList).as(TemplateSoccerPlayer.class);
+    public static List<TemplateSoccerPlayer> findAll(List<ObjectId> idList) {
+        return ListUtils.asList(Model.findObjectIds(Model.templateSoccerPlayers(), "_id", idList).as(TemplateSoccerPlayer.class));
     }
 
 

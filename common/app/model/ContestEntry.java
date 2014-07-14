@@ -40,6 +40,10 @@ public class ContestEntry implements JongoId {
         return ListUtils.asList(Model.contestEntries().find("{userId: #}", userId).as(ContestEntry.class));
     }
 
+    static public List<ContestEntry> findAllFromContest(ObjectId contestId) {
+        return ListUtils.asList(Model.contestEntries().find("{contestId: #}", contestId).as(ContestEntry.class));
+    }
+
     static public List<ContestEntry> findAllFromContests(Iterable<Contest> contests) {
         return ListUtils.asList(Model.findObjectIds(Model.contestEntries(), "contestId", ListUtils.convertToIdList(contests)).as(ContestEntry.class));
     }
