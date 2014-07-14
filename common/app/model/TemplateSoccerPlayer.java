@@ -32,27 +32,26 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
     public TemplateSoccerPlayer(OptaPlayer optaPlayer, ObjectId aTemplateTeamId) {
         optaPlayerId = optaPlayer.optaPlayerId;
         name = optaPlayer.name;
-        fieldPos = getFieldPostFromOpta(optaPlayer.position);
+        fieldPos = transformToFieldPosFromOptaPos(optaPlayer.position);
         templateTeamId = aTemplateTeamId;
         createdAt = GlobalDate.getCurrentDate();
     }
 
-    public void Initialize() {
-    }
+    public void Initialize() { }
 
     public ObjectId getId() {
         return templateSoccerPlayerId;
     }
 
-    static FieldPos getFieldPostFromOpta (String optaPosition) {
-        FieldPos optaFieldPos;
+    static FieldPos transformToFieldPosFromOptaPos(String optaPosition) {
+        FieldPos optaFieldPos = FieldPos.FORWARD;
+
         if      (optaPosition.startsWith("G"))  optaFieldPos = FieldPos.GOALKEEPER;
         else if (optaPosition.startsWith("D"))  optaFieldPos = FieldPos.DEFENSE;
         else if (optaPosition.startsWith("M"))  optaFieldPos = FieldPos.MIDDLE;
         else if (optaPosition.startsWith("F"))  optaFieldPos = FieldPos.FORWARD;
         else {
             Logger.error("Opta Position not registered yet: {}", optaPosition);
-            optaFieldPos = FieldPos.FORWARD;
         }
         return optaFieldPos;
     }
@@ -69,7 +68,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
     public boolean hasChanged(OptaPlayer optaPlayer) {
         return !optaPlayerId.equals(optaPlayer.optaPlayerId) ||
                !name.equals(optaPlayer.name) ||
-               !fieldPos.equals(getFieldPostFromOpta(optaPlayer.position));
+               !fieldPos.equals(transformToFieldPosFromOptaPos(optaPlayer.position));
     }
 
     /**
