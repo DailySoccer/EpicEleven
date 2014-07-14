@@ -253,25 +253,20 @@ public class ContestController extends Controller {
      */
     @UserAuthenticated
     public static Result getLiveMatchEventsFromTemplateContest(String templateContestId) {
+
         Logger.info("getLiveMatchEventsFromTemplateContest: {}", templateContestId);
 
         long startTime = System.currentTimeMillis();
 
-        if (!ObjectId.isValid(templateContestId)) {
+        // Obtenemos el TemplateContest
+        TemplateContest templateContest = TemplateContest.findOne(templateContestId);
+
+        if (templateContest == null) {
             return new ReturnHelper(false, "TemplateContest invalid").toResult();
         }
 
-        // Obtenemos el TemplateContest
-        TemplateContest templateContest = Model.templateContests().findOne("{ _id: # }",
-                new ObjectId(templateContestId)).as(TemplateContest.class);
-
-        if (templateContest == null) {
-            return new ReturnHelper(false, "TemplateContest not found").toResult();
-        }
-
         // Consultar por los partidos del TemplateContest (queremos su version "live")
-        Iterable<LiveMatchEvent> liveMatchEventResults = LiveMatchEvent.find("templateMatchEventId", templateContest.templateMatchEventIds);
-        List<LiveMatchEvent> liveMatchEventList = ListUtils.asList(liveMatchEventResults);
+        List<LiveMatchEvent> liveMatchEventList = LiveMatchEvent.findAllFromTemplateMatchEvents(templateContest.templateMatchEventIds);
 
         Logger.info("END: getLiveMatchEventsFromTemplateContest: {}", System.currentTimeMillis() - startTime);
 

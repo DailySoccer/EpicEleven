@@ -68,6 +68,14 @@ public class TemplateContest implements JongoId, Initializer {
         return Model.templateContests().findOne("{_id : #}", templateContestId).as(TemplateContest.class);
     }
 
+    static public TemplateContest findOne(String templateContestId) {
+        TemplateContest theTemplateContest = null;
+        if (ObjectId.isValid(templateContestId)) {
+            theTemplateContest = Model.templateContests().findOne("{_id : #}", templateContestId).as(TemplateContest.class);
+        }
+        return theTemplateContest;
+    }
+
     static public List<TemplateContest> findAllActive() {
         return ListUtils.asList(Model.templateContests().find("{state: \"ACTIVE\"}").as(TemplateContest.class));
     }

@@ -46,7 +46,7 @@ public class ModelEvents {
             for (TemplateMatchEvent templateMatchEvent :  Model.templateMatchEvents().find("{optaMatchEventId : #}", "g" + optaGameId).as(TemplateMatchEvent.class)) {
 
                 // Existe la version "live" del match event?
-                LiveMatchEvent liveMatchEvent = LiveMatchEvent.find(templateMatchEvent);
+                LiveMatchEvent liveMatchEvent = LiveMatchEvent.findFromTemplateMatchEvent(templateMatchEvent);
 
                 // Si no existe y el partido ya ha comenzado, tenemos que crearlo!
                 if (liveMatchEvent == null && templateMatchEvent.isStarted()) {
