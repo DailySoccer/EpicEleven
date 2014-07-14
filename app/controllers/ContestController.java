@@ -54,7 +54,7 @@ public class ContestController extends Controller {
     public static Result getUserContests() {
         long startTime = System.currentTimeMillis();
 
-        User theUser = utils.SessionUtils.getUserFromRequest(request());
+        User theUser = (User)ctx().args.get("User");
 
         // Obtenermos la lista de Contest Entries que el usuario ha creado y sus joins adicionales
         List<ContestEntry> contestEntries = ContestEntry.findAllForUser(theUser.userId);
@@ -80,10 +80,7 @@ public class ContestController extends Controller {
     public static Result getContest(String contestId) {
         long startTime = System.currentTimeMillis();
 
-        /*
-        // Obtener el User de la session
-        User theUser = utils.SessionUtils.getUserFromRequest(request());
-        */
+        // User theUser = (User)ctx().args.get("User");
 
         // Obtenemos el contest
         Contest contest = Contest.findOne(contestId);
@@ -140,11 +137,7 @@ public class ContestController extends Controller {
 
             Logger.info("addContestEntry: contestId({}) soccerTeam({})", params.contestId, params.soccerTeam);
 
-            // Obtener el User de la session
-            User theUser = utils.SessionUtils.getUserFromRequest(request());
-            if (theUser == null) {
-                contestEntryForm.reject("userId", "User invalid");
-            }
+            User theUser = (User)ctx().args.get("User");
 
             // Obtener el contestId : ObjectId
             Contest aContest = Contest.findOne(params.contestId);
@@ -188,7 +181,7 @@ public class ContestController extends Controller {
     public static Result getLiveContests() {
         long startTime = System.currentTimeMillis();
 
-        User theUser = utils.SessionUtils.getUserFromRequest(request());
+        User theUser = (User)ctx().args.get("User");
 
         // A partir de las contest entries del usuario, hacemos joins con el resto de colecciones
         List<ContestEntry> contestEntries = ContestEntry.findAllForUser(theUser.userId);
@@ -214,10 +207,7 @@ public class ContestController extends Controller {
     public static Result getLiveContest(String contestId) {
         long startTime = System.currentTimeMillis();
 
-        /*
-        // Obtener el User de la session
-        User theUser = utils.SessionUtils.getUserFromRequest(request());
-        */
+        // User theUser = (User)ctx().args.get("User");
 
         // Obtenemos el contest
         Contest contest = Contest.findOne(contestId);
