@@ -12,10 +12,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 
 import java.io.UnsupportedEncodingException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -160,8 +157,9 @@ public class OptaHttpController extends Controller {
 
     public static ResultSet findXML(long last_timestamp) {
         Statement stmt = null;
-        Date last_date = new Date(last_timestamp);
+        Timestamp last_date = new Timestamp(last_timestamp);
         String selectString = "SELECT * FROM optaxml WHERE created_at > '"+last_date+"' ORDER BY created_at LIMIT 1;";
+        Logger.debug(selectString);
         ResultSet results = null;
         try {
             stmt = _connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
