@@ -43,7 +43,7 @@ public class ModelEvents {
             // Logger.info("optaGameId in gameId({})", optaGameId);
 
             // Buscamos todos los template Match Events asociados con ese partido de Opta
-            for (TemplateMatchEvent templateMatchEvent :  Model.templateMatchEvents().find("{optaMatchEventId : #}", "g" + optaGameId).as(TemplateMatchEvent.class)) {
+            for (TemplateMatchEvent templateMatchEvent :  Model.templateMatchEvents().find("{optaMatchEventId: #}", optaGameId).as(TemplateMatchEvent.class)) {
 
                 // Existe la version "live" del match event?
                 LiveMatchEvent liveMatchEvent = LiveMatchEvent.findFromTemplateMatchEvent(templateMatchEvent);
