@@ -52,44 +52,40 @@ public class OptaController extends Controller {
     }
 
 
-    public static F.Promise<Result> importXML(final long last_timestamp){
-        F.Promise<Result> resultPromise = WS.url("http://localhost:9000/return_xml/" + last_timestamp).get().map(
-                new F.Function<WS.Response, Result>(){
-                    public Result apply(WS.Response response){
-                        String bodyText  = response.getBody();
-                        Date createdAt = new Date(0L);
-                        Date lastUpdated = new Date(0L);
-                        if (bodyText.equals("NULL")){
-                            last_imported = lastUpdated;
-                            return ok("-1");
-                        } else {
-                            java.sql.Connection connection = play.db.DB.getConnection();
-                            String headers = response.getHeader("headers");
-                            String feedType = response.getHeader("feed-type");
-                            String gameId = response.getHeader("game-id");
-                            String competitionId = response.getHeader("competition-id");
-                            String seasonId = response.getHeader("season-id");
-                            createdAt = Model.getDateFromHeader(response.getHeader("created-at"));
-                            lastUpdated = Model.getDateFromHeader(response.getHeader("last-updated"));
-                            String name = response.getHeader("name");
+    public static boolean importXML(final long last_timestamp) {
+        F.Promise<WS.Response> response = WS.url("http://192.186.2.186:9000/return_xml/" + last_timestamp).get();
+        WS.Response a = response.get();
+        return processXML(a);
+    }
 
-                            Model.insertXML(connection, bodyText, headers, createdAt, name, feedType, gameId,
-                                    competitionId, seasonId, lastUpdated);
+    private static boolean processXML(final WS.Response response) {
+        String bodyText  = response.getBody();
+        Date createdAt = new Date(0L);
+        Date lastUpdated = new Date(0L);
+        if (bodyText.equals("NULL")) {
+            return false;
+        } else {
+            java.sql.Connection connection = play.db.DB.getConnection();
+            String headers = response.getHeader("headers");
+            String feedType = response.getHeader("feed-type");
+            String gameId = response.getHeader("game-id");
+            String competitionId = response.getHeader("competition-id");
+            String seasonId = response.getHeader("season-id");
+            createdAt = Model.getDateFromHeader(response.getHeader("created-at"));
+            lastUpdated = Model.getDateFromHeader(response.getHeader("last-updated"));
+            String name = response.getHeader("name");
 
-                        }
-                        last_imported = createdAt;
-                        return ok((createdAt).toString());
-                    }
-                }
-        );
-        return resultPromise;
+            Model.insertXML(connection, bodyText, headers, createdAt, name, feedType, gameId,
+                    competitionId, seasonId, lastUpdated);
+
+            return true;
+        }
     }
 
     public static Result importFromLast() {
         Date last_date = findLastDate();
-        importXML(last_date.getTime());
-        while (last_imported.getTime() > 0L) {
-            importXML(last_imported.getTime());
+        while (importXML(last_date.getTime())) {
+            Logger.debug("once again: "+findLastDate().getTime());
         }
         return ok("Finished importing");
     }
@@ -97,7 +93,7 @@ public class OptaController extends Controller {
     public static Date findLastDate() {
         Statement stmt = null;
         java.sql.Connection connection = play.db.DB.getConnection();
-        String selectString = "SELECT created_at FROM dailysoccerdb ORDER BY created_at DESC LIMIT 1;";
+        String selectString = "SELECT created_at FROM optaxml ORDER BY created_at DESC LIMIT 1;";
         ResultSet results = null;
         try {
             stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
@@ -109,9 +105,7 @@ public class OptaController extends Controller {
         } catch (java.sql.SQLException e) {
             Logger.error("WTF SQL 92374");
         }
-        return null;
+        return new Date(0L);
     }
-
-    private static Date last_imported;
 
 }
