@@ -62,9 +62,8 @@ public class OptaHttpController extends Controller {
         catch (Exception e) {
             e.printStackTrace();
         }
-        Connection connection = DB.getConnection();
 
-        insertXML(connection, bodyText,
+        insertXML(_connection, bodyText,
                   getHeadersString(request().headers()),
                   new Date(startDate),
                   getHeader("X-Meta-Default-Filename", request().headers()),
@@ -104,12 +103,11 @@ public class OptaHttpController extends Controller {
 
     public static Result migrate(){
         Iterable<OptaDB> allOptaDBs = Model.optaDB().find().as(OptaDB.class);
-        Connection connection = DB.getConnection();
 
         for (OptaDB document: allOptaDBs) {
             if (getHeader("X-Meta-Feed-Type", document.headers) != null) {
 
-                insertXML(connection, document.xml, getHeadersString(document.headers), new Date(document.startDate), document.name,
+                insertXML(_connection, document.xml, getHeadersString(document.headers), new Date(document.startDate), document.name,
                         getHeader("X-Meta-Feed-Type", document.headers), getHeader("X-Meta-Game-Id", document.headers),
                         getHeader("X-Meta-Competition-Id", document.headers), getHeader("X-Meta-Season-Id", document.headers),
                         Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", document.headers)));
@@ -162,12 +160,11 @@ public class OptaHttpController extends Controller {
 
     public static ResultSet findXML(long last_timestamp) {
         Statement stmt = null;
-        Connection connection = DB.getConnection();
         Date last_date = new Date(last_timestamp);
         String selectString = "SELECT * FROM optaxml WHERE created_at > '"+last_date+"' ORDER BY created_at LIMIT 1;";
         ResultSet results = null;
         try {
-            stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+            stmt = _connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
                     ResultSet.CONCUR_READ_ONLY);
 
             results = stmt.executeQuery(selectString);
@@ -211,4 +208,6 @@ public class OptaHttpController extends Controller {
             Logger.error("WTF 56312: ", e);
         }
     }
+
+    private static Connection _connection = DB.getConnection();
 }
