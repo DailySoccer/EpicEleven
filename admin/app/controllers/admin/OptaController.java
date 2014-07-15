@@ -52,20 +52,19 @@ public class OptaController extends Controller {
     }
 
 
-    public static boolean importXML(final long last_timestamp) {
-        F.Promise<WS.Response> response = WS.url("http://192.186.2.186:9000/return_xml/" + last_timestamp).get();
-        WS.Response a = response.get();
+    public static long importXML(long last_timestamp) {
+        F.Promise<WS.Response> response = WS.url("http://dailysoccer-staging.herokuapp.com/return_xml/" + last_timestamp).get();
+        WS.Response a = response.get(100000);
         return processXML(a);
     }
 
-    private static boolean processXML(final WS.Response response) {
+    private static long processXML(final WS.Response response) {
         String bodyText  = response.getBody();
         Date createdAt = new Date(0L);
         Date lastUpdated = new Date(0L);
         if (bodyText.equals("NULL")) {
-            return false;
+            return -1L;
         } else {
-            java.sql.Connection connection = play.db.DB.getConnection();
             String headers = response.getHeader("headers");
             String feedType = response.getHeader("feed-type");
             String gameId = response.getHeader("game-id");
@@ -75,28 +74,27 @@ public class OptaController extends Controller {
             lastUpdated = Model.getDateFromHeader(response.getHeader("last-updated"));
             String name = response.getHeader("name");
 
-            Model.insertXML(connection, bodyText, headers, createdAt, name, feedType, gameId,
+            Model.insertXML(_connection, bodyText, headers, createdAt, name, feedType, gameId,
                     competitionId, seasonId, lastUpdated);
 
-            return true;
+            long responselong = createdAt.getTime();
+            return responselong;
         }
     }
 
     public static Result importFromLast() {
-        Date last_date = findLastDate();
-        while (importXML(last_date.getTime())) {
-            Logger.debug("once again: "+findLastDate().getTime());
+        for (long last_date = findLastDate().getTime(); 0L <= last_date; last_date=importXML(last_date)) {
+            Logger.debug("once again: "+last_date);
         }
         return ok("Finished importing");
     }
 
     public static Date findLastDate() {
         Statement stmt = null;
-        java.sql.Connection connection = play.db.DB.getConnection();
         String selectString = "SELECT created_at FROM optaxml ORDER BY created_at DESC LIMIT 1;";
         ResultSet results = null;
         try {
-            stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+            stmt = _connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
                     ResultSet.CONCUR_READ_ONLY);
             results = stmt.executeQuery(selectString);
             if (results.next()) {
@@ -108,4 +106,5 @@ public class OptaController extends Controller {
         return new Date(0L);
     }
 
+    private static java.sql.Connection _connection = play.db.DB.getConnection();
 }

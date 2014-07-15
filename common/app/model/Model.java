@@ -13,13 +13,12 @@ import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 
 public class Model {
@@ -263,13 +262,24 @@ public class Model {
         if (dateStr == null) {
             return null;
         }
-        DateFormat formatter = new SimpleDateFormat("E MMM dd HH:mm:ss Z yyyy", Locale.ENGLISH);
+        DateFormat formatter;
+        if (dateStr.indexOf('-')>=0) {
+            if (dateStr.indexOf('T')>=0) {
+                formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+            } else {
+                formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ENGLISH);
+            }
+        } else {
+           formatter = new SimpleDateFormat("E MMM dd HH:mm:ss Z yyyy", Locale.ENGLISH);
+        }
+        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         Date date = null;
         try {
             date = (Date)formatter.parse(dateStr);
         } catch (ParseException e) {
             Logger.error("WTF 23815 Data parsing: ", e);
         }
+        Logger.debug(date.toString());
         return date;
     }
 
