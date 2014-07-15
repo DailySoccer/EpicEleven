@@ -138,8 +138,8 @@ public class OptaHttpController extends Controller {
                 gameId = nextOptaData.getString("game_id");
                 competitionId = nextOptaData.getString("competition_id");
                 seasonId = nextOptaData.getString("season_id");
-                lastUpdated = nextOptaData.getDate("last_updated");
-                createdAt = nextOptaData.getDate("created_at");
+                lastUpdated = nextOptaData.getTimestamp("last_updated");
+                createdAt = nextOptaData.getTimestamp("created_at");
                 xml = nextOptaData.getSQLXML("xml").getString();
 
                 response().setHeader("headers", headers);
