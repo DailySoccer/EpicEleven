@@ -13,8 +13,8 @@ public class AdminController extends Controller {
 
 
     public static Result lobby() {
-        Iterable<Contest> contestsResults = Model.contests().find().as(Contest.class);
-        List<Contest> contestList = ListUtils.asList(contestsResults);
+
+        List<Contest> contestList = ListUtils.asList(Model.contests().find().as(Contest.class));
 
         HashMap<ObjectId, TemplateContest> templateContestMap = getTemplateContestsFromList(contestList);
 
@@ -22,14 +22,8 @@ public class AdminController extends Controller {
     }
 
     public static HashMap<ObjectId, TemplateContest> getTemplateContestsFromList(List<Contest> contestList) {
-        // Obtener la lista de Ids de los TemplateContests
-        ArrayList<ObjectId> idsList = new ArrayList<>();
-        for (Contest contest : contestList) {
-            idsList.add(contest.templateContestId);
-        }
 
-        // Obtenemos las lista de TemplateContest de todos los Ids
-        Iterable<TemplateContest> templateContestResults = TemplateContest.find("_id", idsList);
+        Iterable<TemplateContest> templateContestResults = TemplateContest.findAllFromContests(contestList);
 
         // Convertirlo a map
         HashMap<ObjectId, TemplateContest> ret = new HashMap<>();

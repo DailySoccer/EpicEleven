@@ -21,10 +21,10 @@ public class TemplateSoccerPlayerController extends Controller {
     public static Result showFantasyPointsInContest(String contestId, String playerId) {
         List<OptaEvent> optaEventList = new ArrayList<>();
 
-        TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.find(new ObjectId(playerId));
-        Contest contest = Contest.find(new ObjectId(contestId));
-        TemplateContest templateContest = TemplateContest.find(contest.templateContestId);
-        List<TemplateMatchEvent> templateMatchEvents = templateContest.templateMatchEvents();
+        TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(playerId));
+        Contest contest = Contest.findOne(new ObjectId(contestId));
+        TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
+        List<TemplateMatchEvent> templateMatchEvents = templateContest.getTemplateMatchEvents();
 
         for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
             optaEventList.addAll(OptaEvent.filter(templateMatchEvent.optaMatchEventId, templateSoccerPlayer.optaPlayerId));
@@ -36,8 +36,8 @@ public class TemplateSoccerPlayerController extends Controller {
     public static Result showFantasyPointsInMatchEvent(String templateMatchEventId, String playerId) {
         List<OptaEvent> optaEventList = new ArrayList<>();
 
-        TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.find(new ObjectId(playerId));
-        TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.find(new ObjectId(templateMatchEventId));
+        TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(playerId));
+        TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId));
 
         optaEventList.addAll(OptaEvent.filter(templateMatchEvent.optaMatchEventId, templateSoccerPlayer.optaPlayerId));
 

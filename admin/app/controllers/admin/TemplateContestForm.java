@@ -1,8 +1,6 @@
 package controllers.admin;
 
 import model.*;
-import org.joda.time.DateTime;
-import play.data.format.Formats;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
 
@@ -57,7 +55,7 @@ public class TemplateContestForm {
         entryFee = templateContest.entryFee;
         prizeType = templateContest.prizeType;
 
-        Iterable<TemplateMatchEvent> templateMatchEventsResults = TemplateMatchEvent.find("_id", templateContest.templateMatchEventIds);
+        Iterable<TemplateMatchEvent> templateMatchEventsResults = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
         for(TemplateMatchEvent matchEvent : templateMatchEventsResults) {
             templateMatchEvents.add(matchEvent.optaMatchEventId);
         }

@@ -19,7 +19,7 @@ public class LiveContestEntryController extends Controller {
     }
 
     public static Result show(String contestEntryId) {
-        ContestEntry contestEntry = ContestEntry.find(new ObjectId(contestEntryId));
+        ContestEntry contestEntry = ContestEntry.findOne(new ObjectId(contestEntryId));
         List<SoccerPlayer> soccer_players = contestEntry.getSoccerPlayers();
         return ok(views.html.live_contest_entry.render(contestEntry, soccer_players));
     }

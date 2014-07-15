@@ -19,9 +19,7 @@ public class TemplateSoccerTeam implements JongoId, Initializer {
 
     public Date createdAt;
 
-    // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
-    public TemplateSoccerTeam() {
-    }
+    public TemplateSoccerTeam() { }
 
     public TemplateSoccerTeam(OptaTeam optaTeam) {
         optaTeamId = optaTeam.optaTeamId;
@@ -30,14 +28,13 @@ public class TemplateSoccerTeam implements JongoId, Initializer {
         createdAt = GlobalDate.getCurrentDate();
     }
 
-    public void Initialize() {
-    }
+    public void Initialize() { }
 
     public ObjectId getId() {
         return templateSoccerTeamId;
     }
 
-    static public TemplateSoccerTeam find(ObjectId templateSoccerTeamId) {
+    static public TemplateSoccerTeam findOne(ObjectId templateSoccerTeamId) {
         return Model.templateSoccerTeams().findOne("{_id : #}", templateSoccerTeamId).as(TemplateSoccerTeam.class);
     }
 

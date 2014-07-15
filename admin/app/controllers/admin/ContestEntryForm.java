@@ -87,7 +87,7 @@ public class ContestEntryForm {
         }
 
         // Validar contest
-        Contest aContest = Contest.find(contestId);
+        Contest aContest = Contest.findOne(contestId);
         if (aContest == null) {
             errors.add(new ValidationError("contestId", "Contest invalid"));
         }

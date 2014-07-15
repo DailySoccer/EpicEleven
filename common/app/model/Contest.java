@@ -4,26 +4,26 @@ import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
+import utils.ListUtils;
 
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 
-public class Contest {
+public class Contest implements JongoId {
 
     @Id
     public ObjectId contestId;
+    public ObjectId templateContestId;
 
+    public Date createdAt;
     public String name;
 
     public List<ObjectId> currentUserIds = new ArrayList<>();
     public int maxEntries;
 
-    public ObjectId templateContestId;
 
-    public Date createdAt;
-
-    // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
     public Contest() {}
 
     public Contest(TemplateContest template) {
@@ -33,8 +33,27 @@ public class Contest {
         createdAt = GlobalDate.getCurrentDate();
     }
 
-    static public Contest find(ObjectId contestId) {
+    public ObjectId getId() { return contestId; }
+
+
+    static public Contest findOne(ObjectId contestId) {
         return Model.contests().findOne("{_id : #}", contestId).as(Contest.class);
+    }
+
+    static public Contest findOne(String contestId) {
+        Contest aContest = null;
+        if (ObjectId.isValid(contestId)) {
+            aContest = Model.contests().findOne(new ObjectId(contestId)).as(Contest.class);
+        }
+        return aContest;
+    }
+
+    public static List<Contest> findAllFromContestEntries(Iterable<ContestEntry> contestEntries) {
+        return ListUtils.asList(Model.findObjectIds(Model.contests(), "_id", ListUtils.convertToIdList(contestEntries)).as(Contest.class));
+    }
+
+    static public List<Contest> findAllFromTemplateContests(Iterable<TemplateContest> templateContests) {
+        return ListUtils.asList(Model.findObjectIds(Model.contests(), "templateContestId", ListUtils.convertToIdList(templateContests)).as(Contest.class));
     }
 
     /**
@@ -50,31 +69,5 @@ public class Contest {
         Model.contests().remove(contest.contestId);
 
         return true;
-    }
-
-    /**
-     * Query de un contest por su identificador en mongoDB (verifica la validez del mismo)
-     *
-     * @param contestId Identficador del contest
-     * @return Contest
-     */
-    static public Contest find(String contestId) {
-        Contest aContest = null;
-        Boolean userValid = ObjectId.isValid(contestId);
-        if (userValid) {
-            aContest = Model.contests().findOne(new ObjectId(contestId)).as(Contest.class);
-        }
-        return aContest;
-    }
-
-    /**
-     *  Query de la lista de Contests correspondientes a una lista de Template Contests
-     */
-    static public Find find(List<TemplateContest> templateContests) {
-        List<ObjectId> templateContestObjectIds = new ArrayList<>(templateContests.size());
-        for (TemplateContest template: templateContests) {
-            templateContestObjectIds.add(template.templateContestId);
-        }
-        return Model.findObjectIds(Model.contests(), "templateContestId", templateContestObjectIds);
     }
 }

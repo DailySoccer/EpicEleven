@@ -2,7 +2,6 @@ package model;
 
 import com.mongodb.WriteConcern;
 import org.bson.types.ObjectId;
-import org.joda.time.DateTime;
 import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
@@ -46,8 +45,7 @@ public class TemplateContest implements JongoId, Initializer {
     public Date activationAt;
     public Date createdAt;
 
-    public TemplateContest() {
-    }
+    public TemplateContest() { }
 
     public void Initialize() {
         state = State.OFF;
@@ -61,28 +59,36 @@ public class TemplateContest implements JongoId, Initializer {
     public boolean isLive()     { return (state == State.LIVE); }
     public boolean isHistory()  { return (state == State.HISTORY); }
 
-    public List<TemplateMatchEvent> templateMatchEvents() {
-        Iterable<TemplateMatchEvent> templateMatchEventResults = TemplateMatchEvent.find("_id", templateMatchEventIds);
-        return ListUtils.asList(templateMatchEventResults);
+
+    public List<TemplateMatchEvent> getTemplateMatchEvents() {
+        return TemplateMatchEvent.findAll(templateMatchEventIds);
     }
 
-    static public TemplateContest find(ObjectId templateContestId) {
+    static public TemplateContest findOne(ObjectId templateContestId) {
         return Model.templateContests().findOne("{_id : #}", templateContestId).as(TemplateContest.class);
     }
 
-    /**
-     *  Query de la lista de Template Contests correspondientes a una lista de contests
-     */
-    static public Find find(List<Contest> contests) {
-        List<ObjectId> contestObjectIds = new ArrayList<>(contests.size());
-        for (Contest contest: contests) {
-            contestObjectIds.add(contest.templateContestId);
+    static public TemplateContest findOne(String templateContestId) {
+        TemplateContest theTemplateContest = null;
+        if (ObjectId.isValid(templateContestId)) {
+            theTemplateContest = Model.templateContests().findOne("{_id : #}", new ObjectId(templateContestId)).as(TemplateContest.class);
         }
-        return Model.findObjectIds(Model.templateContests(), "_id", contestObjectIds);
+        return theTemplateContest;
     }
 
-    public static Iterable<TemplateContest> find(String fieldId, List<ObjectId> idList) {
-        return Model.findObjectIds(Model.templateContests(), fieldId, idList).as(TemplateContest.class);
+    static public List<TemplateContest> findAllActive() {
+        return ListUtils.asList(Model.templateContests().find("{state: \"ACTIVE\"}").as(TemplateContest.class));
+    }
+
+    static public List<TemplateContest> findAllFromContests(Iterable<Contest> contests) {
+
+        ArrayList<ObjectId> templateContestIds = new ArrayList<>();
+
+        for (Contest contest : contests) {
+            templateContestIds.add(contest.templateContestId);
+        }
+
+        return ListUtils.asList(Model.findObjectIds(Model.templateContests(), "_id", templateContestIds).as(TemplateContest.class));
     }
 
     /**
@@ -128,7 +134,7 @@ public class TemplateContest implements JongoId, Initializer {
         boolean started = false;
 
         // El Contest ha comenzado si cualquiera de sus partidos ha comenzado
-        Iterable<TemplateMatchEvent> templateContestResults = TemplateMatchEvent.find("_id", templateMatchEventIds);
+        Iterable<TemplateMatchEvent> templateContestResults = TemplateMatchEvent.findAll(templateMatchEventIds);
         for(TemplateMatchEvent templateMatchEvent : templateContestResults) {
             if (templateMatchEvent.isStarted()) {
                 started = true;
@@ -140,7 +146,7 @@ public class TemplateContest implements JongoId, Initializer {
     }
 
     public static boolean isStarted(String templateContestId) {
-        TemplateContest templateContest = find(new ObjectId(templateContestId));
+        TemplateContest templateContest = findOne(new ObjectId(templateContestId));
         return templateContest.isStarted();
     }
 
@@ -148,7 +154,7 @@ public class TemplateContest implements JongoId, Initializer {
         boolean finished = true;
 
         // El Contest ha terminado si TODOS sus partidos han terminado
-        Iterable<TemplateMatchEvent> templateContestResults = TemplateMatchEvent.find("_id", templateMatchEventIds);
+        Iterable<TemplateMatchEvent> templateContestResults = TemplateMatchEvent.findAll(templateMatchEventIds);
         for(TemplateMatchEvent templateMatchEvent : templateContestResults) {
             if (!templateMatchEvent.isFinished()) {
                 finished = false;
@@ -160,7 +166,7 @@ public class TemplateContest implements JongoId, Initializer {
     }
 
     public static boolean isFinished(String templateContestId) {
-        TemplateContest templateContest = find(new ObjectId(templateContestId));
+        TemplateContest templateContest = findOne(new ObjectId(templateContestId));
         return templateContest.isFinished();
     }
 }

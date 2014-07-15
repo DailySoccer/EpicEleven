@@ -19,7 +19,8 @@ libraryDependencies ++= Seq(
   "postgresql" % "postgresql" % "9.1-901-1.jdbc4",
   "org.seleniumhq.selenium" % "selenium-java" % "2.41.0" % "test",
   "org.scalatestplus" % "play_2.10" % "1.0.0" % "test",
-  "com.saucelabs" % "sauce_junit" % "2.0.5" % "test"
+  "com.saucelabs" % "sauce_junit" % "2.0.5" % "test",
+  "com.google.guava" % "guava" % "17.0"
 )
 
 resolvers += "saucelabs-repository" at "http://repository-saucelabs.forge.cloudbees.com/release"

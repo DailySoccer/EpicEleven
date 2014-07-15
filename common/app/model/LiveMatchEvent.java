@@ -6,6 +6,7 @@ import model.opta.OptaEvent;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
+import utils.ListUtils;
 
 import java.util.Date;
 import java.util.List;
@@ -60,21 +61,17 @@ public class LiveMatchEvent {
         return null;
     }
 
-    /**
-     * Buscamos el "live" a partir de su "template"
-     */
-    static public LiveMatchEvent find(TemplateMatchEvent templateMatchEvent) {
-        return Model.liveMatchEvents().findOne("{templateMatchEventId: #}", templateMatchEvent.templateMatchEventId).as(LiveMatchEvent.class);
-    }
-
-    static public LiveMatchEvent find(ObjectId liveMatchEventId) {
+    static public LiveMatchEvent findOne(ObjectId liveMatchEventId) {
         return Model.liveMatchEvents().findOne("{_id : #}", liveMatchEventId).as(LiveMatchEvent.class);
     }
 
-    public static Iterable<LiveMatchEvent> find(String fieldId, List<ObjectId> idList) {
-        return Model.findObjectIds(Model.liveMatchEvents(), fieldId, idList).as(LiveMatchEvent.class);
+    public static List<LiveMatchEvent> findAllFromTemplateMatchEvents(List<ObjectId> idList) {
+        return ListUtils.asList(Model.findObjectIds(Model.liveMatchEvents(), "templateMatchEventId", idList).as(LiveMatchEvent.class));
     }
 
+    static public LiveMatchEvent findFromTemplateMatchEvent(TemplateMatchEvent templateMatchEvent) {
+        return Model.liveMatchEvents().findOne("{templateMatchEventId: #}", templateMatchEvent.templateMatchEventId).as(LiveMatchEvent.class);
+    }
 
     /**
      * Calcular y actualizar los puntos fantasy de un determinado partido "live"
@@ -155,7 +152,7 @@ public class LiveMatchEvent {
      * @return TODO: Tiempo transcurrido
      */
     public static Date currentTime(String liveMatchEventId) {
-        LiveMatchEvent liveMatchEvent = find(new ObjectId(liveMatchEventId));
+        LiveMatchEvent liveMatchEvent = findOne(new ObjectId(liveMatchEventId));
         Date dateNow = liveMatchEvent.startDate;
 
         // Buscar el ultimo evento registrado por el partido

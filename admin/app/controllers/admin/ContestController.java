@@ -28,7 +28,7 @@ public class ContestController extends Controller {
     }
 
     public static Result destroy(String contestId) {
-        Contest contest = Contest.find(new ObjectId(contestId));
+        Contest contest = Contest.findOne(new ObjectId(contestId));
         Contest.remove(contest);
         return redirect(routes.ContestController.index());
     }

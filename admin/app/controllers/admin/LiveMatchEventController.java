@@ -22,13 +22,13 @@ public class LiveMatchEventController extends Controller {
         ObjectId id = new ObjectId(liveMatchEventId);
 
         // Obtener la version actualizada
-        LiveMatchEvent liveMatchEvent = LiveMatchEvent.find(id);
+        LiveMatchEvent liveMatchEvent = LiveMatchEvent.findOne(id);
         return ok(views.html.live_match_event.render(liveMatchEvent));
     }
 
     public static Result showWithTemplate(String templateMatchEventId) {
-        TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.find(new ObjectId(templateMatchEventId));
-        LiveMatchEvent liveMatchEvent = LiveMatchEvent.find(templateMatchEvent);
+        TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId));
+        LiveMatchEvent liveMatchEvent = LiveMatchEvent.findFromTemplateMatchEvent(templateMatchEvent);
         return show(liveMatchEvent.liveMatchEventId.toString());
     }
 }

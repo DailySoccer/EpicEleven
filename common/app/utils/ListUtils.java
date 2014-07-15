@@ -1,11 +1,13 @@
 package utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import play.libs.Json;
+import model.JongoId;
 import org.bson.types.ObjectId;
-import java.util.List;
+import play.libs.Json;
+
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class ListUtils {
     /**
@@ -19,19 +21,6 @@ public class ListUtils {
             list.add(objectId.toString());
         }
         return list;
-    }
-
-    /**
-     * Extraer los campos de una cadena (proporcionada como CSV)
-     * @param regex Caracteres usados para separar campos
-     * @param params Cadena con formato tipo CSV (comma-separated values) ej. "valor1,valor2,valor3"
-     * @return La lista de campos ej. [valor1, valor2, valor3]
-     */
-    public static List<String> listFromCSV(String regex, String params) {
-        List<String> strIdsList = new ArrayList<>();
-        for (String strId: params.split(regex))
-            strIdsList.add(strId);
-        return strIdsList;
     }
 
     /**
@@ -87,5 +76,14 @@ public class ListUtils {
             list.add(iter.next().asText());
 
         return list;
+    }
+
+    public static <T extends JongoId> List<ObjectId> convertToIdList(Iterable<T> listOfPojos) {
+        List<ObjectId> ret = new ArrayList<>();
+
+        for (T pojo: listOfPojos)
+            ret.add(pojo.getId());
+
+        return ret;
     }
 }

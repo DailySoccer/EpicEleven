@@ -2,7 +2,6 @@ package controllers.admin;
 
 import model.*;
 import org.bson.types.ObjectId;
-import play.Logger;
 import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -45,6 +44,9 @@ public class ContestEntryController extends Controller {
     }
 
     public static Result create() {
+        /*
+            Desconectada por usar "ContestEntry.createFromOptaIds"
+
         Form<ContestEntryForm> contestEntryForm = form(ContestEntryForm.class).bindFromRequest();
         if (contestEntryForm.hasErrors()) {
             String contestId = contestEntryForm.field("contestId").value();
@@ -68,6 +70,7 @@ public class ContestEntryController extends Controller {
                 params.defense1, params.defense2, params.defense3, params.defense4,
                 params.middle1, params.middle2, params.middle3, params.middle4,
                 params.forward1, params.forward2);
+        */
 
         return redirect(routes.ContestEntryController.index());
     }
@@ -84,7 +87,6 @@ public class ContestEntryController extends Controller {
         Contest contest = Model.contests().findOne("{_id: #}", new ObjectId(contestId)).as(Contest.class);
         TemplateContest templateContest = Model.templateContests().findOne("{_id: #}", contest.templateContestId).as(TemplateContest.class);
 
-        Iterable<TemplateMatchEvent> templateMatchEventsResults = TemplateMatchEvent.find("_id", templateContest.templateMatchEventIds);
-        return ListUtils.asList(templateMatchEventsResults);
+        return TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
     }
 }

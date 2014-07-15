@@ -7,13 +7,11 @@ import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
+import utils.ListUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import model.opta.*;
-import play.Logger;
 
 public class TemplateMatchEvent implements JongoId, Initializer {
     @Id
@@ -31,8 +29,7 @@ public class TemplateMatchEvent implements JongoId, Initializer {
 
     public TemplateMatchEvent() { }
 
-    public void Initialize() {
-    }
+    public void Initialize() { }
 
     public ObjectId getId() {
         return templateMatchEventId;
@@ -45,23 +42,22 @@ public class TemplateMatchEvent implements JongoId, Initializer {
                !startDate.equals(optaMatchEvent.matchDate);
     }
 
-    static public TemplateMatchEvent find(ObjectId templateMatchEventId) {
+    static public TemplateMatchEvent findOne(ObjectId templateMatchEventId) {
         return Model.templateMatchEvents().findOne("{_id : #}", templateMatchEventId).as(TemplateMatchEvent.class);
     }
 
-    /**
-     *  Query de la lista de Template Match Events correspondientes a una lista de template contests
-     */
-    static public Find find(List<TemplateContest> templateContests) {
-        List<ObjectId> templateMatchEventObjectIds = new ArrayList<>(templateContests.size());
+    public static List<TemplateMatchEvent> findAll(List<ObjectId> idList) {
+        return ListUtils.asList(Model.findObjectIds(Model.templateMatchEvents(), "_id", idList).as(TemplateMatchEvent.class));
+    }
+
+    static public List<TemplateMatchEvent> gatherFromTemplateContests(Iterable<TemplateContest> templateContests) {
+        List<ObjectId> templateMatchEventObjectIds = new ArrayList<>();
+
         for (TemplateContest templateContest: templateContests) {
             templateMatchEventObjectIds.addAll(templateContest.templateMatchEventIds);
         }
-        return Model.findObjectIds(Model.templateMatchEvents(), "_id", templateMatchEventObjectIds);
-    }
 
-    public static Iterable<TemplateMatchEvent> find(String fieldId, List<ObjectId> idList) {
-        return Model.findObjectIds(Model.templateMatchEvents(), fieldId, idList).as(TemplateMatchEvent.class);
+        return ListUtils.asList(Model.findObjectIds(Model.templateMatchEvents(), "_id", templateMatchEventObjectIds).as(TemplateMatchEvent.class));
     }
 
     /**
@@ -83,7 +79,7 @@ public class TemplateMatchEvent implements JongoId, Initializer {
     }
 
     public static boolean isStarted(String templateMatchEventId) {
-        TemplateMatchEvent templateMatch = find(new ObjectId(templateMatchEventId));
+        TemplateMatchEvent templateMatch = findOne(new ObjectId(templateMatchEventId));
         return templateMatch.isStarted();
     }
 
@@ -98,7 +94,7 @@ public class TemplateMatchEvent implements JongoId, Initializer {
     }
 
     public static boolean isFinished(String templateMatchEventId) {
-        TemplateMatchEvent templateMatch = find(new ObjectId(templateMatchEventId));
+        TemplateMatchEvent templateMatch = findOne(new ObjectId(templateMatchEventId));
         return templateMatch.isFinished();
     }
 
