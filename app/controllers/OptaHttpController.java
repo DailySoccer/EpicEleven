@@ -13,10 +13,9 @@ import play.mvc.Result;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by gnufede on 30/05/14.
@@ -120,8 +119,10 @@ public class OptaHttpController extends Controller {
     public static Result returnXML(long last_timestamp){
         ResultSet nextOptaData = findXML(last_timestamp);
         String headers = "";
-        Date createdAt, lastUpdated;
+        Timestamp createdAt, lastUpdated;
         String name, feedType, gameId, competitionId, seasonId, xml = "";
+        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        format1.setTimeZone(TimeZone.getTimeZone("UTC"));
         if (nextOptaData == null) {
             return ok("NULL");
         }
@@ -143,8 +144,8 @@ public class OptaHttpController extends Controller {
                 response().setHeader("competition-id", competitionId);
                 response().setHeader("season-id", seasonId);
                 response().setHeader("feed-type", feedType);
-                response().setHeader("created-at", createdAt.toString());
-                response().setHeader("last-updated", lastUpdated.toString());
+                response().setHeader("created-at", format1.format(createdAt));
+                response().setHeader("last-updated", format1.format(lastUpdated));
 
             }
         } catch (java.sql.SQLException e) {
