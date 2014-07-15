@@ -14,10 +14,12 @@ import play.mvc.Result;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 /**
  * Created by gnufede on 30/05/14.
@@ -70,7 +72,7 @@ public class OptaHttpController extends Controller {
                   getHeader("X-Meta-Game-Id", request().headers()),
                   getHeader("X-Meta-Competition-Id", request().headers()),
                   getHeader("X-Meta-Season-Id", request().headers()),
-                  getDateFromHeader(getHeader("X-Meta-Last-Updated", request().headers()))
+                  Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", request().headers()))
                  );
 
         OptaProcessor theProcessor = new OptaProcessor();
@@ -100,20 +102,6 @@ public class OptaHttpController extends Controller {
                             null;
     }
 
-    public static Date getDateFromHeader(String dateStr) {
-        if (dateStr == null) {
-            return null;
-        }
-        DateFormat formatter = new SimpleDateFormat("E MMM dd HH:mm:ss Z yyyy", Locale.ENGLISH);
-        Date date = null;
-        try {
-            date = (Date)formatter.parse(dateStr);
-        } catch (ParseException e) {
-            Logger.error("WTF 23815 Data parsing: ", e);
-        }
-        return date;
-    }
-
     public static Result migrate(){
         Iterable<OptaDB> allOptaDBs = Model.optaDB().find().as(OptaDB.class);
         Connection connection = DB.getConnection();
@@ -124,7 +112,7 @@ public class OptaHttpController extends Controller {
                 insertXML(connection, document.xml, getHeadersString(document.headers), new Date(document.startDate), document.name,
                         getHeader("X-Meta-Feed-Type", document.headers), getHeader("X-Meta-Game-Id", document.headers),
                         getHeader("X-Meta-Competition-Id", document.headers), getHeader("X-Meta-Season-Id", document.headers),
-                        getDateFromHeader(getHeader("X-Meta-Last-Updated", document.headers)));
+                        Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", document.headers)));
             }
             else {
                 Logger.debug("IGNORANDO: " + document.name);
@@ -134,11 +122,68 @@ public class OptaHttpController extends Controller {
         return ok("Migrating...");
     }
 
+    public static Result returnXML(long last_timestamp){
+        ResultSet nextOptaData = findXML(last_timestamp);
+        String headers = "";
+        Date createdAt, lastUpdated;
+        String name, feedType, gameId, competitionId, seasonId, xml = "";
+        if (nextOptaData == null) {
+            return ok("NULL");
+        }
+        try {
+            if (nextOptaData.next()){
+                headers = nextOptaData.getString("headers");
+                feedType = nextOptaData.getString("feed_type");
+                name = nextOptaData.getString("name");
+                gameId = nextOptaData.getString("game_id");
+                competitionId = nextOptaData.getString("competition_id");
+                seasonId = nextOptaData.getString("season_id");
+                lastUpdated = nextOptaData.getDate("last_updated");
+                createdAt = nextOptaData.getDate("created_at");
+                xml = nextOptaData.getSQLXML("xml").getString();
+
+                response().setHeader("headers", headers);
+                response().setHeader("name", name);
+                response().setHeader("game-id", gameId);
+                response().setHeader("competition-id", competitionId);
+                response().setHeader("season-id", seasonId);
+                response().setHeader("feed-type", feedType);
+                response().setHeader("created-at", createdAt.toString());
+                response().setHeader("last-updated", lastUpdated.toString());
+
+            }
+        } catch (java.sql.SQLException e) {
+            Logger.error("WTF SQL 5683");
+        }
+        response().setContentType("text/html");
+
+        return ok(xml);
+    }
+
+    public static ResultSet findXML(long last_timestamp) {
+        Statement stmt = null;
+        Connection connection = DB.getConnection();
+        Date last_date = new Date(last_timestamp);
+        String selectString = "SELECT * FROM optaxml WHERE created_at > '"+last_date+"' ORDER BY created_at LIMIT 1;";
+        ResultSet results = null;
+        try {
+            stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+                    ResultSet.CONCUR_READ_ONLY);
+
+            results = stmt.executeQuery(selectString);
+
+        } catch (java.sql.SQLException e) {
+            Logger.error("SQL Exception connecting to DailySoccerDB");
+            e.printStackTrace();
+        }
+        return results;
+    }
+
     public static void insertXML(Connection connection, String xml, String headers, Date timestamp, String name, String feedType,
                                  String gameId, String competitionId, String seasonId, Date lastUpdated) {
 
         String insertString = "INSERT INTO optaxml (xml, headers, created_at, name, feed_type, game_id, competition_id," +
-                              "season_id, last_updated) VALUES ( XMLPARSE (DOCUMENT ?),?,?,?,?,?,?,?,?)";
+                "season_id, last_updated) VALUES ( XMLPARSE (DOCUMENT ?),?,?,?,?,?,?,?,?)";
 
         try {
             try (PreparedStatement stmt = connection.prepareStatement(insertString)) {
