@@ -67,6 +67,16 @@ public class Snapshot {
         }
     }
 
+    static public void createInDB() {
+        DBObject copyOp = new BasicDBObject("copydb", "1").
+                append("fromdb" , "dailySoccerDB").
+                append("todb" , "snapshot");
+
+        Model.mongoDBSnapshot().command("dropDatabase");
+        CommandResult a = Model.mongoDBAdmin().command(copyOp);
+        Logger.error(a.getErrorMessage());
+    }
+
     static public Snapshot create() {
         if (!Model.mongoDB().collectionExists(snapshotDBName)) {
             Model.mongoDB().createCollection(snapshotDBName, new BasicDBObject());
