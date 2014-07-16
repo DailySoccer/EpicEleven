@@ -59,7 +59,7 @@ public class OptaHttpController extends Controller {
             e.printStackTrace();
         }
 
-        insertXML(_connection, bodyText,
+        Model.insertXML(bodyText,
                   getHeadersString(request().headers()),
                   new Date(startDate),
                   getHeader("X-Meta-Default-Filename", request().headers()),
@@ -103,7 +103,7 @@ public class OptaHttpController extends Controller {
         for (OptaDB document: allOptaDBs) {
             if (getHeader("X-Meta-Feed-Type", document.headers) != null) {
 
-                insertXML(_connection, document.xml, getHeadersString(document.headers), new Date(document.startDate), document.name,
+                Model.insertXML(document.xml, getHeadersString(document.headers), new Date(document.startDate), document.name,
                         getHeader("X-Meta-Feed-Type", document.headers), getHeader("X-Meta-Game-Id", document.headers),
                         getHeader("X-Meta-Competition-Id", document.headers), getHeader("X-Meta-Season-Id", document.headers),
                         Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", document.headers)));
@@ -149,7 +149,7 @@ public class OptaHttpController extends Controller {
 
             }
         } catch (java.sql.SQLException e) {
-            Logger.error("WTF SQL 5683");
+            Logger.error("WTF 52683");
         }
         response().setContentType("text/html");
 
@@ -157,56 +157,18 @@ public class OptaHttpController extends Controller {
     }
 
     public static ResultSet findXML(long last_timestamp) {
-        Statement stmt = null;
         Timestamp last_date = new Timestamp(last_timestamp);
         String selectString = "SELECT * FROM optaxml WHERE created_at > '"+last_date+"' ORDER BY created_at LIMIT 1;";
         Logger.debug(selectString);
         ResultSet results = null;
-        try {
-            stmt = _connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-                    ResultSet.CONCUR_READ_ONLY);
-
-            results = stmt.executeQuery(selectString);
-
+        try (Connection connection = DB.getConnection()) {
+            try (Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
+                results = stmt.executeQuery(selectString);
+            }
         } catch (java.sql.SQLException e) {
-            Logger.error("SQL Exception connecting to DailySoccerDB");
-            e.printStackTrace();
+            Logger.error("WTF 72613", e);
         }
         return results;
     }
 
-    public static void insertXML(Connection connection, String xml, String headers, Date timestamp, String name, String feedType,
-                                 String gameId, String competitionId, String seasonId, Date lastUpdated) {
-
-        String insertString = "INSERT INTO optaxml (xml, headers, created_at, name, feed_type, game_id, competition_id," +
-                "season_id, last_updated) VALUES ( XMLPARSE (DOCUMENT ?),?,?,?,?,?,?,?,?)";
-
-        try {
-            try (PreparedStatement stmt = connection.prepareStatement(insertString)) {
-                stmt.setString(1, xml);
-                stmt.setString(2, headers);
-                stmt.setTimestamp(3, new java.sql.Timestamp(timestamp.getTime()));
-                stmt.setString(4, name);
-                stmt.setString(5, feedType);
-                stmt.setString(6, gameId);
-                stmt.setString(7, competitionId);
-                stmt.setString(8, seasonId);
-
-                if (lastUpdated != null) {
-                    stmt.setTimestamp(9, new java.sql.Timestamp(lastUpdated.getTime()));
-                } else {
-                    stmt.setTimestamp(9, null);
-                }
-
-                if (stmt.execute()) {
-                    Logger.info("Successful insert in OptaXML");
-                }
-            }
-        }
-        catch (java.sql.SQLException e) {
-            Logger.error("WTF 56312: ", e);
-        }
-    }
-
-    private static Connection _connection = DB.getConnection();
 }

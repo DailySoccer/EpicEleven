@@ -3,12 +3,14 @@ package controllers.admin;
 import model.Model;
 import model.opta.*;
 import play.Logger;
+import play.db.DB;
 import play.libs.F;
 import play.libs.WS;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
@@ -74,11 +76,10 @@ public class OptaController extends Controller {
             lastUpdated = Model.getDateFromHeader(response.getHeader("last-updated"));
             String name = response.getHeader("name");
 
-            Model.insertXML(_connection, bodyText, headers, createdAt, name, feedType, gameId,
+            Model.insertXML(bodyText, headers, createdAt, name, feedType, gameId,
                     competitionId, seasonId, lastUpdated);
 
-            long responselong = createdAt.getTime();
-            return responselong;
+            return createdAt.getTime();
         }
     }
 
@@ -90,15 +91,14 @@ public class OptaController extends Controller {
     }
 
     public static Date findLastDate() {
-        Statement stmt = null;
         String selectString = "SELECT created_at FROM optaxml ORDER BY created_at DESC LIMIT 1;";
         ResultSet results = null;
-        try {
-            stmt = _connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
-                    ResultSet.CONCUR_READ_ONLY);
-            results = stmt.executeQuery(selectString);
-            if (results.next()) {
-                return results.getDate("created_at");
+        try (Connection connection = DB.getConnection()) {
+            try (Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
+                results = stmt.executeQuery(selectString);
+                if (results.next()) {
+                    return results.getDate("created_at");
+                }
             }
         } catch (java.sql.SQLException e) {
             Logger.error("WTF SQL 92374");
@@ -106,5 +106,4 @@ public class OptaController extends Controller {
         return new Date(0L);
     }
 
-    private static java.sql.Connection _connection = play.db.DB.getConnection();
 }

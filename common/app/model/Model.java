@@ -10,6 +10,7 @@ import play.Play;
 import utils.ListUtils;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -225,13 +226,13 @@ public class Model {
         return collection.find(String.format("{%s: {$in: #}, %s}", fieldId, filter), ListUtils.asList(objectIdsIterable));
     }
 
-    public static void insertXML(java.sql.Connection connection, String xml, String headers, Date timestamp, String name, String feedType,
+    public static void insertXML(String xml, String headers, Date timestamp, String name, String feedType,
                                  String gameId, String competitionId, String seasonId, Date lastUpdated) {
 
         String insertString = "INSERT INTO optaxml (xml, headers, created_at, name, feed_type, game_id, competition_id," +
                 "season_id, last_updated) VALUES ( XMLPARSE (DOCUMENT ?),?,?,?,?,?,?,?,?)";
 
-        try {
+        try (Connection connection = play.db.DB.getConnection()) {
             try (PreparedStatement stmt = connection.prepareStatement(insertString)) {
                 stmt.setString(1, xml);
                 stmt.setString(2, headers);
