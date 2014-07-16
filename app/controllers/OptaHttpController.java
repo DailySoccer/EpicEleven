@@ -11,11 +11,12 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.*;
 
 /**
@@ -137,7 +138,7 @@ public class OptaHttpController extends Controller {
                 seasonId = nextOptaData.getString("season_id");
                 lastUpdated = nextOptaData.getTimestamp("last_updated");
                 createdAt = nextOptaData.getTimestamp("created_at");
-                InputStream xmlInput = nextOptaData.getSQLXML("xml").getBinaryStream();
+                //InputStream xmlInput = nextOptaData.getSQLXML("xml").getBinaryStream();
 
                 response().setHeader("headers", headers);
                 response().setHeader("name", name);
@@ -148,7 +149,8 @@ public class OptaHttpController extends Controller {
                 response().setHeader("created-at", format1.format(createdAt));
                 response().setHeader("last-updated", format1.format(lastUpdated));
                 Logger.info("response prepared");
-                return ok(xmlInput);
+                //return ok(xmlInput);
+                return ok("Mentira");
             }
 
         } catch (java.sql.SQLException e) {
