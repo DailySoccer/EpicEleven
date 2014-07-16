@@ -57,10 +57,10 @@ public class OptaController extends Controller {
     public static long importXML(long last_timestamp) {
         F.Promise<WS.Response> response = WS.url("http://dailysoccer-staging.herokuapp.com/return_xml/" + last_timestamp).get();
         WS.Response a = response.get(100000);
-        return processXML(a);
+        return processXML(a, new Date(last_timestamp));
     }
 
-    private static long processXML(final WS.Response response) {
+    private static long processXML(final WS.Response response, Date lastDate) {
         if (response.getStatus() != 200) {
             Logger.error("Response not OK: "+response.getStatus());
             return -2L;
@@ -80,18 +80,24 @@ public class OptaController extends Controller {
                 lastUpdated = Model.getDateFromHeader(response.getHeader("last-updated"));
                 String name = response.getHeader("name");
 
-                Model.insertXML(bodyText, headers, createdAt, name, feedType, gameId,
-                        competitionId, seasonId, lastUpdated);
+                if (createdAt.after(lastDate)) {
+                    Model.insertXML(bodyText, headers, createdAt, name, feedType, gameId,
+                            competitionId, seasonId, lastUpdated);
+                    return createdAt.getTime();
+                } else {
+                    return -2L;
+                }
 
-                return createdAt.getTime();
             }
         }
     }
 
     public static Result importFromLast() {
+        Logger.debug("Starting at: {}", findLastDate());
         for (long last_date = findLastDate().getTime(); 0L <= last_date; last_date=importXML(last_date)) {
             Logger.debug("once again: "+last_date);
         }
+        Logger.debug("Finished at: {}", findLastDate());
         return ok("Finished importing");
     }
 
@@ -99,10 +105,10 @@ public class OptaController extends Controller {
         String selectString = "SELECT created_at FROM optaxml ORDER BY created_at DESC LIMIT 1;";
         ResultSet results = null;
         try (Connection connection = DB.getConnection()) {
-            try (Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
+            try (Statement stmt = connection.createStatement()) {
                 results = stmt.executeQuery(selectString);
                 if (results.next()) {
-                    return results.getDate("created_at");
+                    return results.getTimestamp("created_at");
                 }
             }
         } catch (java.sql.SQLException e) {

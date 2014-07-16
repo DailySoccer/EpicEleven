@@ -119,14 +119,14 @@ public class OptaHttpController extends Controller {
     }
 
     public static Result returnXML(long last_timestamp){
-
+        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        format1.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Date askedDate = new Date(last_timestamp);
         try (Connection connection = DB.getConnection()) {
-            ResultSet nextOptaData = findXML(connection, last_timestamp);
+            ResultSet nextOptaData = findXML(connection, askedDate);
             String headers = "";
             Timestamp createdAt, lastUpdated;
             String name, feedType, gameId, competitionId, seasonId = "";
-            SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-            format1.setTimeZone(TimeZone.getTimeZone("UTC"));
             if (nextOptaData == null) {
                 return ok("NULL");
             }
@@ -162,14 +162,15 @@ public class OptaHttpController extends Controller {
 
         } catch (java.sql.SQLException e) {
             Logger.error("WTF 52683", e);
+            Logger.info("Possibly end of documents reached: {}", format1.format(askedDate));
         }
         response().setContentType("text/html");
 
         return ok("NULL");
     }
 
-    public static ResultSet findXML(Connection connection, long last_timestamp) {
-        Timestamp last_date = new Timestamp(last_timestamp);
+    public static ResultSet findXML(Connection connection, Date askedDate) {
+        Timestamp last_date = new Timestamp(askedDate.getTime());
         String selectString = "SELECT * FROM optaxml WHERE created_at > '"+last_date+"' ORDER BY created_at LIMIT 1;";
         Logger.debug(selectString);
         ResultSet results = null;
