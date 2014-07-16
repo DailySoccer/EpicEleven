@@ -82,7 +82,7 @@ public class ContestController extends Controller {
         // User theUser = (User)ctx().args.get("User");
 
         Contest contest = Contest.findOne(contestId);
-        List<ContestEntry> contestEntries = ContestEntry.findAllFromContest(contest.contestId);
+        List<ContestEntry> contestEntries = contest.contestEntries;
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntry(contestEntries);
         TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
@@ -162,11 +162,8 @@ public class ContestController extends Controller {
 
         User theUser = (User)ctx().args.get("User");
 
-        // A partir de las contest entries del usuario, hacemos joins con el resto de colecciones
-        List<ContestEntry> contestEntries = ContestEntry.findAllForUser(theUser.userId);
-
         // TODO: No estamos restringiendo a Live
-        List<Contest> liveContests = Contest.findAllFromContestEntries(contestEntries);
+        List<Contest> liveContests = Contest.findAllFromUser(theUser.userId);
         List<TemplateContest> liveTemplateContests = TemplateContest.findAllFromContests(liveContests);
         List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.gatherFromTemplateContests(liveTemplateContests);
 
@@ -189,7 +186,7 @@ public class ContestController extends Controller {
         // User theUser = (User)ctx().args.get("User");
 
         Contest contest = Contest.findOne(contestId);
-        List<ContestEntry> contestEntries = ContestEntry.findAllFromContest(contest.contestId);
+        List<ContestEntry> contestEntries = contest.contestEntries;
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntry(contestEntries);
         TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
         List<LiveMatchEvent> liveMatchEvents = LiveMatchEvent.findAllFromTemplateMatchEvents(templateContest.templateMatchEventIds);

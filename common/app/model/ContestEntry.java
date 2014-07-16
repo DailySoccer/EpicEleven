@@ -24,6 +24,7 @@ public class ContestEntry implements JongoId {
     public ContestEntry() {}
 
     public ContestEntry(ObjectId userId, ObjectId contestId, List<ObjectId> soccerIds) {
+        this.contestEntryId = new ObjectId();
         this.userId = userId;
         this.contestId = contestId;
         this.soccerIds = soccerIds;
