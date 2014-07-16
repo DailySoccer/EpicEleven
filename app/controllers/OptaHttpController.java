@@ -156,7 +156,8 @@ public class OptaHttpController extends Controller {
         response().setContentType("text/html");
         Logger.info("about to return response");
 
-        return ok(xml);
+        return ok("Mentira");
+        //return ok(xml);
     }
 
     public static ResultSet findXML(Connection connection, long last_timestamp) {
