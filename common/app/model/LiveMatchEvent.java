@@ -19,6 +19,7 @@ public class LiveMatchEvent {
     public ObjectId templateMatchEventId;
     public String optaMatchEventId;
 
+    // TODO: Incrustar los futbolistas
     public SoccerTeam soccerTeamA;
     public SoccerTeam soccerTeamB;
 

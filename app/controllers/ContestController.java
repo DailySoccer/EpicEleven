@@ -57,8 +57,7 @@ public class ContestController extends Controller {
         User theUser = (User)ctx().args.get("User");
 
         // Obtenermos la lista de Contest Entries que el usuario ha creado y sus joins adicionales
-        List<ContestEntry> contestEntries = ContestEntry.findAllForUser(theUser.userId);
-        List<Contest> contests = Contest.findAllFromContestEntries(contestEntries);
+        List<Contest> contests = Contest.findAllFromUser(theUser.userId);
         List<TemplateContest> templateContests = TemplateContest.findAllFromContests(contests);
 
         // Necesitamos devolver los partidos asociados a estos concursos

@@ -98,15 +98,10 @@ public class ContestEntry implements JongoId {
 
         try {
             Contest contest = Model.contests().findOne("{ _id: # }", contestId).as(Contest.class);
-
             if (contest != null) {
                 ContestEntry aContestEntry = new ContestEntry(user, contestId, soccers);
-                Model.contestEntries().withWriteConcern(WriteConcern.SAFE).insert(aContestEntry);
-
-                if (!contest.currentUserIds.contains(contest.contestId)) {
-                    contest.currentUserIds.add(contest.contestId);
-                    Model.contests().update(contest.contestId).with(contest);
-                }
+                contest.contestEntries.add(aContestEntry);
+                Model.contests().update(contest.contestId).with(contest);
 
                 bRet = true;
             }

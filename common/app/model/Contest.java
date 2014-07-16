@@ -21,6 +21,7 @@ public class Contest implements JongoId {
     public String name;
 
     public List<ObjectId> currentUserIds = new ArrayList<>();
+    public List<ContestEntry> contestEntries = new ArrayList<>();
     public int maxEntries;
 
 
@@ -46,6 +47,10 @@ public class Contest implements JongoId {
             aContest = Model.contests().findOne(new ObjectId(contestId)).as(Contest.class);
         }
         return aContest;
+    }
+
+    public static List<Contest> findAllFromUser(ObjectId userId) {
+        return ListUtils.asList(Model.contests().find("{'contestEntries.userId': #}", userId).as(Contest.class));
     }
 
     public static List<Contest> findAllFromContestEntries(Iterable<ContestEntry> contestEntries) {
