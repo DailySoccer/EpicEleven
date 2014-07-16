@@ -120,54 +120,50 @@ public class OptaHttpController extends Controller {
 
     public static Result returnXML(long last_timestamp){
 
-Logger.debug("R1: {}", System.currentTimeMillis());
         try (Connection connection = DB.getConnection()) {
-Logger.debug("R2: {}", System.currentTimeMillis());
             ResultSet nextOptaData = findXML(connection, last_timestamp);
             String headers = "";
             Timestamp createdAt, lastUpdated;
             String name, feedType, gameId, competitionId, seasonId = "";
             SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
             format1.setTimeZone(TimeZone.getTimeZone("UTC"));
-Logger.debug("R3: {}", System.currentTimeMillis());
             if (nextOptaData == null) {
                 return ok("NULL");
             }
-Logger.debug("R4: {}", System.currentTimeMillis());
             if (nextOptaData.next()){
-Logger.debug(nextOptaData.getSQLXML("xml").getString());
-Logger.debug("R5: {}", System.currentTimeMillis());
                 headers = nextOptaData.getString("headers");
                 feedType = nextOptaData.getString("feed_type");
                 name = nextOptaData.getString("name");
                 gameId = nextOptaData.getString("game_id");
-Logger.debug("R6: {}", System.currentTimeMillis());
                 competitionId = nextOptaData.getString("competition_id");
                 seasonId = nextOptaData.getString("season_id");
                 lastUpdated = nextOptaData.getTimestamp("last_updated");
                 createdAt = nextOptaData.getTimestamp("created_at");
-Logger.debug("R7: {}", System.currentTimeMillis());
-                //InputStream xmlInput = nextOptaData.getSQLXML("xml").getBinaryStream();
+                String xml = nextOptaData.getSQLXML("xml").getString();
 
                 response().setHeader("headers", headers);
-                response().setHeader("name", name);
-                response().setHeader("game-id", gameId);
-                response().setHeader("competition-id", competitionId);
-Logger.debug("R8: {}", System.currentTimeMillis());
-                response().setHeader("season-id", seasonId);
+                if (name != null) {
+                    response().setHeader("name", name);
+                }
+                if (gameId != null) {
+                    response().setHeader("game-id", gameId);
+                }
+                if (competitionId != null) {
+                    response().setHeader("competition-id", competitionId);
+                }
+                if (seasonId != null) {
+                    response().setHeader("season-id", seasonId);
+                }
                 response().setHeader("feed-type", feedType);
                 response().setHeader("created-at", format1.format(createdAt));
                 response().setHeader("last-updated", format1.format(lastUpdated));
-Logger.debug("R9: {}", System.currentTimeMillis());
-                //return ok(xmlInput);
-                return ok("Mentira");
+                return ok(xml);
             }
 
         } catch (java.sql.SQLException e) {
             Logger.error("WTF 52683", e);
         }
         response().setContentType("text/html");
-        Logger.info("about to return response");
 
         return ok("FAIL");
     }
