@@ -11,6 +11,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -117,7 +118,6 @@ public class OptaHttpController extends Controller {
     }
 
     public static Result returnXML(long last_timestamp){
-        String xml = "";
         try (Connection connection = DB.getConnection()) {
             ResultSet nextOptaData = findXML(connection, last_timestamp);
             String headers = "";
@@ -137,7 +137,7 @@ public class OptaHttpController extends Controller {
                 seasonId = nextOptaData.getString("season_id");
                 lastUpdated = nextOptaData.getTimestamp("last_updated");
                 createdAt = nextOptaData.getTimestamp("created_at");
-                xml = nextOptaData.getSQLXML("xml").getString();
+                InputStream xmlInput = nextOptaData.getSQLXML("xml").getBinaryStream();
 
                 response().setHeader("headers", headers);
                 response().setHeader("name", name);
@@ -148,6 +148,7 @@ public class OptaHttpController extends Controller {
                 response().setHeader("created-at", format1.format(createdAt));
                 response().setHeader("last-updated", format1.format(lastUpdated));
                 Logger.info("response prepared");
+                return ok(xmlInput);
             }
 
         } catch (java.sql.SQLException e) {
@@ -156,8 +157,7 @@ public class OptaHttpController extends Controller {
         response().setContentType("text/html");
         Logger.info("about to return response");
 
-        return ok("Mentira");
-        //return ok(xml);
+        return ok("FAIL");
     }
 
     public static ResultSet findXML(Connection connection, long last_timestamp) {
