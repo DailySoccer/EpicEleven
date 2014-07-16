@@ -10,6 +10,7 @@ import play.Play;
 import utils.ListUtils;
 
 import javax.sql.DataSource;
+import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -27,6 +28,7 @@ public class Model {
     static public DB mongoDBAdmin() { return _mongoDBAdmin; }
     static public DB mongoDBSnapshot() { return _mongoDBSnapshot; }
     static public Jongo jongo() { return _jongo; }
+    static public Jongo jongoSnapshot() { return _jongoSnapshot; }
     static public MongoCollection sessions() { return _jongo.getCollection("sessions"); }
     static public MongoCollection users() { return _jongo.getCollection("users"); }
 
@@ -60,6 +62,7 @@ public class Model {
                 _mongoDBAdmin = _mongoClient.getDB("admin");
                 _mongoDBSnapshot = _mongoClient.getDB("snapshot");
                 _jongo = new Jongo(_mongoDB);
+                _jongoSnapshot = new Jongo(_mongoDBSnapshot);
 
                 // Let's make sure our DB has the neccesary collections and indexes
                 ensureDB(_mongoDB);
@@ -114,6 +117,10 @@ public class Model {
             _mongoClient.close();
     }
 
+    static public void dropSnapshotDB() {
+        dropDB(_mongoDBSnapshot);
+    }
+
     static public void resetDB() {
         dropDB(_mongoDB);
         ensureDB(_mongoDB);
@@ -140,10 +147,18 @@ public class Model {
     };
 
     static private void dropDB(DB theMongoDB) {
+        /*
         for (String name : allCollectionNames) {
             theMongoDB.getCollection(name).drop();
         }
+        */
+        try {
+            new Mongo().dropDatabase(theMongoDB.getName());
+        } catch (UnknownHostException e) {
+            Logger.error("WTF 85327");
+        }
     }
+
 
     static private void ensureDB(DB theMongoDB) {
         ensureUsersDB(theMongoDB);
@@ -305,4 +320,5 @@ public class Model {
     static private DB _mongoDBSnapshot;
     // Jongo is thread safe too: https://groups.google.com/forum/#!topic/jongo-user/KwukXi5Vm7c
     static private Jongo _jongo;
+    static private Jongo _jongoSnapshot;
 }
