@@ -60,15 +60,15 @@ public class OptaHttpController extends Controller {
         }
 
         Model.insertXML(bodyText,
-                  getHeadersString(request().headers()),
-                  new Date(startDate),
-                  getHeader("X-Meta-Default-Filename", request().headers()),
-                  getHeader("X-Meta-Feed-Type", request().headers()),
-                  getHeader("X-Meta-Game-Id", request().headers()),
-                  getHeader("X-Meta-Competition-Id", request().headers()),
-                  getHeader("X-Meta-Season-Id", request().headers()),
-                  Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", request().headers()))
-                 );
+                getHeadersString(request().headers()),
+                new Date(startDate),
+                getHeader("X-Meta-Default-Filename", request().headers()),
+                getHeader("X-Meta-Feed-Type", request().headers()),
+                getHeader("X-Meta-Game-Id", request().headers()),
+                getHeader("X-Meta-Competition-Id", request().headers()),
+                getHeader("X-Meta-Season-Id", request().headers()),
+                Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", request().headers()))
+        );
 
         OptaProcessor theProcessor = new OptaProcessor();
         //HashSet<String> dirtyMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyAsJSON);
@@ -117,16 +117,17 @@ public class OptaHttpController extends Controller {
     }
 
     public static Result returnXML(long last_timestamp){
-        ResultSet nextOptaData = findXML(last_timestamp);
-        String headers = "";
-        Timestamp createdAt, lastUpdated;
-        String name, feedType, gameId, competitionId, seasonId, xml = "";
-        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-        format1.setTimeZone(TimeZone.getTimeZone("UTC"));
-        if (nextOptaData == null) {
-            return ok("NULL");
-        }
-        try {
+        String xml = "";
+        try (Connection connection = DB.getConnection()) {
+            ResultSet nextOptaData = findXML(connection, last_timestamp);
+            String headers = "";
+            Timestamp createdAt, lastUpdated;
+            String name, feedType, gameId, competitionId, seasonId = "";
+            SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+            format1.setTimeZone(TimeZone.getTimeZone("UTC"));
+            if (nextOptaData == null) {
+                return ok("NULL");
+            }
             if (nextOptaData.next()){
                 headers = nextOptaData.getString("headers");
                 feedType = nextOptaData.getString("feed_type");
@@ -146,8 +147,8 @@ public class OptaHttpController extends Controller {
                 response().setHeader("feed-type", feedType);
                 response().setHeader("created-at", format1.format(createdAt));
                 response().setHeader("last-updated", format1.format(lastUpdated));
-
             }
+
         } catch (java.sql.SQLException e) {
             Logger.error("WTF 52683");
         }
@@ -156,16 +157,15 @@ public class OptaHttpController extends Controller {
         return ok(xml);
     }
 
-    public static ResultSet findXML(long last_timestamp) {
+    public static ResultSet findXML(Connection connection, long last_timestamp) {
         Timestamp last_date = new Timestamp(last_timestamp);
         String selectString = "SELECT * FROM optaxml WHERE created_at > '"+last_date+"' ORDER BY created_at LIMIT 1;";
         Logger.debug(selectString);
         ResultSet results = null;
-        try (Connection connection = DB.getConnection()) {
             try (Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
                 results = stmt.executeQuery(selectString);
             }
-        } catch (java.sql.SQLException e) {
+        catch (java.sql.SQLException e) {
             Logger.error("WTF 72613", e);
         }
         return results;
