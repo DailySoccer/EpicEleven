@@ -162,7 +162,8 @@ public class OptaHttpController extends Controller {
         String selectString = "SELECT * FROM optaxml WHERE created_at > '"+last_date+"' ORDER BY created_at LIMIT 1;";
         Logger.debug(selectString);
         ResultSet results = null;
-            try (Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
+            try {
+                Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
                 results = stmt.executeQuery(selectString);
             }
         catch (java.sql.SQLException e) {
