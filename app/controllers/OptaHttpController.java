@@ -150,7 +150,7 @@ public class OptaHttpController extends Controller {
             }
 
         } catch (java.sql.SQLException e) {
-            Logger.error("WTF 52683");
+            Logger.error("WTF 52683", e);
         }
         response().setContentType("text/html");
 
