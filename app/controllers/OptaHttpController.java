@@ -119,6 +119,7 @@ public class OptaHttpController extends Controller {
     }
 
     public static Result returnXML(long last_timestamp){
+
 Logger.debug("R1: {}", System.currentTimeMillis());
         try (Connection connection = DB.getConnection()) {
 Logger.debug("R2: {}", System.currentTimeMillis());
@@ -134,6 +135,7 @@ Logger.debug("R3: {}", System.currentTimeMillis());
             }
 Logger.debug("R4: {}", System.currentTimeMillis());
             if (nextOptaData.next()){
+Logger.debug(nextOptaData.getSQLXML("xml").getString());
 Logger.debug("R5: {}", System.currentTimeMillis());
                 headers = nextOptaData.getString("headers");
                 feedType = nextOptaData.getString("feed_type");
