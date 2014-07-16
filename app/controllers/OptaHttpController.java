@@ -147,12 +147,14 @@ public class OptaHttpController extends Controller {
                 response().setHeader("feed-type", feedType);
                 response().setHeader("created-at", format1.format(createdAt));
                 response().setHeader("last-updated", format1.format(lastUpdated));
+                Logger.info("response prepared");
             }
 
         } catch (java.sql.SQLException e) {
             Logger.error("WTF 52683", e);
         }
         response().setContentType("text/html");
+        Logger.info("about to return response");
 
         return ok(xml);
     }

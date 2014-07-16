@@ -236,7 +236,11 @@ public class Model {
             try (PreparedStatement stmt = connection.prepareStatement(insertString)) {
                 stmt.setString(1, xml);
                 stmt.setString(2, headers);
-                stmt.setTimestamp(3, new java.sql.Timestamp(timestamp.getTime()));
+                if (timestamp != null) {
+                    stmt.setTimestamp(3, new java.sql.Timestamp(timestamp.getTime()));
+                } else {
+                    stmt.setTimestamp(3, null);
+                }
                 stmt.setString(4, name);
                 stmt.setString(5, feedType);
                 stmt.setString(6, gameId);

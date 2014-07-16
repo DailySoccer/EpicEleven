@@ -61,25 +61,30 @@ public class OptaController extends Controller {
     }
 
     private static long processXML(final WS.Response response) {
-        String bodyText  = response.getBody();
-        Date createdAt = new Date(0L);
-        Date lastUpdated = new Date(0L);
-        if (bodyText.equals("NULL")) {
-            return -1L;
+        if (response.getStatus() != 200) {
+            Logger.error("Response not OK: "+response.getStatus());
+            return -2L;
         } else {
-            String headers = response.getHeader("headers");
-            String feedType = response.getHeader("feed-type");
-            String gameId = response.getHeader("game-id");
-            String competitionId = response.getHeader("competition-id");
-            String seasonId = response.getHeader("season-id");
-            createdAt = Model.getDateFromHeader(response.getHeader("created-at"));
-            lastUpdated = Model.getDateFromHeader(response.getHeader("last-updated"));
-            String name = response.getHeader("name");
+            String bodyText  = response.getBody();
+            Date createdAt = new Date(0L);
+            Date lastUpdated = new Date(0L);
+            if (bodyText.equals("NULL")) {
+                return -1L;
+            } else {
+                String headers = response.getHeader("headers");
+                String feedType = response.getHeader("feed-type");
+                String gameId = response.getHeader("game-id");
+                String competitionId = response.getHeader("competition-id");
+                String seasonId = response.getHeader("season-id");
+                createdAt = Model.getDateFromHeader(response.getHeader("created-at"));
+                lastUpdated = Model.getDateFromHeader(response.getHeader("last-updated"));
+                String name = response.getHeader("name");
 
-            Model.insertXML(bodyText, headers, createdAt, name, feedType, gameId,
-                    competitionId, seasonId, lastUpdated);
+                Model.insertXML(bodyText, headers, createdAt, name, feedType, gameId,
+                        competitionId, seasonId, lastUpdated);
 
-            return createdAt.getTime();
+                return createdAt.getTime();
+            }
         }
     }
 
