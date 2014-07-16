@@ -51,7 +51,7 @@ public class ContestController extends Controller {
     }
 
     @UserAuthenticated
-    public static Result getUserContests() {
+    public static Result getMyContests() {
         long startTime = System.currentTimeMillis();
 
         User theUser = (User)ctx().args.get("User");
@@ -64,7 +64,7 @@ public class ContestController extends Controller {
         // Necesitamos devolver los partidos asociados a estos concursos
         List<TemplateMatchEvent> templateMatchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests);
 
-        Logger.info("getUserContests: {}", System.currentTimeMillis() - startTime);
+        Logger.info("getMyContests: {}", System.currentTimeMillis() - startTime);
 
         return new ReturnHelper(ImmutableMap.of("match_events", templateMatchEvents,
                                                 "template_contests", templateContests,

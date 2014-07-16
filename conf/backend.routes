@@ -14,7 +14,7 @@ GET         /get_user_profile                                       controllers.
 GET         /get_active_contests                                    controllers.ContestController.getActiveContests()
 
 # Concursos asociados a usuario
-GET         /get_user_contests                                      controllers.ContestController.getUserContests()
+GET         /get_my_contests                                        controllers.ContestController.getMyContests()
 GET         /get_contest/:contest                                   controllers.ContestController.getContest(contest)
 
 # Live contests asociados a usuario
