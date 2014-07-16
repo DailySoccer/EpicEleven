@@ -51,20 +51,19 @@ public class ContestController extends Controller {
     }
 
     @UserAuthenticated
-    public static Result getUserContests() {
+    public static Result getMyContests() {
         long startTime = System.currentTimeMillis();
 
         User theUser = (User)ctx().args.get("User");
 
         // Obtenermos la lista de Contest Entries que el usuario ha creado y sus joins adicionales
-        List<ContestEntry> contestEntries = ContestEntry.findAllForUser(theUser.userId);
-        List<Contest> contests = Contest.findAllFromContestEntries(contestEntries);
+        List<Contest> contests = Contest.findAllFromUser(theUser.userId);
         List<TemplateContest> templateContests = TemplateContest.findAllFromContests(contests);
 
         // Necesitamos devolver los partidos asociados a estos concursos
         List<TemplateMatchEvent> templateMatchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests);
 
-        Logger.info("getUserContests: {}", System.currentTimeMillis() - startTime);
+        Logger.info("getMyContests: {}", System.currentTimeMillis() - startTime);
 
         return new ReturnHelper(ImmutableMap.of("match_events", templateMatchEvents,
                                                 "template_contests", templateContests,
@@ -83,7 +82,7 @@ public class ContestController extends Controller {
         // User theUser = (User)ctx().args.get("User");
 
         Contest contest = Contest.findOne(contestId);
-        List<ContestEntry> contestEntries = ContestEntry.findAllFromContest(contest.contestId);
+        List<ContestEntry> contestEntries = contest.contestEntries;
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntry(contestEntries);
         TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
@@ -163,11 +162,8 @@ public class ContestController extends Controller {
 
         User theUser = (User)ctx().args.get("User");
 
-        // A partir de las contest entries del usuario, hacemos joins con el resto de colecciones
-        List<ContestEntry> contestEntries = ContestEntry.findAllForUser(theUser.userId);
-
         // TODO: No estamos restringiendo a Live
-        List<Contest> liveContests = Contest.findAllFromContestEntries(contestEntries);
+        List<Contest> liveContests = Contest.findAllFromUser(theUser.userId);
         List<TemplateContest> liveTemplateContests = TemplateContest.findAllFromContests(liveContests);
         List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.gatherFromTemplateContests(liveTemplateContests);
 
@@ -190,7 +186,7 @@ public class ContestController extends Controller {
         // User theUser = (User)ctx().args.get("User");
 
         Contest contest = Contest.findOne(contestId);
-        List<ContestEntry> contestEntries = ContestEntry.findAllFromContest(contest.contestId);
+        List<ContestEntry> contestEntries = contest.contestEntries;
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntry(contestEntries);
         TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
         List<LiveMatchEvent> liveMatchEvents = LiveMatchEvent.findAllFromTemplateMatchEvents(templateContest.templateMatchEventIds);

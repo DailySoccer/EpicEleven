@@ -23,7 +23,7 @@
         <tr>
             <td>@p.contestId</td>
             <td><a href="@ContestController.show(p.contestId.toString())">@p.name</a></td>
-            <td>@p.currentUserIds</td>
+            <td>@p.contestEntries.size()</td>
             <td>@p.maxEntries</td>
             <td><a href="@TemplateContestController.show(p.templateContestId.toString())">
                 @templateMap(p.templateContestId).name (@p.templateContestId)</a></td>
