@@ -165,7 +165,7 @@ public class OptaHttpController extends Controller {
         }
         response().setContentType("text/html");
 
-        return ok("FAIL");
+        return ok("NULL");
     }
 
     public static ResultSet findXML(Connection connection, long last_timestamp) {
@@ -174,11 +174,8 @@ public class OptaHttpController extends Controller {
         Logger.debug(selectString);
         ResultSet results = null;
             try {
-Logger.debug("F1: {}", System.currentTimeMillis());
                 Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-Logger.debug("F2: {}", System.currentTimeMillis());
                 results = stmt.executeQuery(selectString);
-Logger.debug("F3: {}", System.currentTimeMillis());
             }
         catch (java.sql.SQLException e) {
             Logger.error("WTF 72613", e);
