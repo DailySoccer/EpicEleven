@@ -79,8 +79,7 @@ public class ContestController extends Controller {
         // User theUser = (User)ctx().args.get("User");
 
         Contest contest = Contest.findOne(contestId);
-        List<ContestEntry> contestEntries = contest.contestEntries;
-        List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contestEntries);
+        List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
         TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
 
@@ -88,9 +87,8 @@ public class ContestController extends Controller {
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                                                 "users_info", usersInfoInContest,
-                                                "contest_entries", contestEntries,
                                                 "template_contest", templateContest,
-                                                "match_events", matchEvents)).toResult();
+                                                "match_events", matchEvents)).toResult(JsonViews.FullContest.class);
     }
 
     // https://github.com/playframework/playframework/tree/master/samples/java/forms
@@ -183,8 +181,7 @@ public class ContestController extends Controller {
         // User theUser = (User)ctx().args.get("User");
 
         Contest contest = Contest.findOne(contestId);
-        List<ContestEntry> contestEntries = contest.contestEntries;
-        List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contestEntries);
+        List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
         TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
         List<LiveMatchEvent> liveMatchEvents = LiveMatchEvent.findAllFromTemplateMatchEvents(templateContest.templateMatchEventIds);
 
@@ -192,9 +189,8 @@ public class ContestController extends Controller {
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                                                 "users_info", usersInfoInContest,
-                                                "contest_entries", contestEntries,
                                                 "template_contest", templateContest,
-                                                "live_match_events", liveMatchEvents)).toResult();
+                                                "live_match_events", liveMatchEvents)).toResult(JsonViews.FullContest.class);
     }
 
     /**

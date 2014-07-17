@@ -19,6 +19,10 @@ public class ReturnHelper {
     public ReturnHelper() {}
 
     public Result toResult() {
+        return toResult(JsonViews.Public.class);
+    }
+
+    public Result toResult(Class jsonView) {
 
         // Los metodos de Results aceptan o un JsonNode o un Content. Si quisieramos mandar un JsonNode, tendriamos que
         // parsear la jsonPayload con Json.parse(), duplicando el trabajo. Asi que mejor creamos un Content.
@@ -26,7 +30,7 @@ public class ReturnHelper {
 
         try {
         	if (payload != null) {
-            	final String jsonPayload = new ObjectIdMapper().writerWithView(JsonViews.Public.class).writeValueAsString(payload);
+            	final String jsonPayload = new ObjectIdMapper().writerWithView(jsonView).writeValueAsString(payload);
 
              	ret = new Content() {
                 	@Override public String body() { return jsonPayload; }

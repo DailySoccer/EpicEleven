@@ -1,9 +1,8 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.MongoException;
-import com.mongodb.WriteConcern;
 import org.bson.types.ObjectId;
-import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
@@ -17,8 +16,11 @@ public class ContestEntry implements JongoId {
     public ObjectId contestEntryId;
     public ObjectId userId;             // Usuario que creo el equipo
     public ObjectId contestId;          // Contest en el que se ha inscrito el usuario
+
+    @JsonView(JsonViews.FullContest.class)
     public List<ObjectId> soccerIds;    // Fantasy team
 
+    @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
     public ContestEntry() {}
