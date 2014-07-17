@@ -1,10 +1,12 @@
-@(contestEntryForm: Form[controllers.admin.PointsTranslationForm])
+@(pointsTranslationForm: Form[controllers.admin.PointsTranslationForm])
+@import model.opta.{OptaEventType, OptaProcessor}
 
 @import helper._
 @import helper.twitterBootstrap._
+@import controllers.admin.routes._
 
-@if(contestEntryForm.hasErrors) {
-    @controllers.admin.FlashMessage.danger("Contest Entry Form has errors")
+@if(pointsTranslationForm.hasErrors) {
+    @controllers.admin.FlashMessage.danger("Points Translation Form has errors")
 }
 
 @input_number(field: Field, _placeholder: String = "", _class: String = "") = {
@@ -22,17 +24,22 @@
 
 <h2 class="sub-header"></h2>
 
-@helper.form(action = AdminController.submitPointsTranslation, 'class -> "form-horizontal") {
+@helper.form(action = PointsTranslationController.create, 'class -> "form-horizontal") {
 <fieldset>
 
     <!-- Form Name -->
     <legend>Point Translation</legend>
 
+    <input type="hidden" name="id" value='@pointsTranslationForm("id").value' >
+
     <!-- Text input-->
     <div class="control-group">
-        <label class="control-label">Event Type</label>
         <div class="controls">
-            @input_number(contestEntryForm("eventType"), _placeholder = "Event Type", _class = "form-control input-xlarge")
+            @select(
+            pointsTranslationForm("eventType"),
+            options(OptaEventType.options()),
+            '_label -> "Event Type"
+            )
         </div>
     </div>
 
@@ -40,7 +47,7 @@
     <div class="control-group">
         <label class="control-label">Points</label>
         <div class="controls">
-            @input_number(contestEntryForm("points"), _placeholder = "Points", _class = "form-control input-xlarge")
+            @input_number(pointsTranslationForm("points"), _placeholder = "Points", _class = "form-control input-xlarge")
         </div>
     </div>
 
@@ -49,7 +56,7 @@
         <label class="control-label" for="ok"></label>
         <div class="controls">
             <button id="ok" name="ok" type="submit" class="btn btn-success">Create</button>
-            <a href="@AdminController.pointsTranslations" class="btn btn-danger">Cancel</a>
+            <a href="@PointsTranslationController.index" class="btn btn-danger">Cancel</a>
         </div>
     </div>
 
@@ -59,6 +66,6 @@
 <br/>
 
 <br/>
-<a href='@AdminController.pointsTranslations'>Back to Points Translation</a>
+<a href='@PointsTranslationController.index'>Back to Points Translation</a>
 
 }

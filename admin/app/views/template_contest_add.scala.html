@@ -2,6 +2,9 @@
 
 @import helper._
 @import helper.twitterBootstrap._
+@import model._
+@import utils.EnumUtils
+@import controllers.admin.routes._
 
 @if(templateContestForm.hasErrors) {
     @controllers.admin.FlashMessage.danger("Template MatchEvent Form has errors")
@@ -20,53 +23,64 @@
 
 <h2 class="sub-header"></h2>
 
-@helper.form(action = AdminController.submitTemplateContest, 'class -> "form-horizontal") {
+@helper.form(action = TemplateContestController.create, 'class -> "form-horizontal") {
 <fieldset>
 
     <!-- Form Name -->
     <legend>Template Contest</legend>
 
-    @inputText(
-        templateContestForm("name"),
-        '_label -> "Name",
-        'size -> 100
-    )
+    <input type="hidden" name="id" value='@templateContestForm("id").value' >
 
-    @inputText(
-        templateContestForm("postName"),
-        '_label -> "Post Name",
-        'size -> 40
-    )
+    <div class="col-md-12">
 
-    @inputText(
-        templateContestForm("minInstances"),
-        '_label -> "Min Instances",
-        'size -> 10
-    )
+    <div class="col-md-6">
+        @inputText(
+            templateContestForm("name"),
+            '_label -> "Name",
+            'size -> 100
+        )
 
-    @inputText(
-        templateContestForm("minInstances"),
-        '_label -> "Max Entries",
-        'size -> 10
-    )
+        @inputText(
+            templateContestForm("postName"),
+            '_label -> "Post Name",
+            'size -> 40
+        )
 
-    @inputText(
-        templateContestForm("salaryCap"),
-        '_label -> "Salary Cap",
-        'size -> 10
-    )
+        @inputText(
+            templateContestForm("minInstances"),
+            '_label -> "Min Instances",
+            'size -> 10
+        )
 
-    @inputText(
-        templateContestForm("entryFee"),
-        '_label -> "Entry Fee",
-        'size -> 10
-    )
+        @inputText(
+            templateContestForm("maxEntries"),
+            '_label -> "Max Entries",
+            'size -> 10
+        )
 
-    @select(
-        templateContestForm("prizeType"),
-        options(model.PrizeType.options()),
-        '_label -> "Prize Type"
-    )
+        @inputText(
+            templateContestForm("salaryCap"),
+            '_label -> "Salary Cap",
+            'size -> 10
+        )
+
+        @inputText(
+            templateContestForm("entryFee"),
+            '_label -> "Entry Fee",
+            'size -> 10
+        )
+
+        @select(
+            templateContestForm("prizeType"),
+            options(EnumUtils.toMap(classOf[PrizeType])),
+            '_label -> "Prize Type"
+        )
+
+        @inputDate(
+            templateContestForm("activationAt"),
+            '_label -> "Activation At"
+        )
+    </div>
 
     <!--
     @inputDate(
@@ -75,20 +89,28 @@
     )
     -->
 
-    @select(
-        templateContestForm("templateMatchEvents"),
-        options(matchEventsOptions),
-        '_label -> "Template Match Events",
-        'size -> 50,
-        'multiple -> true
-    )
+    <div class="col-md-6">
+    @if(matchEventsOptions.isEmpty) {
+        <span>No existen MatchEvents</span>
+    } else {
+        @select(
+            templateContestForm("templateMatchEvents"),
+            options(matchEventsOptions),
+            '_label -> "Template Match Events",
+            'size -> 50,
+            'multiple -> true
+        )
+    }
+    </div>
+
+    </div>
 
     <!-- Button (Double) -->
     <div class="control-group">
         <label class="control-label" for="ok"></label>
         <div class="controls">
-            <button id="ok" name="ok" class="btn btn-success">Create</button>
-            <a href="@AdminController.templateContests" class="btn btn-danger">Cancel</a>
+            <button id="ok" name="ok" class="btn btn-success">Save</button>
+            <a href="@TemplateContestController.index" class="btn btn-danger">Cancel</a>
         </div>
     </div>
 
@@ -96,6 +118,6 @@
 }
 
 <br/>
-<a href='@AdminController.dashBoard'>Back to Dashboard</a>
+<a href='@DashboardController.index'>Back to Dashboard</a>
 
 }

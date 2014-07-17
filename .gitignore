@@ -16,3 +16,4 @@ dist
 /.settings
 /.target/
 .*.swp
+heroku_dump.sh

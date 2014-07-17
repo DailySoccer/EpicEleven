@@ -1,5 +1,7 @@
 @(match_event: model.TemplateMatchEvent)
 
+@import controllers.admin.routes._
+
 @main("Mach Event - Admin") {
 
 <h1 class="page-header">Match Event: @match_event.templateMatchEventId</h1>
@@ -14,6 +16,7 @@
             <th>Name</th>
             <th>Field Pos</th>
             <th>Salary</th>
+            <th>Played Matches</th>
             <th>Fantasy Points</th>
         </tr>
         </thead>
@@ -24,6 +27,7 @@
             <td>@p.name</td>
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
+            <td>@p.playedMatches</td>
             <td>@p.fantasyPoints</td>
         </tr>
         }
@@ -37,6 +41,7 @@
             <th>Name</th>
             <th>Field Pos</th>
             <th>Salary</th>
+            <th>Played Matches</th>
             <th>Fantasy Points</th>
         </tr>
         </thead>
@@ -47,6 +52,7 @@
             <td>@p.name</td>
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
+            <td>@p.playedMatches</td>
             <td>@p.fantasyPoints</td>
         </tr>
         }
@@ -54,6 +60,6 @@
     </table>
 </div>
 
-<a href='@AdminController.templateMatchEvents'>Back to Template Match Events</a>
+<a href='@TemplateMatchEventController.index'>Back to Template Match Events</a>
 
 }

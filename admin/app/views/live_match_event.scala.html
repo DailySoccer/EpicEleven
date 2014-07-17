@@ -1,6 +1,7 @@
 @(match_event: model.LiveMatchEvent)
 
 @import model._
+@import controllers.admin.routes._
 
 @scripts = {
     <script type="text/javascript">
@@ -18,10 +19,10 @@
 }
 
 @match_event_state(match_event_id : String) = {
-    @if(Model.isMatchEventFinished(match_event_id)) {
+    @if(TemplateMatchEvent.isFinished(match_event_id)) {
         <button class="btn btn-danger state_match_event" value="@match_event_id">Finished</button>
     } else {
-        @if(Model.isMatchEventStarted(match_event_id)) {
+        @if(TemplateMatchEvent.isStarted(match_event_id)) {
             <button class="btn btn-success state_match_event" value="@match_event_id">Live</button>
         } else {
             <button class="btn btn-warning state_match_event" value="@match_event_id">Waiting</button>
@@ -35,7 +36,7 @@
 <h1 class="page-header">Live Match Event: @match_event.liveMatchEventId</h1>
 
 <h2 class="sub-header">Start Date: @match_event.startDate</h2>
-<h3><span>@Model.matchEventTime(match_event.templateMatchEventId.toString()).format("HH:mm:ss")</span> @match_event_state(match_event.templateMatchEventId.toString())</h3>
+<h3><span>@LiveMatchEvent.currentTime(match_event.liveMatchEventId.toString()).format("HH:mm:ss")</span> @match_event_state(match_event.templateMatchEventId.toString())</h3>
 
 <div class="table-responsive">
     <table class="table table-striped">
@@ -56,7 +57,7 @@
             <td>@p.name</td>
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
-            <td><a href="@AdminController.showPlayerFantasyPointsInMatchEvent(match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
+            <td><a href="@TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
         </tr>
         }
         </tbody>
@@ -79,13 +80,13 @@
             <td>@p.name</td>
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
-            <td><a href="@AdminController.showPlayerFantasyPointsInMatchEvent(match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
+            <td><a href="@TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
         </tr>
         }
         </tbody>
     </table>
 </div>
 
-<a href='@AdminController.liveMatchEvents'>Back to Live Match Events</a>
+<a href='@LiveMatchEventController.index'>Back to Live Match Events</a>
 
 }

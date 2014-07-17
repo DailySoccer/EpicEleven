@@ -1,16 +1,18 @@
 package controllers.admin;
 
 import model.*;
-import org.bson.types.ObjectId;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 // https://github.com/playframework/playframework/tree/master/samples/java/forms
 public class TemplateContestForm {
+    public String id;
+
+    public TemplateContest.State state;
+
     @Constraints.Required
     public String name;             // Auto-gen if blank
 
@@ -33,11 +35,40 @@ public class TemplateContestForm {
     @Constraints.Required
     public List<String> templateMatchEvents = new ArrayList<>();  // We rather have it here that normalize it in a N:N table
 
-    public Date startDate = new Date();
+    public Date activationAt;
+    public Date createdAt;
+
+    public TemplateContestForm() {
+        state = TemplateContest.State.OFF;
+        activationAt = GlobalDate.getCurrentDate();
+        createdAt = GlobalDate.getCurrentDate();
+    }
+
+    public TemplateContestForm(TemplateContest templateContest) {
+        id = templateContest.templateContestId.toString();
+        state = templateContest.state;
+        name = templateContest.name;
+        postName = templateContest.postName;
+        minInstances = templateContest.minInstances;
+        maxEntries = templateContest.maxEntries;
+        salaryCap = templateContest.salaryCap;
+        entryFee = templateContest.entryFee;
+        prizeType = templateContest.prizeType;
+
+        Iterable<TemplateMatchEvent> templateMatchEventsResults = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
+        for(TemplateMatchEvent matchEvent : templateMatchEventsResults) {
+            templateMatchEvents.add(matchEvent.optaMatchEventId);
+        }
+
+        activationAt = templateContest.activationAt;
+        createdAt = templateContest.createdAt;
+    }
 
     public static HashMap<String, String> matchEventsOptions() {
         HashMap<String, String> options = new LinkedHashMap<>();
-        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.templateMatchEvents().find().sort("{startDate : 1}").as(TemplateMatchEvent.class);
+
+        Date now = GlobalDate.getCurrentDate();
+        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.templateMatchEvents().find("{startDate: {$gte: #}}", now).sort("{startDate : 1}").as(TemplateMatchEvent.class);
         for (TemplateMatchEvent matchEvent: templateMatchEventsResults) {
             options.put(matchEvent.optaMatchEventId, String.format("%s - %s vs %s",
                     // new SimpleDateFormat("yy/MM/dd").format(matchEvent.startDate),

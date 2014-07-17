@@ -68,6 +68,4 @@ Heroku
 
   + heroku config:add --app dailysoccer-staging CONFIG_FILE=staging.conf
   + heroku config:add --app dailysoccer CONFIG_FILE=production.conf
-
-
-
+  

@@ -1,6 +1,7 @@
 @(title: String, scripts: Html = Html(""))(content: Html)
 
 @import controllers.admin.FlashMessage
+@import controllers.admin.routes._
 
 @flash_message() = {
     @for(message <- FlashMessage.list) {
@@ -29,16 +30,17 @@
     <title>@title</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-3.1.1.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-theme-3.1.1.min.css" rel="stylesheet">
 
     <!-- DataTables -->
-    <link href="//cdn.datatables.net/1.10.0/css/jquery.dataTables.css" rel="stylesheet">
-    <link href="//cdn.datatables.net/plug-ins/be7019ee387/integration/bootstrap/3/dataTables.bootstrap.css" rel="stylesheet">
+    <link href="/css/jquery.dataTables-1.10.0.css" rel="stylesheet">
+    <link href="/css/dataTables.bootstrap.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
     <!-- link href="http://getbootstrap.com/examples/dashboard/dashboard.css" rel="stylesheet" -->
     <link href="/css/dashboard.css" rel="stylesheet">
+    <link href="/css/simulator-btn.css" rel="stylesheet">
 
     <!-- Just for debugging purposes. Don't actually copy this line! -->
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
@@ -65,7 +67,7 @@
         </div>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="@AdminController.dashBoard">Dashboard</a></li>
+                <li><a href="@DashboardController.index">Dashboard</a></li>
                 <li><a href="#">Settings</a></li>
                 <li><a href="#">Profile</a></li>
                 <li><a href="#">Help</a></li>
@@ -81,34 +83,34 @@
     <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
             <ul class="nav nav-sidebar">
-                <li class="active"><a href="@AdminController.dashBoard">Overview</a></li>
+                <li class="active"><a href="@DashboardController.index">Overview</a></li>
                 <!--li><a href="#">Reports</a></li>
                 <li><a href="#">Analytics</a></li>
                 <li><a href="#">Export</a></li-->
             </ul>
             <ul class="nav nav-sidebar">
                 <li><a href="@AdminController.lobby">Lobby</a></li>
-                <li><a href="@AdminController.users">Users</a></li>
-                <li><a href="@AdminController.liveContestEntries">Live Contest Entries</a></li>
-                <li><a href="@AdminController.liveMatchEvents">Live Match Events</a></li>
-                <li><a href="@AdminController.pointsTranslations">Points Translations</a></li>
-                <li><a href="@AdminController.contestEntries">Contest Entries</a></li>
-                <li><a href="@AdminController.contests">Contests</a></li>
+                <li><a href="@UserController.index">Users</a></li>
+                <li><a href="@LiveContestEntryController.index">Live Contest Entries</a></li>
+                <li><a href="@LiveMatchEventController.index">Live Match Events</a></li>
+                <li><a href="@PointsTranslationController.index">Points Translations</a></li>
+                <li><a href="@ContestEntryController.index">Contest Entries</a></li>
+                <li><a href="@ContestController.index">Contests</a></li>
             </ul>
             <ul class="nav nav-sidebar">
-                <li><a href="@AdminController.templateContests">Template Contests</a></li>
-                <li><a href="@AdminController.templateMatchEvents">Template Match Events</a></li>
-                <li><a href="@AdminController.templateSoccerTeams">Template Soccer Teams</a></li>
-                <li><a href="@AdminController.templateSoccerPlayers">Template Soccer Players</a></li>
+                <li><a href="@TemplateContestController.index">Template Contests</a></li>
+                <li><a href="@TemplateMatchEventController.index">Template Match Events</a></li>
+                <li><a href="@TemplateSoccerTeamController.index">Template Soccer Teams</a></li>
+                <li><a href="@TemplateSoccerPlayerController.index">Template Soccer Players</a></li>
             </ul>
             <ul class="nav nav-sidebar">
-                <li><a href="@AdminController.optaSoccerPlayers">Opta Players</a></li>
-                <li><a href="@AdminController.optaSoccerTeams">Opta Teams</a></li>
-                <li><a href="@AdminController.optaMatchEvents">Opta Match Events</a></li>
-                <li><a href="@AdminController.optaEvents">Opta Events</a></li>
+                <li><a href="@OptaController.optaSoccerPlayers">Opta Players</a></li>
+                <li><a href="@OptaController.optaSoccerTeams">Opta Teams</a></li>
+                <li><a href="@OptaController.optaMatchEvents">Opta Match Events</a></li>
+                <li><a href="@OptaController.optaEvents">Opta Events</a></li>
             </ul>
             <ul class="nav nav-sidebar">
-                <li><a href="@AdminController.simulator">Simulator</a></li>
+                <li><a href="@SimulatorController.index">Simulator</a></li>
             </ul>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">

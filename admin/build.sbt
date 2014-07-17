@@ -8,6 +8,3 @@ libraryDependencies ++= Seq(
   cache,
   filters
 )
-
-// Un @import comun a todas las view templates, para que quede mas compacto
-templatesImport += "admin.routes.AdminController"

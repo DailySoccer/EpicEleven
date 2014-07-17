@@ -121,7 +121,7 @@ public class LoginController extends Controller {
             }
             else {
                 String sessionToken = Crypto.generateSignedToken();
-                Session newSession = new Session(sessionToken, theUser._id, new Date());
+                Session newSession = new Session(sessionToken, theUser.userId, new Date());
                 Model.sessions().insert(newSession);
 
                 // Durante el desarrollo en local, usamos cookies para que sea mas facil debugear

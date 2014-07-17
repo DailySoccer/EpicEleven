@@ -1,0 +1,116 @@
+@(matchs_new: List[model.opta.OptaMatchEvent], matchs_changed: List[model.opta.OptaMatchEvent], matchs_invalid: List[model.opta.OptaMatchEvent])
+
+@import controllers.admin.routes.ImportController
+
+@main("Import Match Events - Admin") {
+
+<h1 class="page-header">Import Match Events</h1>
+
+<h2 class="sub-header"></h2>
+
+<!--div class="col-md-12">
+    @if((matchs_new != null && !matchs_new.isEmpty) || (matchs_changed != null && !matchs_changed.isEmpty)) {
+    <a href="@ImportController.importAllMatchEvents"><button name="ok" type="submit" class="btn btn-success">Import All</button></a>
+    }
+</div-->
+
+<div class="col-md-6">
+    @if(matchs_new != null && !matchs_new.isEmpty) {
+
+    <div><a href="@ImportController.importAllNewMatchEvents"><button name="ok" type="submit" class="btn btn-success">Import New (@matchs_new.size)</button></a></div>
+    <br/>
+
+    <table class="table table-striped datatable">
+        <thead>
+        <caption class="bg-primary">NEW</caption>
+        <tr>
+            <th>Id</th>
+            <th>Competition Name</th>
+            <th>SeasonId</th>
+            <th>SeasonName</th>
+            <th>HomeTeamId</th>
+            <th>AwayTeamId</th>
+            <th>Match Date</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(p <- matchs_new) {
+        <tr>
+            <td>@p.optaMatchEventId</td>
+            <td>@p.competitionName</td>
+            <td>@p.seasonId</td>
+            <td>@p.seasonName</td>
+            <td>@p.homeTeamId</td>
+            <td>@p.awayTeamId</td>
+            <td>@p.matchDate.format("yyyy/MM/dd HH:mm:ss")</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+    }
+</div>
+
+<div class="col-md-6">
+    @if(matchs_changed != null && !matchs_changed.isEmpty) {
+
+    <div><a href="@ImportController.importAllChangedMatchEvents"><button name="ok" type="submit" class="btn btn-success">Import Changed (@matchs_changed.size)</button></a></div>
+    <br/>
+
+    <table class="table table-striped datatable">
+        <thead>
+        <caption class="bg-info">CHANGED</caption>
+        <tr>
+            <th>Id</th>
+            <th>Competition Name</th>
+            <th>SeasonId</th>
+            <th>SeasonName</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(p <- matchs_changed) {
+        <tr>
+            <td>@p.optaMatchEventId</td>
+            <td>@p.competitionName</td>
+            <td>@p.seasonId</td>
+            <td>@p.seasonName</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+
+    }
+</div>
+
+<div class="col-md-12">
+    @if(matchs_invalid != null && !matchs_invalid.isEmpty) {
+    <table class="table table-striped datatable">
+        <thead>
+        <caption class="bg-danger">INVALID</caption>
+        <tr>
+            <th>Id</th>
+            <th>Competition Name</th>
+            <th>SeasonId</th>
+            <th>SeasonName</th>
+            <th>HomeTeamId</th>
+            <th>AwayTeamId</th>
+            <th>Match Date</th>
+        </tr>
+        </thead>
+        <tbody>
+        @for(p <- matchs_invalid) {
+        <tr>
+            <td>@p.optaMatchEventId</td>
+            <td>@p.competitionName</td>
+            <td>@p.seasonId</td>
+            <td>@p.seasonName</td>
+            <td>@p.homeTeamId</td>
+            <td>@p.awayTeamId</td>
+            <td>@p.matchDate.format("yyyy/MM/dd HH:mm:ss")</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+    }
+</div>
+
+}

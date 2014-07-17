@@ -1,7 +1,5 @@
 package model.opta;
 
-import org.bson.types.ObjectId;
-
 import java.util.Date;
 
 /**
@@ -9,10 +7,9 @@ import java.util.Date;
  */
 public class OptaMatchEvent {
 
-    public ObjectId optaMatchEventId;
-    public String id;
-    public int competitionId;
-    public int seasonId;
+    public String optaMatchEventId;
+    public String competitionId;
+    public String seasonId;
     public String competitionName;
     public String seasonName;
     public String homeTeamId;
@@ -20,6 +17,7 @@ public class OptaMatchEvent {
     public Date matchDate;
     public String timeZone;
     public Date lastModified;
+    public boolean dirty = true;
 
     public OptaMatchEvent(){}
 }

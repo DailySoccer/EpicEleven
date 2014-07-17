@@ -1,29 +1,140 @@
+@()
+
 @import controllers.admin.OptaSimulator
-@main("Simulator - Admin") {
+@import helper._
+@import helper.twitterBootstrap._
+@import controllers.admin.routes._
+@import model._
+
+@scripts = {
+<script type="text/javascript">
+        var was_paused = "@OptaSimulator.isPaused";
+        var is_running = "@{!OptaSimulator.isFinished}";
+
+        function updatePage() {
+            window.location.reload(true);
+        }
+
+        function repaintButtons() {
+            if (is_running == "true") {
+                $(".btn-sim").removeClass("btn-primary");
+                $(".btn-sim").addClass("btn-success");
+            } else {
+                $(".btn-sim").removeClass("btn-success");
+                $(".btn-sim").addClass("btn-primary");
+            }
+        }
+
+        function checkRunning() {
+            var temp =  $.ajax({
+                url: "/admin/is_running",
+                success: function(result) {
+                        var was_running = is_running
+                        is_running = result;
+                        if (is_running !== was_running){
+                            repaintButtons();
+                        }
+                }
+            });
+        }
+
+        function checkReload() {
+            var temp =  $.ajax({
+                url: "/admin/is_paused",
+                success: function(result) {
+                        if (result !== was_paused) {
+                            updatePage();
+                        }
+                }
+            });
+        }
+
+        function validateForm() {
+            if ((new Date($("#time").text()) < new Date($("#date-pause").val())) || is_running == "false") {
+                return true;
+            } else {
+                alert("Error: La fecha introducida es anterior");
+            }
+            return false;
+        }
+
+        function updateFields() {
+            $("#time").load("/admin/current_date_simulator");
+            $("#nextStepDesc").load("/admin/next_step_desc_simulator");
+            $("#nextStop").load("/admin/next_stop_simulator");
+        }
+
+        $(document).ready( function(){
+           repaintButtons();
+           window.setInterval(updateFields, 100);
+           window.setInterval(checkRunning, 100);
+           window.setInterval(checkReload, 500);
+        })
+
+    </script>
+}
+
+
+@main("Simulator - Admin", scripts) {
 
 <h1 class="page-header">Simulator</h1>
-@if(!OptaSimulator.existsInstance() || OptaSimulator.stoppedInstance()){
-<div>
-    <a href="@AdminController.startSimulator"><button class="btn btn-primary">Start</button></a>
-    <a href="@AdminController.launchSimulator"><button class="btn btn-success">Launch</button></a>
-</div>
-<br/>
-}
-@if(OptaSimulator.launchedInstance()){
-<div>
-        @if(OptaSimulator.pausedInstance()){
-            <a href="@AdminController.resumeSimulator"><button class="btn btn-success">Resume</button></a>
+    <div><span>Current date:</span><span style="font-weight:700; margin-left: 0.5em;" id="time">@GlobalDate.getCurrentDateString()</span></div>
+    <div><span>Next stop:</span><span style="font-weight:700;margin-left: 0.5em;" id="nextStop">@OptaSimulator.getNextStop()</span></div>
+    <div><span>Next file index:</span><span style="font-weight:700;margin-left: 0.5em;" id="nextStepDesc">@OptaSimulator.getNextStepDescription()</span></div>
+    <div><strong>Last Snapshot</strong> (@Snapshot.getName()):
+        @if(OptaSimulator.isSnapshotEnabled()) {
+            On
         } else {
-            <a href="@AdminController.pauseSimulator"><button class="btn btn-warning">Pause</button></a>
+            Off
         }
-</div>
-<br/>
-<br/>
-<div>
-    @if(OptaSimulator.pausedInstance()){
-        <a href="@AdminController.simulatorNext"><button class="btn btn-primary">Next</button></a>
+    </div>
+    <br/>
+
+    <div class="btn-group">
+        @if(OptaSimulator.isPaused()) {
+            <a class="btn btn-sim btn-primary play" href="@SimulatorController.start" title="Starts the simulator at the beginning of time (the first date sent by Opta) or resumes execution from the current date.">
+                @if(!OptaSimulator.isCreated()) {
+                    Start
+                } else {
+                    Resume
+                }
+            </a>
+        } else {
+            <a class="btn btn-sim btn-primary pause" href="@SimulatorController.pause">
+                Pause
+            </a>
+        }
+
+        @if(OptaSimulator.isPaused()) {
+            <a class="btn btn-sim btn-primary forward" href="@SimulatorController.nextStep" title="Process the next Opta file (or first if we are at the beginning of time)">
+                @if(OptaSimulator.isCreated()) {
+                    Next step
+                } else {
+                    First step
+                }
+            </a>
+        } else {
+            <a class="btn btn-sim btn-primary disabled forward" href="@SimulatorController.nextStep" title="Disabled">
+             Next step
+            </a>
+        }
+        <a class="btn btn-sim btn-primary stop" href="@SimulatorController.reset" title="Erases the whole Database and resets to the beginning of time.">
+             Reset
+        </a>
+        <a class="btn btn-sim btn-primary stop" href="@SimulatorController.replayLast" title="Erases the whole Database and plays using a last snapshot.">
+            Replay Last Snapshot
+        </a>
+        <a class="btn btn-sim btn-primary" href="@SimulatorController.snapshot" title="Create a snapshot.">
+            Create Snapshot
+        </a>
+    </div>
+    <hr>
+    @if(OptaSimulator.isPaused()){
+        @helper.form(action = SimulatorController.gotoDate, 'onsubmit -> "return validateForm()") {
+            <input type="datetime-local" value="2014-06-14T00:00" id="date-pause" name="date">
+            <button id="ok" name="ok" type="submit" class="btn btn-primary fforward">
+                Go to Date
+            </button>
+        }
     }
-    <a href="@AdminController.stopSimulator"><button class="btn btn-danger">Stop</button></a>
-</div>
-}
 }

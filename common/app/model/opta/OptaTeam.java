@@ -1,17 +1,15 @@
 package model.opta;
 
-import org.bson.types.ObjectId;
-
-import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by gnufede on 03/06/14.
  */
 public class OptaTeam {
-    public ObjectId optaTeamId;
-    public String id;
+    public String optaTeamId;
     public String name;
     public String shortName;
     //public ArrayList<Integer> competitionIds;
-    public long updatedTime;
+    public Date updatedTime;
+    public boolean dirty = true;
 }

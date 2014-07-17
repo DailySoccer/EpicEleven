@@ -1,40 +1,43 @@
 package controllers;
 
 import actions.AllowCors;
-import com.mongodb.*;
-import com.mongodb.util.JSON;
-import controllers.admin.OptaSimulator;
 import model.Model;
-import model.opta.*;
-import org.bson.types.ObjectId;
-import org.json.XML;
-import play.libs.F;
-import play.libs.WS;
+import model.ModelEvents;
+import model.opta.OptaDB;
+import model.opta.OptaProcessor;
+import org.jdom2.input.JDOMParseException;
+import play.Logger;
+import play.db.DB;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utils.OptaUtils;
-
 
 import java.io.UnsupportedEncodingException;
+import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 
 /**
  * Created by gnufede on 30/05/14.
  */
 @AllowCors.Origin
 public class OptaHttpController extends Controller {
+
     @BodyParser.Of(value = BodyParser.TolerantText.class, maxLength = 4 * 1024 * 1024)
-    public static Result optaXmlInput(){
+    public static Result optaXmlInput() {
+
         long startDate = System.currentTimeMillis();
         String bodyText = request().body().asText();
         try {
             bodyText = new String(bodyText.getBytes("ISO-8859-1"));
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
         }
-        BasicDBObject bodyAsJSON = (BasicDBObject) JSON.parse("{}");
+        catch (UnsupportedEncodingException e) {
+            Logger.error("WTF 43451: ", e);
+        }
+
         String name = "default-filename";
+
         try {
             if (request().headers().containsKey("x-meta-default-filename")){
                 name = request().headers().get("x-meta-default-filename")[0];
@@ -42,243 +45,145 @@ public class OptaHttpController extends Controller {
             else if (request().headers().containsKey("X-Meta-Default-Filename")){
                 name = request().headers().get("X-Meta-Default-Filename")[0];
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
+        catch (Exception e) {
+            Logger.error("WTF 43859: ", e);
+        }
+
         try {
             bodyText = bodyText.substring(bodyText.indexOf('<'));
-            // No hay manera de pasar de JSON a BSON directamente al parecer, sin pasar por String,
-            // o por un hashmap (que tampoco parece trivial)
-            // http://stackoverflow.com/questions/5699323/using-json-with-mongodb
-            bodyAsJSON = (BasicDBObject) JSON.parse(XML.toJSONObject(bodyText).toString());
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-        Model.optaDB().insert(new OptaDB(bodyText,
-                bodyAsJSON,
-                name,
-                request().headers(),
-                startDate,
-                System.currentTimeMillis()));
-        /*
-        if (bodyAsJSON.containsField("FANTASY")){
-//            BasicDBList teams = (BasicDBList)bodyAsJSON.get("Team");
-            processFantasy(bodyAsJSON);
+        catch (Exception e) {
+            Logger.error("WTF 4912: ", e);
         }
-        */
-        String feedType = null;
-        if (request().headers().containsKey("X-Meta-Feed-Type")) {
-            feedType = request().headers().get("X-Meta-Feed-Type")[0];
-            OptaUtils.processOptaDBInput(feedType, bodyAsJSON);
+
+        Model.insertXML(bodyText,
+                getHeadersString(request().headers()),
+                new Date(startDate),
+                getHeader("X-Meta-Default-Filename", request().headers()),
+                getHeader("X-Meta-Feed-Type", request().headers()),
+                getHeader("X-Meta-Game-Id", request().headers()),
+                getHeader("X-Meta-Competition-Id", request().headers()),
+                getHeader("X-Meta-Season-Id", request().headers()),
+                Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", request().headers()))
+        );
+
+        OptaProcessor theProcessor = new OptaProcessor();
+        HashSet<String> dirtyMatchEvents = null;
+        try {
+            dirtyMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyText);
+        } catch (JDOMParseException e) {
+            Logger.error("Exception parsing: {}", getHeader("X-Meta-Default-Filename", request().headers()), e);
         }
+        ModelEvents.onOptaMatchEventIdsChanged(dirtyMatchEvents);
+
         return ok("Yeah, XML processed");
     }
 
-    public static void childEvent(OptaEvent child, OptaEvent origin){
-        child.optaEventId = new ObjectId();
-        child.parentId = origin.eventId;
-
-        child.gameId = origin.gameId;
-        child.homeTeamId = origin.homeTeamId;
-        child.awayTeamId = origin.awayTeamId;
-        child.competitionId = origin.competitionId;
-        child.seasonId = origin.seasonId;
-        child.eventId = origin.eventId;
-        child.typeId = origin.typeId;
-        child.outcome = origin.outcome;
-        child.timestamp = origin.timestamp;
-
-        child.unixtimestamp = origin.unixtimestamp;
-        child.lastModified = origin.lastModified;
-        child.qualifiers = origin.qualifiers;
+    public static String getHeadersString(Map<String, String[]> headers) {
+        Map<String, String> plainHeaders = new HashMap<String, String>();
+        for (String key: headers.keySet()){
+            plainHeaders.put(key, "'"+headers.get(key)[0]+"'");
+        }
+        return plainHeaders.toString();
     }
 
-    public static void derivateEvent(int eventType, String playerId, OptaEvent parentEvent){
-        OptaEvent dbevent = Model.optaEvents().findOne("{parentId: #, gameId: #, typeId: #}", parentEvent.eventId,
-                                                       parentEvent.gameId, eventType).as(OptaEvent.class);
-        if (dbevent == null){
-            dbevent = new OptaEvent();
-            childEvent(dbevent, parentEvent);
-            dbevent.optaPlayerId = playerId;
-            Model.optaEvents().save(dbevent);
-        }else if (dbevent.hasChanged(parentEvent)) {
-            childEvent(dbevent, parentEvent);
-            dbevent.optaPlayerId = playerId;
-            Model.optaEvents().save(dbevent);
+    public static String getHeader(String key, Map<String, String[]> headers) {
+        if (null == headers) {
+            return null;
         }
+        return headers.containsKey(key)?
+                    headers.get(key)[0]:
+                    headers.containsKey(key.toLowerCase())?
+                            headers.get(key.toLowerCase())[0]:
+                            null;
     }
 
-    /*
-    private static void processFantasyPoints(OptaEvent event, ObjectId upsertedId){
-        FantasyPoints dbFPoints = Model.fantasyPoints().findOne("{eventId: #}", upsertedId).as(FantasyPoints.class);
-        FantasyPoints fpoints = new FantasyPoints();
-        fpoints.eventType = event.typeId;
-        fpoints.optaPlayerId = event.optaPlayerId;
-        fpoints.eventId = event._id;
-        fpoints.unixtimestamp = event.unixtimestamp;
-        fpoints.timestamp = event.timestamp;
+    public static Result migrate(){
+        Iterable<OptaDB> allOptaDBs = Model.optaDB().find().as(OptaDB.class);
 
-        Iterable<PointsTranslation> pointsTranslations = Model.pointsTranslation().
-                find("{eventTypeId: #, unixtimestamp: {$lte: #}}",
-                        fpoints.eventType, fpoints.unixtimestamp).sort("{unixtimestamp: -1}").as(PointsTranslation.class);
+        for (OptaDB document: allOptaDBs) {
+            if (getHeader("X-Meta-Feed-Type", document.headers) != null) {
 
-        PointsTranslation pointsTranslation = null;
-        if (pointsTranslations.iterator().hasNext()){
-            pointsTranslation = pointsTranslations.iterator().next();
-            fpoints.pointsTranslationId = pointsTranslation._id;
-            fpoints.points = pointsTranslation.points;
+                Model.insertXML(document.xml, getHeadersString(document.headers), new Date(document.startDate), document.name,
+                        getHeader("X-Meta-Feed-Type", document.headers), getHeader("X-Meta-Game-Id", document.headers),
+                        getHeader("X-Meta-Competition-Id", document.headers), getHeader("X-Meta-Season-Id", document.headers),
+                        Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", document.headers)));
+            }
+            else {
+                Logger.debug("IGNORANDO: " + document.name);
+            }
         }
-
-        if (dbFPoints == null){
-            Model.fantasyPoints().insert(fpoints);
-        }else{
-
-            Model.fantasyPoints().update("{eventId: #}", event._id).with(fpoints);
-        }
-    }
-    */
-
-    public static F.Promise<Result> importXML(){
-        //F.Promise<Result> resultPromise = WS.url("http://dailysoccer.herokuapp.com/get_xml/").get().map(
-        F.Promise<Result> resultPromise = WS.url("http://localhost:9000/get_xml").get().map(
-                new F.Function<WS.Response, Result>(){
-                    public Result apply(WS.Response response){
-                        long startDate = System.currentTimeMillis();
-                        String bodyText  = response.getBody();
-                        String name = response.getHeader("x-default-filename");
-                        BasicDBObject bodyAsJSON = (BasicDBObject) JSON.parse(XML.toJSONObject(bodyText).toString());
-                        Model.optaDB().insert(new OptaDB(bodyText,
-                                bodyAsJSON,
-                                name,
-                                null, //headers, cannot be obtained programatically
-                                startDate,
-                                System.currentTimeMillis()));
-
-                        return ok("Imported");
-
-                    }
-                }
-        );
-       return resultPromise;
+        return ok("Migrating...");
     }
 
-    public static Result getXML(){
-        //OptaDB someOptaData = Model.optaDB().findOne("{'Games': {$exists: true}}").as(OptaDB.class);
-        OptaDB someOptaData = Model.optaDB().findOne().as(OptaDB.class);
-        Map headers = someOptaData.headers;
-        for (Object header: headers.keySet()){
-            String value = ((String[]) headers.get(header))[0];
-            response().setHeader(header.toString(), value);
+    public static Result returnXML(long last_timestamp) {
+
+        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        format1.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Date askedDate = new Date(last_timestamp);
+
+        String retXML = "NULL";
+
+        try (Connection connection = DB.getConnection()) {
+
+            ResultSet nextOptaData = findXML(connection, askedDate);
+
+            if (nextOptaData != null && nextOptaData.next()) {
+                setResponseHeaders(nextOptaData, format1);
+                retXML = nextOptaData.getSQLXML("xml").getString();
+            }
         }
-        response().setHeader("x-default-filename", someOptaData.name);
+        catch (java.sql.SQLException e) {
+            Logger.error("WTF 52683", e);
+            Logger.info("Possibly end of documents reached: {}", format1.format(askedDate));
+        }
+
         response().setContentType("text/html");
-        return ok(someOptaData.xml);
+
+        return ok(retXML);
     }
 
-    public static Result parseEvents(){
-        //BasicDBObject game = Model.optaDB().findOne("{'Games': {$exists: true}}").as(BasicDBObject.class);
-        Model.optaEvents().remove();
-        Iterable<BasicDBObject> games = Model.optaDB().find("{'json.Games': {$exists: true}}").as(BasicDBObject.class);
-        long initialTime = System.currentTimeMillis();
-        int i=0;
-        for (BasicDBObject object: games) {
-            play.Logger.info("parse({}): {}", ++i, object.get("_id"));
+    private static void setResponseHeaders(ResultSet nextOptaData, SimpleDateFormat dateFormat) throws SQLException {
+        Timestamp createdAt, lastUpdated;
+        String name, feedType, gameId, competitionId, seasonId = "", headers = "";
 
-            LinkedHashMap json = (LinkedHashMap) object.get("json");
-            OptaUtils.processEvents((LinkedHashMap)json.get("Games"));
+        headers = nextOptaData.getString("headers");
+        feedType = nextOptaData.getString("feed_type");
+        name = nextOptaData.getString("name");
+        gameId = nextOptaData.getString("game_id");
+        competitionId = nextOptaData.getString("competition_id");
+        seasonId = nextOptaData.getString("season_id");
+        lastUpdated = nextOptaData.getTimestamp("last_updated");
+        createdAt = nextOptaData.getTimestamp("created_at");
+
+        response().setHeader("headers", headers);
+
+        if (name != null) {
+            response().setHeader("name", name);
         }
-        System.currentTimeMillis();
-        return ok("Yeah, Game processed: "+(System.currentTimeMillis()-initialTime)+" milliseconds");
-    }
-
-    public static Result playersPoints(){
-        Iterable<OptaPlayer> myPlayers = Model.optaPlayers().find().as(OptaPlayer.class);
-        String allplayers = "<ul>";
-        for (OptaPlayer myPlayer: myPlayers){
-            Iterable<OptaEvent> optaEvents = Model.optaEvents().find("{optaPlayerId: #}", myPlayer.id).as(OptaEvent.class);
-            int totalPoints = 0;
-            for (OptaEvent optaEvent: optaEvents){
-                totalPoints += optaEvent.points;
-            }
-            allplayers += "<li>"+myPlayer.name+"'s (<a href='/player/"+myPlayer.id+"'>"+myPlayer.id+"</a>) points: "+totalPoints+"</li>\n";
+        if (gameId != null) {
+            response().setHeader("game-id", gameId);
         }
-        allplayers += "</ul>";
-        return ok(allplayers).as("text/html");
-    }
-
-    public static Result playerPoints(int player){
-        Iterable<OptaEvent> playerEvents = Model.optaEvents().find("{optaPlayerId: #}", player).as(OptaEvent.class);
-        OptaPlayer myPlayer = Model.optaPlayers().findOne("{id: #}", player).as(OptaPlayer.class);
-        int totalPoints = 0;
-        LinkedHashMap events = new LinkedHashMap();
-        LinkedHashMap points = new LinkedHashMap();
-
-        for (OptaEvent playerEvent: playerEvents){
-            totalPoints += playerEvent.points;
-            if (playerEvent.points != 0){
-                if (events.containsKey(playerEvent.typeId)){
-                    events.put(playerEvent.typeId, 1+(int)events.get(playerEvent.typeId));
-                }else{
-                    events.put(playerEvent.typeId, 1);
-                    points.put(playerEvent.typeId, playerEvent.points);
-                }
-            }
+        if (competitionId != null) {
+            response().setHeader("competition-id", competitionId);
         }
-        String html = "<h1>"+myPlayer.name+"'s points: "+totalPoints+"</h1> <ul>";
-        for (Object eventType: events.keySet()){
-            html += "<li>event "+eventType+"("+points.get(eventType)+" points): "+events.get(eventType)+" times</li>";
-        }
-        html += "</ul>";
-        return ok(html).as("text/html");
-//        return ok(my_player.firstname+" "+my_player.lastname+"'s points: "+totalPoints);
-    }
-
-    public static Result parseF1(){
-        OptaDB f1 = Model.optaDB().findOne("{'headers.X-Meta-Feed-Type': 'F1'}").as(OptaDB.class);
-        if (f1 != null)
-            OptaUtils.processF1((BasicDBObject) f1.json);
-        return ok("Yeah, F1 processed");
-    }
-
-    public static void processFantasy(BasicDBObject fantasy){
-        ArrayList teams = new ArrayList();
-        LinkedHashMap fantasy1 = (LinkedHashMap)fantasy.get("FANTASY");
-        if (fantasy1.containsKey("Team")) {
-            teams = (ArrayList)fantasy1.get("Team");
-        }else{
-            if (fantasy1.containsKey("Match")){
-                LinkedHashMap match = (LinkedHashMap)(fantasy1.get("Match"));
-                teams = (ArrayList)match.get("Team");
-            }
-            else{
-                System.out.println("no match");
-            }
+        if (seasonId != null) {
+            response().setHeader("season-id", seasonId);
         }
 
-        for (Object team: teams){
-            LinkedHashMap teamObject = (LinkedHashMap)team;
-            ArrayList playersList = (ArrayList)teamObject.get("Player");
-            OptaTeam myTeam = new OptaTeam();
-            myTeam.id = (String)teamObject.get("id");
-            myTeam.name = (String)teamObject.get("name");
-            myTeam.updatedTime = System.currentTimeMillis();
-            Model.optaTeams().update("{id: #}", myTeam.id).upsert().with(myTeam);
-
-            for (Object player: playersList){
-                LinkedHashMap playerObject = (LinkedHashMap)player;
-                int playerId = (int) playerObject.get("id");
-                OptaPlayer myPlayer = OptaUtils.createPlayer(playerObject, teamObject);
-                Model.optaPlayers().update("{id: #}", playerId).upsert().with(myPlayer);
-            }
-        }
+        response().setHeader("feed-type", feedType);
+        response().setHeader("created-at", dateFormat.format(createdAt));
+        response().setHeader("last-updated", dateFormat.format(lastUpdated));
     }
 
-    public static Result parseFantasy(){
-        BasicDBObject fantasy = Model.optaDB().findOne("{'FANTASY': {$exists: true}}").as(BasicDBObject.class);
-        //BasicDBObject game = Model.optaDB().findOne().as(BasicDBObject.class);
-//        BasicDBList teams = (BasicDBList)game.get("Team");
-        processFantasy(fantasy);
-        return ok("Yeah, Fantasy processed");
-    }
 
+    private static ResultSet findXML(Connection connection, Date askedDate) throws SQLException {
+
+        Timestamp last_date = new Timestamp(askedDate.getTime());
+        String selectString = "SELECT * FROM optaxml WHERE created_at > '"+last_date+"' ORDER BY created_at LIMIT 1;";
+
+        Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+        return stmt.executeQuery(selectString);
+    }
 }

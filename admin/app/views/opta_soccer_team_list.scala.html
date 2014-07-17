@@ -1,5 +1,7 @@
 @(teams: List[model.opta.OptaTeam])
 
+@import controllers.admin.routes._
+
 @main("Opta Soccer Teams - Admin") {
 
 <h1 class="page-header">Opta Soccer Teams</h1>
@@ -18,7 +20,7 @@
         <tbody>
         @for(p <- teams) {
         <tr>
-            <td>@p.id</td>
+            <td>@p.optaTeamId</td>
             <td>@p.name</td>
             <td>@p.shortName</td>
             <td>@p.updatedTime</td>
@@ -28,6 +30,6 @@
     </table>
 </div>
 
-<a href='@AdminController.dashBoard'>Back to Dashboard</a>
+<a href='@DashboardController.index'>Back to Dashboard</a>
 
 }
