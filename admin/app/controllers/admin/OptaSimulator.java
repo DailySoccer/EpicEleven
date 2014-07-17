@@ -6,6 +6,7 @@ import model.Model;
 import model.ModelEvents;
 import model.Snapshot;
 import model.opta.OptaProcessor;
+import org.jdom2.input.JDOMParseException;
 import play.Logger;
 import play.db.DB;
 
@@ -222,7 +223,12 @@ public class OptaSimulator implements Runnable {
                 Logger.debug(name + " " + createdAt.toString());
 
                 if (feedType != null) {
-                    HashSet<String> changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, sqlxml);
+                    HashSet<String> changedOptaMatchEventIds = null;
+                    try {
+                        changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, sqlxml);
+                    } catch (JDOMParseException e) {
+                        Logger.info("Failed parsing: {}", _optaResultSet.getInt("id"));
+                    }
                     ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
                 }
                 updateDate(createdAt);

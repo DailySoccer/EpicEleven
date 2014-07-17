@@ -5,6 +5,7 @@ import model.Model;
 import model.ModelEvents;
 import model.opta.OptaDB;
 import model.opta.OptaProcessor;
+import org.jdom2.input.JDOMParseException;
 import play.Logger;
 import play.db.DB;
 import play.mvc.BodyParser;
@@ -68,7 +69,12 @@ public class OptaHttpController extends Controller {
         );
 
         OptaProcessor theProcessor = new OptaProcessor();
-        HashSet<String> dirtyMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyText);
+        HashSet<String> dirtyMatchEvents = null;
+        try {
+            dirtyMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyText);
+        } catch (JDOMParseException e) {
+            Logger.info("Exception parsing: {}", getHeader("X-Meta-Default-Filename", request().headers()), e);
+        }
         ModelEvents.onOptaMatchEventIdsChanged(dirtyMatchEvents);
 
         return ok("Yeah, XML processed");

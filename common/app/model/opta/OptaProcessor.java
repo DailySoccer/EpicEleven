@@ -5,6 +5,7 @@ import model.PointsTranslation;
 import org.bson.types.ObjectId;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.input.JDOMParseException;
 import org.jdom2.input.SAXBuilder;
 import play.Logger;
 
@@ -18,7 +19,7 @@ import java.util.*;
 public class OptaProcessor {
 
     // Retorna los Ids de opta (gameIds, optaMachEventId) de los partidos que han cambiado
-    public HashSet<String> processOptaDBInput(String feedType, String requestBody) {
+    public HashSet<String> processOptaDBInput(String feedType, String requestBody) throws JDOMParseException {
         /*
         FIX para leer los XML chungos de la base de datos.
          */
@@ -35,9 +36,13 @@ public class OptaProcessor {
             Document document = (Document) builder.build(new StringReader(requestBody));
             processOptaDBInput(feedType, document.getRootElement());
 
-        } catch (Exception e) {
+        } catch (JDOMParseException e) {
+            throw e;
+        }
+        catch (Exception e) {
             Logger.error("WTF 95634", e);
         }
+
 
         return _dirtyMatchEvents;
     }
