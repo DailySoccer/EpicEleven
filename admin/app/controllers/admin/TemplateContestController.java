@@ -135,7 +135,7 @@ public class TemplateContestController extends Controller {
                 if (matchEvents.size() >= 2) {
 
                     // crear el contest
-                    create(matchEvents);
+                    createMock(matchEvents);
 
                     // empezar a registrar los partidos del nuevo contest
                     matchEvents.clear();
@@ -148,14 +148,13 @@ public class TemplateContestController extends Controller {
 
         // Tenemos partidos sin incluir en un contest?
         if (matchEvents.size() > 0) {
-            create(matchEvents);
+            createMock(matchEvents);
         }
-
 
         return redirect(routes.TemplateContestController.index());
     }
 
-    public static void create(List<TemplateMatchEvent> templateMatchEvents) {
+    public static void createMock(List<TemplateMatchEvent> templateMatchEvents) {
         if (templateMatchEvents.size() == 0) {
             Logger.error("create: templateMatchEvents is empty");
             return;
@@ -165,7 +164,7 @@ public class TemplateContestController extends Controller {
 
         TemplateContest templateContest = new TemplateContest();
 
-        templateContest.name = String.format("Contest date %s", startDate);
+        templateContest.name = String.format("%s", startDate);
         templateContest.postName = "Late evening";
         templateContest.minInstances = 3;
         templateContest.maxEntries = 10;
