@@ -36,19 +36,18 @@ public class ContestEntry implements JongoId {
     public ObjectId getId() { return contestEntryId; }
 
     static public ContestEntry findOne(ObjectId contestEntryId) {
-        return Model.contestEntries().findOne("{_id : #}", contestEntryId).as(ContestEntry.class);
+        return Model.contests().findOne("{'contestEntries._id' : #}", contestEntryId).as(ContestEntry.class);
     }
 
-    static public List<ContestEntry> findAllForUser(ObjectId userId) {
-        return ListUtils.asList(Model.contestEntries().find("{userId: #}", userId).as(ContestEntry.class));
-    }
+    static public List<ContestEntry> findAllFromContests() {
+        List<ContestEntry> contestEntries = new ArrayList<>();
 
-    static public List<ContestEntry> findAllFromContest(ObjectId contestId) {
-        return ListUtils.asList(Model.contestEntries().find("{contestId: #}", contestId).as(ContestEntry.class));
-    }
+        List<Contest> contests = ListUtils.asList(Model.contests().find().as(Contest.class));
+        for (Contest contest : contests) {
+            contestEntries.addAll(contest.contestEntries);
+        }
 
-    static public List<ContestEntry> findAllFromContests(Iterable<Contest> contests) {
-        return ListUtils.asList(Model.findObjectIds(Model.contestEntries(), "contestId", ListUtils.convertToIdList(contests)).as(ContestEntry.class));
+        return contestEntries;
     }
 
     /**

@@ -13,10 +13,8 @@ import static play.data.Form.form;
 
 public class ContestEntryController extends Controller {
     public static Result index() {
-        Iterable<ContestEntry> contestEntryResults = Model.contestEntries().find().as(ContestEntry.class);
-        List<ContestEntry> contestEntryList = ListUtils.asList(contestEntryResults);
-
-        return ok(views.html.contest_entry_list.render(contestEntryList));
+        List<ContestEntry> contestEntryList = ContestEntry.findAllFromContests();
+       return ok(views.html.contest_entry_list.render(contestEntryList));
     }
 
     public static Result newForm() {
