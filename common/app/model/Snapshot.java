@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Snapshot {
-    static public MongoCollection collection() { return Model.jongo().getCollection(snapshotDBName); }
+    static public MongoCollection collection() { return Model.jongoSnapshot().getCollection(snapshotDBName); }
 
     public ArrayList<PointsTranslation> pointsTranslations;
     public ArrayList<TemplateContest> templateContests;
@@ -51,9 +51,10 @@ public class Snapshot {
     //  dado que cada clase sobreescribe el nombre por defecto "_id", no es posible obtenerlo de forma genérica
     //
     private <T extends JongoId & Initializer> void update(Date nextDate, String collectionName, Class<T> classType) {
-        String snapshotName = String.format("%s-%s", snapshotDBName, collectionName);
+        //String snapshotName = String.format("%s-%s", snapshotDBName, collectionName);
 
-        MongoCollection collectionSource = Model.jongo().getCollection(snapshotName);
+        //MongoCollection collectionSource = Model.jongo().getCollection(snapshotName);
+        MongoCollection collectionSource = Model.jongoSnapshot().getCollection(collectionName);
         MongoCollection collectionTarget = Model.jongo().getCollection(collectionName);
 
         Iterable<T> results = collectionSource.find("{createdAt: {$gte: #, $lte: #}}", updatedDate, nextDate).as(classType);
@@ -67,27 +68,25 @@ public class Snapshot {
         }
     }
 
-    static public Snapshot create() {
-        if (!Model.mongoDB().collectionExists(snapshotDBName)) {
-            Model.mongoDB().createCollection(snapshotDBName, new BasicDBObject());
+    static public void createInDB() {
+        DBObject copyOp = new BasicDBObject("copydb", "1").
+                append("fromdb" , "dailySoccerDB").
+                append("todb", "snapshot");
+
+        Model.dropSnapshotDB();
+        CommandResult a = Model.mongoDBAdmin().command(copyOp);
+        if (a.getErrorMessage() != null) {
+            Logger.error(a.getErrorMessage());
         }
+    }
 
-        collection().remove();
-
+    static public Snapshot create() {
         Snapshot snapshot   = new Snapshot();
-
-        create("pointsTranslation", PointsTranslation.class);
-        create("templateContests", TemplateContest.class);
-        create("templateMatchEvents", TemplateMatchEvent.class);
-        create("templateSoccerTeams", TemplateSoccerTeam.class);
-        create("templateSoccerPlayers", TemplateSoccerPlayer.class);
-        //create("contestEntries", ContestEntry.class);
-        //create("contests", Contest.class);
 
         snapshot.createdAt = GlobalDate.getCurrentDate();
 
+        createInDB();
         collection().insert(snapshot);
-
         return snapshot;
     }
 

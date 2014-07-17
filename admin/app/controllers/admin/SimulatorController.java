@@ -93,4 +93,11 @@ public class SimulatorController extends Controller {
         FlashMessage.success("Snapshot created");
         return redirect(routes.SimulatorController.index());
     }
+
+    public static Result snapshotDB() {
+        Snapshot.createInDB();
+
+        FlashMessage.success("Snapshot copied");
+        return redirect(routes.SimulatorController.index());
+    }
 }
