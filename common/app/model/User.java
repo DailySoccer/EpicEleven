@@ -57,7 +57,13 @@ public class User {
     }
 
     static public List<User> find(List<ContestEntry> contestEntries) {
-        return ListUtils.asList(Model.findObjectIds(Model.users(), "_id", ListUtils.convertToIdList(contestEntries)).as(User.class));
+        List<ObjectId> userObjectIds = new ArrayList<>(contestEntries.size());
+
+        for (ContestEntry entry: contestEntries) {
+            userObjectIds.add(entry.userId);
+        }
+
+        return ListUtils.asList(Model.findObjectIds(Model.users(), "_id", userObjectIds).as(User.class));
     }
 
 
