@@ -213,7 +213,7 @@ public class OptaSimulator implements Runnable {
             _nextDocToParseIndex += 1;
 
             if (_optaResultSet.next()) {
-                SQLXML sqlxml = _optaResultSet.getSQLXML("xml");
+                String sqlxml = _optaResultSet.getString("xml");
                 Date createdAt = _optaResultSet.getTimestamp("created_at");
                 _lastParsedDate = createdAt.getTime();
                 String name = _optaResultSet.getString("name");
@@ -222,7 +222,7 @@ public class OptaSimulator implements Runnable {
                 Logger.debug(name + " " + createdAt.toString());
 
                 if (feedType != null) {
-                    HashSet<String> changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, sqlxml.getString());
+                    HashSet<String> changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, sqlxml);
                     ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
                 }
                 updateDate(createdAt);

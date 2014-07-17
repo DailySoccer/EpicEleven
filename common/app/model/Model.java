@@ -83,7 +83,7 @@ public class Model {
             try (Statement stmt = connection.createStatement()) {
                 boolean result = stmt.execute("CREATE TABLE IF NOT EXISTS optaxml (" +
                                               " id serial PRIMARY KEY, " +
-                                              " xml xml, " +
+                                              " xml text, " +
                                               " headers text, " +
                                               " created_at timestamp, " +
                                               " name text, " +
@@ -249,7 +249,7 @@ public class Model {
                                  String gameId, String competitionId, String seasonId, Date lastUpdated) {
 
         String insertString = "INSERT INTO optaxml (xml, headers, created_at, name, feed_type, game_id, competition_id," +
-                "season_id, last_updated) VALUES ( XMLPARSE (DOCUMENT ?),?,?,?,?,?,?,?,?)";
+                "season_id, last_updated) VALUES (?,?,?,?,?,?,?,?,?)";
 
         try (Connection connection = play.db.DB.getConnection()) {
             try (PreparedStatement stmt = connection.prepareStatement(insertString)) {
