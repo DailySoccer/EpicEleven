@@ -12,10 +12,7 @@ import java.util.List;
 
 public class TemplateSoccerPlayerController extends Controller {
     public static Result index() {
-        Iterable<TemplateSoccerPlayer> soccerPlayerResults = Model.templateSoccerPlayers().find().as(TemplateSoccerPlayer.class);
-        List<TemplateSoccerPlayer> soccerPlayerList = ListUtils.asList(soccerPlayerResults);
-
-        return ok(views.html.template_soccer_player_list.render(soccerPlayerList));
+        return ok(views.html.template_soccer_player_list.render(TemplateSoccerPlayer.findAll()));
     }
 
     public static Result showFantasyPointsInContest(String contestId, String playerId) {

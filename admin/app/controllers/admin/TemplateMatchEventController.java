@@ -11,15 +11,10 @@ import java.util.List;
 
 public class TemplateMatchEventController extends Controller {
     public static Result index() {
-        Iterable<TemplateMatchEvent> soccerMatchEventResults = Model.templateMatchEvents().find().as(TemplateMatchEvent.class);
-        List<TemplateMatchEvent> matchEventList = ListUtils.asList(soccerMatchEventResults);
-
-        return ok(views.html.template_match_event_list.render(matchEventList));
+        return ok(views.html.template_match_event_list.render(TemplateMatchEvent.findAll()));
     }
 
     public static Result show(String templateMatchEventId) {
-        TemplateMatchEvent templateMatchEvent = Model.templateMatchEvents().findOne("{ _id : # }",
-                new ObjectId(templateMatchEventId)).as(TemplateMatchEvent.class);
-        return ok(views.html.template_match_event.render(templateMatchEvent));
+        return ok(views.html.template_match_event.render(TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId))));
     }
 }

@@ -12,15 +12,13 @@ import java.util.List;
 
 public class LiveContestEntryController extends Controller {
     public static Result index() {
-        Iterable<ContestEntry> contestEntryResults = Model.contestEntries().find().as(ContestEntry.class);
-        List<ContestEntry> contestEntryList = ListUtils.asList(contestEntryResults);
-
-        return ok(views.html.live_contest_entry_list.render(contestEntryList));
+        return ok(views.html.live_contest_entry_list.render(ContestEntry.findAllFromContests()));
     }
 
     public static Result show(String contestEntryId) {
         ContestEntry contestEntry = ContestEntry.findOne(new ObjectId(contestEntryId));
-        List<SoccerPlayer> soccer_players = contestEntry.getSoccerPlayers();
-        return ok(views.html.live_contest_entry.render(contestEntry, soccer_players));
+        return ok(views.html.live_contest_entry.render(
+                contestEntry,
+                contestEntry.getSoccerPlayers()));
     }
 }

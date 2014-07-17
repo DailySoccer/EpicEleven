@@ -13,8 +13,7 @@ import static play.data.Form.form;
 
 public class ContestEntryController extends Controller {
     public static Result index() {
-        List<ContestEntry> contestEntryList = ContestEntry.findAllFromContests();
-       return ok(views.html.contest_entry_list.render(contestEntryList));
+       return ok(views.html.contest_entry_list.render(ContestEntry.findAllFromContests()));
     }
 
     public static Result newForm() {
@@ -82,9 +81,8 @@ public class ContestEntryController extends Controller {
 
     private static List<TemplateMatchEvent> getTemplateMatchEvents(String contestId) {
         // Pasar la lista de partidos
-        Contest contest = Model.contests().findOne("{_id: #}", new ObjectId(contestId)).as(Contest.class);
-        TemplateContest templateContest = Model.templateContests().findOne("{_id: #}", contest.templateContestId).as(TemplateContest.class);
-
+        Contest contest = Contest.findOne(new ObjectId(contestId));
+        TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
         return TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
     }
 }

@@ -17,10 +17,7 @@ import static play.data.Form.form;
 
 public class TemplateContestController extends Controller {
     public static Result index() {
-        Iterable<TemplateContest> templateContestResults = Model.templateContests().find().as(TemplateContest.class);
-        List<TemplateContest> templateContestList = ListUtils.asList(templateContestResults);
-
-        return ok(views.html.template_contest_list.render(templateContestList));
+        return ok(views.html.template_contest_list.render(TemplateContest.findAll()));
     }
 
     public static Result show(String templateContestId) {
@@ -84,8 +81,7 @@ public class TemplateContestController extends Controller {
         Date startDate = null;
         templateContest.templateMatchEventIds = new ArrayList<>();
         for (String optaMatchEventId: params.templateMatchEvents) {
-            TemplateMatchEvent templateMatchEvent = Model.templateMatchEvents().findOne(
-                    "{optaMatchEventId: #}", optaMatchEventId).as(TemplateMatchEvent.class);
+            TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOneFromOptaId(optaMatchEventId);
             templateContest.templateMatchEventIds.add(templateMatchEvent.templateMatchEventId);
 
             if (startDate == null || templateMatchEvent.startDate.before(startDate)) {

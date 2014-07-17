@@ -46,6 +46,14 @@ public class TemplateMatchEvent implements JongoId, Initializer {
         return Model.templateMatchEvents().findOne("{_id : #}", templateMatchEventId).as(TemplateMatchEvent.class);
     }
 
+    static public TemplateMatchEvent findOneFromOptaId(String optaMatchEventId) {
+        return Model.templateMatchEvents().findOne("{optaMatchEventId: #}", optaMatchEventId).as(TemplateMatchEvent.class);
+    }
+
+    public static List<TemplateMatchEvent> findAll() {
+        return ListUtils.asList(Model.templateMatchEvents().find().as(TemplateMatchEvent.class));
+    }
+
     public static List<TemplateMatchEvent> findAll(List<ObjectId> idList) {
         return ListUtils.asList(Model.findObjectIds(Model.templateMatchEvents(), "_id", idList).as(TemplateMatchEvent.class));
     }

@@ -27,6 +27,10 @@ public class PointsTranslation implements JongoId, Initializer {
         return pointsTranslationId;
     }
 
+    public static PointsTranslation findOne(ObjectId pointsTranslationId) {
+        return Model.pointsTranslation().findOne("{_id: #}", pointsTranslationId).as(PointsTranslation.class);
+    }
+
     /**
      * Creacion de una entrada de Points Translation
      */

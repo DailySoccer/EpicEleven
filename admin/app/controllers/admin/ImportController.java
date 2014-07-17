@@ -19,7 +19,7 @@ public class ImportController extends Controller {
     private static void evaluateDirtyTeams(List<OptaTeam> news, List<OptaTeam> changes, List<OptaTeam> invalidates) {
         Iterable<OptaTeam> teamsDirty = Model.optaTeams().find("{dirty: true}").as(OptaTeam.class);
         for(OptaTeam optaTeam : teamsDirty) {
-            TemplateSoccerTeam template = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaTeam.optaTeamId).as(TemplateSoccerTeam.class);
+            TemplateSoccerTeam template = TemplateSoccerTeam.findOneFromOptaId(optaTeam.optaTeamId);
             if (template == null) {
                 if (TemplateSoccerTeam.isInvalid(optaTeam)) {
                     if (invalidates != null)
@@ -88,7 +88,7 @@ public class ImportController extends Controller {
     private static void evaluateDirtySoccers(List<OptaPlayer> news, List<OptaPlayer> changes, List<OptaPlayer> invalidates) {
         Iterable<OptaPlayer> soccersDirty = Model.optaPlayers().find("{dirty: true}").as(OptaPlayer.class);
         for(OptaPlayer optaSoccer : soccersDirty) {
-            TemplateSoccerPlayer template = Model.templateSoccerPlayers().findOne("{optaPlayerId: #}", optaSoccer.optaPlayerId).as(TemplateSoccerPlayer.class);
+            TemplateSoccerPlayer template = TemplateSoccerPlayer.findOneFromOptaId(optaSoccer.optaPlayerId);
             if (template == null) {
                 if (TemplateSoccerPlayer.isInvalid(optaSoccer)) {
                     if (invalidates != null)
@@ -161,7 +161,7 @@ public class ImportController extends Controller {
         Date now = GlobalDate.getCurrentDate();
         Iterable<OptaMatchEvent> matchesDirty = Model.optaMatchEvents().find("{dirty: true, matchDate: {$gte: #}}", now).as(OptaMatchEvent.class);
         for(OptaMatchEvent optaMatch : matchesDirty) {
-            TemplateMatchEvent template = Model.templateMatchEvents().findOne("{optaMatchEventId: #}", optaMatch.optaMatchEventId).as(TemplateMatchEvent.class);
+            TemplateMatchEvent template = TemplateMatchEvent.findOneFromOptaId(optaMatch.optaMatchEventId);
             if (template == null) {
                 if (TemplateMatchEvent.isInvalid(optaMatch)) {
                     if (invalidates != null)

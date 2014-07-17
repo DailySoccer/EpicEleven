@@ -5,8 +5,10 @@ import com.mongodb.WriteConcern;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import model.opta.*;
+import utils.ListUtils;
 
 import java.util.Date;
+import java.util.List;
 
 public class TemplateSoccerTeam implements JongoId, Initializer {
     @Id
@@ -34,8 +36,20 @@ public class TemplateSoccerTeam implements JongoId, Initializer {
         return templateSoccerTeamId;
     }
 
+    public List<TemplateSoccerPlayer> getTemplateSoccerPlayers() {
+        return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: # }", templateSoccerTeamId).as(TemplateSoccerPlayer.class));
+    }
+
     static public TemplateSoccerTeam findOne(ObjectId templateSoccerTeamId) {
         return Model.templateSoccerTeams().findOne("{_id : #}", templateSoccerTeamId).as(TemplateSoccerTeam.class);
+    }
+
+    static public TemplateSoccerTeam findOneFromOptaId(String optaTeamId) {
+        return Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaTeamId).as(TemplateSoccerTeam.class);
+    }
+
+    static public List<TemplateSoccerTeam> findAll() {
+        return ListUtils.asList(Model.templateSoccerTeams().find().as(TemplateSoccerTeam.class));
     }
 
     public boolean hasChanged(OptaTeam optaTeam) {

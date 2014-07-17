@@ -35,8 +35,7 @@ public class PointsTranslationController extends Controller {
     }
 
     public static Result edit(String pointsTranslationId) {
-        PointsTranslation pointsTranslation = Model.pointsTranslation().findOne("{_id: #}",
-                new ObjectId(pointsTranslationId)).as(PointsTranslation.class);
+        PointsTranslation pointsTranslation = PointsTranslation.findOne(new ObjectId(pointsTranslationId));
         Form<PointsTranslationForm> pointsTranslationForm = Form.form(PointsTranslationForm.class).
                                                             fill(new PointsTranslationForm(pointsTranslation));
         return ok(points_translation_add.render(pointsTranslationForm));
