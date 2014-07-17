@@ -1,9 +1,6 @@
 package controllers.admin;
 
-import model.Model;
-import model.TemplateMatchEvent;
-import model.TemplateSoccerPlayer;
-import model.TemplateSoccerTeam;
+import model.*;
 import model.opta.OptaMatchEvent;
 import model.opta.OptaPlayer;
 import model.opta.OptaTeam;
@@ -11,6 +8,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class ImportController extends Controller {
@@ -160,7 +158,8 @@ public class ImportController extends Controller {
      *
      */
     private static void evaluateDirtyMatchEvents(List<OptaMatchEvent> news, List<OptaMatchEvent> changes, List<OptaMatchEvent> invalidates) {
-        Iterable<OptaMatchEvent> matchesDirty = Model.optaMatchEvents().find("{dirty: true}").as(OptaMatchEvent.class);
+        Date now = GlobalDate.getCurrentDate();
+        Iterable<OptaMatchEvent> matchesDirty = Model.optaMatchEvents().find("{dirty: true, matchDate: {$gte: #}}", now).as(OptaMatchEvent.class);
         for(OptaMatchEvent optaMatch : matchesDirty) {
             TemplateMatchEvent template = Model.templateMatchEvents().findOne("{optaMatchEventId: #}", optaMatch.optaMatchEventId).as(TemplateMatchEvent.class);
             if (template == null) {
