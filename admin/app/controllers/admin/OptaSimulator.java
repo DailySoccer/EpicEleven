@@ -226,10 +226,11 @@ public class OptaSimulator implements Runnable {
                     HashSet<String> changedOptaMatchEventIds = null;
                     try {
                         changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, sqlxml);
+                        ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
                     } catch (JDOMParseException e) {
-                        Logger.info("Failed parsing: {}", _optaResultSet.getInt("id"));
+                        Logger.error("Failed parsing: {}", _optaResultSet.getInt("id"));
+
                     }
-                    ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
                 }
                 updateDate(createdAt);
             }
