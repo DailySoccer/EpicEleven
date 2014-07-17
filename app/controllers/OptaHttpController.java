@@ -12,18 +12,17 @@ import play.mvc.Controller;
 import play.mvc.Result;
 
 import java.io.UnsupportedEncodingException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 
 /**
  * Created by gnufede on 30/05/14.
  */
 @AllowCors.Origin
 public class OptaHttpController extends Controller {
+
     @BodyParser.Of(value = BodyParser.TolerantText.class, maxLength = 4 * 1024 * 1024)
     public static Result optaXmlInput() {
 
@@ -52,13 +51,9 @@ public class OptaHttpController extends Controller {
 
         try {
             bodyText = bodyText.substring(bodyText.indexOf('<'));
-            // No hay manera de pasar de JSON a BSON directamente al parecer, sin pasar por String,
-            // o por un hashmap (que tampoco parece trivial)
-            // http://stackoverflow.com/questions/5699323/using-json-with-mongodb
-            //bodyAsJSON = (BasicDBObject) JSON.parse(XML.toJSONObject(bodyText).toString());
         }
         catch (Exception e) {
-            e.printStackTrace();
+            Logger.error("WTF 4912: ", e);
         }
 
         Model.insertXML(bodyText,
@@ -73,7 +68,6 @@ public class OptaHttpController extends Controller {
         );
 
         OptaProcessor theProcessor = new OptaProcessor();
-        //HashSet<String> dirtyMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyAsJSON);
         HashSet<String> dirtyMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyText);
         ModelEvents.onOptaMatchEventIdsChanged(dirtyMatchEvents);
 
@@ -112,76 +106,78 @@ public class OptaHttpController extends Controller {
             }
             else {
                 Logger.debug("IGNORANDO: " + document.name);
-
             }
         }
         return ok("Migrating...");
     }
 
-    public static Result returnXML(long last_timestamp){
+    public static Result returnXML(long last_timestamp) {
+
         SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
         format1.setTimeZone(TimeZone.getTimeZone("UTC"));
         Date askedDate = new Date(last_timestamp);
+
+        String retXML = "NULL";
+
         try (Connection connection = DB.getConnection()) {
+
             ResultSet nextOptaData = findXML(connection, askedDate);
-            String headers = "";
-            Timestamp createdAt, lastUpdated;
-            String name, feedType, gameId, competitionId, seasonId = "";
-            if (nextOptaData == null) {
-                return ok("NULL");
-            }
-            if (nextOptaData.next()){
-                headers = nextOptaData.getString("headers");
-                feedType = nextOptaData.getString("feed_type");
-                name = nextOptaData.getString("name");
-                gameId = nextOptaData.getString("game_id");
-                competitionId = nextOptaData.getString("competition_id");
-                seasonId = nextOptaData.getString("season_id");
-                lastUpdated = nextOptaData.getTimestamp("last_updated");
-                createdAt = nextOptaData.getTimestamp("created_at");
-                String xml = nextOptaData.getSQLXML("xml").getString();
 
-                response().setHeader("headers", headers);
-                if (name != null) {
-                    response().setHeader("name", name);
-                }
-                if (gameId != null) {
-                    response().setHeader("game-id", gameId);
-                }
-                if (competitionId != null) {
-                    response().setHeader("competition-id", competitionId);
-                }
-                if (seasonId != null) {
-                    response().setHeader("season-id", seasonId);
-                }
-                response().setHeader("feed-type", feedType);
-                response().setHeader("created-at", format1.format(createdAt));
-                response().setHeader("last-updated", format1.format(lastUpdated));
-                return ok(xml);
+            if (nextOptaData != null && nextOptaData.next()) {
+                setResponseHeaders(nextOptaData, format1);
+                retXML = nextOptaData.getSQLXML("xml").getString();
             }
-
-        } catch (java.sql.SQLException e) {
+        }
+        catch (java.sql.SQLException e) {
             Logger.error("WTF 52683", e);
             Logger.info("Possibly end of documents reached: {}", format1.format(askedDate));
         }
+
         response().setContentType("text/html");
 
-        return ok("NULL");
+        return ok(retXML);
     }
 
-    public static ResultSet findXML(Connection connection, Date askedDate) {
+    private static void setResponseHeaders(ResultSet nextOptaData, SimpleDateFormat dateFormat) throws SQLException {
+        Timestamp createdAt, lastUpdated;
+        String name, feedType, gameId, competitionId, seasonId = "", headers = "";
+
+        headers = nextOptaData.getString("headers");
+        feedType = nextOptaData.getString("feed_type");
+        name = nextOptaData.getString("name");
+        gameId = nextOptaData.getString("game_id");
+        competitionId = nextOptaData.getString("competition_id");
+        seasonId = nextOptaData.getString("season_id");
+        lastUpdated = nextOptaData.getTimestamp("last_updated");
+        createdAt = nextOptaData.getTimestamp("created_at");
+
+        response().setHeader("headers", headers);
+
+        if (name != null) {
+            response().setHeader("name", name);
+        }
+        if (gameId != null) {
+            response().setHeader("game-id", gameId);
+        }
+        if (competitionId != null) {
+            response().setHeader("competition-id", competitionId);
+        }
+        if (seasonId != null) {
+            response().setHeader("season-id", seasonId);
+        }
+
+        response().setHeader("feed-type", feedType);
+        response().setHeader("created-at", dateFormat.format(createdAt));
+        response().setHeader("last-updated", dateFormat.format(lastUpdated));
+    }
+
+
+    private static ResultSet findXML(Connection connection, Date askedDate) throws SQLException {
+
         Timestamp last_date = new Timestamp(askedDate.getTime());
         String selectString = "SELECT * FROM optaxml WHERE created_at > '"+last_date+"' ORDER BY created_at LIMIT 1;";
-        Logger.debug(selectString);
-        ResultSet results = null;
-            try {
-                Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-                results = stmt.executeQuery(selectString);
-            }
-        catch (java.sql.SQLException e) {
-            Logger.error("WTF 72613", e);
-        }
-        return results;
-    }
 
+        Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+        return stmt.executeQuery(selectString);
+    }
 }
