@@ -20,12 +20,15 @@ public class UserInfo {
         this.nickName = nickName;
     }
 
-    static public List<UserInfo> findAllFromContestEntry(List<ContestEntry> contestEntries) {
+    static public List<UserInfo> findAllFromContestEntries(List<ContestEntry> contestEntries) {
+
+        Iterable<User> users = User.find(contestEntries);
         List<UserInfo> usersInfo = new ArrayList<>();
-        Iterable<User> users = User.find(contestEntries).as(User.class);
+
         for (User user : users) {
             usersInfo.add(user.info());
         }
+
         return usersInfo;
     }
 }

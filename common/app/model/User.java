@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
+import utils.ListUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -55,12 +56,8 @@ public class User {
         return aUser;
     }
 
-    static public Find find(List<ContestEntry> contestEntries) {
-        List<ObjectId> userObjectIds = new ArrayList<>(contestEntries.size());
-        for (ContestEntry entry: contestEntries) {
-            userObjectIds.add(entry.userId);
-        }
-        return Model.findObjectIds(Model.users(), "_id", userObjectIds);
+    static public List<User> find(List<ContestEntry> contestEntries) {
+        return ListUtils.asList(Model.findObjectIds(Model.users(), "_id", ListUtils.convertToIdList(contestEntries)).as(User.class));
     }
 
 

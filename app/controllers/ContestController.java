@@ -15,9 +15,6 @@ import play.mvc.Result;
 import utils.ListUtils;
 import utils.ReturnHelper;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import static play.data.Form.form;
@@ -83,7 +80,7 @@ public class ContestController extends Controller {
 
         Contest contest = Contest.findOne(contestId);
         List<ContestEntry> contestEntries = contest.contestEntries;
-        List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntry(contestEntries);
+        List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contestEntries);
         TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
 
@@ -187,7 +184,7 @@ public class ContestController extends Controller {
 
         Contest contest = Contest.findOne(contestId);
         List<ContestEntry> contestEntries = contest.contestEntries;
-        List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntry(contestEntries);
+        List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contestEntries);
         TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
         List<LiveMatchEvent> liveMatchEvents = LiveMatchEvent.findAllFromTemplateMatchEvents(templateContest.templateMatchEventIds);
 
