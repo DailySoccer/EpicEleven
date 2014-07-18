@@ -1,0 +1,53 @@
+@()
+
+@import helper._
+@import helper.twitterBootstrap._
+@import controllers.admin.routes._
+@import model._
+
+@scripts = {
+<script type="text/javascript">
+        function repaintRemaining(remaining) {
+            document.getElementById("remaining").innerHTML=remaining;
+        }
+
+        function checkRemaining(remaining) {
+            var temp =  $.ajax({
+                url: "http://dailysoccer.herokuapp.com/remaining/"+remaining,
+                success: function(result) {
+                        repaintRemaining(result);
+                }
+            });
+        }
+
+        function getLastXML() {
+            var temp =  $.ajax({
+                url: "/admin/last_date/",
+                success: function(result) {
+                        checkRemaining(result);
+                }
+            });
+        }
+
+        $(document).ready( function(){
+           window.setInterval(getLastXML, 100);
+        })
+
+    </script>
+}
+
+
+@main("Refresher - Admin", scripts) {
+
+<h1 class="page-header">Refresher</h1>
+    <div><span>Production server has:</span>
+         <span style="font-weight:700; margin-left: 0.5em;" id="remaining"></span>
+         <span> more documents than you</span></div>
+    <br/>
+
+    <div class="btn-group">
+            <a class="btn btn-sim btn-primary play" href="@RefresherController.importFromLast" title="Synchronize all documents from Opta.">
+                Import
+            </a>
+    </div>
+}
