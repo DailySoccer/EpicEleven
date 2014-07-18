@@ -91,11 +91,4 @@ public class ModelEvents {
             }
         }
     }
-
-    public static void instantiateContests() {
-        Iterable<TemplateContest> templateContests = Model.templateContests().find().as(TemplateContest.class);
-        for(TemplateContest template : templateContests) {
-            template.instantiate();
-        }
-    }
 }

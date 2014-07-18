@@ -32,9 +32,4 @@ public class ContestController extends Controller {
         Contest.remove(contest);
         return redirect(routes.ContestController.index());
     }
-
-    public static Result instantiateAll() {
-        ModelEvents.instantiateContests();
-        return redirect(routes.ContestController.index());
-    }
 }

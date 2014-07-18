@@ -41,7 +41,6 @@ GET         /contest_enter/add/:contestId                              controlle
 POST        /contest_entry/add                                         controllers.admin.ContestEntryController.create()
 
 GET         /contests                                                  controllers.admin.ContestController.index()
-GET         /contests/instantiate                                      controllers.admin.ContestController.instantiateAll()
 GET         /contest/:contestId                                        controllers.admin.ContestController.show(contestId : String)
 GET         /contest/destroy/:contestId                                controllers.admin.ContestController.destroy(contestId : String)
 
