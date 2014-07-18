@@ -69,11 +69,11 @@ public class Model {
                 _mongoDB = _mongoClient.getDB(mongoClientURI.getDatabase());
                 _mongoDBAdmin = _mongoClient.getDB("admin");
                 _jongo = new Jongo(_mongoDB);
-                try {
+
+                if (!Play.isProd()) {
                     _mongoDBSnapshot = _mongoClient.getDB("snapshot");
                     _jongoSnapshot = new Jongo(mongoDBSnapshot());
-
-                } catch (Exception e ) {
+                } else {
                     _mongoDBSnapshot = null;
                     _jongoSnapshot = null;
                 }
