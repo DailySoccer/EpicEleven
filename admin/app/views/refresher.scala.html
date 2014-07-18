@@ -22,7 +22,7 @@
 
         function getLastXML() {
             var temp =  $.ajax({
-                url: "/admin/last_date/",
+                url: "/admin/last_date",
                 success: function(result) {
                         checkRemaining(result);
                 }
@@ -30,7 +30,7 @@
         }
 
         $(document).ready( function(){
-           window.setInterval(getLastXML, 100);
+           window.setInterval(getLastXML, 200);
         })
 
     </script>
