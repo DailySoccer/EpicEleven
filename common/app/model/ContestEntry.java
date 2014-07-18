@@ -85,6 +85,7 @@ public class ContestEntry implements JongoId {
         List<LiveMatchEvent> liveMatchEventList = ListUtils.asList(liveMatchEventsResults);
 
         List<SoccerPlayer> soccerPlayers = new ArrayList<>();
+        /*
         for (ObjectId soccerId : soccerIds) {
             for (LiveMatchEvent liveMatchEvent : liveMatchEventList) {
                 SoccerPlayer liveSoccer = liveMatchEvent.findSoccerPlayer(soccerId);
@@ -94,6 +95,7 @@ public class ContestEntry implements JongoId {
                 }
             }
         }
+        */
         return soccerPlayers;
     }
 

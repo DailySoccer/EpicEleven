@@ -54,7 +54,7 @@ public class ModelEvents {
                 }
 
                 if (liveMatchEvent != null) {
-                    LiveMatchEvent.updateLiveFantasyPoints(liveMatchEvent);
+                    liveMatchEvent.updateFantasyPoints();
 
                     // Logger.info("fantasyPoints in liveMatchEvent({})", find.liveMatchEventId);
 
