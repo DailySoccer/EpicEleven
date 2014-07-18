@@ -145,6 +145,31 @@ public class OptaHttpController extends Controller {
         return ok(retXML);
     }
 
+    public static Result remainingXMLs(long last_timestamp) {
+        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+        format1.setTimeZone(TimeZone.getTimeZone("UTC"));
+        Date askedDate = new Date(last_timestamp);
+
+        String remainingXML = "0";
+
+        try (Connection connection = DB.getConnection()) {
+
+            ResultSet remainingOptaData = getRemaining(connection, askedDate);
+
+            if (remainingOptaData != null && remainingOptaData.next()) {
+                remainingXML = String.valueOf(remainingOptaData.getInt("remaining"));
+            }
+        }
+        catch (java.sql.SQLException e) {
+            Logger.error("WTF 25386", e);
+        }
+
+        response().setContentType("text/html");
+
+        return ok(remainingXML);
+
+    }
+
     private static void setResponseHeaders(ResultSet nextOptaData, SimpleDateFormat dateFormat) throws SQLException {
         Timestamp createdAt, lastUpdated;
         String name, feedType, gameId, competitionId, seasonId = "", headers = "";
@@ -183,11 +208,18 @@ public class OptaHttpController extends Controller {
         }
     }
 
-
     private static ResultSet findXML(Connection connection, Date askedDate) throws SQLException {
 
         Timestamp last_date = new Timestamp(askedDate.getTime());
         String selectString = "SELECT * FROM optaxml WHERE created_at > '"+last_date+"' ORDER BY created_at LIMIT 1;";
+
+        Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+        return stmt.executeQuery(selectString);
+    }
+
+    private static ResultSet getRemaining(Connection connection, Date askedDate) throws SQLException {
+        Timestamp last_date = new Timestamp(askedDate.getTime());
+        String selectString = "SELECT count(*) as remaining FROM optaxml WHERE created_at > '"+last_date+"';";
 
         Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
         return stmt.executeQuery(selectString);

@@ -82,5 +82,7 @@ GET         /is_running                                                controlle
 GET         /is_paused                                                 controllers.admin.SimulatorController.isPaused()
 GET         /current_date_simulator                                    controllers.admin.SimulatorController.currentDate()
 
-GET         /import_from_last                                          controllers.admin.OptaController.importFromLast()
+GET         /refresher                                                 controllers.admin.RefresherController.index()
+GET         /import_from_last                                          controllers.admin.RefresherController.importFromLast()
+GET         /last_date                                                 controllers.admin.RefresherController.lastDate()
 
