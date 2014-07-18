@@ -31,6 +31,9 @@ public class Snapshot {
     }
 
     public void update(Date nextDate) {
+        if (collection() == null) {
+            return;
+        }
         if (nextDate.after(updatedDate)) {
             // Logger.info("snapshot: update: start: {} - end: {}", updatedDate, nextDate);
 
@@ -81,6 +84,9 @@ public class Snapshot {
     }
 
     static public Snapshot create() {
+        if (collection() == null) {
+            return null;
+        }
         Snapshot snapshot   = new Snapshot();
 
         snapshot.createdAt = GlobalDate.getCurrentDate();
@@ -114,7 +120,11 @@ public class Snapshot {
     }
 
     static public Snapshot getLast() {
-        return collection().findOne().as(Snapshot.class);
+        if (collection() != null) {
+            return collection().findOne().as(Snapshot.class);
+        } else {
+            return null;
+        }
     }
 
     static private <T> ArrayList<T> asList(MongoCollection collection, Class<T> classType) {
