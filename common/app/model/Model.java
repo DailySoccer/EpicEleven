@@ -68,12 +68,13 @@ public class Model {
                 _mongoClient = new MongoClient(mongoClientURI);
                 _mongoDB = _mongoClient.getDB(mongoClientURI.getDatabase());
                 _mongoDBAdmin = _mongoClient.getDB("admin");
-                _mongoDBSnapshot = _mongoClient.getDB("snapshot");
                 _jongo = new Jongo(_mongoDB);
                 try {
+                    _mongoDBSnapshot = _mongoClient.getDB("snapshot");
                     _jongoSnapshot = new Jongo(mongoDBSnapshot());
 
-                } catch (NullPointerException e ) {
+                } catch (Exception e ) {
+                    _mongoDBSnapshot = null;
                     _jongoSnapshot = null;
                 }
 

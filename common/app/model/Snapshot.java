@@ -10,7 +10,12 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Snapshot {
-    static public MongoCollection collection() { return Model.jongoSnapshot().getCollection(snapshotDBName); }
+    static public MongoCollection collection() {
+        if (Model.jongoSnapshot() == null) {
+            return null;
+        }
+        return Model.jongoSnapshot().getCollection(snapshotDBName);
+    }
 
     public ArrayList<PointsTranslation> pointsTranslations;
     public ArrayList<TemplateContest> templateContests;
@@ -31,9 +36,6 @@ public class Snapshot {
     }
 
     public void update(Date nextDate) {
-        if (collection() == null) {
-            return;
-        }
         if (nextDate.after(updatedDate)) {
             // Logger.info("snapshot: update: start: {} - end: {}", updatedDate, nextDate);
 
@@ -120,11 +122,10 @@ public class Snapshot {
     }
 
     static public Snapshot getLast() {
-        if (collection() != null) {
-            return collection().findOne().as(Snapshot.class);
-        } else {
+        if (collection() == null) {
             return null;
         }
+        return collection().findOne().as(Snapshot.class);
     }
 
     static private <T> ArrayList<T> asList(MongoCollection collection, Class<T> classType) {
