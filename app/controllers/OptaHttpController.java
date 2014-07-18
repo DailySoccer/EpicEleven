@@ -132,7 +132,7 @@ public class OptaHttpController extends Controller {
 
             if (nextOptaData != null && nextOptaData.next()) {
                 setResponseHeaders(nextOptaData, format1);
-                retXML = nextOptaData.getSQLXML("xml").getString();
+                retXML = nextOptaData.getString("xml");
             }
         }
         catch (java.sql.SQLException e) {
