@@ -172,10 +172,15 @@ public class OptaHttpController extends Controller {
         if (seasonId != null) {
             response().setHeader("season-id", seasonId);
         }
-
-        response().setHeader("feed-type", feedType);
-        response().setHeader("created-at", dateFormat.format(createdAt));
-        response().setHeader("last-updated", dateFormat.format(lastUpdated));
+        if (feedType != null) {
+            response().setHeader("feed-type", feedType);
+        }
+        if (createdAt != null) {
+            response().setHeader("created-at", dateFormat.format(createdAt));
+        }
+        if (lastUpdated != null) {
+            response().setHeader("last-updated", dateFormat.format(lastUpdated));
+        }
     }
 
 
