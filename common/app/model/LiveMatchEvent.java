@@ -1,6 +1,7 @@
 package model;
 
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.WriteConcern;
 import model.opta.OptaEvent;
 import org.bson.types.ObjectId;
@@ -9,6 +10,7 @@ import play.Logger;
 import utils.ListUtils;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -17,56 +19,66 @@ public class LiveMatchEvent {
     public ObjectId liveMatchEventId;
 
     public ObjectId templateMatchEventId;
+
+    @JsonView(JsonViews.NotForClient.class)
     public String optaMatchEventId;
 
-    // TODO: Incrustar los futbolistas
-    public SoccerTeam soccerTeamA;
-    public SoccerTeam soccerTeamB;
+    // Asocia un soccerPlayerId con fantasyPoints
+    public HashMap<String, Integer> soccerPlayerToPoints = new HashMap<>();
 
+    @JsonView(JsonViews.NotForClient.class)
     public Date startDate;
+
+    @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
+
+    // Asocia un soccerPlayerId con optaPlayerId (el id de Opta se necesita para las querys a optaEvents)
+    @JsonView(JsonViews.NotForClient.class)
+    public HashMap<String, String> soccerPlayerToOpta = new HashMap<>();
 
     public LiveMatchEvent() { }
 
     public LiveMatchEvent(TemplateMatchEvent templateMatchEvent) {
         templateMatchEventId = templateMatchEvent.templateMatchEventId;
         optaMatchEventId = templateMatchEvent.optaMatchEventId;
-        soccerTeamA = templateMatchEvent.soccerTeamA;
-        soccerTeamB = templateMatchEvent.soccerTeamB;
-        startDate = templateMatchEvent.startDate;
+
+        insertSoccerPlayersFromTeam(templateMatchEvent.soccerTeamA);
+        insertSoccerPlayersFromTeam(templateMatchEvent.soccerTeamB);
+
         createdAt = GlobalDate.getCurrentDate();
+    }
+
+    public TemplateMatchEvent getTemplateMatchEvent() {
+        return TemplateMatchEvent.findOne(templateMatchEventId);
+    }
+
+    public int getFantasyPoints(SoccerTeam soccerTeam) {
+        int points = 0;
+        for (SoccerPlayer soccerPlayer : soccerTeam.soccerPlayers) {
+            points += getFantasyPoints(soccerPlayer.templateSoccerPlayerId.toString());
+        }
+        return points;
+    }
+
+    public int getFantasyPoints(String soccerPlayerId) {
+        return soccerPlayerToPoints.get(soccerPlayerId);
     }
 
     static public LiveMatchEvent create(TemplateMatchEvent templateMatchEvent) {
         // Creamos la version "live" del template Match Event
         LiveMatchEvent liveMatchEvent = new LiveMatchEvent(templateMatchEvent);
 
-        // Generamos el objectId para poder devolverlo correctamente
-        liveMatchEvent.liveMatchEventId = new ObjectId();
         Model.liveMatchEvents().withWriteConcern(WriteConcern.SAFE).insert(liveMatchEvent);
+        assert(liveMatchEvent.liveMatchEventId != null);
 
         return liveMatchEvent;
-    }
-
-    public SoccerPlayer findSoccerPlayer(ObjectId templateSoccerPlayerId) {
-        for(SoccerPlayer soccer : soccerTeamA.soccerPlayers) {
-            if(soccer.templateSoccerPlayerId.compareTo(templateSoccerPlayerId) == 0)
-                return soccer;
-        }
-
-        for(SoccerPlayer soccer : soccerTeamB.soccerPlayers) {
-            if(soccer.templateSoccerPlayerId.compareTo(templateSoccerPlayerId) == 0)
-                return soccer;
-        }
-
-        return null;
     }
 
     static public LiveMatchEvent findOne(ObjectId liveMatchEventId) {
         return Model.liveMatchEvents().findOne("{_id : #}", liveMatchEventId).as(LiveMatchEvent.class);
     }
 
-    public static List<LiveMatchEvent> findAllFromTemplateMatchEvents(List<ObjectId> idList) {
+    static public List<LiveMatchEvent> findAllFromTemplateMatchEvents(List<ObjectId> idList) {
         return ListUtils.asList(Model.findObjectIds(Model.liveMatchEvents(), "templateMatchEventId", idList).as(LiveMatchEvent.class));
     }
 
@@ -78,32 +90,22 @@ public class LiveMatchEvent {
      * Calcular y actualizar los puntos fantasy de un determinado partido "live"
      * Opera sobre cada uno de los futbolistas del partido (teamA y teamB)
      */
-    static public void updateLiveFantasyPoints(LiveMatchEvent liveMatchEvent) {
-        Logger.info("update Live: {} vs {} ({})", liveMatchEvent.soccerTeamA.name, liveMatchEvent.soccerTeamB.name, liveMatchEvent.startDate);
+    public void updateFantasyPoints() {
+        Logger.info("update Live: templateMatchEvent: {}", templateMatchEventId.toString());
 
-        // Actualizamos los jugadores del TeamA
-        for (SoccerPlayer soccer : liveMatchEvent.soccerTeamA.soccerPlayers) {
-            updateLiveFantasyPoints(liveMatchEvent.optaMatchEventId, soccer);
-        }
-
-        // Actualizamos los jugadores del TeamB
-        for (SoccerPlayer soccer : liveMatchEvent.soccerTeamB.soccerPlayers) {
-            updateLiveFantasyPoints(liveMatchEvent.optaMatchEventId, soccer);
+        for (String soccerPlayerId : soccerPlayerToPoints.keySet()) {
+            updateFantasyPoints(soccerPlayerId);
         }
     }
 
     /**
      * Calcular y actualizar los puntos fantasy de un determinado futbolista en los partidos "live"
-     *
-     * @param optaMatchId  Partido que se ha jugado
      */
-    static private void updateLiveFantasyPoints(String optaMatchId, SoccerPlayer soccerPlayer) {
-        // Logger.info("search points: {}: optaId({})", soccerPlayer.name, soccerPlayer.optaPlayerId);
-
-        //TODO: ¿ $sum (aggregation) ?
+    private void updateFantasyPoints(String soccerPlayerId) {
+         //TODO: ¿ $sum (aggregation) ?
         // Obtener los puntos fantasy obtenidos por el futbolista en un partido
         Iterable<OptaEvent> optaEventResults = Model.optaEvents().find("{optaPlayerId: #, gameId: #}",
-                soccerPlayer.optaPlayerId, optaMatchId).as(OptaEvent.class);
+                soccerPlayerToOpta.get(soccerPlayerId), optaMatchEventId).as(OptaEvent.class);
 
         // Sumarlos
         int points = 0;
@@ -119,29 +121,23 @@ public class LiveMatchEvent {
         // filter().aggregate("{$match: {optaPlayerId: #}}", soccerPlayer.optaPlayerId);
 
         // Actualizar sus puntos en cada LiverMatchEvent en el que participe
-        setLiveFantasyPointsOfSoccerPlayer(optaMatchId, soccerPlayer.templateSoccerPlayerId, points);
+        setLiveFantasyPointsOfSoccerPlayer(optaMatchEventId, soccerPlayerId, points);
     }
 
     /**
      * Actualizar los puntos fantasy de un determinado futbolista en los partidos "live"
      */
-    static private void setLiveFantasyPointsOfSoccerPlayer(String optaMatchId, ObjectId soccerPlayerId, int points) {
-        //Logger.info("setLiveFantasyPoints: {} = {} fantasy points", soccerPlayerId, strPoints);
+    static private void setLiveFantasyPointsOfSoccerPlayer(String optaMatchId, String soccerPlayerId, int points) {
+        //Logger.info("setLiveFantasyPoints: {} = {} fantasy points", soccerPlayerId, points);
 
         long startTime = System.currentTimeMillis();
 
-        // TODO: Pasar el equipo del futbolista para simplificar la query
-        // Actualizar jugador si aparece en TeamA
+        String searchPattern = String.format("{optaMatchEventId: #, 'soccerPlayerToPoints.%s': {$exists: 1}}", soccerPlayerId);
+        String setPattern = String.format("{$set: {'soccerPlayerToPoints.%s': #}}", soccerPlayerId);
         Model.liveMatchEvents()
-                .update("{optaMatchEventId: #, soccerTeamA.soccerPlayers.templateSoccerPlayerId: #}", optaMatchId, soccerPlayerId)
+                .update(searchPattern, optaMatchId)
                 .multi()
-                .with("{$set: {soccerTeamA.soccerPlayers.$.fantasyPoints: #}}", points);
-
-        // Actualizar jugador si aparece en TeamB
-        Model.liveMatchEvents()
-                .update("{optaMatchEventId: #, soccerTeamB.soccerPlayers.templateSoccerPlayerId: #}", optaMatchId, soccerPlayerId)
-                .multi()
-                .with("{$set: {soccerTeamB.soccerPlayers.$.fantasyPoints: #}}", points);
+                .with(setPattern, points);
 
         //Logger.info("END: setLiveFantasyPoints: {}", System.currentTimeMillis() - startTime);
     }
@@ -166,5 +162,12 @@ public class LiveMatchEvent {
 
         Logger.info("currentTime ({}): {}", liveMatchEvent.optaMatchEventId, dateNow);
         return dateNow;
+    }
+
+    private void insertSoccerPlayersFromTeam(SoccerTeam soccerTeam) {
+        for (SoccerPlayer soccerPlayer : soccerTeam.soccerPlayers) {
+            soccerPlayerToPoints.put(soccerPlayer.templateSoccerPlayerId.toString(), 0);
+            soccerPlayerToOpta.put(soccerPlayer.templateSoccerPlayerId.toString(), soccerPlayer.optaPlayerId);
+        }
     }
 }

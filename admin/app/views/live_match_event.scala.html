@@ -1,4 +1,4 @@
-@(match_event: model.LiveMatchEvent)
+@(live_match_event: model.LiveMatchEvent)
 
 @import model._
 @import controllers.admin.routes._
@@ -33,15 +33,17 @@
 
 @main("Live Mach Event - Admin", scripts) {
 
-<h1 class="page-header">Live Match Event: @match_event.liveMatchEventId</h1>
+@defining(live_match_event.getTemplateMatchEvent()) { template_match_event =>
 
-<h2 class="sub-header">Start Date: @match_event.startDate</h2>
-<h3><span>@LiveMatchEvent.currentTime(match_event.liveMatchEventId.toString()).format("HH:mm:ss")</span> @match_event_state(match_event.templateMatchEventId.toString())</h3>
+<h1 class="page-header">Live Match Event: @live_match_event.liveMatchEventId</h1>
+
+<h2 class="sub-header">Start Date: @template_match_event.startDate</h2>
+<h3><span>@LiveMatchEvent.currentTime(live_match_event.liveMatchEventId.toString()).format("HH:mm:ss")</span> @match_event_state(live_match_event.templateMatchEventId.toString())</h3>
 
 <div class="table-responsive">
     <table class="table table-striped">
         <thead>
-        <caption>@match_event.soccerTeamA.name (@match_event.soccerTeamA.getFantasyPoints)</caption>
+        <caption>@template_match_event.soccerTeamA.name (@live_match_event.getFantasyPoints(template_match_event.soccerTeamA))</caption>
         <tr>
             <th>Template SoccerID</th>
             <th>Name</th>
@@ -51,19 +53,23 @@
         </tr>
         </thead>
         <tbody>
-        @for(p <- match_event.soccerTeamA.soccerPlayers) {
+        @for(p <- template_match_event.soccerTeamA.soccerPlayers) {
         <tr>
             <td>@p.templateSoccerPlayerId</td>
             <td>@p.name</td>
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
-            <td><a href="@TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
+            <td>
+                <a href="@TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(live_match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">
+                    @live_match_event.getFantasyPoints(p.templateSoccerPlayerId.toString())
+                </a>
+            </td>
         </tr>
         }
         </tbody>
     </table>
     <table class="table table-striped">
-        <caption>@match_event.soccerTeamB.name (@match_event.soccerTeamB.getFantasyPoints)</caption>
+        <caption>@template_match_event.soccerTeamB.name (@live_match_event.getFantasyPoints(template_match_event.soccerTeamB))</caption>
         <thead>
         <tr>
             <th>Template SoccerID</th>
@@ -74,13 +80,17 @@
         </tr>
         </thead>
         <tbody>
-        @for(p <- match_event.soccerTeamB.soccerPlayers) {
+        @for(p <- template_match_event.soccerTeamB.soccerPlayers) {
         <tr>
             <td>@p.templateSoccerPlayerId</td>
             <td>@p.name</td>
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
-            <td><a href="@TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
+            <td>
+                <a href="@TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(live_match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">
+                    @live_match_event.getFantasyPoints(p.templateSoccerPlayerId.toString())
+                </a>
+            </td>
         </tr>
         }
         </tbody>
@@ -88,5 +98,7 @@
 </div>
 
 <a href='@LiveMatchEventController.index'>Back to Live Match Events</a>
+
+}
 
 }
