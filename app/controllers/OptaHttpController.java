@@ -72,7 +72,8 @@ public class OptaHttpController extends Controller {
         HashSet<String> dirtyMatchEvents = null;
         try {
             dirtyMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyText);
-        } catch (JDOMParseException e) {
+        }
+        catch (JDOMParseException e) {
             Logger.error("Exception parsing: {}", getHeader("X-Meta-Default-Filename", request().headers()), e);
         }
         ModelEvents.onOptaMatchEventIdsChanged(dirtyMatchEvents);
@@ -131,7 +132,7 @@ public class OptaHttpController extends Controller {
 
             if (nextOptaData != null && nextOptaData.next()) {
                 setResponseHeaders(nextOptaData, format1);
-                retXML = nextOptaData.getSQLXML("xml").getString();
+                retXML = nextOptaData.getString("xml");
             }
         }
         catch (java.sql.SQLException e) {

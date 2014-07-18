@@ -18,23 +18,6 @@ import java.util.HashSet;
  * Created by gnufede on 13/06/14.
  */
 public class OptaSimulator implements Runnable {
-    static OptaSimulator _instance;
-
-    Thread _optaThread;
-    volatile boolean _stopLoop;
-    volatile boolean _pauseLoop;
-    Date _pause;
-    OptaProcessor _optaProcessor;
-
-    long _lastParsedDate;
-    String _competitionId;
-
-    final int RESULTS_PER_QUERY = 500;
-    Connection _connection;
-    ResultSet _optaResultSet;
-    Statement _stmt;
-    int _nextDocToParseIndex;
-    boolean _isFinished;
 
 
     private OptaSimulator(String competitionId) {
@@ -204,19 +187,21 @@ public class OptaSimulator implements Runnable {
             if (_nextDocToParseIndex % RESULTS_PER_QUERY == 0) {
                 if (_stmt != null) {
                     _stmt.close();
+                    _stmt = null;
                 }
 
-                _stmt = _connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                _stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
                 _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml ORDER BY created_at LIMIT " +
-                                                  RESULTS_PER_QUERY + " OFFSET " + _nextDocToParseIndex + ";");
+                                                    RESULTS_PER_QUERY + " OFFSET " + _nextDocToParseIndex + ";");
             }
 
             _nextDocToParseIndex += 1;
 
             if (_optaResultSet.next()) {
-                String sqlxml = _optaResultSet.getString("xml");
                 Date createdAt = _optaResultSet.getTimestamp("created_at");
                 _lastParsedDate = createdAt.getTime();
+
+                String sqlxml = _optaResultSet.getString("xml");
                 String name = _optaResultSet.getString("name");
                 String feedType = _optaResultSet.getString("feed_type");
 
@@ -227,9 +212,9 @@ public class OptaSimulator implements Runnable {
                     try {
                         changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, sqlxml);
                         ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
-                    } catch (JDOMParseException e) {
-                        Logger.error("Failed parsing: {}", _optaResultSet.getInt("id"));
-
+                    }
+                    catch (JDOMParseException e) {
+                        Logger.error("Failed parsing: {}", _optaResultSet.getInt("id"), e);
                     }
                 }
                 updateDate(createdAt);
@@ -272,6 +257,26 @@ public class OptaSimulator implements Runnable {
             Logger.error("WTF 742 SQLException: ", e);
         }
     }
+
+    static OptaSimulator _instance;
+
+    Thread _optaThread;
+    volatile boolean _stopLoop;
+    volatile boolean _pauseLoop;
+
+    OptaProcessor _optaProcessor;
+
+    final int RESULTS_PER_QUERY = 500;
+    Connection _connection;
+    ResultSet _optaResultSet;
+    Statement _stmt;
+
+    String _competitionId;
+
+    Date _pause;
+    long _lastParsedDate;
+    int _nextDocToParseIndex;
+    boolean _isFinished;
 
     static Snapshot _snapshot;
 }
