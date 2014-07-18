@@ -55,7 +55,7 @@ public class OptaController extends Controller {
 
 
     public static long importXML(long last_timestamp) {
-        F.Promise<WS.Response> response = WS.url("http://dailysoccer-staging.herokuapp.com/return_xml/" + last_timestamp).get();
+        F.Promise<WS.Response> response = WS.url("http://dailysoccer.herokuapp.com/return_xml/" + last_timestamp).get();
         WS.Response a = response.get(100000);
         return processXML(a, new Date(last_timestamp));
     }
