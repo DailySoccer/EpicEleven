@@ -72,7 +72,8 @@ public class OptaHttpController extends Controller {
         HashSet<String> dirtyMatchEvents = null;
         try {
             dirtyMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyText);
-        } catch (JDOMParseException e) {
+        }
+        catch (JDOMParseException e) {
             Logger.error("Exception parsing: {}", getHeader("X-Meta-Default-Filename", request().headers()), e);
         }
         ModelEvents.onOptaMatchEventIdsChanged(dirtyMatchEvents);
