@@ -34,14 +34,18 @@
         </thead>
         <tbody>
         @for(p <- match_events) {
+        @defining(p.getTemplateMatchEvent()) { match_event =>
+
         <tr>
             <td>@p.liveMatchEventId</td>
             <td>@p.templateMatchEventId</td>
             <td>
                 <a href="@LiveMatchEventController.show(p.liveMatchEventId.toString())">
-                    @p.soccerTeamA.name (@p.soccerTeamA.getFantasyPoints()) vS @p.soccerTeamB.name (@p.soccerTeamB.getFantasyPoints())</a></td>
-            <td>@p.startDate.format("yyyy/MM/dd HH:mm:ss")</td>
+                    @match_event.soccerTeamA.name (@p.getFantasyPoints(match_event.soccerTeamA)) vS @match_event.soccerTeamB.name (@p.getFantasyPoints(match_event.soccerTeamB))</a></td>
+            <td>@match_event.startDate.format("yyyy/MM/dd HH:mm:ss")</td>
         </tr>
+
+        }
         }
         </tbody>
     </table>

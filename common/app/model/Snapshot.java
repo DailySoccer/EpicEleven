@@ -10,7 +10,12 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Snapshot {
-    static public MongoCollection collection() { return Model.jongoSnapshot().getCollection(snapshotDBName); }
+    static public MongoCollection collection() {
+        if (Model.jongoSnapshot() == null) {
+            return null;
+        }
+        return Model.jongoSnapshot().getCollection(snapshotDBName);
+    }
 
     public ArrayList<PointsTranslation> pointsTranslations;
     public ArrayList<TemplateContest> templateContests;
@@ -81,6 +86,9 @@ public class Snapshot {
     }
 
     static public Snapshot create() {
+        if (collection() == null) {
+            return null;
+        }
         Snapshot snapshot   = new Snapshot();
 
         snapshot.createdAt = GlobalDate.getCurrentDate();
@@ -114,6 +122,9 @@ public class Snapshot {
     }
 
     static public Snapshot getLast() {
+        if (collection() == null) {
+            return null;
+        }
         return collection().findOne().as(Snapshot.class);
     }
 

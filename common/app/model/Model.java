@@ -26,7 +26,15 @@ import java.util.TimeZone;
 public class Model {
     static public DB mongoDB() { return _mongoDB; }
     static public DB mongoDBAdmin() { return _mongoDBAdmin; }
-    static public DB mongoDBSnapshot() { return _mongoDBSnapshot; }
+    static public DB mongoDBSnapshot() {
+        try {
+            return _mongoDBSnapshot;
+        } catch (MongoException e) {
+            Logger.error("WTF 12952: ", e);
+            return null;
+        }
+    }
+
     static public Jongo jongo() { return _jongo; }
     static public Jongo jongoSnapshot() { return _jongoSnapshot; }
     static public MongoCollection sessions() { return _jongo.getCollection("sessions"); }
@@ -60,9 +68,15 @@ public class Model {
                 _mongoClient = new MongoClient(mongoClientURI);
                 _mongoDB = _mongoClient.getDB(mongoClientURI.getDatabase());
                 _mongoDBAdmin = _mongoClient.getDB("admin");
-                _mongoDBSnapshot = _mongoClient.getDB("snapshot");
                 _jongo = new Jongo(_mongoDB);
-                _jongoSnapshot = new Jongo(_mongoDBSnapshot);
+
+                if (!Play.isProd()) {
+                    _mongoDBSnapshot = _mongoClient.getDB("snapshot");
+                    _jongoSnapshot = new Jongo(mongoDBSnapshot());
+                } else {
+                    _mongoDBSnapshot = null;
+                    _jongoSnapshot = null;
+                }
 
                 // Let's make sure our DB has the neccesary collections and indexes
                 ensureDB(_mongoDB);

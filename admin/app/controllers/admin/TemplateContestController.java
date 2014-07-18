@@ -103,10 +103,6 @@ public class TemplateContestController extends Controller {
             Model.templateContests().update("{_id: #}", templateContest.templateContestId).with(templateContest);
         }
 
-        if (templateContest.isActive()) {
-            templateContest.instantiate();
-        }
-
         return redirect(routes.TemplateContestController.index());
     }
 

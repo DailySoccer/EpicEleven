@@ -41,7 +41,6 @@ GET         /contest_enter/add/:contestId                              controlle
 POST        /contest_entry/add                                         controllers.admin.ContestEntryController.create()
 
 GET         /contests                                                  controllers.admin.ContestController.index()
-GET         /contests/instantiate                                      controllers.admin.ContestController.instantiateAll()
 GET         /contest/:contestId                                        controllers.admin.ContestController.show(contestId : String)
 GET         /contest/destroy/:contestId                                controllers.admin.ContestController.destroy(contestId : String)
 
@@ -83,5 +82,7 @@ GET         /is_running                                                controlle
 GET         /is_paused                                                 controllers.admin.SimulatorController.isPaused()
 GET         /current_date_simulator                                    controllers.admin.SimulatorController.currentDate()
 
-GET         /import_from_last                                          controllers.admin.OptaController.importFromLast()
+GET         /refresher                                                 controllers.admin.RefresherController.index()
+GET         /import_from_last                                          controllers.admin.RefresherController.importFromLast()
+GET         /last_date                                                 controllers.admin.RefresherController.lastDate()
 

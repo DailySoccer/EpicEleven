@@ -54,7 +54,7 @@ public class ModelEvents {
                 }
 
                 if (liveMatchEvent != null) {
-                    LiveMatchEvent.updateLiveFantasyPoints(liveMatchEvent);
+                    liveMatchEvent.updateFantasyPoints();
 
                     // Logger.info("fantasyPoints in liveMatchEvent({})", find.liveMatchEventId);
 
@@ -89,13 +89,6 @@ public class ModelEvents {
                 // Cambiar el estado del contest a "HISTORY"
                 Model.templateContests().update("{_id: #, state: \"LIVE\"}", templateContest.templateContestId).with("{$set: {state: \"HISTORY\"}}");
             }
-        }
-    }
-
-    public static void instantiateContests() {
-        Iterable<TemplateContest> templateContests = Model.templateContests().find().as(TemplateContest.class);
-        for(TemplateContest template : templateContests) {
-            template.instantiate();
         }
     }
 }
