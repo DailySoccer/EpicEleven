@@ -60,13 +60,24 @@ public class RefresherController extends Controller {
         }
     }
 
+    public static Result inProgress() {
+        return ok(String.valueOf(_inProgress));
+    }
+
     public static Result importFromLast() {
         Logger.debug("Starting at: {}", findLastDate());
-        for (long last_date = findLastDate().getTime(); 0L <= last_date; last_date=importXML(last_date)) {
-            Logger.debug("once again: "+last_date);
+        if (_inProgress) {
+            Logger.info("Already refreshing!");
+            return ok("Already refreshing");
+        } else {
+            _inProgress = true;
+            for (long last_date = findLastDate().getTime(); 0L <= last_date; last_date=importXML(last_date)) {
+                Logger.debug("once again: "+last_date);
+            }
+            Logger.debug("Finished at: {}", findLastDate());
+            _inProgress = false;
+            return ok("Finished importing");
         }
-        Logger.debug("Finished at: {}", findLastDate());
-        return ok("Finished importing");
     }
 
     public static Date findLastDate() {
@@ -89,4 +100,5 @@ public class RefresherController extends Controller {
         return ok(String.valueOf(findLastDate().getTime()));
     }
 
+    public static boolean _inProgress = false;
 }

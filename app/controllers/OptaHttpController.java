@@ -144,6 +144,23 @@ public class OptaHttpController extends Controller {
         return ok(retXML);
     }
 
+    public static Result dateLastXML() {
+        String result = new Date(0L).toString();
+        try (Connection connection = DB.getConnection()) {
+            String selectString = "SELECT created_at FROM optaxml ORDER BY created_at LIMIT 1;";
+
+            Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            ResultSet resultSet = stmt.executeQuery(selectString);
+            if (resultSet != null && resultSet.next()) {
+                result = resultSet.getTimestamp("created_at").toString();
+            }
+        }
+        catch (java.sql.SQLException e) {
+            Logger.error("WTF 82846", e);
+        }
+        return ok(result);
+    }
+
     public static Result remainingXMLs(long last_timestamp) {
         SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
         format1.setTimeZone(TimeZone.getTimeZone("UTC"));
