@@ -91,24 +91,32 @@ public class Model {
         }
 
         DataSource ds = play.db.DB.getDataSource();
-        java.sql.Connection connection = play.db.DB.getConnection();
 
-        try {
+        try (java.sql.Connection connection = play.db.DB.getConnection()){
             try (Statement stmt = connection.createStatement()) {
                 boolean result = stmt.execute("CREATE TABLE IF NOT EXISTS optaxml (" +
-                                              " id serial PRIMARY KEY, " +
-                                              " xml text, " +
-                                              " headers text, " +
-                                              " created_at timestamp, " +
-                                              " name text, " +
-                                              " feed_type text, " +
-                                              " game_id text, " +
-                                              " competition_id text, " +
-                                              " season_id text, " +
-                                              " last_updated timestamp " +
-                                              " );");
+                        " id serial PRIMARY KEY, " +
+                        " xml text, " +
+                        " headers text, " +
+                        " created_at timestamp, " +
+                        " name text, " +
+                        " feed_type text, " +
+                        " game_id text, " +
+                        " competition_id text, " +
+                        " season_id text, " +
+                        " last_updated timestamp " +
+                        " );");
                 if (result) {
                     Logger.info("Tabla OptaXML creada");
+                }
+            }
+            try (Statement stmt = connection.createStatement()) {
+                //TODO: Lanza excepción si el indice ya existe
+                // http://dba.stackexchange.com/questions/35616/create-index-if-it-does-not-exist
+                boolean result = stmt.execute("CREATE INDEX CREATED_INDEX ON" +
+                                              " optaxml(created_at);");
+                if (result) {
+                    Logger.info("Indice en OptaXML creado");
                 }
             }
         }
