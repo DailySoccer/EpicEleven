@@ -263,7 +263,7 @@ public class Model {
                                  String gameId, String competitionId, String seasonId, Date lastUpdated) {
 
         String insertString = "INSERT INTO optaxml (xml, headers, created_at, name, feed_type, game_id, competition_id," +
-                "season_id, last_updated) VALUES (?,?,?,?,?,?,?,?,?)";
+                              "season_id, last_updated) VALUES (?,?,?,?,?,?,?,?,?)";
 
         try (Connection connection = play.db.DB.getConnection()) {
             try (PreparedStatement stmt = connection.prepareStatement(insertString)) {

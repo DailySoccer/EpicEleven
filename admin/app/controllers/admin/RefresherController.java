@@ -50,7 +50,7 @@ public class RefresherController extends Controller {
 
                 if (createdAt.after(lastDate)) {
                     Model.insertXML(bodyText, headers, createdAt, name, feedType, gameId,
-                            competitionId, seasonId, lastUpdated);
+                                    competitionId, seasonId, lastUpdated);
                     return createdAt.getTime();
                 } else {
                     return -2L;

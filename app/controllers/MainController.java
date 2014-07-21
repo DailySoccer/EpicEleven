@@ -13,7 +13,6 @@ public class MainController extends Controller {
     }
 
     public static Result test() {
-        //return ok(index.render("Your new application is ready."));
     	return ok(Json.toJson(new TestClass()));
     }
     

@@ -130,16 +130,12 @@ public class LiveMatchEvent {
     static private void setLiveFantasyPointsOfSoccerPlayer(String optaMatchId, String soccerPlayerId, int points) {
         //Logger.info("setLiveFantasyPoints: {} = {} fantasy points", soccerPlayerId, points);
 
-        long startTime = System.currentTimeMillis();
-
         String searchPattern = String.format("{optaMatchEventId: #, 'soccerPlayerToPoints.%s': {$exists: 1}}", soccerPlayerId);
         String setPattern = String.format("{$set: {'soccerPlayerToPoints.%s': #}}", soccerPlayerId);
         Model.liveMatchEvents()
                 .update(searchPattern, optaMatchId)
                 .multi()
                 .with(setPattern, points);
-
-        //Logger.info("END: setLiveFantasyPoints: {}", System.currentTimeMillis() - startTime);
     }
 
 

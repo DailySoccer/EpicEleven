@@ -58,15 +58,14 @@ public class OptaHttpController extends Controller {
         }
 
         Model.insertXML(bodyText,
-                getHeadersString(request().headers()),
-                new Date(startDate),
-                getHeader("X-Meta-Default-Filename", request().headers()),
-                getHeader("X-Meta-Feed-Type", request().headers()),
-                getHeader("X-Meta-Game-Id", request().headers()),
-                getHeader("X-Meta-Competition-Id", request().headers()),
-                getHeader("X-Meta-Season-Id", request().headers()),
-                Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", request().headers()))
-        );
+                        getHeadersString(request().headers()),
+                        new Date(startDate),
+                        getHeader("X-Meta-Default-Filename", request().headers()),
+                        getHeader("X-Meta-Feed-Type", request().headers()),
+                        getHeader("X-Meta-Game-Id", request().headers()),
+                        getHeader("X-Meta-Competition-Id", request().headers()),
+                        getHeader("X-Meta-Season-Id", request().headers()),
+                        Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", request().headers())));
 
         OptaProcessor theProcessor = new OptaProcessor();
         HashSet<String> dirtyMatchEvents = null;
@@ -107,9 +106,9 @@ public class OptaHttpController extends Controller {
             if (getHeader("X-Meta-Feed-Type", document.headers) != null) {
 
                 Model.insertXML(document.xml, getHeadersString(document.headers), new Date(document.startDate), document.name,
-                        getHeader("X-Meta-Feed-Type", document.headers), getHeader("X-Meta-Game-Id", document.headers),
-                        getHeader("X-Meta-Competition-Id", document.headers), getHeader("X-Meta-Season-Id", document.headers),
-                        Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", document.headers)));
+                                getHeader("X-Meta-Feed-Type", document.headers), getHeader("X-Meta-Game-Id", document.headers),
+                                getHeader("X-Meta-Competition-Id", document.headers), getHeader("X-Meta-Season-Id", document.headers),
+                                Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", document.headers)));
             }
             else {
                 Logger.debug("IGNORANDO: " + document.name);
