@@ -25,6 +25,9 @@ public class SoccerPlayer {
         fieldPos = template.fieldPos;
         salary = template.salary;
         fantasyPoints = template.fantasyPoints;
+
+        // TODO: Salario default
+        salary = 6969;
     }
 
     /**
