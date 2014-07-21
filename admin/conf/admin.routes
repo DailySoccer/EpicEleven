@@ -84,5 +84,6 @@ GET         /current_date_simulator                                    controlle
 
 GET         /refresher                                                 controllers.admin.RefresherController.index()
 GET         /import_from_last                                          controllers.admin.RefresherController.importFromLast()
+GET         /refresher_in_progress                                     controllers.admin.RefresherController.inProgress()
 GET         /last_date                                                 controllers.admin.RefresherController.lastDate()
 

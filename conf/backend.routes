@@ -30,6 +30,7 @@ POST        /add_contest_entry                                      controllers.
 GET         /migrate                                                controllers.OptaHttpController.migrate()
 GET         /return_xml/:timestamp                                  controllers.OptaHttpController.returnXML(timestamp: Long)
 GET         /remaining/:timestamp                                   controllers.OptaHttpController.remainingXMLs(timestamp: Long)
+GET         /date_last_xml                                          controllers.OptaHttpController.dateLastXML()
 
 # Por aqui nos entran todos nuestros datos de opta
 POST        /opta                                                   controllers.OptaHttpController.optaXmlInput()
