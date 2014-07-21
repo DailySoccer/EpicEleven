@@ -229,7 +229,7 @@ public class OptaHttpController extends Controller {
         Timestamp last_date = new Timestamp(askedDate.getTime());
         String selectString = "SELECT * FROM optaxml WHERE created_at > '"+last_date+"' ORDER BY created_at LIMIT 1;";
 
-        Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+        Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
         return stmt.executeQuery(selectString);
     }
 
@@ -237,7 +237,7 @@ public class OptaHttpController extends Controller {
         Timestamp last_date = new Timestamp(askedDate.getTime());
         String selectString = "SELECT count(*) as remaining FROM optaxml WHERE created_at > '"+last_date+"';";
 
-        Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+        Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
         return stmt.executeQuery(selectString);
     }
 }
