@@ -10,6 +10,7 @@ import play.mvc.Result;
 import utils.ListUtils;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -107,8 +108,6 @@ public class TemplateContestController extends Controller {
     }
 
     public static Result createAll() {
-        Model.templateContests().remove();
-
         Iterable<TemplateMatchEvent> matchEventResults = Model.templateMatchEvents().find().sort("{startDate: 1}").as(TemplateMatchEvent.class);
 
         DateTime dateTime = null;
@@ -165,6 +164,13 @@ public class TemplateContestController extends Controller {
         templateContest.salaryCap = 100000;
         templateContest.startDate = startDate;
         templateContest.templateMatchEventIds = new ArrayList<>();
+
+        // Se activará 2 dias antes a la fecha del partido
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(startDate);
+        calendar.add(Calendar.DAY_OF_MONTH, -2);
+        templateContest.activationAt = calendar.getTime();
+
         templateContest.createdAt = GlobalDate.getCurrentDate();
 
         for (TemplateMatchEvent match: templateMatchEvents) {
