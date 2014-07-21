@@ -1,7 +1,14 @@
 package model;
 
+import org.bson.types.ObjectId;
 import model.opta.OptaEventType;
+import play.Logger;
+import utils.ListUtils;
+
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Random;
 
 
 public final class MockData {
@@ -17,6 +24,8 @@ public final class MockData {
         createUser("Santiago",  "R. Bedate",    "Neo",          "neo@test.com", "");
         createUser("Federico",  "Mon",          "Fede",         "fede@test.com", "");
         createUser("Jesús",     "Tapial",       "Machus",       "machus@test.com", "");
+
+        createUser("Test",      "Test",         "Test",         "test@test.com", "");
     }
 
     static private void createUser(String firstName, String lastName, String nickName, String email, String password) {
@@ -72,5 +81,66 @@ public final class MockData {
                 Model.pointsTranslation().insert(myPointsTranslation);
             }
         }
+    }
+
+    public static void addContestEntries(Contest contest, int size) {
+        // TODO: Si no tiene contestId (aún no ha sido insertado en una collection), lo generamos
+        if (contest.contestId == null) {
+            contest.contestId = new ObjectId();
+        }
+
+        List<SoccerPlayer> goalKeepers = new ArrayList<>();
+        List<SoccerPlayer> defenses = new ArrayList<>();
+        List<SoccerPlayer> middles = new ArrayList<>();
+        List<SoccerPlayer> forwards = new ArrayList<>();
+
+        for (TemplateMatchEvent matchEvent : TemplateContest.findOne(contest.templateContestId).getTemplateMatchEvents()) {
+            goalKeepers.addAll( filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamA, FieldPos.GOALKEEPER) );
+            goalKeepers.addAll( filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamB, FieldPos.GOALKEEPER) );
+
+            defenses.addAll( filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamA, FieldPos.DEFENSE) );
+            defenses.addAll( filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamB, FieldPos.DEFENSE) );
+
+            middles.addAll( filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamA, FieldPos.MIDDLE) );
+            middles.addAll( filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamB, FieldPos.MIDDLE) );
+
+            forwards.addAll( filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamA, FieldPos.FORWARD) );
+            forwards.addAll( filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamB, FieldPos.FORWARD) );
+        }
+
+        // Todos los usuarios excepto el "Test"
+        List<User> users = ListUtils.asList(Model.users().find("{nickName: {$ne: 'Test'}}").as(User.class));
+        for (int i=0; i<size || i<users.size()-1; i++) {
+            User user = users.get(i);
+
+            List<ObjectId> soccerIds = new ArrayList<>();
+
+            for (SoccerPlayer soccer : ListUtils.randomElements(goalKeepers, 1))
+                soccerIds.add(soccer.templateSoccerPlayerId);
+
+            for (SoccerPlayer soccer : ListUtils.randomElements(defenses, 4))
+                soccerIds.add(soccer.templateSoccerPlayerId);
+
+            for (SoccerPlayer soccer : ListUtils.randomElements(middles, 4))
+                soccerIds.add(soccer.templateSoccerPlayerId);
+
+            for (SoccerPlayer soccer : ListUtils.randomElements(forwards, 2))
+                soccerIds.add(soccer.templateSoccerPlayerId);
+
+            contest.contestEntries.add(new ContestEntry(user.userId, contest.contestId, soccerIds));
+        }
+
+    }
+
+    private static List<SoccerPlayer> filterSoccerPlayersFromFieldPos(SoccerTeam team, FieldPos fieldPos) {
+        List<SoccerPlayer> soccers = new ArrayList<>();
+
+        for (SoccerPlayer soccer : team.soccerPlayers) {
+            if (soccer.fieldPos.equals(fieldPos)) {
+                soccers.add(soccer);
+            }
+        }
+
+        return soccers;
     }
 }

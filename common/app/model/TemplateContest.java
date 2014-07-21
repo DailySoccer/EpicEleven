@@ -127,6 +127,10 @@ public class TemplateContest implements JongoId, Initializer {
 
         for(long i=instances; i<minInstances; i++) {
             Contest contest = new Contest(this);
+
+            // TODO: <MockData> Cuándo activar o no esta "funcionalidad"
+            MockData.addContestEntries(contest, contest.maxEntries-1);
+
             Model.contests().withWriteConcern(WriteConcern.SAFE).insert(contest);
         }
     }

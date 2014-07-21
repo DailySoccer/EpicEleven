@@ -8,6 +8,7 @@ import play.libs.Json;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 public class ListUtils {
     /**
@@ -85,5 +86,33 @@ public class ListUtils {
             ret.add(pojo.getId());
 
         return ret;
+    }
+
+    /**
+     * Obtener una lista aleatoria de elementos
+     * @param list  Lista de la que se obtienen los elementos
+     * @param numElements Numero de elementos
+     * @return Lista aleatoria
+     */
+    public static <T> List<T> randomElements(List<T> list, int numElements) {
+        List<T> result = new ArrayList<>();
+
+        // Indices al array original (que iremos eliminando para no repetir los elementos)
+        List<Integer> indexes = new ArrayList<>(list.size());
+        for (int i=0; i<list.size(); i++)
+            indexes.add(i);
+
+        // Elegir x elementos aleatorios
+        Random rand = new Random();
+        while (numElements > 0 && indexes.size() > 0) {
+            int index = rand.nextInt(indexes.size());
+
+            result.add(list.get(index));
+
+            indexes.remove(index);
+            numElements--;
+        }
+
+        return result;
     }
 }
