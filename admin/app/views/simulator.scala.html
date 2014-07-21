@@ -64,6 +64,11 @@
             $("#nextStop").load("/admin/next_stop_simulator");
         }
 
+        $('.ajax').on('click', function(e) {
+            e.preventDefault();
+            $.ajax($(this).attr('href'));
+        });
+
         $(document).ready( function(){
            repaintButtons();
            window.setInterval(updateFields, 100);
@@ -90,9 +95,9 @@
     </div>
     <br/>
 
-    <div class="btn-group">
+    <div class="btn-group" style="display:inline-block">
         @if(OptaSimulator.isPaused()) {
-            <a class="btn btn-sim btn-primary play" href="@SimulatorController.start" title="Starts the simulator at the beginning of time (the first date sent by Opta) or resumes execution from the current date.">
+            <a class="btn btn-sim btn-primary ajax play" href="@SimulatorController.start" title="Starts the simulator at the beginning of time (the first date sent by Opta) or resumes execution from the current date.">
                 @if(!OptaSimulator.isCreated()) {
                     Start
                 } else {
@@ -100,13 +105,13 @@
                 }
             </a>
         } else {
-            <a class="btn btn-sim btn-primary pause" href="@SimulatorController.pause">
+            <a class="btn btn-sim btn-primary ajax pause" href="@SimulatorController.pause">
                 Pause
             </a>
         }
 
         @if(OptaSimulator.isPaused()) {
-            <a class="btn btn-sim btn-primary forward" href="@SimulatorController.nextStep" title="Process the next Opta file (or first if we are at the beginning of time)">
+            <a class="btn btn-sim btn-primary ajax forward" href="@SimulatorController.nextStep" title="Process the next Opta file (or first if we are at the beginning of time)">
                 @if(OptaSimulator.isCreated()) {
                     Next step
                 } else {
@@ -114,17 +119,22 @@
                 }
             </a>
         } else {
-            <a class="btn btn-sim btn-primary disabled forward" href="@SimulatorController.nextStep" title="Disabled">
+            <a class="btn btn-sim btn-primary disabled ajax forward" href="@SimulatorController.nextStep" title="Disabled">
              Next step
             </a>
         }
-        <a class="btn btn-sim btn-primary stop" href="@SimulatorController.reset" title="Erases the whole Database and resets to the beginning of time.">
+        <a class="btn btn-sim btn-primary ajax stop" href="@SimulatorController.reset" title="Erases the whole Database and resets to the beginning of time.">
              Reset
         </a>
-        <a class="btn btn-sim btn-primary stop" href="@SimulatorController.replayLast" title="Erases the whole Database and plays using a last snapshot.">
+    </div>
+    <br/>
+    <br/>
+
+    <div class="btn-group">
+        <a class="btn btn-sim btn-primary ajax stop" href="@SimulatorController.replayLast" title="Erases the whole Database and plays using a last snapshot.">
             Replay Last Snapshot
         </a>
-        <a class="btn btn-sim btn-primary" href="@SimulatorController.snapshot" title="Create a snapshot.">
+        <a class="btn btn-sim ajax btn-primary" href="@SimulatorController.snapshot" title="Create a snapshot.">
             Create Snapshot
         </a>
     </div>
