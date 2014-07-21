@@ -24,7 +24,7 @@ public class OptaSimulator implements Runnable {
         this._isFinished = false;
         this._stopLoop = false;
         this._pauseLoop = true;
-        this._lastParsedDate = 0L;
+        this._lastParsedDate = new Date(0L);
         this._nextDocToParseIndex = 0;
         this._competitionId = competitionId;
         this._optaProcessor = new OptaProcessor();
@@ -159,7 +159,7 @@ public class OptaSimulator implements Runnable {
     }
 
     private void checkDate() {
-        if (_pause != null && _lastParsedDate >= _pause.getTime()) {
+        if (_pause != null && !_lastParsedDate.before(_pause)) {
             _pauseLoop = true;
             _pause = null;
         }
@@ -175,8 +175,8 @@ public class OptaSimulator implements Runnable {
         ModelEvents.runTasks();
     }
 
-    private boolean isBefore(long date) {
-        return _lastParsedDate < date;
+    private boolean isBefore(Date date) {
+        return _lastParsedDate.before(date);
     }
 
 
@@ -199,7 +199,7 @@ public class OptaSimulator implements Runnable {
 
             if (_optaResultSet.next()) {
                 Date createdAt = _optaResultSet.getTimestamp("created_at");
-                _lastParsedDate = createdAt.getTime();
+                _lastParsedDate = createdAt;
 
                 String sqlxml = _optaResultSet.getString("xml");
                 String name = _optaResultSet.getString("name");
@@ -274,7 +274,7 @@ public class OptaSimulator implements Runnable {
     String _competitionId;
 
     Date _pause;
-    long _lastParsedDate;
+    Date _lastParsedDate;
     int _nextDocToParseIndex;
     boolean _isFinished;
 
