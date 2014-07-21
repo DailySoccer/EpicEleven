@@ -19,7 +19,7 @@ object Global extends GlobalSettings {
       //val action = requestHeader.tags(Routes.ROUTE_CONTROLLER) + "." + requestHeader.tags(Routes.ROUTE_ACTION_METHOD)
 
       // Quitamos los logs que vienen de la descarga de Assets
-      if (!requestHeader.tags(Routes.ROUTE_CONTROLLER).contains("Assets")) {
+      if (!requestHeader.tags(Routes.ROUTE_CONTROLLER).contains("Assets") && !requestHeader.tags(Routes.ROUTE_CONTROLLER).contains("admin")) {
         Logger.info(requestHeader.tags(Routes.ROUTE_ACTION_METHOD) + s" took ${requestTime}ms")
       }
 
