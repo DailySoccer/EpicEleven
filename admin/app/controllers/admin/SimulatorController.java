@@ -26,17 +26,17 @@ public class SimulatorController extends Controller {
 
         boolean wasResumed = OptaSimulator.start();
 
-        return redirect(routes.SimulatorController.index());
+        return ok();
     }
 
     public static Result pause() {
         OptaSimulator.pause();
-        return redirect(routes.SimulatorController.index());
+        return ok();
     }
 
     public static Result nextStep() {
         OptaSimulator.nextStep();
-        return redirect(routes.SimulatorController.index());
+        return ok();
     }
 
     public static Result isRunning() {
@@ -69,35 +69,30 @@ public class SimulatorController extends Controller {
         OptaSimulator.gotoDate(params.date);
         OptaSimulator.start();
 
-        return redirect(routes.SimulatorController.index());
+        return ok();
     }
 
     public static Result reset(){
         OptaSimulator.reset();
-        FlashMessage.success("Simulator reset");
-        FlashMessage.info("The DB was totally erased. If you press Start now, the simulation will start at the beginning of time (the first file Opta sent).");
-        return redirect(routes.SimulatorController.index());
+        return ok();
     }
 
     public static Result replayLast() {
         OptaSimulator.reset();
         OptaSimulator.useSnapshot( Snapshot.getLast() );
 
-        FlashMessage.success("Simulator replay with last snapshot");
         return redirect(routes.SimulatorController.index());
     }
 
     public static Result snapshot() {
         Snapshot.create();
 
-        FlashMessage.success("Snapshot created");
         return redirect(routes.SimulatorController.index());
     }
 
     public static Result snapshotDB() {
         Snapshot.createInDB();
 
-        FlashMessage.success("Snapshot copied");
         return redirect(routes.SimulatorController.index());
     }
 }

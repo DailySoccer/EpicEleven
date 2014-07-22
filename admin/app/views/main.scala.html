@@ -1,7 +1,9 @@
 @(title: String, scripts: Html = Html(""))(content: Html)
 
+@import controllers.admin.OptaSimulator
 @import controllers.admin.FlashMessage
 @import controllers.admin.routes._
+@import model._
 
 @flash_message() = {
     @for(message <- FlashMessage.list) {
@@ -110,7 +112,7 @@
                 <li><a href="@OptaController.optaEvents">Opta Events</a></li>
             </ul>
             <ul class="nav nav-sidebar">
-                <li><a href="@SimulatorController.index">Simulator</a></li>
+                <li><a href="@SimulatorController.index">Snapshots</a></li>
                 <li><a href="@RefresherController.index">Refresh DB</a></li>
             </ul>
         </div>
@@ -121,6 +123,58 @@
     </div>
 </div>
 
+<div class="navbar navbar-fixed-bottom" style="background: #ededed; border-top: 1px solid #ccc">
+    <div class="container-fluid">
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-right">
+                <li><a>Current date:<span style="font-weight:700; margin-left: 0.5em;" id="time">@GlobalDate.getCurrentDateString()</span> </a></li>
+                <li><a>Next stop:<span style="font-weight:700;margin-left: 0.5em;" id="nextStop">@OptaSimulator.getNextStop()</span> </a></li>
+                <li><a> Next file index:<span style="font-weight:700;margin-left: 0.5em;" id="nextStepDesc">@OptaSimulator.getNextStepDescription()</span> </a></li>
+                @if(OptaSimulator.isSnapshotEnabled()) {
+                    <li><a>Snapshot:<strong> @Snapshot.getName()</strong></a></li>
+                }
+            </ul>
+                <div class="btn-group" style="display:inline-block;">
+                    @if(OptaSimulator.isPaused()) {
+                    <a class="btn btn-sim btn-primary ajax play" href="@SimulatorController.start" title="Starts the simulator at the beginning of time (the first date sent by Opta) or resumes execution from the current date.">
+                        @if(!OptaSimulator.isCreated()) {
+                        Start
+                        } else {
+                        Resume
+                        }
+                    </a>
+                    } else {
+                    <a class="btn btn-sim btn-primary ajax pause" href="@SimulatorController.pause">
+                        Pause
+                    </a>
+                    }
+
+                    @if(OptaSimulator.isPaused()) {
+                    <a class="btn btn-sim btn-primary ajax forward" href="@SimulatorController.nextStep" title="Process the next Opta file (or first if we are at the beginning of time)">
+                        @if(OptaSimulator.isCreated()) {
+                        Next step
+                        } else {
+                        First step
+                        }
+                    </a>
+                    } else {
+                    <a class="btn btn-sim btn-primary disabled ajax forward" href="@SimulatorController.nextStep" title="Disabled">
+                        Next step
+                    </a>
+                    }
+                    <a class="btn btn-sim btn-primary ajax stop" href="@SimulatorController.reset" title="Erases the whole Database and resets to the beginning of time.">
+                        Reset
+                    </a>
+                </div>
+                @helper.form(action = SimulatorController.gotoDate, 'onsubmit -> "return validateForm()", 'id -> "date-pause-form", 'style -> "display:inline-block; margin-top: 8px;") {
+                    <input type="datetime-local" value="2014-06-14T00:00" id="date-pause" name="date" class="form-control" style="display:inline-block">
+                }
+                <button id="date-pause-ok" name="date-pause-ok" type="button" class="btn btn-primary">
+                    Go to Date
+                </button>
+        </div>
+    </div>
+</div>
 <!-- Bootstrap core JavaScript
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
@@ -138,6 +192,116 @@
                 stateSave: true
             } );
         } );
+</script>
+
+<script type="text/javascript" charset="utf-8">
+        var was_paused = "@OptaSimulator.isPaused";
+        var is_running = "@{!OptaSimulator.isFinished}";
+
+        function updatePage(paused) {
+            if (paused == "false") {
+                $(".btn-sim.play").attr("href", "/admin/pause_simulator");
+                $(".btn-sim.play").text("Pause");
+                $(".btn-sim.play").addClass("pause");
+                $(".btn-sim.pause").removeClass("play");
+                $(".btn-sim.forward").addClass("disabled");
+                $(".btn-sim.forward").text("Next step");
+            } else {
+                $(".btn-sim.pause").attr("href", "/admin/start_simulator");
+                $(".btn-sim.pause").text("Resume");
+                $(".btn-sim.pause").addClass("play");
+                $(".btn-sim.play").removeClass("pause");
+                $(".btn-sim.forward").removeClass("disabled");
+                $(".btn-sim.forward").text("Next step");
+            }
+        }
+
+        function repaintButtons() {
+            if (is_running == "true") {
+                $(".btn-sim").removeClass("btn-primary");
+                $(".btn-sim").addClass("btn-success");
+            } else {
+                $(".btn-sim").removeClass("btn-success");
+                $(".btn-sim").addClass("btn-primary");
+            }
+        }
+
+        function checkRunning() {
+            var temp =  $.ajax({
+                url: "/admin/is_running",
+                success: function(result) {
+                        var was_running = is_running
+                        is_running = result;
+                        if (is_running == "true") {
+                            updateFields();
+                        }
+                        if (is_running !== was_running){
+                            repaintButtons();
+                        }
+                }
+            });
+        }
+
+        function checkReload() {
+            var temp =  $.ajax({
+                url: "/admin/is_paused",
+                success: function(result) {
+                        if (result !== was_paused) {
+                            was_paused = result;
+                            updatePage(result);
+                        }
+                }
+            });
+        }
+
+        function sleep(millis, callback) {
+            setTimeout(function()
+                    { callback(); }
+            , millis);
+        }
+
+        function validateForm() {
+            if ((new Date($("#time").text()) < new Date($("#date-pause").val())) || is_running == "false") {
+                return true;
+            } else {
+                alert("Error: La fecha introducida es anterior");
+            }
+            return false;
+        }
+
+        function updateFields() {
+            $("#time").load("/admin/current_date_simulator");
+            $("#nextStepDesc").load("/admin/next_step_desc_simulator");
+            $("#nextStop").load("/admin/next_stop_simulator");
+        }
+
+        $('.ajax').on('click', function(e) {
+            e.preventDefault();
+            $.ajax($(this).attr('href'));
+            sleep(100, checkReload);
+        });
+
+        $(document).ready( function(){
+           repaintButtons();
+           //window.setInterval(updateFields, 1000);
+           window.setInterval(checkRunning, 1000);
+           window.setInterval(checkReload, 5000);
+        });
+
+        $('#date-pause-ok').click(function(){
+            var form = $('#date-pause-form');
+            $.ajax({
+              type: form.attr('method'),
+              url: form.attr('action'),
+              data: form.serialize()
+            }).done(function() {
+              // Optionally alert the user of success here...
+            }).fail(function() {
+              // Optionally alert the user of an error here...
+            });
+            sleep(100, checkReload);
+        });
+
 </script>
 
 </body>
