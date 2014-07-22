@@ -276,8 +276,15 @@
         }
 
         $('.ajax').on('click', function(e) {
+            $(this).addClass('active');
             e.preventDefault();
-            $.ajax($(this).attr('href'));
+            var myself = $(this);
+            $.ajax({
+                 url: $(this).attr('href'),
+                 complete: function(result) {
+                    myself.removeClass('active');
+                 }
+            });
             sleep(100, checkReload);
         });
 

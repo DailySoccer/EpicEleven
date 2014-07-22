@@ -81,6 +81,8 @@ GET         /next_stop_simulator                                       controlle
 GET         /is_running                                                controllers.admin.SimulatorController.isRunning()
 GET         /is_paused                                                 controllers.admin.SimulatorController.isPaused()
 GET         /current_date_simulator                                    controllers.admin.SimulatorController.currentDate()
+GET         /snapshot_dump                                             controllers.admin.SimulatorController.snapshotDump()
+GET         /snapshot_restore                                          controllers.admin.SimulatorController.snapshotRestore()
 
 GET         /refresher                                                 controllers.admin.RefresherController.index()
 GET         /import_from_last                                          controllers.admin.RefresherController.importFromLast()

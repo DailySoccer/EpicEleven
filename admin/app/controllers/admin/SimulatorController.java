@@ -2,12 +2,15 @@ package controllers.admin;
 
 import model.GlobalDate;
 import model.Snapshot;
+import play.Logger;
 import play.data.Form;
 import play.data.format.Formats;
 import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 
 import static play.data.Form.form;
@@ -79,7 +82,7 @@ public class SimulatorController extends Controller {
 
     public static Result replayLast() {
         OptaSimulator.reset();
-        OptaSimulator.useSnapshot( Snapshot.getLast() );
+        OptaSimulator.useSnapshot(Snapshot.getLast());
 
         return redirect(routes.SimulatorController.index());
     }
@@ -95,4 +98,29 @@ public class SimulatorController extends Controller {
 
         return redirect(routes.SimulatorController.index());
     }
+
+    public static Result snapshotDump() {
+        ProcessBuilder pb = new ProcessBuilder("./snapshot_dump.sh", "snapshot000");
+        String pwd = pb.environment().get("PWD");
+        ProcessBuilder data = pb.directory(new File(pwd+"/data"));
+        try {
+            Process p = data.start();
+        } catch (IOException e) {
+            Logger.error("WTF 4264", e);
+        }
+        return ok();
+    }
+
+    public static Result snapshotRestore() {
+        ProcessBuilder pb = new ProcessBuilder("./snapshot_restore.sh", "snapshot000");
+        String pwd = pb.environment().get("PWD");
+        ProcessBuilder data = pb.directory(new File(pwd+"/data"));
+        try {
+            Process p = data.start();
+        } catch (IOException e) {
+            Logger.error("WTF 1124", e);
+        }
+        return ok();
+    }
+
 }
