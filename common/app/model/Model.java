@@ -25,14 +25,7 @@ import java.util.TimeZone;
 public class Model {
     static public DB mongoDB() { return _mongoDB; }
     static public DB mongoDBAdmin() { return _mongoDBAdmin; }
-    static public DB mongoDBSnapshot() {
-        try {
-            return _mongoDBSnapshot;
-        } catch (MongoException e) {
-            Logger.error("WTF 12952: ", e);
-            return null;
-        }
-    }
+    static public DB mongoDBSnapshot() { return _mongoDBSnapshot; }
 
     static public Jongo jongo() { return _jongo; }
     static public Jongo jongoSnapshot() { return _jongoSnapshot; }
@@ -166,7 +159,7 @@ public class Model {
         }
         */
         try {
-            new Mongo().dropDatabase(theMongoDB.getName());
+            theMongoDB.dropDatabase();
         } catch (UnknownHostException e) {
             Logger.error("WTF 85327");
         }
