@@ -4,6 +4,7 @@ import model.Model;
 import model.Session;
 import model.User;
 
+import play.Logger;
 import play.Play;
 import play.mvc.Http;
 
@@ -14,6 +15,12 @@ public class SessionUtils {
 
         if (sessionToken == null)
             return null;
+
+        // En desarrollo, el sessionToken hace referencia al ObjectId
+        if (Play.isDev()) {
+            Logger.info("isDev: user < sessionToken");
+            return User.find(sessionToken);
+        }
 
         Session theSession = Model.sessions().findOne("{sessionToken:'#'}", sessionToken).as(Session.class);
 
