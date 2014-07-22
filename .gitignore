@@ -16,4 +16,4 @@ dist
 /.settings
 /.target/
 .*.swp
-heroku_dump.sh
+heroku_mongo_dump.sh
