@@ -9,7 +9,6 @@ import play.Logger;
 import play.Play;
 import utils.ListUtils;
 
-import javax.sql.DataSource;
 import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -62,75 +61,67 @@ public class Model {
 
         Logger.info("The MongoDB is {}/{}", mongoClientURI.getHosts(), mongoClientURI.getDatabase());
 
-        boolean bIsInitialized = false;
-        while (!bIsInitialized) {
-            try {
-                _mongoClient = new MongoClient(mongoClientURI);
-                _mongoDB = _mongoClient.getDB(mongoClientURI.getDatabase());
-                _mongoDBAdmin = _mongoClient.getDB("admin");
-                _jongo = new Jongo(_mongoDB);
+        try {
+            _mongoClient = new MongoClient(mongoClientURI);
+            _mongoDB = _mongoClient.getDB(mongoClientURI.getDatabase());
+            _mongoDBAdmin = _mongoClient.getDB("admin");
+            _jongo = new Jongo(_mongoDB);
 
-                if (!Play.isProd()) {
-                    _mongoDBSnapshot = _mongoClient.getDB("snapshot");
-                    _jongoSnapshot = new Jongo(mongoDBSnapshot());
-                } else {
-                    _mongoDBSnapshot = null;
-                    _jongoSnapshot = null;
-                }
-
-                // Let's make sure our DB has the neccesary collections and indexes
-                ensureDB(_mongoDB);
-
-                bIsInitialized = true;
+            if (!Play.isProd()) {
+                _mongoDBSnapshot = _mongoClient.getDB("snapshot");
+                _jongoSnapshot = new Jongo(mongoDBSnapshot());
+            } else {
+                _mongoDBSnapshot = null;
+                _jongoSnapshot = null;
             }
-            catch (Exception exc) {
-                Logger.error("Error initializating MongoDB {}/{}: {}", mongoClientURI.getHosts(),
-                                                                       mongoClientURI.getDatabase(), exc.toString());
-                WaitSeconds(10, "Trying to initialize MongoDB again");
-            }
+
+            // Let's make sure our DB has the neccesary collections and indexes
+            ensureDB(_mongoDB);
+        }
+        catch (Exception exc) {
+            Logger.error("Error initializating MongoDB {}/{}: {}", mongoClientURI.getHosts(),
+                                                                   mongoClientURI.getDatabase(), exc.toString());
         }
 
-        DataSource ds = play.db.DB.getDataSource();
-
-        try (java.sql.Connection connection = play.db.DB.getConnection()){
-            try (Statement stmt = connection.createStatement()) {
-                boolean result = stmt.execute("CREATE TABLE IF NOT EXISTS optaxml (" +
-                        " id serial PRIMARY KEY, " +
-                        " xml text, " +
-                        " headers text, " +
-                        " created_at timestamp, " +
-                        " name text, " +
-                        " feed_type text, " +
-                        " game_id text, " +
-                        " competition_id text, " +
-                        " season_id text, " +
-                        " last_updated timestamp " +
-                        " );");
-                if (result) {
-                    Logger.info("Tabla OptaXML creada");
-                }
-            }
-            try (Statement stmt = connection.createStatement()) {
-                //TODO: Lanza excepción si el indice ya existe
-                // http://dba.stackexchange.com/questions/35616/create-index-if-it-does-not-exist
-                boolean result = stmt.execute("CREATE INDEX CREATED_INDEX ON" +
-                                              " optaxml(created_at);");
-                if (result) {
-                    Logger.info("Indice en OptaXML creado");
-                }
-            }
+        try {
+            ensurePostgresDB();
         }
-        catch (SQLException e) {
-            Logger.error("SQL Exception creating DailySoccerDB table", e);
+        catch (Exception exc) {
+            Logger.error("Error creating optaxml: ", exc);
         }
     }
 
-    static void WaitSeconds(int seconds, String message) {
-        try {
-            Logger.info("{} in {} seconds...", message, seconds);
-            Thread.sleep(seconds * 1000);
-        } catch (InterruptedException intExc) {
-            Logger.error("Interrupted");
+    private static void ensurePostgresDB() throws SQLException {
+
+        try (Connection connection = play.db.DB.getConnection()) {
+            try (Statement stmt = connection.createStatement()) {
+                stmt.execute("CREATE TABLE IF NOT EXISTS optaxml (" +
+                             " id serial PRIMARY KEY, " +
+                             " xml text, " +
+                             " headers text, " +
+                             " created_at timestamp, " +
+                             " name text, " +
+                             " feed_type text, " +
+                             " game_id text, " +
+                             " competition_id text, " +
+                             " season_id text, " +
+                             " last_updated timestamp " +
+                             " );");
+
+                // http://dba.stackexchange.com/questions/35616/create-index-if-it-does-not-exist
+                stmt.execute("DO $$ " +
+                             "BEGIN " +
+                                 "IF NOT EXISTS ( " +
+                                     "SELECT 1 " +
+                                     "FROM  pg_class c " +
+                                     "JOIN  pg_namespace n ON n.oid = c.relnamespace " +
+                                     "WHERE c.relname = 'created_at_index' " +
+                                     "AND   n.nspname = 'public' " +
+                                     ") THEN " +
+                                     "CREATE INDEX created_at_index ON public.optaxml (created_at); " +
+                                 "END IF; " +
+                             "END$$;");
+            }
         }
     }
 
@@ -237,10 +228,6 @@ public class Model {
         if (!theMongoDB.collectionExists("contests"))
             theMongoDB.createCollection("contests", new BasicDBObject());
 
-        // TODO: Podemos quitar esto?
-        if (!theMongoDB.collectionExists("matchEvents"))
-            theMongoDB.createCollection("matchEvents", new BasicDBObject());
-
         if (!theMongoDB.collectionExists("liveMatchEvents"))
             theMongoDB.createCollection("liveMatchEvents", new BasicDBObject());
 
@@ -340,6 +327,7 @@ public class Model {
 
     static private DB _mongoDBAdmin;
     static private DB _mongoDBSnapshot;
+
     // Jongo is thread safe too: https://groups.google.com/forum/#!topic/jongo-user/KwukXi5Vm7c
     static private Jongo _jongo;
     static private Jongo _jongoSnapshot;
