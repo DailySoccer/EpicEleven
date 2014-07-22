@@ -6,7 +6,7 @@
 @import model._
 
 @scripts = {
-<script type="text/javascript">
+    <script type="text/javascript" charset="utf-8">
         var inProgress = "@RefresherController.inProgress";
 
         function repaintDateServerLastXML(result) {
@@ -16,7 +16,11 @@
             document.getElementById("date_last_xml").innerHTML=result;
         }
         function repaintRemaining(remaining) {
+            var prevHtml = document.getElementById("remaining").innerHTML;
             document.getElementById("remaining").innerHTML=remaining;
+            if (remaining == "0" && prevHtml != "0") {
+                repaintButton();
+            }
         }
 
         function checkRemaining(remaining) {
@@ -26,13 +30,16 @@
                         repaintRemaining(result);
                 }
             });
-            temp =  $.ajax({
-                url: "http://dailysoccer.herokuapp.com/date_last_xml",
-                success: function(result) {
-                        repaintDateServerLastXML(result);
-                }
-            });
-            temp =  $.ajax({
+         }
+
+        function checkDates() {
+            //var temp =  $.ajax({
+            //    url: "http://dailysoccer.herokuapp.com/date_last_xml",
+            //    success: function(result) {
+            //            repaintDateServerLastXML(result);
+            //    }
+            //});
+            var temp =  $.ajax({
                 url: "/date_last_xml",
                 success: function(result) {
                         repaintDateLastXML(result);
@@ -58,11 +65,12 @@
                         } else {
                             inProgress = "false";
                         }
-                        if ( $(".play").hasClass("disabled") && inProgress == "false" ) {
-                            $(".play").removeClass("disabled");
+                        if ( $(".play.import").hasClass("disabled") && inProgress == "false" ) {
+                            $(".play.import").removeClass("disabled");
                         }
-                        else if ( !$(".play").hasClass("disabled") && inProgress == "true" ) {
-                            $(".play").addClass("disabled");
+                        else if ( !$(".play.import").hasClass("disabled") &&
+                                 (inProgress == "true" || document.getElementById("remaining").innerHTML == "0") ) {
+                            $(".play.import").addClass("disabled");
                         }
                 }
             });
@@ -71,12 +79,19 @@
         $('.ajax').on('click', function(e) {
             e.preventDefault();
             $.ajax($(this).attr('href'));
+            repaintButton();
         });
 
         $(document).ready( function(){
-           window.setInterval(getLastXML, 200);
-           window.setInterval(repaintButton, 200);
-        })
+           getLastXML();
+           repaintButton();
+           checkDates();
+           window.setInterval(checkDates, 10000);
+           if (inProgress == "true") {
+               window.setInterval(getLastXML, 1000);
+               window.setInterval(repaintButton, 1000);
+           }
+        });
 
     </script>
 }
@@ -96,7 +111,7 @@
     <br/>
 
     <div class="btn-group">
-            <a class="btn btn-sim btn-primary ajax play" href="@RefresherController.importFromLast" title="Synchronize all documents from Opta.">
+            <a class="btn btn-sim btn-primary ajax play import" href="@RefresherController.importFromLast" title="Synchronize all documents from Opta.">
                 Import
             </a>
     </div>
