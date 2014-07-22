@@ -9,7 +9,6 @@ import play.Logger;
 import play.Play;
 import utils.ListUtils;
 
-import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -158,11 +157,7 @@ public class Model {
             theMongoDB.getCollection(name).drop();
         }
         */
-        try {
-            theMongoDB.dropDatabase();
-        } catch (UnknownHostException e) {
-            Logger.error("WTF 85327");
-        }
+        theMongoDB.dropDatabase();
     }
 
 
