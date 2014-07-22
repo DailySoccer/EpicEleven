@@ -147,7 +147,7 @@ public class OptaHttpController extends Controller {
     public static Result dateLastXML() {
         String result = new Date(0L).toString();
         try (Connection connection = DB.getConnection()) {
-            String selectString = "SELECT created_at FROM optaxml ORDER BY created_at LIMIT 1;";
+            String selectString = "SELECT created_at FROM optaxml ORDER BY created_at DESC LIMIT 1;";
 
             Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             ResultSet resultSet = stmt.executeQuery(selectString);
