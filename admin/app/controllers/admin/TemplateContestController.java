@@ -79,8 +79,8 @@ public class TemplateContestController extends Controller {
 
         Date startDate = null;
         templateContest.templateMatchEventIds = new ArrayList<>();
-        for (String optaMatchEventId: params.templateMatchEvents) {
-            TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOneFromOptaId(optaMatchEventId);
+        for (String templateMatchEventId: params.templateMatchEvents) {
+            TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId));
             templateContest.templateMatchEventIds.add(templateMatchEvent.templateMatchEventId);
 
             if (startDate == null || templateMatchEvent.startDate.before(startDate)) {
