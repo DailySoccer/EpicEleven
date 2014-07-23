@@ -88,6 +88,13 @@ public class SimulatorController extends Controller {
         return redirect(routes.SimulatorController.index());
     }
 
+    public static Result continueSnapshot() {
+        Snapshot.load();
+        OptaSimulator.resetInstance();
+
+        return redirect(routes.SimulatorController.index());
+    }
+
     public static Result snapshot() {
         Snapshot.create();
 

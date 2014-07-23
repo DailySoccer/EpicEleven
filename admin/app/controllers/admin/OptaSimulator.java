@@ -67,7 +67,7 @@ public class OptaSimulator implements Runnable {
         _instance.next();
     }
 
-    static public void reset() {
+    static public void resetInstance() {
         if (_instance != null) {
             _instance._stopLoop = true;
 
@@ -85,6 +85,11 @@ public class OptaSimulator implements Runnable {
 
         _snapshot = null;
         GlobalDate.setFakeDate(null);
+        SimulatorState.reset();
+    }
+
+    static public void reset() {
+        resetInstance();
         Model.resetDB();
         MockData.ensureMockDataUsers();
         SimulatorState.reset();
@@ -121,7 +126,7 @@ public class OptaSimulator implements Runnable {
         String nextStop = "None";
 
         SimulatorState state = SimulatorState.getInstance();
-        if (state.pause != null) {
+        if (state.paused && state.pause != null) {
             nextStop = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(state.pause);
         }
 
@@ -181,6 +186,8 @@ public class OptaSimulator implements Runnable {
         if (_pause != null && !_lastParsedDate.before(_pause)) {
             _pauseLoop = true;
             _pause = null;
+
+            SimulatorState.update();
         }
     }
 
@@ -311,6 +318,7 @@ class SimulatorState {
 
     String stateId = "--unique id--";
     boolean useSnapshot;
+    boolean paused;
     Date pause;
     Date lastParsedDate;
     int nextDocToParseIndex;
@@ -321,14 +329,14 @@ class SimulatorState {
 
     static public void reset() {
         Logger.info("Simulator: reset State...");
-        _state = stateDefault();
+        _state = findOrCreateInstance();
         update();
     }
 
     static public void initialize(OptaSimulator optaSimulator) {
         SimulatorState state = getInstance();
 
-        optaSimulator._pause = state.pause;
+        optaSimulator._pause = state.paused ? state.pause : null;
         optaSimulator._lastParsedDate = state.lastParsedDate;
         optaSimulator._nextDocToParseIndex = state.nextDocToParseIndex;
 
@@ -344,8 +352,8 @@ class SimulatorState {
 
         OptaSimulator optaSimulator = OptaSimulator._instance;
         if (optaSimulator != null) {
-            if (optaSimulator._pause != null)
-                state.pause =  optaSimulator._pause;
+            state.paused = (optaSimulator._pause != null);
+            state.pause =  optaSimulator._pause;
 
             if (optaSimulator._lastParsedDate != null)
                 state.lastParsedDate = optaSimulator._lastParsedDate;

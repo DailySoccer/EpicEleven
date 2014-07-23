@@ -95,6 +95,18 @@ public class Snapshot {
         return snapshot;
     }
 
+    static public void load() {
+        DBObject copyOp = new BasicDBObject("copydb", "1").
+                append("fromdb" , "snapshot").
+                append("todb", "dailySoccerDB");
+
+        Model.resetDB();
+        CommandResult a = Model.mongoDBAdmin().command(copyOp);
+        if (a.getErrorMessage() != null) {
+            Logger.error(a.getErrorMessage());
+        }
+    }
+
     static private <T> void create(String collectionName, Class<T> classType) {
         String snapshotName = String.format("%s-%s", snapshotDBName, collectionName);
 
