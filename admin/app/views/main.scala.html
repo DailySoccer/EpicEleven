@@ -232,9 +232,9 @@
                 success: function(result) {
                         var was_running = is_running
                         is_running = result;
-                        if (is_running == "true") {
-                            updateFields();
-                        }
+                        //if (is_running == "true") {
+                        updateFields();
+                        //}
                         if (is_running !== was_running){
                             repaintButtons();
                         }
@@ -291,7 +291,7 @@
         $(document).ready( function(){
            repaintButtons();
            //window.setInterval(updateFields, 1000);
-           window.setInterval(checkRunning, 1000);
+           window.setInterval(checkRunning, 500);
            window.setInterval(checkReload, 5000);
         });
 
