@@ -17,9 +17,6 @@ public class TemplateContestForm {
     public String name;             // Auto-gen if blank
 
     @Constraints.Required
-    public String postName;         // This goes in parenthesis
-
-    @Constraints.Required
     public int minInstances;        // Minimum desired number of instances that we want running at any given moment
 
     @Constraints.Required
@@ -48,7 +45,6 @@ public class TemplateContestForm {
         id = templateContest.templateContestId.toString();
         state = templateContest.state;
         name = templateContest.name;
-        postName = templateContest.postName;
         minInstances = templateContest.minInstances;
         maxEntries = templateContest.maxEntries;
         salaryCap = templateContest.salaryCap;

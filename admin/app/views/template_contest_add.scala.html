@@ -10,12 +10,62 @@
     @controllers.admin.FlashMessage.danger("Template MatchEvent Form has errors")
 }
 
-@input_text(field: Field, _placeholder: String = "", _class: String = "") = {
-    <input id="@field.name" name="@field.name" type="text" placeholder="@_placeholder" class="@_class @if(field.hasErrors) {has-error}" required="" value="@field.value">
-    @if(field.hasErrors) {
-        <span class="help-block">@{field.error.map { error => error.message }}</span>
-    }
+@input_text(field: Field, _label: String = "", _size: Int = 10) = {
+<div class="form-group @if(field.hasErrors) {has-error}">
+    @if(_label.nonEmpty) { <label class="control-label col-sm-3" for="@field.id">@_label</label> }
+    <div class="col-sm-7">
+        <input type="text" name="@field.id" id="@field.id" value="@field.value" size="@_size" class="form-control">
+        @if(field.hasErrors){
+        <p class="help-block">@{field.error.map { error => error.message }}</p>
+        }
+    </div>
+</div>
 }
+
+@_select(field: Field, label: String = "CHANGEME", options: Seq[(String, String)], isMultiple: Boolean = false, size: Int = 1, help: String = "") = {
+<div class="form-group @if(field.hasErrors) {has-error}">
+    <label class="col-sm-3 control-label" for="@field.id">@label</label>
+    <div class="col-sm-7">
+        @defining( if( isMultiple ) "%s[]".format(field.name) else field.name ) { selectName =>
+        @defining( ( !field.indexes.isEmpty && isMultiple ) match {
+            case true => field.indexes.map( i => field("[%s]".format(i)).value ).flatten.toSet
+            case _ => field.value.toSet
+        }){ values =>
+        <select id="@field.id" name="@selectName" class="form-control" size="@size" @if(isMultiple) {multiple="true"}>
+        @options.map { v =>
+            <option value="@v._1" @if(values.contains(v._1)){selected="selected"}>@v._2</option>
+        }
+        </select>
+
+        @if(isMultiple && !field.indexes.isEmpty) {
+        <div>
+            <strong>Previously selected:</strong>
+            <ul>
+            @options.map { v =>
+                @if(values.contains(v._1)){<li><a href="/admin/template_match_event/@v._1">@v._2</a></li>}
+            }
+            </ul>
+        </div>
+        }
+        }}
+        <span class="help-block">@help</span>
+        <span class="help-block">@{field.error.map { error => error.message }}</span>
+    </div>
+</div>
+}
+
+@_inputDate(field: Field, _label: String = "", _size: Int = 10) = {
+<div class="form-group @if(field.hasErrors) {has-error}">
+    <label class="col-sm-3 control-label" for="@field.id">@_label</label>
+    <div class="col-sm-7">
+        <input type="date" id="@field.id" name="@field.name" class="form-control" value="@field.value">
+        @if(field.hasErrors){
+        <p class="help-block">@{field.error.map { error => error.message }}</p>
+        }
+    </div>
+</div>
+}
+
 
 @main("Template Contest - Admin") {
 
@@ -33,55 +83,55 @@
 
     <div class="col-md-12">
 
-    <div class="col-md-6">
-        @inputText(
+    <div class="col-md-7">
+        <form class="form-horizontal">
+        @input_text(
             templateContestForm("name"),
-            '_label -> "Name",
-            'size -> 100
+            "Name",
+            50
         )
+        <div class="well">
+           En el nombre se pueden usar las variables <code>%MaxEntries</code>, <code>%SalaryCap</code>,
+            <code>%PrizeType</code> o <code>%EntryFee</code>.
+        </div>
 
-        @inputText(
-            templateContestForm("postName"),
-            '_label -> "Post Name",
-            'size -> 40
-        )
-
-        @inputText(
+        @input_text(
             templateContestForm("minInstances"),
-            '_label -> "Min Instances",
-            'size -> 10
+            "Min Instances",
+            10
         )
 
-        @inputText(
+        @input_text(
             templateContestForm("maxEntries"),
-            '_label -> "Max Entries",
-            'size -> 10
+            "Max Entries",
+            10
         )
 
-        @inputText(
+        @input_text(
             templateContestForm("salaryCap"),
-            '_label -> "Salary Cap",
-            'size -> 10
+            "Salary Cap",
+            10
         )
 
-        @inputText(
+        @input_text(
             templateContestForm("entryFee"),
-            '_label -> "Entry Fee",
-            'size -> 10
+            "Entry Fee",
+            10
         )
 
-        @select(
+        @_select(
             templateContestForm("prizeType"),
+            "Prize Type",
             options(EnumUtils.toMap(classOf[PrizeType])),
-            '_label -> "Prize Type"
+            false
         )
 
-        @inputDate(
+        @_inputDate(
             templateContestForm("activationAt"),
-            '_label -> "Activation At"
+            "Activation At"
         )
+        </form>
     </div>
-
     <!--
     @inputDate(
         templateContestForm("startDate"),
@@ -89,16 +139,16 @@
     )
     -->
 
-    <div class="col-md-6">
+    <div class="col-md-5">
     @if(matchEventsOptions.isEmpty) {
         <span>No existen MatchEvents</span>
     } else {
-        @select(
+        @_select(
             templateContestForm("templateMatchEvents"),
+            "Template Match Events",
             options(matchEventsOptions),
-            '_label -> "Template Match Events",
-            'size -> 50,
-            'multiple -> true
+            true,
+            25
         )
     }
     </div>

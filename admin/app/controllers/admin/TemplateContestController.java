@@ -7,7 +7,6 @@ import play.Logger;
 import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utils.ListUtils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -61,7 +60,6 @@ public class TemplateContestController extends Controller {
         templateContest.templateContestId = isNew ? new ObjectId() : new ObjectId(params.id);
         templateContest.state = params.state;
         templateContest.name = params.name;
-        templateContest.postName = params.postName;
         templateContest.minInstances = params.minInstances;
         templateContest.maxEntries = params.maxEntries;
         templateContest.salaryCap = params.salaryCap;
