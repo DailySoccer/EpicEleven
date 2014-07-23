@@ -11,10 +11,7 @@ import java.util.ArrayList;
 
 public class Snapshot {
     static public MongoCollection collection() {
-        if (Model.jongoSnapshot() == null) {
-            return null;
-        }
-        return Model.jongoSnapshot().getCollection(snapshotDBName);
+        return (Model.jongoSnapshot() != null) ? Model.jongoSnapshot().getCollection(snapshotDBName) : null;
     }
 
     public ArrayList<PointsTranslation> pointsTranslations;

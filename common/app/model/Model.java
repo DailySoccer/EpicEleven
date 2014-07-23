@@ -1,18 +1,18 @@
 package model;
 
 import com.mongodb.*;
+import com.mongodb.DB;
 import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import play.Logger;
 import play.Play;
+import play.db.*;
+import play.mvc.Result;
 import utils.ListUtils;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -304,7 +304,39 @@ public class Model {
         return date;
     }
 
+    public static Date dateFirstFromOptaXML() {
+        Date dateFirst = new Date(0L);
+        try (Connection connection = play.db.DB.getConnection()) {
+            String selectString = "SELECT created_at FROM optaxml ORDER BY created_at ASC LIMIT 1;";
 
+            Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            ResultSet resultSet = stmt.executeQuery(selectString);
+            if (resultSet != null && resultSet.next()) {
+                dateFirst = resultSet.getTimestamp("created_at");
+            }
+        }
+        catch (java.sql.SQLException e) {
+            Logger.error("WTF 82847", e);
+        }
+        return dateFirst;
+    }
+
+    public static Date dateLastFromOptaXML() {
+        Date dateLast = new Date(0L);
+        try (Connection connection = play.db.DB.getConnection()) {
+            String selectString = "SELECT created_at FROM optaxml ORDER BY created_at DESC LIMIT 1;";
+
+            Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            ResultSet resultSet = stmt.executeQuery(selectString);
+            if (resultSet != null && resultSet.next()) {
+                dateLast = resultSet.getTimestamp("created_at");
+            }
+        }
+        catch (java.sql.SQLException e) {
+            Logger.error("WTF 82848", e);
+        }
+        return dateLast;
+    }
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/
     static private MongoClient _mongoClient;

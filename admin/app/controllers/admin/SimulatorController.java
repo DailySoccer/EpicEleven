@@ -9,8 +9,10 @@ import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
 
+
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static play.data.Form.form;
@@ -22,7 +24,7 @@ public class SimulatorController extends Controller {
     }
 
     public static Result currentDate() {
-        return ok(GlobalDate.getCurrentDateString());
+        return ok(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(OptaSimulator.getCurrentDate()));
     }
 
     public static Result start() {
@@ -82,8 +84,7 @@ public class SimulatorController extends Controller {
 
     public static Result replayLast() {
         OptaSimulator.reset();
-        OptaSimulator.useSnapshot(Snapshot.getLast());
-
+        OptaSimulator.useSnapshot();
         return redirect(routes.SimulatorController.index());
     }
 
