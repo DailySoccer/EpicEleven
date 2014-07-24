@@ -10,7 +10,7 @@
     @controllers.admin.FlashMessage.danger("Template MatchEvent Form has errors")
 }
 
-@input_text(field: Field, _label: String = "", _size: Int = 10) = {
+@myInputText(field: Field, _label: String = "", _size: Int = 10) = {
 <div class="form-group @if(field.hasErrors) {has-error}">
     @if(_label.nonEmpty) { <label class="control-label col-sm-3" for="@field.id">@_label</label> }
     <div class="col-sm-7">
@@ -22,7 +22,7 @@
 </div>
 }
 
-@_select(field: Field, label: String = "CHANGEME", options: Seq[(String, String)], isMultiple: Boolean = false, size: Int = 1, help: String = "") = {
+@mySelect(field: Field, label: String = "CHANGEME", options: Seq[(String, String)], isMultiple: Boolean = false, size: Int = 1, help: String = "") = {
 <div class="form-group @if(field.hasErrors) {has-error}">
     <label class="col-sm-3 control-label" for="@field.id">@label</label>
     <div class="col-sm-7">
@@ -54,7 +54,7 @@
 </div>
 }
 
-@_inputDate(field: Field, _label: String = "", _size: Int = 10) = {
+@myInputDate(field: Field, _label: String = "", _size: Int = 10) = {
 <div class="form-group @if(field.hasErrors) {has-error}">
     <label class="col-sm-3 control-label" for="@field.id">@_label</label>
     <div class="col-sm-7">
@@ -95,38 +95,38 @@
             <code>%PrizeType</code> o <code>%EntryFee</code>.
         </div>
 
-        @input_text(
+        @myInputText(
             templateContestForm("minInstances"),
             "Min Instances",
             10
         )
 
-        @input_text(
+        @myInputText(
             templateContestForm("maxEntries"),
             "Max Entries",
             10
         )
 
-        @input_text(
+        @myInputText(
             templateContestForm("salaryCap"),
             "Salary Cap",
             10
         )
 
-        @input_text(
+        @myInputText(
             templateContestForm("entryFee"),
             "Entry Fee",
             10
         )
 
-        @_select(
+        @mySelect(
             templateContestForm("prizeType"),
             "Prize Type",
             options(EnumUtils.toMap(classOf[PrizeType])),
             false
         )
 
-        @_inputDate(
+        @myInputDate(
             templateContestForm("activationAt"),
             "Activation At"
         )
@@ -143,7 +143,7 @@
     @if(matchEventsOptions.isEmpty) {
         <span>No existen MatchEvents</span>
     } else {
-        @_select(
+        @mySelect(
             templateContestForm("templateMatchEvents"),
             "Template Match Events",
             options(matchEventsOptions),
