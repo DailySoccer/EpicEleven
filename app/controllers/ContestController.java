@@ -165,7 +165,7 @@ public class ContestController extends Controller {
         Contest contest = Contest.findOne(contestId);
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
         TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
-        List<LiveMatchEvent> liveMatchEvents = LiveMatchEvent.findAllFromTemplateMatchEvents(templateContest.templateMatchEventIds);
+        List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                                                 "users_info", usersInfoInContest,
@@ -193,7 +193,7 @@ public class ContestController extends Controller {
         }
 
         // Consultar por los partidos del TemplateContest (queremos su version "live")
-        List<LiveMatchEvent> liveMatchEventList = LiveMatchEvent.findAllFromTemplateMatchEvents(templateContest.templateMatchEventIds);
+        List<TemplateMatchEvent> liveMatchEventList = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
 
         return new ReturnHelper(liveMatchEventList).toResult();
     }
