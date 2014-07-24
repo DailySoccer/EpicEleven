@@ -68,19 +68,21 @@ public class OptaHttpController extends Controller {
                         Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", request().headers())));
 
         OptaProcessor theProcessor = new OptaProcessor();
-        HashSet<String> dirtyMatchEvents = null;
+        HashSet<String> updatedMatchEvents = null;
+
         try {
-            dirtyMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyText);
+            updatedMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyText);
         }
         catch (JDOMParseException e) {
             Logger.error("Exception parsing: {}", getHeader("X-Meta-Default-Filename", request().headers()), e);
         }
-        ModelEvents.onOptaMatchEventIdsChanged(dirtyMatchEvents);
+
+        ModelEvents.onOptaMatchEventIdsChanged(updatedMatchEvents);
 
         return ok("Yeah, XML processed");
     }
 
-    public static String getHeadersString(Map<String, String[]> headers) {
+    private static String getHeadersString(Map<String, String[]> headers) {
         Map<String, String> plainHeaders = new HashMap<String, String>();
         for (String key: headers.keySet()){
             plainHeaders.put(key, "'"+headers.get(key)[0]+"'");
@@ -88,7 +90,7 @@ public class OptaHttpController extends Controller {
         return plainHeaders.toString();
     }
 
-    public static String getHeader(String key, Map<String, String[]> headers) {
+    private static String getHeader(String key, Map<String, String[]> headers) {
         if (null == headers) {
             return null;
         }
@@ -99,7 +101,7 @@ public class OptaHttpController extends Controller {
                             null;
     }
 
-    public static Result migrate(){
+    public static Result migrate() {
         Iterable<OptaDB> allOptaDBs = Model.optaDB().find().as(OptaDB.class);
 
         for (OptaDB document: allOptaDBs) {
