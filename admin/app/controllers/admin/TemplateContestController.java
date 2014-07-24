@@ -21,7 +21,10 @@ public class TemplateContestController extends Controller {
     }
 
     public static Result show(String templateContestId) {
-        return TODO;
+        TemplateContest templateContest = TemplateContest.findOne(new ObjectId(templateContestId));
+        return ok(views.html.template_contest.render(
+                templateContest,
+                templateContest.getTemplateMatchEvents()));
     }
 
     public static Result newForm() {
