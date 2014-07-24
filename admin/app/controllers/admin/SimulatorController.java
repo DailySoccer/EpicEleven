@@ -1,6 +1,5 @@
 package controllers.admin;
 
-import model.GlobalDate;
 import model.Snapshot;
 import play.Logger;
 import play.data.Form;
@@ -8,7 +7,6 @@ import play.data.format.Formats;
 import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
-
 
 import java.io.File;
 import java.io.IOException;
@@ -116,7 +114,7 @@ public class SimulatorController extends Controller {
         } catch (IOException e) {
             Logger.error("WTF 4264", e);
         }
-        return ok();
+        return redirect(routes.SimulatorController.index());
     }
 
     public static Result snapshotRestore() {
@@ -128,7 +126,7 @@ public class SimulatorController extends Controller {
         } catch (IOException e) {
             Logger.error("WTF 1124", e);
         }
-        return ok();
+        return redirect(routes.SimulatorController.index());
     }
 
 }
