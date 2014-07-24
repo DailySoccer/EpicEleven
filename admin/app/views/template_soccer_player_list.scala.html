@@ -1,4 +1,4 @@
-@(soccers: List[model.TemplateSoccerPlayer])
+@(soccers: List[model.TemplateSoccerPlayer], templateSoccerTeamMap: HashMap[org.bson.types.ObjectId, model.TemplateSoccerTeam])
 
 @import controllers.admin.routes._
         
@@ -29,7 +29,7 @@
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
             <td>@p.fantasyPoints</td>
-            <td><a href="@TemplateSoccerTeamController.show(p.templateTeamId.toString())">@p.templateTeamId</a></td>
+            <td><a href="@TemplateSoccerTeamController.show(p.templateTeamId.toString())">@templateSoccerTeamMap(p.templateTeamId).name</a></td>
         </tr>
         }
         </tbody>

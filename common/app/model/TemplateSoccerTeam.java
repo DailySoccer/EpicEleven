@@ -7,8 +7,7 @@ import org.jongo.marshall.jackson.oid.Id;
 import model.opta.*;
 import utils.ListUtils;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class TemplateSoccerTeam implements JongoId, Initializer {
     @Id
@@ -50,6 +49,14 @@ public class TemplateSoccerTeam implements JongoId, Initializer {
 
     static public List<TemplateSoccerTeam> findAll() {
         return ListUtils.asList(Model.templateSoccerTeams().find().as(TemplateSoccerTeam.class));
+    }
+
+    static public HashMap<ObjectId, TemplateSoccerTeam> findAllAsMap(){
+        HashMap<ObjectId, TemplateSoccerTeam> map = new HashMap<>();
+        for (TemplateSoccerTeam templateSoccerTeam: findAll()) {
+            map.put(templateSoccerTeam.getId(), templateSoccerTeam);
+        }
+        return map;
     }
 
     public boolean hasChanged(OptaTeam optaTeam) {
