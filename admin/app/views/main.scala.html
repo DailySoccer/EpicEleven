@@ -137,11 +137,7 @@
                 <div class="btn-group" style="display:inline-block;">
                     @if(OptaSimulator.isPaused()) {
                     <a class="btn btn-sim btn-primary ajax play" href="@SimulatorController.start" title="Starts the simulator at the beginning of time (the first date sent by Opta) or resumes execution from the current date.">
-                        @if(!OptaSimulator.isCreated()) {
                         Start
-                        } else {
-                        Resume
-                        }
                     </a>
                     } else {
                     <a class="btn btn-sim btn-primary ajax pause" href="@SimulatorController.pause">
@@ -149,19 +145,11 @@
                     </a>
                     }
 
-                    @if(OptaSimulator.isPaused()) {
-                    <a class="btn btn-sim btn-primary ajax forward" href="@SimulatorController.nextStep" title="Process the next Opta file (or first if we are at the beginning of time)">
-                        @if(OptaSimulator.isCreated()) {
-                        Next step
-                        } else {
-                        First step
-                        }
-                    </a>
-                    } else {
-                    <a class="btn btn-sim btn-primary disabled ajax forward" href="@SimulatorController.nextStep" title="Disabled">
+                    <a class="btn btn-sim btn-primary
+                    @if(!OptaSimulator.isPaused()) {disabled}
+                     ajax forward" href="@SimulatorController.nextStep" title="Process the next Opta file (or first if we are at the beginning of time)">
                         Next step
                     </a>
-                    }
                     <a class="btn btn-sim btn-primary ajax stop" href="@SimulatorController.reset" title="Erases the whole Database and resets to the beginning of time.">
                         Reset
                     </a>
@@ -208,7 +196,7 @@
                 $(".btn-sim.forward").text("Next step");
             } else {
                 $(".btn-sim.pause").attr("href", "/admin/start_simulator");
-                $(".btn-sim.pause").text("Resume");
+                $(".btn-sim.pause").text("Play");
                 $(".btn-sim.pause").addClass("play");
                 $(".btn-sim.play").removeClass("pause");
                 $(".btn-sim.forward").removeClass("disabled");
