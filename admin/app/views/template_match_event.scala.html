@@ -6,11 +6,26 @@
 
 <h1 class="page-header">Match Event</h1>
 
+@if(match_event.isFinished()) {
+    <button class="btn btn-danger state_match_event">Finished</button>
+} else {
+    @if(match_event.isStarted()) {
+        <button class="btn btn-success state_match_event">Live</button>
+    } else {
+        <button class="btn btn-warning state_match_event">Waiting</button>
+    }
+}
+
 <h2 class="sub-header">Start Date: @match_event.startDate</h2>
 <div class="table-responsive">
     <table class="table table-striped">
         <thead>
-        <caption>@match_event.soccerTeamA.name</caption>
+        <caption>
+            @match_event.soccerTeamA.name
+            @if(match_event.isStarted()) {
+                (@match_event.getFantasyPoints(match_event.soccerTeamA))
+            }
+        </caption>
         <tr>
             <!--th>Template SoccerID</th-->
             <th>Name</th>
@@ -18,6 +33,9 @@
             <th>Salary</th>
             <th>Played Matches</th>
             <th>Fantasy Points</th>
+        @if(match_event.isStarted()) {
+            <th>Live Points</th>
+        }
         </tr>
         </thead>
         <tbody>
@@ -29,12 +47,22 @@
             <td>@p.salary</td>
             <td>@p.playedMatches</td>
             <td>@p.fantasyPoints</td>
+        @if(match_event.isStarted()) {
+            <td><a href="@TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">
+                @match_event.getFantasyPoints(p.templateSoccerPlayerId)
+            </a></td>
+        }
         </tr>
         }
         </tbody>
     </table>
     <table class="table table-striped">
-        <caption>@match_event.soccerTeamB.name</caption>
+        <caption>
+            @match_event.soccerTeamB.name
+            @if(match_event.isStarted()) {
+                (@match_event.getFantasyPoints(match_event.soccerTeamB))
+            }
+        </caption>
         <thead>
         <tr>
             <!--th>Template SoccerID</th-->
@@ -43,6 +71,9 @@
             <th>Salary</th>
             <th>Played Matches</th>
             <th>Fantasy Points</th>
+        @if(match_event.isStarted()) {
+            <th>Live Points</th>
+        }
         </tr>
         </thead>
         <tbody>
@@ -54,6 +85,11 @@
             <td>@p.salary</td>
             <td>@p.playedMatches</td>
             <td>@p.fantasyPoints</td>
+        @if(match_event.isStarted()) {
+            <td><a href="@TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">
+                @match_event.getFantasyPoints(p.templateSoccerPlayerId)
+            </a></td>
+        }
         </tr>
         }
         </tbody>

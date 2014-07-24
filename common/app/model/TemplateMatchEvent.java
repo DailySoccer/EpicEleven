@@ -115,13 +115,13 @@ public class TemplateMatchEvent implements JongoId, Initializer {
     public int getFantasyPoints(SoccerTeam soccerTeam) {
         int points = 0;
         for (SoccerPlayer soccerPlayer : soccerTeam.soccerPlayers) {
-            points += getFantasyPoints(soccerPlayer.templateSoccerPlayerId.toString());
+            points += getFantasyPoints(soccerPlayer.templateSoccerPlayerId);
         }
         return points;
     }
 
-    public int getFantasyPoints(String soccerPlayerId) {
-        return livePlayerToPoints.get(soccerPlayerId);
+    public int getFantasyPoints(ObjectId soccerPlayerId) {
+        return livePlayerToPoints.get(soccerPlayerId.toString());
     }
 
     static public boolean importMatchEvent(OptaMatchEvent optaMatchEvent) {
