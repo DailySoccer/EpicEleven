@@ -91,6 +91,7 @@ public class Snapshot {
         snapshot.createdAt = GlobalDate.getCurrentDate();
 
         createInDB();
+        collection().remove();
         collection().insert(snapshot);
         return snapshot;
     }
