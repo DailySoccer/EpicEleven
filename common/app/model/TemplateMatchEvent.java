@@ -221,9 +221,9 @@ public class TemplateMatchEvent implements JongoId, Initializer {
     static private void setLiveFantasyPointsOfSoccerPlayer(String optaMatchId, String soccerPlayerId, int points) {
         //Logger.info("setLiveFantasyPoints: {} = {} fantasy points", soccerPlayerId, points);
 
-        String searchPattern = String.format("{optaMatchEventId: #, 'soccerPlayerToPoints.%s': {$exists: 1}}", soccerPlayerId);
-        String setPattern = String.format("{$set: {'soccerPlayerToPoints.%s': #}}", soccerPlayerId);
-        Model.liveMatchEvents()
+        String searchPattern = String.format("{optaMatchEventId: #, 'livePlayerToPoints.%s': {$exists: 1}}", soccerPlayerId);
+        String setPattern = String.format("{$set: {'livePlayerToPoints.%s': #}}", soccerPlayerId);
+        Model.templateMatchEvents()
                 .update(searchPattern, optaMatchId)
                 .multi()
                 .with(setPattern, points);
