@@ -33,8 +33,6 @@ public class OptaSimulator implements Runnable {
         this._optaProcessor = new OptaProcessor();
 
         SimulatorState.initialize(this);
-
-        createConnection();
     }
 
     public static boolean start() {
@@ -52,7 +50,7 @@ public class OptaSimulator implements Runnable {
         else {
             _instance._pauseLoop = false;
 
-            if (_instance._optaThread == null) {
+            if (_instance._optaThread == null || !_instance._optaThread.isAlive()) {
                 _instance.startThread();
             }
         }
@@ -160,21 +158,14 @@ public class OptaSimulator implements Runnable {
 
         _stopLoop = false;
 
-        while (!_stopLoop) {
-            if (!_pauseLoop) {
-                boolean isFinished = next();
+        while (!_stopLoop && !_pauseLoop) {
+            boolean isFinished = next();
 
-                // Si hemos llegado al final, nos quedamos pausados
-                if (isFinished)
-                    _pauseLoop = true;
+            // Si hemos llegado al final, nos quedamos pausados
+            if (isFinished)
+                _pauseLoop = true;
 
-                checkDate();
-            }
-            else {                       // Durante la pausa reevaluamos cada X ms si continuamos
-                try {
-                    Thread.sleep(10);
-                }  catch (InterruptedException e) {}
-            }
+            checkDate();
         }
 
         closeConnection();
@@ -209,6 +200,10 @@ public class OptaSimulator implements Runnable {
 
 
     private boolean next() {
+        if (_connection == null) {
+            createConnection();
+        }
+
         _isFinished = false;
 
         try {
@@ -366,7 +361,6 @@ class SimulatorState {
     }
 
    static private SimulatorState findOrCreateInstance() {
-        Logger.info("Simulator: create State...");
         _state = collection().findOne().as(SimulatorState.class);
         if (_state == null) {
             _state = stateDefault();
