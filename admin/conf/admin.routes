@@ -28,13 +28,6 @@ GET         /users                                                     controlle
 GET         /fantasy_points/contest/:contestId/:playerId               controllers.admin.TemplateSoccerPlayerController.showFantasyPointsInContest(contestId : String, playerId : String)
 GET         /fantasy_points/match_event/:matchEventId/:playerId        controllers.admin.TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(matchEventId : String, playerId : String)
 
-GET         /live_contest_entries                                      controllers.admin.LiveContestEntryController.index()
-GET         /live_contest_entry/:contestEntryId                        controllers.admin.LiveContestEntryController.show(contestEntryId : String)
-
-GET         /live_match_events                                         controllers.admin.LiveMatchEventController.index()
-GET         /live_match_event/:liveMatchEventId                        controllers.admin.LiveMatchEventController.show(liveMatchEventId : String)
-GET         /live_match_event/template/:templateMatchEventId           controllers.admin.LiveMatchEventController.showWithTemplate(templateMatchEventId : String)
-
 GET         /contest_entries                                           controllers.admin.ContestEntryController.index()
 GET         /contest_entry/add                                         controllers.admin.ContestEntryController.newForm()
 GET         /contest_enter/add/:contestId                              controllers.admin.ContestEntryController.enterContest(contestId : String)

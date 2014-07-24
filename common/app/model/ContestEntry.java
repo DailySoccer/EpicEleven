@@ -72,35 +72,6 @@ public class ContestEntry implements JongoId {
     }
 
     /**
-     * Obtener la lista de Soccer Players incluidos en un Contest Entry
-     * @return lista de Soccer Players
-     */
-    public List<SoccerPlayer> getSoccerPlayers() {
-        Contest contest = Contest.findOne(contestId);
-        TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
-        List<ObjectId> templateMatchEventIds = templateContest.templateMatchEventIds;
-
-        //Iterable<LiveMatchEvent> liveMatchEventsResults = Model.liveMatchEvents().find().as(LiveMatchEvent.class);
-        Iterable<LiveMatchEvent> liveMatchEventsResults = Model.findObjectIds(Model.liveMatchEvents(), "templateMatchEventId", templateMatchEventIds).as(LiveMatchEvent.class);
-        List<LiveMatchEvent> liveMatchEventList = ListUtils.asList(liveMatchEventsResults);
-
-        List<SoccerPlayer> soccerPlayers = new ArrayList<>();
-        /*
-        for (ObjectId soccerId : soccerIds) {
-            for (LiveMatchEvent liveMatchEvent : liveMatchEventList) {
-                SoccerPlayer liveSoccer = liveMatchEvent.findSoccerPlayer(soccerId);
-                if (liveSoccer != null) {
-                    soccerPlayers.add(liveSoccer);
-                    break;
-                }
-            }
-        }
-        */
-        return soccerPlayers;
-    }
-
-
-    /**
      * Creacion de un contest entry (se añade a la base de datos)
      * @param user      Usuario al que pertenece el equipo
      * @param contestId   Contest al que se apunta
