@@ -52,6 +52,7 @@
             <th>Entry Fee</th>
             <th>Prize Type</th>
             <th>Start Date</th>
+            <th>Activation At</th>
             <th>State</th>
             <th></th>
             <!--
@@ -66,7 +67,7 @@
         <tr>
             <!--td>@p.templateContestId</td-->
             <td>@p.state</td>
-            <td><a href="@TemplateContestController.show(p.templateContestId.toString())">@p.name</a></td>
+            <td><a href="@TemplateContestController.show(p.templateContestId.toString())" style="white-space: nowrap">@p.name</a></td>
             <td>@p.templateMatchEventIds.size()</td>
             <td>@p.minInstances</td>
             <td>@p.maxEntries</td>
@@ -74,6 +75,7 @@
             <td>@p.entryFee</td>
             <td>@p.prizeType</td>
             <td>@p.startDate.format("yyyy/MM/dd HH:mm:ss")</td>
+            <td>@p.activationAt.format("yyyy/MM/dd HH:mm:ss")</td>
             <td>@contest_state(p.templateContestId.toString())</td>
             <td>
                 <a href="@TemplateContestController.edit(p.templateContestId.toString())"><button class="btn btn-success">Edit</button></a>

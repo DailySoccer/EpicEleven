@@ -35,7 +35,7 @@
 
 @defining(live_match_event.getTemplateMatchEvent()) { template_match_event =>
 
-<h1 class="page-header">Live Match Event: @live_match_event.liveMatchEventId</h1>
+<h1 class="page-header">Live Match Event</h1>
 
 <h2 class="sub-header">Start Date: @template_match_event.startDate</h2>
 <h3><span>@LiveMatchEvent.currentTime(live_match_event.liveMatchEventId.toString()).format("HH:mm:ss")</span> @match_event_state(live_match_event.templateMatchEventId.toString())</h3>
