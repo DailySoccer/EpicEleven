@@ -33,10 +33,6 @@ public class TemplateMatchEvent implements JongoId, Initializer {
     public Date startDate;
     public Date createdAt;
 
-    // Asocia un soccerPlayerId con optaPlayerId (el id de Opta se necesita para las querys a optaEvents)
-    @JsonView(JsonViews.NotForClient.class)
-    public HashMap<String, String> livePlayerToOpta = new HashMap<>();
-
     public TemplateMatchEvent() { }
 
     public void Initialize() { }
@@ -184,35 +180,34 @@ public class TemplateMatchEvent implements JongoId, Initializer {
     public void updateFantasyPoints() {
         Logger.info("update Live: templateMatchEvent: {}", templateMatchEventId.toString());
 
-        for (String soccerPlayerId : livePlayerToPoints.keySet()) {
-            updateFantasyPoints(soccerPlayerId);
+        for (SoccerPlayer soccerPlayer : soccerTeamA.soccerPlayers) {
+            updateFantasyPoints(soccerPlayer);
+        }
+
+        for (SoccerPlayer soccerPlayer : soccerTeamB.soccerPlayers) {
+            updateFantasyPoints(soccerPlayer);
         }
     }
 
     /**
      * Calcular y actualizar los puntos fantasy de un determinado futbolista en los partidos "live"
+     *
+     * TODO: ¿ $sum (aggregation) ?
      */
-    private void updateFantasyPoints(String soccerPlayerId) {
-        //TODO: ¿ $sum (aggregation) ?
+    private void updateFantasyPoints(SoccerPlayer soccerPlayer) {
         // Obtener los puntos fantasy obtenidos por el futbolista en un partido
         Iterable<OptaEvent> optaEventResults = Model.optaEvents().find("{optaPlayerId: #, gameId: #}",
-                livePlayerToOpta.get(soccerPlayerId), optaMatchEventId).as(OptaEvent.class);
+                soccerPlayer.optaPlayerId, optaMatchEventId).as(OptaEvent.class);
 
         // Sumarlos
         int points = 0;
         for (OptaEvent point: optaEventResults) {
             points += point.points;
         }
-        /*
-        if (points > 0) {
-            Logger.info("--> {}: {} = {}", soccerPlayer.optaPlayerId, soccerPlayer.name, points);
-        }
-        */
-
-        // filter().aggregate("{$match: {optaPlayerId: #}}", soccerPlayer.optaPlayerId);
+        // if (points > 0) Logger.info("--> {}: {} = {}", soccerPlayer.optaPlayerId, soccerPlayer.name, points);
 
         // Actualizar sus puntos en cada LiverMatchEvent en el que participe
-        setLiveFantasyPointsOfSoccerPlayer(optaMatchEventId, soccerPlayerId, points);
+        setLiveFantasyPointsOfSoccerPlayer(optaMatchEventId, soccerPlayer.templateSoccerPlayerId.toString(), points);
     }
 
     /**
@@ -253,7 +248,6 @@ public class TemplateMatchEvent implements JongoId, Initializer {
     private void insertLivePlayersFromTeam(SoccerTeam soccerTeam) {
         for (SoccerPlayer soccerPlayer : soccerTeam.soccerPlayers) {
             livePlayerToPoints.put(soccerPlayer.templateSoccerPlayerId.toString(), 0);
-            livePlayerToOpta.put(soccerPlayer.templateSoccerPlayerId.toString(), soccerPlayer.optaPlayerId);
         }
     }
 }
