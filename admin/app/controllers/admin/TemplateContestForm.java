@@ -17,9 +17,6 @@ public class TemplateContestForm {
     public String name;             // Auto-gen if blank
 
     @Constraints.Required
-    public String postName;         // This goes in parenthesis
-
-    @Constraints.Required
     public int minInstances;        // Minimum desired number of instances that we want running at any given moment
 
     @Constraints.Required
@@ -48,7 +45,6 @@ public class TemplateContestForm {
         id = templateContest.templateContestId.toString();
         state = templateContest.state;
         name = templateContest.name;
-        postName = templateContest.postName;
         minInstances = templateContest.minInstances;
         maxEntries = templateContest.maxEntries;
         salaryCap = templateContest.salaryCap;
@@ -57,7 +53,7 @@ public class TemplateContestForm {
 
         Iterable<TemplateMatchEvent> templateMatchEventsResults = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
         for(TemplateMatchEvent matchEvent : templateMatchEventsResults) {
-            templateMatchEvents.add(matchEvent.optaMatchEventId);
+            templateMatchEvents.add(matchEvent.templateMatchEventId.toString());
         }
 
         activationAt = templateContest.activationAt;
@@ -70,7 +66,7 @@ public class TemplateContestForm {
         Date now = GlobalDate.getCurrentDate();
         Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.templateMatchEvents().find("{startDate: {$gte: #}}", now).sort("{startDate : 1}").as(TemplateMatchEvent.class);
         for (TemplateMatchEvent matchEvent: templateMatchEventsResults) {
-            options.put(matchEvent.optaMatchEventId, String.format("%s - %s vs %s",
+            options.put(matchEvent.templateMatchEventId.toString(), String.format("%s - %s vs %s",
                     // new SimpleDateFormat("yy/MM/dd").format(matchEvent.startDate),
                     DateFormat.getDateInstance(DateFormat.SHORT).format(matchEvent.startDate),
                     matchEvent.soccerTeamA.name, matchEvent.soccerTeamB.name));
