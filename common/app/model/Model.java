@@ -1,15 +1,12 @@
 package model;
 
 import com.mongodb.*;
-import com.mongodb.DB;
 import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import play.Logger;
 import play.Play;
-import play.db.*;
-import play.mvc.Result;
 import utils.ListUtils;
 
 import java.sql.*;
@@ -48,6 +45,9 @@ public class Model {
     static public MongoCollection pointsTranslation() { return _jongo.getCollection("pointsTranslation"); }
 
     static public void init() {
+        if (Play.isTest())
+            return;
+
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
         MongoClientURI mongoClientURI = new MongoClientURI(mongodbUri);
 
