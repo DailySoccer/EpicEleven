@@ -40,7 +40,7 @@ public class OptaProcessor {
         _dirtyMatchEvents = new HashSet<>();
 
         if (feedType != null) {
-            if (feedType.equals("F9") || feedType.equals("F40")) {
+            if (feedType.equals("F40")) {
                 processF9(requestBody);
             } else if (feedType.equals("F24")) {
                 processEvents(requestBody);
