@@ -24,8 +24,10 @@ public class OptaProcessor {
         FIX para leer los XML chungos de la base de datos.
          */
         try {
-            requestBody = new String (new String (requestBody.getBytes("ISO-8859-15"), "UTF-8").
-                                                              getBytes("ISO-8859-15"), "UTF-8");
+            requestBody = new String (new String (new String (requestBody.getBytes("ISO-8859-1"), "UTF-8").
+                                                                          getBytes("ISO-8859-1"), "UTF-8").
+                                                                          getBytes("ISO-8859-1"), "UTF-8");
+
         } catch (UnsupportedEncodingException e) {
             Logger.error("WTF 59634", e);
         }
