@@ -157,7 +157,6 @@ public class TemplateContestController extends Controller {
         TemplateContest templateContest = new TemplateContest();
 
         templateContest.name = String.format("%s", startDate);
-        templateContest.postName = "Late evening";
         templateContest.minInstances = 3;
         templateContest.maxEntries = 10;
         templateContest.prizeType = PrizeType.STANDARD;

@@ -29,7 +29,6 @@ public class TemplateContest implements JongoId, Initializer {
     public State state = State.OFF;
 
     public String name;             // Auto-gen if blank
-    public String postName;         // This goes in parenthesis
 
     public int minInstances;        // Minimum desired number of instances that we want running at any given moment
     public int maxEntries;
