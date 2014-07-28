@@ -36,8 +36,7 @@ public class OptaMatchEventStats {
                     String playerId = OptaProcessor.getStringId(matchPlayer, "PlayerRef", "_NO PLAYER ID");
                     int playedMinutes = Integer.parseInt(stat.getContent().get(0).getValue());
                     stats.put(playerId, new OptaPlayerStats(playedMinutes));
-
-                    Logger.debug("{} - minutes: {}", playerId, playedMinutes);
+                    // Logger.debug("{} - minutes: {}", playerId, playedMinutes);
                 }
             }
         }

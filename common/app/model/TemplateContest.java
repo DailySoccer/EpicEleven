@@ -178,7 +178,7 @@ public class TemplateContest implements JongoId, Initializer {
     }
 
     public void onChangeToHistory() {
-        Logger.info("saveStats: {}", name);
+        // Logger.debug("saveStats: {}", name);
 
         List<TemplateMatchEvent> templateMatchEvents = getTemplateMatchEvents();
         for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
