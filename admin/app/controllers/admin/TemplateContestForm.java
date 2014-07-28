@@ -33,12 +33,14 @@ public class TemplateContestForm {
     public List<String> templateMatchEvents = new ArrayList<>();  // We rather have it here that normalize it in a N:N table
 
     public Date activationAt;
-    public Date createdAt;
+
+    // Fecha expresada en Time (para que sea más fácil volverla a convertir en Date; se usa para filtrar por fecha)
+    public long createdAt;
 
     public TemplateContestForm() {
         state = TemplateContest.State.OFF;
         activationAt = GlobalDate.getCurrentDate();
-        createdAt = GlobalDate.getCurrentDate();
+        createdAt = GlobalDate.getCurrentDate().getTime();
     }
 
     public TemplateContestForm(TemplateContest templateContest) {
@@ -57,14 +59,17 @@ public class TemplateContestForm {
         }
 
         activationAt = templateContest.activationAt;
-        createdAt = templateContest.createdAt;
+        createdAt = templateContest.createdAt.getTime();
     }
 
-    public static HashMap<String, String> matchEventsOptions() {
+    public static HashMap<String, String> matchEventsOptions(long startTime) {
+        return matchEventsOptions(new Date(startTime));
+    }
+
+    public static HashMap<String, String> matchEventsOptions(Date startDate) {
         HashMap<String, String> options = new LinkedHashMap<>();
 
-        Date now = GlobalDate.getCurrentDate();
-        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.templateMatchEvents().find("{startDate: {$gte: #}}", now).sort("{startDate : 1}").as(TemplateMatchEvent.class);
+        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.templateMatchEvents().find("{startDate: {$gte: #}}", startDate).sort("{startDate : 1}").as(TemplateMatchEvent.class);
         for (TemplateMatchEvent matchEvent: templateMatchEventsResults) {
             options.put(matchEvent.templateMatchEventId.toString(), String.format("%s - %s vs %s",
                     // new SimpleDateFormat("yy/MM/dd").format(matchEvent.startDate),

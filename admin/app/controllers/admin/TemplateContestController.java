@@ -31,7 +31,7 @@ public class TemplateContestController extends Controller {
         TemplateContestForm params = new TemplateContestForm();
 
         Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
-        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.createdAt)));
     }
 
     public static Result edit(String templateContestId) {
@@ -39,7 +39,7 @@ public class TemplateContestController extends Controller {
         TemplateContestForm params = new TemplateContestForm(templateContest);
 
         Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
-        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.createdAt)));
     }
 
     public static Result destroy(String templateContestId) {
@@ -51,7 +51,8 @@ public class TemplateContestController extends Controller {
     public static Result create() {
         Form<TemplateContestForm> templateContestForm = form(TemplateContestForm.class).bindFromRequest();
         if (templateContestForm.hasErrors()) {
-            return badRequest(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
+            String createdAt = templateContestForm.field("createdAt").valueOr("0");
+            return badRequest(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(Long.parseLong(createdAt))));
         }
 
         TemplateContestForm params = templateContestForm.get();
@@ -70,7 +71,7 @@ public class TemplateContestController extends Controller {
         templateContest.prizeType = params.prizeType;
 
         templateContest.activationAt = params.activationAt;
-        templateContest.createdAt = params.createdAt;
+        templateContest.createdAt = new Date(params.createdAt);
 
         /*
         // Si está activo y la fecha de activación se ha puesto en un futuro
