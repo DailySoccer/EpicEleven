@@ -32,6 +32,9 @@ public class SoccerPlayerStats {
     }
 
     public void updateStats() {
+        OptaMatchEventStats matchEventStats = OptaMatchEventStats.findOne(optaMatchEventId);
+        playedMinutes = (matchEventStats != null) ? matchEventStats.getPlayedMinutes(optaPlayerId) : 0;
+
         // Registrar los eventos "acumulados"
         for (OptaEventType eType : OptaEventType.values()) {
             int count = (int) Model.optaEvents().count("{optaPlayerId: #, gameId: #, typeId: #}", optaPlayerId, optaMatchEventId, eType.getCode());

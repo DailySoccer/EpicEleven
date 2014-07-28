@@ -188,12 +188,12 @@ public class OptaProcessor {
         Model.optaMatchEvents().update("{optaMatchEventId: #}", optaMatchEvent.optaMatchEventId).upsert().with(optaMatchEvent);
     }
 
-    private String getStringId(Element document, String key, String defaultValue){
+    static public String getStringId(Element document, String key, String defaultValue){
         String value = getStringValue(document, key, defaultValue);
         return Character.isDigit(value.charAt(0))? value : value.substring(1);
     }
 
-    private String getStringValue(Element document, String key, String defaultValue){
+    static private String getStringValue(Element document, String key, String defaultValue){
         return (document.getAttribute(key)!=null)? document.getAttributeValue(key) : defaultValue ;
     }
 
@@ -309,6 +309,8 @@ public class OptaProcessor {
     private void processFinishedMatch(Element F9) {
         String gameId = getStringId(F9, "uID", "_NO GAME ID");
 
+        OptaMatchEventStats stats = new OptaMatchEventStats(gameId);
+
         List<Element> teamDatas = F9.getChild("MatchData").getChildren("TeamData");
 
         for (Element teamData : teamDatas) {
@@ -323,11 +325,14 @@ public class OptaProcessor {
                     }
                 }
             }
+
+            stats.updateWithTeamData(teamData);
         }
+
+        Model.optaMatchEventStats().update("{optaMatchEventId: #}", gameId).upsert().with(stats);
 
         _dirtyMatchEvents.add(gameId);
     }
-
 
     private void processGoalsAgainst(Element F9, String gameId, Element teamData) {
         List<Element> matchPlayers = teamData.getChild("PlayerLineUp").getChildren("MatchPlayer");

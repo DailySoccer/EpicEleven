@@ -139,7 +139,7 @@ public class TemplateMatchEvent implements JongoId, Initializer {
             soccerPlayerStats.updateStats();
 
             // El futbolista ha jugado en el partido?
-            if (/*soccerPlayerStats.playedMinutes > 0 &&*/ !soccerPlayerStats.events.isEmpty()) {
+            if (soccerPlayerStats.playedMinutes > 0 && !soccerPlayerStats.events.isEmpty()) {
 
                 templateSoccerPlayer.stats.add(soccerPlayerStats);
 
@@ -154,7 +154,8 @@ public class TemplateMatchEvent implements JongoId, Initializer {
                 Model.templateSoccerPlayers().update("{optaPlayerId: #}", soccerPlayerStats.optaPlayerId)
                         .with("{$set: {fantasyPoints: #, stats: #}}", fantasyPointsMedia, templateSoccerPlayer.stats);
 
-                Logger.info("saveStats: {}({}) - points = {} - events({})", soccerPlayer.name, soccerPlayer.optaPlayerId, getFantasyPoints(soccerPlayer.templateSoccerPlayerId), soccerPlayerStats.events);
+                Logger.debug("saveStats: {}({}) - minutes = {} - points = {} - events({})",
+                        soccerPlayer.name, soccerPlayer.optaPlayerId, soccerPlayerStats.playedMinutes, getFantasyPoints(soccerPlayer.templateSoccerPlayerId), soccerPlayerStats.events);
             }
         }
     }
