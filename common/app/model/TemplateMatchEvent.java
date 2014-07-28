@@ -124,6 +124,41 @@ public class TemplateMatchEvent implements JongoId, Initializer {
         return livePlayerToPoints.get(soccerPlayerId.toString());
     }
 
+    public void saveStats() {
+        saveStats(soccerTeamA);
+        saveStats(soccerTeamB);
+    }
+
+    public void saveStats(SoccerTeam soccerTeam) {
+        for (SoccerPlayer soccerPlayer : soccerTeam.soccerPlayers) {
+            // Buscamos el template
+            TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(soccerPlayer.templateSoccerPlayerId);
+
+            // Generamos las nuevas estadísticas del partido
+            SoccerPlayerStats soccerPlayerStats = new SoccerPlayerStats(soccerPlayer.optaPlayerId, optaMatchEventId, getFantasyPoints(soccerPlayer.templateSoccerPlayerId));
+            soccerPlayerStats.updateStats();
+
+            // El futbolista ha jugado en el partido?
+            if (/*soccerPlayerStats.playedMinutes > 0 &&*/ !soccerPlayerStats.events.isEmpty()) {
+
+                templateSoccerPlayer.stats.add(soccerPlayerStats);
+
+                // Calculamos la media de los fantasyPoints
+                int fantasyPointsMedia = 0;
+                for (SoccerPlayerStats stats : templateSoccerPlayer.stats) {
+                    fantasyPointsMedia += stats.fantasyPoints;
+                }
+                fantasyPointsMedia /= templateSoccerPlayer.stats.size();
+
+                // Grabar cambios
+                Model.templateSoccerPlayers().update("{optaPlayerId: #}", soccerPlayerStats.optaPlayerId)
+                        .with("{$set: {fantasyPoints: #, stats: #}}", fantasyPointsMedia, templateSoccerPlayer.stats);
+
+                Logger.info("saveStats: {}({}) - points = {} - events({})", soccerPlayer.name, soccerPlayer.optaPlayerId, getFantasyPoints(soccerPlayer.templateSoccerPlayerId), soccerPlayerStats.events);
+            }
+        }
+    }
+
     static public boolean importMatchEvent(OptaMatchEvent optaMatchEvent) {
         TemplateSoccerTeam teamA = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.homeTeamId).as(TemplateSoccerTeam.class);
         TemplateSoccerTeam teamB = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.awayTeamId).as(TemplateSoccerTeam.class);

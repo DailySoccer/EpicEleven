@@ -33,7 +33,6 @@ public class Model {
     static public MongoCollection templateSoccerTeams() { return _jongo.getCollection("templateSoccerTeams"); }
     static public MongoCollection templateSoccerPlayers() { return _jongo.getCollection("templateSoccerPlayers"); }
     static public MongoCollection templateSoccerPlayersMetadata() { return _jongo.getCollection("templateSoccerPlayersMetadata"); }
-    static public MongoCollection liveMatchEvents() { return _jongo.getCollection("liveMatchEvents"); }
     static public MongoCollection contestEntries() { return _jongo.getCollection("contestEntries"); }
 
     static public MongoCollection contests() { return _jongo.getCollection("contests"); }
