@@ -129,4 +129,39 @@ public class SimulatorController extends Controller {
         return redirect(routes.SimulatorController.index());
     }
 
+    public static Result exportSalaries() {
+        ProcessBuilder pb = new ProcessBuilder("./export_salaries.sh", "salaries.csv");
+        String pwd = pb.environment().get("PWD");
+        ProcessBuilder data = pb.directory(new File(pwd+"/data"));
+        try {
+            Process p = data.start();
+        } catch (IOException e) {
+            Logger.error("WTF 1124", e);
+        }
+        return redirect(routes.SimulatorController.index());
+    }
+
+    public static Result importSalaries() {
+        ProcessBuilder pb = new ProcessBuilder("./import_salaries.sh", "salaries.csv");
+        String pwd = pb.environment().get("PWD");
+        ProcessBuilder data = pb.directory(new File(pwd+"/data"));
+        try {
+            Process p = data.start();
+        } catch (IOException e) {
+            Logger.error("WTF 1124", e);
+        }
+        return redirect(routes.SimulatorController.index());
+    }
+
+    public static Result importSalariesServer() {
+        ProcessBuilder pb = new ProcessBuilder("./import_salaries_server.sh", "salaries.csv");
+        String pwd = pb.environment().get("PWD");
+        ProcessBuilder data = pb.directory(new File(pwd+"/data"));
+        try {
+            Process p = data.start();
+        } catch (IOException e) {
+            Logger.error("WTF 1124", e);
+        }
+        return redirect(routes.SimulatorController.index());
+    }
 }
