@@ -77,6 +77,9 @@ GET         /is_paused                                                 controlle
 GET         /current_date_simulator                                    controllers.admin.SimulatorController.currentDate()
 GET         /snapshot_dump                                             controllers.admin.SimulatorController.snapshotDump()
 GET         /snapshot_restore                                          controllers.admin.SimulatorController.snapshotRestore()
+GET         /import_salaries                                           controllers.admin.SimulatorController.importSalaries()
+GET         /import_salaries_server                                    controllers.admin.SimulatorController.importSalariesServer()
+GET         /export_salaries                                           controllers.admin.SimulatorController.exportSalaries()
 
 GET         /refresher                                                 controllers.admin.RefresherController.index()
 GET         /import_from_last                                          controllers.admin.RefresherController.importFromLast()

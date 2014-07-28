@@ -32,6 +32,7 @@ public class Model {
     static public MongoCollection templateMatchEvents() { return _jongo.getCollection("templateMatchEvents"); }
     static public MongoCollection templateSoccerTeams() { return _jongo.getCollection("templateSoccerTeams"); }
     static public MongoCollection templateSoccerPlayers() { return _jongo.getCollection("templateSoccerPlayers"); }
+    static public MongoCollection templateSoccerPlayersMetadata() { return _jongo.getCollection("templateSoccerPlayersMetadata"); }
     static public MongoCollection liveMatchEvents() { return _jongo.getCollection("liveMatchEvents"); }
     static public MongoCollection contestEntries() { return _jongo.getCollection("contestEntries"); }
 
@@ -212,6 +213,9 @@ public class Model {
 
         if (!theMongoDB.collectionExists("templateSoccerPlayers"))
             theMongoDB.createCollection("templateSoccerPlayers", new BasicDBObject());
+
+        if (!theMongoDB.collectionExists("templateSoccerPlayersMetadata"))
+            theMongoDB.createCollection("templateSoccerPlayersMetadata", new BasicDBObject());
 
         if (!theMongoDB.collectionExists("contests"))
             theMongoDB.createCollection("contests", new BasicDBObject());
