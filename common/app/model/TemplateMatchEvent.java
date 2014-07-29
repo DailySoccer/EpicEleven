@@ -10,10 +10,7 @@ import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class TemplateMatchEvent implements JongoId, Initializer {
     @Id
@@ -78,18 +75,24 @@ public class TemplateMatchEvent implements JongoId, Initializer {
      *  Estado del partido
      */
     public boolean isStarted() {
-        // Inicio del partido?
+        // Un partido "comenzará" x minutos antes de su fecha establecida de comienzo
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(startDate);
+        calendar.add(Calendar.MINUTE, -5);
+        return GlobalDate.getCurrentDate().after(calendar.getTime());
+
+         /*
         OptaEvent optaEvent = Model.optaEvents().findOne("{gameId: #, typeId: 32, periodId: 1}", optaMatchEventId).as(OptaEvent.class);
         if (optaEvent == null) {
             // Kick Off Pass?
             optaEvent = Model.optaEvents().findOne("{gameId: #, typeId: 1, periodId: 1, qualifiers: 278}", optaMatchEventId).as(OptaEvent.class);
         }
+        */
 
         /*
         Logger.info("isStarted? {}({}) = {}",
                 find.soccerTeamA.name + " vs " + find.soccerTeamB.name, find.optaMatchEventId, (optaEvent!= null));
         */
-        return (optaEvent != null);
     }
 
     public static boolean isStarted(String templateMatchEventId) {
@@ -122,6 +125,44 @@ public class TemplateMatchEvent implements JongoId, Initializer {
 
     public int getFantasyPoints(ObjectId soccerPlayerId) {
         return livePlayerToPoints.get(soccerPlayerId.toString());
+    }
+
+    public void saveStats() {
+        saveStats(soccerTeamA);
+        saveStats(soccerTeamB);
+    }
+
+    public void saveStats(SoccerTeam soccerTeam) {
+        for (SoccerPlayer soccerPlayer : soccerTeam.soccerPlayers) {
+            // Buscamos el template
+            TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(soccerPlayer.templateSoccerPlayerId);
+
+            // Generamos las nuevas estadísticas del partido
+            SoccerPlayerStats soccerPlayerStats = new SoccerPlayerStats(soccerPlayer.optaPlayerId, optaMatchEventId, getFantasyPoints(soccerPlayer.templateSoccerPlayerId));
+            soccerPlayerStats.updateStats();
+
+            // El futbolista ha jugado en el partido?
+            if (soccerPlayerStats.playedMinutes > 0 && !soccerPlayerStats.events.isEmpty()) {
+
+                templateSoccerPlayer.stats.add(soccerPlayerStats);
+
+                // Calculamos la media de los fantasyPoints
+                int fantasyPointsMedia = 0;
+                for (SoccerPlayerStats stats : templateSoccerPlayer.stats) {
+                    fantasyPointsMedia += stats.fantasyPoints;
+                }
+                fantasyPointsMedia /= templateSoccerPlayer.stats.size();
+
+                // Grabar cambios
+                Model.templateSoccerPlayers().update("{optaPlayerId: #}", soccerPlayerStats.optaPlayerId)
+                        .with("{$set: {fantasyPoints: #, stats: #}}", fantasyPointsMedia, templateSoccerPlayer.stats);
+
+                /*
+                Logger.debug("saveStats: {}({}) - minutes = {} - points = {} - events({})",
+                        soccerPlayer.name, soccerPlayer.optaPlayerId, soccerPlayerStats.playedMinutes, getFantasyPoints(soccerPlayer.templateSoccerPlayerId), soccerPlayerStats.events);
+                */
+            }
+        }
     }
 
     static public boolean importMatchEvent(OptaMatchEvent optaMatchEvent) {

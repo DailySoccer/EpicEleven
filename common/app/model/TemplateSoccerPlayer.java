@@ -8,6 +8,7 @@ import model.opta.*;
 import play.Logger;
 import utils.ListUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -25,6 +26,8 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
     public ObjectId templateTeamId;
 
     public Date createdAt;
+
+    public List<SoccerPlayerStats> stats = new ArrayList<>();
 
     // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
     public TemplateSoccerPlayer() {
