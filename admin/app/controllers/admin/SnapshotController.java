@@ -87,15 +87,4 @@ public class SnapshotController extends Controller {
         return redirect(routes.SnapshotController.index());
     }
 
-    public static Result importSalariesServer() {
-        ProcessBuilder pb = new ProcessBuilder("./import_salaries_server.sh", "salaries.csv");
-        String pwd = pb.environment().get("PWD");
-        ProcessBuilder data = pb.directory(new File(pwd+"/data"));
-        try {
-            Process p = data.start();
-        } catch (IOException e) {
-            Logger.error("WTF 1124", e);
-        }
-        return redirect(routes.SnapshotController.index());
-    }
 }

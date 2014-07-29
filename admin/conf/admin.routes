@@ -79,7 +79,6 @@ GET         /continue_snapshot                                         controlle
 GET         /snapshot_dump                                             controllers.admin.SnapshotController.snapshotDump()
 GET         /snapshot_restore                                          controllers.admin.SnapshotController.snapshotRestore()
 GET         /import_salaries                                           controllers.admin.SnapshotController.importSalaries()
-GET         /import_salaries_server                                    controllers.admin.SnapshotController.importSalariesServer()
 GET         /export_salaries                                           controllers.admin.SnapshotController.exportSalaries()
 
 GET         /refresher                                                 controllers.admin.RefresherController.index()
