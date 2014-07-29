@@ -73,3 +73,6 @@ fi
 
 # Restauramos el symlink borrado
 git checkout public
+
+# Lanzamos los tests funcionales
+curl "https://drone.io/hook?id=github.com/DailySoccer/backend_test&token=sjy4CJrxbBizapoLvUtl" &
