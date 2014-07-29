@@ -24,6 +24,8 @@ public final class MockData {
         createUser("Santiago",  "R. Bedate",    "Neo",          "neo@test.com", "");
         createUser("Federico",  "Mon",          "Fede",         "fede@test.com", "");
         createUser("Jesús",     "Tapial",       "Machus",       "machus@test.com", "");
+        createUser("Antonio",   "Galvez",       "Antonio",      "antonio@test.com", "");
+        createUser("Belen",     "Cao",          "Belen",        "belen@test.com", "");
 
         createUser("Test",      "Test",         "Test",         "test@test.com", "");
     }
