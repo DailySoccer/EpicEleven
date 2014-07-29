@@ -27,7 +27,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
 
     public Date createdAt;
 
-    List<SoccerPlayerStats> stats = new ArrayList<>();
+    public List<SoccerPlayerStats> stats = new ArrayList<>();
 
     // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
     public TemplateSoccerPlayer() {

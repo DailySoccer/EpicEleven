@@ -25,6 +25,9 @@ GET         /get_live_match_events/template_contest/:contest        controllers.
 # Entrar en concurso
 POST        /add_contest_entry                                      controllers.ContestController.addContestEntry()
 
+# Informacion
+GET         /get_soccer_player_info/:soccerPlayer                   controllers.ContestController.getTemplateSoccerPlayerInfo(soccerPlayer)
+
 
 # Debug
 GET         /migrate                                                controllers.OptaHttpController.migrate()

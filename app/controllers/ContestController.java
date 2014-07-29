@@ -198,4 +198,15 @@ public class ContestController extends Controller {
         return new ReturnHelper(liveMatchEventList).toResult(JsonViews.Live.class);
     }
 
+    /**
+     * Obtener la información sobre un SoccerPlayer (estadísticas,...)
+     * @param templateSoccerPlayerId
+     * @return
+     */
+    public static Result getTemplateSoccerPlayerInfo(String templateSoccerPlayerId) {
+
+        TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(templateSoccerPlayerId));
+        return new ReturnHelper(templateSoccerPlayer).toResult();
+        // return new ReturnHelper(ImmutableMap.of("stats", templateSoccerPlayer.stats)).toResult();
+    }
 }
