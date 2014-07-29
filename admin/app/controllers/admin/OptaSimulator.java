@@ -7,9 +7,6 @@ import model.ModelEvents;
 import model.Snapshot;
 import model.opta.OptaProcessor;
 import org.jdom2.input.JDOMParseException;
-import org.jongo.MongoCollection;
-import org.bson.types.ObjectId;
-import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import play.db.DB;
 
@@ -32,7 +29,7 @@ public class OptaSimulator implements Runnable {
         this._nextDocToParseIndex = 0;
         this._optaProcessor = new OptaProcessor();
 
-        SimulatorState.initialize(this);
+        OptaSimulatorState.initialize(this);
     }
 
     public static boolean start() {
@@ -83,23 +80,23 @@ public class OptaSimulator implements Runnable {
 
         _snapshot = null;
         GlobalDate.setFakeDate(null);
-        SimulatorState.reset();
+        OptaSimulatorState.reset();
     }
 
     static public void reset() {
         resetInstance();
         Model.resetDB();
         MockData.ensureMockDataUsers();
-        SimulatorState.reset();
+        OptaSimulatorState.reset();
     }
 
     static public boolean isSnapshotEnabled() {
-        return SimulatorState.getInstance().useSnapshot;
+        return OptaSimulatorState.getInstance().useSnapshot;
     }
 
     static public void useSnapshot() {
         _snapshot =  Snapshot.getLast();
-        SimulatorState.update();
+        OptaSimulatorState.update();
     }
 
     static public void gotoDate(Date date) {
@@ -109,21 +106,21 @@ public class OptaSimulator implements Runnable {
             _instance.startThread();
         }
         _instance._pause = date;
-         SimulatorState.update();
+         OptaSimulatorState.update();
     }
 
     static public Date getCurrentDate() {
-        return SimulatorState.getInstance().lastParsedDate;
+        return OptaSimulatorState.getInstance().lastParsedDate;
     }
 
     static public String getNextStepDescription() {
-        return "" + SimulatorState.getInstance().nextDocToParseIndex;
+        return "" + OptaSimulatorState.getInstance().nextDocToParseIndex;
     }
 
     static public String getNextStop() {
         String nextStop = "None";
 
-        SimulatorState state = SimulatorState.getInstance();
+        OptaSimulatorState state = OptaSimulatorState.getInstance();
         if (state.paused && state.pause != null) {
             nextStop = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(state.pause);
         }
@@ -178,7 +175,7 @@ public class OptaSimulator implements Runnable {
             _pauseLoop = true;
             _pause = null;
 
-            SimulatorState.update();
+            OptaSimulatorState.update();
         }
     }
 
@@ -252,7 +249,7 @@ public class OptaSimulator implements Runnable {
             Logger.error("WTF 1533 SQLException: ", e);
         }
 
-        SimulatorState.update();
+        OptaSimulatorState.update();
         return _isFinished;
     }
 
@@ -303,78 +300,4 @@ public class OptaSimulator implements Runnable {
     boolean _isFinished;
 
     static Snapshot _snapshot;
-}
-
-/**
- * Estado del simulador
- */
-class SimulatorState {
-    static public MongoCollection collection() { return Model.jongo().getCollection(collectionName); }
-
-    String stateId = "--unique id--";
-    boolean useSnapshot;
-    boolean paused;
-    Date pause;
-    Date lastParsedDate;
-    int nextDocToParseIndex;
-
-    static public SimulatorState getInstance() {
-        return (SimulatorState._state != null) ? SimulatorState._state : SimulatorState.findOrCreateInstance();
-    }
-
-    static public void reset() {
-        Logger.info("Simulator: reset State...");
-        _state = findOrCreateInstance();
-        update();
-    }
-
-    static public void initialize(OptaSimulator optaSimulator) {
-        SimulatorState state = getInstance();
-
-        optaSimulator._pause = state.paused ? state.pause : null;
-        optaSimulator._lastParsedDate = state.lastParsedDate;
-        optaSimulator._nextDocToParseIndex = state.nextDocToParseIndex;
-
-        if (state.useSnapshot) {
-            OptaSimulator.useSnapshot();
-        }
-
-        Logger.info("Simulator: loading State: date({}): {} index", state.lastParsedDate, state.nextDocToParseIndex);
-    }
-
-    static public void update() {
-        SimulatorState state = getInstance();
-
-        OptaSimulator optaSimulator = OptaSimulator._instance;
-        if (optaSimulator != null) {
-            state.paused = (optaSimulator._pause != null);
-            state.pause =  optaSimulator._pause;
-
-            if (optaSimulator._lastParsedDate != null)
-                state.lastParsedDate = optaSimulator._lastParsedDate;
-
-            state.nextDocToParseIndex =  optaSimulator._nextDocToParseIndex;
-        }
-        state.useSnapshot = ( OptaSimulator._snapshot != null);
-
-        collection().update("{stateId: #}", state.stateId).upsert().with(state);
-    }
-
-   static private SimulatorState findOrCreateInstance() {
-        _state = collection().findOne().as(SimulatorState.class);
-        if (_state == null) {
-            _state = stateDefault();
-        }
-        return _state;
-    }
-
-    static private SimulatorState stateDefault() {
-        SimulatorState state = new SimulatorState();
-        state.useSnapshot = (OptaSimulator._snapshot != null);
-        state.lastParsedDate = Model.dateFirstFromOptaXML();
-        return state;
-    }
-
-    static private SimulatorState _state = null;
-    static final private String collectionName = "simulator";
 }

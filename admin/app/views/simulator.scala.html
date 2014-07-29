@@ -1,15 +1,13 @@
 @()
 
 @import controllers.admin.OptaSimulator
-@import helper._
-@import helper.twitterBootstrap._
 @import controllers.admin.routes._
 @import model._
 
 
 @main("Snapshots - Admin") {
 
-<h1 class="page-header">Snapshot</h1>
+<h1 class="page-header">Snapshots</h1>
     <div><strong>Last Snapshot</strong> (@Snapshot.getName()):
         @if(OptaSimulator.isSnapshotEnabled()) {
             On
