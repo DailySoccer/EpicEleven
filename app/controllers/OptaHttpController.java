@@ -147,6 +147,7 @@ public class OptaHttpController extends Controller {
     }
 
     public static Result dateLastXML() {
+        response().setHeader("Access-Control-Allow-Origin", "*");
         return ok(Model.dateLastFromOptaXML().toString());
     }
 
@@ -170,6 +171,7 @@ public class OptaHttpController extends Controller {
         }
 
         response().setContentType("text/html");
+        response().setHeader("Access-Control-Allow-Origin", "*");
 
         return ok(remainingXML);
 

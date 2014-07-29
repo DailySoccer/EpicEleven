@@ -33,12 +33,12 @@
          }
 
         function checkDates() {
-            //var temp =  $.ajax({
-            //    url: "http://dailysoccer.herokuapp.com/date_last_xml",
-            //    success: function(result) {
-            //            repaintDateServerLastXML(result);
-            //    }
-            //});
+            var temp =  $.ajax({
+                url: "http://dailysoccer.herokuapp.com/date_last_xml",
+                success: function(result) {
+                        repaintDateServerLastXML(result);
+                }
+            });
             var temp =  $.ajax({
                 url: "/date_last_xml",
                 success: function(result) {
