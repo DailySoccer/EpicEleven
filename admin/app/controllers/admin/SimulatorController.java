@@ -1,25 +1,17 @@
 package controllers.admin;
 
-import model.Snapshot;
-import play.Logger;
 import play.data.Form;
 import play.data.format.Formats;
 import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
 
-import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static play.data.Form.form;
 
 public class SimulatorController extends Controller {
-
-    public static Result index() {
-        return ok(views.html.simulator.render());
-    }
 
     public static Result currentDate() {
         return ok(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(OptaSimulator.getCurrentDate()));
@@ -80,88 +72,4 @@ public class SimulatorController extends Controller {
         return ok();
     }
 
-    public static Result replayLast() {
-        OptaSimulator.reset();
-        OptaSimulator.useSnapshot();
-        return redirect(routes.SimulatorController.index());
-    }
-
-    public static Result continueSnapshot() {
-        Snapshot.load();
-        OptaSimulator.resetInstance();
-
-        return redirect(routes.SimulatorController.index());
-    }
-
-    public static Result snapshot() {
-        Snapshot.create();
-
-        return redirect(routes.SimulatorController.index());
-    }
-
-    public static Result snapshotDB() {
-        Snapshot.createInDB();
-
-        return redirect(routes.SimulatorController.index());
-    }
-
-    public static Result snapshotDump() {
-        ProcessBuilder pb = new ProcessBuilder("./snapshot_dump.sh", "snapshot000");
-        String pwd = pb.environment().get("PWD");
-        ProcessBuilder data = pb.directory(new File(pwd+"/data"));
-        try {
-            Process p = data.start();
-        } catch (IOException e) {
-            Logger.error("WTF 4264", e);
-        }
-        return redirect(routes.SimulatorController.index());
-    }
-
-    public static Result snapshotRestore() {
-        ProcessBuilder pb = new ProcessBuilder("./snapshot_restore.sh", "snapshot000");
-        String pwd = pb.environment().get("PWD");
-        ProcessBuilder data = pb.directory(new File(pwd+"/data"));
-        try {
-            Process p = data.start();
-        } catch (IOException e) {
-            Logger.error("WTF 1124", e);
-        }
-        return redirect(routes.SimulatorController.index());
-    }
-
-    public static Result exportSalaries() {
-        ProcessBuilder pb = new ProcessBuilder("./export_salaries.sh", "salaries.csv");
-        String pwd = pb.environment().get("PWD");
-        ProcessBuilder data = pb.directory(new File(pwd+"/data"));
-        try {
-            Process p = data.start();
-        } catch (IOException e) {
-            Logger.error("WTF 1124", e);
-        }
-        return redirect(routes.SimulatorController.index());
-    }
-
-    public static Result importSalaries() {
-        ProcessBuilder pb = new ProcessBuilder("./import_salaries.sh", "salaries.csv");
-        String pwd = pb.environment().get("PWD");
-        ProcessBuilder data = pb.directory(new File(pwd+"/data"));
-        try {
-            Process p = data.start();
-        } catch (IOException e) {
-            Logger.error("WTF 1124", e);
-        }
-        return redirect(routes.SimulatorController.index());
-    }
-
-    public static Result importSalariesServer() {
-        ProcessBuilder pb = new ProcessBuilder("./import_salaries_server.sh", "salaries.csv");
-        String pwd = pb.environment().get("PWD");
-        ProcessBuilder data = pb.directory(new File(pwd+"/data"));
-        try {
-            Process p = data.start();
-        } catch (IOException e) {
-            Logger.error("WTF 1124", e);
-        }
-        return redirect(routes.SimulatorController.index());
-    }
 }
