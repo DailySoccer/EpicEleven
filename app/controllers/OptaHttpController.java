@@ -146,11 +146,12 @@ public class OptaHttpController extends Controller {
         return ok(retXML);
     }
 
+    @AllowCors.Origin
     public static Result dateLastXML() {
-        response().setHeader("Access-Control-Allow-Origin", "*");
         return ok(Model.dateLastFromOptaXML().toString());
     }
 
+    @AllowCors.Origin
     public static Result remainingXMLs(long last_timestamp) {
         SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
         format1.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -171,7 +172,6 @@ public class OptaHttpController extends Controller {
         }
 
         response().setContentType("text/html");
-        response().setHeader("Access-Control-Allow-Origin", "*");
 
         return ok(remainingXML);
 
