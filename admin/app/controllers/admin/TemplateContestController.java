@@ -159,7 +159,7 @@ public class TemplateContestController extends Controller {
 
         templateContest.name = String.format("%s", startDate);
         templateContest.minInstances = 3;
-        templateContest.maxEntries = 10;
+        templateContest.maxEntries = 20;
         templateContest.prizeType = PrizeType.STANDARD;
         templateContest.entryFee = 10000;
         templateContest.salaryCap = 100000;
