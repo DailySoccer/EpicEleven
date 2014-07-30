@@ -16,7 +16,6 @@ import play.mvc.Result;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -39,12 +38,12 @@ public class OptaHttpController extends Controller {
             else
                 Logger.error("WTF 88731, BOM NOT UTF-8");
         }
-        InputStream stream = new ByteArrayInputStream(bodyText.getBytes(StandardCharsets.UTF_8));
+        InputStream stream = new ByteArrayInputStream(bodyText.getBytes());
         try {
             String encoding = getDetectedEncoding(stream);
             Logger.info("Detected enconding: {}", encoding);
             // Read with detected encoding, save it in UTF-8
-            bodyText = new String(bodyText.getBytes(encoding), "UTF-8");
+            bodyText = new String(bodyText.getBytes(), encoding);
         } catch (IOException e) {
             Logger.error("WTF 1783");
         }
