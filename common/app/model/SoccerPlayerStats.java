@@ -13,7 +13,7 @@ public class SoccerPlayerStats {
 
     public int fantasyPoints;
     public int playedMinutes;
-    public HashMap<Integer, Integer> events = new HashMap<>();
+    public HashMap<String, Integer> events = new HashMap<>();
 
     // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
     public SoccerPlayerStats() {
@@ -35,7 +35,7 @@ public class SoccerPlayerStats {
         for (StatType statType : StatType.values()) {
             int count = countStat(statType);
             if (count > 0) {
-                events.put(statType.id, count);
+                events.put(statType.toString(), count);
 
                 // Logger.debug("Stat: {} : {} count", statType, count);
             }
