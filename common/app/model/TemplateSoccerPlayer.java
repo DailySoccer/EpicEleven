@@ -8,6 +8,7 @@ import model.opta.*;
 import play.Logger;
 import utils.ListUtils;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -25,6 +26,8 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
     public ObjectId templateTeamId;
 
     public Date createdAt;
+
+    public List<SoccerPlayerStats> stats = new ArrayList<>();
 
     // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
     public TemplateSoccerPlayer() {
@@ -93,6 +96,10 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         TemplateSoccerTeam templateTeam = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaPlayer.teamId).as(TemplateSoccerTeam.class);
         if (templateTeam != null) {
             TemplateSoccerPlayer templateSoccer = new TemplateSoccerPlayer(optaPlayer, templateTeam.templateSoccerTeamId);
+
+            TemplateSoccerPlayerMetadata templateSoccerPlayerMetadata = TemplateSoccerPlayerMetadata.findOne(optaPlayer.optaPlayerId);
+            templateSoccer.salary = templateSoccerPlayerMetadata!=null? templateSoccerPlayerMetadata.salary: 79797;
+
             Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).insert(templateSoccer);
 
             Model.optaPlayers().update("{id: #}", optaPlayer.optaPlayerId).with("{$set: {dirty: false}}");

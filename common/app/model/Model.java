@@ -9,12 +9,7 @@ import play.Logger;
 import play.Play;
 import utils.ListUtils;
 
-import javax.sql.DataSource;
-import java.net.UnknownHostException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -26,14 +21,7 @@ import java.util.TimeZone;
 public class Model {
     static public DB mongoDB() { return _mongoDB; }
     static public DB mongoDBAdmin() { return _mongoDBAdmin; }
-    static public DB mongoDBSnapshot() {
-        try {
-            return _mongoDBSnapshot;
-        } catch (MongoException e) {
-            Logger.error("WTF 12952: ", e);
-            return null;
-        }
-    }
+    static public DB mongoDBSnapshot() { return _mongoDBSnapshot; }
 
     static public Jongo jongo() { return _jongo; }
     static public Jongo jongoSnapshot() { return _jongoSnapshot; }
@@ -44,7 +32,7 @@ public class Model {
     static public MongoCollection templateMatchEvents() { return _jongo.getCollection("templateMatchEvents"); }
     static public MongoCollection templateSoccerTeams() { return _jongo.getCollection("templateSoccerTeams"); }
     static public MongoCollection templateSoccerPlayers() { return _jongo.getCollection("templateSoccerPlayers"); }
-    static public MongoCollection liveMatchEvents() { return _jongo.getCollection("liveMatchEvents"); }
+    static public MongoCollection templateSoccerPlayersMetadata() { return _jongo.getCollection("templateSoccerPlayersMetadata"); }
     static public MongoCollection contestEntries() { return _jongo.getCollection("contestEntries"); }
 
     static public MongoCollection contests() { return _jongo.getCollection("contests"); }
@@ -54,75 +42,79 @@ public class Model {
     static public MongoCollection optaPlayers() { return _jongo.getCollection("optaPlayers"); }
     static public MongoCollection optaTeams() { return _jongo.getCollection("optaTeams"); }
     static public MongoCollection optaMatchEvents() { return _jongo.getCollection("optaMatchEvents"); }
+    static public MongoCollection optaMatchEventStats() { return _jongo.getCollection("optaMatchEventStats"); }
     static public MongoCollection pointsTranslation() { return _jongo.getCollection("pointsTranslation"); }
 
     static public void init() {
+        if (Play.isTest())
+            return;
+
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
         MongoClientURI mongoClientURI = new MongoClientURI(mongodbUri);
 
         Logger.info("The MongoDB is {}/{}", mongoClientURI.getHosts(), mongoClientURI.getDatabase());
 
-        boolean bIsInitialized = false;
-        while (!bIsInitialized) {
-            try {
-                _mongoClient = new MongoClient(mongoClientURI);
-                _mongoDB = _mongoClient.getDB(mongoClientURI.getDatabase());
-                _mongoDBAdmin = _mongoClient.getDB("admin");
-                _jongo = new Jongo(_mongoDB);
+        try {
+            _mongoClient = new MongoClient(mongoClientURI);
+            _mongoDB = _mongoClient.getDB(mongoClientURI.getDatabase());
+            _mongoDBAdmin = _mongoClient.getDB("admin");
+            _jongo = new Jongo(_mongoDB);
 
-                if (!Play.isProd()) {
-                    _mongoDBSnapshot = _mongoClient.getDB("snapshot");
-                    _jongoSnapshot = new Jongo(mongoDBSnapshot());
-                } else {
-                    _mongoDBSnapshot = null;
-                    _jongoSnapshot = null;
-                }
-
-                // Let's make sure our DB has the neccesary collections and indexes
-                ensureDB(_mongoDB);
-
-                bIsInitialized = true;
+            if (!Play.isProd()) {
+                _mongoDBSnapshot = _mongoClient.getDB("snapshot");
+                _jongoSnapshot = new Jongo(mongoDBSnapshot());
+            } else {
+                _mongoDBSnapshot = null;
+                _jongoSnapshot = null;
             }
-            catch (Exception exc) {
-                Logger.error("Error initializating MongoDB {}/{}: {}", mongoClientURI.getHosts(),
-                                                                       mongoClientURI.getDatabase(), exc.toString());
-                WaitSeconds(10, "Trying to initialize MongoDB again");
-            }
+
+            // Let's make sure our DB has the neccesary collections and indexes
+            ensureDB(_mongoDB);
         }
-
-        DataSource ds = play.db.DB.getDataSource();
-        java.sql.Connection connection = play.db.DB.getConnection();
+        catch (Exception exc) {
+            Logger.error("Error initializating MongoDB {}/{}: {}", mongoClientURI.getHosts(),
+                                                                   mongoClientURI.getDatabase(), exc.toString());
+        }
 
         try {
-            try (Statement stmt = connection.createStatement()) {
-                boolean result = stmt.execute("CREATE TABLE IF NOT EXISTS optaxml (" +
-                                              " id serial PRIMARY KEY, " +
-                                              " xml text, " +
-                                              " headers text, " +
-                                              " created_at timestamp, " +
-                                              " name text, " +
-                                              " feed_type text, " +
-                                              " game_id text, " +
-                                              " competition_id text, " +
-                                              " season_id text, " +
-                                              " last_updated timestamp " +
-                                              " );");
-                if (result) {
-                    Logger.info("Tabla OptaXML creada");
-                }
-            }
+            ensurePostgresDB();
         }
-        catch (SQLException e) {
-            Logger.error("SQL Exception creating DailySoccerDB table", e);
+        catch (Exception exc) {
+            Logger.error("Error creating optaxml: ", exc);
         }
     }
 
-    static void WaitSeconds(int seconds, String message) {
-        try {
-            Logger.info("{} in {} seconds...", message, seconds);
-            Thread.sleep(seconds * 1000);
-        } catch (InterruptedException intExc) {
-            Logger.error("Interrupted");
+    private static void ensurePostgresDB() throws SQLException {
+
+        try (Connection connection = play.db.DB.getConnection()) {
+            try (Statement stmt = connection.createStatement()) {
+                stmt.execute("CREATE TABLE IF NOT EXISTS optaxml (" +
+                             " id serial PRIMARY KEY, " +
+                             " xml text, " +
+                             " headers text, " +
+                             " created_at timestamp, " +
+                             " name text, " +
+                             " feed_type text, " +
+                             " game_id text, " +
+                             " competition_id text, " +
+                             " season_id text, " +
+                             " last_updated timestamp " +
+                             " );");
+
+                // http://dba.stackexchange.com/questions/35616/create-index-if-it-does-not-exist
+                stmt.execute("DO $$ " +
+                             "BEGIN " +
+                                 "IF NOT EXISTS ( " +
+                                     "SELECT 1 " +
+                                     "FROM  pg_class c " +
+                                     "JOIN  pg_namespace n ON n.oid = c.relnamespace " +
+                                     "WHERE c.relname = 'created_at_index' " +
+                                     "AND   n.nspname = 'public' " +
+                                     ") THEN " +
+                                     "CREATE INDEX created_at_index ON public.optaxml (created_at); " +
+                                 "END IF; " +
+                             "END$$;");
+            }
         }
     }
 
@@ -166,11 +158,7 @@ public class Model {
             theMongoDB.getCollection(name).drop();
         }
         */
-        try {
-            new Mongo().dropDatabase(theMongoDB.getName());
-        } catch (UnknownHostException e) {
-            Logger.error("WTF 85327");
-        }
+        theMongoDB.dropDatabase();
     }
 
 
@@ -226,12 +214,11 @@ public class Model {
         if (!theMongoDB.collectionExists("templateSoccerPlayers"))
             theMongoDB.createCollection("templateSoccerPlayers", new BasicDBObject());
 
+        if (!theMongoDB.collectionExists("templateSoccerPlayersMetadata"))
+            theMongoDB.createCollection("templateSoccerPlayersMetadata", new BasicDBObject());
+
         if (!theMongoDB.collectionExists("contests"))
             theMongoDB.createCollection("contests", new BasicDBObject());
-
-        // TODO: Podemos quitar esto?
-        if (!theMongoDB.collectionExists("matchEvents"))
-            theMongoDB.createCollection("matchEvents", new BasicDBObject());
 
         if (!theMongoDB.collectionExists("liveMatchEvents"))
             theMongoDB.createCollection("liveMatchEvents", new BasicDBObject());
@@ -263,7 +250,7 @@ public class Model {
                                  String gameId, String competitionId, String seasonId, Date lastUpdated) {
 
         String insertString = "INSERT INTO optaxml (xml, headers, created_at, name, feed_type, game_id, competition_id," +
-                "season_id, last_updated) VALUES (?,?,?,?,?,?,?,?,?)";
+                              "season_id, last_updated) VALUES (?,?,?,?,?,?,?,?,?)";
 
         try (Connection connection = play.db.DB.getConnection()) {
             try (PreparedStatement stmt = connection.prepareStatement(insertString)) {
@@ -321,7 +308,39 @@ public class Model {
         return date;
     }
 
+    public static Date dateFirstFromOptaXML() {
+        Date dateFirst = new Date(0L);
+        try (Connection connection = play.db.DB.getConnection()) {
+            String selectString = "SELECT created_at FROM optaxml ORDER BY created_at ASC LIMIT 1;";
 
+            Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            ResultSet resultSet = stmt.executeQuery(selectString);
+            if (resultSet != null && resultSet.next()) {
+                dateFirst = resultSet.getTimestamp("created_at");
+            }
+        }
+        catch (java.sql.SQLException e) {
+            Logger.error("WTF 82847", e);
+        }
+        return dateFirst;
+    }
+
+    public static Date dateLastFromOptaXML() {
+        Date dateLast = new Date(0L);
+        try (Connection connection = play.db.DB.getConnection()) {
+            String selectString = "SELECT created_at FROM optaxml ORDER BY created_at DESC LIMIT 1;";
+
+            Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            ResultSet resultSet = stmt.executeQuery(selectString);
+            if (resultSet != null && resultSet.next()) {
+                dateLast = resultSet.getTimestamp("created_at");
+            }
+        }
+        catch (java.sql.SQLException e) {
+            Logger.error("WTF 82848", e);
+        }
+        return dateLast;
+    }
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/
     static private MongoClient _mongoClient;
@@ -332,6 +351,7 @@ public class Model {
 
     static private DB _mongoDBAdmin;
     static private DB _mongoDBSnapshot;
+
     // Jongo is thread safe too: https://groups.google.com/forum/#!topic/jongo-user/KwukXi5Vm7c
     static private Jongo _jongo;
     static private Jongo _jongoSnapshot;

@@ -7,9 +7,9 @@ import play.Logger;
 import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utils.ListUtils;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -21,14 +21,17 @@ public class TemplateContestController extends Controller {
     }
 
     public static Result show(String templateContestId) {
-        return TODO;
+        TemplateContest templateContest = TemplateContest.findOne(new ObjectId(templateContestId));
+        return ok(views.html.template_contest.render(
+                templateContest,
+                templateContest.getTemplateMatchEvents()));
     }
 
     public static Result newForm() {
         TemplateContestForm params = new TemplateContestForm();
 
         Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
-        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.createdAt)));
     }
 
     public static Result edit(String templateContestId) {
@@ -36,7 +39,7 @@ public class TemplateContestController extends Controller {
         TemplateContestForm params = new TemplateContestForm(templateContest);
 
         Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
-        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.createdAt)));
     }
 
     public static Result destroy(String templateContestId) {
@@ -48,7 +51,8 @@ public class TemplateContestController extends Controller {
     public static Result create() {
         Form<TemplateContestForm> templateContestForm = form(TemplateContestForm.class).bindFromRequest();
         if (templateContestForm.hasErrors()) {
-            return badRequest(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions()));
+            String createdAt = templateContestForm.field("createdAt").valueOr("0");
+            return badRequest(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(Long.parseLong(createdAt))));
         }
 
         TemplateContestForm params = templateContestForm.get();
@@ -60,7 +64,6 @@ public class TemplateContestController extends Controller {
         templateContest.templateContestId = isNew ? new ObjectId() : new ObjectId(params.id);
         templateContest.state = params.state;
         templateContest.name = params.name;
-        templateContest.postName = params.postName;
         templateContest.minInstances = params.minInstances;
         templateContest.maxEntries = params.maxEntries;
         templateContest.salaryCap = params.salaryCap;
@@ -68,7 +71,7 @@ public class TemplateContestController extends Controller {
         templateContest.prizeType = params.prizeType;
 
         templateContest.activationAt = params.activationAt;
-        templateContest.createdAt = params.createdAt;
+        templateContest.createdAt = new Date(params.createdAt);
 
         /*
         // Si está activo y la fecha de activación se ha puesto en un futuro
@@ -80,8 +83,8 @@ public class TemplateContestController extends Controller {
 
         Date startDate = null;
         templateContest.templateMatchEventIds = new ArrayList<>();
-        for (String optaMatchEventId: params.templateMatchEvents) {
-            TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOneFromOptaId(optaMatchEventId);
+        for (String templateMatchEventId: params.templateMatchEvents) {
+            TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId));
             templateContest.templateMatchEventIds.add(templateMatchEvent.templateMatchEventId);
 
             if (startDate == null || templateMatchEvent.startDate.before(startDate)) {
@@ -107,8 +110,6 @@ public class TemplateContestController extends Controller {
     }
 
     public static Result createAll() {
-        Model.templateContests().remove();
-
         Iterable<TemplateMatchEvent> matchEventResults = Model.templateMatchEvents().find().sort("{startDate: 1}").as(TemplateMatchEvent.class);
 
         DateTime dateTime = null;
@@ -157,7 +158,6 @@ public class TemplateContestController extends Controller {
         TemplateContest templateContest = new TemplateContest();
 
         templateContest.name = String.format("%s", startDate);
-        templateContest.postName = "Late evening";
         templateContest.minInstances = 3;
         templateContest.maxEntries = 10;
         templateContest.prizeType = PrizeType.STANDARD;
@@ -165,6 +165,13 @@ public class TemplateContestController extends Controller {
         templateContest.salaryCap = 100000;
         templateContest.startDate = startDate;
         templateContest.templateMatchEventIds = new ArrayList<>();
+
+        // Se activará 2 dias antes a la fecha del partido
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(startDate);
+        calendar.add(Calendar.DAY_OF_MONTH, -2);
+        templateContest.activationAt = calendar.getTime();
+
         templateContest.createdAt = GlobalDate.getCurrentDate();
 
         for (TemplateMatchEvent match: templateMatchEvents) {

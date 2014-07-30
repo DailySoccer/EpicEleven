@@ -25,15 +25,10 @@ GET         /lobby                                                     controlle
 
 GET         /users                                                     controllers.admin.UserController.index()
 
+GET         /soccer_player_stats/:playerId                             controllers.admin.TemplateSoccerPlayerController.showStats(playerId : String)
+
 GET         /fantasy_points/contest/:contestId/:playerId               controllers.admin.TemplateSoccerPlayerController.showFantasyPointsInContest(contestId : String, playerId : String)
 GET         /fantasy_points/match_event/:matchEventId/:playerId        controllers.admin.TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(matchEventId : String, playerId : String)
-
-GET         /live_contest_entries                                      controllers.admin.LiveContestEntryController.index()
-GET         /live_contest_entry/:contestEntryId                        controllers.admin.LiveContestEntryController.show(contestEntryId : String)
-
-GET         /live_match_events                                         controllers.admin.LiveMatchEventController.index()
-GET         /live_match_event/:liveMatchEventId                        controllers.admin.LiveMatchEventController.show(liveMatchEventId : String)
-GET         /live_match_event/template/:templateMatchEventId           controllers.admin.LiveMatchEventController.showWithTemplate(templateMatchEventId : String)
 
 GET         /contest_entries                                           controllers.admin.ContestEntryController.index()
 GET         /contest_entry/add                                         controllers.admin.ContestEntryController.newForm()
@@ -66,13 +61,9 @@ GET         /opta_match_events                                         controlle
 GET         /opta_events                                               controllers.admin.OptaController.optaEvents()
 GET         /opta_events/update                                        controllers.admin.OptaController.updateOptaEvents()
 
-GET         /simulator                                                 controllers.admin.SimulatorController.index()
 
 GET         /start_simulator                                           controllers.admin.SimulatorController.start()
 GET         /reset_simulator                                           controllers.admin.SimulatorController.reset()
-GET         /replay_last_simulator                                     controllers.admin.SimulatorController.replayLast()
-GET         /snapshot_simulator                                        controllers.admin.SimulatorController.snapshot()
-GET         /snapshotdb_simulator                                      controllers.admin.SimulatorController.snapshotDB()
 GET         /nextstep_simulator                                        controllers.admin.SimulatorController.nextStep()
 GET         /pause_simulator                                           controllers.admin.SimulatorController.pause()
 POST        /goto_date_simulator                                       controllers.admin.SimulatorController.gotoDate()
@@ -82,7 +73,18 @@ GET         /is_running                                                controlle
 GET         /is_paused                                                 controllers.admin.SimulatorController.isPaused()
 GET         /current_date_simulator                                    controllers.admin.SimulatorController.currentDate()
 
+GET         /simulator                                                 controllers.admin.SnapshotController.index()
+GET         /snapshot                                                  controllers.admin.SnapshotController.snapshot()
+GET         /snapshotdb                                                controllers.admin.SnapshotController.snapshotDB()
+GET         /replay_last                                               controllers.admin.SnapshotController.replayLast()
+GET         /continue_snapshot                                         controllers.admin.SnapshotController.continueSnapshot()
+GET         /snapshot_dump                                             controllers.admin.SnapshotController.snapshotDump()
+GET         /snapshot_restore                                          controllers.admin.SnapshotController.snapshotRestore()
+GET         /import_salaries                                           controllers.admin.SnapshotController.importSalaries()
+GET         /export_salaries                                           controllers.admin.SnapshotController.exportSalaries()
+
 GET         /refresher                                                 controllers.admin.RefresherController.index()
 GET         /import_from_last                                          controllers.admin.RefresherController.importFromLast()
+GET         /refresher_in_progress                                     controllers.admin.RefresherController.inProgress()
 GET         /last_date                                                 controllers.admin.RefresherController.lastDate()
 

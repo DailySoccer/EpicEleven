@@ -45,18 +45,8 @@ public class ModelEvents {
             // Buscamos todos los template Match Events asociados con ese partido de Opta
             for (TemplateMatchEvent templateMatchEvent :  Model.templateMatchEvents().find("{optaMatchEventId: #}", optaGameId).as(TemplateMatchEvent.class)) {
 
-                // Existe la version "live" del match event?
-                LiveMatchEvent liveMatchEvent = LiveMatchEvent.findFromTemplateMatchEvent(templateMatchEvent);
-
-                // Si no existe y el partido ya ha comenzado, tenemos que crearlo!
-                if (liveMatchEvent == null && templateMatchEvent.isStarted()) {
-                    liveMatchEvent = LiveMatchEvent.create(templateMatchEvent);
-                }
-
-                if (liveMatchEvent != null) {
-                    liveMatchEvent.updateFantasyPoints();
-
-                    // Logger.info("fantasyPoints in liveMatchEvent({})", find.liveMatchEventId);
+                if (templateMatchEvent.isStarted()) {
+                    templateMatchEvent.updateFantasyPoints();
 
                     if (templateMatchEvent.isFinished()) {
                         actionWhenMatchEventIsFinished(templateMatchEvent);
@@ -88,6 +78,8 @@ public class ModelEvents {
             if (templateContest.isFinished()) {
                 // Cambiar el estado del contest a "HISTORY"
                 Model.templateContests().update("{_id: #, state: \"LIVE\"}", templateContest.templateContestId).with("{$set: {state: \"HISTORY\"}}");
+
+                templateContest.onChangeToHistory();
             }
         }
     }

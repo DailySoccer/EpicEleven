@@ -15,9 +15,13 @@ Installing the environment
 
     $ brew install play
 
-- You need to install mongodb
+- You need to install mongodb:
  
     $ brew install mongo
+
+- You need to install postgres too:
+
+	$ brew install postgres
 
 - To run the server:
 

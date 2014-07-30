@@ -2,6 +2,7 @@
 
 @import controllers.admin.FlashMessage
 @import controllers.admin.routes._
+@import model._
 
 @flash_message() = {
     @for(message <- FlashMessage.list) {
@@ -83,7 +84,7 @@
     <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
             <ul class="nav nav-sidebar">
-                <li class="active"><a href="@DashboardController.index">Overview</a></li>
+                <li><a href="@DashboardController.index">Overview</a></li>
                 <!--li><a href="#">Reports</a></li>
                 <li><a href="#">Analytics</a></li>
                 <li><a href="#">Export</a></li-->
@@ -91,8 +92,6 @@
             <ul class="nav nav-sidebar">
                 <li><a href="@AdminController.lobby">Lobby</a></li>
                 <li><a href="@UserController.index">Users</a></li>
-                <li><a href="@LiveContestEntryController.index">Live Contest Entries</a></li>
-                <li><a href="@LiveMatchEventController.index">Live Match Events</a></li>
                 <li><a href="@PointsTranslationController.index">Points Translations</a></li>
                 <li><a href="@ContestEntryController.index">Contest Entries</a></li>
                 <li><a href="@ContestController.index">Contests</a></li>
@@ -110,7 +109,7 @@
                 <li><a href="@OptaController.optaEvents">Opta Events</a></li>
             </ul>
             <ul class="nav nav-sidebar">
-                <li><a href="@SimulatorController.index">Simulator</a></li>
+                <li><a href="@SnapshotController.index">Snapshots</a></li>
                 <li><a href="@RefresherController.index">Refresh DB</a></li>
             </ul>
         </div>
@@ -120,7 +119,6 @@
         </div>
     </div>
 </div>
-
 <!-- Bootstrap core JavaScript
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
@@ -128,6 +126,7 @@
 <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
 <script src="//cdn.datatables.net/1.10.0/js/jquery.dataTables.js"></script>
 <script src="//cdn.datatables.net/plug-ins/be7019ee387/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+@simulatorbar()
 
 @scripts
 

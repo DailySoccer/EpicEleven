@@ -11,7 +11,7 @@
     <table id="table_id" class="table table-striped">
         <thead>
         <tr>
-            <th>Id</th>
+            <!--th>Id</th-->
             <th>OptaId</th>
             <th>Name</th>
             <th>ShortName</th>
@@ -20,7 +20,7 @@
         <tbody>
         @for(p <- teams) {
         <tr>
-            <td>@p.templateSoccerTeamId</td>
+            <!--td>@p.templateSoccerTeamId</td-->
             <td>@p.optaTeamId</td>
             <td><a href="@TemplateSoccerTeamController.show(p.templateSoccerTeamId.toString())">@p.name</a></td>
             <td>@p.shortName</td>

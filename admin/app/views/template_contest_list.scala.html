@@ -45,7 +45,6 @@
             <!--th>Id</th-->
             <th>State</th>
             <th>Name</th>
-            <th>PostName</th>
             <th>Num. Matches</th>
             <th>Min Instances</th>
             <th>Max Entries</th>
@@ -53,8 +52,8 @@
             <th>Entry Fee</th>
             <th>Prize Type</th>
             <th>Start Date</th>
+            <th>Activation At</th>
             <th>State</th>
-            <th></th>
             <!--
             @for(i <- 0 to 10) {
             <th>Match Event @i</th>
@@ -67,8 +66,7 @@
         <tr>
             <!--td>@p.templateContestId</td-->
             <td>@p.state</td>
-            <td>@p.name</td>
-            <td>@p.postName</td>
+            <td><a href="@TemplateContestController.show(p.templateContestId.toString())" style="white-space: nowrap">@p.name</a></td>
             <td>@p.templateMatchEventIds.size()</td>
             <td>@p.minInstances</td>
             <td>@p.maxEntries</td>
@@ -76,11 +74,16 @@
             <td>@p.entryFee</td>
             <td>@p.prizeType</td>
             <td>@p.startDate.format("yyyy/MM/dd HH:mm:ss")</td>
+            <td>@p.activationAt.format("yyyy/MM/dd HH:mm:ss")</td>
             <td>@contest_state(p.templateContestId.toString())</td>
-            <td>
-                <a href="@TemplateContestController.edit(p.templateContestId.toString())"><button class="btn btn-success">Edit</button></a>
-                <a href="@TemplateContestController.destroy(p.templateContestId.toString())"><button class="btn btn-danger">-</button></a>
-            </td>
+            @if(p.state.toString().equals("OFF")) {
+                <td>
+                    <a href="@TemplateContestController.edit(p.templateContestId.toString())"><button class="btn btn-success">Edit</button></a>
+                </td>
+                <td>
+                    <a href="@TemplateContestController.destroy(p.templateContestId.toString())"><button class="btn btn-danger">-</button></a>
+                </td>
+            }
         </tr>
         }
         </tbody>

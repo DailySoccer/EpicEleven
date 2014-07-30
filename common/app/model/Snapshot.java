@@ -11,10 +11,7 @@ import java.util.ArrayList;
 
 public class Snapshot {
     static public MongoCollection collection() {
-        if (Model.jongoSnapshot() == null) {
-            return null;
-        }
-        return Model.jongoSnapshot().getCollection(snapshotDBName);
+        return (Model.jongoSnapshot() != null) ? Model.jongoSnapshot().getCollection(snapshotDBName) : null;
     }
 
     public ArrayList<PointsTranslation> pointsTranslations;
@@ -94,8 +91,21 @@ public class Snapshot {
         snapshot.createdAt = GlobalDate.getCurrentDate();
 
         createInDB();
+        collection().remove();
         collection().insert(snapshot);
         return snapshot;
+    }
+
+    static public void load() {
+        DBObject copyOp = new BasicDBObject("copydb", "1").
+                append("fromdb" , "snapshot").
+                append("todb", "dailySoccerDB");
+
+        Model.resetDB();
+        CommandResult a = Model.mongoDBAdmin().command(copyOp);
+        if (a.getErrorMessage() != null) {
+            Logger.error(a.getErrorMessage());
+        }
     }
 
     static private <T> void create(String collectionName, Class<T> classType) {

@@ -6,13 +6,17 @@ import model.ModelEvents;
 import model.opta.OptaDB;
 import model.opta.OptaProcessor;
 import org.jdom2.input.JDOMParseException;
+import org.mozilla.universalchardet.UniversalDetector;
 import play.Logger;
 import play.db.DB;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 
-import java.io.UnsupportedEncodingException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -29,11 +33,20 @@ public class OptaHttpController extends Controller {
 
         long startDate = System.currentTimeMillis();
         String bodyText = request().body().asText();
-        try {
-            bodyText = new String(bodyText.getBytes("ISO-8859-1"));
+        if (bodyText.charAt(0) != '<') {
+            if (bodyText.charAt(0) == '\uFEFF')
+                Logger.info("BOM: UTF-8");
+            else
+                Logger.error("WTF 88731, BOM NOT UTF-8");
         }
-        catch (UnsupportedEncodingException e) {
-            Logger.error("WTF 43451: ", e);
+        InputStream stream = new ByteArrayInputStream(bodyText.getBytes(StandardCharsets.UTF_8));
+        try {
+            String encoding = getDetectedEncoding(stream);
+            Logger.info("Detected enconding: {}", encoding);
+            // Read with detected encoding, save it in UTF-8
+            bodyText = new String(bodyText.getBytes(encoding), "UTF-8");
+        } catch (IOException e) {
+            Logger.error("WTF 1783");
         }
 
         String name = "default-filename";
@@ -58,30 +71,42 @@ public class OptaHttpController extends Controller {
         }
 
         Model.insertXML(bodyText,
-                getHeadersString(request().headers()),
-                new Date(startDate),
-                getHeader("X-Meta-Default-Filename", request().headers()),
-                getHeader("X-Meta-Feed-Type", request().headers()),
-                getHeader("X-Meta-Game-Id", request().headers()),
-                getHeader("X-Meta-Competition-Id", request().headers()),
-                getHeader("X-Meta-Season-Id", request().headers()),
-                Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", request().headers()))
-        );
+                        getHeadersString(request().headers()),
+                        new Date(startDate),
+                        getHeader("X-Meta-Default-Filename", request().headers()),
+                        getHeader("X-Meta-Feed-Type", request().headers()),
+                        getHeader("X-Meta-Game-Id", request().headers()),
+                        getHeader("X-Meta-Competition-Id", request().headers()),
+                        getHeader("X-Meta-Season-Id", request().headers()),
+                        Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", request().headers())));
 
         OptaProcessor theProcessor = new OptaProcessor();
-        HashSet<String> dirtyMatchEvents = null;
+        HashSet<String> updatedMatchEvents = null;
+
         try {
-            dirtyMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyText);
+            updatedMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyText);
         }
         catch (JDOMParseException e) {
             Logger.error("Exception parsing: {}", getHeader("X-Meta-Default-Filename", request().headers()), e);
         }
-        ModelEvents.onOptaMatchEventIdsChanged(dirtyMatchEvents);
+
+        ModelEvents.onOptaMatchEventIdsChanged(updatedMatchEvents);
 
         return ok("Yeah, XML processed");
     }
 
-    public static String getHeadersString(Map<String, String[]> headers) {
+    private static String getDetectedEncoding(InputStream is) throws IOException {
+        UniversalDetector detector = new UniversalDetector(null);
+        byte[] buf = new byte[4096];
+        int nread;
+        while ((nread = is.read(buf)) > 0 && !detector.isDone()) {
+            detector.handleData(buf, 0, nread);
+        }
+        detector.dataEnd();
+        return detector.getDetectedCharset();
+    }
+
+    private static String getHeadersString(Map<String, String[]> headers) {
         Map<String, String> plainHeaders = new HashMap<String, String>();
         for (String key: headers.keySet()){
             plainHeaders.put(key, "'"+headers.get(key)[0]+"'");
@@ -89,7 +114,7 @@ public class OptaHttpController extends Controller {
         return plainHeaders.toString();
     }
 
-    public static String getHeader(String key, Map<String, String[]> headers) {
+    private static String getHeader(String key, Map<String, String[]> headers) {
         if (null == headers) {
             return null;
         }
@@ -100,16 +125,16 @@ public class OptaHttpController extends Controller {
                             null;
     }
 
-    public static Result migrate(){
+    public static Result migrate() {
         Iterable<OptaDB> allOptaDBs = Model.optaDB().find().as(OptaDB.class);
 
         for (OptaDB document: allOptaDBs) {
             if (getHeader("X-Meta-Feed-Type", document.headers) != null) {
 
                 Model.insertXML(document.xml, getHeadersString(document.headers), new Date(document.startDate), document.name,
-                        getHeader("X-Meta-Feed-Type", document.headers), getHeader("X-Meta-Game-Id", document.headers),
-                        getHeader("X-Meta-Competition-Id", document.headers), getHeader("X-Meta-Season-Id", document.headers),
-                        Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", document.headers)));
+                                getHeader("X-Meta-Feed-Type", document.headers), getHeader("X-Meta-Game-Id", document.headers),
+                                getHeader("X-Meta-Competition-Id", document.headers), getHeader("X-Meta-Season-Id", document.headers),
+                                Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", document.headers)));
             }
             else {
                 Logger.debug("IGNORANDO: " + document.name);
@@ -145,6 +170,12 @@ public class OptaHttpController extends Controller {
         return ok(retXML);
     }
 
+    @AllowCors.Origin
+    public static Result dateLastXML() {
+        return ok(Model.dateLastFromOptaXML().toString());
+    }
+
+    @AllowCors.Origin
     public static Result remainingXMLs(long last_timestamp) {
         SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
         format1.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -213,7 +244,7 @@ public class OptaHttpController extends Controller {
         Timestamp last_date = new Timestamp(askedDate.getTime());
         String selectString = "SELECT * FROM optaxml WHERE created_at > '"+last_date+"' ORDER BY created_at LIMIT 1;";
 
-        Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+        Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
         return stmt.executeQuery(selectString);
     }
 
@@ -221,7 +252,7 @@ public class OptaHttpController extends Controller {
         Timestamp last_date = new Timestamp(askedDate.getTime());
         String selectString = "SELECT count(*) as remaining FROM optaxml WHERE created_at > '"+last_date+"';";
 
-        Statement stmt = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+        Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
         return stmt.executeQuery(selectString);
     }
 }

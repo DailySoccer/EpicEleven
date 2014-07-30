@@ -6,9 +6,21 @@
 @import model._
 
 @scripts = {
-<script type="text/javascript">
+    <script type="text/javascript" charset="utf-8">
+
+
+        function repaintDateServerLastXML(result) {
+            document.getElementById("date_server_last_xml").innerHTML=result;
+        }
+        function repaintDateLastXML(result) {
+            document.getElementById("date_last_xml").innerHTML=result;
+        }
         function repaintRemaining(remaining) {
+            var prevHtml = document.getElementById("remaining").innerHTML;
             document.getElementById("remaining").innerHTML=remaining;
+            if (remaining == "0" && prevHtml != "0") {
+                repaintButton();
+            }
         }
 
         function checkRemaining(remaining) {
@@ -16,6 +28,21 @@
                 url: "http://dailysoccer.herokuapp.com/remaining/"+remaining,
                 success: function(result) {
                         repaintRemaining(result);
+                }
+            });
+         }
+
+        function checkDates() {
+            var temp =  $.ajax({
+                url: "http://dailysoccer.herokuapp.com/date_last_xml",
+                success: function(result) {
+                        repaintDateServerLastXML(result);
+                }
+            });
+            var temp =  $.ajax({
+                url: "/date_last_xml",
+                success: function(result) {
+                        repaintDateLastXML(result);
                 }
             });
         }
@@ -29,9 +56,32 @@
             });
         }
 
+        function repaintButton() {
+            var temp =  $.ajax({
+                url: "@RefresherController.inProgress",
+                success: function(result) {
+                        if (result == "true" || document.getElementById("remaining").innerHTML == "0") {
+                            getLastXML();
+                            $(".play.import").addClass("disabled");
+                        } else {
+                            $(".play.import").removeClass("disabled");
+                        }
+                }
+            });
+        }
+
+        $('.ajax').on('click', function(e) {
+            e.preventDefault();
+            $.ajax($(this).attr('href'));
+            repaintButton();
+        });
+
         $(document).ready( function(){
-           window.setInterval(getLastXML, 200);
-        })
+           getLastXML();
+           checkDates();
+           window.setInterval(checkDates, 10000);
+           window.setInterval(repaintButton, 1000);
+        });
 
     </script>
 }
@@ -42,11 +92,16 @@
 <h1 class="page-header">Refresher</h1>
     <div><span>Production server has:</span>
          <span style="font-weight:700; margin-left: 0.5em;" id="remaining"></span>
-         <span> more documents than you</span></div>
+         <span> more documents than you</span>
+    </div>
+    <div>
+        <div>Your last XML date: <span id="date_last_xml"></span></div>
+        <div>Server's last XML date: <span id="date_server_last_xml"></span></div>
+    </div>
     <br/>
 
     <div class="btn-group">
-            <a class="btn btn-sim btn-primary play" href="@RefresherController.importFromLast" title="Synchronize all documents from Opta.">
+            <a class="btn btn-sim btn-primary ajax play import disabled" href="@RefresherController.importFromLast" title="Synchronize all documents from Opta.">
                 Import
             </a>
     </div>

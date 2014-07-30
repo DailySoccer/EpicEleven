@@ -24,7 +24,9 @@ if [ $# -eq 0 ]
     then
         if [[ "$branch_name" != "master" && "$branch_name" != "develop" ]]
             then
-                echo "You need to supply the Heroku remote. $remotes_allowed_message"
+                #echo "You need to supply the Heroku remote. $remotes_allowed_message"
+                echo "If you want to push $branch_name to staging, you must say explicitly:"
+                echo "> ./deploy staging"
                 exit 1
         elif [[ "$branch_name" == "master" ]]
             then
@@ -38,9 +40,6 @@ if [ $# -eq 0 ]
             then
                 echo $remotes_allowed_message
                 exit 1
-        elif [[ "$1" == "staging" && "$branch_name" != "develop" ]]
-            then
-                git checkout develop
         elif [[ "$1" != "production" && "$branch_name" != "master" ]]
             then
                 git checkout master
@@ -62,6 +61,9 @@ git commit -am "Including build in deploy branch"
 # Push a heroku
 git push "$destination" deploy:master --force
 
+#Hacemos una petición a heroku para que vaya levantándose con el código nuevo
+curl "http://dailysoccer-staging.herokuapp.com" > /dev/null 2>&1
+
 # Vuelta adonde estabamos
 git checkout $branch_name
 
@@ -74,3 +76,6 @@ fi
 
 # Restauramos el symlink borrado
 git checkout public
+
+# Lanzamos los tests funcionales
+curl "https://drone.io/hook?id=github.com/DailySoccer/backend_test&token=sjy4CJrxbBizapoLvUtl" > /dev/null 2>&1 &

@@ -11,6 +11,7 @@ import play.Logger;
 import play.db.DB;
 
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 
@@ -18,18 +19,17 @@ import java.util.HashSet;
  * Created by gnufede on 13/06/14.
  */
 public class OptaSimulator implements Runnable {
-
-
     private OptaSimulator(String competitionId) {
+
         this._isFinished = false;
+        this._lastParsedDate = new Date(0L);
+        this._competitionId = competitionId;
         this._stopLoop = false;
         this._pauseLoop = true;
-        this._lastParsedDate = 0L;
         this._nextDocToParseIndex = 0;
-        this._competitionId = competitionId;
         this._optaProcessor = new OptaProcessor();
 
-        createConnection();
+        OptaSimulatorState.initialize(this);
     }
 
     public static boolean start() {
@@ -47,7 +47,7 @@ public class OptaSimulator implements Runnable {
         else {
             _instance._pauseLoop = false;
 
-            if (_instance._optaThread == null) {
+            if (_instance._optaThread == null || !_instance._optaThread.isAlive()) {
                 _instance.startThread();
             }
         }
@@ -62,7 +62,7 @@ public class OptaSimulator implements Runnable {
         _instance.next();
     }
 
-    static public void reset() {
+    static public void resetInstance() {
         if (_instance != null) {
             _instance._stopLoop = true;
 
@@ -80,16 +80,23 @@ public class OptaSimulator implements Runnable {
 
         _snapshot = null;
         GlobalDate.setFakeDate(null);
+        OptaSimulatorState.reset();
+    }
+
+    static public void reset() {
+        resetInstance();
         Model.resetDB();
         MockData.ensureMockDataUsers();
+        OptaSimulatorState.reset();
     }
 
     static public boolean isSnapshotEnabled() {
-        return _snapshot != null;
+        return OptaSimulatorState.getInstance().useSnapshot;
     }
 
-    static public void useSnapshot(Snapshot aSnapshot) {
-        _snapshot = aSnapshot;
+    static public void useSnapshot() {
+        _snapshot =  Snapshot.getLast();
+        OptaSimulatorState.update();
     }
 
     static public void gotoDate(Date date) {
@@ -99,14 +106,26 @@ public class OptaSimulator implements Runnable {
             _instance.startThread();
         }
         _instance._pause = date;
+         OptaSimulatorState.update();
+    }
+
+    static public Date getCurrentDate() {
+        return OptaSimulatorState.getInstance().lastParsedDate;
     }
 
     static public String getNextStepDescription() {
-        return _instance != null? "" + _instance._nextDocToParseIndex : "0";
+        return "" + OptaSimulatorState.getInstance().nextDocToParseIndex;
     }
 
     static public String getNextStop() {
-        return (_instance==null)? "None": (_instance._pause==null)? "None": _instance._pause.toString();
+        String nextStop = "None";
+
+        OptaSimulatorState state = OptaSimulatorState.getInstance();
+        if (state.paused && state.pause != null) {
+            nextStop = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(state.pause);
+        }
+
+        return nextStop;
     }
 
     public static boolean isCreated() {
@@ -134,23 +153,16 @@ public class OptaSimulator implements Runnable {
     @Override
     public void run() {
 
-        this._stopLoop = false;
+        _stopLoop = false;
 
-        while (!_stopLoop) {
-            if (!_pauseLoop) {
-                boolean isFinished = next();
+        while (!_stopLoop && !_pauseLoop) {
+            boolean isFinished = next();
 
-                // Si hemos llegado al final, nos quedamos pausados
-                if (isFinished)
-                    _pauseLoop = true;
+            // Si hemos llegado al final, nos quedamos pausados
+            if (isFinished)
+                _pauseLoop = true;
 
-                checkDate();
-            }
-            else {                       // Durante la pausa reevaluamos cada X ms si continuamos
-                try {
-                    Thread.sleep(10);
-                }  catch (InterruptedException e) {}
-            }
+            checkDate();
         }
 
         closeConnection();
@@ -159,13 +171,17 @@ public class OptaSimulator implements Runnable {
     }
 
     private void checkDate() {
-        if (_pause != null && _lastParsedDate >= _pause.getTime()) {
+        if (_pause != null && !_lastParsedDate.before(_pause)) {
             _pauseLoop = true;
             _pause = null;
+
+            OptaSimulatorState.update();
         }
     }
 
     private void updateDate(Date currentDate) {
+        _lastParsedDate = currentDate;
+
         GlobalDate.setFakeDate(currentDate);
 
         if (isSnapshotEnabled()) {
@@ -175,16 +191,20 @@ public class OptaSimulator implements Runnable {
         ModelEvents.runTasks();
     }
 
-    private boolean isBefore(long date) {
-        return _lastParsedDate < date;
+    private boolean isBefore(Date date) {
+        return _lastParsedDate.before(date);
     }
 
 
     private boolean next() {
+        if (_connection == null) {
+            createConnection();
+        }
+
         _isFinished = false;
 
         try {
-            if (_nextDocToParseIndex % RESULTS_PER_QUERY == 0) {
+            if (_nextDocToParseIndex % RESULTS_PER_QUERY == 0 || _optaResultSet == null) {
                 if (_stmt != null) {
                     _stmt.close();
                     _stmt = null;
@@ -199,7 +219,6 @@ public class OptaSimulator implements Runnable {
 
             if (_optaResultSet.next()) {
                 Date createdAt = _optaResultSet.getTimestamp("created_at");
-                _lastParsedDate = createdAt.getTime();
 
                 String sqlxml = _optaResultSet.getString("xml");
                 String name = _optaResultSet.getString("name");
@@ -217,6 +236,7 @@ public class OptaSimulator implements Runnable {
                         Logger.error("Failed parsing: {}", _optaResultSet.getInt("id"), e);
                     }
                 }
+
                 updateDate(createdAt);
             }
             else {
@@ -229,6 +249,7 @@ public class OptaSimulator implements Runnable {
             Logger.error("WTF 1533 SQLException: ", e);
         }
 
+        OptaSimulatorState.update();
         return _isFinished;
     }
 
@@ -258,7 +279,7 @@ public class OptaSimulator implements Runnable {
         }
     }
 
-    static OptaSimulator _instance;
+     static OptaSimulator _instance;
 
     Thread _optaThread;
     volatile boolean _stopLoop;
@@ -271,11 +292,11 @@ public class OptaSimulator implements Runnable {
     ResultSet _optaResultSet;
     Statement _stmt;
 
-    String _competitionId;
-
-    Date _pause;
-    long _lastParsedDate;
     int _nextDocToParseIndex;
+
+    String _competitionId;
+    Date _pause;
+    Date _lastParsedDate;
     boolean _isFinished;
 
     static Snapshot _snapshot;

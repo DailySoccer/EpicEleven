@@ -4,7 +4,7 @@
 
 @main("Template Soccer Team - Admin") {
 
-<h1 class="page-header">Template Soccer Team: @template_soccer_team.templateSoccerTeamId</h1>
+<h1 class="page-header">Template Soccer Team</h1>
 
 <h2 class="sub-header">@template_soccer_team.name</h2>
 <div class="table-responsive">
@@ -12,7 +12,7 @@
         <!--caption>@template_soccer_team.name</caption-->
         <thead>
         <tr>
-            <th>Template SoccerID</th>
+            <!--th>Template SoccerID</th-->
             <th>OptaId</th>
             <th>Name</th>
             <th>Field Pos</th>
@@ -23,7 +23,7 @@
         <tbody>
         @for(p <- template_soccer_players) {
         <tr>
-            <td>@p.templateSoccerPlayerId</td>
+            <!--td>@p.templateSoccerPlayerId</td-->
             <td>@p.optaPlayerId</td>
             <td>@p.name</td>
             <td>@p.fieldPos</td>

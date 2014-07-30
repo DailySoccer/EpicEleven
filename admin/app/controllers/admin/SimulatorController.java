@@ -1,42 +1,37 @@
 package controllers.admin;
 
-import model.GlobalDate;
-import model.Snapshot;
 import play.data.Form;
 import play.data.format.Formats;
 import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static play.data.Form.form;
 
 public class SimulatorController extends Controller {
 
-    public static Result index() {
-        return ok(views.html.simulator.render());
-    }
-
     public static Result currentDate() {
-        return ok(GlobalDate.getCurrentDateString());
+        return ok(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(OptaSimulator.getCurrentDate()));
     }
 
     public static Result start() {
 
         boolean wasResumed = OptaSimulator.start();
 
-        return redirect(routes.SimulatorController.index());
+        return ok();
     }
 
     public static Result pause() {
         OptaSimulator.pause();
-        return redirect(routes.SimulatorController.index());
+        return ok();
     }
 
     public static Result nextStep() {
         OptaSimulator.nextStep();
-        return redirect(routes.SimulatorController.index());
+        return ok();
     }
 
     public static Result isRunning() {
@@ -69,35 +64,12 @@ public class SimulatorController extends Controller {
         OptaSimulator.gotoDate(params.date);
         OptaSimulator.start();
 
-        return redirect(routes.SimulatorController.index());
+        return ok();
     }
 
     public static Result reset(){
         OptaSimulator.reset();
-        FlashMessage.success("Simulator reset");
-        FlashMessage.info("The DB was totally erased. If you press Start now, the simulation will start at the beginning of time (the first file Opta sent).");
-        return redirect(routes.SimulatorController.index());
+        return ok();
     }
 
-    public static Result replayLast() {
-        OptaSimulator.reset();
-        OptaSimulator.useSnapshot( Snapshot.getLast() );
-
-        FlashMessage.success("Simulator replay with last snapshot");
-        return redirect(routes.SimulatorController.index());
-    }
-
-    public static Result snapshot() {
-        Snapshot.create();
-
-        FlashMessage.success("Snapshot created");
-        return redirect(routes.SimulatorController.index());
-    }
-
-    public static Result snapshotDB() {
-        Snapshot.createInDB();
-
-        FlashMessage.success("Snapshot copied");
-        return redirect(routes.SimulatorController.index());
-    }
 }

@@ -1,0 +1,40 @@
+@()
+
+@import controllers.admin.OptaSimulator
+@import controllers.admin.routes._
+@import model._
+
+
+@main("Snapshots - Admin") {
+
+<h1 class="page-header">Snapshot</h1>
+    <div><strong>Last Snapshot</strong> (@Snapshot.getName()):
+        @if(OptaSimulator.isSnapshotEnabled()) {
+            On
+        } else {
+            Off
+        }
+    </div>
+    <br/>
+
+    <div class="btn-group">
+        <a class="btn btn-primary" href="@SnapshotController.replayLast" title="Erases the whole Database and plays using a last snapshot.">
+            Replay Last Snapshot
+        </a>
+        <a class="btn btn-primary" href="@SnapshotController.continueSnapshot" title="Continue from snapshot.">
+            Continue from Snapshot
+        </a>
+        <a class="btn btn-primary" href="@SnapshotController.snapshot" title="Create a snapshot.">
+            Create Snapshot
+        </a>
+    </div>
+    <hr>
+    <div class="btn-group">
+        <a class="btn btn-primary" href="@SnapshotController.snapshotDump" title="Saves the Database saved snapshot to disk.">
+            Save Snapshot to Disk
+        </a>
+        <a class="btn btn-primary" href="@SnapshotController.snapshotRestore" title="Load a snapshot from disk to database.">
+            Restore Snapshot from Disk
+        </a>
+    </div>
+}

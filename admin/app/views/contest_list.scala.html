@@ -40,28 +40,33 @@
     <table id="table_id" class="table table-striped">
         <thead>
         <tr>
-            <th>Id</th>
+            <!--th>Id</th-->
             <th>Name</th>
             <th>Current Users</th>
             <th>Max Entries</th>
             <th>TemplateContestId</th>
             <th>State</th>
-            <th></th>
         </tr>
         </thead>
         <tbody>
         @for(p <- contests) {
         <tr>
-            <td>@p.contestId</td>
+            <!--td>@p.contestId</td-->
             <td><a href="@ContestController.show(p.contestId.toString())">@p.name</a></td>
             <td>@p.contestEntries.size()</td>
             <td>@p.maxEntries</td>
             <td><a href="@TemplateContestController.show(p.templateContestId.toString())">@p.templateContestId</a></td>
             <td>@contest_state(p.templateContestId.toString())</td>
-            <td>
-                <a href="@ContestEntryController.enterContest(p.contestId.toString())"><button class="btn btn-success">Enter</button></a>
-                <a href="@ContestController.destroy(p.contestId.toString())"><button class="btn btn-danger">-</button></a>
-            </td>
+            @if(!TemplateContest.isStarted(p.templateContestId.toString())) {
+                <td>
+                    <a href="@ContestEntryController.enterContest(p.contestId.toString())"><button class="btn btn-success">Enter</button></a>
+                </td>
+            }
+            @if(p.contestEntries.isEmpty) {
+                <td>
+                    <a href="@ContestController.destroy(p.contestId.toString())"><button class="btn btn-danger">-</button></a>
+                </td>
+            }
         </tr>
         }
         </tbody>

@@ -1,6 +1,7 @@
 package controllers;
 
 import actions.AllowCors;
+import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
@@ -120,25 +121,32 @@ public class LoginController extends Controller {
                 returnHelper.setKO(loginParamsForm.errorsAsJson());
             }
             else {
-                String sessionToken = Crypto.generateSignedToken();
-                Session newSession = new Session(sessionToken, theUser.userId, new Date());
-                Model.sessions().insert(newSession);
+                if (Play.isDev()) {
+                    Logger.info("isDev: login > sessionToken");
 
-                // Durante el desarrollo en local, usamos cookies para que sea mas facil debugear
-                if (Play.isDev())
-                    response().setCookie("sessionToken", sessionToken);
+                    // Durante el desarrollo en local, usamos cookies para que sea mas facil debugear
+                    response().setCookie("sessionToken", theUser.userId.toString());
 
-                returnHelper.setOK(newSession);
+                    returnHelper.setOK(new Session(theUser.userId.toString(), theUser.userId, new Date()));
+
+                }
+                else {
+                    String sessionToken = Crypto.generateSignedToken();
+                    Session newSession = new Session(sessionToken, theUser.userId, new Date());
+                    Model.sessions().insert(newSession);
+
+                    returnHelper.setOK(newSession);
+                }
             }
         }
 
         return returnHelper.toResult();
     }
 
-
+    @UserAuthenticated
     public static Result getUserProfile() {
         ReturnHelper returnHelper = new ReturnHelper();
-        User theUser = SessionUtils.getUserFromRequest(request());
+        User theUser = (User)ctx().args.get("User");
 
         if (theUser == null) {
             returnHelper.setKO(new ClientError("User not found", "Check your sessionToken"));

@@ -29,7 +29,6 @@ public class TemplateContest implements JongoId, Initializer {
     public State state = State.OFF;
 
     public String name;             // Auto-gen if blank
-    public String postName;         // This goes in parenthesis
 
     public int minInstances;        // Minimum desired number of instances that we want running at any given moment
     public int maxEntries;
@@ -127,6 +126,10 @@ public class TemplateContest implements JongoId, Initializer {
 
         for(long i=instances; i<minInstances; i++) {
             Contest contest = new Contest(this);
+
+            // TODO: <MockData> Cuándo activar o no esta "funcionalidad"
+            MockData.addContestEntries(contest, contest.maxEntries-1);
+
             Model.contests().withWriteConcern(WriteConcern.SAFE).insert(contest);
         }
     }
@@ -172,5 +175,14 @@ public class TemplateContest implements JongoId, Initializer {
     public static boolean isFinished(String templateContestId) {
         TemplateContest templateContest = findOne(new ObjectId(templateContestId));
         return templateContest.isFinished();
+    }
+
+    public void onChangeToHistory() {
+        // Logger.debug("saveStats: {}", name);
+
+        List<TemplateMatchEvent> templateMatchEvents = getTemplateMatchEvents();
+        for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
+            templateMatchEvent.saveStats();
+        }
     }
 }

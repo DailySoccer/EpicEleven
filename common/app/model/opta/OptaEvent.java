@@ -98,7 +98,7 @@ public class OptaEvent {
             } else {
                 // Diferencias en goles:
                 try {
-                    OptaPlayer scorer = Model.optaPlayers().findOne("{optaPlayerId: #}", "p" + this.optaPlayerId).as(OptaPlayer.class);
+                    OptaPlayer scorer = Model.optaPlayers().findOne("{optaPlayerId: #}", this.optaPlayerId).as(OptaPlayer.class);
                     if (scorer.position.equals("Goalkeeper")) {
                         // Gol del portero
                         this.typeId = OptaEventType.GOAL_SCORED_BY_GOALKEEPER._code;

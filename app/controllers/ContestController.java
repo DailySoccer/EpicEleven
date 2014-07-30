@@ -29,8 +29,6 @@ public class ContestController extends Controller {
      * de forma que el cliente tenga todos los datos referenciados por un determinado contest
      */
     public static Result getActiveContests() {
-        long startTime = System.currentTimeMillis();
-
         // Obtenemos la lista de TemplateContests activos
         List<TemplateContest> templateContests = TemplateContest.findAllActive();
 
@@ -40,8 +38,6 @@ public class ContestController extends Controller {
         // Todos los partidos asociados a todos los TemplateContests
         List<TemplateMatchEvent> templateMatchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests);
 
-        Logger.info("getActiveContests: {}", System.currentTimeMillis() - startTime);
-
         return new ReturnHelper(ImmutableMap.of("match_events", templateMatchEvents,
                                                 "template_contests", templateContests,
                                                 "contests", contests)).toResult();
@@ -49,8 +45,6 @@ public class ContestController extends Controller {
 
     @UserAuthenticated
     public static Result getMyContests() {
-        long startTime = System.currentTimeMillis();
-
         User theUser = (User)ctx().args.get("User");
 
         // Obtenermos la lista de Contest Entries que el usuario ha creado y sus joins adicionales
@@ -59,8 +53,6 @@ public class ContestController extends Controller {
 
         // Necesitamos devolver los partidos asociados a estos concursos
         List<TemplateMatchEvent> templateMatchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests);
-
-        Logger.info("getMyContests: {}", System.currentTimeMillis() - startTime);
 
         return new ReturnHelper(ImmutableMap.of("match_events", templateMatchEvents,
                                                 "template_contests", templateContests,
@@ -74,16 +66,12 @@ public class ContestController extends Controller {
      */
     @UserAuthenticated
     public static Result getContest(String contestId) {
-        long startTime = System.currentTimeMillis();
-
         // User theUser = (User)ctx().args.get("User");
 
         Contest contest = Contest.findOne(contestId);
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
         TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
-
-        Logger.info("getContest: {}", System.currentTimeMillis() - startTime);
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                                                 "users_info", usersInfoInContest,
@@ -153,16 +141,12 @@ public class ContestController extends Controller {
 
     @UserAuthenticated
     public static Result getLiveContests() {
-        long startTime = System.currentTimeMillis();
-
         User theUser = (User)ctx().args.get("User");
 
         // TODO: No estamos restringiendo a Live
         List<Contest> liveContests = Contest.findAllFromUser(theUser.userId);
         List<TemplateContest> liveTemplateContests = TemplateContest.findAllFromContests(liveContests);
         List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.gatherFromTemplateContests(liveTemplateContests);
-
-        Logger.info("getLiveContests: {}", System.currentTimeMillis() - startTime);
 
         return new ReturnHelper(ImmutableMap.of("match_events", liveMatchEvents,
                                                 "template_contests", liveTemplateContests,
@@ -176,16 +160,12 @@ public class ContestController extends Controller {
      */
     @UserAuthenticated
     public static Result getLiveContest(String contestId) {
-        long startTime = System.currentTimeMillis();
-
         // User theUser = (User)ctx().args.get("User");
 
         Contest contest = Contest.findOne(contestId);
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
         TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
-        List<LiveMatchEvent> liveMatchEvents = LiveMatchEvent.findAllFromTemplateMatchEvents(templateContest.templateMatchEventIds);
-
-         Logger.info("getLiveContest: {}", System.currentTimeMillis() - startTime);
+        List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                                                 "users_info", usersInfoInContest,
@@ -205,10 +185,6 @@ public class ContestController extends Controller {
     @UserAuthenticated
     public static Result getLiveMatchEventsFromTemplateContest(String templateContestId) {
 
-        Logger.info("getLiveMatchEventsFromTemplateContest: {}", templateContestId);
-
-        long startTime = System.currentTimeMillis();
-
         // Obtenemos el TemplateContest
         TemplateContest templateContest = TemplateContest.findOne(templateContestId);
 
@@ -217,11 +193,20 @@ public class ContestController extends Controller {
         }
 
         // Consultar por los partidos del TemplateContest (queremos su version "live")
-        List<LiveMatchEvent> liveMatchEventList = LiveMatchEvent.findAllFromTemplateMatchEvents(templateContest.templateMatchEventIds);
+        List<TemplateMatchEvent> liveMatchEventList = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
 
-        Logger.info("END: getLiveMatchEventsFromTemplateContest: {}", System.currentTimeMillis() - startTime);
-
-        return new ReturnHelper(liveMatchEventList).toResult();
+        return new ReturnHelper(liveMatchEventList).toResult(JsonViews.Live.class);
     }
 
+    /**
+     * Obtener la información sobre un SoccerPlayer (estadísticas,...)
+     * @param templateSoccerPlayerId
+     * @return
+     */
+    public static Result getTemplateSoccerPlayerInfo(String templateSoccerPlayerId) {
+
+        TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(templateSoccerPlayerId));
+        return new ReturnHelper(templateSoccerPlayer).toResult();
+        // return new ReturnHelper(ImmutableMap.of("stats", templateSoccerPlayer.stats)).toResult();
+    }
 }

@@ -5,14 +5,13 @@ import model.opta.OptaEvent;
 import org.bson.types.ObjectId;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utils.ListUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TemplateSoccerPlayerController extends Controller {
     public static Result index() {
-        return ok(views.html.template_soccer_player_list.render(TemplateSoccerPlayer.findAll()));
+        return ok(views.html.template_soccer_player_list.render(TemplateSoccerPlayer.findAll(), TemplateSoccerTeam.findAllAsMap()));
     }
 
     public static Result showFantasyPointsInContest(String contestId, String playerId) {
@@ -39,5 +38,10 @@ public class TemplateSoccerPlayerController extends Controller {
         optaEventList.addAll(OptaEvent.filter(templateMatchEvent.optaMatchEventId, templateSoccerPlayer.optaPlayerId));
 
         return ok(views.html.player_fantasy_points.render(templateSoccerPlayer, optaEventList));
+    }
+
+    public static Result showStats(String playerId) {
+        TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(playerId));
+        return ok(views.html.template_soccer_player_stats.render(templateSoccerPlayer));
     }
 }

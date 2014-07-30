@@ -27,7 +27,7 @@ trait SauceLabsFactory extends SauceOnDemandSessionIdProvider {
   val CHROME_HOST   = "chrome"
   val FIREFOX_HOST  = "firefox"
 
-  val host:String       = FIREFOX_HOST
+  val host:String       = SAUCE_LABS_HOST
   var sessionId: String = ""
 
   /**

@@ -25,11 +25,15 @@ GET         /get_live_match_events/template_contest/:contest        controllers.
 # Entrar en concurso
 POST        /add_contest_entry                                      controllers.ContestController.addContestEntry()
 
+# Informacion
+GET         /get_soccer_player_info/:soccerPlayer                   controllers.ContestController.getTemplateSoccerPlayerInfo(soccerPlayer)
+
 
 # Debug
 GET         /migrate                                                controllers.OptaHttpController.migrate()
 GET         /return_xml/:timestamp                                  controllers.OptaHttpController.returnXML(timestamp: Long)
 GET         /remaining/:timestamp                                   controllers.OptaHttpController.remainingXMLs(timestamp: Long)
+GET         /date_last_xml                                          controllers.OptaHttpController.dateLastXML()
 
 # Por aqui nos entran todos nuestros datos de opta
 POST        /opta                                                   controllers.OptaHttpController.optaXmlInput()

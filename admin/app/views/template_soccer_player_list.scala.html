@@ -1,4 +1,4 @@
-@(soccers: List[model.TemplateSoccerPlayer])
+@(soccers: List[model.TemplateSoccerPlayer], templateSoccerTeamMap: HashMap[org.bson.types.ObjectId, model.TemplateSoccerTeam])
 
 @import controllers.admin.routes._
         
@@ -11,25 +11,27 @@
     <table id="table_id" class="table table-striped">
         <thead>
         <tr>
-            <th>Id</th>
+            <!--th>Id</th-->
             <th>OptaId</th>
             <th>Name</th>
             <th>Field Pos</th>
             <th>Salary</th>
             <th>Fantasy Points</th>
+            <th>Played Matches</th>
             <th>Team ID</th>
         </tr>
         </thead>
         <tbody>
         @for(p <- soccers) {
         <tr>
-            <td>@p.templateSoccerPlayerId</td>
+            <!--td>@p.templateSoccerPlayerId</td-->
             <td>@p.optaPlayerId</td>
             <td>@p.name</td>
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
-            <td>@p.fantasyPoints</td>
-            <td><a href="@TemplateSoccerTeamController.show(p.templateTeamId.toString())">@p.templateTeamId</a></td>
+            <td><a href="@TemplateSoccerPlayerController.showStats(p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
+            <td>@p.stats.length</td>
+            <td><a href="@TemplateSoccerTeamController.show(p.templateTeamId.toString())">@templateSoccerTeamMap(p.templateTeamId).name</a></td>
         </tr>
         }
         </tbody>
