@@ -6,13 +6,17 @@ import model.ModelEvents;
 import model.opta.OptaDB;
 import model.opta.OptaProcessor;
 import org.jdom2.input.JDOMParseException;
+import org.mozilla.universalchardet.UniversalDetector;
 import play.Logger;
 import play.db.DB;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 
-import java.io.UnsupportedEncodingException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -29,11 +33,20 @@ public class OptaHttpController extends Controller {
 
         long startDate = System.currentTimeMillis();
         String bodyText = request().body().asText();
-        try {
-            bodyText = new String(bodyText.getBytes("ISO-8859-1"));
+        if (bodyText.charAt(0) != '<') {
+            if (bodyText.charAt(0) == '\uFEFF')
+                Logger.info("BOM: UTF-8");
+            else
+                Logger.error("WTF 88731, BOM NOT UTF-8");
         }
-        catch (UnsupportedEncodingException e) {
-            Logger.error("WTF 43451: ", e);
+        InputStream stream = new ByteArrayInputStream(bodyText.getBytes(StandardCharsets.UTF_8));
+        try {
+            String encoding = getDetectedEncoding(stream);
+            Logger.info("Detected enconding: {}", encoding);
+            // Read with detected encoding, save it in UTF-8
+            bodyText = new String(bodyText.getBytes(encoding), "UTF-8");
+        } catch (IOException e) {
+            Logger.error("WTF 1783");
         }
 
         String name = "default-filename";
@@ -80,6 +93,17 @@ public class OptaHttpController extends Controller {
         ModelEvents.onOptaMatchEventIdsChanged(updatedMatchEvents);
 
         return ok("Yeah, XML processed");
+    }
+
+    private static String getDetectedEncoding(InputStream is) throws IOException {
+        UniversalDetector detector = new UniversalDetector(null);
+        byte[] buf = new byte[4096];
+        int nread;
+        while ((nread = is.read(buf)) > 0 && !detector.isDone()) {
+            detector.handleData(buf, 0, nread);
+        }
+        detector.dataEnd();
+        return detector.getDetectedCharset();
     }
 
     private static String getHeadersString(Map<String, String[]> headers) {
