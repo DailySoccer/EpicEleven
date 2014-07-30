@@ -137,6 +137,15 @@ public class TemplateMatchEvent implements JongoId, Initializer {
             // Buscamos el template
             TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(soccerPlayer.templateSoccerPlayerId);
 
+            // Eliminamos las estadísticas del partido que hubieramos registrado anteriormente
+            for (SoccerPlayerStats stats : templateSoccerPlayer.stats) {
+                if (stats.optaMatchEventId.equals(optaMatchEventId)) {
+                    templateSoccerPlayer.stats.remove(stats);
+                    // Logger.debug("------> OptaMatchEventId({}): Fecha({}): stats modificadas !!!", optaMatchEventId, GlobalDate.getCurrentDate().toString());
+                    break;
+                }
+            }
+
             // Generamos las nuevas estadísticas del partido
             SoccerPlayerStats soccerPlayerStats = new SoccerPlayerStats(soccerPlayer.optaPlayerId, optaMatchEventId, getFantasyPoints(soccerPlayer.templateSoccerPlayerId));
             soccerPlayerStats.updateStats();

@@ -78,9 +78,9 @@ public class ModelEvents {
             if (templateContest.isFinished()) {
                 // Cambiar el estado del contest a "HISTORY"
                 Model.templateContests().update("{_id: #, state: \"LIVE\"}", templateContest.templateContestId).with("{$set: {state: \"HISTORY\"}}");
-
-                templateContest.onChangeToHistory();
             }
         }
+
+        templateMatchEvent.saveStats();
     }
 }
