@@ -7,7 +7,7 @@
 
 @scripts = {
     <script type="text/javascript" charset="utf-8">
-        var inProgress = "@RefresherController.inProgress";
+
 
         function repaintDateServerLastXML(result) {
             document.getElementById("date_server_last_xml").innerHTML=result;
@@ -61,16 +61,10 @@
                 url: "@RefresherController.inProgress",
                 success: function(result) {
                         if (result == "true" || document.getElementById("remaining").innerHTML == "0") {
-                            inProgress = "true";
-                        } else {
-                            inProgress = "false";
-                        }
-                        if ( $(".play.import").hasClass("disabled") && inProgress == "false" ) {
-                            $(".play.import").removeClass("disabled");
-                        }
-                        else if ( !$(".play.import").hasClass("disabled") &&
-                                 (inProgress == "true" || document.getElementById("remaining").innerHTML == "0") ) {
+                            getLastXML();
                             $(".play.import").addClass("disabled");
+                        } else {
+                            $(".play.import").removeClass("disabled");
                         }
                 }
             });
@@ -84,13 +78,9 @@
 
         $(document).ready( function(){
            getLastXML();
-           repaintButton();
            checkDates();
            window.setInterval(checkDates, 10000);
-           if (inProgress == "true") {
-               window.setInterval(getLastXML, 1000);
-               window.setInterval(repaintButton, 1000);
-           }
+           window.setInterval(repaintButton, 1000);
         });
 
     </script>
@@ -111,7 +101,7 @@
     <br/>
 
     <div class="btn-group">
-            <a class="btn btn-sim btn-primary ajax play import" href="@RefresherController.importFromLast" title="Synchronize all documents from Opta.">
+            <a class="btn btn-sim btn-primary ajax play import disabled" href="@RefresherController.importFromLast" title="Synchronize all documents from Opta.">
                 Import
             </a>
     </div>
