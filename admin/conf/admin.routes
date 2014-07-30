@@ -25,6 +25,8 @@ GET         /lobby                                                     controlle
 
 GET         /users                                                     controllers.admin.UserController.index()
 
+GET         /soccer_player_stats/:playerId                             controllers.admin.TemplateSoccerPlayerController.showStats(playerId : String)
+
 GET         /fantasy_points/contest/:contestId/:playerId               controllers.admin.TemplateSoccerPlayerController.showFantasyPointsInContest(contestId : String, playerId : String)
 GET         /fantasy_points/match_event/:matchEventId/:playerId        controllers.admin.TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(matchEventId : String, playerId : String)
 

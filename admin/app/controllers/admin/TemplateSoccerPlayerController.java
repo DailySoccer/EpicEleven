@@ -40,4 +40,8 @@ public class TemplateSoccerPlayerController extends Controller {
         return ok(views.html.player_fantasy_points.render(templateSoccerPlayer, optaEventList));
     }
 
+    public static Result showStats(String playerId) {
+        TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(playerId));
+        return ok(views.html.template_soccer_player_stats.render(templateSoccerPlayer));
+    }
 }

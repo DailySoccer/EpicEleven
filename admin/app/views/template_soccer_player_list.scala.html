@@ -17,6 +17,7 @@
             <th>Field Pos</th>
             <th>Salary</th>
             <th>Fantasy Points</th>
+            <th>Played Matches</th>
             <th>Team ID</th>
         </tr>
         </thead>
@@ -28,7 +29,8 @@
             <td>@p.name</td>
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
-            <td>@p.fantasyPoints</td>
+            <td><a href="@TemplateSoccerPlayerController.showStats(p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
+            <td>@p.stats.length</td>
             <td><a href="@TemplateSoccerTeamController.show(p.templateTeamId.toString())">@templateSoccerTeamMap(p.templateTeamId).name</a></td>
         </tr>
         }

@@ -1,0 +1,104 @@
+@(soccer_player: model.TemplateSoccerPlayer)
+
+@import controllers.admin.routes._
+@import model._
+
+@main("Template Soccer Player Stats - Admin") {
+
+<h1 class="page-header">Template Soccer Player Stats</h1>
+
+<h2 class="sub-header">@soccer_player.name</h2>
+<div class="table-responsive">
+
+    @if(soccer_player.fieldPos == FieldPos.GOALKEEPER) {
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Opta Match Event</th>
+            <th>Fantasy Points</th>
+            <th>Minutos</th>
+            <th>Goles Encajados</th>
+            <th>Paradas</th>
+            <th>Despejes
+            <th>Pases</th>
+            <th>Recuperaciones</th>
+            <th>Perdidas Balón</th>
+            <th>Penaltis Detenidos</th>
+            <th>Faltas Recibidas</th>
+            <th>Faltas Cometidas</th>
+            <th>Tarjetas Amarillas</th>
+            <th>Tarjetas Rojas</th>
+       </tr>
+        </thead>
+        <tbody>
+        @for(p <- soccer_player.stats) {
+        <tr>
+            <td>@p.optaMatchEventId</td>
+            <td><a href="@TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(
+                TemplateMatchEvent.findOneFromOptaId(p.optaMatchEventId).templateMatchEventId.toString(),
+                TemplateSoccerPlayer.findOneFromOptaId(p.optaPlayerId).templateSoccerPlayerId.toString()
+                )">@p.fantasyPoints</a></td>
+            <td>@p.playedMinutes</td>
+            <td>@p.getStat(SoccerPlayerStatType.GOLES_ENCAJADOS)</td>
+            <td>@p.getStat(SoccerPlayerStatType.PARADAS)</td>
+            <td>@p.getStat(SoccerPlayerStatType.DESPEJES)</td>
+            <td>@p.getStat(SoccerPlayerStatType.PASES)</td>
+            <td>@p.getStat(SoccerPlayerStatType.RECUPERACIONES)</td>
+            <td>@p.getStat(SoccerPlayerStatType.PERDIDAS_BALON)</td>
+            <td>@p.getStat(SoccerPlayerStatType.PENALTIS_DETENIDOS)</td>
+            <td>@p.getStat(SoccerPlayerStatType.FALTAS_RECIBIDAS)</td>
+            <td>@p.getStat(SoccerPlayerStatType.FALTAS_COMETIDAS)</td>
+            <td>@p.getStat(SoccerPlayerStatType.TARJETAS_AMARILLAS)</td>
+            <td>@p.getStat(SoccerPlayerStatType.TARJETAS_ROJAS)</td>
+       </tr>
+        }
+        </tbody>
+    </table>
+    } else {
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Opta Match Event</th>
+            <th>Fantasy Points</th>
+            <th>Minutos</th>
+            <th>Goles</th>
+            <th>Tiros</th>
+            <th>Pases</th>
+            <th>Asistencias</th>
+            <th>Regates</th>
+            <th>Recuperaciones</th>
+            <th>Perdidas Balón</th>
+            <th>Faltas Recibidas</th>
+            <th>Faltas Cometidas</th>
+            <th>Tarjetas Amarillas</th>
+            <th>Tarjetas Rojas</th>
+       </tr>
+        </thead>
+        <tbody>
+        @for(p <- soccer_player.stats) {
+        <tr>
+            <td>@p.optaMatchEventId</td>
+            <td><a href="@TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(
+                TemplateMatchEvent.findOneFromOptaId(p.optaMatchEventId).templateMatchEventId.toString(),
+                TemplateSoccerPlayer.findOneFromOptaId(p.optaPlayerId).templateSoccerPlayerId.toString()
+                )">@p.fantasyPoints</a></td>
+            <td>@p.playedMinutes</td>
+            <td>@p.getStat(SoccerPlayerStatType.GOLES)</td>
+            <td>@p.getStat(SoccerPlayerStatType.TIROS)</td>
+            <td>@p.getStat(SoccerPlayerStatType.PASES)</td>
+            <td>@p.getStat(SoccerPlayerStatType.ASISTENCIAS)</td>
+            <td>@p.getStat(SoccerPlayerStatType.REGATES)</td>
+            <td>@p.getStat(SoccerPlayerStatType.RECUPERACIONES)</td>
+            <td>@p.getStat(SoccerPlayerStatType.PERDIDAS_BALON)</td>
+            <td>@p.getStat(SoccerPlayerStatType.FALTAS_RECIBIDAS)</td>
+            <td>@p.getStat(SoccerPlayerStatType.FALTAS_COMETIDAS)</td>
+            <td>@p.getStat(SoccerPlayerStatType.TARJETAS_AMARILLAS)</td>
+            <td>@p.getStat(SoccerPlayerStatType.TARJETAS_ROJAS)</td>
+        </tr>
+        }
+        </tbody>
+    </table>
+    }
+</div>
+
+}
