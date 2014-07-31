@@ -8,7 +8,6 @@ import play.data.validation.ValidationError;
 import java.util.ArrayList;
 import java.util.List;
 
-// https://github.com/playframework/playframework/tree/master/samples/java/forms
 public class PointsTranslationForm {
     @Constraints.Required
     public OptaEventType eventType;

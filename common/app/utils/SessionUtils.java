@@ -6,6 +6,7 @@ import model.User;
 
 import play.Logger;
 import play.Play;
+import play.libs.Crypto;
 import play.mvc.Http;
 
 public class SessionUtils {
@@ -18,8 +19,8 @@ public class SessionUtils {
 
         // En desarrollo, el sessionToken hace referencia al ObjectId
         if (Play.isDev()) {
-            Logger.info("isDev: user < sessionToken");
-            return User.find(sessionToken);
+            String decodedEmail = Crypto.decryptAES(sessionToken);
+            return User.findByEmail(decodedEmail);
         }
 
         Session theSession = Model.sessions().findOne("{sessionToken:'#'}", sessionToken).as(Session.class);
@@ -44,5 +45,4 @@ public class SessionUtils {
 
         return sessionToken;
     }
-
 }

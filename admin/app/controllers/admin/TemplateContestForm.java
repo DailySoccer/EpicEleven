@@ -7,7 +7,6 @@ import play.data.validation.ValidationError;
 import java.text.DateFormat;
 import java.util.*;
 
-// https://github.com/playframework/playframework/tree/master/samples/java/forms
 public class TemplateContestForm {
     public String id;
 

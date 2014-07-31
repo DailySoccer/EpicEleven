@@ -97,17 +97,17 @@ public final class MockData {
         List<SoccerPlayer> forwards = new ArrayList<>();
 
         for (TemplateMatchEvent matchEvent : TemplateContest.findOne(contest.templateContestId).getTemplateMatchEvents()) {
-            goalKeepers.addAll( filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamA, FieldPos.GOALKEEPER) );
-            goalKeepers.addAll( filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamB, FieldPos.GOALKEEPER) );
+            goalKeepers.addAll(filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamA, FieldPos.GOALKEEPER));
+            goalKeepers.addAll(filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamB, FieldPos.GOALKEEPER));
 
-            defenses.addAll( filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamA, FieldPos.DEFENSE) );
-            defenses.addAll( filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamB, FieldPos.DEFENSE) );
+            defenses.addAll(filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamA, FieldPos.DEFENSE));
+            defenses.addAll(filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamB, FieldPos.DEFENSE));
 
-            middles.addAll( filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamA, FieldPos.MIDDLE) );
-            middles.addAll( filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamB, FieldPos.MIDDLE) );
+            middles.addAll(filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamA, FieldPos.MIDDLE));
+            middles.addAll(filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamB, FieldPos.MIDDLE));
 
-            forwards.addAll( filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamA, FieldPos.FORWARD) );
-            forwards.addAll( filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamB, FieldPos.FORWARD) );
+            forwards.addAll(filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamA, FieldPos.FORWARD));
+            forwards.addAll(filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamB, FieldPos.FORWARD));
         }
 
         // Todos los usuarios excepto el "Test"

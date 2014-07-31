@@ -19,7 +19,7 @@ public class ModelEvents {
      * Condiciones:
      * - los template contests que esten apagados y cuya fecha de activacion sean validas
      */
-    public static void instantiateContestsTask() {
+    private static void instantiateContestsTask() {
         Iterable<TemplateContest> templateContestsResults = Model.templateContests()
                 .find("{state: \"OFF\", activationAt: {$lte: #}}", GlobalDate.getCurrentDate())
                 .as(TemplateContest.class);
@@ -43,7 +43,7 @@ public class ModelEvents {
             // Logger.info("optaGameId in gameId({})", optaGameId);
 
             // Buscamos todos los template Match Events asociados con ese partido de Opta
-            for (TemplateMatchEvent templateMatchEvent :  Model.templateMatchEvents().find("{optaMatchEventId: #}", optaGameId).as(TemplateMatchEvent.class)) {
+            for (TemplateMatchEvent templateMatchEvent : Model.templateMatchEvents().find("{optaMatchEventId: #}", optaGameId).as(TemplateMatchEvent.class)) {
 
                 if (templateMatchEvent.isStarted()) {
                     templateMatchEvent.updateFantasyPoints();

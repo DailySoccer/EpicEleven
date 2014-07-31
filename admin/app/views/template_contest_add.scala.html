@@ -11,7 +11,7 @@
 }
 
 @myInputText(field: Field, _label: String = "", _size: Int = 10) = {
-<div class="form-group @if(field.hasErrors) {has-error}">
+<div class="form-group @if(field.hasErrors) {has-error}" title="En el nombre se pueden usar las variables: %MaxEntries, %SalaryCap, %PrizeType, %EntryFee">
     @if(_label.nonEmpty) { <label class="control-label col-sm-3" for="@field.id">@_label</label> }
     <div class="col-sm-7">
         <input type="text" name="@field.id" id="@field.id" value="@field.value" size="@_size" class="form-control">
@@ -84,77 +84,72 @@
 
     <div class="col-md-12">
 
-    <div class="col-md-7">
-        <form class="form-horizontal">
-        @myInputText(
-            templateContestForm("name"),
-            "Name",
-            50
-        )
-        <div class="alert alert-info alert-dismissible" role="alert">
-            <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-           En el nombre se pueden usar las variables <code>%MaxEntries</code>, <code>%SalaryCap</code>,
-            <code>%PrizeType</code> o <code>%EntryFee</code>.
+        <div class="col-md-7">
+            <form class="form-horizontal">
+            @myInputText(
+                templateContestForm("name"),
+                "Name",
+                50
+            )
+
+            @myInputText(
+                templateContestForm("minInstances"),
+                "Min Instances",
+                10
+            )
+
+            @myInputText(
+                templateContestForm("maxEntries"),
+                "Max Entries",
+                10
+            )
+
+            @myInputText(
+                templateContestForm("salaryCap"),
+                "Salary Cap",
+                10
+            )
+
+            @myInputText(
+                templateContestForm("entryFee"),
+                "Entry Fee",
+                10
+            )
+
+            @mySelect(
+                templateContestForm("prizeType"),
+                "Prize Type",
+                options(EnumUtils.toMap(classOf[PrizeType])),
+                false
+            )
+
+            @myInputDate(
+                templateContestForm("activationAt"),
+                "Activation At"
+            )
+            </form>
         </div>
-
-        @myInputText(
-            templateContestForm("minInstances"),
-            "Min Instances",
-            10
+        <!--
+        @inputDate(
+            templateContestForm("startDate"),
+            '_label -> "Start Date"
         )
+        -->
 
-        @myInputText(
-            templateContestForm("maxEntries"),
-            "Max Entries",
-            10
-        )
-
-        @myInputText(
-            templateContestForm("salaryCap"),
-            "Salary Cap",
-            10
-        )
-
-        @myInputText(
-            templateContestForm("entryFee"),
-            "Entry Fee",
-            10
-        )
-
-        @mySelect(
-            templateContestForm("prizeType"),
-            "Prize Type",
-            options(EnumUtils.toMap(classOf[PrizeType])),
-            false
-        )
-
-        @myInputDate(
-            templateContestForm("activationAt"),
-            "Activation At"
-        )
-        </form>
-    </div>
-    <!--
-    @inputDate(
-        templateContestForm("startDate"),
-        '_label -> "Start Date"
-    )
-    -->
-
-    <div class="col-md-5">
-    @if(matchEventsOptions.isEmpty) {
-        <span>No existen MatchEvents</span>
-    } else {
-        @mySelect(
-            templateContestForm("templateMatchEvents"),
-            "Template Match Events",
-            options(matchEventsOptions),
-            true,
-            25,
-            false
-        )
-    }
-    </div>
+        <div class="col-md-5">
+        @if(matchEventsOptions.isEmpty) {
+            <span>No existen MatchEvents</span>
+        } else {
+            @mySelect(
+                templateContestForm("templateMatchEvents"),
+                "Template Match Events",
+                options(matchEventsOptions),
+                true,
+                25,
+                false
+            )
+        }
+        </div>
 
     </div>
 

@@ -66,6 +66,9 @@ public class User {
         return ListUtils.asList(Model.findObjectIds(Model.users(), "_id", userObjectIds).as(User.class));
     }
 
+    static public User findByEmail(String email) {
+        return Model.users().findOne("{email: #}", email).as(User.class);
+    }
 
     /*
     @JsonView(JsonViews.NotForClient.class)

@@ -31,8 +31,6 @@ public class SoccerTeam {
 
     /**
      * Setup Team (incrustando a los futbolistas en el equipo)
-     * @param templateTeam
-     * @return
      */
     public static SoccerTeam create(TemplateMatchEvent templateMatchEvent, TemplateSoccerTeam templateTeam) {
         SoccerTeam team = new SoccerTeam(templateTeam);

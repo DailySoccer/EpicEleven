@@ -13,10 +13,8 @@ public class OptaMatchEventStats {
     public String optaMatchEventId;
     public HashMap<String, OptaPlayerStats> stats = new HashMap<>();
 
-    // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
-    public OptaMatchEventStats() {
 
-    }
+    public OptaMatchEventStats() { }
 
     public OptaMatchEventStats(String optaMatchEventId) {
         this.optaMatchEventId = optaMatchEventId;
@@ -51,9 +49,7 @@ public class OptaMatchEventStats {
 class OptaPlayerStats {
     public int playedMinutes;
 
-    // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
-    public OptaPlayerStats() {
-    }
+    public OptaPlayerStats() { }
 
     public OptaPlayerStats(int playedMinutes) {
         this.playedMinutes = playedMinutes;
