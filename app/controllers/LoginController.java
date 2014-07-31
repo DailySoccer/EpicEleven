@@ -124,11 +124,12 @@ public class LoginController extends Controller {
                 if (Play.isDev()) {
                     Logger.info("isDev: login > sessionToken");
 
+                    String encodedEmail = Crypto.encryptAES(theUser.email);
+
                     // Durante el desarrollo en local, usamos cookies para que sea mas facil debugear
-                    response().setCookie("sessionToken", theUser.userId.toString());
+                    response().setCookie("sessionToken", encodedEmail);
 
-                    returnHelper.setOK(new Session(theUser.userId.toString(), theUser.userId, new Date()));
-
+                    returnHelper.setOK(new Session(encodedEmail, theUser.userId, new Date()));
                 }
                 else {
                     String sessionToken = Crypto.generateSignedToken();
