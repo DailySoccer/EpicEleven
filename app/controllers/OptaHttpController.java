@@ -42,27 +42,13 @@ public class OptaHttpController extends Controller {
         InputStream stream = new ByteArrayInputStream(bodyText.getBytes());
         try {
             String encoding = getDetectedEncoding(stream);
-            Logger.info("Detected enconding: {}", encoding);
+            encoding = (encoding!=null)? encoding: "ISO-8859-15";
 
-            // Read with detected encoding, save it in UTF-8
+            // Read with detected encoding, defaults to ISO
             bodyText = new String(bodyText.getBytes(), encoding);
         }
         catch (IOException e) {
             Logger.error("WTF 1783");
-        }
-
-        String name = "default-filename";
-
-        try {
-            if (request().headers().containsKey("x-meta-default-filename")){
-                name = request().headers().get("x-meta-default-filename")[0];
-            }
-            else if (request().headers().containsKey("X-Meta-Default-Filename")){
-                name = request().headers().get("X-Meta-Default-Filename")[0];
-            }
-        }
-        catch (Exception e) {
-            Logger.error("WTF 43859: ", e);
         }
 
         try {
@@ -105,7 +91,13 @@ public class OptaHttpController extends Controller {
             detector.handleData(buf, 0, nread);
         }
         detector.dataEnd();
-        return detector.getDetectedCharset();
+        String encoding = detector.getDetectedCharset();
+        if (encoding != null) {
+            Logger.info("Detected enconding: {}", encoding);
+        } else {
+            Logger.error("Encoding not detected properly");
+        }
+        return encoding;
     }
 
     private static String getHeadersString(Map<String, String[]> headers) {
