@@ -136,38 +136,6 @@ public class ContestController extends Controller {
         return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
     }
 
-    @UserAuthenticated
-    public static Result getLiveContests() {
-        User theUser = (User)ctx().args.get("User");
-
-        // TODO: No estamos restringiendo a Live
-        List<Contest> liveContests = Contest.findAllFromUser(theUser.userId);
-        List<TemplateContest> liveTemplateContests = TemplateContest.findAllFromContests(liveContests);
-        List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.gatherFromTemplateContests(liveTemplateContests);
-
-        return new ReturnHelper(ImmutableMap.of("match_events", liveMatchEvents,
-                                                "template_contests", liveTemplateContests,
-                                                "contests", liveContests)).toResult();
-    }
-
-    /**
-     * Obtener toda la información necesaria para mostrar un Live Contest
-     */
-    @UserAuthenticated
-    public static Result getLiveContest(String contestId) {
-        // User theUser = (User)ctx().args.get("User");
-
-        Contest contest = Contest.findOne(contestId);
-        List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
-        TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
-        List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
-
-        return new ReturnHelper(ImmutableMap.of("contest", contest,
-                                                "users_info", usersInfoInContest,
-                                                "template_contest", templateContest,
-                                                "live_match_events", liveMatchEvents)).toResult(JsonViews.FullContest.class);
-    }
-
     /**
      * Obtener los partidos "live" correspondientes a un template contest
      *  Incluye los fantasy points obtenidos por cada uno de los futbolistas
@@ -190,7 +158,7 @@ public class ContestController extends Controller {
         // Consultar por los partidos del TemplateContest (queremos su version "live")
         List<TemplateMatchEvent> liveMatchEventList = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
 
-        return new ReturnHelper(liveMatchEventList).toResult(JsonViews.Live.class);
+        return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
     }
 
     /**
