@@ -15,9 +15,7 @@ public class SoccerPlayerStats {
     public int playedMinutes;
     public HashMap<String, Integer> events = new HashMap<>();
 
-    // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
-    public SoccerPlayerStats() {
-    }
+    public SoccerPlayerStats() { }
 
     public SoccerPlayerStats(String optaPlayerId, String optaMatchEventId, int fantasyPoints) {
         this.optaMatchEventId = optaMatchEventId;
@@ -49,7 +47,7 @@ public class SoccerPlayerStats {
         }
     }
 
-    public int countStat(SoccerPlayerStatType statType) {
+    private int countStat(SoccerPlayerStatType statType) {
         int count = 0;
 
         List<Integer> typeIds = statType.getEventTypes();

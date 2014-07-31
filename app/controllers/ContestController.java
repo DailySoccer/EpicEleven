@@ -61,8 +61,6 @@ public class ContestController extends Controller {
 
     /**
      * Obtener toda la información necesaria para mostrar un Contest
-     * @param contestId
-     * @return
      */
     @UserAuthenticated
     public static Result getContest(String contestId) {
@@ -79,7 +77,6 @@ public class ContestController extends Controller {
                                                 "match_events", matchEvents)).toResult(JsonViews.FullContest.class);
     }
 
-    // https://github.com/playframework/playframework/tree/master/samples/java/forms
     public static class ContestEntryParams {
         @Constraints.Required
         public String contestId;
@@ -155,8 +152,6 @@ public class ContestController extends Controller {
 
     /**
      * Obtener toda la información necesaria para mostrar un Live Contest
-     * @param contestId
-     * @return
      */
     @UserAuthenticated
     public static Result getLiveContest(String contestId) {
@@ -200,8 +195,6 @@ public class ContestController extends Controller {
 
     /**
      * Obtener la información sobre un SoccerPlayer (estadísticas,...)
-     * @param templateSoccerPlayerId
-     * @return
      */
     public static Result getTemplateSoccerPlayerInfo(String templateSoccerPlayerId) {
 

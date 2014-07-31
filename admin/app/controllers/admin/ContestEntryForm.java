@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 
-// https://github.com/playframework/playframework/tree/master/samples/java/forms
 public class ContestEntryForm {
     @Constraints.Required
     public String userId;

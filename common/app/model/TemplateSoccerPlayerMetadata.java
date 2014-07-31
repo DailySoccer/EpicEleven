@@ -12,8 +12,8 @@ public class TemplateSoccerPlayerMetadata {
 
 
     public static TemplateSoccerPlayerMetadata findOne(String optaPlayerId) {
-        //Ojo al parche: optaPlayer.optaPlayerId se pasa aqui como int porque el importador de CSV es demasiado automagico
-        //y no encontre manera de decirle que coja un int como string
+        // Ojo al parche: optaPlayer.optaPlayerId se pasa aqui como int porque el importador de CSV es demasiado automagico
+        // y no encontre manera de decirle que coja un int como string
         return Model.templateSoccerPlayersMetadata().findOne("{ optaPlayerId: #}", Integer.parseInt(optaPlayerId)).as(TemplateSoccerPlayerMetadata.class);
     }
 }

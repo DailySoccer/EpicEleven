@@ -14,9 +14,7 @@ public class SoccerPlayer {
     public int playedMatches;
     public int fantasyPoints;
 
-    // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
-    public SoccerPlayer() {
-    }
+    public SoccerPlayer() { }
 
     public SoccerPlayer(TemplateSoccerPlayer template) {
         templateSoccerPlayerId = template.templateSoccerPlayerId;
@@ -29,13 +27,10 @@ public class SoccerPlayer {
 
     /**
      * Obtener el numero de partidos jugados por un futbolista en una competicion de una temporada
-     * @param seasonId
-     * @param competitionId
-     * @return
      */
     public void updatePlayedMatches(String seasonId, String competitionId) {
         // Buscar el numero de partidos de un jugador en particular
-        //  dado que hay multiples eventos de un mismo jugador en un mismo partido, se busca que sean "distintos partidos"
+        // dado que hay multiples eventos de un mismo jugador en un mismo partido, se busca que sean "distintos partidos"
         List<OptaEvent> partidos = Model.optaEvents()
                 .distinct("gameId")
                 .query("{optaPlayerId: #, seasonId: #, competitionId: #}", optaPlayerId, seasonId, competitionId)
@@ -45,7 +40,7 @@ public class SoccerPlayer {
 
         if (playedMatches > 0) {
             play.Logger.info("seasonId: {} - competitionId: {} - optaPlayerId: {} = {} partidos",
-                    seasonId, competitionId, optaPlayerId, playedMatches);
+                             seasonId, competitionId, optaPlayerId, playedMatches);
         }
     }
 }

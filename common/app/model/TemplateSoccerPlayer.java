@@ -29,9 +29,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
 
     public List<SoccerPlayerStats> stats = new ArrayList<>();
 
-    // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
-    public TemplateSoccerPlayer() {
-    }
+    public TemplateSoccerPlayer() { }
 
     public TemplateSoccerPlayer(OptaPlayer optaPlayer, ObjectId aTemplateTeamId) {
         optaPlayerId = optaPlayer.optaPlayerId;
@@ -89,8 +87,6 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
 
     /**
      * Importar un optaPlayer
-     * @param optaPlayer
-     * @return
      */
     static public boolean importSoccer(OptaPlayer optaPlayer) {
         TemplateSoccerTeam templateTeam = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaPlayer.teamId).as(TemplateSoccerTeam.class);

@@ -153,11 +153,6 @@ public class Model {
     };
 
     static private void dropDB(DB theMongoDB) {
-        /*
-        for (String name : allCollectionNames) {
-            theMongoDB.getCollection(name).drop();
-        }
-        */
         theMongoDB.dropDatabase();
     }
 
@@ -284,9 +279,11 @@ public class Model {
     }
 
     public static Date getDateFromHeader(String dateStr) {
+
         if (dateStr == null) {
             return null;
         }
+
         DateFormat formatter;
         if (dateStr.indexOf('-')>=0) {
             if (dateStr.indexOf('T')>=0) {
@@ -297,13 +294,17 @@ public class Model {
         } else {
            formatter = new SimpleDateFormat("E MMM dd HH:mm:ss Z yyyy", Locale.ENGLISH);
         }
+
         formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
         Date date = null;
+
         try {
             date = (Date)formatter.parse(dateStr);
-        } catch (ParseException e) {
+        }
+        catch (ParseException e) {
             Logger.error("WTF 23815 Data parsing: ", e);
         }
+
         Logger.debug(date.toString());
         return date;
     }

@@ -75,44 +75,22 @@ public class TemplateMatchEvent implements JongoId, Initializer {
      *  Estado del partido
      */
     public boolean isStarted() {
-        // Un partido "comenzará" x minutos antes de su fecha establecida de comienzo
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(startDate);
-        calendar.add(Calendar.MINUTE, -5);
+        calendar.add(Calendar.MINUTE, -5);      // Un partido "comenzará" x minutos antes de su fecha establecida de comienzo
         return GlobalDate.getCurrentDate().after(calendar.getTime());
-
-         /*
-        OptaEvent optaEvent = Model.optaEvents().findOne("{gameId: #, typeId: 32, periodId: 1}", optaMatchEventId).as(OptaEvent.class);
-        if (optaEvent == null) {
-            // Kick Off Pass?
-            optaEvent = Model.optaEvents().findOne("{gameId: #, typeId: 1, periodId: 1, qualifiers: 278}", optaMatchEventId).as(OptaEvent.class);
-        }
-        */
-
-        /*
-        Logger.info("isStarted? {}({}) = {}",
-                find.soccerTeamA.name + " vs " + find.soccerTeamB.name, find.optaMatchEventId, (optaEvent!= null));
-        */
     }
 
     public static boolean isStarted(String templateMatchEventId) {
-        TemplateMatchEvent templateMatch = findOne(new ObjectId(templateMatchEventId));
-        return templateMatch.isStarted();
+        return findOne(new ObjectId(templateMatchEventId)).isStarted();
     }
 
     public boolean isFinished() {
-        OptaEvent optaEvent = Model.optaEvents().findOne("{gameId: #, typeId: 30, periodId: 14}", optaMatchEventId).as(OptaEvent.class);
-
-        /*
-        Logger.info("isFinished? {}({}) = {}",
-                find.soccerTeamA.name + " vs " + find.soccerTeamB.name, find.optaMatchEventId, (optaEvent!= null));
-        */
-        return (optaEvent != null);
+        return (Model.optaEvents().findOne("{gameId: #, typeId: 30, periodId: 14}", optaMatchEventId).as(OptaEvent.class) != null);
     }
 
     public static boolean isFinished(String templateMatchEventId) {
-        TemplateMatchEvent templateMatch = findOne(new ObjectId(templateMatchEventId));
-        return templateMatch.isFinished();
+        return findOne(new ObjectId(templateMatchEventId)).isFinished();
     }
 
     public int getFantasyPoints(SoccerTeam soccerTeam) {
@@ -241,13 +219,11 @@ public class TemplateMatchEvent implements JongoId, Initializer {
 
     /**
      * Calcular y actualizar los puntos fantasy de un determinado futbolista en los partidos "live"
-     *
-     * TODO: ¿ $sum (aggregation) ?
      */
     private void updateFantasyPoints(SoccerPlayer soccerPlayer) {
         // Obtener los puntos fantasy obtenidos por el futbolista en un partido
         Iterable<OptaEvent> optaEventResults = Model.optaEvents().find("{optaPlayerId: #, gameId: #}",
-                soccerPlayer.optaPlayerId, optaMatchEventId).as(OptaEvent.class);
+                                                                        soccerPlayer.optaPlayerId, optaMatchEventId).as(OptaEvent.class);
 
         // Sumarlos
         int points = 0;
