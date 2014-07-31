@@ -104,6 +104,32 @@ public class Model {
                                      "CREATE INDEX created_at_index ON public.optaxml (created_at); " +
                                  "END IF; " +
                              "END$$;");
+                stmt.execute("CREATE TABLE newoptaxml (" +
+                        " id serial PRIMARY KEY, " +
+                        " xml text, " +
+                        " headers text, " +
+                        " created_at timestamp, " +
+                        " name text, " +
+                        " feed_type text, " +
+                        " game_id text, " +
+                        " competition_id text, " +
+                        " season_id text, " +
+                        " last_updated timestamp " +
+                        " );");
+
+                // http://dba.stackexchange.com/questions/35616/create-index-if-it-does-not-exist
+                stmt.execute("DO $$ " +
+                        "BEGIN " +
+                        "IF NOT EXISTS ( " +
+                        "SELECT 1 " +
+                        "FROM  pg_class c " +
+                        "JOIN  pg_namespace n ON n.oid = c.relnamespace " +
+                        "WHERE c.relname = 'created_at_index_new' " +
+                        "AND   n.nspname = 'public' " +
+                        ") THEN " +
+                        "CREATE INDEX created_at_index_new ON public.newoptaxml (created_at); " +
+                        "END IF; " +
+                        "END$$;");
             }
         }
     }
