@@ -1,12 +1,16 @@
 package controllers.admin;
 
+import model.Model;
 import play.Logger;
 import play.db.DB;
 import play.mvc.Controller;
 import play.mvc.Result;
 
 import java.io.UnsupportedEncodingException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 
 /**
@@ -29,11 +33,16 @@ public class MigrationController extends Controller {
         return ok("Migration finished");
     }
 
-    public static String translate(String requestBody) {
+    public static String translate(String requestBody, boolean twice) {
         try {
-            return new String (new String (new String (requestBody.getBytes("ISO-8859-1"), "UTF-8").
-                                    getBytes("ISO-8859-1"), "UTF-8").
-                                    getBytes("ISO-8859-1"), "UTF-8");
+            if (twice) {
+                return new String (new String (requestBody.getBytes("ISO-8859-1"), "UTF-8").
+                            getBytes("ISO-8859-1"), "UTF-8");
+            } else {
+                return new String(new String(new String(requestBody.getBytes("ISO-8859-1"), "UTF-8").
+                        getBytes("ISO-8859-1"), "UTF-8").
+                        getBytes("ISO-8859-1"), "UTF-8");
+            }
 
         } catch (UnsupportedEncodingException e) {
             Logger.error("WTF 6534", e);
@@ -56,7 +65,7 @@ public class MigrationController extends Controller {
                     }
 
                     _stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-                    _optaResultSet = _stmt.executeQuery("SELECT id, xml FROM optaxml "+
+                    _optaResultSet = _stmt.executeQuery("SELECT id, xml, feed_tpye FROM optaxml "+
                             " ORDER BY created_at LIMIT " +
                             RESULTS_PER_QUERY + " OFFSET " + _nextDocToParseIndex + ";");
                 }
@@ -64,10 +73,11 @@ public class MigrationController extends Controller {
                 if (_optaResultSet.next()) {
                     _nextDocToParseIndex += 1;
 
-                    String bodyText = translate(_optaResultSet.getString("xml"));
+                    String feedType = _optaResultSet.getString("feed_type");
+                    String bodyText = translate(_optaResultSet.getString("xml"), feedType.equals("F40"));
                     int documentId = _optaResultSet.getInt("id");
 
-                    updateXML(documentId, bodyText);
+                    Model.updateXML(documentId, bodyText);
                 } else {
                     _isFinished = true;
                 }
@@ -76,23 +86,6 @@ public class MigrationController extends Controller {
             }
         }
         closeConnection();
-    }
-
-    public static void updateXML(int documentId, String xml) {
-
-        String updateString = "UPDATE optaxml SET xml = ? WHERE id = ?";
-
-        try (PreparedStatement stmt = _connection.prepareStatement(updateString)) {
-            stmt.setString(1, xml);
-            stmt.setInt(2, documentId);
-
-            if (!stmt.execute()) {
-                Logger.error("Unsuccessful update in OptaXML");
-            }
-        }
-        catch (java.sql.SQLException e) {
-            Logger.error("WTF 56312: ", e);
-        }
     }
 
 

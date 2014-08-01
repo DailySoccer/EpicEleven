@@ -104,32 +104,6 @@ public class Model {
                                      "CREATE INDEX created_at_index ON public.optaxml (created_at); " +
                                  "END IF; " +
                              "END$$;");
-                stmt.execute("CREATE TABLE newoptaxml (" +
-                        " id serial PRIMARY KEY, " +
-                        " xml text, " +
-                        " headers text, " +
-                        " created_at timestamp, " +
-                        " name text, " +
-                        " feed_type text, " +
-                        " game_id text, " +
-                        " competition_id text, " +
-                        " season_id text, " +
-                        " last_updated timestamp " +
-                        " );");
-
-                // http://dba.stackexchange.com/questions/35616/create-index-if-it-does-not-exist
-                stmt.execute("DO $$ " +
-                        "BEGIN " +
-                        "IF NOT EXISTS ( " +
-                        "SELECT 1 " +
-                        "FROM  pg_class c " +
-                        "JOIN  pg_namespace n ON n.oid = c.relnamespace " +
-                        "WHERE c.relname = 'created_at_index_new' " +
-                        "AND   n.nspname = 'public' " +
-                        ") THEN " +
-                        "CREATE INDEX created_at_index_new ON public.newoptaxml (created_at); " +
-                        "END IF; " +
-                        "END$$;");
             }
         }
     }
@@ -247,6 +221,24 @@ public class Model {
      */
     public static Find findObjectIds(MongoCollection collection, String fieldId, String filter, Iterable<ObjectId> objectIdsIterable) {
         return collection.find(String.format("{%s: {$in: #}, %s}", fieldId, filter), ListUtils.asList(objectIdsIterable));
+    }
+
+    public static void updateXML(int documentId, String xml) {
+
+        String updateString = "UPDATE optaxml SET xml = ? WHERE id = ?";
+
+        try (Connection connection = play.db.DB.getConnection()) {
+            try (PreparedStatement stmt = connection.prepareStatement(updateString)) {
+                stmt.setString(1, xml);
+                stmt.setInt(2, documentId);
+                if(stmt.executeUpdate()==1) {
+                    Logger.info("Updated succesfully document number: {}", documentId);
+                }
+            }
+        }
+        catch (java.sql.SQLException e) {
+            Logger.error("WTF 56312: ", e);
+        }
     }
 
     public static void insertXML(String xml, String headers, Date timestamp, String name, String feedType,
