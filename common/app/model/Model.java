@@ -20,11 +20,8 @@ import java.util.TimeZone;
 
 public class Model {
     static public DB mongoDB() { return _mongoDB; }
-    static public DB mongoDBAdmin() { return _mongoDBAdmin; }
-    static public DB mongoDBSnapshot() { return _mongoDBSnapshot; }
 
     static public Jongo jongo() { return _jongo; }
-    static public Jongo jongoSnapshot() { return _jongoSnapshot; }
     static public MongoCollection sessions() { return _jongo.getCollection("sessions"); }
     static public MongoCollection users() { return _jongo.getCollection("users"); }
 
@@ -49,6 +46,8 @@ public class Model {
         if (Play.isTest())
             return;
 
+        Snapshot.init();
+
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
         MongoClientURI mongoClientURI = new MongoClientURI(mongodbUri);
 
@@ -59,14 +58,6 @@ public class Model {
             _mongoDB = _mongoClient.getDB(mongoClientURI.getDatabase());
             _mongoDBAdmin = _mongoClient.getDB("admin");
             _jongo = new Jongo(_mongoDB);
-
-            if (!Play.isProd()) {
-                _mongoDBSnapshot = _mongoClient.getDB("snapshot");
-                _jongoSnapshot = new Jongo(mongoDBSnapshot());
-            } else {
-                _mongoDBSnapshot = null;
-                _jongoSnapshot = null;
-            }
 
             // Let's make sure our DB has the neccesary collections and indexes
             ensureDB(_mongoDB);
@@ -121,10 +112,6 @@ public class Model {
     static public void shutdown() {
         if (_mongoClient != null)
             _mongoClient.close();
-    }
-
-    static public void dropSnapshotDB() {
-        dropDB(_mongoDBSnapshot);
     }
 
     static public void resetDB() {
