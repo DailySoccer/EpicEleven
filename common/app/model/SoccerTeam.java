@@ -37,12 +37,7 @@ public class SoccerTeam {
 
         Iterable<TemplateSoccerPlayer> playersTeamA = Model.templateSoccerPlayers().find("{ templateTeamId: # }", templateTeam.templateSoccerTeamId).as(TemplateSoccerPlayer.class);
         for(TemplateSoccerPlayer templateSoccer : playersTeamA) {
-            SoccerPlayer player = new SoccerPlayer(templateSoccer);
-
-            // Calcular el numero de partidos jugados en la competicion
-            player.updatePlayedMatches(matchEvent.optaSeasonId, matchEvent.optaCompetitionId);
-
-            team.soccerPlayers.add(player);
+            team.soccerPlayers.add(new SoccerPlayer(templateSoccer));
         }
         return team;
     }
