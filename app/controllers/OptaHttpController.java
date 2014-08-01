@@ -30,33 +30,20 @@ public class OptaHttpController extends Controller {
     @BodyParser.Of(value = BodyParser.TolerantText.class, maxLength = 4 * 1024 * 1024)
     public static Result optaXmlInput() {
 
-        String bodyText = request().body().asText();
+        String bodyText = null;
+        InputStream stream = new ByteArrayInputStream(request().body().asRaw().asBytes());
 
-        if (bodyText.charAt(0) != '<') {
-            if (bodyText.charAt(0) == '\uFEFF')
-                Logger.info("BOM: UTF-8");
-            else
-                Logger.error("WTF 88731, BOM NOT UTF-8");
-        }
-
-        InputStream stream = new ByteArrayInputStream(bodyText.getBytes());
         try {
             String encoding = getDetectedEncoding(stream);
-            encoding = (encoding!=null)? encoding: "ISO-8859-15";
-
             // Read with detected encoding, defaults to ISO
-            bodyText = new String(bodyText.getBytes(), encoding);
+            assert encoding != null;
+            bodyText = new String(request().body().asRaw().asBytes(), encoding);
         }
         catch (IOException e) {
             Logger.error("WTF 1783");
         }
 
-        try {
-            bodyText = bodyText.substring(bodyText.indexOf('<'));
-        }
-        catch (Exception e) {
-            Logger.error("WTF 4912: ", e);
-        }
+        assert bodyText != null;
 
         Model.insertXML(bodyText,
                         getHeadersString(request().headers()),
