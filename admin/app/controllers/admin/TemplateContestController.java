@@ -73,14 +73,6 @@ public class TemplateContestController extends Controller {
         templateContest.activationAt = params.activationAt;
         templateContest.createdAt = new Date(params.createdAt);
 
-        /*
-        // Si está activo y la fecha de activación se ha puesto en un futuro
-        if (templateContest.isActive() && templateContest.activationAt.after(GlobalDate.getCurrentDate())) {
-            // Lo apagamos... hasta que suceda esa fecha
-            templateContest.state = TemplateContest.State.OFF;
-        }
-        */
-
         Date startDate = null;
         templateContest.templateMatchEventIds = new ArrayList<>();
         for (String templateMatchEventId: params.templateMatchEvents) {
@@ -92,12 +84,6 @@ public class TemplateContestController extends Controller {
             }
         }
         templateContest.startDate = startDate;
-
-        /*
-        for(String p: params.templateMatchEvents) {
-            Logger.info("{}", p);
-        }
-        */
 
         if (isNew) {
             Model.templateContests().insert(templateContest);

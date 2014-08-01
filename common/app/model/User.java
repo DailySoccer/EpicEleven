@@ -69,9 +69,4 @@ public class User {
     static public User findByEmail(String email) {
         return Model.users().findOne("{email: #}", email).as(User.class);
     }
-
-    /*
-    @JsonView(JsonViews.NotForClient.class)
-    public ObjectId _id;
-    */
 }

@@ -19,7 +19,6 @@ import play.libs.Crypto;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ReturnHelper;
-import utils.SessionUtils;
 
 import java.util.Date;
 
@@ -122,14 +121,13 @@ public class LoginController extends Controller {
             }
             else {
                 if (Play.isDev()) {
-                    Logger.info("isDev: login > sessionToken");
+                    Logger.info("Estamos en desarrollo: El email sera el sessionToken");
 
-                    String encodedEmail = Crypto.encryptAES(theUser.email);
+                    // Durante el desarrollo en local usamos cookies y el email como sessionToken para que sea mas facil debugear
+                    // por ejemplo usando Postman
+                    response().setCookie("sessionToken", theUser.email);
 
-                    // Durante el desarrollo en local, usamos cookies para que sea mas facil debugear
-                    response().setCookie("sessionToken", encodedEmail);
-
-                    returnHelper.setOK(new Session(encodedEmail, theUser.userId, new Date()));
+                    returnHelper.setOK(new Session(theUser.email, theUser.userId, new Date()));
                 }
                 else {
                     String sessionToken = Crypto.generateSignedToken();
