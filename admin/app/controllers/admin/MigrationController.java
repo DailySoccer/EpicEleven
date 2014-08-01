@@ -65,7 +65,7 @@ public class MigrationController extends Controller {
                     }
 
                     _stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-                    _optaResultSet = _stmt.executeQuery("SELECT id, xml, feed_tpye FROM optaxml "+
+                    _optaResultSet = _stmt.executeQuery("SELECT id, xml, feed_type FROM optaxml "+
                             " ORDER BY created_at LIMIT " +
                             RESULTS_PER_QUERY + " OFFSET " + _nextDocToParseIndex + ";");
                 }
