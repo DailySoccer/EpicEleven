@@ -1,10 +1,10 @@
-@(match_events: List[model.TemplateMatchEvent])
+@(match_events: List[model.MatchEvent])
 
 @import model._
 @import controllers.admin.routes._
 
 @scripts = {
-    <script type="text/javascript">
+<script type="text/javascript">
 
         function updatePage() {
             console.log("reload");
@@ -30,9 +30,9 @@
     }
 }
 
-@main("Template Mach Events - Admin", scripts) {
+@main("Mach Events - Admin", scripts) {
 
-<h1 class="page-header">Template Match Events</h1>
+<h1 class="page-header">Match Events</h1>
 
 <h2 class="sub-header"></h2>
 <div class="table-responsive">
@@ -43,6 +43,7 @@
             <th>OptaId</th>
             <th>OptaTeamAId</th>
             <th>OptaTeamBId</th>
+            <th>Teams</th>
             <th>Start Date</th>
             <th>State</th>
         </tr>
@@ -52,19 +53,16 @@
         <tr>
             <!--td>@p.templateMatchEventId</td-->
             <td>@p.optaMatchEventId</td>
-            <td>@p.optaTeamAId</td>
-            <td>@p.optaTeamBId</td>
-            @{/*
+            <td>@p.soccerTeamA.optaTeamId</td>
+            <td>@p.soccerTeamB.optaTeamId</td>
             <td>
-                <a href="@TemplateMatchEventController.show(p.templateMatchEventId.toString())">
-                @if(p.isStarted()) {
-                    @p.soccerTeamA.name (@p.getFantasyPoints(p.soccerTeamA)) vS @p.soccerTeamB.name (@p.getFantasyPoints(p.soccerTeamB))
-                } else {
-                    @p.soccerTeamA.name vS @p.soccerTeamB.name
-                }
-                </a>
-            </td>
-            */}
+                <a href="@MatchEventController.show(p.matchEventId.toString())">
+                    @if(p.isStarted()) {
+                        @p.soccerTeamA.name (@p.getFantasyPoints(p.soccerTeamA)) vS @p.soccerTeamB.name (@p.getFantasyPoints(p.soccerTeamB))
+                    } else {
+                        @p.soccerTeamA.name vS @p.soccerTeamB.name
+                    }
+                </a></td>
             <td>@p.startDate.format("yyyy/MM/dd HH:mm:ss")</td>
             <td>@match_event_state(p.templateMatchEventId.toString())</td>
         </tr>

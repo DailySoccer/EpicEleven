@@ -62,16 +62,6 @@ public class ContestEntry implements JongoId {
     }
 
     /**
-     *  Eliminar un contest entry y sus dependencias
-     */
-    public static boolean remove(ContestEntry contestEntry) {
-        Logger.info("remove ContestEntry ({})", contestEntry.contestEntryId);
-        Model.contestEntries().remove(contestEntry.contestEntryId);
-
-        return true;
-    }
-
-    /**
      * Creacion de un contest entry (se añade a la base de datos)
      * @param user      Usuario al que pertenece el equipo
      * @param contestId   Contest al que se apunta

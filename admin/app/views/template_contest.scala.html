@@ -27,7 +27,6 @@
             <th>OptaId</th>
             <th>OptaTeamAId</th>
             <th>OptaTeamBId</th>
-            <th>Teams</th>
             <th>Start Date</th>
             <th>State</th>
         </tr>
@@ -37,16 +36,19 @@
         <tr>
             <!--td>@p.templateMatchEventId</td-->
             <td>@p.optaMatchEventId</td>
-            <td>@p.soccerTeamA.optaTeamId</td>
-            <td>@p.soccerTeamB.optaTeamId</td>
+            <td>@p.optaTeamAId</td>
+            <td>@p.optaTeamBId</td>
+            @{/*
             <td>
                 <a href="@TemplateMatchEventController.show(p.templateMatchEventId.toString())">
                     @if(p.isStarted()) {
-                    @p.soccerTeamA.name (@p.getFantasyPoints(p.soccerTeamA)) vS @p.soccerTeamB.name (@p.getFantasyPoints(p.soccerTeamB))
+                        @p.soccerTeamA.name (@p.getFantasyPoints(p.soccerTeamA)) vS @p.soccerTeamB.name (@p.getFantasyPoints(p.soccerTeamB))
                     } else {
-                    @p.soccerTeamA.name vS @p.soccerTeamB.name
+                        @p.soccerTeamA.name vS @p.soccerTeamB.name
                     }
-                </a></td>
+                </a>
+            </td>
+            */}
             <td>@p.startDate.format("yyyy/MM/dd HH:mm:ss")</td>
             <td>@match_event_state(p)</td>
         </tr>

@@ -47,7 +47,7 @@ public class ContestEntryController extends Controller {
         Form<ContestEntryForm> contestEntryForm = form(ContestEntryForm.class).bindFromRequest();
         if (contestEntryForm.hasErrors()) {
             String contestId = contestEntryForm.field("contestId").value();
-            List<TemplateMatchEvent> templateMatchEvents = ObjectId.isValid(contestId) ? getTemplateMatchEvents(contestId) : null;
+            List<TemplateMatchEvent> templateMatchEvents = ObjectId.isValid(contestId) ? getMatchEvents(contestId) : null;
             return badRequest(views.html.contest_entry_add.render(contestEntryForm, templateMatchEvents));
         }
 
@@ -57,7 +57,7 @@ public class ContestEntryController extends Controller {
         if ( !success ) {
             FlashMessage.warning("Contest Entry invalid");
             String contestId = contestEntryForm.field("contestId").value();
-            List<TemplateMatchEvent> templateMatchEvents = ObjectId.isValid(contestId) ? getTemplateMatchEvents(contestId) : null;
+            List<TemplateMatchEvent> templateMatchEvents = ObjectId.isValid(contestId) ? getMatchEvents(contestId) : null;
             return badRequest(views.html.contest_entry_add.render(contestEntryForm, templateMatchEvents));
         }
 
@@ -76,13 +76,13 @@ public class ContestEntryController extends Controller {
         ContestEntryForm params = contestEntryForm.get();
         String contestId = params.contestId;
 
-        return ok(views.html.contest_entry_add.render(contestEntryForm, getTemplateMatchEvents(contestId)));
+        return ok(views.html.contest_entry_add.render(contestEntryForm, getMatchEvents(contestId)));
     }
 
-    private static List<TemplateMatchEvent> getTemplateMatchEvents(String contestId) {
+    private static List<MatchEvent> getMatchEvents(String contestId) {
         // Pasar la lista de partidos
         Contest contest = Contest.findOne(new ObjectId(contestId));
         TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
-        return TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
+        return MatchEvent.findAllFromTemplate(templateContest.templateMatchEventIds);
     }
 }

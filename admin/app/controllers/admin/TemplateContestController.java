@@ -61,7 +61,7 @@ public class TemplateContestController extends Controller {
 
         TemplateContest templateContest = new TemplateContest();
 
-        templateContest.templateContestId = isNew ? new ObjectId() : new ObjectId(params.id);
+        templateContest.templateContestId = !isNew ? new ObjectId(params.id) : null;
         templateContest.state = params.state;
         templateContest.name = params.name;
         templateContest.minInstances = params.minInstances;
