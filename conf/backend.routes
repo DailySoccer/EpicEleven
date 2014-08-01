@@ -18,8 +18,6 @@ GET         /get_my_contests                                        controllers.
 GET         /get_contest/:contest                                   controllers.ContestController.getContest(contest)
 
 # Live contests asociados a usuario
-GET         /get_live_contests                                      controllers.ContestController.getLiveContests()
-GET         /get_live_contest/:contest                              controllers.ContestController.getLiveContest(contest)
 GET         /get_live_match_events/template_contest/:contest        controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)
 
 # Entrar en concurso

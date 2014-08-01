@@ -24,7 +24,7 @@ public class TemplateMatchEvent implements JongoId, Initializer {
     public SoccerTeam soccerTeamB;
 
     // Asocia un soccerPlayerId con fantasyPoints
-    @JsonView(JsonViews.Live.class)
+    @JsonView(JsonViews.FullContest.class)
     public HashMap<String, Integer> livePlayerToPoints = new HashMap<>();
 
     public Date startDate;
