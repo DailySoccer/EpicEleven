@@ -54,6 +54,7 @@ public class TemplateContest implements JongoId, Initializer {
         return templateContestId;
     }
 
+    public boolean isOff()      { return (state == State.OFF); }
     public boolean isActive()   { return (state == State.ACTIVE); }
     public boolean isLive()     { return (state == State.LIVE); }
     public boolean isHistory()  { return (state == State.HISTORY); }

@@ -1,11 +1,9 @@
 package model;
 
 
-import com.fasterxml.jackson.annotation.JsonView;
 import model.opta.OptaEvent;
 import model.opta.OptaMatchEvent;
 import org.bson.types.ObjectId;
-import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
@@ -22,8 +20,8 @@ public class TemplateMatchEvent implements JongoId, Initializer {
     public String optaTeamAId;
     public String optaTeamBId;
 
-    public ObjectId soccerTeamAId;
-    public ObjectId soccerTeamBId;
+    public ObjectId templateSoccerTeamAId;
+    public ObjectId templateSoccerTeamBId;
 
     public Date startDate;
     public Date createdAt;
@@ -105,9 +103,9 @@ public class TemplateMatchEvent implements JongoId, Initializer {
         templateMatchEvent.optaMatchEventId = optaMatchEvent.optaMatchEventId;
         templateMatchEvent.optaCompetitionId = optaMatchEvent.competitionId;
         templateMatchEvent.optaSeasonId = optaMatchEvent.seasonId;
-        templateMatchEvent.soccerTeamAId = teamA.templateSoccerTeamId;
+        templateMatchEvent.templateSoccerTeamAId = teamA.templateSoccerTeamId;
         templateMatchEvent.optaTeamAId = teamA.optaTeamId;
-        templateMatchEvent.soccerTeamBId = teamB.templateSoccerTeamId;
+        templateMatchEvent.templateSoccerTeamBId = teamB.templateSoccerTeamId;
         templateMatchEvent.optaTeamBId = teamB.optaTeamId;
         templateMatchEvent.createdAt = GlobalDate.getCurrentDate();
 

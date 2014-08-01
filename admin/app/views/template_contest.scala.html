@@ -1,4 +1,4 @@
-@(template_contest: model.TemplateContest, match_events: List[model.TemplateMatchEvent])
+@(template_contest: model.TemplateContest, match_events: List[model.TemplateMatchEvent], templateSoccerTeamMap: HashMap[org.bson.types.ObjectId, model.TemplateSoccerTeam])
 
 @import controllers.admin.routes._
 
@@ -27,6 +27,7 @@
             <th>OptaId</th>
             <th>OptaTeamAId</th>
             <th>OptaTeamBId</th>
+            <th>Teams</th>
             <th>Start Date</th>
             <th>State</th>
         </tr>
@@ -38,18 +39,16 @@
             <td>@p.optaMatchEventId</td>
             <td>@p.optaTeamAId</td>
             <td>@p.optaTeamBId</td>
-            @{/*
             <td>
-                <a href="@TemplateMatchEventController.show(p.templateMatchEventId.toString())">
-                    @if(p.isStarted()) {
-                        @p.soccerTeamA.name (@p.getFantasyPoints(p.soccerTeamA)) vS @p.soccerTeamB.name (@p.getFantasyPoints(p.soccerTeamB))
-                    } else {
-                        @p.soccerTeamA.name vS @p.soccerTeamB.name
-                    }
+                <a href="@TemplateSoccerTeamController.show(p.templateSoccerTeamAId.toString())">
+                    @templateSoccerTeamMap(p.templateSoccerTeamAId).name
+                </a>
+                vs
+                <a href="@TemplateSoccerTeamController.show(p.templateSoccerTeamBId.toString())">
+                    @templateSoccerTeamMap(p.templateSoccerTeamBId).name
                 </a>
             </td>
-            */}
-            <td>@p.startDate.format("yyyy/MM/dd HH:mm:ss")</td>
+          <td>@p.startDate.format("yyyy/MM/dd HH:mm:ss")</td>
             <td>@match_event_state(p)</td>
         </tr>
         }

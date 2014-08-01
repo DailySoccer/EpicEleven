@@ -157,8 +157,8 @@ public class MatchEvent {
     }
 
     static public void createFromTemplate(TemplateMatchEvent templateMatchEvent) {
-        TemplateSoccerTeam teamA = Model.templateSoccerTeams().findOne("{_id: #}", templateMatchEvent.soccerTeamAId).as(TemplateSoccerTeam.class);
-        TemplateSoccerTeam teamB = Model.templateSoccerTeams().findOne("{_id: #}", templateMatchEvent.soccerTeamBId).as(TemplateSoccerTeam.class);
+        TemplateSoccerTeam teamA = Model.templateSoccerTeams().findOne("{_id: #}", templateMatchEvent.templateSoccerTeamAId).as(TemplateSoccerTeam.class);
+        TemplateSoccerTeam teamB = Model.templateSoccerTeams().findOne("{_id: #}", templateMatchEvent.templateSoccerTeamBId).as(TemplateSoccerTeam.class);
         assert(teamA != null && teamB != null);
 
         MatchEvent matchEvent = new MatchEvent();
