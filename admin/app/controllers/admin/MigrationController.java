@@ -7,7 +7,6 @@ import play.mvc.Result;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.*;
-import java.util.Date;
 
 
 /**
@@ -25,18 +24,12 @@ public class MigrationController extends Controller {
     4- Rename newoptaxml to optaxml: "ALTER TABLE distributors RENAME TO suppliers;"
      */
 
-    private static MigrationController get_instance(){
-        if (_instance == null)
-            _instance = new MigrationController();
-        return _instance;
-    }
-
     public static Result migrate() {
-        get_instance().runMigration();
+        runMigration();
         return ok("Migration finished");
     }
 
-    public String translate(String requestBody) {
+    public static String translate(String requestBody) {
         try {
             return new String (new String (new String (requestBody.getBytes("ISO-8859-1"), "UTF-8").
                                     getBytes("ISO-8859-1"), "UTF-8").
@@ -48,7 +41,7 @@ public class MigrationController extends Controller {
         return requestBody;
     }
 
-    public void runMigration() {
+    public static void runMigration() {
         if (_connection == null) {
             createConnection();
         }
@@ -63,7 +56,7 @@ public class MigrationController extends Controller {
                     }
 
                     _stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-                    _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml "+
+                    _optaResultSet = _stmt.executeQuery("SELECT id, xml FROM optaxml "+
                             " ORDER BY created_at LIMIT " +
                             RESULTS_PER_QUERY + " OFFSET " + _nextDocToParseIndex + ";");
                 }
@@ -72,17 +65,9 @@ public class MigrationController extends Controller {
                     _nextDocToParseIndex += 1;
 
                     String bodyText = translate(_optaResultSet.getString("xml"));
-                    String headers = _optaResultSet.getString("headers");
-                    String feedType = _optaResultSet.getString("feed_type");
-                    String name = _optaResultSet.getString("name");
-                    String gameId = _optaResultSet.getString("game_id");
-                    String competitionId = _optaResultSet.getString("competition_id");
-                    String seasonId = _optaResultSet.getString("season_id");
-                    Date lastUpdated = _optaResultSet.getTimestamp("last_updated");
-                    Date createdAt = _optaResultSet.getTimestamp("created_at");
+                    int documentId = _optaResultSet.getInt("id");
 
-                    insertRightXML(bodyText, headers, createdAt, name, feedType, gameId,
-                            competitionId, seasonId, lastUpdated);
+                    updateXML(documentId, bodyText);
                 } else {
                     _isFinished = true;
                 }
@@ -93,66 +78,16 @@ public class MigrationController extends Controller {
         closeConnection();
     }
 
-    private static void ensurePostgresDB() throws SQLException {
-        try (Statement stmt = get_instance()._connection.createStatement()) {
-            stmt.execute("CREATE TABLE newoptaxml (" +
-                    " id serial PRIMARY KEY, " +
-                    " xml text, " +
-                    " headers text, " +
-                    " created_at timestamp, " +
-                    " name text, " +
-                    " feed_type text, " +
-                    " game_id text, " +
-                    " competition_id text, " +
-                    " season_id text, " +
-                    " last_updated timestamp " +
-                    " );");
+    public static void updateXML(int documentId, String xml) {
 
-            // http://dba.stackexchange.com/questions/35616/create-index-if-it-does-not-exist
-            stmt.execute("DO $$ " +
-                    "BEGIN " +
-                    "IF NOT EXISTS ( " +
-                    "SELECT 1 " +
-                    "FROM  pg_class c " +
-                    "JOIN  pg_namespace n ON n.oid = c.relnamespace " +
-                    "WHERE c.relname = 'created_at_index_new' " +
-                    "AND   n.nspname = 'public' " +
-                    ") THEN " +
-                    "CREATE INDEX created_at_index_new ON public.newoptaxml (created_at); " +
-                    "END IF; " +
-                    "END$$;");
-        }
-    }
+        String updateString = "UPDATE optaxml SET xml = ? WHERE id = ?";
 
-
-    public  void insertRightXML(String xml, String headers, Date timestamp, String name, String feedType,
-                                 String gameId, String competitionId, String seasonId, Date lastUpdated) {
-
-        String insertString = "INSERT INTO newoptaxml (xml, headers, created_at, name, feed_type, game_id, competition_id," +
-                "season_id, last_updated) VALUES (?,?,?,?,?,?,?,?,?)";
-
-        try (PreparedStatement stmt = _connection.prepareStatement(insertString)) {
+        try (PreparedStatement stmt = _connection.prepareStatement(updateString)) {
             stmt.setString(1, xml);
-            stmt.setString(2, headers);
-            if (timestamp != null) {
-                stmt.setTimestamp(3, new java.sql.Timestamp(timestamp.getTime()));
-            } else {
-                stmt.setTimestamp(3, null);
-            }
-            stmt.setString(4, name);
-            stmt.setString(5, feedType);
-            stmt.setString(6, gameId);
-            stmt.setString(7, competitionId);
-            stmt.setString(8, seasonId);
-
-            if (lastUpdated != null) {
-                stmt.setTimestamp(9, new java.sql.Timestamp(lastUpdated.getTime()));
-            } else {
-                stmt.setTimestamp(9, null);
-            }
+            stmt.setInt(2, documentId);
 
             if (!stmt.execute()) {
-                Logger.error("Unsuccessful insert in OptaXML2");
+                Logger.error("Unsuccessful update in OptaXML");
             }
         }
         catch (java.sql.SQLException e) {
@@ -161,7 +96,7 @@ public class MigrationController extends Controller {
     }
 
 
-    private void createConnection() {
+    private static void createConnection() {
         _connection = DB.getConnection();
         try {
             _connection.setAutoCommit(false);
@@ -170,7 +105,7 @@ public class MigrationController extends Controller {
         }
     }
 
-    private void closeConnection() {
+    private static void closeConnection() {
         try {
             if (_stmt != null) {
                 _stmt.close();
@@ -186,11 +121,10 @@ public class MigrationController extends Controller {
         }
     }
 
-    private static MigrationController _instance;
-    private Connection _connection;
-    private Statement _stmt;
-    private ResultSet _optaResultSet;
-    private int RESULTS_PER_QUERY = 500;
-    private int _nextDocToParseIndex = 0;
-    private boolean _isFinished = false;
+    private static Connection _connection;
+    private static Statement _stmt;
+    private static ResultSet _optaResultSet;
+    private static int RESULTS_PER_QUERY = 500;
+    private static int _nextDocToParseIndex = 0;
+    private static boolean _isFinished = false;
 }
