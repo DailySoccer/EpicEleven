@@ -81,7 +81,7 @@ public class OptaProcessor {
                              OptaEvent.parseDate(event.getAttributeValue("timestamp"));
 
         HashMap<Integer, Date> eventsCache = getOptaEventsCache(game.getAttributeValue("id"));
-        int eventId = (int) Integer.parseInt(event.getAttributeValue("event_id"));
+        int eventId = (int) Integer.parseInt(event.getAttributeValue("id"));
 
         if (!eventsCache.containsKey(eventId) || timestamp.after(eventsCache.get(eventId))) {
             updateOrInsertEvent(event, game);
@@ -90,24 +90,23 @@ public class OptaProcessor {
     }
 
     private void updateOrInsertEvent(Element event, Element game) {
-        OptaEvent myEvent = new OptaEvent(event, game);
-        myEvent.points = getPointsTranslation(myEvent.typeId, myEvent.timestamp);
-        myEvent.pointsTranslationId = _pointsTranslationTableCache.get(myEvent.typeId);
+        OptaEvent optaEvent = new OptaEvent(event, game);
+        updateEvent(optaEvent);
 
-        Model.optaEvents().update("{eventId: #, gameId: #}", myEvent.eventId, myEvent.gameId).upsert().with(myEvent);
-
-        _dirtyMatchEvents.add(myEvent.gameId);
+        _dirtyMatchEvents.add(optaEvent.gameId);
     }
 
+    private void updateEvent(OptaEvent optaEvent) {
+        optaEvent.points = getPointsTranslation(optaEvent.typeId, optaEvent.timestamp);
+        optaEvent.pointsTranslationId = _pointsTranslationTableCache.get(optaEvent.typeId);
+        Model.optaEvents().update("{eventId: #, teamId: #, gameId: #}", optaEvent.eventId, optaEvent.teamId, optaEvent.gameId).upsert().with(optaEvent);
+    }
 
     public void recalculateAllEvents() {
-
         resetPointsTranslationCache();
 
         for (OptaEvent optaEvent : Model.optaEvents().find().as(OptaEvent.class)) {
-            optaEvent.points = getPointsTranslation(optaEvent.typeId, optaEvent.timestamp);
-            optaEvent.pointsTranslationId = _pointsTranslationTableCache.get(optaEvent.typeId);
-            Model.optaEvents().update("{eventId: #, gameId: #}", optaEvent.eventId, optaEvent.gameId).upsert().with(optaEvent);
+            updateEvent(optaEvent);
         }
     }
 
@@ -336,6 +335,7 @@ public class OptaProcessor {
 
     private void processGoalsAgainst(Element F9, String gameId, Element teamData) {
         List<Element> matchPlayers = teamData.getChild("PlayerLineUp").getChildren("MatchPlayer");
+        int teamRef = (int) Integer.parseInt(getStringId(teamData,"TeamRef","999"));
 
         for (Element matchPlayer : matchPlayers) {
             if (matchPlayer.getAttribute("Position").getValue().equals("Goalkeeper") ||
@@ -344,7 +344,7 @@ public class OptaProcessor {
                 for (Element stat : stats) {
                     if (stat.getAttribute("Type").getValue().equals("goals_conceded") &&
                         ((int) Integer.parseInt(stat.getContent().get(0).getValue()) > 0)) {
-                        createEvent(F9, gameId, matchPlayer, OptaEventType.GOAL_CONCEDED._code, 20001,
+                        createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.GOAL_CONCEDED._code, 20001,
                                     (int) Integer.parseInt(stat.getContent().get(0).getValue()));
                     }
                 }
@@ -355,6 +355,7 @@ public class OptaProcessor {
 
     private void processCleanSheet(Element F9, String gameId, Element teamData) {
         List<Element> matchPlayers = teamData.getChild("PlayerLineUp").getChildren("MatchPlayer");
+        int teamRef = (int) Integer.parseInt(getStringId(teamData,"TeamRef","999"));
 
         for (Element matchPlayer : matchPlayers) {
             if (matchPlayer.getChild("Position").getValue().equals("Goalkeeper") ||
@@ -363,7 +364,7 @@ public class OptaProcessor {
                 for (Element stat : stats) {
                     if (stat.getAttribute("Type").getValue().equals("mins_played") &&
                         ((int) Integer.parseInt(stat.getContent().get(0).getValue()) > 59)) {
-                        createEvent(F9, gameId, matchPlayer, OptaEventType.CLEAN_SHEET._code, 20000, 1);
+                        createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.CLEAN_SHEET._code, 20000, 1);
                     }
                 }
             }
@@ -371,13 +372,13 @@ public class OptaProcessor {
 
     }
 
-    private void createEvent(Element F9, String gameId, Element matchPlayer, int typeId, int eventId, int times) {
+    private void createEvent(Element F9, String gameId, Element matchPlayer, int teamId, int typeId, int eventId, int times) {
         String playerId = getStringId(matchPlayer, "PlayerRef", "_NO PLAYER ID");
         String competitionId = getStringId(F9.getChild("Competition"), "uID", "_NO COMPETITION UID");
         Date timestamp = OptaEvent.parseDate(F9.getChild("MatchData").getChild("MatchInfo").getAttributeValue("TimeStamp"));
 
-        Model.optaEvents().remove("{typeId: #, eventId: #, optaPlayerId: #, gameId: #, competitionId: #}",
-                typeId, eventId, playerId, gameId, competitionId);
+        Model.optaEvents().remove("{typeId: #, eventId: #, optaPlayerId: #, teamId: #, gameId: #, competitionId: #}",
+                typeId, eventId, playerId, teamId, gameId, competitionId);
 
         OptaEvent[] events = new OptaEvent[times];
 
@@ -386,6 +387,7 @@ public class OptaProcessor {
             myEvent.typeId = typeId;
             myEvent.eventId = eventId;
             myEvent.optaPlayerId = playerId;
+            myEvent.teamId = teamId;
             myEvent.gameId = gameId;
             myEvent.competitionId = competitionId;
             //TODO: Extraer SeasonID de Competition->Stat->Type==season_id->content
