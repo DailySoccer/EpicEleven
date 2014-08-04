@@ -90,24 +90,23 @@ public class OptaProcessor {
     }
 
     private void updateOrInsertEvent(Element event, Element game) {
-        OptaEvent myEvent = new OptaEvent(event, game);
-        myEvent.points = getPointsTranslation(myEvent.typeId, myEvent.timestamp);
-        myEvent.pointsTranslationId = _pointsTranslationTableCache.get(myEvent.typeId);
+        OptaEvent optaEvent = new OptaEvent(event, game);
+        updateEvent(optaEvent);
 
-        Model.optaEvents().update("{eventId: #, teamId: #, gameId: #}", myEvent.eventId, myEvent.teamId, myEvent.gameId).upsert().with(myEvent);
-
-        _dirtyMatchEvents.add(myEvent.gameId);
+        _dirtyMatchEvents.add(optaEvent.gameId);
     }
 
+    private void updateEvent(OptaEvent optaEvent) {
+        optaEvent.points = getPointsTranslation(optaEvent.typeId, optaEvent.timestamp);
+        optaEvent.pointsTranslationId = _pointsTranslationTableCache.get(optaEvent.typeId);
+        Model.optaEvents().update("{eventId: #, teamId: #, gameId: #}", optaEvent.eventId, optaEvent.teamId, optaEvent.gameId).upsert().with(optaEvent);
+    }
 
     public void recalculateAllEvents() {
-
         resetPointsTranslationCache();
 
         for (OptaEvent optaEvent : Model.optaEvents().find().as(OptaEvent.class)) {
-            optaEvent.points = getPointsTranslation(optaEvent.typeId, optaEvent.timestamp);
-            optaEvent.pointsTranslationId = _pointsTranslationTableCache.get(optaEvent.typeId);
-            Model.optaEvents().update("{eventId: #, gameId: #, teamId: #}", optaEvent.eventId, optaEvent.gameId, optaEvent.teamId).upsert().with(optaEvent);
+            updateEvent(optaEvent);
         }
     }
 
