@@ -1,8 +1,9 @@
 package model;
 
-import java.util.List;
-import java.util.HashSet;
 import utils.ListUtils;
+
+import java.util.HashSet;
+import java.util.List;
 
 public class ModelEvents {
 
@@ -36,7 +37,7 @@ public class ModelEvents {
 
     public static void onOptaMatchEventIdsChanged(HashSet<String> changedOptaMatchEventIds) {
 
-        if (changedOptaMatchEventIds.isEmpty())
+        if (changedOptaMatchEventIds==null || changedOptaMatchEventIds.isEmpty())
             return;
 
         for(String optaGameId : changedOptaMatchEventIds) {

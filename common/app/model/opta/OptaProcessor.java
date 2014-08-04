@@ -10,7 +10,6 @@ import org.jdom2.input.SAXBuilder;
 import play.Logger;
 
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 /**
@@ -20,18 +19,6 @@ public class OptaProcessor {
 
     // Retorna los Ids de opta (gameIds, optaMachEventId) de los partidos que han cambiado
     public HashSet<String> processOptaDBInput(String feedType, String requestBody) throws JDOMParseException {
-        /*
-        FIX para leer los XML chungos de la base de datos.
-         */
-        try {
-            requestBody = new String (new String (new String (requestBody.getBytes("ISO-8859-1"), "UTF-8").
-                                                                          getBytes("ISO-8859-1"), "UTF-8").
-                                                                          getBytes("ISO-8859-1"), "UTF-8");
-
-        } catch (UnsupportedEncodingException e) {
-            Logger.error("WTF 59634", e);
-        }
-
         try {
             SAXBuilder builder = new SAXBuilder();
 
