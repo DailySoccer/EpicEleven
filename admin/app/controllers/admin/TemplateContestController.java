@@ -24,7 +24,8 @@ public class TemplateContestController extends Controller {
         TemplateContest templateContest = TemplateContest.findOne(new ObjectId(templateContestId));
         return ok(views.html.template_contest.render(
                 templateContest,
-                templateContest.getTemplateMatchEvents()));
+                templateContest.getTemplateMatchEvents(),
+                TemplateSoccerTeam.findAllAsMap()));
     }
 
     public static Result newForm() {
@@ -61,7 +62,7 @@ public class TemplateContestController extends Controller {
 
         TemplateContest templateContest = new TemplateContest();
 
-        templateContest.templateContestId = isNew ? new ObjectId() : new ObjectId(params.id);
+        templateContest.templateContestId = !isNew ? new ObjectId(params.id) : null;
         templateContest.state = params.state;
         templateContest.name = params.name;
         templateContest.minInstances = params.minInstances;

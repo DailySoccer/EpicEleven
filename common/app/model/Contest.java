@@ -35,7 +35,6 @@ public class Contest implements JongoId {
 
     public ObjectId getId() { return contestId; }
 
-
     static public Contest findOne(ObjectId contestId) {
         return Model.contests().findOne("{_id : #}", contestId).as(Contest.class);
     }
@@ -61,9 +60,6 @@ public class Contest implements JongoId {
      */
     public static boolean remove(Contest contest) {
         Logger.info("remove Contest ({}): {}", contest.contestId, contest.name);
-
-        // Eliminar los contest entries de ese contest
-        Model.contestEntries().remove("{contestId: #}", contest.contestId);
 
         // Eliminar el contest
         Model.contests().remove(contest.contestId);

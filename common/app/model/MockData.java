@@ -86,7 +86,7 @@ public final class MockData {
     }
 
     public static void addContestEntries(Contest contest, int size) {
-        // TODO: Si no tiene contestId (aún no ha sido insertado en una collection), lo generamos
+        // Si no tiene contestId (aún no ha sido insertado en una collection), lo generamos
         if (contest.contestId == null) {
             contest.contestId = new ObjectId();
         }
@@ -96,7 +96,7 @@ public final class MockData {
         List<SoccerPlayer> middles = new ArrayList<>();
         List<SoccerPlayer> forwards = new ArrayList<>();
 
-        for (TemplateMatchEvent matchEvent : TemplateContest.findOne(contest.templateContestId).getTemplateMatchEvents()) {
+        for (MatchEvent matchEvent : TemplateContest.findOne(contest.templateContestId).getMatchEvents()) {
             goalKeepers.addAll(filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamA, FieldPos.GOALKEEPER));
             goalKeepers.addAll(filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamB, FieldPos.GOALKEEPER));
 
