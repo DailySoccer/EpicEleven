@@ -1,8 +1,9 @@
 package model;
 
-import java.util.List;
-import java.util.HashSet;
 import utils.ListUtils;
+
+import java.util.HashSet;
+import java.util.List;
 
 public class ModelEvents {
 
@@ -36,22 +37,22 @@ public class ModelEvents {
 
     public static void onOptaMatchEventIdsChanged(HashSet<String> changedOptaMatchEventIds) {
 
-        if (changedOptaMatchEventIds.isEmpty())
+        if (changedOptaMatchEventIds==null || changedOptaMatchEventIds.isEmpty())
             return;
 
         for(String optaGameId : changedOptaMatchEventIds) {
             // Logger.info("optaGameId in gameId({})", optaGameId);
 
             // Buscamos todos los template Match Events asociados con ese partido de Opta
-            for (TemplateMatchEvent templateMatchEvent : Model.templateMatchEvents().find("{optaMatchEventId: #}", optaGameId).as(TemplateMatchEvent.class)) {
+            for (MatchEvent matchEvent : Model.matchEvents().find("{optaMatchEventId: #}", optaGameId).as(MatchEvent.class)) {
 
-                if (templateMatchEvent.isStarted()) {
-                    templateMatchEvent.updateFantasyPoints();
+                if (matchEvent.isStarted()) {
+                    matchEvent.updateFantasyPoints();
 
-                    if (templateMatchEvent.isFinished()) {
-                        actionWhenMatchEventIsFinished(templateMatchEvent);
+                    if (matchEvent.isFinished()) {
+                        actionWhenMatchEventIsFinished(matchEvent);
                     } else {
-                        actionWhenMatchEventIsStarted(templateMatchEvent);
+                        actionWhenMatchEventIsStarted(matchEvent);
                     }
                 }
 
@@ -60,18 +61,18 @@ public class ModelEvents {
         }
     }
 
-    private static void actionWhenMatchEventIsStarted(TemplateMatchEvent templateMatchEvent) {
+    private static void actionWhenMatchEventIsStarted(MatchEvent matchEvent) {
         // Los template contests (que incluyan este match event y que esten "activos") tendrian que ser marcados como "live"
         Model.templateContests()
-                .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}", templateMatchEvent.templateMatchEventId)
+                .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}", matchEvent.templateMatchEventId)
                 .multi()
                 .with("{$set: {state: \"LIVE\"}}");
     }
 
-    private static void actionWhenMatchEventIsFinished(TemplateMatchEvent templateMatchEvent) {
+    private static void actionWhenMatchEventIsFinished(MatchEvent matchEvent) {
         // Buscamos los template contests que incluyan ese partido y que esten en "LIVE"
         Iterable<TemplateContest> templateContests = Model.templateContests().find("{templateMatchEventIds: {$in:[#]}, state: \"LIVE\"}",
-                                                                                    templateMatchEvent.templateMatchEventId).as(TemplateContest.class);
+                matchEvent.templateMatchEventId).as(TemplateContest.class);
 
         for (TemplateContest templateContest : templateContests) {
             // Si el contest ha terminado (true si todos sus partidos han terminado)
@@ -81,6 +82,6 @@ public class ModelEvents {
             }
         }
 
-        templateMatchEvent.saveStats();
+        matchEvent.saveStats();
     }
 }

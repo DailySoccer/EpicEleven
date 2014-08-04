@@ -70,10 +70,12 @@ public class TemplateContestForm {
 
         Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.templateMatchEvents().find("{startDate: {$gte: #}}", startDate).sort("{startDate : 1}").as(TemplateMatchEvent.class);
         for (TemplateMatchEvent matchEvent: templateMatchEventsResults) {
+            TemplateSoccerTeam teamA = TemplateSoccerTeam.findOne(matchEvent.templateSoccerTeamAId);
+            TemplateSoccerTeam teamB = TemplateSoccerTeam.findOne(matchEvent.templateSoccerTeamBId);
             options.put(matchEvent.templateMatchEventId.toString(), String.format("%s - %s vs %s",
                     // new SimpleDateFormat("yy/MM/dd").format(matchEvent.startDate),
                     DateFormat.getDateInstance(DateFormat.SHORT).format(matchEvent.startDate),
-                    matchEvent.soccerTeamA.name, matchEvent.soccerTeamB.name));
+                    teamA.name, teamB.name));
         }
         return options;
     }

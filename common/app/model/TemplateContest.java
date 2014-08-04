@@ -54,6 +54,7 @@ public class TemplateContest implements JongoId, Initializer {
         return templateContestId;
     }
 
+    public boolean isOff()      { return (state == State.OFF); }
     public boolean isActive()   { return (state == State.ACTIVE); }
     public boolean isLive()     { return (state == State.LIVE); }
     public boolean isHistory()  { return (state == State.HISTORY); }
@@ -61,6 +62,10 @@ public class TemplateContest implements JongoId, Initializer {
 
     public List<TemplateMatchEvent> getTemplateMatchEvents() {
         return TemplateMatchEvent.findAll(templateMatchEventIds);
+    }
+
+    public List<MatchEvent> getMatchEvents() {
+        return MatchEvent.findAllFromTemplate(templateMatchEventIds);
     }
 
     static public TemplateContest findOne(ObjectId templateContestId) {
@@ -115,11 +120,11 @@ public class TemplateContest implements JongoId, Initializer {
     }
 
     public void instantiate() {
-        // No instanciamos template contests que no esten activos
-        if (!isActive())
-            return;
+        assert(isActive());
 
         Logger.info("instantiate: {}: activationAt: {}", name, activationAt );
+
+        instantiateMatchEvents();
 
         // Cuantas instancias tenemos creadas?
         long instances = Model.contests().count("{templateContestId: #}", templateContestId);
@@ -134,6 +139,17 @@ public class TemplateContest implements JongoId, Initializer {
         }
     }
 
+    public void instantiateMatchEvents() {
+        List<TemplateMatchEvent> templateMatchEvents = getTemplateMatchEvents();
+
+        for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
+            MatchEvent matchEvent = MatchEvent.findOneFromTemplate(templateMatchEvent.getId());
+            if (matchEvent == null) {
+                MatchEvent.createFromTemplate(templateMatchEvent);
+            }
+        }
+    }
+
     /**
      *  Estado del partido
      */
@@ -141,8 +157,8 @@ public class TemplateContest implements JongoId, Initializer {
         boolean started = false;
 
         // El Contest ha comenzado si cualquiera de sus partidos ha comenzado
-        Iterable<TemplateMatchEvent> templateContestResults = TemplateMatchEvent.findAll(templateMatchEventIds);
-        for(TemplateMatchEvent templateMatchEvent : templateContestResults) {
+        Iterable<TemplateMatchEvent> matchEventResults = TemplateMatchEvent.findAll(templateMatchEventIds);
+        for(TemplateMatchEvent templateMatchEvent : matchEventResults) {
             if (templateMatchEvent.isStarted()) {
                 started = true;
                 break;

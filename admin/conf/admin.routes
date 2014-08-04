@@ -39,6 +39,9 @@ GET         /contests                                                  controlle
 GET         /contest/:contestId                                        controllers.admin.ContestController.show(contestId : String)
 GET         /contest/destroy/:contestId                                controllers.admin.ContestController.destroy(contestId : String)
 
+GET         /match_events                                              controllers.admin.MatchEventController.index()
+GET         /match_event/:templateMatchEventId                         controllers.admin.MatchEventController.show(templateMatchEventId : String)
+
 GET         /template_contests                                         controllers.admin.TemplateContestController.index()
 GET         /template_contest/create_all                               controllers.admin.TemplateContestController.createAll()
 GET         /template_contest/save/:templateContestId                  controllers.admin.TemplateContestController.edit(templateContestId : String)

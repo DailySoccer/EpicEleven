@@ -18,7 +18,16 @@
     </script>
 }
 
-@contest_state(template_contest_id : String) = {
+@template_contest_state(templateContest : TemplateContest) = {
+    @{templateContest.state match {
+        case TemplateContest.State.HISTORY  => <button class="btn btn-danger">{templateContest.state}</button>
+        case TemplateContest.State.LIVE     => <button class="btn btn-success">{templateContest.state}</button>
+        case TemplateContest.State.ACTIVE   => <button class="btn btn-warning">{templateContest.state}</button>
+        case _                              => <button class="btn btn-warning disabled">{templateContest.state}</button>
+    }}
+}
+
+@match_events_state(template_contest_id : String) = {
     @if(TemplateContest.isFinished(template_contest_id)) {
         <button class="btn btn-danger" value="@template_contest_id">Finished</button>
     } else {
@@ -54,18 +63,15 @@
             <th>Start Date</th>
             <th>Activation At</th>
             <th>State</th>
-            <!--
-            @for(i <- 0 to 10) {
-            <th>Match Event @i</th>
-            }
-            -->
+            <th></th>
+            <th></th>
         </tr>
         </thead>
         <tbody>
         @for(p <- template_contests) {
         <tr>
             <!--td>@p.templateContestId</td-->
-            <td>@p.state</td>
+            <td>@template_contest_state(p)</td>
             <td><a href="@TemplateContestController.show(p.templateContestId.toString())" style="white-space: nowrap">@p.name</a></td>
             <td>@p.templateMatchEventIds.size()</td>
             <td>@p.minInstances</td>
@@ -75,14 +81,17 @@
             <td>@p.prizeType</td>
             <td>@p.startDate.format("yyyy/MM/dd HH:mm:ss")</td>
             <td>@p.activationAt.format("yyyy/MM/dd HH:mm:ss")</td>
-            <td>@contest_state(p.templateContestId.toString())</td>
-            @if(p.state.toString().equals("OFF")) {
+            <td>@match_events_state(p.templateContestId.toString)</td>
+            @if(p.isOff) {
                 <td>
                     <a href="@TemplateContestController.edit(p.templateContestId.toString())"><button class="btn btn-success">Edit</button></a>
                 </td>
                 <td>
                     <a href="@TemplateContestController.destroy(p.templateContestId.toString())"><button class="btn btn-danger">-</button></a>
                 </td>
+            } else {
+                <td></td>
+                <td></td>
             }
         </tr>
         }

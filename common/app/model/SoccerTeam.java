@@ -32,17 +32,12 @@ public class SoccerTeam {
     /**
      * Setup Team (incrustando a los futbolistas en el equipo)
      */
-    public static SoccerTeam create(TemplateMatchEvent templateMatchEvent, TemplateSoccerTeam templateTeam) {
+    public static SoccerTeam create(MatchEvent matchEvent, TemplateSoccerTeam templateTeam) {
         SoccerTeam team = new SoccerTeam(templateTeam);
 
         Iterable<TemplateSoccerPlayer> playersTeamA = Model.templateSoccerPlayers().find("{ templateTeamId: # }", templateTeam.templateSoccerTeamId).as(TemplateSoccerPlayer.class);
         for(TemplateSoccerPlayer templateSoccer : playersTeamA) {
-            SoccerPlayer player = new SoccerPlayer(templateSoccer);
-
-            // Calcular el numero de partidos jugados en la competicion
-            player.updatePlayedMatches(templateMatchEvent.optaSeasonId, templateMatchEvent.optaCompetitionId);
-
-            team.soccerPlayers.add(player);
+            team.soccerPlayers.add(new SoccerPlayer(templateSoccer));
         }
         return team;
     }

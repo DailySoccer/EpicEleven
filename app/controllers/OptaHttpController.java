@@ -16,10 +16,11 @@ import play.mvc.Result;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 
 /**
  * Created by gnufede on 30/05/14.
@@ -29,21 +30,42 @@ public class OptaHttpController extends Controller {
 
     @BodyParser.Of(value = BodyParser.TolerantText.class, maxLength = 4 * 1024 * 1024)
     public static Result optaXmlInput() {
-
+        byte[] bodyOriginalBytes = null;
         String bodyText = null;
-        InputStream stream = new ByteArrayInputStream(request().body().asRaw().asBytes());
+        String contentType = request().headers().get("Content-Type")[0];
+        if (contentType.indexOf("charset=") > 0) {
+            bodyText = request().body().asText();
+        } else {
+            try {
+                //HTTP default encoding for POST requests is ISO-8859-1 if no charset is passed via "Content-Type" header.
+                String charset = "ISO-8859-1";
+                try {
+                    charset = contentType.substring(contentType.indexOf("charset="));
+                } catch (StringIndexOutOfBoundsException e) {
+                    Logger.info("No charset passed in request");
+                }
 
-        try {
-            String encoding = getDetectedEncoding(stream);
-            // Read with detected encoding, defaults to ISO
-            assert encoding != null;
-            bodyText = new String(request().body().asRaw().asBytes(), encoding);
-        }
-        catch (IOException e) {
-            Logger.error("WTF 1783");
-        }
+                bodyOriginalBytes = request().body().asText().getBytes(charset);
 
-        assert bodyText != null;
+            } catch (UnsupportedEncodingException e) {
+                Logger.error("WTF 9151", e);
+            }
+
+            String detectedEncoding = null;
+            try {
+                detectedEncoding = getDetectedEncoding(new ByteArrayInputStream(bodyOriginalBytes));
+            } catch (IOException e) {
+                Logger.error("WTF 1591", e);
+            }
+
+            detectedEncoding = detectedEncoding!=null? detectedEncoding: "UTF-8";
+
+            try {
+                bodyText = new String(bodyOriginalBytes, detectedEncoding);
+            } catch (UnsupportedEncodingException e) {
+                Logger.error("WTF 5119", e);
+            }
+        }
 
         Model.insertXML(bodyText,
                         getHeadersString(request().headers()),
