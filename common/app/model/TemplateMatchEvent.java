@@ -61,10 +61,7 @@ public class TemplateMatchEvent implements JongoId, Initializer {
      *  Estado del partido
      */
     public boolean isStarted() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(startDate);
-        calendar.add(Calendar.MINUTE, -5);      // Un partido "comenzará" x minutos antes de su fecha establecida de comienzo
-        return GlobalDate.getCurrentDate().after(calendar.getTime());
+        return (Model.optaEvents().findOne("{gameId: #, typeId: 32, periodId: 1}", optaMatchEventId).as(OptaEvent.class) != null);
     }
 
     public static boolean isStarted(String templateMatchEventId) {
