@@ -145,6 +145,12 @@
         });
 
         $('#date-pause-ok').click(function(){
+            var localDate = new Date($("#date-pause").val());
+            var origDate = new Date($("#date-pause").val());
+
+            localDate.setHours(localDate.getHours() - (localDate.getTimezoneOffset()/60));
+            $("#date-pause").val(localDate.toISOString().substring(0,16));
+
             var form = $('#date-pause-form');
             $.ajax({
               type: form.attr('method'),
@@ -155,6 +161,8 @@
             }).fail(function() {
               // Optionally alert the user of an error here...
             });
+
+            $("#date-pause").val(origDate.toISOString().substring(0,16));
             sleep(100, checkReload);
         });
 
