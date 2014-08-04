@@ -97,6 +97,7 @@ public class RefresherController extends Controller {
     }
 
     public static Result lastDate() {
+        // Returns date in millis
         return ok(String.valueOf(findLastDate().getTime()));
     }
 

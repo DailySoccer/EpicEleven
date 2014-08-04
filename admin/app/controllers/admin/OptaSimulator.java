@@ -1,17 +1,15 @@
 package controllers.admin;
 
-import model.GlobalDate;
-import model.MockData;
-import model.Model;
-import model.ModelEvents;
-import model.Snapshot;
+import model.*;
 import model.opta.OptaProcessor;
 import org.jdom2.input.JDOMParseException;
 import play.Logger;
 import play.db.DB;
 
-import java.sql.*;
-import java.text.SimpleDateFormat;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Date;
 import java.util.HashSet;
 
@@ -122,7 +120,7 @@ public class OptaSimulator implements Runnable {
 
         OptaSimulatorState state = OptaSimulatorState.getInstance();
         if (state.paused && state.pause != null) {
-            nextStop = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(state.pause);
+            nextStop = GlobalDate.formatDate(state.pause);
         }
 
         return nextStop;
@@ -224,7 +222,7 @@ public class OptaSimulator implements Runnable {
                 String name = _optaResultSet.getString("name");
                 String feedType = _optaResultSet.getString("feed_type");
 
-                Logger.debug(name + " " + createdAt.toString());
+                Logger.debug(name + " " + GlobalDate.formatDate(createdAt));
 
                 if (feedType != null) {
                     HashSet<String> changedOptaMatchEventIds = null;

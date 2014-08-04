@@ -1,6 +1,7 @@
 @(matchs_new: List[model.opta.OptaMatchEvent], matchs_changed: List[model.opta.OptaMatchEvent], matchs_invalid: List[model.opta.OptaMatchEvent])
 
 @import controllers.admin.routes.ImportController
+@import model.GlobalDate
 
 @main("Import Match Events - Admin") {
 
@@ -42,7 +43,7 @@
             <td>@p.seasonName</td>
             <td>@p.homeTeamId</td>
             <td>@p.awayTeamId</td>
-            <td>@p.matchDate.format("yyyy/MM/dd HH:mm:ss")</td>
+            <td>@GlobalDate.formatDate(p.matchDate)</td>
         </tr>
         }
         </tbody>
@@ -105,7 +106,7 @@
             <td>@p.seasonName</td>
             <td>@p.homeTeamId</td>
             <td>@p.awayTeamId</td>
-            <td>@p.matchDate.format("yyyy/MM/dd HH:mm:ss")</td>
+            <td>@GlobalDate.formatDate(p.matchDate)</td>
         </tr>
         }
         </tbody>

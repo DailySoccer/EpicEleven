@@ -1,12 +1,12 @@
 package controllers.admin;
 
+import model.GlobalDate;
 import play.data.Form;
 import play.data.format.Formats;
 import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static play.data.Form.form;
@@ -14,7 +14,7 @@ import static play.data.Form.form;
 public class SimulatorController extends Controller {
 
     public static Result currentDate() {
-        return ok(new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(OptaSimulator.getCurrentDate()));
+        return ok(GlobalDate.formatDate(OptaSimulator.getCurrentDate()));
     }
 
     public static Result start() {

@@ -6,7 +6,7 @@
     <div class="container-fluid">
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
-                <li><a>Current date:<span style="font-weight:700; margin-left: 0.5em;" id="time">@OptaSimulator.getCurrentDate().format("yyyy/MM/dd HH:mm:ss")</span> </a></li>
+                <li><a>Current date:<span style="font-weight:700; margin-left: 0.5em;" id="time">@GlobalDate.formatDate(OptaSimulator.getCurrentDate())</span> </a></li>
                 <li><a>Next stop:<span style="font-weight:700;margin-left: 0.5em;" id="nextStop">@OptaSimulator.getNextStop()</span> </a></li>
                 <li><a> Next file index:<span style="font-weight:700;margin-left: 0.5em;" id="nextStepDesc">@OptaSimulator.getNextStepDescription()</span> </a></li>
                 @if(OptaSimulator.isSnapshotEnabled()) {
