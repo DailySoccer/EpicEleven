@@ -105,14 +105,6 @@ public class TemplateContest implements JongoId, Initializer {
     public static boolean remove(TemplateContest templateContest) {
         Logger.info("remove TemplateContest({}): {}", templateContest.templateContestId, templateContest.name);
 
-        // Buscar los Contests que instancian el template contest
-        Iterable<Contest> contestResults = Model.contests().find("{templateContestId : #}", templateContest.templateContestId).as(Contest.class);
-        List<Contest> contestList = ListUtils.asList(contestResults);
-
-        for (Contest contest : contestList) {
-            Contest.remove(contest);
-        }
-
         // Eliminar el template contest
         Model.templateContests().remove(templateContest.templateContestId);
 

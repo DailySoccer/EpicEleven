@@ -37,7 +37,6 @@ POST        /contest_entry/add                                         controlle
 
 GET         /contests                                                  controllers.admin.ContestController.index()
 GET         /contest/:contestId                                        controllers.admin.ContestController.show(contestId : String)
-GET         /contest/destroy/:contestId                                controllers.admin.ContestController.destroy(contestId : String)
 
 GET         /match_events                                              controllers.admin.MatchEventController.index()
 GET         /match_event/:templateMatchEventId                         controllers.admin.MatchEventController.show(templateMatchEventId : String)
