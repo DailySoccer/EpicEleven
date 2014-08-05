@@ -56,7 +56,6 @@ public class Model {
         try {
             _mongoClient = new MongoClient(mongoClientURI);
             _mongoDB = _mongoClient.getDB(mongoClientURI.getDatabase());
-            _mongoDBAdmin = _mongoClient.getDB("admin");
             _jongo = new Jongo(_mongoDB);
 
             // Let's make sure our DB has the neccesary collections and indexes
@@ -333,10 +332,6 @@ public class Model {
     // DB and DBCollection are completely thread safe. In fact, they are cached so you get the same instance no matter what.
     static private DB _mongoDB;
 
-    static private DB _mongoDBAdmin;
-    static private DB _mongoDBSnapshot;
-
     // Jongo is thread safe too: https://groups.google.com/forum/#!topic/jongo-user/KwukXi5Vm7c
     static private Jongo _jongo;
-    static private Jongo _jongoSnapshot;
 }
