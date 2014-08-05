@@ -6,7 +6,7 @@
     <div class="container-fluid">
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
-                <li><a>Current date:<span style="font-weight:700; margin-left: 0.5em;" id="time">@OptaSimulator.getCurrentDate().format("yyyy/MM/dd HH:mm:ss")</span> </a></li>
+                <li><a>Current date:<span style="font-weight:700; margin-left: 0.5em;" id="time">@GlobalDate.formatDate(OptaSimulator.getCurrentDate())</span> </a></li>
                 <li><a>Next stop:<span style="font-weight:700;margin-left: 0.5em;" id="nextStop">@OptaSimulator.getNextStop()</span> </a></li>
                 <li><a> Next file index:<span style="font-weight:700;margin-left: 0.5em;" id="nextStepDesc">@OptaSimulator.getNextStepDescription()</span> </a></li>
                 @if(OptaSimulator.isSnapshotEnabled()) {
@@ -145,6 +145,12 @@
         });
 
         $('#date-pause-ok').click(function(){
+            var localDate = new Date($("#date-pause").val());
+            var origDate = new Date($("#date-pause").val());
+
+            localDate.setHours(localDate.getHours() - (localDate.getTimezoneOffset()/60));
+            $("#date-pause").val(localDate.toISOString().substring(0,16));
+
             var form = $('#date-pause-form');
             $.ajax({
               type: form.attr('method'),
@@ -155,6 +161,8 @@
             }).fail(function() {
               // Optionally alert the user of an error here...
             });
+
+            $("#date-pause").val(origDate.toISOString().substring(0,16));
             sleep(100, checkReload);
         });
 

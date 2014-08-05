@@ -165,9 +165,9 @@ public class OptaHttpController extends Controller {
             Logger.info("Possibly end of documents reached: {}", format1.format(askedDate));
         }
 
-        response().setContentType("text/html");
+        response().setContentType("text/html; charset=UTF-8");
 
-        return ok(retXML);
+        return ok(retXML, "UTF-8");
     }
 
     @AllowCors.Origin

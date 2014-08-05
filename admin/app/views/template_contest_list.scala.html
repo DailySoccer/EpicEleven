@@ -79,8 +79,8 @@
             <td>@p.salaryCap</td>
             <td>@p.entryFee</td>
             <td>@p.prizeType</td>
-            <td>@p.startDate.format("yyyy/MM/dd HH:mm:ss")</td>
-            <td>@p.activationAt.format("yyyy/MM/dd HH:mm:ss")</td>
+            <td>@GlobalDate.formatDate(p.startDate)</td>
+            <td>@GlobalDate.formatDate(p.activationAt)</td>
             <td>@match_events_state(p.templateContestId.toString)</td>
             @if(p.isOff) {
                 <td>

@@ -64,7 +64,7 @@
                     @templateSoccerTeamMap(p.templateSoccerTeamBId).name
                 </a>
             </td>
-            <td>@p.startDate.format("yyyy/MM/dd HH:mm:ss")</td>
+            <td>@GlobalDate.formatDate(p.startDate)</td>
             <td>@match_event_state(p.templateMatchEventId.toString())</td>
         </tr>
         }

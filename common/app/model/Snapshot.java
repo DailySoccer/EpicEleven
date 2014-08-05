@@ -136,7 +136,7 @@ public class Snapshot {
 
     static public String getName() {
         Snapshot snapshot = getLast();
-        return (snapshot != null) ? snapshot.createdAt.toString() : "none";
+        return (snapshot != null) ? GlobalDate.formatDate(snapshot.createdAt): "none";
     }
 
     static public Snapshot getLast() {
