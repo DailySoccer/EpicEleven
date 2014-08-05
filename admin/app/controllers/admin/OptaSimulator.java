@@ -21,7 +21,8 @@ public class OptaSimulator implements Runnable {
 
         this._isFinished = false;
         this._lastParsedDate = new Date(0L);
-        this._competitionId = competitionId;
+        //Let's simulate just world cup
+        this._competitionId = competitionId!=null? competitionId: "4";
         this._stopLoop = false;
         this._pauseLoop = true;
         this._nextDocToParseIndex = 0;
@@ -209,8 +210,16 @@ public class OptaSimulator implements Runnable {
                 }
 
                 _stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-                _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml ORDER BY created_at LIMIT " +
-                                                    RESULTS_PER_QUERY + " OFFSET " + _nextDocToParseIndex + ";");
+                if (_competitionId!=null) {
+                    _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml " +
+                            "WHERE competition_id='" + _competitionId + "' "+
+                            "ORDER BY created_at LIMIT " +
+                            RESULTS_PER_QUERY + " OFFSET " + _nextDocToParseIndex + ";");
+                }
+                else {
+                    _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml ORDER BY created_at LIMIT " +
+                            RESULTS_PER_QUERY + " OFFSET " + _nextDocToParseIndex + ";");
+                }
             }
 
             _nextDocToParseIndex += 1;
