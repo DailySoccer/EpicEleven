@@ -5,8 +5,14 @@
 <script type="text/javascript">
 
         function updatePage() {
-            console.log("reload");
-            window.location.reload(true);
+            $.ajax({
+                url: "/admin/is_paused",
+                success: function(result) {
+                    if (result == "false") {
+                        window.location.reload(true);
+                    }
+                }
+            });
         }
 
         $(document).ready( function(){
