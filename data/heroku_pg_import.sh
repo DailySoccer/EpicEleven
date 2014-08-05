@@ -8,7 +8,7 @@ if ! which heroku >/dev/null
     if ! which brew >/dev/null
       then
         # If brew is installed, try first brew cask to install brew
-        (brew cask install heroku-toolbelt || brew install heroku-toolbelt)
+        brew install heroku-toolbelt
         heroku auth:login
 
       else
@@ -20,8 +20,8 @@ fi
 
 if which heroku >/dev/null
   then
-    heroku pgbackups:capture --expire
-    curl -o latest.dump `heroku pgbackups:url`
-    PGPASSWORD=postgres /Applications/Postgres.app/Contents/Versions/9.3/bin/pg_restore \
+    heroku pgbackups:capture --app $1 --expire
+    curl -o latest.dump `heroku pgbackups:url --app $1`
+    PGPASSWORD=postgres pg_restore \
         --verbose --clean --no-acl --no-owner -h localhost -U postgres -d dailysoccerdb latest.dump
 fi
