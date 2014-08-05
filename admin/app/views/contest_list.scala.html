@@ -46,7 +46,6 @@
             <th>Max Entries</th>
             <th>TemplateContestId</th>
             <th>State</th>
-            <th></th>
         </tr>
         </thead>
         <tbody>
@@ -58,14 +57,7 @@
             <td>@p.maxEntries</td>
             <td><a href="@TemplateContestController.show(p.templateContestId.toString())">@p.templateContestId</a></td>
             <td>@contest_state(p.templateContestId.toString())</td>
-            @if(!TemplateContest.isStarted(p.templateContestId.toString())) {
-                <td>
-                    <a href="@ContestEntryController.enterContest(p.contestId.toString())"><button class="btn btn-success">Enter</button></a>
-                </td>
-            } else {
-                <td></td>
-            }
-        </tr>
+         </tr>
         }
         </tbody>
     </table>
