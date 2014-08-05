@@ -35,14 +35,16 @@ public class MigrationController extends Controller {
 
     public static String translate(String requestBody, boolean twice) {
         try {
-            if (twice) {
-                return new String (new String (requestBody.getBytes("ISO-8859-1"), "UTF-8").
-                            getBytes("ISO-8859-1"), "UTF-8");
-            } else {
-                return new String(new String(new String(requestBody.getBytes("ISO-8859-1"), "UTF-8").
-                        getBytes("ISO-8859-1"), "UTF-8").
-                        getBytes("ISO-8859-1"), "UTF-8");
+            String translated = requestBody;
+            String temp = translated;
+            while (temp.indexOf("Ã")>0) {
+                translated = temp;
+                temp = new String (temp.getBytes("ISO-8859-1"), "UTF-8");
             }
+            if (temp.indexOf("��") >= 0 || temp.indexOf("??") >= 0) {
+                temp = translated;
+            }
+            return temp;
 
         } catch (UnsupportedEncodingException e) {
             Logger.error("WTF 6534", e);
