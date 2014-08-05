@@ -1,5 +1,6 @@
 @(points_translation: List[model.PointsTranslation])
 @import model.opta.{OptaEventType, OptaProcessor}
+@import model.GlobalDate
 @import controllers.admin.routes._
 
 @main("Contests - Admin") {
@@ -27,7 +28,7 @@
             <td><a href="@PointsTranslationController.history(p.eventTypeId)">@OptaEventType.getEnum(p.eventTypeId).name()</td>
             <td>@OptaEventType.getEnum(p.eventTypeId)._description</td>
             <td><a href="@PointsTranslationController.edit(p.pointsTranslationId.toString())">@p.points</td>
-            <td>@p.timestamp.format("yyyy/MM/dd HH:mm:ss")</td>
+            <td>@GlobalDate.formatDate(p.timestamp)</td>
         </tr>
         }
         </tbody>
