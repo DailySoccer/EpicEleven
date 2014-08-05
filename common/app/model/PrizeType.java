@@ -5,8 +5,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public enum PrizeType {
-    STANDARD(0),
-    WINNER_TAKES_ALL(1);
+    WINNER_TAKES_ALL(0),
+    TOP_3_GET_PRIZES(1),
+    TOP_THIRD_GET_PRIZES(2),
+    FIFTY_FIFTY(3),
+    STANDARD(-1);
 
     public final int id;
 
