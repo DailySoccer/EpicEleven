@@ -32,20 +32,17 @@ public class OptaHttpController extends Controller {
     public static Result optaXmlInput() {
         byte[] bodyOriginalBytes = null;
         String bodyText = null;
-        String contentType = request().headers().get("Content-Type")[0];
+        String contentType = request().headers().containsKey("Content-Type")?
+                                                    request().headers().get("Content-Type")[0]: "";
+        String xMetaEncoding = request().headers().containsKey("X-Meta-Encoding")?
+                                                    request().headers().get("X-Meta-Encoding")[0]: "UTF-8";
+
         if (contentType.indexOf("charset=") > 0) {
             bodyText = request().body().asText();
         } else {
             try {
                 //HTTP default encoding for POST requests is ISO-8859-1 if no charset is passed via "Content-Type" header.
-                String charset = "ISO-8859-1";
-                try {
-                    charset = contentType.substring(contentType.indexOf("charset="));
-                } catch (StringIndexOutOfBoundsException e) {
-                    Logger.info("No charset passed in request");
-                }
-
-                bodyOriginalBytes = request().body().asText().getBytes(charset);
+                bodyOriginalBytes = request().body().asText().getBytes("ISO-8859-1");
 
             } catch (UnsupportedEncodingException e) {
                 Logger.error("WTF 9151", e);
@@ -58,7 +55,7 @@ public class OptaHttpController extends Controller {
                 Logger.error("WTF 1591", e);
             }
 
-            detectedEncoding = detectedEncoding!=null? detectedEncoding: "UTF-8";
+            detectedEncoding = detectedEncoding!=null? detectedEncoding: xMetaEncoding;
 
             try {
                 bodyText = new String(bodyOriginalBytes, detectedEncoding);
