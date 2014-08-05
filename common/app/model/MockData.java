@@ -112,7 +112,7 @@ public final class MockData {
 
         // Todos los usuarios excepto el "Test"
         List<User> users = ListUtils.asList(Model.users().find("{nickName: {$ne: 'Test'}}").as(User.class));
-        for (int i=0; i<size && i<users.size()-1; i++) {
+        for (int i=0; i<size && i<users.size(); i++) {
             User user = users.get(i);
 
             List<ObjectId> soccerIds = new ArrayList<>();
