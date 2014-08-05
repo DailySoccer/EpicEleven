@@ -40,12 +40,14 @@ public class OptaProcessor {
         _dirtyMatchEvents = new HashSet<>();
 
         if (feedType != null) {
-            if (feedType.equals("F9")) {
+            if (feedType.equals("F40")) {
                 processF9(requestBody);
             } else if (feedType.equals("F24")) {
                 processEvents(requestBody);
             } else if (feedType.equals("F1")) {
                 processF1(requestBody);
+            } else {
+                Logger.info("Not parsing file type: {}", feedType);
             }
         }
     }

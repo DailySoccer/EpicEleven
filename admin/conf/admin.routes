@@ -90,3 +90,4 @@ GET         /import_from_last                                          controlle
 GET         /refresher_in_progress                                     controllers.admin.RefresherController.inProgress()
 GET         /last_date                                                 controllers.admin.RefresherController.lastDate()
 
+GET         /run_migration                                             controllers.admin.MigrationController.migrate()
