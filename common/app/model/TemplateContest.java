@@ -1,6 +1,8 @@
 package model;
 
+import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
+import com.mongodb.WriteResult;
 import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
@@ -106,7 +108,16 @@ public class TemplateContest implements JongoId, Initializer {
         Logger.info("remove TemplateContest({}): {}", templateContest.templateContestId, templateContest.name);
 
         // Eliminar el template contest
-        Model.templateContests().remove(templateContest.templateContestId);
+        try {
+            WriteResult result = Model.templateContests().remove("{_id: #, state: \"OFF\"}", templateContest.templateContestId);
+            if (result.getN() == 0) {
+                Logger.error("Template Contest: Error removing {}", templateContest.templateContestId.toString());
+                return false;
+            }
+        }
+        catch(MongoException e) {
+            Logger.error("WTF 6742 MongoException: ", e);
+        }
 
         return true;
     }
