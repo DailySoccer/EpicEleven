@@ -137,8 +137,8 @@ public class LoginController extends Controller {
             }
         }
 
-        // Cuando NO estamos en producción y el simulador está activo mandaremos información extra...
-        if (!Play.isProd() && OptaSimulator.isCreated()) {
+        // Cuando estamos en desarrollo y el simulador está activo mandaremos información extra...
+        if (Play.isDev() && OptaSimulator.isCreated()) {
             return returnHelper.toResult(JsonViews.Simulation.class);
         }
         return returnHelper.toResult();
