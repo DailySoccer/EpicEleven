@@ -33,7 +33,7 @@
             <td>@p.seasonName</td>
             <td>@p.homeTeamId</td>
             <td>@p.awayTeamId</td>
-            <td>@p.matchDate.format("yyyy/MM/dd HH:mm:ss")</td>
+            <td>@GlobalDate.format(p.matchDate)</td>
             <td>@p.timeZone</td>
         @if(p.lastModified != null) {
             <td>@p.lastModified.format("yyyy/MM/dd HH:mm:ss")</td>
