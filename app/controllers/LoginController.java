@@ -5,10 +5,8 @@ import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
-import model.ClientError;
-import model.Model;
-import model.Session;
-import model.User;
+import controllers.admin.OptaSimulator;
+import model.*;
 import play.Logger;
 import play.Play;
 import play.data.Form;
@@ -139,6 +137,10 @@ public class LoginController extends Controller {
             }
         }
 
+        // Cuando NO estamos en producción y el simulador está activo mandaremos información extra...
+        if (!Play.isProd() && OptaSimulator.isCreated()) {
+            return returnHelper.toResult(JsonViews.Simulation.class);
+        }
         return returnHelper.toResult();
     }
 

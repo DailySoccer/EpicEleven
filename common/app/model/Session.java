@@ -11,7 +11,8 @@ public class Session {
     @JsonView(JsonViews.NotForClient.class)
     public ObjectId userId;
 
-    @JsonView(JsonViews.NotForClient.class)
+    // Cuando estemos simulando mandaremos un campo adicional para que el webclient pueda diferenciarlos
+    @JsonView(JsonViews.Simulation.class)
     public Date createdAt;
 
     public Session(String sessionToken, ObjectId userId, Date createdAt) {
