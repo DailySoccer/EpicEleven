@@ -126,6 +126,11 @@ public class LoginController extends Controller {
                     response().setCookie("sessionToken", theUser.email);
 
                     returnHelper.setOK(new Session(theUser.email, theUser.userId, new Date()));
+
+                    // Cuando estamos en desarrollo y el simulador está activo mandaremos información extra...
+                    if (OptaSimulator.isCreated()) {
+                        return returnHelper.toResult(JsonViews.Simulation.class);   // <<==================== RETURN
+                    }
                 }
                 else {
                     String sessionToken = Crypto.generateSignedToken();
@@ -137,10 +142,6 @@ public class LoginController extends Controller {
             }
         }
 
-        // Cuando estamos en desarrollo y el simulador está activo mandaremos información extra...
-        if (Play.isDev() && OptaSimulator.isCreated()) {
-            return returnHelper.toResult(JsonViews.Simulation.class);
-        }
         return returnHelper.toResult();
     }
 
