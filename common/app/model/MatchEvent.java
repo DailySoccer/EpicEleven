@@ -79,22 +79,11 @@ public class MatchEvent {
      *  Estado del partido
      */
     public boolean isStarted() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(startDate);
-        calendar.add(Calendar.MINUTE, -5);      // Un partido "comenzará" x minutos antes de su fecha establecida de comienzo
-        return GlobalDate.getCurrentDate().after(calendar.getTime());
-    }
-
-    public static boolean isStarted(String templateMatchEventId) {
-        return findOne(new ObjectId(templateMatchEventId)).isStarted();
+        return OptaEvent.isGameStarted(optaMatchEventId);
     }
 
     public boolean isFinished() {
-        return (Model.optaEvents().findOne("{gameId: #, typeId: 30, periodId: 14}", optaMatchEventId).as(OptaEvent.class) != null);
-    }
-
-    public static boolean isFinished(String templateMatchEventId) {
-        return findOne(new ObjectId(templateMatchEventId)).isFinished();
+        return OptaEvent.isGameFinished(optaMatchEventId);
     }
 
     public int getFantasyPoints(SoccerTeam soccerTeam) {

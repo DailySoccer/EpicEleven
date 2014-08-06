@@ -176,4 +176,12 @@ public class OptaEvent {
         }
         return myDate;
     }
+
+    public static boolean isGameStarted(String gameId) {
+        return (Model.optaEvents().findOne("{gameId: #, typeId: 32, periodId: 1}", gameId).as(OptaEvent.class) != null);
+    }
+
+    public static boolean isGameFinished(String gameId) {
+        return (Model.optaEvents().findOne("{gameId: #, typeId: 30, periodId: 14}", gameId).as(OptaEvent.class) != null);
+    }
 }
