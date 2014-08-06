@@ -105,7 +105,8 @@ public class OptaSimulator implements Runnable {
             _instance.startThread();
         }
         _instance._pause = date;
-         OptaSimulatorState.update();
+        Logger.info("Added pause: {}", GlobalDate.formatDate(date));
+        OptaSimulatorState.update();
     }
 
     static public Date getCurrentDate() {
@@ -163,6 +164,7 @@ public class OptaSimulator implements Runnable {
 
             checkDate();
         }
+        Logger.info("Paused at: {}", GlobalDate.formatDate(_lastParsedDate));
 
         closeConnection();
 
