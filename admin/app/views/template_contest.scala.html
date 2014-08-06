@@ -1,6 +1,7 @@
 @(template_contest: model.TemplateContest, match_events: List[model.TemplateMatchEvent], templateSoccerTeamMap: HashMap[org.bson.types.ObjectId, model.TemplateSoccerTeam])
 
 @import controllers.admin.routes._
+@import model.GlobalDate
 
 @match_event_state(match_event : model.TemplateMatchEvent) = {
     @if(match_event.isFinished()) {
