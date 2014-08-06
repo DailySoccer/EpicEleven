@@ -33,16 +33,16 @@ public class MigrationController extends Controller {
         return ok("Migration finished");
     }
 
-    public static String translate(String requestBody, boolean twice) {
+    public static String translate(String requestBody) {
         try {
-            String translated = requestBody;
-            String temp = translated;
-            while (temp.indexOf("Ã")>0) {
-                translated = temp;
-                temp = new String (temp.getBytes("ISO-8859-1"), "UTF-8");
+            String temp = requestBody;
+            String symbol = "\uFFFD";
+            if (temp.indexOf(symbol) >= 0) {
+                return null;
             }
-            if (temp.indexOf("��") >= 0 || temp.indexOf("??") >= 0) {
-                temp = translated;
+
+            while (temp.indexOf("Ã")>0) {
+                temp = new String (temp.getBytes("ISO-8859-1"), "UTF-8");
             }
             return temp;
 
@@ -76,10 +76,15 @@ public class MigrationController extends Controller {
                     _nextDocToParseIndex += 1;
 
                     String feedType = _optaResultSet.getString("feed_type");
-                    String bodyText = translate(_optaResultSet.getString("xml"), feedType.equals("F40"));
+                    String bodyText = translate(_optaResultSet.getString("xml"));
                     int documentId = _optaResultSet.getInt("id");
 
-                    Model.updateXML(documentId, bodyText);
+                    if (bodyText != null) {
+                        Model.updateXML(documentId, bodyText);
+                    }
+                    else {
+                        Model.deleteXML(documentId);
+                    }
                 } else {
                     _isFinished = true;
                 }

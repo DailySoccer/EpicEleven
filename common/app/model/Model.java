@@ -241,6 +241,23 @@ public class Model {
         }
     }
 
+    public static void deleteXML(int documentId) {
+
+        String deleteString = "DELETE from optaxml WHERE id = ?";
+
+        try (Connection connection = play.db.DB.getConnection()) {
+            try (PreparedStatement stmt = connection.prepareStatement(deleteString)) {
+                stmt.setInt(1, documentId);
+                if(stmt.executeUpdate()==1) {
+                    Logger.info("Deleted succesfully document number: {}", documentId);
+                }
+            }
+        }
+        catch (java.sql.SQLException e) {
+            Logger.error("WTF 56312: ", e);
+        }
+    }
+
     public static void insertXML(String xml, String headers, Date timestamp, String name, String feedType,
                                  String gameId, String competitionId, String seasonId, Date lastUpdated) {
 
