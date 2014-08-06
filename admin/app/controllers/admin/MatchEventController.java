@@ -11,6 +11,7 @@ import play.mvc.Result;
 import utils.ListUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class MatchEventController extends Controller {
@@ -28,6 +29,19 @@ public class MatchEventController extends Controller {
         Iterable<OptaEvent> optaEventResults = Model.optaEvents().find("{gameId: #, points: { $ne: 0 }}", matchEvent.optaMatchEventId).as(OptaEvent.class);
         List<OptaEvent> optaEventList = ListUtils.asList(optaEventResults);
 
-        return ok(views.html.match_event_opta_events_list.render(optaEventList, matchEvent.getSoccerTeamsAsMap(), matchEvent.getSoccerPlayersAsMap()));
+        return ok(views.html.match_event_opta_events_list.render(optaEventList, getPlayersInfo(matchEvent)));
+    }
+
+    private static HashMap<String, String> getPlayersInfo(MatchEvent matchEvent){
+        HashMap<String, String> map = new HashMap<>();
+        for (SoccerPlayer soccerPlayer : matchEvent.soccerTeamA.soccerPlayers) {
+            map.put(soccerPlayer.optaPlayerId, soccerPlayer.name);
+            map.put(soccerPlayer.optaPlayerId.concat("-team"), matchEvent.soccerTeamA.name);
+        }
+        for (SoccerPlayer soccerPlayer : matchEvent.soccerTeamB.soccerPlayers) {
+            map.put(soccerPlayer.optaPlayerId, soccerPlayer.name);
+            map.put(soccerPlayer.optaPlayerId + "-team", matchEvent.soccerTeamB.name);
+        }
+        return map;
     }
 }

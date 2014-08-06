@@ -113,24 +113,6 @@ public class MatchEvent {
         return livePlayerToPoints.get(soccerPlayerId.toString());
     }
 
-    public HashMap<String, SoccerTeam> getSoccerTeamsAsMap(){
-        HashMap<String, SoccerTeam> map = new HashMap<>();
-        map.put(soccerTeamA.optaTeamId, soccerTeamA);
-        map.put(soccerTeamB.optaTeamId, soccerTeamB);
-        return map;
-    }
-
-    public HashMap<String, SoccerPlayer> getSoccerPlayersAsMap(){
-        HashMap<String, SoccerPlayer> map = new HashMap<>();
-        for (SoccerPlayer soccerPlayer : soccerTeamA.soccerPlayers) {
-            map.put(soccerPlayer.optaPlayerId, soccerPlayer);
-        }
-        for (SoccerPlayer soccerPlayer : soccerTeamB.soccerPlayers) {
-            map.put(soccerPlayer.optaPlayerId, soccerPlayer);
-        }
-        return map;
-    }
-
     public void saveStats() {
         saveStats(soccerTeamA);
         saveStats(soccerTeamB);

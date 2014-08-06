@@ -1,5 +1,6 @@
-@(opta_events: List[model.opta.OptaEvent], soccerTeamMap: HashMap[String, model.SoccerTeam], soccerPlayerMap: HashMap[String, model.SoccerPlayer])
+@(opta_events: List[model.opta.OptaEvent], playerInfoMap: HashMap[String, String])
 
+@import model.opta.OptaEventType
 @import controllers.admin.routes._
 @import model.GlobalDate
 
@@ -12,29 +13,31 @@
     <table id="table_id" class="table table-striped">
         <thead>
         <tr>
-            <th>HomeTeamId</th>
-            <th>AwayTeamId</th>
-            <th>SoccerPlayer</th>
+            <!--th>Id</th-->
+            <th>TimeStamp</th>
+            <th>Name</th>
+            <th>Team</th>
+            <th>Type</th>
             <th>TypeId</th>
             <th>Points</th>
-            <th>TimeStamp</th>
             <th>LastModified</th>
         </tr>
         </thead>
         <tbody>
         @for(p <- opta_events) {
         <tr>
-            <td>@soccerTeamMap(p.homeTeamId).name</td>
-            <td>@soccerTeamMap(p.awayTeamId).name</td>
-            @if(soccerPlayerMap.containsKey(p.optaPlayerId)) {
-            <td>@soccerPlayerMap(p.optaPlayerId).name</td>
+            <!--td>p.id</td-->
+            <td>@GlobalDate.formatDate(p.timestamp)</td>
+            @if(playerInfoMap.containsKey(p.optaPlayerId)) {
+            <td>@playerInfoMap(p.optaPlayerId)</td>
+            <td>@playerInfoMap(p.optaPlayerId+"-team")</td>
             } else {
             <td>p.optaPlayerId</td>
+            <td>???</td>
             }
+            <td>@OptaEventType.getEnum(p.typeId).name()</td>
             <td>@p.typeId</td>
             <td>@p.points</td>
-
-            <td>@GlobalDate.formatDate(p.timestamp)</td>
             @if(p.lastModified != null) {
             <td>@GlobalDate.formatDate(p.lastModified)</td>
             } else {
