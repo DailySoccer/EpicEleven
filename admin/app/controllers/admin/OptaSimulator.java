@@ -20,7 +20,7 @@ public class OptaSimulator implements Runnable {
     private OptaSimulator(String competitionId) {
 
         this._isFinished = false;
-        this._lastParsedDate = new Date(0L);
+        this._lastParsedDate = new Date();
         //Let's simulate just world cup
         this._competitionId = competitionId!=null? competitionId: "4";
         this._stopLoop = false;
