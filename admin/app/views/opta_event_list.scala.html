@@ -1,6 +1,7 @@
 @(opta_events: List[model.opta.OptaEvent])
 
 @import controllers.admin.routes._
+@import model.GlobalDate
 
 @main("Opta Events - Admin") {
 
@@ -34,9 +35,10 @@
             <td>@p.optaPlayerId</td>
             <td>@p.typeId</td>
             <td>@p.points</td>
-            <td>@p.timestamp.format("yyyy/MM/dd HH:mm:ss")</td>
+
+            <td>@GlobalDate.formatDate(p.timestamp)</td>
          @if(p.lastModified != null) {
-            <td>@p.lastModified.format("yyyy/MM/dd HH:mm:ss")</td>
+            <td>@GlobalDate.formatDate(p.lastModified)</td>
          } else {
             <td></td>
          }

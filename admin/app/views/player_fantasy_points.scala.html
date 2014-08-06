@@ -1,5 +1,6 @@
 @(soccer_player: model.TemplateSoccerPlayer, opta_events: List[model.opta.OptaEvent])
 @import model.opta.OptaEventType
+@import model.GlobalDate
 
 @scripts = {
 <script type="text/javascript">
@@ -64,9 +65,9 @@
             <td>@p.eventId</td>
             <td>@p.homeTeamId</td>
             <td>@p.awayTeamId</td>
-            <td>@p.timestamp.format("yyyy/MM/dd HH:mm:ss")</td>
+            <td>@GlobalDate.formatDate(p.timestamp)</td>
         @if(p.lastModified != null) {
-            <td>@p.lastModified.format("yyyy/MM/dd HH:mm:ss")</td>
+            <td>@GlobalDate.formatDate(p.lastModified)</td>
         } else {
             <td></td>
         }
