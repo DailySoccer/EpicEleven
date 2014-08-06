@@ -35,6 +35,7 @@ public class MigrationController extends Controller {
 
     public static String translate(String requestBody) {
         try {
+            String translated = requestBody;
             String temp = requestBody;
             String symbol = "\uFFFD";
             if (temp.indexOf(symbol) >= 0) {
@@ -42,7 +43,11 @@ public class MigrationController extends Controller {
             }
 
             while (temp.indexOf("Ã")>0) {
+                translated = temp;
                 temp = new String (temp.getBytes("ISO-8859-1"), "UTF-8");
+            }
+            if (temp.indexOf(symbol) >= 0) {
+                return translated;
             }
             return temp;
 
