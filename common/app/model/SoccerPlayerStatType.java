@@ -64,7 +64,7 @@ public enum SoccerPlayerStatType {
                     OptaEventType.POST.getCode()
             );
             case PASES: return ImmutableList.of(
-                    OptaEventType.PASS.getCode()
+                    OptaEventType.PASS_SUCCESSFUL.getCode()
             );
             case ASISTENCIAS: return ImmutableList.of(
                     OptaEventType.ASSIST.getCode()
@@ -79,6 +79,7 @@ public enum SoccerPlayerStatType {
             );
             case PERDIDAS_BALON: return ImmutableList.of(
                     OptaEventType.DISPOSSESSED.getCode(),
+                    OptaEventType.PASS_UNSUCCESSFUL.getCode(),
                     OptaEventType.ERROR.getCode()
             );
             case FALTAS_RECIBIDAS: return ImmutableList.of(

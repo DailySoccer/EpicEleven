@@ -72,8 +72,17 @@ public class OptaEvent {
             }
         }
         //DERIVED EVENTS GO HERE
+        // Pase exitoso o fracasado
+        if (this.typeId == 1) {
+            if (this.outcome == 1) {
+                this.typeId = OptaEventType.PASS_SUCCESSFUL._code;  //Pase exitoso-> 1001
+            }
+            else {
+                this.typeId = OptaEventType.PASS_UNSUCCESSFUL._code;  //Pase fracasado -> 1002
+            }
+        }
         // Asistencia
-        if (this.typeId == OptaEventType.PASS._code && this.qualifiers.contains(210)) {
+        if (this.typeId == OptaEventType.PASS_SUCCESSFUL._code && this.qualifiers.contains(210)) {
             this.typeId = OptaEventType.ASSIST._code;  //Asistencia -> 1210
         }
         // Falta/Penalty infligido

@@ -5,7 +5,8 @@ import java.util.Map;
 
 
 public enum OptaEventType {
-    PASS                    (1, "Any pass attempted from one player to another."),
+    PASS_SUCCESSFUL         (1001, "Any pass successful from one player to another."),
+    PASS_UNSUCCESSFUL       (1002, "Any pass attempted from one player to a wrong place."),
     TAKE_ON                 (3, "Attempted dribble past an opponent" ),
     FOUL_RECEIVED           (4, "Player who was fouled"),
     TACKLE                  (7, "Tackle: dispossesses an opponent of the ball, not retaining possession"),
