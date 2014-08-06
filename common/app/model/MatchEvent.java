@@ -11,6 +11,19 @@ import utils.ListUtils;
 import java.util.*;
 
 public class MatchEvent {
+    public enum PeriodType {
+        PRE_GAME(0),
+        FIRST_HALF(1),
+        SECOND_HALF(2),
+        POST_GAME(3);
+
+        public final int id;
+
+        PeriodType(int id) {
+            this.id = id;
+        }
+    }
+
     @Id
     public ObjectId matchEventId;
 
@@ -26,6 +39,8 @@ public class MatchEvent {
     // Asocia un soccerPlayerId con fantasyPoints
     @JsonView(JsonViews.FullContest.class)
     public HashMap<String, Integer> livePlayerToPoints = new HashMap<>();
+
+    public PeriodType period = PeriodType.PRE_GAME;
 
     public Date startDate;
     public Date createdAt;
@@ -96,6 +111,24 @@ public class MatchEvent {
 
     public int getFantasyPoints(ObjectId soccerPlayerId) {
         return livePlayerToPoints.get(soccerPlayerId.toString());
+    }
+
+    public HashMap<String, SoccerTeam> getSoccerTeamsAsMap(){
+        HashMap<String, SoccerTeam> map = new HashMap<>();
+        map.put(soccerTeamA.optaTeamId, soccerTeamA);
+        map.put(soccerTeamB.optaTeamId, soccerTeamB);
+        return map;
+    }
+
+    public HashMap<String, SoccerPlayer> getSoccerPlayersAsMap(){
+        HashMap<String, SoccerPlayer> map = new HashMap<>();
+        for (SoccerPlayer soccerPlayer : soccerTeamA.soccerPlayers) {
+            map.put(soccerPlayer.optaPlayerId, soccerPlayer);
+        }
+        for (SoccerPlayer soccerPlayer : soccerTeamB.soccerPlayers) {
+            map.put(soccerPlayer.optaPlayerId, soccerPlayer);
+        }
+        return map;
     }
 
     public void saveStats() {
@@ -176,6 +209,39 @@ public class MatchEvent {
         }
 
         return invalid;
+    }
+
+    public void updateState() {
+        if (period == null) {
+            period = PeriodType.PRE_GAME;
+        }
+
+        PeriodType periodBackup = period;
+
+        if (period == PeriodType.PRE_GAME) {
+            // Primera Parte?
+            if (Model.optaEvents().findOne("{gameId: #, periodId: 1}", optaMatchEventId).as(OptaEvent.class) != null) {
+                period = PeriodType.FIRST_HALF;
+            }
+        }
+
+        if (period == PeriodType.FIRST_HALF) {
+            // Segunda Parte?
+            if (Model.optaEvents().findOne("{gameId: #, periodId: 2}", optaMatchEventId).as(OptaEvent.class) != null) {
+                period = PeriodType.SECOND_HALF;
+            }
+        }
+
+        if (period == PeriodType.SECOND_HALF) {
+            // Segunda Parte?
+            if (Model.optaEvents().findOne("{gameId: #, periodId: 14}", optaMatchEventId).as(OptaEvent.class) != null) {
+                period = PeriodType.POST_GAME;
+            }
+        }
+
+        if (!period.equals(periodBackup)) {
+            Model.matchEvents().update("{_id: #}", matchEventId).with("{$set: {period: #}}", period);
+        }
     }
 
     /**

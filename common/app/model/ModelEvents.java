@@ -47,6 +47,7 @@ public class ModelEvents {
             for (MatchEvent matchEvent : Model.matchEvents().find("{optaMatchEventId: #}", optaGameId).as(MatchEvent.class)) {
 
                 if (matchEvent.isStarted()) {
+                    matchEvent.updateState();
                     matchEvent.updateFantasyPoints();
 
                     if (matchEvent.isFinished()) {
