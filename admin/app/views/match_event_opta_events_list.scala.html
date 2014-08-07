@@ -15,6 +15,7 @@
         <tr>
             <!--th>Id</th-->
             <th>TimeStamp</th>
+            <th>Elapsed</th>
             <th>Name</th>
             <th>Team</th>
             <th>Type</th>
@@ -28,6 +29,7 @@
         <tr>
             <!--td>p.id</td-->
             <td>@GlobalDate.formatDate(p.timestamp)</td>
+            <td>@("%02d".format(p.min)):@("%02d".format(p.sec))</td>
             @if(playerInfoMap.containsKey(p.optaPlayerId)) {
             <td>@playerInfoMap(p.optaPlayerId)</td>
             <td>@playerInfoMap(p.optaPlayerId+"-team")</td>

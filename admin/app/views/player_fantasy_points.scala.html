@@ -52,6 +52,7 @@
             <th>HomeTeamId</th>
             <th>AwayTeamId</th>
             <th>TimeStamp</th>
+            <th>Elapsed</th>
             <th>LastModified</th>
         </tr>
         </thead>
@@ -68,6 +69,7 @@
             <td>@p.homeTeamId</td>
             <td>@p.awayTeamId</td>
             <td>@GlobalDate.formatDate(p.timestamp)</td>
+            <td>@("%02d".format(p.min)):@("%02d".format(p.sec))</td>
         @if(p.lastModified != null) {
             <td>@GlobalDate.formatDate(p.lastModified)</td>
         } else {

@@ -40,6 +40,8 @@ public class OptaEvent {
     // </DEBUG>
     public Date timestamp;
     public Date lastModified;
+    public int min;
+    public int sec;
 
     public int points;
     public ObjectId pointsTranslationId;
@@ -58,6 +60,8 @@ public class OptaEvent {
         this.outcome = (int) Integer.parseInt(event.getAttributeValue("outcome"));
         this.timestamp = parseDate(event.getAttributeValue("timestamp"));
         this.lastModified = parseDate(event.getAttributeValue("last_modified"));
+        this.min = Integer.parseInt(event.getAttributeValue("min"));
+        this.sec = Integer.parseInt(event.getAttributeValue("sec"));
 
         if (event.getAttribute("player_id") != null) {
             this.optaPlayerId = event.getAttributeValue("player_id");
