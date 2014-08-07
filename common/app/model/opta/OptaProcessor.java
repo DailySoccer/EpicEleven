@@ -155,13 +155,13 @@ public class OptaProcessor {
         if (matchObject.getAttribute("last_modified") != null) {
             optaMatchEvent.lastModified = OptaEvent.parseDate(matchObject.getAttributeValue("last_modified"));
         }
-        optaMatchEvent.matchDate = OptaEvent.parseDate(matchInfo.getChild("Date").getContent().get(0).getValue());
+        optaMatchEvent.timeZone = matchInfo.getChild("TZ").getContent().get(0).getValue();
+        optaMatchEvent.matchDate = OptaEvent.parseDate(matchInfo.getChild("Date").getContent().get(0).getValue(), optaMatchEvent.timeZone);
         optaMatchEvent.competitionId = getStringId(myF1, "competition_id", "_NO COMPETITION ID");
         optaMatchEvent.seasonId = getStringId(myF1, "season_id", "_NO SEASON ID");
 
         optaMatchEvent.seasonName = (myF1.getAttribute("season_name")!=null)? myF1.getAttributeValue("season_name"): "NO SEASON NAME";
         optaMatchEvent.competitionName = (myF1.getAttribute("competition_name")!=null)? myF1.getAttributeValue("competition_name"): "NO COMPETITION NAME";
-        optaMatchEvent.timeZone = matchInfo.getChild("TZ").getContent().get(0).getValue();
 
         List<Element> teams = matchObject.getChildren("TeamData");
         if (teams != null) {

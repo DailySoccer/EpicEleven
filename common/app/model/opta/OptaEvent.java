@@ -154,24 +154,26 @@ public class OptaEvent {
         return ListUtils.asList(optaEventResults);
     }
 
-    public static Date parseDate(String timestamp) {
+    public static Date parseDate(String timestamp, String timezone) {
+        timezone = timezone!=null? timezone: "UTC";
+        if (timezone.equals("BST")) {
+            timezone = "GMT+01:00";
+        }
+
         String dateConfig;
         SimpleDateFormat dateFormat;
         if (timestamp.indexOf('-') > 0) {
             dateConfig = timestamp.indexOf('T') > 0 ? "yyyy-MM-dd'T'hh:mm:ss.SSSz" : "yyyy-MM-dd hh:mm:ss.SSSz";
             dateFormat = new SimpleDateFormat(dateConfig.substring(0, timestamp.length()));
-            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         }else{
             dateConfig = timestamp.indexOf('T') > 0 ? "yyyyMMdd'T'hhmmssZ" : "yyyyMMdd hhmmssZ";
             dateFormat = new SimpleDateFormat(dateConfig);
-            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         }
         int plusPos = timestamp.indexOf('+');
         if (plusPos>=19) {
             if (timestamp.substring(plusPos, timestamp.length()).equals("+00:00")) {
                 timestamp = timestamp.substring(0, plusPos);
                 dateFormat = new SimpleDateFormat(dateConfig.substring(0, timestamp.length()));
-                dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
             } else {
                 Logger.info("Cant parse this date: " + timestamp);
             }
@@ -179,11 +181,17 @@ public class OptaEvent {
 
         Date myDate = null;
         try {
+            dateFormat.setTimeZone(TimeZone.getTimeZone(timezone));
             myDate = dateFormat.parse(timestamp);
         } catch (ParseException e) {
             Logger.error("WTF 7523862890", e);
         }
         return myDate;
+
+    }
+
+    public static Date parseDate(String timestamp) {
+        return parseDate(timestamp, null);
     }
 
     public static boolean isGameStarted(String gameId) {

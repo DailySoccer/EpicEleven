@@ -11,7 +11,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
+import java.util.TimeZone;
 
 /**
  * Created by gnufede on 13/06/14.
@@ -227,7 +229,7 @@ public class OptaSimulator implements Runnable {
             _nextDocToParseIndex += 1;
 
             if (_optaResultSet.next()) {
-                Date createdAt = _optaResultSet.getTimestamp("created_at");
+                Date createdAt = _optaResultSet.getTimestamp("created_at", new GregorianCalendar(TimeZone.getTimeZone("UTC")));
 
                 String sqlxml = _optaResultSet.getString("xml");
                 String name = _optaResultSet.getString("name");
