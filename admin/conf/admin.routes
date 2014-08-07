@@ -91,3 +91,6 @@ GET         /refresher_in_progress                                     controlle
 GET         /last_date                                                 controllers.admin.RefresherController.lastDate()
 
 GET         /run_migration                                             controllers.admin.MigrationController.migrate()
+
+# Informar al webclient si el simulator esta activado (requiere Json)
+GET         /is_simulator_activated                                    controllers.admin.SimulatorController.isSimulatorActivated()

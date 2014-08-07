@@ -1,11 +1,14 @@
 package controllers.admin;
 
+import actions.AllowCors;
+import com.google.common.collect.ImmutableMap;
 import model.GlobalDate;
 import play.data.Form;
 import play.data.format.Formats;
 import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utils.ReturnHelper;
 
 import java.util.Date;
 
@@ -72,4 +75,10 @@ public class SimulatorController extends Controller {
         return ok();
     }
 
+    @AllowCors.Origin
+    public static Result isSimulatorActivated() {
+        return new ReturnHelper(ImmutableMap.of(
+                "simulator_activated", OptaSimulator.isCreated()
+        )).toResult();
+    }
 }

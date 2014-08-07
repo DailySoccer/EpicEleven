@@ -5,7 +5,6 @@ import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
-import controllers.admin.OptaSimulator;
 import model.*;
 import play.Logger;
 import play.Play;
@@ -126,11 +125,6 @@ public class LoginController extends Controller {
                     response().setCookie("sessionToken", theUser.email);
 
                     returnHelper.setOK(new Session(theUser.email, theUser.userId, new Date()));
-
-                    // Cuando estamos en desarrollo y el simulador está activo mandaremos información extra...
-                    if (OptaSimulator.isCreated()) {
-                        return returnHelper.toResult(JsonViews.Simulation.class);   // <<==================== RETURN
-                    }
                 }
                 else {
                     String sessionToken = Crypto.generateSignedToken();
