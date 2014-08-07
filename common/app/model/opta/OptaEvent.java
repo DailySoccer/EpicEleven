@@ -177,7 +177,7 @@ public class OptaEvent {
     }
 
     public static Date parseDate(String timestamp, String timezone) {
-        timezone = timezone!=null? timezone: "UTC";
+        timezone = timezone!=null? timezone: "Europe/London";
         if (timezone.equals("BST")) {
             timezone = "GMT+01:00";
         }
