@@ -67,12 +67,19 @@ public class OptaEvent {
             this.optaPlayerId = event.getAttributeValue("player_id");
         }
 
+        String optaPlayerOffsideId = "<player_offside>";
         if (event.getChildren("Q") != null) {
             List<Element> qualifierList = event.getChildren("Q");
             this.qualifiers = new ArrayList<>((qualifierList).size());
             for (Element qualifier : qualifierList) {
                 Integer tempQualifier = Integer.parseInt(qualifier.getAttributeValue("qualifier_id"));
                 this.qualifiers.add(tempQualifier);
+
+                // Se ha dejado a un futbolista en fuera de juego?
+                if (tempQualifier == 7) {
+                    optaPlayerOffsideId = qualifier.getAttributeValue("value");
+                    // Logger.info("optaOtherPlayerId: {}", optaPlayerOffsideId);
+                }
             }
         }
         //DERIVED EVENTS GO HERE
@@ -140,7 +147,18 @@ public class OptaEvent {
         else if (this.typeId == OptaEventType.TACKLE._code && this.outcome == 1) {
             this.typeId = OptaEventType.TACKLE_EFFECTIVE._code;
         }
+        // Caught Offside -> 1072
+        else if (this.typeId == 2 && this.qualifiers.contains(7)) {
+            this.typeId = OptaEventType.CAUGHT_OFFSIDE._code;
+            this.optaPlayerId = optaPlayerOffsideId;
+        }
     }
+
+    /*
+    public String getQualifier(int qualifierId) {
+        //qualifiers.con
+    }
+    */
 
     public boolean hasChanged(OptaEvent other){
         if (other == this) {
