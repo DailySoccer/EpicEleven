@@ -80,7 +80,7 @@ GET         /simulator                                                 controlle
 GET         /snapshot                                                  controllers.admin.SnapshotController.snapshot()
 GET         /snapshotdb                                                controllers.admin.SnapshotController.snapshotDB()
 GET         /replay_last                                               controllers.admin.SnapshotController.replayLast()
-GET         /continue_snapshot                                         controllers.admin.SnapshotController.continueSnapshot()
+GET         /continue_from_snapshot                                    controllers.admin.SnapshotController.continueFromSnapshot()
 GET         /snapshot_dump                                             controllers.admin.SnapshotController.snapshotDump()
 GET         /snapshot_restore                                          controllers.admin.SnapshotController.snapshotRestore()
 GET         /import_salaries                                           controllers.admin.SnapshotController.importSalaries()

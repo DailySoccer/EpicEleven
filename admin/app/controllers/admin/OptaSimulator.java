@@ -73,18 +73,32 @@ public class OptaSimulator implements Runnable {
         }
     }
 
-    public void reset() {
+    public void continueFromSnapshot() {
+        pause();
+
+        Snapshot.load();
+
+        _state = collection().findOne().as(OptaSimulatorState.class);
+        _state.useSnapshot = false;
+        _snapshot = null;
+
+        saveState();
+        updateDate(_state.lastParsedDate);
+    }
+
+    public void reset(boolean useSnapshot) {
         pause();
 
         Model.resetDB();
         MockData.ensureMockDataUsers();
 
         _instance = new OptaSimulator();
-    }
 
-    public void useSnapshot() {
-        _snapshot = Snapshot.getLast();
-        saveState();
+        if (useSnapshot) {
+            _snapshot = Snapshot.getLast();
+            _state.useSnapshot = true;
+            saveState();
+        }
     }
 
     public void gotoDate(Date date) {

@@ -41,7 +41,7 @@ public class SimulatorController extends Controller {
     }
 
     public static Result reset() {
-        OptaSimulator.instance().reset();
+        OptaSimulator.instance().reset(false);
         return ok();
     }
 

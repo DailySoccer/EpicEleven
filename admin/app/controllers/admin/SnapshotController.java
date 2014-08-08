@@ -16,17 +16,15 @@ public class SnapshotController extends Controller {
 
     public static Result replayLast() {
         if (OptaSimulator.isCreated()) {
-            OptaSimulator.instance().reset();
-            OptaSimulator.instance().useSnapshot();
+            OptaSimulator.instance().reset(true);
         }
         return redirect(routes.SnapshotController.index());
     }
 
-    public static Result continueSnapshot() {
-        Snapshot.load();
+    public static Result continueFromSnapshot() {
 
         if (OptaSimulator.isCreated()) {
-            OptaSimulator.instance().reset();
+            OptaSimulator.instance().continueFromSnapshot();
         }
 
         return redirect(routes.SnapshotController.index());
