@@ -39,27 +39,30 @@ public class OptaHttpController extends Controller {
 
         if (contentType.indexOf("charset=") > 0) {
             bodyText = request().body().asText();
-        } else {
+        }
+        else {
             try {
-                //HTTP default encoding for POST requests is ISO-8859-1 if no charset is passed via "Content-Type" header.
+                // HTTP default encoding for POST requests is ISO-8859-1 if no charset is passed via "Content-Type" header.
                 bodyOriginalBytes = request().body().asText().getBytes("ISO-8859-1");
-
-            } catch (UnsupportedEncodingException e) {
+            }
+            catch (UnsupportedEncodingException e) {
                 Logger.error("WTF 9151", e);
             }
 
             String detectedEncoding = null;
             try {
                 detectedEncoding = getDetectedEncoding(new ByteArrayInputStream(bodyOriginalBytes));
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 Logger.error("WTF 1591", e);
             }
 
-            detectedEncoding = detectedEncoding!=null? detectedEncoding: xMetaEncoding;
+            detectedEncoding = detectedEncoding!=null? detectedEncoding : xMetaEncoding;
 
             try {
                 bodyText = new String(bodyOriginalBytes, detectedEncoding);
-            } catch (UnsupportedEncodingException e) {
+            }
+            catch (UnsupportedEncodingException e) {
                 Logger.error("WTF 5119", e);
             }
         }
@@ -90,6 +93,7 @@ public class OptaHttpController extends Controller {
     }
 
     private static String getDetectedEncoding(InputStream is) throws IOException {
+
         UniversalDetector detector = new UniversalDetector(null);
         byte[] buf = new byte[4096];
         int nread;
@@ -97,12 +101,16 @@ public class OptaHttpController extends Controller {
             detector.handleData(buf, 0, nread);
         }
         detector.dataEnd();
+
         String encoding = detector.getDetectedCharset();
+
         if (encoding != null) {
             Logger.info("Detected enconding: {}", encoding);
-        } else {
+        }
+        else {
             Logger.error("Encoding not detected properly");
         }
+
         return encoding;
     }
 

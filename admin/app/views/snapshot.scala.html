@@ -1,15 +1,15 @@
 @()
 
-@import controllers.admin.OptaSimulator
+@import controllers.admin.SimulatorController
 @import controllers.admin.routes._
-@import model._
+@import model.Snapshot
 
 
 @main("Snapshots - Admin") {
 
 <h1 class="page-header">Snapshot</h1>
     <div><strong>Last Snapshot</strong> (@Snapshot.getName()):
-        @if(OptaSimulator.isSnapshotEnabled()) {
+        @if(SimulatorController.isSnapshotEnabled()) {
             On
         } else {
             Off

@@ -1,121 +1,102 @@
-@import controllers.admin.OptaSimulator
-@import controllers.admin.routes._
-@import model._
+@import controllers.admin.SimulatorController
+@import model.Snapshot
+@import controllers.admin.routes
+
 
 <div class="navbar navbar-fixed-bottom" style="background: #ededed; border-top: 1px solid #ccc">
     <div class="container-fluid">
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
-                <li><a>Current date:<span style="font-weight:700; margin-left: 0.5em;" id="time">@GlobalDate.formatDate(OptaSimulator.getCurrentDate())</span> </a></li>
-                <li><a>Next stop:<span style="font-weight:700;margin-left: 0.5em;" id="nextStop">@OptaSimulator.getNextStop()</span> </a></li>
-                <li><a> Next file index:<span style="font-weight:700;margin-left: 0.5em;" id="nextStepDesc">@OptaSimulator.getNextStepDescription()</span> </a></li>
-                @if(OptaSimulator.isSnapshotEnabled()) {
+                <li><a>Current date:<span style="font-weight:700; margin-left: 0.5em;" id="time">@SimulatorController.getCurrentDate()</span> </a></li>
+                <li><a>Next stop:<span style="font-weight:700;margin-left: 0.5em;" id="nextStop">@SimulatorController.getNextStop()</span> </a></li>
+                <li><a> Next file index:<span style="font-weight:700;margin-left: 0.5em;" id="nextStepDesc">@SimulatorController.getNextStepDescription()</span> </a></li>
+                @if(SimulatorController.isSnapshotEnabled()) {
                     <li><a>Snapshot:<strong> @Snapshot.getName()</strong></a></li>
                 }
             </ul>
-                <div class="btn-group" style="display:inline-block;">
-                    @if(OptaSimulator.isPaused()) {
-                    <a class="btn btn-sim btn-primary ajax play" href="@SimulatorController.start" title="Starts the simulator at the beginning of time (the first date sent by Opta) or resumes execution from the current date.">
-                        Start
-                    </a>
-                    } else {
-                    <a class="btn btn-sim btn-primary ajax pause" href="@SimulatorController.pause">
-                        Pause
-                    </a>
-                    }
 
-                    <a class="btn btn-sim btn-primary
-                    @if(!OptaSimulator.isPaused()) {disabled}
-                     ajax forward" href="@SimulatorController.nextStep" title="Process the next Opta file (or first if we are at the beginning of time)">
-                        Next step
-                    </a>
-                    <a class="btn btn-sim btn-primary ajax stop" href="@SimulatorController.reset" title="Erases the whole Database and resets to the beginning of time.">
-                        Reset
-                    </a>
-                </div>
-                @helper.form(action = SimulatorController.gotoDate, 'onsubmit -> "return validateForm()", 'id -> "date-pause-form", 'style -> "display:inline-block; margin-top: 8px;") {
-                    <input type="datetime-local" value="2014-06-14T00:00" id="date-pause" name="date" class="form-control" style="display:inline-block">
+            @if(SimulatorController.isSimulatorCreated()) {
+                <a class="btn btn-primary ajax" href="@routes.SimulatorController.switchSimulator">Off</a>
+            } else {
+                <a class="btn btn-primary ajax" href="@routes.SimulatorController.switchSimulator">On</a>
+            }
+
+            <div class="btn-group" style="display:inline-block;">
+
+                @if(SimulatorController.isSimulatorPaused()) {
+                    <a class="btn btn-sim btn-primary ajax play" href="@routes.SimulatorController.start"
+                       title="Starts the simulator at the beginning of time (the first date sent by Opta) or resumes execution from the current date.">Start</a>
+                } else {
+                    <a class="btn btn-sim btn-primary ajax pause" href="@routes.SimulatorController.pause">Pause</a>
                 }
-                <button id="date-pause-ok" name="date-pause-ok" type="button" class="btn btn-primary">
-                    Go to Date
-                </button>
+
+                <a class="btn btn-sim btn-primary ajax forward" href="@routes.SimulatorController.nextStep"
+                    title="Process the next Opta file (or first if we are at the beginning of time)">Next step</a>
+
+                <a class="btn btn-sim btn-primary ajax stop" href="@routes.SimulatorController.reset" title="Erases the whole Database and resets to the beginning of time.">
+                    Reset
+                </a>
+            </div>
+
+            @helper.form(action = routes.SimulatorController.gotoDate, 'onsubmit -> "return validateForm()", 'id -> "date-pause-form", 'style -> "display:inline-block; margin-top: 8px;") {
+                <input type="datetime-local" value="2014-06-14T00:00" id="date-pause" name="date" class="form-control" style="display:inline-block">
+            }
+            <button id="date-pause-ok" name="date-pause-ok" type="button" class="btn btn-sim btn-primary fforward" style="position:relative;">Go to Date</button>
         </div>
     </div>
 </div>
 
 <script type="text/javascript" charset="utf-8">
-        var was_paused = "@OptaSimulator.isPaused";
-        var is_running = "@{!OptaSimulator.isFinished}";
+        var is_paused = "@SimulatorController.isSimulatorPaused()";
+        var is_created = "@SimulatorController.isSimulatorCreated()";
 
-        function updatePage(paused) {
-            if (paused == "false") {
-                $(".btn-sim.play").attr("href", "/admin/pause_simulator");
-                $(".btn-sim.play").text("Pause");
-                $(".btn-sim.play").addClass("pause");
-                $(".btn-sim.pause").removeClass("play");
-                $(".btn-sim.forward").addClass("disabled");
-                $(".btn-sim.forward").text("Next step");
-            } else {
-                $(".btn-sim.pause").attr("href", "/admin/start_simulator");
-                $(".btn-sim.pause").text("Play");
-                $(".btn-sim.pause").addClass("play");
-                $(".btn-sim.play").removeClass("pause");
-                $(".btn-sim.forward").removeClass("disabled");
-                $(".btn-sim.forward").text("Next step");
-            }
-        }
+        $(document).ready(function() {
+            repaintButtons();
+
+            window.setInterval(checkReload, 200);
+        });
 
         function repaintButtons() {
-            if (is_running == "true") {
-                $(".btn-sim").removeClass("btn-primary");
-                $(".btn-sim").addClass("btn-success");
-            } else {
+            if (is_created == "true") {
+                $(".btn-sim").removeClass("disabled");
+
+                if (is_paused == "false") {
+                    $(".btn-sim.play").attr("href", "/admin/pause_simulator");
+                    $(".btn-sim.play").text("Pause");
+                    $(".btn-sim.play").addClass("pause");
+
+                    $(".btn-sim.pause").removeClass("play");
+
+                    $(".btn-sim.forward").addClass("disabled");
+                    $(".btn-sim.forward").text("Next step");
+
+                    $(".btn-sim.fforward").addClass("disabled");
+
+                    $(".btn-sim").removeClass("btn-primary");
+                    $(".btn-sim").addClass("btn-success");
+                }
+                else {
+                    $(".btn-sim.pause").attr("href", "/admin/start_simulator");
+                    $(".btn-sim.pause").text("Play");
+                    $(".btn-sim.pause").addClass("play");
+
+                    $(".btn-sim.play").removeClass("pause");
+
+                    $(".btn-sim.forward").removeClass("disabled");
+                    $(".btn-sim.forward").text("Next step");
+
+                    $(".btn-sim.fforward").removeClass("disabled");
+
+                    $(".btn-sim").removeClass("btn-success");
+                    $(".btn-sim").addClass("btn-primary");
+                }
+            }
+            else {
+                $(".btn-sim").addClass("disabled");
+
                 $(".btn-sim").removeClass("btn-success");
                 $(".btn-sim").addClass("btn-primary");
             }
-        }
-
-        function checkRunning() {
-            var temp =  $.ajax({
-                url: "/admin/is_running",
-                success: function(result) {
-                        var was_running = is_running
-                        is_running = result;
-                        //if (is_running == "true") {
-                        updateFields();
-                        //}
-                        if (is_running !== was_running){
-                            repaintButtons();
-                        }
-                }
-            });
-        }
-
-        function checkReload() {
-            var temp =  $.ajax({
-                url: "/admin/is_paused",
-                success: function(result) {
-                        if (result !== was_paused) {
-                            was_paused = result;
-                            updatePage(result);
-                        }
-                }
-            });
-        }
-
-        function sleep(millis, callback) {
-            setTimeout(function()
-                    { callback(); }
-            , millis);
-        }
-
-        function validateForm() {
-            if ((new Date($("#time").text()) < new Date($("#date-pause").val())) || is_running == "false") {
-                return true;
-            } else {
-                alert("Error: La fecha introducida es anterior");
-            }
-            return false;
         }
 
         function updateFields() {
@@ -124,24 +105,56 @@
             $("#nextStop").load("/admin/next_stop_simulator");
         }
 
+        function checkReload() {
+
+            updateFields();
+
+            var temp =  $.ajax({
+                url: "/admin/is_created_simulator",
+                success: function(result) {
+
+                    if (result !== is_created) {
+                        is_created = result;
+                        repaintButtons();
+                    }
+
+                    if (is_created) {
+                        var another_temp = $.ajax({
+                            url: "/admin/is_paused_simulator",
+                            success: function(result) {
+
+                                if (result !== is_paused) {
+                                    is_paused = result;
+                                    repaintButtons();
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        function sleep(millis, callback) {  setTimeout(function() { callback(); }, millis); }
+
+        function validateForm() {
+            if ((new Date($("#time").text()) < new Date($("#date-pause").val())) || is_created == "false") {
+                return true;
+            } else {
+                alert("Error: La fecha introducida es anterior");
+            }
+            return false;
+        }
+
         $('.ajax').on('click', function(e) {
-            $(this).addClass('active');
+            $(this).addClass('disabled');
             e.preventDefault();
             var myself = $(this);
             $.ajax({
                  url: $(this).attr('href'),
                  complete: function(result) {
-                    myself.removeClass('active');
+                    myself.removeClass('disabled');
                  }
             });
-            sleep(100, checkReload);
-        });
-
-        $(document).ready( function(){
-           repaintButtons();
-           //window.setInterval(updateFields, 1000);
-           window.setInterval(checkRunning, 100);
-           window.setInterval(checkReload, 1000);
         });
 
         $('#date-pause-ok').click(function(){
@@ -163,7 +176,6 @@
             });
 
             $("#date-pause").val(origDate.toISOString().substring(0,16));
-            sleep(100, checkReload);
         });
 
 </script>

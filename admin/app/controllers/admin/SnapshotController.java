@@ -15,14 +15,14 @@ public class SnapshotController extends Controller {
     }
 
     public static Result replayLast() {
-        OptaSimulator.reset();
-        OptaSimulator.useSnapshot();
+        //OptaSimulator.reset();
+        //OptaSimulator.useSnapshot();
         return redirect(routes.SnapshotController.index());
     }
 
     public static Result continueSnapshot() {
         Snapshot.load();
-        OptaSimulator.resetInstance();
+        //OptaSimulator.resetInstance();
 
         return redirect(routes.SnapshotController.index());
     }

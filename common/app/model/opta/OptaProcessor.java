@@ -32,7 +32,6 @@ public class OptaProcessor {
             Logger.error("WTF 95634", e);
         }
 
-
         return _dirtyMatchEvents;
     }
 

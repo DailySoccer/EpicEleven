@@ -112,7 +112,7 @@ public class Snapshot {
         if (collection() == null) {
             return null;
         }
-        Snapshot snapshot   = new Snapshot();
+        Snapshot snapshot = new Snapshot();
 
         snapshot.createdAt = GlobalDate.getCurrentDate();
 
