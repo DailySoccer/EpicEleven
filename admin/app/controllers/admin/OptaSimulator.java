@@ -55,11 +55,10 @@ public class OptaSimulator implements Runnable {
     public boolean isSnapshotEnabled() { return _state.useSnapshot; }
 
     public void start() {
-        if (_optaThread != null)
-            throw new RuntimeException("WTF 112");
-
-        _optaThread = new Thread(this);
-        _optaThread.start();
+        if (_optaThread == null) {
+            _optaThread = new Thread(this);
+            _optaThread.start();
+        }
     }
 
     public void pause() {

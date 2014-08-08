@@ -16,9 +16,9 @@
             </ul>
 
             @if(SimulatorController.isSimulatorCreated()) {
-                <a class="btn btn-primary ajax" href="@routes.SimulatorController.switchSimulator">Off</a>
+                <a class="btn btn-primary ajax switch" href="@routes.SimulatorController.switchSimulator">Off</a>
             } else {
-                <a class="btn btn-primary ajax" href="@routes.SimulatorController.switchSimulator">On</a>
+                <a class="btn btn-primary ajax switch" href="@routes.SimulatorController.switchSimulator">On</a>
             }
 
             <div class="btn-group" style="display:inline-block;">
@@ -58,7 +58,9 @@
 
         function repaintButtons() {
             if (is_created == "true") {
+                $(".switch").text("Off")
                 $(".btn-sim").removeClass("disabled");
+
 
                 if (is_paused == "false") {
                     $(".btn-sim.play").attr("href", "/admin/pause_simulator");
@@ -92,6 +94,7 @@
                 }
             }
             else {
+                $(".switch").text("On")
                 $(".btn-sim").addClass("disabled");
 
                 $(".btn-sim").removeClass("btn-success");
@@ -134,8 +137,6 @@
             });
         }
 
-        function sleep(millis, callback) {  setTimeout(function() { callback(); }, millis); }
-
         function validateForm() {
             if ((new Date($("#time").text()) < new Date($("#date-pause").val())) || is_created == "false") {
                 return true;
@@ -146,13 +147,13 @@
         }
 
         $('.ajax').on('click', function(e) {
-            $(this).addClass('disabled');
+            $(this).addClass('active');
             e.preventDefault();
             var myself = $(this);
             $.ajax({
                  url: $(this).attr('href'),
                  complete: function(result) {
-                    myself.removeClass('disabled');
+                    myself.removeClass('active');
                  }
             });
         });
