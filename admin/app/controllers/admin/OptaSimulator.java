@@ -19,7 +19,14 @@ import java.util.TimeZone;
 public class OptaSimulator implements Runnable {
 
     static public boolean       isCreated() { return _instance != null;  }
-    static public OptaSimulator instance()  { return _instance == null? _instance = new OptaSimulator() : _instance; }
+    static public OptaSimulator instance()  { return _instance; }
+
+    static public void init() {
+        if (_instance != null)
+            throw new RuntimeException("WTF 495");
+
+        _instance = new OptaSimulator();
+    }
 
     static public void shutdown() {
         _instance.pause();
@@ -80,6 +87,7 @@ public class OptaSimulator implements Runnable {
 
         _state = collection().findOne().as(OptaSimulatorState.class);
         _state.useSnapshot = false;
+        _state.paused = true;
         _snapshot = null;
 
         saveState();

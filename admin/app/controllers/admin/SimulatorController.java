@@ -21,7 +21,7 @@ public class SimulatorController extends Controller {
         if (OptaSimulator.isCreated())
             OptaSimulator.shutdown();
         else
-            OptaSimulator.instance();
+            OptaSimulator.init();
 
         return ok();
     }
