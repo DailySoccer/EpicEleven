@@ -1,5 +1,5 @@
 @import controllers.admin.SimulatorController
-@import model.Snapshot
+@import controllers.admin.SnapshotController
 @import controllers.admin.routes
 
 
@@ -11,7 +11,7 @@
                 <li><a>Next stop:<span style="font-weight:700;margin-left: 0.5em;" id="nextStop">@SimulatorController.getNextStop()</span> </a></li>
                 <li><a> Next file index:<span style="font-weight:700;margin-left: 0.5em;" id="nextStepDesc">@SimulatorController.getNextStepDescription()</span> </a></li>
                 @if(SimulatorController.isSnapshotEnabled()) {
-                    <li><a>Snapshot:<strong> @Snapshot.getName()</strong></a></li>
+                    <li><a>Snapshot:<strong> @SnapshotController.getSnapshotName()</strong></a></li>
                 }
             </ul>
 

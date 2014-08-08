@@ -55,7 +55,6 @@ public class Snapshot {
     @JsonIgnore
     private Date updatedDate;
 
-    // Constructor por defecto (necesario para Jongo: "unmarshall result to class")
     public Snapshot() {
         updatedDate = new Date(0);
     }
@@ -124,8 +123,8 @@ public class Snapshot {
 
     static public void load() {
         DBObject copyOp = new BasicDBObject("copydb", "1").
-                append("fromdb" , "snapshot").
-                append("todb", "dailySoccerDB");
+                                     append("fromdb" , "snapshot").
+                                     append("todb", "dailySoccerDB");
 
         Model.resetDB();
         CommandResult a = mongoDBAdmin().command(copyOp);
