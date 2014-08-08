@@ -170,6 +170,17 @@ public class OptaEvent {
         return this.lastModified.before(other.lastModified);
     }
 
+    static public OptaEvent findLast(String optaMatchEventId) {
+        OptaEvent lastEvent = null;
+
+        Iterable<OptaEvent> optaEvents = Model.optaEvents().find("{gameId: #}", optaMatchEventId).sort("{timestamp: -1}").limit(1).as(OptaEvent.class);
+        if (optaEvents != null && optaEvents.iterator().hasNext()) {
+            lastEvent = optaEvents.iterator().next();
+        }
+
+        return lastEvent;
+    }
+
     static public List<OptaEvent> filter(String optaMatchId, String optaPlayerId) {
         Iterable<OptaEvent> optaEventResults = Model.optaEvents().find("{optaPlayerId: #, gameId: #}",
                 optaPlayerId, optaMatchId).as(OptaEvent.class);

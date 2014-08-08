@@ -48,7 +48,6 @@ public class ModelEvents {
 
                 if (matchEvent.isStarted()) {
                     matchEvent.updateState();
-                    matchEvent.updateFantasyPoints();
 
                     if (matchEvent.isFinished()) {
                         actionWhenMatchEventIsFinished(matchEvent);

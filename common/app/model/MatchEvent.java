@@ -41,6 +41,7 @@ public class MatchEvent {
     public HashMap<String, Integer> livePlayerToPoints = new HashMap<>();
 
     public PeriodType period = PeriodType.PRE_GAME;
+    public int minutesPlayed;
 
     public Date startDate;
     public Date createdAt;
@@ -194,11 +195,14 @@ public class MatchEvent {
     }
 
     public void updateState() {
+        updateFantasyPoints();
+        updateMatchEventTime(OptaEvent.findLast(optaMatchEventId));
+    }
+
+    private void updateMatchEventTime(OptaEvent optaEvent) {
         if (period == null) {
             period = PeriodType.PRE_GAME;
         }
-
-        PeriodType periodBackup = period;
 
         if (period == PeriodType.PRE_GAME) {
             // Primera Parte?
@@ -221,9 +225,14 @@ public class MatchEvent {
             }
         }
 
-        if (!period.equals(periodBackup)) {
-            Model.matchEvents().update("{_id: #}", matchEventId).with("{$set: {period: #}}", period);
+        switch(period) {
+            case PRE_GAME:      minutesPlayed = 0; break;
+            case FIRST_HALF:
+            case SECOND_HALF:   minutesPlayed = optaEvent.min; break;
+            case POST_GAME:     minutesPlayed = 90; break;
         }
+
+        Model.matchEvents().update("{_id: #}", matchEventId).with("{$set: {period: #, minutesPlayed: #}}", period, minutesPlayed);
     }
 
     /**
