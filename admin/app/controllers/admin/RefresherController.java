@@ -97,7 +97,7 @@ public class RefresherController extends Controller {
         catch (java.sql.SQLException e) {
             Logger.error("WTF SQL 92374");
         }
-        return new Date();
+        return new Date(0L);
     }
 
     public static Result lastDate() {
