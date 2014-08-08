@@ -32,30 +32,31 @@ public class RefresherController extends Controller {
         if (response.getStatus() != 200) {
             Logger.error("Response not OK: " + response.getStatus());
             return -2L;
-        } else {
+        }
+        else {
             String bodyText  = response.getBody();
-            Date createdAt = new Date(0L);
-            Date lastUpdated = new Date(0L);
+
             if (bodyText.equals("NULL")) {
                 return -1L;
-            } else {
+            }
+            else {
                 String headers = response.getHeader("headers");
                 String feedType = response.getHeader("feed-type");
                 String gameId = response.getHeader("game-id");
                 String competitionId = response.getHeader("competition-id");
                 String seasonId = response.getHeader("season-id");
-                createdAt = Model.getDateFromHeader(response.getHeader("created-at"));
-                lastUpdated = Model.getDateFromHeader(response.getHeader("last-updated"));
+                Date createdAt = Model.getDateFromHeader(response.getHeader("created-at"));
+                Date lastUpdated = Model.getDateFromHeader(response.getHeader("last-updated"));
                 String name = response.getHeader("name");
 
                 if (createdAt.after(lastDate)) {
                     Model.insertXML(bodyText, headers, createdAt, name, feedType, gameId,
                                     competitionId, seasonId, lastUpdated);
                     return createdAt.getTime();
-                } else {
+                }
+                else {
                     return -2L;
                 }
-
             }
         }
     }
@@ -66,10 +67,12 @@ public class RefresherController extends Controller {
 
     public static Result importFromLast() {
         Logger.debug("Starting at: {}", findLastDate());
+
         if (_inProgress) {
             Logger.info("Already refreshing!");
             return ok("Already refreshing");
-        } else {
+        }
+        else {
             _inProgress = true;
             for (long last_date = findLastDate().getTime(); 0L <= last_date; last_date=importXML(last_date)) {
                 Logger.debug("once again: "+last_date);
@@ -90,10 +93,11 @@ public class RefresherController extends Controller {
                     return results.getTimestamp("created_at");
                 }
             }
-        } catch (java.sql.SQLException e) {
+        }
+        catch (java.sql.SQLException e) {
             Logger.error("WTF SQL 92374");
         }
-        return new Date(0L);
+        return new Date();
     }
 
     public static Result lastDate() {

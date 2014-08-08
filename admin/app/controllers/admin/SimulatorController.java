@@ -16,41 +16,41 @@ import static play.data.Form.form;
 
 public class SimulatorController extends Controller {
 
-    public static Result currentDate() {
-        return ok(GlobalDate.formatDate(OptaSimulator.getCurrentDate()));
+    public static Result switchSimulator() {
+
+        if (OptaSimulator.isCreated())
+            OptaSimulator.shutdown();
+        else
+            OptaSimulator.init();
+
+        return ok();
     }
-
     public static Result start() {
-
-        boolean wasResumed = OptaSimulator.start();
-
+        OptaSimulator.instance().start();
         return ok();
     }
 
     public static Result pause() {
-        OptaSimulator.pause();
+        OptaSimulator.instance().pause();
         return ok();
     }
 
     public static Result nextStep() {
-        OptaSimulator.nextStep();
+        OptaSimulator.instance().nextStep();
         return ok();
     }
 
-    public static Result isRunning() {
-        return ok(((Boolean)!OptaSimulator.isFinished()).toString());
+    public static Result reset() {
+        OptaSimulator.instance().reset(false);
+        return ok();
     }
 
-    public static Result isPaused() {
-        return ok(((Boolean)OptaSimulator.isPaused()).toString());
-    }
-
-    public static Result getNextStop() {
-        return ok(OptaSimulator.getNextStop());
-    }
-
+    public static Result currentDate() {  return ok(getCurrentDate()); }
+    public static Result isCreated() { return ok(String.valueOf(isSimulatorCreated()));  }
+    public static Result isPaused() { return ok((String.valueOf(isSimulatorPaused())));  }
+    public static Result nextStop() { return ok(getNextStop()); }
     public static Result nextStepDescription() {
-        return ok(OptaSimulator.getNextStepDescription());
+        return ok(getNextStepDescription());
     }
 
     public static class GotoSimParams {
@@ -64,21 +64,46 @@ public class SimulatorController extends Controller {
         Form<GotoSimParams> gotoForm = form(GotoSimParams.class).bindFromRequest();
 
         GotoSimParams params = gotoForm.get();
-        OptaSimulator.gotoDate(params.date);
-        OptaSimulator.start();
+        OptaSimulator.instance().gotoDate(params.date);
 
         return ok();
     }
 
-    public static Result reset(){
-        OptaSimulator.reset();
-        return ok();
+    public static String getCurrentDate() {
+        return GlobalDate.getCurrentDateString();
+    }
+
+    public static String getNextStop() {
+
+        if (isSimulatorCreated()) {
+            Date nextStopDate = OptaSimulator.instance().getNextStop();
+
+            if (nextStopDate != null) {
+                return GlobalDate.formatDate(nextStopDate);
+            }
+        }
+
+        return "";
+    }
+
+    public static String getNextStepDescription() {
+        return isSimulatorCreated()? OptaSimulator.instance().getNextStepDescription() : "";
+    }
+
+    public static boolean isSnapshotEnabled() {
+        return isSimulatorCreated() && OptaSimulator.instance().isSnapshotEnabled();
+    }
+
+    public static boolean isSimulatorPaused() {
+        return !isSimulatorCreated() || OptaSimulator.instance().isPaused();
+    }
+
+    public static boolean isSimulatorCreated() {
+        return OptaSimulator.isCreated();
     }
 
     @AllowCors.Origin
     public static Result isSimulatorActivated() {
-        return new ReturnHelper(ImmutableMap.of(
-                "simulator_activated", OptaSimulator.isCreated()
-        )).toResult();
+        return new ReturnHelper(ImmutableMap.of("simulator_activated", OptaSimulator.isCreated())).toResult();
     }
 }
