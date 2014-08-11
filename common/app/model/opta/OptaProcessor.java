@@ -65,8 +65,8 @@ public class OptaProcessor {
     private void processEvent(Element event, Element game) {
 
         Date timestamp = (event.getAttribute("last_modified") != null) ?
-                             OptaEvent.parseDate(event.getAttributeValue("last_modified")):
-                             OptaEvent.parseDate(event.getAttributeValue("timestamp"));
+                          OptaEvent.parseDate(event.getAttributeValue("last_modified"), null):
+                          OptaEvent.parseDate(event.getAttributeValue("timestamp"), null);
 
         HashMap<Integer, Date> eventsCache = getOptaEventsCache(game.getAttributeValue("id"));
         int eventId = (int) Integer.parseInt(event.getAttributeValue("id"));
@@ -106,13 +106,13 @@ public class OptaProcessor {
                                                          find("{eventTypeId: #, timestamp: {$lte: #}}", typeId, timestamp).
                                                          sort("{timestamp: -1}").as(PointsTranslation.class);
 
-        PointsTranslation pointsTranslation = null;
         if (pointsTranslations.iterator().hasNext()){
-            pointsTranslation = pointsTranslations.iterator().next();
+            PointsTranslation pointsTranslation = pointsTranslations.iterator().next();
             _pointsTranslationCache.put(typeId, pointsTranslation.points);
             _pointsTranslationTableCache.put(typeId, pointsTranslation.pointsTranslationId);
             return pointsTranslation.points;
-        } else {
+        }
+        else {
             _pointsTranslationCache.put(typeId, 0);
             _pointsTranslationTableCache.put(typeId, null);
             return 0;
@@ -138,7 +138,7 @@ public class OptaProcessor {
 
         HashMap<String, Date> optaMatchDatas = getOptaMatchDataCache(competitionId);
         String matchId = matchObject.getAttributeValue("uID");
-        Date timestamp = OptaEvent.parseDate(matchObject.getAttributeValue("last_modified"));
+        Date timestamp = OptaEvent.parseDate(matchObject.getAttributeValue("last_modified"), null);
 
         if (!optaMatchDatas.containsKey(matchId) || timestamp.after(optaMatchDatas.get(matchId))) {
             updateOrInsertMatchData(myF1, matchObject);
@@ -152,7 +152,7 @@ public class OptaProcessor {
         OptaMatchEvent optaMatchEvent = new OptaMatchEvent();
         optaMatchEvent.optaMatchEventId = getStringId(matchObject, "uID", "_NO UID");
         if (matchObject.getAttribute("last_modified") != null) {
-            optaMatchEvent.lastModified = OptaEvent.parseDate(matchObject.getAttributeValue("last_modified"));
+            optaMatchEvent.lastModified = OptaEvent.parseDate(matchObject.getAttributeValue("last_modified"), null);
         }
         optaMatchEvent.timeZone = matchInfo.getChild("TZ").getContent().get(0).getValue();
         optaMatchEvent.matchDate = OptaEvent.parseDate(matchInfo.getChild("Date").getContent().get(0).getValue(), optaMatchEvent.timeZone);
@@ -305,9 +305,11 @@ public class OptaProcessor {
 
             for (Element teamStat : teamStats) {
                 if (teamStat.getAttribute("Type").getValue().equals("goals_conceded")) {
+
                     if ((int) Integer.parseInt(teamStat.getContent().get(0).getValue()) == 0) {
                         processCleanSheet(F9, gameId, teamData);
-                    } else {
+                    }
+                    else {
                         processGoalsAgainst(F9, gameId, teamData);
                     }
                 }
@@ -363,7 +365,7 @@ public class OptaProcessor {
     private void createEvent(Element F9, String gameId, Element matchPlayer, int teamId, int typeId, int eventId, int times) {
         String playerId = getStringId(matchPlayer, "PlayerRef", "_NO PLAYER ID");
         String competitionId = getStringId(F9.getChild("Competition"), "uID", "_NO COMPETITION UID");
-        Date timestamp = OptaEvent.parseDate(F9.getChild("MatchData").getChild("MatchInfo").getAttributeValue("TimeStamp"));
+        Date timestamp = OptaEvent.parseDate(F9.getChild("MatchData").getChild("MatchInfo").getAttributeValue("TimeStamp"), null);
 
         Model.optaEvents().remove("{typeId: #, eventId: #, optaPlayerId: #, teamId: #, gameId: #, competitionId: #}",
                 typeId, eventId, playerId, teamId, gameId, competitionId);

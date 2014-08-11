@@ -22,9 +22,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.*;
 
-/**
- * Created by gnufede on 30/05/14.
- */
 @AllowCors.Origin
 public class OptaHttpController extends Controller {
 
@@ -69,7 +66,7 @@ public class OptaHttpController extends Controller {
 
         Model.insertXML(bodyText,
                         getHeadersString(request().headers()),
-                        new Date(System.currentTimeMillis()),
+                        new Date(),
                         getHeader("X-Meta-Default-Filename", request().headers()),
                         getHeader("X-Meta-Feed-Type", request().headers()),
                         getHeader("X-Meta-Game-Id", request().headers()),
@@ -178,12 +175,10 @@ public class OptaHttpController extends Controller {
         return ok(retXML, "UTF-8");
     }
 
-    @AllowCors.Origin
     public static Result dateLastXML() {
-        return ok(Model.dateLastFromOptaXML().toString());
+        return ok(Model.getLastDateFromOptaXML().toString());
     }
 
-    @AllowCors.Origin
     public static Result remainingXMLs(long last_timestamp) {
         SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
         format1.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -210,17 +205,15 @@ public class OptaHttpController extends Controller {
     }
 
     private static void setResponseHeaders(ResultSet nextOptaData, SimpleDateFormat dateFormat) throws SQLException {
-        Timestamp createdAt, lastUpdated;
-        String name, feedType, gameId, competitionId, seasonId = "", headers = "";
 
-        headers = nextOptaData.getString("headers");
-        feedType = nextOptaData.getString("feed_type");
-        name = nextOptaData.getString("name");
-        gameId = nextOptaData.getString("game_id");
-        competitionId = nextOptaData.getString("competition_id");
-        seasonId = nextOptaData.getString("season_id");
-        lastUpdated = nextOptaData.getTimestamp("last_updated");
-        createdAt = nextOptaData.getTimestamp("created_at");
+        String headers = nextOptaData.getString("headers");
+        String feedType = nextOptaData.getString("feed_type");
+        String name = nextOptaData.getString("name");
+        String gameId = nextOptaData.getString("game_id");
+        String competitionId = nextOptaData.getString("competition_id");
+        String seasonId = nextOptaData.getString("season_id");
+        Timestamp lastUpdated = nextOptaData.getTimestamp("last_updated");
+        Timestamp createdAt = nextOptaData.getTimestamp("created_at");
 
         response().setHeader("headers", headers);
 

@@ -2,6 +2,7 @@ package model;
 
 import com.mongodb.*;
 import org.bson.types.ObjectId;
+import org.joda.time.DateTime;
 import org.jongo.Find;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
@@ -323,10 +324,19 @@ public class Model {
         }
 
         Logger.debug(date.toString());
+
+        DateTime dateTime = DateTime.parse(dateStr);
+        if (!dateTime.toDate().equals(date)) {
+            int a = 0;
+        }
+        else {
+            int b = 0;
+        }
+
         return date;
     }
 
-    public static Date dateFirstFromOptaXML() {
+    public static Date getFirstDateFromOptaXML() {
         Date dateFirst = new Date(0L);
         try (Connection connection = play.db.DB.getConnection()) {
             String selectString = "SELECT created_at FROM optaxml ORDER BY created_at ASC LIMIT 1;";
@@ -343,7 +353,7 @@ public class Model {
         return dateFirst;
     }
 
-    public static Date dateLastFromOptaXML() {
+    public static Date getLastDateFromOptaXML() {
         Date dateLast = new Date(0L);
         try (Connection connection = play.db.DB.getConnection()) {
             String selectString = "SELECT created_at FROM optaxml ORDER BY created_at DESC LIMIT 1;";

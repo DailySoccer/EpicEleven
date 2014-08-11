@@ -13,9 +13,6 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
 
-/**
- * Created by gnufede on 18/07/14.
- */
 public class RefresherController extends Controller {
 
     public static Result index() {
@@ -34,7 +31,7 @@ public class RefresherController extends Controller {
             return -2L;
         }
         else {
-            String bodyText  = response.getBody();
+            String bodyText = response.getBody();
 
             if (bodyText.equals("NULL")) {
                 return -1L;
