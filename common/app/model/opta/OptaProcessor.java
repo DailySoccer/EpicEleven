@@ -12,9 +12,6 @@ import play.Logger;
 import java.io.StringReader;
 import java.util.*;
 
-/**
- * Created by gnufede on 16/06/14.
- */
 public class OptaProcessor {
 
     // Retorna los Ids de opta (gameIds, optaMachEventId) de los partidos que han cambiado

@@ -13,9 +13,6 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
 
-/**
- * Created by gnufede on 18/07/14.
- */
 public class RefresherController extends Controller {
 
     public static Result index() {

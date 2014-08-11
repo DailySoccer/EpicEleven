@@ -15,9 +15,6 @@ import java.util.List;
 import java.util.TimeZone;
 
 
-/**
- * Created by gnufede on 28/05/14.
- */
 public class OptaEvent {
 
     @Id

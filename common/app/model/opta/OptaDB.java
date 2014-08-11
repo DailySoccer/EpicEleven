@@ -7,9 +7,6 @@ import org.jongo.marshall.jackson.oid.Id;
 
 import java.util.Map;
 
-/**
- * Created by gnufede on 30/05/14.
- */
 public class OptaDB {
 
     @Id

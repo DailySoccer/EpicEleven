@@ -1,8 +1,5 @@
 package model;
 
-/**
- * Created by gnufede on 28/07/14.
- */
 public class TemplateSoccerPlayerMetadata {
     public String optaPlayerId;
     public String name;

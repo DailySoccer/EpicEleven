@@ -22,9 +22,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.*;
 
-/**
- * Created by gnufede on 30/05/14.
- */
 @AllowCors.Origin
 public class OptaHttpController extends Controller {
 
