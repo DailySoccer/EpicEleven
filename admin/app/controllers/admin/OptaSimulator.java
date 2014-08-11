@@ -151,7 +151,7 @@ public class OptaSimulator implements Runnable {
 
         GlobalDate.setFakeDate(_state.lastParsedDate);
 
-        if (_state.useSnapshot) {
+        if (_state.useSnapshot && _snapshot != null) {
             _snapshot.update(_state.lastParsedDate);
         }
 
