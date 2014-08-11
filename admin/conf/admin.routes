@@ -83,8 +83,8 @@ GET         /replay_last                                               controlle
 GET         /continue_from_snapshot                                    controllers.admin.SnapshotController.continueFromSnapshot()
 GET         /snapshot_dump                                             controllers.admin.SnapshotController.snapshotDump()
 GET         /snapshot_restore                                          controllers.admin.SnapshotController.snapshotRestore()
-GET         /import_salaries                                           controllers.admin.SnapshotController.importSalaries()
-GET         /export_salaries                                           controllers.admin.SnapshotController.exportSalaries()
+GET         /import_salaries                                           controllers.admin.ImportController.importSalaries()
+GET         /export_salaries                                           controllers.admin.ImportController.exportSalaries()
 
 GET         /refresher                                                 controllers.admin.RefresherController.index()
 GET         /import_from_last                                          controllers.admin.RefresherController.importFromLast()

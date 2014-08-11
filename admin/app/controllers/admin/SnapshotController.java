@@ -15,18 +15,20 @@ public class SnapshotController extends Controller {
     }
 
     public static Result replayLast() {
-        if (OptaSimulator.isCreated()) {
-            OptaSimulator.instance().reset(true);
+        if (!OptaSimulator.isCreated()) {
+            OptaSimulator.init();
         }
+
+        OptaSimulator.instance().reset(true);
         return redirect(routes.SnapshotController.index());
     }
 
     public static Result continueFromSnapshot() {
-
-        if (OptaSimulator.isCreated()) {
-            OptaSimulator.instance().continueFromSnapshot();
+        if (!OptaSimulator.isCreated()) {
+            OptaSimulator.init();
         }
 
+        OptaSimulator.instance().continueFromSnapshot();
         return redirect(routes.SnapshotController.index());
     }
 
@@ -52,8 +54,11 @@ public class SnapshotController extends Controller {
         ProcessBuilder data = pb.directory(new File(pwd+"/data"));
         try {
             Process p = data.start();
+            p.waitFor();
         } catch (IOException e) {
             Logger.error("WTF 4264", e);
+        } catch (InterruptedException e) {
+            Logger.error("WTF 4274", e);
         }
         return redirect(routes.SnapshotController.index());
     }
@@ -64,32 +69,13 @@ public class SnapshotController extends Controller {
         ProcessBuilder data = pb.directory(new File(pwd+"/data"));
         try {
             Process p = data.start();
-        } catch (IOException e) {
+            p.waitFor();
+        }
+        catch (IOException e) {
             Logger.error("WTF 1124", e);
         }
-        return redirect(routes.SnapshotController.index());
-    }
-
-    public static Result exportSalaries() {
-        ProcessBuilder pb = new ProcessBuilder("./export_salaries.sh", "salaries.csv");
-        String pwd = pb.environment().get("PWD");
-        ProcessBuilder data = pb.directory(new File(pwd+"/data"));
-        try {
-            Process p = data.start();
-        } catch (IOException e) {
-            Logger.error("WTF 1124", e);
-        }
-        return redirect(routes.SnapshotController.index());
-    }
-
-    public static Result importSalaries() {
-        ProcessBuilder pb = new ProcessBuilder("./import_salaries.sh", "salaries.csv");
-        String pwd = pb.environment().get("PWD");
-        ProcessBuilder data = pb.directory(new File(pwd+"/data"));
-        try {
-            Process p = data.start();
-        } catch (IOException e) {
-            Logger.error("WTF 1124", e);
+        catch (InterruptedException e) {
+            Logger.error("WTF 1134", e);
         }
         return redirect(routes.SnapshotController.index());
     }

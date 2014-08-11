@@ -4,9 +4,12 @@ import model.*;
 import model.opta.OptaMatchEvent;
 import model.opta.OptaPlayer;
 import model.opta.OptaTeam;
+import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -225,4 +228,40 @@ public class ImportController extends Controller {
         FlashMessage.success( String.format("Imported %d match events Changed", changes) );
         return redirect(routes.ImportController.showImportMatchEvents());
     }
+
+    public static Result exportSalaries() {
+        ProcessBuilder pb = new ProcessBuilder("./export_salaries.sh", "salaries.csv");
+        String pwd = pb.environment().get("PWD");
+        ProcessBuilder data = pb.directory(new File(pwd+"/data"));
+        try {
+            Process p = data.start();
+            p.waitFor();
+        }
+        catch (IOException e) {
+            Logger.error("WTF 1125", e);
+        }
+        catch (InterruptedException e) {
+            Logger.error("WTF 1135", e);
+        }
+        return redirect(routes.SnapshotController.index());
+    }
+
+    public static Result importSalaries() {
+        ProcessBuilder pb = new ProcessBuilder("./import_salaries.sh", "salaries.csv");
+        String pwd = pb.environment().get("PWD");
+        ProcessBuilder data = pb.directory(new File(pwd+"/data"));
+        try {
+            Process p = data.start();
+            p.waitFor();
+        }
+        catch (IOException e) {
+            Logger.error("WTF 1126", e);
+        }
+        catch (InterruptedException e) {
+            Logger.error("WTF 1136", e);
+        }
+        return redirect(routes.SnapshotController.index());
+    }
+
+
 }
