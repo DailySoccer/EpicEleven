@@ -6,6 +6,7 @@ import org.jdom2.Element;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.ISODateTimeFormat;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
@@ -167,25 +168,18 @@ public class OptaEvent {
 
     public static Date parseDate(String timestamp, String timezone) {
 
-        DateTime theDateTime = null;
+        DateTime theDateTime;
 
         if (timezone == null) {
-            theDateTime = DateTime.parse(timestamp);
+            theDateTime = DateTime.parse(timestamp, ISODateTimeFormat.dateTimeParser().withZone(DateTimeZone.forID("Europe/London")));
         }
         else {
-            // Opta manda BST (British Summer Time), que para TimeZone.getTimeZone es Bangladesh. Tanto BST como GMT son en
-            // realidad el horario de Londres, sea verano o no.
-            // Si llega una zona horia que no sea BST o GMT, tenemos que revisar como la expresa Opta y si TimeZone.getTimeZone
-            // la esta interpretando bien. Puesto que ha fallado con BST probablemente fallara con la siguiente que nos mande tambien.
-            if (timezone.equals("BST") || timezone.equals("GMT"))
-                timezone = "Europe/London";
-            else
-                Logger.error("WTF 3911: Zona horaria de Opta desconocida. Revisar: " + timezone);
+            // Opta manda BST (British Summer Time) o GMT. Tanto BST como GMT son en realidad el horario de Londres, sea verano o no.
+            // Si llega una zona horia que no sea BST o GMT, tenemos que revisar pq estamos asumiendo que siempre es asi!
+            if (!timezone.equals("BST") && !timezone.equals("GMT"))
+                throw new RuntimeException("WTF 3911: Zona horaria de Opta desconocida. Revisar urgentemente!!! " + timezone);
 
-            // Usamos el parseo de Java (TimeZone.getTimeZone) pq el de Joda (DateTimeZone.forID) no soporta explicitamente 3 letras.
-            // Si llega un formato desconocido, nuestra probabilidad de fallar entonces es algo menor (pero alta).
-            DateTimeZone dateTimeZone = DateTimeZone.forTimeZone(TimeZone.getTimeZone(timezone));
-            theDateTime = DateTime.parse(timestamp, DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(dateTimeZone));
+            theDateTime = DateTime.parse(timestamp, DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.forID("Europe/London")));
         }
 
         return theDateTime.toDate();

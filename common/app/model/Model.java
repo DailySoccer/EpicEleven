@@ -325,13 +325,13 @@ public class Model {
 
         Logger.debug(date.toString());
 
-        DateTime dateTime = DateTime.parse(dateStr);
+        /*DateTime dateTime = DateTime.parse(dateStr);
         if (!dateTime.toDate().equals(date)) {
             int a = 0;
         }
         else {
             int b = 0;
-        }
+        }*/
 
         return date;
     }
