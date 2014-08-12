@@ -195,4 +195,60 @@ public class TemplateContest implements JongoId, Initializer {
         TemplateContest templateContest = findOne(new ObjectId(templateContestId));
         return templateContest.isFinished();
     }
+
+    public int getPositionPrize(int position) {
+        List<Integer> prizes = getPrizes();
+        return (position < prizes.size()) ? prizes.get(position) : 0;
+    }
+
+    private int getPrizePool() {
+        return (int)((maxEntries * entryFee) * 0.90f);
+    }
+
+    private List<Integer> getPrizes() {
+        List<Integer> prizes = new ArrayList<Integer>();
+
+        if      (prizeType.equals(PrizeType.FREE)) {
+
+        }
+        else if (prizeType.equals(PrizeType.WINNER_TAKES_ALL)) {
+            prizes.add(getPrizePool());
+        }
+        else if (prizeType.equals(PrizeType.TOP_3_GET_PRIZES)) {
+            prizes.add((int) (getPrizePool() * 0.5f));
+            prizes.add((int) (getPrizePool() * 0.3f));
+            prizes.add((int) (getPrizePool() * 0.2));
+        }
+        else if (prizeType.equals(PrizeType.TOP_THIRD_GET_PRIZES)) {
+            // A cuantos repartiremos premios?
+            int third = maxEntries / 3;
+
+            // Para hacer el reparto proporcional asignaremos puntos inversamente a la posición
+            // Más puntos cuanto más baja su posición. Para repartir a "n" usuarios: 1º = (n) pts / 2º = (n-1) pts / 3º = (n-2) pts / ... / nº = 1 pts
+
+            // Averiguar los puntos totales a repartir para saber cuánto vale el punto: n * (n+1) / 2  (suma el valor de "n" numeros)
+            int totalPoints = third * (third + 1) / 2;
+            int prizeByPoint = (int) (getPrizePool() / totalPoints);
+
+            // A cada posición le damos el premio (sus puntos se corresponden con su posición "invertida": p.ej. para repartir a 6 usuarios: el 1º tiene 6 puntos, el 2º tiene 5 puntos, etc)
+            int totalPrize = getPrizePool();
+            for (int i = third; i > 0; i--) {
+                int prize = prizeByPoint * i;
+                prizes.add(prize);
+                totalPrize -= prize;
+            }
+            // Si queda algo, ¿se lo damos al primero?
+            if (totalPrize > 0) {
+                prizes.set(0, prizes.get(0) + totalPrize);
+            }
+        }
+        else if (prizeType.equals(PrizeType.FIFTY_FIFTY)) {
+            int mid = maxEntries / 2;
+            for (int i = 0; i < mid; i++) {
+                prizes.add((int) (getPrizePool() / mid));
+            }
+        }
+
+        return prizes;
+    }
 }

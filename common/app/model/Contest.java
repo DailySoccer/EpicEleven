@@ -6,10 +6,7 @@ import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
 
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 public class Contest implements JongoId {
 
@@ -51,7 +48,51 @@ public class Contest implements JongoId {
         return ListUtils.asList(Model.contests().find("{'contestEntries.userId': #}", userId).as(Contest.class));
     }
 
+    static public List<Contest> findAllFromTemplateContest(ObjectId templateContestId) {
+        return ListUtils.asList(Model.contests().find("{templateContestId: #}", templateContestId).as(Contest.class));
+    }
+
     static public List<Contest> findAllFromTemplateContests(Iterable<TemplateContest> templateContests) {
         return ListUtils.asList(Model.findObjectIds(Model.contests(), "templateContestId", ListUtils.convertToIdList(templateContests)).as(Contest.class));
+    }
+
+    static public void updateRanking(ObjectId templateMatchEventId) {
+        // Buscamos los template contests que incluyan ese partido
+        List<TemplateContest> templateContests = ListUtils.asList(Model.templateContests().find("{templateMatchEventIds: {$in:[#]}}",
+                templateMatchEventId).as(TemplateContest.class));
+
+        for (TemplateContest templateContest : templateContests) {
+            // Obtenemos los partidos
+            List<MatchEvent> matchEvents = templateContest.getMatchEvents();
+
+            // Actualizamos los rankings de cada contest
+            List<Contest> contests = Contest.findAllFromTemplateContest(templateContest.templateContestId);
+            for (Contest contest : contests) {
+                contest.updateRanking(templateContest, matchEvents);
+            }
+        }
+    }
+
+   private void updateRanking(TemplateContest templateContest, List<MatchEvent> matchEvents) {
+        // Actualizamos los fantasy points
+        for (ContestEntry contestEntry : contestEntries) {
+            contestEntry.fantasyPoints = contestEntry.getFantasyPointsFromMatchEvents(matchEvents);
+        }
+        // Los ordenamos según los fantasy points
+        Collections.sort (contestEntries, new ContestEntryComparable());
+        // Actualizamos sus "posiciones"
+        int index = 0;
+        for (ContestEntry contestEntry : contestEntries) {
+            contestEntry.position = index++;
+            contestEntry.prize = templateContest.getPositionPrize(contestEntry.position);
+            contestEntry.updateRanking();
+        }
+    }
+
+    class ContestEntryComparable implements Comparator<ContestEntry>{
+        @Override
+        public int compare(ContestEntry o1, ContestEntry o2) {
+            return (o1.fantasyPoints>o2.fantasyPoints ? -1 : (o1.fantasyPoints==o2.fantasyPoints ? 0 : 1));
+        }
     }
 }

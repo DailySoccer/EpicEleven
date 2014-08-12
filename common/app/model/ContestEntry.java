@@ -8,6 +8,7 @@ import play.Logger;
 import utils.ListUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -19,6 +20,15 @@ public class ContestEntry implements JongoId {
 
     @JsonView(JsonViews.FullContest.class)
     public List<ObjectId> soccerIds;    // Fantasy team
+
+    @JsonView(JsonViews.FullContest.class)
+    public int position;
+
+    @JsonView(JsonViews.FullContest.class)
+    public int prize;
+
+    @JsonView(JsonViews.FullContest.class)
+    public int fantasyPoints;
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
@@ -34,6 +44,15 @@ public class ContestEntry implements JongoId {
     }
 
     public ObjectId getId() { return contestEntryId; }
+
+    public void updateRanking() {
+        Logger.info("ContestEntry: {} | Position: {} | FantasyPoints: {}", contestEntryId, position, fantasyPoints);
+
+        Model.contests()
+            .update("{'contestEntries._id': #}", getId())
+            .with("{$set: {'contestEntries.$.position': #, 'contestEntries.$.fantasyPoints': #, 'contestEntries.$.prize': #}}",
+                    position, fantasyPoints, prize);
+    }
 
     static public ContestEntry findOne(ObjectId contestEntryId) {
         Contest contest = Model.contests().findOne("{'contestEntries._id' : #}", contestEntryId).as(Contest.class);
@@ -87,5 +106,18 @@ public class ContestEntry implements JongoId {
         }
 
         return bRet;
+    }
+
+    public int getFantasyPointsFromMatchEvents(List<MatchEvent> matchEvents) {
+        int fantasyPoints = 0;
+        for (ObjectId templateSoccerPlayerId : soccerIds) {
+            for (MatchEvent matchEvent : matchEvents) {
+                if (matchEvent.containsSoccerPlayer(templateSoccerPlayerId)) {
+                    fantasyPoints += matchEvent.getFantasyPoints(templateSoccerPlayerId);
+                    break;
+                }
+            }
+        }
+        return fantasyPoints;
     }
 }
