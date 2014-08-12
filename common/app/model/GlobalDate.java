@@ -5,9 +5,7 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.ISODateTimeFormat;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.TimeZone;
 
 public class GlobalDate {
 
@@ -16,9 +14,7 @@ public class GlobalDate {
     }
 
     static public String formatDate(Date date) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-        return formatter.format(date);
+        return new DateTime(date).toString(DateTimeFormat.mediumDateTime().withZoneUTC()) + " UTC";
     }
 
     static public Date getCurrentDate() {

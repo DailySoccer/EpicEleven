@@ -176,7 +176,7 @@ public class OptaHttpController extends Controller {
     }
 
     public static Result dateLastXML() {
-        return ok(Model.getLastDateFromOptaXML().toString());
+        return ok(GlobalDate.formatDate(Model.getLastDateFromOptaXML()));
     }
 
     public static Result remainingXMLs(long last_timestamp) {

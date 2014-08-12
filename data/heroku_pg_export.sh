@@ -32,7 +32,7 @@ if which heroku >/dev/null
             app="dailysoccer-staging"
     elif [[ "$1" == "production" ]]
         then
-            DB="ROSE"
+            DB="COPPER"
             app="dailysoccer"
     fi
     PGUSER=postgres PGPASSWORD=postgres heroku pg:push dailysoccerdb HEROKU_POSTGRESQL_"$DB" --app "$app"
