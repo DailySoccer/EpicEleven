@@ -19,19 +19,66 @@ public class RefresherController extends Controller {
         return ok(views.html.refresher.render());
     }
 
-    public static long importXML(long last_timestamp) {
-        F.Promise<WS.Response> response = WS.url("http://dailysoccer.herokuapp.com/return_xml/" + last_timestamp).get();
-        WS.Response a = response.get(100000);
-        return processXML(a, new Date(last_timestamp));
+
+    public static Result inProgress() {
+        return ok(String.valueOf(_inProgress));
     }
 
-    private static long processXML(final WS.Response response, Date lastDate) {
+    public static Result importFromLast() {
+
+        if (_inProgress)
+            return ok("Already refreshing");
+
+        _inProgress = true;
+
+        long last_date = findLastDate().getTime();
+
+        while (last_date >= 0) {
+            Logger.debug("Importing xml date: " + last_date);
+            last_date = downloadAndImportXML(last_date);
+        }
+
+        _inProgress = false;
+
+        return ok("Finished importing");
+    }
+
+    private static Date findLastDate() {
+
+        String selectString = "SELECT created_at FROM optaxml ORDER BY created_at DESC LIMIT 1;";
+        ResultSet results = null;
+
+        try (Connection connection = DB.getConnection()) {
+            try (Statement stmt = connection.createStatement()) {
+                results = stmt.executeQuery(selectString);
+
+                if (results.next()) {
+                    return results.getTimestamp("created_at");
+                }
+            }
+        }
+        catch (java.sql.SQLException e) {
+            Logger.error("WTF SQL 92374");
+        }
+
+        return new Date(0L);
+    }
+
+    public static Result lastDate() {
+        return ok(String.valueOf(findLastDate().getTime()));    // Returns date in millis
+    }
+
+    private static long downloadAndImportXML(long last_timestamp) {
+
+        F.Promise<WS.Response> responsePromise = WS.url("http://dailysoccer.herokuapp.com/return_xml/" + last_timestamp).get();
+        WS.Response response = responsePromise.get(100000);
+
         if (response.getStatus() != 200) {
             Logger.error("Response not OK: " + response.getStatus());
             return -2L;
         }
         else {
-            String bodyText  = response.getBody();
+            String bodyText = response.getBody();
 
             if (bodyText.equals("NULL")) {
                 return -1L;
@@ -46,9 +93,8 @@ public class RefresherController extends Controller {
                 Date lastUpdated = Model.getDateFromHeader(response.getHeader("last-updated"));
                 String name = response.getHeader("name");
 
-                if (createdAt.after(lastDate)) {
-                    Model.insertXML(bodyText, headers, createdAt, name, feedType, gameId,
-                                    competitionId, seasonId, lastUpdated);
+                if (createdAt.after(new Date(last_timestamp))) {
+                    Model.insertXML(bodyText, headers, createdAt, name, feedType, gameId, competitionId, seasonId, lastUpdated);
                     return createdAt.getTime();
                 }
                 else {
@@ -56,50 +102,6 @@ public class RefresherController extends Controller {
                 }
             }
         }
-    }
-
-    public static Result inProgress() {
-        return ok(String.valueOf(_inProgress));
-    }
-
-    public static Result importFromLast() {
-        Logger.debug("Starting at: {}", findLastDate());
-
-        if (_inProgress) {
-            Logger.info("Already refreshing!");
-            return ok("Already refreshing");
-        }
-        else {
-            _inProgress = true;
-            for (long last_date = findLastDate().getTime(); 0L <= last_date; last_date=importXML(last_date)) {
-                Logger.debug("once again: "+last_date);
-            }
-            Logger.debug("Finished at: {}", findLastDate());
-            _inProgress = false;
-            return ok("Finished importing");
-        }
-    }
-
-    public static Date findLastDate() {
-        String selectString = "SELECT created_at FROM optaxml ORDER BY created_at DESC LIMIT 1;";
-        ResultSet results = null;
-        try (Connection connection = DB.getConnection()) {
-            try (Statement stmt = connection.createStatement()) {
-                results = stmt.executeQuery(selectString);
-                if (results.next()) {
-                    return results.getTimestamp("created_at");
-                }
-            }
-        }
-        catch (java.sql.SQLException e) {
-            Logger.error("WTF SQL 92374");
-        }
-        return new Date(0L);
-    }
-
-    public static Result lastDate() {
-        // Returns date in millis
-        return ok(String.valueOf(findLastDate().getTime()));
     }
 
     public static boolean _inProgress = false;

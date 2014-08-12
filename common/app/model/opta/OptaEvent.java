@@ -3,12 +3,14 @@ package model.opta;
 import model.Model;
 import org.bson.types.ObjectId;
 import org.jdom2.Element;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.ISODateTimeFormat;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,7 +18,6 @@ import java.util.TimeZone;
 
 
 public class OptaEvent {
-
     @Id
     public ObjectId optaEventId;
     public String gameId;
@@ -55,8 +56,8 @@ public class OptaEvent {
         this.eventId = (int) Integer.parseInt(event.getAttributeValue("event_id"));
         this.typeId = (int) Integer.parseInt(event.getAttributeValue("type_id"));
         this.outcome = (int) Integer.parseInt(event.getAttributeValue("outcome"));
-        this.timestamp = parseDate(event.getAttributeValue("timestamp"));
-        this.lastModified = parseDate(event.getAttributeValue("last_modified"));
+        this.timestamp = parseDate(event.getAttributeValue("timestamp"), null);
+        this.lastModified = parseDate(event.getAttributeValue("last_modified"), null);
         this.min = Integer.parseInt(event.getAttributeValue("min"));
         this.sec = Integer.parseInt(event.getAttributeValue("sec"));
 
@@ -151,22 +152,6 @@ public class OptaEvent {
         }
     }
 
-    /*
-    public String getQualifier(int qualifierId) {
-        //qualifiers.con
-    }
-    */
-
-    public boolean hasChanged(OptaEvent other){
-        if (other == this) {
-            return false;
-        }
-        if (other == null) {
-            return false;
-        }
-        return this.lastModified.before(other.lastModified);
-    }
-
     static public OptaEvent findLast(String optaMatchEventId) {
         OptaEvent lastEvent = null;
 
@@ -179,49 +164,26 @@ public class OptaEvent {
     }
 
     static public List<OptaEvent> filter(String optaMatchId, String optaPlayerId) {
-        Iterable<OptaEvent> optaEventResults = Model.optaEvents().find("{optaPlayerId: #, gameId: #}",
-                optaPlayerId, optaMatchId).as(OptaEvent.class);
-        return ListUtils.asList(optaEventResults);
+        return ListUtils.asList(Model.optaEvents().find("{optaPlayerId: #, gameId: #}", optaPlayerId, optaMatchId).as(OptaEvent.class));
     }
 
     public static Date parseDate(String timestamp, String timezone) {
-        timezone = timezone!=null? timezone: "Europe/London";
-        if (timezone.equals("BST")) {
-            timezone = "GMT+01:00";
+
+        DateTime theDateTime;
+
+        if (timezone == null) {
+            theDateTime = DateTime.parse(timestamp, ISODateTimeFormat.dateTimeParser().withZone(DateTimeZone.forID("Europe/London")));
+        }
+        else {
+            // Opta manda BST (British Summer Time) o GMT. Tanto BST como GMT son en realidad el horario de Londres, sea verano o no.
+            // Si llega una zona horia que no sea BST o GMT, tenemos que revisar pq estamos asumiendo que siempre es asi!
+            if (!timezone.equals("BST") && !timezone.equals("GMT"))
+                throw new RuntimeException("WTF 3911: Zona horaria de Opta desconocida. Revisar urgentemente!!! " + timezone);
+
+            theDateTime = DateTime.parse(timestamp, DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.forID("Europe/London")));
         }
 
-        String dateConfig;
-        SimpleDateFormat dateFormat;
-        if (timestamp.indexOf('-') > 0) {
-            dateConfig = timestamp.indexOf('T') > 0 ? "yyyy-MM-dd'T'hh:mm:ss.SSSz" : "yyyy-MM-dd hh:mm:ss.SSSz";
-            dateFormat = new SimpleDateFormat(dateConfig.substring(0, timestamp.length()));
-        }else{
-            dateConfig = timestamp.indexOf('T') > 0 ? "yyyyMMdd'T'hhmmssZ" : "yyyyMMdd hhmmssZ";
-            dateFormat = new SimpleDateFormat(dateConfig);
-        }
-        int plusPos = timestamp.indexOf('+');
-        if (plusPos>=19) {
-            if (timestamp.substring(plusPos, timestamp.length()).equals("+00:00")) {
-                timestamp = timestamp.substring(0, plusPos);
-                dateFormat = new SimpleDateFormat(dateConfig.substring(0, timestamp.length()));
-            } else {
-                Logger.info("Cant parse this date: " + timestamp);
-            }
-        }
-
-        Date myDate = null;
-        try {
-            dateFormat.setTimeZone(TimeZone.getTimeZone(timezone));
-            myDate = dateFormat.parse(timestamp);
-        } catch (ParseException e) {
-            Logger.error("WTF 7523862890", e);
-        }
-        return myDate;
-
-    }
-
-    public static Date parseDate(String timestamp) {
-        return parseDate(timestamp, null);
+        return theDateTime.toDate();
     }
 
     public static boolean isGameStarted(String gameId) {

@@ -6,6 +6,8 @@ import model.ModelEvents;
 import model.opta.OptaDB;
 import model.opta.OptaProcessor;
 import org.jdom2.input.JDOMParseException;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.mozilla.universalchardet.UniversalDetector;
 import play.Logger;
 import play.db.DB;
@@ -66,7 +68,7 @@ public class OptaHttpController extends Controller {
 
         Model.insertXML(bodyText,
                         getHeadersString(request().headers()),
-                        new Date(System.currentTimeMillis()),
+                        new Date(),
                         getHeader("X-Meta-Default-Filename", request().headers()),
                         getHeader("X-Meta-Feed-Type", request().headers()),
                         getHeader("X-Meta-Game-Id", request().headers()),
@@ -150,8 +152,6 @@ public class OptaHttpController extends Controller {
 
     public static Result returnXML(long last_timestamp) {
 
-        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-        format1.setTimeZone(TimeZone.getTimeZone("UTC"));
         Date askedDate = new Date(last_timestamp);
 
         String retXML = "NULL";
@@ -161,13 +161,12 @@ public class OptaHttpController extends Controller {
             ResultSet nextOptaData = findXML(connection, askedDate);
 
             if (nextOptaData != null && nextOptaData.next()) {
-                setResponseHeaders(nextOptaData, format1);
+                setResponseHeaders(nextOptaData);
                 retXML = nextOptaData.getString("xml");
             }
         }
         catch (java.sql.SQLException e) {
             Logger.error("WTF 52683", e);
-            Logger.info("Possibly end of documents reached: {}", format1.format(askedDate));
         }
 
         response().setContentType("text/html; charset=UTF-8");
@@ -175,17 +174,13 @@ public class OptaHttpController extends Controller {
         return ok(retXML, "UTF-8");
     }
 
-    @AllowCors.Origin
     public static Result dateLastXML() {
-        return ok(Model.dateLastFromOptaXML().toString());
+        return ok(Model.getLastDateFromOptaXML().toString());
     }
 
-    @AllowCors.Origin
     public static Result remainingXMLs(long last_timestamp) {
-        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-        format1.setTimeZone(TimeZone.getTimeZone("UTC"));
-        Date askedDate = new Date(last_timestamp);
 
+        Date askedDate = new Date(last_timestamp);
         String remainingXML = "0";
 
         try (Connection connection = DB.getConnection()) {
@@ -206,18 +201,16 @@ public class OptaHttpController extends Controller {
 
     }
 
-    private static void setResponseHeaders(ResultSet nextOptaData, SimpleDateFormat dateFormat) throws SQLException {
-        Timestamp createdAt, lastUpdated;
-        String name, feedType, gameId, competitionId, seasonId = "", headers = "";
+    private static void setResponseHeaders(ResultSet nextOptaData) throws SQLException {
 
-        headers = nextOptaData.getString("headers");
-        feedType = nextOptaData.getString("feed_type");
-        name = nextOptaData.getString("name");
-        gameId = nextOptaData.getString("game_id");
-        competitionId = nextOptaData.getString("competition_id");
-        seasonId = nextOptaData.getString("season_id");
-        lastUpdated = nextOptaData.getTimestamp("last_updated");
-        createdAt = nextOptaData.getTimestamp("created_at");
+        String headers = nextOptaData.getString("headers");
+        String feedType = nextOptaData.getString("feed_type");
+        String name = nextOptaData.getString("name");
+        String gameId = nextOptaData.getString("game_id");
+        String competitionId = nextOptaData.getString("competition_id");
+        String seasonId = nextOptaData.getString("season_id");
+        Timestamp lastUpdated = nextOptaData.getTimestamp("last_updated");
+        Timestamp createdAt = nextOptaData.getTimestamp("created_at");
 
         response().setHeader("headers", headers);
 
@@ -237,10 +230,10 @@ public class OptaHttpController extends Controller {
             response().setHeader("feed-type", feedType);
         }
         if (createdAt != null) {
-            response().setHeader("created-at", dateFormat.format(createdAt));
+            response().setHeader("created-at", new DateTime(createdAt).toString());
         }
         if (lastUpdated != null) {
-            response().setHeader("last-updated", dateFormat.format(lastUpdated));
+            response().setHeader("last-updated", new DateTime(lastUpdated).toString());
         }
     }
 
