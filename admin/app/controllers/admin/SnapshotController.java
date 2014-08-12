@@ -37,7 +37,7 @@ public class SnapshotController extends Controller {
     }
 
     public static Result snapshot() {
-        Snapshot.instance().create();
+        Snapshot.instance().save();
 
         return redirect(routes.SnapshotController.index());
     }
