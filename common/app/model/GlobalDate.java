@@ -31,9 +31,6 @@ public class GlobalDate {
 
     static public Date parseDate(String dateStr, String timezone) {
 
-        if (dateStr == null)    // TODO: No deberiamos aceptar que nos pasen null aqui, revisar q no ocurra y quitar esta comprobacion
-            return null;
-
         DateTime dateTime;
 
         // Si la propia cadena contiene BST o GMT, es una de las que nos manda Opta en X-Meta-Last-Updated
