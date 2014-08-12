@@ -96,7 +96,7 @@ public class OptaSimulator implements Runnable {
     public void continueFromSnapshot() {
         pause();
 
-        Snapshot.load();
+        new Snapshot().load();
 
         _state = collection().findOne().as(OptaSimulatorState.class);
         _state.useSnapshot = false;
@@ -116,7 +116,7 @@ public class OptaSimulator implements Runnable {
         _instance = new OptaSimulator();
 
         if (useSnapshot) {
-            _snapshot = Snapshot.getLast();
+            _snapshot = Snapshot.instance().getLast();
             _state.useSnapshot = true;
             saveState();
         }

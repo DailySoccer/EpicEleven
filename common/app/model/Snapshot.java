@@ -11,14 +11,30 @@ import java.util.Date;
 import java.util.List;
 
 public class Snapshot {
-    static public DB mongoDBAdmin() { return _mongoDBAdmin; }
-    static public DB mongoDBSnapshot() { return _mongoDBSnapshot; }
-    static public Jongo jongoSnapshot() { return _jongoSnapshot; }
 
-    static public void init() {
-        if (Play.isTest())
-            return;
+    public Date createdAt;
 
+    static public Snapshot instance() {
+        if (_instance == null) {
+            _instance = new Snapshot();
+            _instance.init();
+            Snapshot last = _instance.collection().findOne().as(Snapshot.class);
+            if (last != null) {
+                _instance = last;
+            }
+        }
+        return _instance;
+    }
+
+    public Snapshot() {
+        if (collection() == null) {
+            return null;
+        }
+        return
+        updatedDate = new Date(0);
+    }
+
+    private void init() {
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
         MongoClientURI mongoClientURI = new MongoClientURI(mongodbUri);
 
@@ -42,21 +58,8 @@ public class Snapshot {
         }
     }
 
-    static public void dropSnapshotDB() {
+    public void dropSnapshotDB() {
         _mongoDBSnapshot.dropDatabase();
-    }
-
-    static public MongoCollection collection() {
-        return (jongoSnapshot() != null) ? jongoSnapshot().getCollection(snapshotDBName) : null;
-    }
-
-    public Date createdAt;
-
-    @JsonIgnore
-    private Date updatedDate;
-
-    public Snapshot() {
-        updatedDate = new Date(0);
     }
 
     public void update(Date nextDate) {
@@ -95,33 +98,21 @@ public class Snapshot {
         }
     }
 
-    static public void createInDB() {
-        DBObject copyOp = new BasicDBObject("copydb", "1").
-                append("fromdb" , "dailySoccerDB").
-                append("todb", "snapshot");
 
-        dropSnapshotDB();
-        CommandResult a = mongoDBAdmin().command(copyOp);
-        if (a.getErrorMessage() != null) {
-            Logger.error(a.getErrorMessage());
-        }
-    }
-
-    static public Snapshot create() {
+    public Snapshot create() {
         if (collection() == null) {
             return null;
         }
-        Snapshot snapshot = new Snapshot();
 
-        snapshot.createdAt = GlobalDate.getCurrentDate();
+        createdAt = GlobalDate.getCurrentDate();
 
         createInDB();
         collection().remove();
-        collection().insert(snapshot);
-        return snapshot;
+        collection().insert(_instance);
+        return _instance;
     }
 
-    static public void load() {
+    public void load() {
         DBObject copyOp = new BasicDBObject("copydb", "1").
                                      append("fromdb" , "snapshot").
                                      append("todb", "dailySoccerDB");
@@ -133,23 +124,56 @@ public class Snapshot {
         }
     }
 
-    static public String getName() {
+    public String getName() {
         Snapshot snapshot = getLast();
         return (snapshot != null) ? GlobalDate.formatDate(snapshot.createdAt): "none";
     }
 
-    static public Snapshot getLast() {
+    public Snapshot getLast() {
         if (collection() == null) {
             return null;
         }
         return collection().findOne().as(Snapshot.class);
     }
 
-    static private MongoClient _mongoClient;
-    static final private String snapshotDBName = "snapshot";
+    private void createInDB() {
+        DBObject copyOp = new BasicDBObject("copydb", "1").
+                append("fromdb" , "dailySoccerDB").
+                append("todb", "snapshot");
 
-    static private DB _mongoDBAdmin;
-    static private DB _mongoDBSnapshot;
+        dropSnapshotDB();
+        CommandResult a = mongoDBAdmin().command(copyOp);
+        if (a.getErrorMessage() != null) {
+            Logger.error(a.getErrorMessage());
+        }
+    }
 
-    static private Jongo _jongoSnapshot;
+    private DB mongoDBAdmin() { return _mongoDBAdmin; }
+    private DB mongoDBSnapshot() { return _mongoDBSnapshot; }
+
+    private Jongo jongoSnapshot() { return _jongoSnapshot; }
+
+    private MongoCollection collection() {
+        return (jongoSnapshot() != null) ? jongoSnapshot().getCollection(snapshotDBName) : null;
+    }
+
+
+
+    @JsonIgnore
+    private MongoClient _mongoClient;
+    @JsonIgnore
+    final private String snapshotDBName = "snapshot";
+
+    @JsonIgnore
+    private DB _mongoDBAdmin;
+    @JsonIgnore
+    private DB _mongoDBSnapshot;
+    @JsonIgnore
+    private Jongo _jongoSnapshot;
+
+    @JsonIgnore
+    private Date updatedDate;
+
+    @JsonIgnore
+    static private Snapshot _instance;
 }

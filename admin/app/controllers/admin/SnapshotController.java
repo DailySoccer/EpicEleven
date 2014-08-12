@@ -33,17 +33,11 @@ public class SnapshotController extends Controller {
     }
 
     public static String getSnapshotName() {
-        return Snapshot.getName();
+        return Snapshot.instance().getName();
     }
 
     public static Result snapshot() {
-        Snapshot.create();
-
-        return redirect(routes.SnapshotController.index());
-    }
-
-    public static Result snapshotDB() {
-        Snapshot.createInDB();
+        Snapshot.instance().create();
 
         return redirect(routes.SnapshotController.index());
     }
