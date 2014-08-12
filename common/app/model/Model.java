@@ -2,9 +2,6 @@ package model;
 
 import com.mongodb.*;
 import org.bson.types.ObjectId;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.ISODateTimeFormat;
 import org.jongo.Find;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
@@ -12,13 +9,9 @@ import play.Logger;
 import play.Play;
 import utils.ListUtils;
 
+import java.sql.Connection;
 import java.sql.*;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
 
 
 public class Model {
@@ -294,45 +287,6 @@ public class Model {
         catch (java.sql.SQLException e) {
             Logger.error("WTF 56312: ", e);
         }
-    }
-
-    public static Date getDateFromHeader(String dateStr) {
-
-        if (dateStr == null) {
-            return null;
-        }
-
-        DateFormat formatter;
-        if (dateStr.indexOf('-')>=0) {
-            if (dateStr.indexOf('T')>=0) {
-                formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-            } else {
-                formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ENGLISH);
-            }
-        } else {
-           formatter = new SimpleDateFormat("E MMM dd HH:mm:ss Z yyyy", Locale.ENGLISH);
-        }
-
-        formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-        Date date = null;
-
-        try {
-            date = formatter.parse(dateStr);
-            Logger.debug(date.toString());
-        }
-        catch (ParseException e) {
-            Logger.error("WTF 23815 Data parsing: ", e);
-        }
-
-        /*DateTime dateTime = DateTime.parse(dateStr);
-        if (!dateTime.toDate().equals(date)) {
-            int a = 0;
-        }
-        else {
-            int b = 0;
-        }*/
-
-        return date;
     }
 
     public static Date getFirstDateFromOptaXML() {

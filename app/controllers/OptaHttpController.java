@@ -1,13 +1,13 @@
 package controllers;
 
 import actions.AllowCors;
+import model.GlobalDate;
 import model.Model;
 import model.ModelEvents;
 import model.opta.OptaDB;
 import model.opta.OptaProcessor;
 import org.jdom2.input.JDOMParseException;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 import org.mozilla.universalchardet.UniversalDetector;
 import play.Logger;
 import play.db.DB;
@@ -20,9 +20,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 @AllowCors.Origin
 public class OptaHttpController extends Controller {
@@ -74,7 +75,7 @@ public class OptaHttpController extends Controller {
                         getHeader("X-Meta-Game-Id", request().headers()),
                         getHeader("X-Meta-Competition-Id", request().headers()),
                         getHeader("X-Meta-Season-Id", request().headers()),
-                        Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", request().headers())));
+                        GlobalDate.parseDate(getHeader("X-Meta-Last-Updated", request().headers()), null));
 
         OptaProcessor theProcessor = new OptaProcessor();
         HashSet<String> updatedMatchEvents = null;
@@ -141,7 +142,7 @@ public class OptaHttpController extends Controller {
                 Model.insertXML(document.xml, getHeadersString(document.headers), new Date(document.startDate), document.name,
                                 getHeader("X-Meta-Feed-Type", document.headers), getHeader("X-Meta-Game-Id", document.headers),
                                 getHeader("X-Meta-Competition-Id", document.headers), getHeader("X-Meta-Season-Id", document.headers),
-                                Model.getDateFromHeader(getHeader("X-Meta-Last-Updated", document.headers)));
+                                GlobalDate.parseDate(getHeader("X-Meta-Last-Updated", document.headers), null));
             }
             else {
                 Logger.debug("IGNORANDO: " + document.name);

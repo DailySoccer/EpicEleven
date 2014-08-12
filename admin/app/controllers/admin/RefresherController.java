@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import model.GlobalDate;
 import model.Model;
 import play.Logger;
 import play.db.DB;
@@ -89,8 +90,8 @@ public class RefresherController extends Controller {
                 String gameId = response.getHeader("game-id");
                 String competitionId = response.getHeader("competition-id");
                 String seasonId = response.getHeader("season-id");
-                Date createdAt = Model.getDateFromHeader(response.getHeader("created-at"));
-                Date lastUpdated = Model.getDateFromHeader(response.getHeader("last-updated"));
+                Date createdAt = GlobalDate.parseDate(response.getHeader("created-at"), null);
+                Date lastUpdated = GlobalDate.parseDate(response.getHeader("last-updated"), null);
                 String name = response.getHeader("name");
 
                 if (createdAt.after(new Date(last_timestamp))) {
