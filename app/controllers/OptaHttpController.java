@@ -6,6 +6,8 @@ import model.ModelEvents;
 import model.opta.OptaDB;
 import model.opta.OptaProcessor;
 import org.jdom2.input.JDOMParseException;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.mozilla.universalchardet.UniversalDetector;
 import play.Logger;
 import play.db.DB;
@@ -150,8 +152,6 @@ public class OptaHttpController extends Controller {
 
     public static Result returnXML(long last_timestamp) {
 
-        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-        format1.setTimeZone(TimeZone.getTimeZone("UTC"));
         Date askedDate = new Date(last_timestamp);
 
         String retXML = "NULL";
@@ -161,13 +161,12 @@ public class OptaHttpController extends Controller {
             ResultSet nextOptaData = findXML(connection, askedDate);
 
             if (nextOptaData != null && nextOptaData.next()) {
-                setResponseHeaders(nextOptaData, format1);
+                setResponseHeaders(nextOptaData);
                 retXML = nextOptaData.getString("xml");
             }
         }
         catch (java.sql.SQLException e) {
             Logger.error("WTF 52683", e);
-            Logger.info("Possibly end of documents reached: {}", format1.format(askedDate));
         }
 
         response().setContentType("text/html; charset=UTF-8");
@@ -180,10 +179,8 @@ public class OptaHttpController extends Controller {
     }
 
     public static Result remainingXMLs(long last_timestamp) {
-        SimpleDateFormat format1 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
-        format1.setTimeZone(TimeZone.getTimeZone("UTC"));
-        Date askedDate = new Date(last_timestamp);
 
+        Date askedDate = new Date(last_timestamp);
         String remainingXML = "0";
 
         try (Connection connection = DB.getConnection()) {
@@ -204,7 +201,7 @@ public class OptaHttpController extends Controller {
 
     }
 
-    private static void setResponseHeaders(ResultSet nextOptaData, SimpleDateFormat dateFormat) throws SQLException {
+    private static void setResponseHeaders(ResultSet nextOptaData) throws SQLException {
 
         String headers = nextOptaData.getString("headers");
         String feedType = nextOptaData.getString("feed_type");
@@ -233,10 +230,10 @@ public class OptaHttpController extends Controller {
             response().setHeader("feed-type", feedType);
         }
         if (createdAt != null) {
-            response().setHeader("created-at", dateFormat.format(createdAt));
+            response().setHeader("created-at", new DateTime(createdAt).toString());
         }
         if (lastUpdated != null) {
-            response().setHeader("last-updated", dateFormat.format(lastUpdated));
+            response().setHeader("last-updated", new DateTime(lastUpdated).toString());
         }
     }
 

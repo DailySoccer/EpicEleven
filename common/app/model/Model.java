@@ -3,6 +3,8 @@ package model;
 import com.mongodb.*;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.ISODateTimeFormat;
 import org.jongo.Find;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
@@ -83,13 +85,13 @@ public class Model {
                              " id serial PRIMARY KEY, " +
                              " xml text, " +
                              " headers text, " +
-                             " created_at timestamp, " +
+                             " created_at timestamp with time zone, " +
                              " name text, " +
                              " feed_type text, " +
                              " game_id text, " +
                              " competition_id text, " +
                              " season_id text, " +
-                             " last_updated timestamp " +
+                             " last_updated timestamp with time zone " +
                              " );");
 
                 // http://dba.stackexchange.com/questions/35616/create-index-if-it-does-not-exist
@@ -269,20 +271,18 @@ public class Model {
             try (PreparedStatement stmt = connection.prepareStatement(insertString)) {
                 stmt.setString(1, xml);
                 stmt.setString(2, headers);
-                if (timestamp != null) {
-                    stmt.setTimestamp(3, new java.sql.Timestamp(timestamp.getTime()));
-                } else {
-                    stmt.setTimestamp(3, null);
-                }
+                stmt.setTimestamp(3, new java.sql.Timestamp(timestamp.getTime()));
                 stmt.setString(4, name);
                 stmt.setString(5, feedType);
                 stmt.setString(6, gameId);
                 stmt.setString(7, competitionId);
                 stmt.setString(8, seasonId);
 
+                // TODO: No aceptar null
                 if (lastUpdated != null) {
                     stmt.setTimestamp(9, new java.sql.Timestamp(lastUpdated.getTime()));
-                } else {
+                }
+                else {
                     stmt.setTimestamp(9, null);
                 }
 
@@ -317,13 +317,12 @@ public class Model {
         Date date = null;
 
         try {
-            date = (Date)formatter.parse(dateStr);
+            date = formatter.parse(dateStr);
+            Logger.debug(date.toString());
         }
         catch (ParseException e) {
             Logger.error("WTF 23815 Data parsing: ", e);
         }
-
-        Logger.debug(date.toString());
 
         /*DateTime dateTime = DateTime.parse(dateStr);
         if (!dateTime.toDate().equals(date)) {
