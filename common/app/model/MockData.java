@@ -1,14 +1,12 @@
 package model;
 
-import org.bson.types.ObjectId;
 import model.opta.OptaEventType;
-import play.Logger;
+import org.bson.types.ObjectId;
 import utils.ListUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 
 public final class MockData {
@@ -26,6 +24,7 @@ public final class MockData {
         createUser("Jesús",     "Tapial",       "Machus",       "machus@test.com", "");
         createUser("Antonio",   "Galvez",       "Antonio",      "antonio@test.com", "");
         createUser("Belen",     "Cao",          "Belen",        "belen@test.com", "");
+        createUser("Goyo",      "Iniesta",      "Goyo",         "goyo@test.com", "");
 
         createUser("Test",      "Test",         "Test",         "test@test.com", "");
     }
@@ -36,7 +35,7 @@ public final class MockData {
 
     public static void createPointsTranslation() {
         int[][] pointsTable = {
-                {OptaEventType.PASS._code, 2},                          // pase
+                {OptaEventType.PASS_SUCCESSFUL._code, 2},               // pase bien hecho
                 {OptaEventType.TAKE_ON._code, 10},                      // regate
                 {OptaEventType.FOUL_RECEIVED._code, 10},                // falta recibida
                 {OptaEventType.TACKLE_EFFECTIVE._code, 15},             // recuperacion/entrada con posesion
@@ -56,7 +55,8 @@ public final class MockData {
                 {OptaEventType.OWN_GOAL._code, -10},                    // gol en contra
                 {OptaEventType.YELLOW_CARD._code, -30},                 // tarjeta amarilla
                 {OptaEventType.PUNCH._code, 10},                        // despeje puños
-                {OptaEventType.DISPOSSESSED._code, -10},                // perdida de balon
+                {OptaEventType.PASS_UNSUCCESSFUL._code, -5},            // perdida de balon, pase perdido
+                {OptaEventType.DISPOSSESSED._code, -5},                 // perdida de balon
                 {OptaEventType.ERROR._code, -20},                       // perdida de balon
                 {OptaEventType.CAUGHT_OFFSIDE._code, -5},               // fuera de juego
                 {OptaEventType.FOUL_COMMITTED._code, -5},               // falta infligida
@@ -112,7 +112,7 @@ public final class MockData {
 
         // Todos los usuarios excepto el "Test"
         List<User> users = ListUtils.asList(Model.users().find("{nickName: {$ne: 'Test'}}").as(User.class));
-        for (int i=0; i<size && i<users.size()-1; i++) {
+        for (int i=0; i<size && i<users.size(); i++) {
             User user = users.get(i);
 
             List<ObjectId> soccerIds = new ArrayList<>();

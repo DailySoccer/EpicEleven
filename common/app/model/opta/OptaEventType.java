@@ -5,7 +5,8 @@ import java.util.Map;
 
 
 public enum OptaEventType {
-    PASS                    (1, "Any pass attempted from one player to another."),
+    PASS_SUCCESSFUL         (1001, "Any pass successful from one player to another."),
+    PASS_UNSUCCESSFUL       (1002, "Any pass attempted from one player to a wrong place."),
     TAKE_ON                 (3, "Attempted dribble past an opponent" ),
     FOUL_RECEIVED           (4, "Player who was fouled"),
     TACKLE                  (7, "Tackle: dispossesses an opponent of the ball, not retaining possession"),
@@ -20,7 +21,7 @@ public enum OptaEventType {
     PUNCH                   (41, "Ball is punched clear by Goalkeeper"),
     DISPOSSESSED            (50, "Player is successfully tacked and loses possession of the ball"),
     ERROR                   (51, "Mistake by player losing the ball"),
-    CAUGHT_OFFSIDE          (72, "Player who is offside"),
+    //CAUGHT_OFFSIDE          (72, "Player who is offside"),
     ASSIST                  (1210, "The pass was an assist for a shot"),
     TACKLE_EFFECTIVE        (1007, "Tackle: dispossesses an opponent of the ball, retaining possession"),
     GOAL_SCORED_BY_GOALKEEPER   (1601, "Goal scored by the goalkeeper"),
@@ -30,6 +31,7 @@ public enum OptaEventType {
     OWN_GOAL                (1699, "Own goal scored by the player"),
     FOUL_COMMITTED          (1004, "Player who committed the foul"),
     RED_CARD                (1017, "Red card shown to player"),
+    CAUGHT_OFFSIDE          (1072, "Player who is offside"),
     PENALTY_COMMITTED       (1409, "Player who committed the foul (penalty)"),
     PENALTY_FAILED          (1410, "Player who shots penalty and fails"),
     GOALKEEPER_SAVES_PENALTY(1458, "Goalkeeper saves a penalty shot"),

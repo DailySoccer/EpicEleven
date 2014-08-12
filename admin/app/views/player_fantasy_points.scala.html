@@ -1,12 +1,19 @@
 @(soccer_player: model.TemplateSoccerPlayer, opta_events: List[model.opta.OptaEvent])
 @import model.opta.OptaEventType
+@import model.GlobalDate
 
 @scripts = {
 <script type="text/javascript">
 
         function updatePage() {
-            console.log("reload");
-            window.location.reload(true);
+            $.ajax({
+                url: "/admin/is_paused",
+                success: function(result) {
+                    if (result == "false") {
+                        window.location.reload(true);
+                    }
+                }
+            });
         }
 
         $(document).ready( function(){
@@ -35,6 +42,7 @@
     <table id="table_id" class="table table-striped">
         <thead>
         <tr>
+            <th>Type</th>
             <th>TypeId</th>
             <th>Points</th>
             <th>OptaPlayerId</th>
@@ -44,6 +52,7 @@
             <th>HomeTeamId</th>
             <th>AwayTeamId</th>
             <th>TimeStamp</th>
+            <th>Elapsed</th>
             <th>LastModified</th>
         </tr>
         </thead>
@@ -51,6 +60,7 @@
         @for(p <- opta_events) {
         <tr>
             <td>@OptaEventType.getEnum(p.typeId).name()</td>
+            <td>@p.typeId</td>
             <td>@p.points</td>
             <td>@p.optaPlayerId</td>
             <td>@p.competitionId</td>
@@ -58,9 +68,10 @@
             <td>@p.eventId</td>
             <td>@p.homeTeamId</td>
             <td>@p.awayTeamId</td>
-            <td>@p.timestamp.format("yyyy/MM/dd HH:mm:ss")</td>
+            <td>@GlobalDate.formatDate(p.timestamp)</td>
+            <td>@("%02d".format(p.min)):@("%02d".format(p.sec))</td>
         @if(p.lastModified != null) {
-            <td>@p.lastModified.format("yyyy/MM/dd HH:mm:ss")</td>
+            <td>@GlobalDate.formatDate(p.lastModified)</td>
         } else {
             <td></td>
         }

@@ -7,8 +7,14 @@
 <script type="text/javascript">
 
         function updatePage() {
-            console.log("reload");
-            window.location.reload(true);
+            $.ajax({
+                url: "/admin/is_paused",
+                success: function(result) {
+                    if (result == "false") {
+                        window.location.reload(true);
+                    }
+                }
+            });
         }
 
         $(document).ready( function(){
@@ -18,14 +24,14 @@
     </script>
 }
 
-@match_event_state(match_event_id : String) = {
-    @if(TemplateMatchEvent.isFinished(match_event_id)) {
-        <button class="btn btn-danger state_match_event" value="@match_event_id">Finished</button>
+@match_event_state(match_event : model.MatchEvent) = {
+    @if(match_event.isFinished()) {
+        <button class="btn btn-danger state_match_event">Finished</button>
     } else {
-        @if(TemplateMatchEvent.isStarted(match_event_id)) {
-            <button class="btn btn-success state_match_event" value="@match_event_id">Live</button>
+        @if(match_event.isStarted()) {
+            <button class="btn btn-success state_match_event">@match_event.period: @match_event.minutesPlayed min.</button>
         } else {
-            <button class="btn btn-warning state_match_event" value="@match_event_id">Waiting</button>
+            <button class="btn btn-warning state_match_event">Waiting</button>
         }
     }
 }
@@ -63,8 +69,8 @@
                         @p.soccerTeamA.name vS @p.soccerTeamB.name
                     }
                 </a></td>
-            <td>@p.startDate.format("yyyy/MM/dd HH:mm:ss")</td>
-            <td>@match_event_state(p.templateMatchEventId.toString())</td>
+            <td>@GlobalDate.formatDate(p.startDate)</td>
+            <td>@match_event_state(p)</td>
         </tr>
         }
         </tbody>

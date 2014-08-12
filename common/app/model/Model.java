@@ -2,6 +2,9 @@ package model;
 
 import com.mongodb.*;
 import org.bson.types.ObjectId;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.ISODateTimeFormat;
 import org.jongo.Find;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
@@ -56,7 +59,6 @@ public class Model {
         try {
             _mongoClient = new MongoClient(mongoClientURI);
             _mongoDB = _mongoClient.getDB(mongoClientURI.getDatabase());
-            _mongoDBAdmin = _mongoClient.getDB("admin");
             _jongo = new Jongo(_mongoDB);
 
             // Let's make sure our DB has the neccesary collections and indexes
@@ -83,13 +85,13 @@ public class Model {
                              " id serial PRIMARY KEY, " +
                              " xml text, " +
                              " headers text, " +
-                             " created_at timestamp, " +
+                             " created_at timestamp with time zone, " +
                              " name text, " +
                              " feed_type text, " +
                              " game_id text, " +
                              " competition_id text, " +
                              " season_id text, " +
-                             " last_updated timestamp " +
+                             " last_updated timestamp with time zone " +
                              " );");
 
                 // http://dba.stackexchange.com/questions/35616/create-index-if-it-does-not-exist
@@ -224,6 +226,41 @@ public class Model {
         return collection.find(String.format("{%s: {$in: #}, %s}", fieldId, filter), ListUtils.asList(objectIdsIterable));
     }
 
+    public static void updateXML(int documentId, String xml) {
+
+        String updateString = "UPDATE optaxml SET xml = ? WHERE id = ?";
+
+        try (Connection connection = play.db.DB.getConnection()) {
+            try (PreparedStatement stmt = connection.prepareStatement(updateString)) {
+                stmt.setString(1, xml);
+                stmt.setInt(2, documentId);
+                if(stmt.executeUpdate()==1) {
+                    Logger.info("Updated succesfully document number: {}", documentId);
+                }
+            }
+        }
+        catch (java.sql.SQLException e) {
+            Logger.error("WTF 56312: ", e);
+        }
+    }
+
+    public static void deleteXML(int documentId) {
+
+        String deleteString = "DELETE from optaxml WHERE id = ?";
+
+        try (Connection connection = play.db.DB.getConnection()) {
+            try (PreparedStatement stmt = connection.prepareStatement(deleteString)) {
+                stmt.setInt(1, documentId);
+                if(stmt.executeUpdate()==1) {
+                    Logger.info("Deleted succesfully document number: {}", documentId);
+                }
+            }
+        }
+        catch (java.sql.SQLException e) {
+            Logger.error("WTF 56312: ", e);
+        }
+    }
+
     public static void insertXML(String xml, String headers, Date timestamp, String name, String feedType,
                                  String gameId, String competitionId, String seasonId, Date lastUpdated) {
 
@@ -234,20 +271,18 @@ public class Model {
             try (PreparedStatement stmt = connection.prepareStatement(insertString)) {
                 stmt.setString(1, xml);
                 stmt.setString(2, headers);
-                if (timestamp != null) {
-                    stmt.setTimestamp(3, new java.sql.Timestamp(timestamp.getTime()));
-                } else {
-                    stmt.setTimestamp(3, null);
-                }
+                stmt.setTimestamp(3, new java.sql.Timestamp(timestamp.getTime()));
                 stmt.setString(4, name);
                 stmt.setString(5, feedType);
                 stmt.setString(6, gameId);
                 stmt.setString(7, competitionId);
                 stmt.setString(8, seasonId);
 
+                // TODO: No aceptar null
                 if (lastUpdated != null) {
                     stmt.setTimestamp(9, new java.sql.Timestamp(lastUpdated.getTime()));
-                } else {
+                }
+                else {
                     stmt.setTimestamp(9, null);
                 }
 
@@ -282,17 +317,25 @@ public class Model {
         Date date = null;
 
         try {
-            date = (Date)formatter.parse(dateStr);
+            date = formatter.parse(dateStr);
+            Logger.debug(date.toString());
         }
         catch (ParseException e) {
             Logger.error("WTF 23815 Data parsing: ", e);
         }
 
-        Logger.debug(date.toString());
+        /*DateTime dateTime = DateTime.parse(dateStr);
+        if (!dateTime.toDate().equals(date)) {
+            int a = 0;
+        }
+        else {
+            int b = 0;
+        }*/
+
         return date;
     }
 
-    public static Date dateFirstFromOptaXML() {
+    public static Date getFirstDateFromOptaXML() {
         Date dateFirst = new Date(0L);
         try (Connection connection = play.db.DB.getConnection()) {
             String selectString = "SELECT created_at FROM optaxml ORDER BY created_at ASC LIMIT 1;";
@@ -309,7 +352,7 @@ public class Model {
         return dateFirst;
     }
 
-    public static Date dateLastFromOptaXML() {
+    public static Date getLastDateFromOptaXML() {
         Date dateLast = new Date(0L);
         try (Connection connection = play.db.DB.getConnection()) {
             String selectString = "SELECT created_at FROM optaxml ORDER BY created_at DESC LIMIT 1;";
@@ -333,10 +376,6 @@ public class Model {
     // DB and DBCollection are completely thread safe. In fact, they are cached so you get the same instance no matter what.
     static private DB _mongoDB;
 
-    static private DB _mongoDBAdmin;
-    static private DB _mongoDBSnapshot;
-
     // Jongo is thread safe too: https://groups.google.com/forum/#!topic/jongo-user/KwukXi5Vm7c
     static private Jongo _jongo;
-    static private Jongo _jongoSnapshot;
 }

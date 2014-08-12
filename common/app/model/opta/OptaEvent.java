@@ -3,23 +3,20 @@ package model.opta;
 import model.Model;
 import org.bson.types.ObjectId;
 import org.jdom2.Element;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.ISODateTimeFormat;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-
-/**
- * Created by gnufede on 28/05/14.
- */
 public class OptaEvent {
-
     @Id
     public ObjectId optaEventId;
     public String gameId;
@@ -40,6 +37,8 @@ public class OptaEvent {
     // </DEBUG>
     public Date timestamp;
     public Date lastModified;
+    public int min;
+    public int sec;
 
     public int points;
     public ObjectId pointsTranslationId;
@@ -56,24 +55,42 @@ public class OptaEvent {
         this.eventId = (int) Integer.parseInt(event.getAttributeValue("event_id"));
         this.typeId = (int) Integer.parseInt(event.getAttributeValue("type_id"));
         this.outcome = (int) Integer.parseInt(event.getAttributeValue("outcome"));
-        this.timestamp = parseDate(event.getAttributeValue("timestamp"));
-        this.lastModified = parseDate(event.getAttributeValue("last_modified"));
+        this.timestamp = parseDate(event.getAttributeValue("timestamp"), null);
+        this.lastModified = parseDate(event.getAttributeValue("last_modified"), null);
+        this.min = Integer.parseInt(event.getAttributeValue("min"));
+        this.sec = Integer.parseInt(event.getAttributeValue("sec"));
 
         if (event.getAttribute("player_id") != null) {
             this.optaPlayerId = event.getAttributeValue("player_id");
         }
 
+        String optaPlayerOffsideId = "<player_offside>";
         if (event.getChildren("Q") != null) {
             List<Element> qualifierList = event.getChildren("Q");
             this.qualifiers = new ArrayList<>((qualifierList).size());
             for (Element qualifier : qualifierList) {
                 Integer tempQualifier = Integer.parseInt(qualifier.getAttributeValue("qualifier_id"));
                 this.qualifiers.add(tempQualifier);
+
+                // Se ha dejado a un futbolista en fuera de juego?
+                if (tempQualifier == 7) {
+                    optaPlayerOffsideId = qualifier.getAttributeValue("value");
+                    // Logger.info("optaOtherPlayerId: {}", optaPlayerOffsideId);
+                }
             }
         }
         //DERIVED EVENTS GO HERE
+        // Pase exitoso o fracasado
+        if (this.typeId == 1) {
+            if (this.outcome == 1) {
+                this.typeId = OptaEventType.PASS_SUCCESSFUL._code;  //Pase exitoso-> 1001
+            }
+            else {
+                this.typeId = OptaEventType.PASS_UNSUCCESSFUL._code;  //Pase fracasado -> 1002
+            }
+        }
         // Asistencia
-        if (this.typeId == OptaEventType.PASS._code && this.qualifiers.contains(210)) {
+        if (this.typeId == OptaEventType.PASS_SUCCESSFUL._code && this.qualifiers.contains(210)) {
             this.typeId = OptaEventType.ASSIST._code;  //Asistencia -> 1210
         }
         // Falta/Penalty infligido
@@ -127,53 +144,52 @@ public class OptaEvent {
         else if (this.typeId == OptaEventType.TACKLE._code && this.outcome == 1) {
             this.typeId = OptaEventType.TACKLE_EFFECTIVE._code;
         }
+        // Caught Offside -> 1072
+        else if (this.typeId == 2 && this.qualifiers.contains(7)) {
+            this.typeId = OptaEventType.CAUGHT_OFFSIDE._code;
+            this.optaPlayerId = optaPlayerOffsideId;
+        }
     }
 
-    public boolean hasChanged(OptaEvent other){
-        if (other == this) {
-            return false;
+    static public OptaEvent findLast(String optaMatchEventId) {
+        OptaEvent lastEvent = null;
+
+        Iterable<OptaEvent> optaEvents = Model.optaEvents().find("{gameId: #}", optaMatchEventId).sort("{timestamp: -1}").limit(1).as(OptaEvent.class);
+        if (optaEvents != null && optaEvents.iterator().hasNext()) {
+            lastEvent = optaEvents.iterator().next();
         }
-        if (other == null) {
-            return false;
-        }
-        return this.lastModified.before(other.lastModified);
+
+        return lastEvent;
     }
 
     static public List<OptaEvent> filter(String optaMatchId, String optaPlayerId) {
-        Iterable<OptaEvent> optaEventResults = Model.optaEvents().find("{optaPlayerId: #, gameId: #}",
-                optaPlayerId, optaMatchId).as(OptaEvent.class);
-        return ListUtils.asList(optaEventResults);
+        return ListUtils.asList(Model.optaEvents().find("{optaPlayerId: #, gameId: #}", optaPlayerId, optaMatchId).as(OptaEvent.class));
     }
 
-    public static Date parseDate(String timestamp) {
-        String dateConfig;
-        SimpleDateFormat dateFormat;
-        if (timestamp.indexOf('-') > 0) {
-            dateConfig = timestamp.indexOf('T') > 0 ? "yyyy-MM-dd'T'hh:mm:ss.SSSz" : "yyyy-MM-dd hh:mm:ss.SSSz";
-            dateFormat = new SimpleDateFormat(dateConfig.substring(0, timestamp.length()));
-            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-        }else{
-            dateConfig = timestamp.indexOf('T') > 0 ? "yyyyMMdd'T'hhmmssZ" : "yyyyMMdd hhmmssZ";
-            dateFormat = new SimpleDateFormat(dateConfig);
-            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+    public static Date parseDate(String timestamp, String timezone) {
+
+        DateTime theDateTime;
+
+        if (timezone == null) {
+            theDateTime = DateTime.parse(timestamp, ISODateTimeFormat.dateTimeParser().withZone(DateTimeZone.forID("Europe/London")));
         }
-        int plusPos = timestamp.indexOf('+');
-        if (plusPos>=19) {
-            if (timestamp.substring(plusPos, timestamp.length()).equals("+00:00")) {
-                timestamp = timestamp.substring(0, plusPos);
-                dateFormat = new SimpleDateFormat(dateConfig.substring(0, timestamp.length()));
-                dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-            } else {
-                Logger.info("Cant parse this date: " + timestamp);
-            }
+        else {
+            // Opta manda BST (British Summer Time) o GMT. Tanto BST como GMT son en realidad el horario de Londres, sea verano o no.
+            // Si llega una zona horia que no sea BST o GMT, tenemos que revisar pq estamos asumiendo que siempre es asi!
+            if (!timezone.equals("BST") && !timezone.equals("GMT"))
+                throw new RuntimeException("WTF 3911: Zona horaria de Opta desconocida. Revisar urgentemente!!! " + timezone);
+
+            theDateTime = DateTime.parse(timestamp, DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.forID("Europe/London")));
         }
 
-        Date myDate = null;
-        try {
-            myDate = dateFormat.parse(timestamp);
-        } catch (ParseException e) {
-            Logger.error("WTF 7523862890", e);
-        }
-        return myDate;
+        return theDateTime.toDate();
+    }
+
+    public static boolean isGameStarted(String gameId) {
+        return (Model.optaEvents().findOne("{gameId: #, typeId: 32, periodId: 1}", gameId).as(OptaEvent.class) != null);
+    }
+
+    public static boolean isGameFinished(String gameId) {
+        return (Model.optaEvents().findOne("{gameId: #, typeId: 30, periodId: 14}", gameId).as(OptaEvent.class) != null);
     }
 }

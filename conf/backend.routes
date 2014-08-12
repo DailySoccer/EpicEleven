@@ -36,6 +36,8 @@ GET         /date_last_xml                                          controllers.
 # Por aqui nos entran todos nuestros datos de opta
 POST        /opta                                                   controllers.OptaHttpController.optaXmlInput()
 
+# Informar de la fecha del server (usado por webclient para sincronizarse con la simulacion)
+GET         /current_date                                           controllers.ContestController.getCurrentDate()
 
 # Static assets
 GET         /                                                       controllers.Assets.at(path="/public", file="index.html")

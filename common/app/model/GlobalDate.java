@@ -17,7 +17,7 @@ public class GlobalDate {
     }
 
     static public Date getCurrentDate() {
-        return _fakeDate == null? new Date(): _fakeDate;
+        return _fakeDate == null? new Date() : _fakeDate;
     }
 
     static public void setFakeDate(Date newFakeDate) {

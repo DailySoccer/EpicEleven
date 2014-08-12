@@ -11,6 +11,19 @@ import utils.ListUtils;
 import java.util.*;
 
 public class MatchEvent {
+    public enum PeriodType {
+        PRE_GAME(0),
+        FIRST_HALF(1),
+        SECOND_HALF(2),
+        POST_GAME(3);
+
+        public final int id;
+
+        PeriodType(int id) {
+            this.id = id;
+        }
+    }
+
     @Id
     public ObjectId matchEventId;
 
@@ -26,6 +39,9 @@ public class MatchEvent {
     // Asocia un soccerPlayerId con fantasyPoints
     @JsonView(JsonViews.FullContest.class)
     public HashMap<String, Integer> livePlayerToPoints = new HashMap<>();
+
+    public PeriodType period = PeriodType.PRE_GAME;
+    public int minutesPlayed;
 
     public Date startDate;
     public Date createdAt;
@@ -79,22 +95,11 @@ public class MatchEvent {
      *  Estado del partido
      */
     public boolean isStarted() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(startDate);
-        calendar.add(Calendar.MINUTE, -5);      // Un partido "comenzará" x minutos antes de su fecha establecida de comienzo
-        return GlobalDate.getCurrentDate().after(calendar.getTime());
-    }
-
-    public static boolean isStarted(String templateMatchEventId) {
-        return findOne(new ObjectId(templateMatchEventId)).isStarted();
+        return OptaEvent.isGameStarted(optaMatchEventId);
     }
 
     public boolean isFinished() {
-        return (Model.optaEvents().findOne("{gameId: #, typeId: 30, periodId: 14}", optaMatchEventId).as(OptaEvent.class) != null);
-    }
-
-    public static boolean isFinished(String templateMatchEventId) {
-        return findOne(new ObjectId(templateMatchEventId)).isFinished();
+        return OptaEvent.isGameFinished(optaMatchEventId);
     }
 
     public int getFantasyPoints(SoccerTeam soccerTeam) {
@@ -187,6 +192,47 @@ public class MatchEvent {
         }
 
         return invalid;
+    }
+
+    public void updateState() {
+        updateFantasyPoints();
+        updateMatchEventTime(OptaEvent.findLast(optaMatchEventId));
+    }
+
+    private void updateMatchEventTime(OptaEvent optaEvent) {
+        if (period == null) {
+            period = PeriodType.PRE_GAME;
+        }
+
+        if (period == PeriodType.PRE_GAME) {
+            // Primera Parte?
+            if (Model.optaEvents().findOne("{gameId: #, periodId: 1}", optaMatchEventId).as(OptaEvent.class) != null) {
+                period = PeriodType.FIRST_HALF;
+            }
+        }
+
+        if (period == PeriodType.FIRST_HALF) {
+            // Segunda Parte?
+            if (Model.optaEvents().findOne("{gameId: #, periodId: 2}", optaMatchEventId).as(OptaEvent.class) != null) {
+                period = PeriodType.SECOND_HALF;
+            }
+        }
+
+        if (period == PeriodType.SECOND_HALF) {
+            // Segunda Parte?
+            if (Model.optaEvents().findOne("{gameId: #, periodId: 14}", optaMatchEventId).as(OptaEvent.class) != null) {
+                period = PeriodType.POST_GAME;
+            }
+        }
+
+        switch(period) {
+            case PRE_GAME:      minutesPlayed = 0; break;
+            case FIRST_HALF:
+            case SECOND_HALF:   minutesPlayed = optaEvent.min; break;
+            case POST_GAME:     minutesPlayed = 90; break;
+        }
+
+        Model.matchEvents().update("{_id: #}", matchEventId).with("{$set: {period: #, minutesPlayed: #}}", period, minutesPlayed);
     }
 
     /**

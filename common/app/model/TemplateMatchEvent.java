@@ -61,19 +61,11 @@ public class TemplateMatchEvent implements JongoId, Initializer {
      *  Estado del partido
      */
     public boolean isStarted() {
-        return (Model.optaEvents().findOne("{gameId: #, typeId: 32, periodId: 1}", optaMatchEventId).as(OptaEvent.class) != null);
-    }
-
-    public static boolean isStarted(String templateMatchEventId) {
-        return findOne(new ObjectId(templateMatchEventId)).isStarted();
+        return OptaEvent.isGameStarted(optaMatchEventId);
     }
 
     public boolean isFinished() {
-        return (Model.optaEvents().findOne("{gameId: #, typeId: 30, periodId: 14}", optaMatchEventId).as(OptaEvent.class) != null);
-    }
-
-    public static boolean isFinished(String templateMatchEventId) {
-        return findOne(new ObjectId(templateMatchEventId)).isFinished();
+        return OptaEvent.isGameFinished(optaMatchEventId);
     }
 
     static public boolean importMatchEvent(OptaMatchEvent optaMatchEvent) {

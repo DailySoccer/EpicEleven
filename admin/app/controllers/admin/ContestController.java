@@ -26,10 +26,4 @@ public class ContestController extends Controller {
         map.put(1, "adios");
         return ok(views.html.contest.render(contest, map));
     }
-
-    public static Result destroy(String contestId) {
-        Contest contest = Contest.findOne(new ObjectId(contestId));
-        Contest.remove(contest);
-        return redirect(routes.ContestController.index());
-    }
 }

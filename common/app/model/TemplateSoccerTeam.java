@@ -72,7 +72,7 @@ public class TemplateSoccerTeam implements JongoId, Initializer {
      */
     static public boolean importTeam(OptaTeam optaTeam) {
         TemplateSoccerTeam templateTeam = new TemplateSoccerTeam(optaTeam);
-        Model.templateSoccerTeams().withWriteConcern(WriteConcern.SAFE).insert(templateTeam);
+        Model.templateSoccerTeams().withWriteConcern(WriteConcern.SAFE).update("{optaTeamId: #}", templateTeam.optaTeamId).upsert().with(templateTeam);
 
         Model.optaTeams().update("{id: #}", optaTeam.optaTeamId).with("{$set: {dirty: false}}");
         return true;

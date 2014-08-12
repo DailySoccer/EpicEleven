@@ -54,16 +54,4 @@ public class Contest implements JongoId {
     static public List<Contest> findAllFromTemplateContests(Iterable<TemplateContest> templateContests) {
         return ListUtils.asList(Model.findObjectIds(Model.contests(), "templateContestId", ListUtils.convertToIdList(templateContests)).as(Contest.class));
     }
-
-    /**
-     * Eliminar un contest y sus dependencias
-     */
-    public static boolean remove(Contest contest) {
-        Logger.info("remove Contest ({}): {}", contest.contestId, contest.name);
-
-        // Eliminar el contest
-        Model.contests().remove(contest.contestId);
-
-        return true;
-    }
 }

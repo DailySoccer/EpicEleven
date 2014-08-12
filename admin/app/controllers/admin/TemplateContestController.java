@@ -135,6 +135,15 @@ public class TemplateContestController extends Controller {
     }
 
     public static void createMock(List<TemplateMatchEvent> templateMatchEvents) {
+        createMock(templateMatchEvents, 0, 20, PrizeType.FREE);
+        createMock(templateMatchEvents, 5, 2, PrizeType.WINNER_TAKES_ALL);
+        createMock(templateMatchEvents, 5, 20, PrizeType.WINNER_TAKES_ALL);
+        createMock(templateMatchEvents, 10, 20, PrizeType.TOP_3_GET_PRIZES);
+        createMock(templateMatchEvents, 25, 20, PrizeType.TOP_THIRD_GET_PRIZES);
+        createMock(templateMatchEvents, 50, 20, PrizeType.FIFTY_FIFTY);
+    }
+
+    public static void createMock(List<TemplateMatchEvent> templateMatchEvents, int entryFee, int maxEntries, PrizeType prizeType) {
         if (templateMatchEvents.size() == 0) {
             Logger.error("create: templateMatchEvents is empty");
             return;
@@ -146,9 +155,9 @@ public class TemplateContestController extends Controller {
 
         templateContest.name = GlobalDate.formatDate(startDate);
         templateContest.minInstances = 3;
-        templateContest.maxEntries = 20;
-        templateContest.prizeType = PrizeType.STANDARD;
-        templateContest.entryFee = 10000;
+        templateContest.maxEntries = maxEntries;
+        templateContest.prizeType = prizeType;
+        templateContest.entryFee = entryFee;
         templateContest.salaryCap = 100000;
         templateContest.startDate = startDate;
         templateContest.templateMatchEventIds = new ArrayList<>();

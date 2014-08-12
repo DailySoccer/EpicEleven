@@ -7,27 +7,20 @@
 <h1 class="page-header">Dashboard</h1>
 
 <div>
-    <a href="@DashboardController.resetDB"><button class="btn btn-danger">Reset DB</button></a>
-</div>
-<br/>
-<br/>
-<div>
-    <a href="@ImportController.showImportTeams"><button class="btn btn-warning">Import Teams...</button></a>
-    <a href="@ImportController.showImportSoccers"><button class="btn btn-warning">Import Soccers...</button></a>
-    <a href="@ImportController.showImportMatchEvents"><button class="btn btn-warning">Import MatchEvents...</button></a>
+    <a class="btn btn-primary" href="@SnapshotController.importSalaries" title="Import Players' salaries from a CSV file.">
+        Import Salaries
+    </a>
+    <a href="@ImportController.showImportTeams"><button class="btn btn-warning">Import Teams</button></a>
+    <a href="@ImportController.showImportSoccers"><button class="btn btn-warning">Import SoccerPlayers</button></a>
+    <a href="@ImportController.showImportMatchEvents"><button class="btn btn-warning">Import MatchEvents</button></a>
 </div>
 <br/>
 <br/>
 
 <div>
-    <div class="btn-group">
-        <a class="btn btn-primary" href="@SnapshotController.importSalaries" title="Import Players' salaries from a CSV file.">
-            Import Salaries
-        </a>
-        <a class="btn btn-primary" href="@SnapshotController.exportSalaries" title="Export Players' salaries to a CSV file.">
-            Export Salaries
-        </a>
-    </div>
+    <a class="btn btn-primary" href="@SnapshotController.exportSalaries" title="Export Players' salaries to a CSV file.">
+        Export Salaries
+    </a>
 
 </div>
 }

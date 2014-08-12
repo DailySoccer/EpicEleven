@@ -170,4 +170,10 @@ public class ContestController extends Controller {
         return new ReturnHelper(templateSoccerPlayer).toResult();
         // return new ReturnHelper(ImmutableMap.of("stats", templateSoccerPlayer.stats)).toResult();
     }
+
+    public static Result getCurrentDate() {
+        return new ReturnHelper(ImmutableMap.of(
+                "currentDate", GlobalDate.getCurrentDate()
+        )).toResult();
+    }
 }

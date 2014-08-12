@@ -1,6 +1,7 @@
 @(match_events: List[model.opta.OptaMatchEvent])
 
 @import controllers.admin.routes._
+@import model.GlobalDate
 
 @main("Opta Match Events - Admin") {
 
@@ -33,10 +34,10 @@
             <td>@p.seasonName</td>
             <td>@p.homeTeamId</td>
             <td>@p.awayTeamId</td>
-            <td>@p.matchDate.format("yyyy/MM/dd HH:mm:ss")</td>
+            <td>@GlobalDate.formatDate(p.matchDate)</td>
             <td>@p.timeZone</td>
         @if(p.lastModified != null) {
-            <td>@p.lastModified.format("yyyy/MM/dd HH:mm:ss")</td>
+            <td>@GlobalDate.formatDate(p.lastModified)</td>
         } else {
             <td></td>
         }

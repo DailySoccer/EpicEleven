@@ -32,7 +32,6 @@ public class OptaProcessor {
             Logger.error("WTF 95634", e);
         }
 
-
         return _dirtyMatchEvents;
     }
 
@@ -40,12 +39,14 @@ public class OptaProcessor {
         _dirtyMatchEvents = new HashSet<>();
 
         if (feedType != null) {
-            if (feedType.equals("F9")) {
+            if (feedType.equals("F40")) {
                 processF9(requestBody);
             } else if (feedType.equals("F24")) {
                 processEvents(requestBody);
             } else if (feedType.equals("F1")) {
                 processF1(requestBody);
+            } else {
+                Logger.info("Not parsing file type: {}", feedType);
             }
         }
     }
@@ -64,8 +65,8 @@ public class OptaProcessor {
     private void processEvent(Element event, Element game) {
 
         Date timestamp = (event.getAttribute("last_modified") != null) ?
-                             OptaEvent.parseDate(event.getAttributeValue("last_modified")):
-                             OptaEvent.parseDate(event.getAttributeValue("timestamp"));
+                          OptaEvent.parseDate(event.getAttributeValue("last_modified"), null):
+                          OptaEvent.parseDate(event.getAttributeValue("timestamp"), null);
 
         HashMap<Integer, Date> eventsCache = getOptaEventsCache(game.getAttributeValue("id"));
         int eventId = (int) Integer.parseInt(event.getAttributeValue("id"));
@@ -105,13 +106,13 @@ public class OptaProcessor {
                                                          find("{eventTypeId: #, timestamp: {$lte: #}}", typeId, timestamp).
                                                          sort("{timestamp: -1}").as(PointsTranslation.class);
 
-        PointsTranslation pointsTranslation = null;
         if (pointsTranslations.iterator().hasNext()){
-            pointsTranslation = pointsTranslations.iterator().next();
+            PointsTranslation pointsTranslation = pointsTranslations.iterator().next();
             _pointsTranslationCache.put(typeId, pointsTranslation.points);
             _pointsTranslationTableCache.put(typeId, pointsTranslation.pointsTranslationId);
             return pointsTranslation.points;
-        } else {
+        }
+        else {
             _pointsTranslationCache.put(typeId, 0);
             _pointsTranslationTableCache.put(typeId, null);
             return 0;
@@ -137,7 +138,7 @@ public class OptaProcessor {
 
         HashMap<String, Date> optaMatchDatas = getOptaMatchDataCache(competitionId);
         String matchId = matchObject.getAttributeValue("uID");
-        Date timestamp = OptaEvent.parseDate(matchObject.getAttributeValue("last_modified"));
+        Date timestamp = OptaEvent.parseDate(matchObject.getAttributeValue("last_modified"), null);
 
         if (!optaMatchDatas.containsKey(matchId) || timestamp.after(optaMatchDatas.get(matchId))) {
             updateOrInsertMatchData(myF1, matchObject);
@@ -151,15 +152,15 @@ public class OptaProcessor {
         OptaMatchEvent optaMatchEvent = new OptaMatchEvent();
         optaMatchEvent.optaMatchEventId = getStringId(matchObject, "uID", "_NO UID");
         if (matchObject.getAttribute("last_modified") != null) {
-            optaMatchEvent.lastModified = OptaEvent.parseDate(matchObject.getAttributeValue("last_modified"));
+            optaMatchEvent.lastModified = OptaEvent.parseDate(matchObject.getAttributeValue("last_modified"), null);
         }
-        optaMatchEvent.matchDate = OptaEvent.parseDate(matchInfo.getChild("Date").getContent().get(0).getValue());
+        optaMatchEvent.timeZone = matchInfo.getChild("TZ").getContent().get(0).getValue();
+        optaMatchEvent.matchDate = OptaEvent.parseDate(matchInfo.getChild("Date").getContent().get(0).getValue(), optaMatchEvent.timeZone);
         optaMatchEvent.competitionId = getStringId(myF1, "competition_id", "_NO COMPETITION ID");
         optaMatchEvent.seasonId = getStringId(myF1, "season_id", "_NO SEASON ID");
 
         optaMatchEvent.seasonName = (myF1.getAttribute("season_name")!=null)? myF1.getAttributeValue("season_name"): "NO SEASON NAME";
         optaMatchEvent.competitionName = (myF1.getAttribute("competition_name")!=null)? myF1.getAttributeValue("competition_name"): "NO COMPETITION NAME";
-        optaMatchEvent.timeZone = matchInfo.getChild("TZ").getContent().get(0).getValue();
 
         List<Element> teams = matchObject.getChildren("TeamData");
         if (teams != null) {
@@ -304,9 +305,11 @@ public class OptaProcessor {
 
             for (Element teamStat : teamStats) {
                 if (teamStat.getAttribute("Type").getValue().equals("goals_conceded")) {
+
                     if ((int) Integer.parseInt(teamStat.getContent().get(0).getValue()) == 0) {
                         processCleanSheet(F9, gameId, teamData);
-                    } else {
+                    }
+                    else {
                         processGoalsAgainst(F9, gameId, teamData);
                     }
                 }
@@ -362,7 +365,7 @@ public class OptaProcessor {
     private void createEvent(Element F9, String gameId, Element matchPlayer, int teamId, int typeId, int eventId, int times) {
         String playerId = getStringId(matchPlayer, "PlayerRef", "_NO PLAYER ID");
         String competitionId = getStringId(F9.getChild("Competition"), "uID", "_NO COMPETITION UID");
-        Date timestamp = OptaEvent.parseDate(F9.getChild("MatchData").getChild("MatchInfo").getAttributeValue("TimeStamp"));
+        Date timestamp = OptaEvent.parseDate(F9.getChild("MatchData").getChild("MatchInfo").getAttributeValue("TimeStamp"), null);
 
         Model.optaEvents().remove("{typeId: #, eventId: #, optaPlayerId: #, teamId: #, gameId: #, competitionId: #}",
                 typeId, eventId, playerId, teamId, gameId, competitionId);
