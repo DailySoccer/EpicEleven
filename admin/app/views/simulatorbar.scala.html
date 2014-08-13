@@ -38,7 +38,7 @@
                 </a>
             </div>
 
-            @helper.form(action = routes.SimulatorController.gotoDate, 'onsubmit -> "return validateForm()", 'id -> "date-pause-form", 'style -> "display:inline-block; margin-top: 8px;") {
+            @helper.form(action = routes.SimulatorController.gotoDate, 'id -> "date-pause-form", 'style -> "display:inline-block; margin-top: 8px;") {
                 <input type="datetime-local" value="2014-06-14T00:00" id="date-pause" name="date" class="form-control" style="display:inline-block">
             }
             <button id="date-pause-ok" name="date-pause-ok" type="button" class="btn btn-sim btn-primary fforward" style="position:relative;">Go to Date</button>
@@ -135,15 +135,6 @@
                     }
                 }
             });
-        }
-
-        function validateForm() {
-            if ((new Date($("#time").text()) < new Date($("#date-pause").val())) || is_created == "false") {
-                return true;
-            } else {
-                alert("Error: La fecha introducida es anterior");
-            }
-            return false;
         }
 
         $('.ajax').on('click', function(e) {
