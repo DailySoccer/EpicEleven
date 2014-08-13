@@ -46,7 +46,7 @@ public class ContestEntry implements JongoId {
     public ObjectId getId() { return contestEntryId; }
 
     public void updateRanking() {
-        Logger.info("ContestEntry: {} | Position: {} | FantasyPoints: {}", contestEntryId, position, fantasyPoints);
+        // Logger.info("ContestEntry: {} | Position: {} | FantasyPoints: {}", contestEntryId, position, fantasyPoints);
 
         Model.contests()
             .update("{'contestEntries._id': #}", getId())
