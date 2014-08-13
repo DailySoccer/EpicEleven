@@ -214,40 +214,6 @@ public class Model {
         return collection.find(String.format("{%s: {$in: #}, %s}", fieldId, filter), ListUtils.asList(objectIdsIterable));
     }
 
-    public static void updateXML(int documentId, String xml) {
-
-        String updateString = "UPDATE optaxml SET xml = ? WHERE id = ?";
-
-        try (Connection connection = play.db.DB.getConnection()) {
-            try (PreparedStatement stmt = connection.prepareStatement(updateString)) {
-                stmt.setString(1, xml);
-                stmt.setInt(2, documentId);
-                if(stmt.executeUpdate()==1) {
-                    Logger.info("Updated succesfully document number: {}", documentId);
-                }
-            }
-        }
-        catch (java.sql.SQLException e) {
-            Logger.error("WTF 56312: ", e);
-        }
-    }
-
-    public static void deleteXML(int documentId) {
-
-        String deleteString = "DELETE from optaxml WHERE id = ?";
-
-        try (Connection connection = play.db.DB.getConnection()) {
-            try (PreparedStatement stmt = connection.prepareStatement(deleteString)) {
-                stmt.setInt(1, documentId);
-                if(stmt.executeUpdate()==1) {
-                    Logger.info("Deleted succesfully document number: {}", documentId);
-                }
-            }
-        }
-        catch (java.sql.SQLException e) {
-            Logger.error("WTF 56312: ", e);
-        }
-    }
 
     public static void insertXML(String xml, String headers, Date timestamp, String name, String feedType,
                                  String gameId, String competitionId, String seasonId, Date lastUpdated) {

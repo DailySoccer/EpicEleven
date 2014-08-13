@@ -31,7 +31,6 @@ GET         /get_soccer_player_info/:soccerPlayer                   controllers.
 
 
 # Debug
-GET         /migrate                                                controllers.OptaHttpController.migrate()
 GET         /return_xml/:timestamp                                  controllers.OptaHttpController.returnXML(timestamp: Long)
 GET         /remaining/:timestamp                                   controllers.OptaHttpController.remainingXMLs(timestamp: Long)
 GET         /date_last_xml                                          controllers.OptaHttpController.dateLastXML()

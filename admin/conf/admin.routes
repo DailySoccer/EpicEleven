@@ -90,8 +90,6 @@ GET         /import_from_last                                          controlle
 GET         /refresher_in_progress                                     controllers.admin.RefresherController.inProgress()
 GET         /last_date                                                 controllers.admin.RefresherController.lastDate()
 
-GET         /run_migration                                             controllers.admin.MigrationController.migrate()
-
 GET         /test_start                                                controllers.admin.TestController.start()
 GET         /test_goto_date/:timestamp                                 controllers.admin.TestController.gotoDate(timestamp : Long)
 
