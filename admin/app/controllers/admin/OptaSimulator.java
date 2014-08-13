@@ -44,7 +44,6 @@ public class OptaSimulator implements Runnable {
             _state = new OptaSimulatorState();
 
             _state.useSnapshot = false;
-            _state.paused = true;
             _state.lastParsedDate = Model.getFirstDateFromOptaXML();
 
             _state.competitionId = "4";     // Let's simulate just the World Cup
@@ -52,13 +51,27 @@ public class OptaSimulator implements Runnable {
 
             saveState();
         }
+        else {
+            // Tenemos registrada una fecha antigua de pausa?
+            if (_state.pauseDate != null && !_state.lastParsedDate.before(_state.pauseDate)) {
+                _state.pauseDate = null;
+            }
+
+            // Si estábamos usando un snapshot, habrá que inicializarlo
+            if (_state.useSnapshot) {
+                _snapshot = Snapshot.getLast();
+            }
+        }
+
+        // Siempre comenzamos pausados
+        _paused = true;
 
         updateDate(_state.lastParsedDate);
     }
 
     public Date getNextStop() { return _state.pauseDate; }
     public String getNextStepDescription() { return "" + _state.nextDocToParseIndex; }
-    public boolean isPaused() { return _state.paused; }
+    public boolean isPaused() { return _paused; }
     public boolean isSnapshotEnabled() { return _state.useSnapshot; }
 
     public void start() {
@@ -87,8 +100,8 @@ public class OptaSimulator implements Runnable {
 
         _state = collection().findOne().as(OptaSimulatorState.class);
         _state.useSnapshot = false;
-        _state.paused = true;
         _snapshot = null;
+        _paused = true;
 
         saveState();
         updateDate(_state.lastParsedDate);
@@ -118,7 +131,7 @@ public class OptaSimulator implements Runnable {
     public void run() {
         _stopLoop = false;
 
-        _state.paused = false;
+        _paused = false;
         saveState();
 
         while (!_stopLoop) {
@@ -140,7 +153,7 @@ public class OptaSimulator implements Runnable {
 
         // Salir del bucle implica que el thread muere y por lo tanto estamos pausados
         _optaThread = null;
-        _state.paused = true;
+        _paused = true;
         saveState();
 
         Logger.info("Paused at: {}", GlobalDate.formatDate(_state.lastParsedDate));
@@ -151,7 +164,7 @@ public class OptaSimulator implements Runnable {
 
         GlobalDate.setFakeDate(_state.lastParsedDate);
 
-        if (_state.useSnapshot) {
+        if (_snapshot != null) {
             _snapshot.update(_state.lastParsedDate);
         }
 
@@ -259,6 +272,7 @@ public class OptaSimulator implements Runnable {
     }
 
     Thread _optaThread;
+    volatile boolean _paused;
     volatile boolean _stopLoop;
 
     final int RESULTS_PER_QUERY = 500;
@@ -277,7 +291,6 @@ class OptaSimulatorState {
     public String  stateId = "--unique id--";
     public String  competitionId;
     public boolean useSnapshot;
-    public boolean paused;
     public Date    pauseDate;
     public Date    lastParsedDate;
     public int     nextDocToParseIndex;

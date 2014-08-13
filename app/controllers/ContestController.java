@@ -15,7 +15,10 @@ import play.mvc.Result;
 import utils.ListUtils;
 import utils.ReturnHelper;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static play.data.Form.form;
 
@@ -57,6 +60,60 @@ public class ContestController extends Controller {
         return new ReturnHelper(ImmutableMap.of("match_events", matchEvents,
                                                 "template_contests", templateContests,
                                                 "contests", contests)).toResult();
+    }
+
+    @UserAuthenticated
+    public static Result getMyNextContests() {
+        User theUser = (User)ctx().args.get("User");
+        return getMyContestsWithState(theUser, TemplateContest.State.ACTIVE).toResult();
+    }
+
+    @UserAuthenticated
+    public static Result getMyLiveContests() {
+        User theUser = (User)ctx().args.get("User");
+        return getMyContestsWithState(theUser, TemplateContest.State.LIVE).toResult(JsonViews.FullContest.class);
+    }
+
+    @UserAuthenticated
+    public static Result getMyHistoryContests() {
+        User theUser = (User)ctx().args.get("User");
+        return getMyContestsWithState(theUser, TemplateContest.State.HISTORY).toResult(JsonViews.FullContest.class);
+    }
+
+    @UserAuthenticated
+    private static ReturnHelper getMyContestsWithState(User theUser, TemplateContest.State state) {
+        // Obtenermos la lista de Contest Entries que el usuario ha creado y sus joins adicionales
+        List<Contest> contests = Contest.findAllFromUser(theUser.userId);
+        List<TemplateContest> templateContests = TemplateContest.findAllFromContests(contests);
+
+        // Registraremos los templateContests validos (del estado deseado)
+        Set<ObjectId> templateContestValids = new HashSet<>();
+
+        // Filtrar los templateContests en el estado correcto
+        List<TemplateContest> templateContestsFiltered = new ArrayList<>();
+        for (TemplateContest templateContest : templateContests) {
+            if (templateContest.state.equals(state)) {
+                templateContestsFiltered.add(templateContest);
+
+                // Marcarlo como valido
+                templateContestValids.add(templateContest.getId());
+            }
+        }
+
+        // Filtrar los Contests
+        List<Contest> contestFiltered = new ArrayList<>();
+        for (Contest contest : contests) {
+            if (templateContestValids.contains(contest.templateContestId)) {
+                contestFiltered.add(contest);
+            }
+        }
+
+        // Necesitamos devolver los partidos asociados a estos concursos
+        List<MatchEvent> matchEvents = MatchEvent.gatherFromTemplateContests(templateContests);
+
+        return new ReturnHelper(ImmutableMap.of("match_events", matchEvents,
+                "template_contests", templateContestsFiltered,
+                "contests", contestFiltered));
     }
 
     /**

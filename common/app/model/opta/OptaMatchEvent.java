@@ -2,9 +2,6 @@ package model.opta;
 
 import java.util.Date;
 
-/**
- * Created by gnufede on 12/06/14.
- */
 public class OptaMatchEvent {
 
     public String optaMatchEventId;

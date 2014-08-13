@@ -110,6 +110,10 @@ public class MatchEvent {
         return points;
     }
 
+    public boolean containsSoccerPlayer(ObjectId soccerPlayerId) {
+        return livePlayerToPoints.containsKey(soccerPlayerId.toString());
+    }
+
     public int getFantasyPoints(ObjectId soccerPlayerId) {
         return livePlayerToPoints.get(soccerPlayerId.toString());
     }
@@ -117,6 +121,8 @@ public class MatchEvent {
     public void saveStats() {
         saveStats(soccerTeamA);
         saveStats(soccerTeamB);
+
+        Contest.updateRanking(templateMatchEventId);
     }
 
     public void saveStats(SoccerTeam soccerTeam) {
