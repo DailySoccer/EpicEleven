@@ -93,5 +93,8 @@ GET         /last_date                                                 controlle
 
 GET         /run_migration                                             controllers.admin.MigrationController.migrate()
 
+GET         /test_start                                                controllers.admin.TestController.start()
+GET         /test_goto_date/:timestamp                                 controllers.admin.TestController.gotoDate(timestamp : Long)
+
 # Informar al webclient si el simulator esta activado (requiere Json)
 GET         /is_simulator_activated                                    controllers.admin.SimulatorController.isSimulatorActivated()
