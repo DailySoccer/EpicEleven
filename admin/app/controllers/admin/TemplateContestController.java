@@ -163,10 +163,7 @@ public class TemplateContestController extends Controller {
         templateContest.templateMatchEventIds = new ArrayList<>();
 
         // Se activará 2 dias antes a la fecha del partido
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(startDate);
-        calendar.add(Calendar.DAY_OF_MONTH, -2);
-        templateContest.activationAt = calendar.getTime();
+        templateContest.activationAt = new DateTime(startDate).minusDays(2).toDate();
 
         templateContest.createdAt = GlobalDate.getCurrentDate();
 
