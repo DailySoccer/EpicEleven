@@ -174,7 +174,7 @@ public class TemplateContestController extends Controller {
             templateContest.templateMatchEventIds.add(match.templateMatchEventId);
         }
 
-        Logger.info("MockData: Template Contest: {} ({})", templateContest.templateMatchEventIds, startDate);
+        Logger.info("MockData: Template Contest: {} ({})", templateContest.templateMatchEventIds, GlobalDate.formatDate(startDate));
 
         Model.templateContests().insert(templateContest);
     }
