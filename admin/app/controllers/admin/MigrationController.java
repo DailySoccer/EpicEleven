@@ -13,9 +13,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 
-/**
- * Created by gnufede on 31/07/14.
- */
 public class MigrationController extends Controller {
     /*
     STEPS:
@@ -33,23 +30,36 @@ public class MigrationController extends Controller {
         return ok("Migration finished");
     }
 
-    public static String translate(String requestBody) {
+    public static String translate(String requestBody, String feedType) {
+        if (!requestBody.contains("Ã")) {
+            return requestBody;
+        }
+        /*
+        if (!(feedType.equals("F40") || feedType.equals("F9")))
+            return requestBody;
+        */
         try {
             String translated = requestBody;
             String temp = requestBody;
-            String symbol = "\uFFFD";
+
+            int times = 0;
+            while (!(temp.indexOf('ô')>0 || temp.indexOf('á')>0 || temp.indexOf('é')>0) && times<7) {
+                if (temp.indexOf("voire")>0)
+                    Logger.debug(temp.substring((temp.indexOf("voire")-14), (temp.indexOf("voire")+5)));
+                times++;
+                translated = temp;
+                temp = new String(temp.getBytes("ISO-8859-1"), "UTF-8");
+            }
+            Logger.debug("Translated times: {}", times);
+            if (times < 7)
+                return temp;
+            return requestBody;
+
+            /*
             if (temp.indexOf(symbol) >= 0) {
                 return null;
             }
-
-            while (temp.indexOf("Ã")>0) {
-                translated = temp;
-                temp = new String (temp.getBytes("ISO-8859-1"), "UTF-8");
-            }
-            if (temp.indexOf(symbol) >= 0) {
-                return translated;
-            }
-            return temp;
+            */
 
         } catch (UnsupportedEncodingException e) {
             Logger.error("WTF 6534", e);
@@ -81,7 +91,7 @@ public class MigrationController extends Controller {
                     _nextDocToParseIndex += 1;
 
                     String feedType = _optaResultSet.getString("feed_type");
-                    String bodyText = translate(_optaResultSet.getString("xml"));
+                    String bodyText = translate(_optaResultSet.getString("xml"), feedType);
                     int documentId = _optaResultSet.getInt("id");
 
                     if (bodyText != null) {
