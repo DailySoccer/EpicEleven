@@ -1,3 +1,4 @@
+import jobs.Scheduler
 import model.Model
 import play.Logger
 import play.api._
@@ -35,6 +36,9 @@ object Global extends GlobalSettings {
     Logger.info("Application has started")
 
     Model.init()
+    Scheduler.eachSecond()
+    Scheduler.eachMinute()
+
   }
 
   override def onStop(app: Application) {
