@@ -89,7 +89,8 @@ public enum SoccerPlayerStatType {
                     OptaEventType.FOUL_COMMITTED.getCode()
             );
             case TARJETAS_AMARILLAS: return ImmutableList.of(
-                    OptaEventType.YELLOW_CARD.getCode()
+                    OptaEventType.YELLOW_CARD.getCode(),
+                    OptaEventType.SECOND_YELLOW_CARD.getCode()
             );
             case TARJETAS_ROJAS: return ImmutableList.of(
                     OptaEventType.RED_CARD.getCode()
