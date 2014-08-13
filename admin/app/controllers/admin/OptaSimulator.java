@@ -190,7 +190,7 @@ public class OptaSimulator implements Runnable {
             }
 
             if (_optaResultSet.next()) {
-                Date createdAt = _optaResultSet.getTimestamp("created_at", new GregorianCalendar(TimeZone.getTimeZone("UTC")));
+                Date createdAt = _optaResultSet.getTimestamp("created_at");
 
                 String sqlxml = _optaResultSet.getString("xml");
                 String name = _optaResultSet.getString("name");
