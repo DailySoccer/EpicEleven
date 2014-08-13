@@ -70,12 +70,6 @@
             });
         }
 
-        $('.ajax').on('click', function(e) {
-            e.preventDefault();
-            $.ajax($(this).attr('href'));
-            repaintButton();
-        });
-
         $(document).ready( function(){
            getLastXML();
            checkDates();
