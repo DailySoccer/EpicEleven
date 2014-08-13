@@ -4,7 +4,9 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.ISODateTimeFormat;
+
 import java.util.Date;
+import java.util.Locale;
 
 public class GlobalDate {
 
@@ -22,7 +24,7 @@ public class GlobalDate {
 
     // Para mostrar fechas en sitios como el log o la zona de administracion, siempre tenemos que llamar aqui
     static public String formatDate(Date date) {
-        return new DateTime(date).toString(DateTimeFormat.mediumDateTime().withZoneUTC()) + " UTC";
+        return new DateTime(date).toString(DateTimeFormat.mediumDateTime().withZoneUTC().withLocale(Locale.JAPAN) ) + " UTC";
     }
 
     static public Date parseDate(String dateStr, String timezone) {
