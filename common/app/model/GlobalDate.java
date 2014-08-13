@@ -8,20 +8,21 @@ import java.util.Date;
 
 public class GlobalDate {
 
-    static public String getCurrentDateString() {
-        return formatDate(getCurrentDate());
-    }
-
-    static public String formatDate(Date date) {
-        return new DateTime(date).toString(DateTimeFormat.mediumDateTime().withZoneUTC()) + " UTC";
-    }
-
     static public Date getCurrentDate() {
         return _fakeDate == null? new Date() : _fakeDate;
     }
 
     static public void setFakeDate(Date newFakeDate) {
         _fakeDate = newFakeDate;
+    }
+
+    static public String getCurrentDateString() {
+        return formatDate(getCurrentDate());
+    }
+
+    // Para mostrar fechas en sitios como el log o la zona de administracion, siempre tenemos que llamar aqui
+    static public String formatDate(Date date) {
+        return new DateTime(date).toString(DateTimeFormat.mediumDateTime().withZoneUTC()) + " UTC";
     }
 
     static public Date parseDate(String dateStr, String timezone) {
