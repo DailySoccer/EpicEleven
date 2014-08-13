@@ -59,7 +59,7 @@ public class OptaSimulator implements Runnable {
 
             // Si estábamos usando un snapshot, habrá que inicializarlo
             if (_state.useSnapshot) {
-                _snapshot = Snapshot.getLast();
+                _snapshot = Snapshot.instance();
             }
         }
 
@@ -93,24 +93,6 @@ public class OptaSimulator implements Runnable {
         }
     }
 
-    public void continueFromSnapshot() {
-        pause();
-
-        Snapshot.instance().load();
-
-        _state = collection().findOne().as(OptaSimulatorState.class);
-
-        if (_state == null) {
-            _state = new OptaSimulatorState();
-        }
-        _state.useSnapshot = false;
-        _snapshot = null;
-        _paused = true;
-
-        saveState();
-        updateDate(_state.lastParsedDate);
-    }
-
     public void reset(boolean useSnapshot) {
         pause();
 
@@ -120,10 +102,14 @@ public class OptaSimulator implements Runnable {
         _instance = new OptaSimulator();
 
         if (useSnapshot) {
-            _snapshot = Snapshot.instance().getLast();
-            _state.useSnapshot = true;
-            saveState();
+            _instance.useSnapshot();
         }
+    }
+
+    private void useSnapshot() {
+        _snapshot = Snapshot.instance();
+        _state.useSnapshot = true;
+        saveState();
     }
 
     public void gotoDate(Date date) {

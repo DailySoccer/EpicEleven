@@ -24,11 +24,12 @@ public class SnapshotController extends Controller {
     }
 
     public static Result continueFromSnapshot() {
-        if (!OptaSimulator.isCreated()) {
-            OptaSimulator.init();
+        if (OptaSimulator.isCreated()) {
+            OptaSimulator.shutdown();
         }
+        Snapshot.instance().load();
+        OptaSimulator.init();
 
-        OptaSimulator.instance().continueFromSnapshot();
         return redirect(routes.SnapshotController.index());
     }
 
