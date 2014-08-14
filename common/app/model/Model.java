@@ -15,7 +15,6 @@ import java.util.Date;
 
 
 public class Model {
-    static public DB mongoDB() { return _mongoDB; }
 
     static public Jongo jongo() { return _jongo; }
     static public MongoCollection sessions() { return _jongo.getCollection("sessions"); }
@@ -30,7 +29,6 @@ public class Model {
     static public MongoCollection contests() { return _jongo.getCollection("contests"); }
     static public MongoCollection matchEvents() { return _jongo.getCollection("matchEvents"); }
 
-    static public MongoCollection optaDB() { return _jongo.getCollection("optaDB"); }
     static public MongoCollection optaEvents() { return _jongo.getCollection("optaEvents"); }
     static public MongoCollection optaPlayers() { return _jongo.getCollection("optaPlayers"); }
     static public MongoCollection optaTeams() { return _jongo.getCollection("optaTeams"); }
@@ -231,14 +229,7 @@ public class Model {
                 stmt.setString(6, gameId);
                 stmt.setString(7, competitionId);
                 stmt.setString(8, seasonId);
-
-                // TODO: No aceptar null
-                if (lastUpdated != null) {
-                    stmt.setTimestamp(9, new java.sql.Timestamp(lastUpdated.getTime()));
-                }
-                else {
-                    stmt.setTimestamp(9, null);
-                }
+                stmt.setTimestamp(9, new java.sql.Timestamp(lastUpdated.getTime()));
 
                 if (stmt.execute()) {
                     Logger.info("Successful insert in OptaXML");
