@@ -151,9 +151,7 @@ public class OptaHttpController extends Controller {
             Logger.error("WTF 52683", e);
         }
 
-        response().setContentType("text/html; charset=UTF-8");
-
-        return ok(retXML, "UTF-8");
+        return ok(retXML);
     }
 
     public static Result dateLastXML() {
@@ -176,8 +174,6 @@ public class OptaHttpController extends Controller {
         catch (java.sql.SQLException e) {
             Logger.error("WTF 25386", e);
         }
-
-        response().setContentType("text/html");
 
         return ok(remainingXML);
 
