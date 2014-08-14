@@ -99,7 +99,7 @@ public class ReturnHelper {
 
     private String getBodyFromBuffer() {
         if (stringBuffer == null)
-            throw new RuntimeException("WTF 771: getBodyFromBuffer");
+            throw new RuntimeException("WTF 771");
 
         // Finalizamos el Json Object
         stringBuffer.append("}");
