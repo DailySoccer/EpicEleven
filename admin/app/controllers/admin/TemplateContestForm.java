@@ -73,9 +73,8 @@ public class TemplateContestForm {
             TemplateSoccerTeam teamA = TemplateSoccerTeam.findOne(matchEvent.templateSoccerTeamAId);
             TemplateSoccerTeam teamB = TemplateSoccerTeam.findOne(matchEvent.templateSoccerTeamBId);
             options.put(matchEvent.templateMatchEventId.toString(), String.format("%s - %s vs %s",
-                    // new SimpleDateFormat("yy/MM/dd").format(matchEvent.startDate),
-                    DateFormat.getDateInstance(DateFormat.SHORT).format(matchEvent.startDate),
-                    teamA.name, teamB.name));
+                        GlobalDate.formatDate(matchEvent.startDate),
+                        teamA.name, teamB.name));
         }
         return options;
     }

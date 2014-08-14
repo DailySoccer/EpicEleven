@@ -78,7 +78,6 @@ GET         /current_date_simulator                                    controlle
 
 GET         /simulator                                                 controllers.admin.SnapshotController.index()
 GET         /snapshot                                                  controllers.admin.SnapshotController.snapshot()
-GET         /snapshotdb                                                controllers.admin.SnapshotController.snapshotDB()
 GET         /replay_last                                               controllers.admin.SnapshotController.replayLast()
 GET         /continue_from_snapshot                                    controllers.admin.SnapshotController.continueFromSnapshot()
 GET         /snapshot_dump                                             controllers.admin.SnapshotController.snapshotDump()
@@ -90,8 +89,6 @@ GET         /refresher                                                 controlle
 GET         /import_from_last                                          controllers.admin.RefresherController.importFromLast()
 GET         /refresher_in_progress                                     controllers.admin.RefresherController.inProgress()
 GET         /last_date                                                 controllers.admin.RefresherController.lastDate()
-
-GET         /run_migration                                             controllers.admin.MigrationController.migrate()
 
 GET         /test_start                                                controllers.admin.TestController.start()
 GET         /test_goto_date/:timestamp                                 controllers.admin.TestController.gotoDate(timestamp : Long)

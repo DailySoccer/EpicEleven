@@ -4,7 +4,6 @@ import actions.AllowCors;
 import model.GlobalDate;
 import model.Model;
 import model.ModelEvents;
-import model.opta.OptaDB;
 import model.opta.OptaProcessor;
 import org.jdom2.input.JDOMParseException;
 import org.joda.time.DateTime;
@@ -133,24 +132,6 @@ public class OptaHttpController extends Controller {
                             null;
     }
 
-    public static Result migrate() {
-        Iterable<OptaDB> allOptaDBs = Model.optaDB().find().as(OptaDB.class);
-
-        for (OptaDB document: allOptaDBs) {
-            if (getHeader("X-Meta-Feed-Type", document.headers) != null) {
-
-                Model.insertXML(document.xml, getHeadersString(document.headers), new Date(document.startDate), document.name,
-                                getHeader("X-Meta-Feed-Type", document.headers), getHeader("X-Meta-Game-Id", document.headers),
-                                getHeader("X-Meta-Competition-Id", document.headers), getHeader("X-Meta-Season-Id", document.headers),
-                                GlobalDate.parseDate(getHeader("X-Meta-Last-Updated", document.headers), null));
-            }
-            else {
-                Logger.debug("IGNORANDO: " + document.name);
-            }
-        }
-        return ok("Migrating...");
-    }
-
     public static Result returnXML(long last_timestamp) {
 
         Date askedDate = new Date(last_timestamp);
@@ -170,9 +151,7 @@ public class OptaHttpController extends Controller {
             Logger.error("WTF 52683", e);
         }
 
-        response().setContentType("text/html; charset=UTF-8");
-
-        return ok(retXML, "UTF-8");
+        return ok(retXML);
     }
 
     public static Result dateLastXML() {
@@ -195,8 +174,6 @@ public class OptaHttpController extends Controller {
         catch (java.sql.SQLException e) {
             Logger.error("WTF 25386", e);
         }
-
-        response().setContentType("text/html");
 
         return ok(remainingXML);
 

@@ -15,7 +15,6 @@ import java.util.Date;
 
 
 public class Model {
-    static public DB mongoDB() { return _mongoDB; }
 
     static public Jongo jongo() { return _jongo; }
     static public MongoCollection sessions() { return _jongo.getCollection("sessions"); }
@@ -30,7 +29,6 @@ public class Model {
     static public MongoCollection contests() { return _jongo.getCollection("contests"); }
     static public MongoCollection matchEvents() { return _jongo.getCollection("matchEvents"); }
 
-    static public MongoCollection optaDB() { return _jongo.getCollection("optaDB"); }
     static public MongoCollection optaEvents() { return _jongo.getCollection("optaEvents"); }
     static public MongoCollection optaPlayers() { return _jongo.getCollection("optaPlayers"); }
     static public MongoCollection optaTeams() { return _jongo.getCollection("optaTeams"); }
@@ -39,11 +37,6 @@ public class Model {
     static public MongoCollection pointsTranslation() { return _jongo.getCollection("pointsTranslation"); }
 
     static public void init() {
-        if (Play.isTest())
-            return;
-
-        Snapshot.init();
-
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
         MongoClientURI mongoClientURI = new MongoClientURI(mongodbUri);
 
@@ -219,40 +212,6 @@ public class Model {
         return collection.find(String.format("{%s: {$in: #}, %s}", fieldId, filter), ListUtils.asList(objectIdsIterable));
     }
 
-    public static void updateXML(int documentId, String xml) {
-
-        String updateString = "UPDATE optaxml SET xml = ? WHERE id = ?";
-
-        try (Connection connection = play.db.DB.getConnection()) {
-            try (PreparedStatement stmt = connection.prepareStatement(updateString)) {
-                stmt.setString(1, xml);
-                stmt.setInt(2, documentId);
-                if(stmt.executeUpdate()==1) {
-                    Logger.info("Updated succesfully document number: {}", documentId);
-                }
-            }
-        }
-        catch (java.sql.SQLException e) {
-            Logger.error("WTF 56312: ", e);
-        }
-    }
-
-    public static void deleteXML(int documentId) {
-
-        String deleteString = "DELETE from optaxml WHERE id = ?";
-
-        try (Connection connection = play.db.DB.getConnection()) {
-            try (PreparedStatement stmt = connection.prepareStatement(deleteString)) {
-                stmt.setInt(1, documentId);
-                if(stmt.executeUpdate()==1) {
-                    Logger.info("Deleted succesfully document number: {}", documentId);
-                }
-            }
-        }
-        catch (java.sql.SQLException e) {
-            Logger.error("WTF 56312: ", e);
-        }
-    }
 
     public static void insertXML(String xml, String headers, Date timestamp, String name, String feedType,
                                  String gameId, String competitionId, String seasonId, Date lastUpdated) {
@@ -270,14 +229,7 @@ public class Model {
                 stmt.setString(6, gameId);
                 stmt.setString(7, competitionId);
                 stmt.setString(8, seasonId);
-
-                // TODO: No aceptar null
-                if (lastUpdated != null) {
-                    stmt.setTimestamp(9, new java.sql.Timestamp(lastUpdated.getTime()));
-                }
-                else {
-                    stmt.setTimestamp(9, null);
-                }
+                stmt.setTimestamp(9, new java.sql.Timestamp(lastUpdated.getTime()));
 
                 if (stmt.execute()) {
                     Logger.info("Successful insert in OptaXML");

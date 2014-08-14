@@ -98,7 +98,11 @@ public class OptaEvent {
                 this.typeId = OptaEventType.FOUL_COMMITTED._code;  // Falta infligida -> 1004
             }
         }
-        // Tarjeta roja -> 1017
+        // Segunda tarjeta amarilla -> 1017
+        else if (this.typeId == OptaEventType.YELLOW_CARD._code && this.qualifiers.contains(32)) {
+            this.typeId = OptaEventType.SECOND_YELLOW_CARD._code;
+        }
+        // Tarjeta roja -> 1117
         else if (this.typeId == OptaEventType.YELLOW_CARD._code && this.qualifiers.contains(33)) {
             this.typeId = OptaEventType.RED_CARD._code;
         }

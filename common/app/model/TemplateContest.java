@@ -4,12 +4,13 @@ import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
 import org.bson.types.ObjectId;
-import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 public class TemplateContest implements JongoId, Initializer {
     public enum State {
@@ -125,7 +126,7 @@ public class TemplateContest implements JongoId, Initializer {
     public void instantiate() {
         assert(isActive());
 
-        Logger.info("instantiate: {}: activationAt: {}", name, activationAt );
+        Logger.info("instantiate: {}: activationAt: {}", name, GlobalDate.formatDate(activationAt));
 
         instantiateMatchEvents();
 

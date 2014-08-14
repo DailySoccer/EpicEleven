@@ -53,14 +53,15 @@ public final class MockData {
                 {OptaEventType.GOAL_SCORED_BY_MIDFIELDER._code, 60},    // gol del medio
                 {OptaEventType.GOAL_SCORED_BY_FORWARD._code, 40},       // gol del delantero
                 {OptaEventType.OWN_GOAL._code, -10},                    // gol en contra
-                {OptaEventType.YELLOW_CARD._code, -30},                 // tarjeta amarilla
+                {OptaEventType.YELLOW_CARD._code, -25},                 // tarjeta amarilla
+                {OptaEventType.SECOND_YELLOW_CARD._code, -25},          // tarjeta amarilla (segunda)
                 {OptaEventType.PUNCH._code, 10},                        // despeje puños
                 {OptaEventType.PASS_UNSUCCESSFUL._code, -5},            // perdida de balon, pase perdido
                 {OptaEventType.DISPOSSESSED._code, -5},                 // perdida de balon
                 {OptaEventType.ERROR._code, -20},                       // perdida de balon
                 {OptaEventType.CAUGHT_OFFSIDE._code, -5},               // fuera de juego
                 {OptaEventType.FOUL_COMMITTED._code, -5},               // falta infligida
-                {OptaEventType.RED_CARD._code, -100},                   // tarjeta roja
+                {OptaEventType.RED_CARD._code, -75},                   // tarjeta roja
                 {OptaEventType.PENALTY_COMMITTED._code, -30},           // penalty infligido
                 {OptaEventType.PENALTY_FAILED._code, -30},              // penalty fallado
                 {OptaEventType.GOALKEEPER_SAVES_PENALTY._code, 30},     // penalty parado por el portero

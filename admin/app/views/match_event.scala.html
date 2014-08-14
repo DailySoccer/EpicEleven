@@ -1,6 +1,7 @@
 @(match_event: model.MatchEvent)
 
 @import controllers.admin.routes._
+@import model.GlobalDate
 
 @main("Mach Event - Admin") {
 
@@ -18,7 +19,7 @@
 
 <a href="@MatchEventController.showOptaEvents(match_event.matchEventId.toString())"><button class="btn btn-success">Opta Events</button></a>
 
-<h2 class="sub-header">Start Date: @match_event.startDate</h2>
+<h2 class="sub-header">Start Date: @GlobalDate.formatDate(match_event.startDate)</h2>
 <div class="table-responsive">
     <table class="table table-striped">
         <thead>

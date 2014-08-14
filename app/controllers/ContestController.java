@@ -57,9 +57,23 @@ public class ContestController extends Controller {
         // Necesitamos devolver los partidos asociados a estos concursos
         List<MatchEvent> matchEvents = MatchEvent.gatherFromTemplateContests(templateContests);
 
-        return new ReturnHelper(ImmutableMap.of("match_events", matchEvents,
-                                                "template_contests", templateContests,
-                                                "contests", contests)).toResult();
+        // Averiguar nuestras contestEntries
+        List<ContestEntry> contestEntries = new ArrayList(contests.size());
+        for (Contest contest : contests) {
+            for (ContestEntry contestEntry : contest.contestEntries) {
+                if (contestEntry.userId.equals(theUser.userId)) {
+                    contestEntries.add(contestEntry);
+                }
+            }
+        }
+
+        // Enviamos nuestras contestEntries aparte (para poder proporcionar un jsonView con más información)
+        return new ReturnHelper()
+                .attachObject("contest_entries", contestEntries, JsonViews.FullContest.class)
+                .attachObject("match_events", matchEvents)
+                .attachObject("template_contests", templateContests)
+                .attachObject("contests", contests)
+                .toContentResult();
     }
 
     @UserAuthenticated
@@ -112,18 +126,28 @@ public class ContestController extends Controller {
         List<MatchEvent> matchEvents = MatchEvent.gatherFromTemplateContests(templateContests);
 
         return new ReturnHelper(ImmutableMap.of("match_events", matchEvents,
-                "template_contests", templateContestsFiltered,
-                "contests", contestFiltered));
+                                                "template_contests", templateContestsFiltered,
+                                                "contests", contestFiltered));
     }
 
     /**
      * Obtener toda la información necesaria para mostrar un Contest
      */
     @UserAuthenticated
-    public static Result getContest(String contestId) {
+    public static Result getFullContest(String contestId) {
         // User theUser = (User)ctx().args.get("User");
+        return getContest(contestId).toResult(JsonViews.FullContest.class);
+    }
 
-        Contest contest = Contest.findOne(contestId);
+    /**
+     * Obtener la información sobre un Contest
+     */
+    public static Result getPublicContest(String contestId) {
+        return getContest(contestId).toResult();
+    }
+
+    private static ReturnHelper getContest(String contestId) {
+         Contest contest = Contest.findOne(contestId);
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
         TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
         List<MatchEvent> matchEvents = MatchEvent.findAllFromTemplate(templateContest.templateMatchEventIds);
@@ -131,7 +155,7 @@ public class ContestController extends Controller {
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                                                 "users_info", usersInfoInContest,
                                                 "template_contest", templateContest,
-                                                "match_events", matchEvents)).toResult(JsonViews.FullContest.class);
+                                                "match_events", matchEvents));
     }
 
     public static class ContestEntryParams {

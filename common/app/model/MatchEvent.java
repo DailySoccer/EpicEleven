@@ -307,7 +307,7 @@ public class MatchEvent {
             Logger.info("currentTime from optaEvent: gameId({}) id({})", matchEvent.optaMatchEventId, event.eventId);
         }
 
-        Logger.info("currentTime ({}): {}", matchEvent.optaMatchEventId, dateNow);
+        Logger.info("currentTime ({}): {}", matchEvent.optaMatchEventId, GlobalDate.formatDate(dateNow));
         return dateNow;
     }
 

@@ -20,7 +20,6 @@ public class RefresherController extends Controller {
         return ok(views.html.refresher.render());
     }
 
-
     public static Result inProgress() {
         return ok(String.valueOf(_inProgress));
     }

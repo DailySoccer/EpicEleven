@@ -199,7 +199,7 @@ public class OptaProcessor {
                 OptaTeam myTeam = new OptaTeam();
                 myTeam.optaTeamId = getStringId(team, "uID", "_NO TEAM UID");
                 myTeam.name = team.getChild("Name").getContent().get(0).getValue();// AttributeValue("Name");
-                myTeam.updatedTime = new Date(System.currentTimeMillis());
+                myTeam.updatedTime = new Date();
 
                 if (null != team.getChild("SYMID") && team.getChild("SYMID").getContentSize() > 0) {
                     myTeam.shortName = team.getChild("SYMID").getContent().get(0).getValue();//getAttributeValue("SYMID");
@@ -230,47 +230,52 @@ public class OptaProcessor {
 
     private OptaPlayer createPlayer(Element playerObject, Element teamObject) {
         OptaPlayer myPlayer = new OptaPlayer();
-            if (playerObject.getAttribute("firstname") != null){
-                myPlayer.optaPlayerId = getStringId(playerObject, "id", "_NO PLAYER ID");
-                myPlayer.firstname = playerObject.getAttributeValue("firstname");
-                myPlayer.lastname = playerObject.getAttributeValue("lastname");
-                myPlayer.name = myPlayer.firstname+" "+myPlayer.lastname;
-                myPlayer.position = playerObject.getAttributeValue("position");
-                myPlayer.teamId = getStringId(teamObject, "id", "_NO TEAM ID");
-                myPlayer.teamName = teamObject.getAttributeValue("name");
+
+        if (playerObject.getAttribute("firstname") != null) {
+            myPlayer.optaPlayerId = getStringId(playerObject, "id", "_NO PLAYER ID");
+            myPlayer.firstname = playerObject.getAttributeValue("firstname");
+            myPlayer.lastname = playerObject.getAttributeValue("lastname");
+            myPlayer.name = myPlayer.firstname + " " + myPlayer.lastname;
+            myPlayer.position = playerObject.getAttributeValue("position");
+            myPlayer.teamId = getStringId(teamObject, "id", "_NO TEAM ID");
+            myPlayer.teamName = teamObject.getAttributeValue("name");
+        }
+        else {
+            if (playerObject.getAttribute("uID") != null) {
+                myPlayer.optaPlayerId = getStringId(playerObject, "uID", "_NO PLAYER ID");
+            }
+
+            if (playerObject.getChild("Name") != null) {
+                myPlayer.name = playerObject.getChild("Name").getContent().get(0).getValue();
+                myPlayer.optaPlayerId = getStringId(playerObject, "uID", "_NO PLAYER ID");
+                myPlayer.position = playerObject.getChild("Position").getContent().get(0).getValue();
+            }
+            else if (playerObject.getChild("PersonName") != null) {
+                if (playerObject.getChild("PersonName").getChild("Known") != null) {
+                    myPlayer.nickname = playerObject.getChild("PersonName").getChild("Known").getContent().get(0).getValue();
+                }
+                myPlayer.firstname = playerObject.getChild("PersonName").getChild("First").getContent().get(0).getValue();
+                myPlayer.lastname = playerObject.getChild("PersonName").getChild("Last").getContent().get(0).getValue();
+                myPlayer.name = myPlayer.firstname + " " + myPlayer.lastname;
             }
             else {
-                if (playerObject.getAttribute("uID") != null){
-                    myPlayer.optaPlayerId = getStringId(playerObject, "uID", "_NO PLAYER ID");
-                }
-
-                if (playerObject.getChild("Name") != null) {
-                    myPlayer.name = playerObject.getChild("Name").getContent().get(0).getValue();
-                    myPlayer.optaPlayerId = getStringId(playerObject, "uID", "_NO PLAYER ID");
-                    myPlayer.position = playerObject.getChild("Position").getContent().get(0).getValue();
-                } else if (playerObject.getChild("PersonName") != null) {
-                    if (playerObject.getChild("PersonName").getChild("Known") != null) {
-                        myPlayer.nickname = playerObject.getChild("PersonName").getChild("Known").getContent().get(0).getValue();
-                    }
-                    myPlayer.firstname = playerObject.getChild("PersonName").getChild("First").getContent().get(0).getValue();
-                    myPlayer.lastname = playerObject.getChild("PersonName").getChild("Last").getContent().get(0).getValue();
-                    myPlayer.name = myPlayer.firstname+" "+myPlayer.lastname;
-                } else {
-                    Logger.error("Not getting name for: "+myPlayer.optaPlayerId);
-                }
-
-                if (playerObject.getChild("Position") != null){
-                    myPlayer.position = playerObject.getChild("Position").getContent().get(0).getValue();
-                    if (myPlayer.position.equals("Substitute")) {
-                        Logger.info("WTF 23344: Sustituto! {}", myPlayer.name );
-                    }
-                }
-
-                myPlayer.teamId = getStringId(teamObject, "uID", "_NO TEAM ID");
-                myPlayer.teamName = teamObject.getChild("Name").getContent().get(0).getValue();
+                Logger.error("Not getting name for: " + myPlayer.optaPlayerId);
             }
-            myPlayer.updatedTime = new Date(System.currentTimeMillis());
-            return myPlayer;
+
+            if (playerObject.getChild("Position") != null){
+                myPlayer.position = playerObject.getChild("Position").getContent().get(0).getValue();
+                if (myPlayer.position.equals("Substitute")) {
+                    Logger.info("WTF 23344: Sustituto! {}", myPlayer.name);
+                }
+            }
+
+            myPlayer.teamId = getStringId(teamObject, "uID", "_NO TEAM ID");
+            myPlayer.teamName = teamObject.getChild("Name").getContent().get(0).getValue();
+        }
+
+        myPlayer.updatedTime = new Date();
+
+        return myPlayer;
     }
 
 
