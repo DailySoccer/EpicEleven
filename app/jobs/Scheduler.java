@@ -1,40 +1,65 @@
 package jobs;
 
+import org.reflections.Reflections;
+import org.reflections.scanners.MethodAnnotationsScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
 import play.Logger;
 import play.libs.Akka;
 import scala.concurrent.duration.Duration;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class Scheduler {
 
-    static public void eachSecond() {
-        Akka.system().scheduler().schedule(
-                Duration.create(1, TimeUnit.SECONDS), // A partir del primer segundo
-                Duration.create(1, TimeUnit.SECONDS), // Cada segundo
-                new Runnable() {
-                    public void run() {
-                        Logger.debug("Un segundo más");
-                        // Aquí vamos metiendo llamadas a funciones que se deban hacer cada segundo
-                    }
-                },
-                Akka.system().dispatcher()
-        );
+    @SuppressWarnings("unchecked")
+    public static void scheduleMethods(String... namespaces) {
+        if (namespaces.length == 0) {
+            namespaces = new String[]{""};
+        }
+        final ConfigurationBuilder configBuilder = build(namespaces);
+        final Reflections reflections = new Reflections(configBuilder.setScanners(new MethodAnnotationsScanner()));
+        final Set<Method> schedules = reflections.getMethodsAnnotatedWith(Schedule.class);
+        if(!schedules.isEmpty()) {
+            Logger.debug("Scheduling methods:");
+        }
+        for(final Method schedule : schedules) {
+            final Schedule annotation = schedule.getAnnotation(Schedule.class);
+
+            long initialDelay = annotation.initialDelay();
+            TimeUnit timeUnitInitial = annotation.timeUnit();
+            long interval = annotation.interval();
+            TimeUnit timeUnitInterval = annotation.timeUnit();
+
+            Akka.system().scheduler().schedule(
+                    Duration.apply(initialDelay, timeUnitInterval),
+                    Duration.apply(interval, timeUnitInterval),
+                    new Runnable() {
+                        public void run() {
+                            try {
+                                schedule.invoke(null);
+                            } catch (IllegalAccessException e) {
+                                Logger.error("WTF 7472", e);
+                            } catch (InvocationTargetException e) {
+                                Logger.error("WTF 7473", e);
+                            }
+                        }
+                    },
+                    Akka.system().dispatcher()
+            );
+            Logger.debug(schedule + " on delay: " + initialDelay + " " + timeUnitInitial + " interval: " + interval + " " + timeUnitInterval);
+        }
     }
 
-   static public void eachMinute() {
-        Akka.system().scheduler().schedule(
-                Duration.create(1, TimeUnit.MINUTES), // A partir del primer minuto
-                Duration.create(1, TimeUnit.MINUTES), // Cada minuto
-                new Runnable() {
-                    public void run() {
-                        Logger.debug("Un minuto más");
-                        // Aquí vamos metiendo llamadas a funciones que se deban hacer cada minuto
-                    }
-                },
-                Akka.system().dispatcher()
-        );
+
+    private static ConfigurationBuilder build(String... namespaces) {
+        final ConfigurationBuilder configBuilder = new ConfigurationBuilder();
+        for(final String namespace : namespaces) {
+            configBuilder.addUrls(ClasspathHelper.forPackage(namespace));
+        }
+        return configBuilder;
     }
 }
-
-

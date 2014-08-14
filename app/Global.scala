@@ -36,8 +36,7 @@ object Global extends GlobalSettings {
     Logger.info("Application has started")
 
     Model.init()
-    Scheduler.eachSecond()
-    Scheduler.eachMinute()
+    Scheduler.scheduleMethods();
 
   }
 
