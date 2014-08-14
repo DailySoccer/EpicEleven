@@ -57,9 +57,23 @@ public class ContestController extends Controller {
         // Necesitamos devolver los partidos asociados a estos concursos
         List<MatchEvent> matchEvents = MatchEvent.gatherFromTemplateContests(templateContests);
 
-        return new ReturnHelper(ImmutableMap.of("match_events", matchEvents,
-                                                "template_contests", templateContests,
-                                                "contests", contests)).toResult();
+        // Averiguar nuestras contestEntries
+        List<ContestEntry> contestEntries = new ArrayList(contests.size());
+        for (Contest contest : contests) {
+            for (ContestEntry contestEntry : contest.contestEntries) {
+                if (contestEntry.userId.equals(theUser.userId)) {
+                    contestEntries.add(contestEntry);
+                }
+            }
+        }
+
+        // Enviamos nuestras contestEntries aparte (para poder proporcionar un jsonView con más información)
+        return new ReturnHelper()
+                .attachObject("contest_entries", contestEntries, JsonViews.FullContest.class)
+                .attachObject("match_events", matchEvents)
+                .attachObject("template_contests", templateContests)
+                .attachObject("contests", contests)
+                .toContentResult();
     }
 
     @UserAuthenticated
