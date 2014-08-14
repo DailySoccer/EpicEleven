@@ -15,7 +15,7 @@ GET         /get_active_contests                                    controllers.
 
 # Concursos asociados a usuario
 GET         /get_my_contests                                        controllers.ContestController.getMyContests()
-GET         /get_contest/:contest                                   controllers.ContestController.getContest(contest)
+GET         /get_contest/:contest                                   controllers.ContestController.getFullContest(contest)
 GET         /get_my_next_contests                                   controllers.ContestController.getMyNextContests()
 GET         /get_my_live_contests                                   controllers.ContestController.getMyLiveContests()
 GET         /get_my_history_contests                                controllers.ContestController.getMyHistoryContests()
@@ -27,6 +27,7 @@ GET         /get_live_match_events/template_contest/:contest        controllers.
 POST        /add_contest_entry                                      controllers.ContestController.addContestEntry()
 
 # Informacion
+GET         /get_contest_info/:contest                              controllers.ContestController.getPublicContest(contest)
 GET         /get_soccer_player_info/:soccerPlayer                   controllers.ContestController.getTemplateSoccerPlayerInfo(soccerPlayer)
 
 
