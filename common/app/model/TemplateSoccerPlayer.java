@@ -94,7 +94,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
             TemplateSoccerPlayer templateSoccer = new TemplateSoccerPlayer(optaPlayer, templateTeam.templateSoccerTeamId);
 
             TemplateSoccerPlayerMetadata templateSoccerPlayerMetadata = TemplateSoccerPlayerMetadata.findOne(optaPlayer.optaPlayerId);
-            templateSoccer.salary = templateSoccerPlayerMetadata!=null? templateSoccerPlayerMetadata.salary: 79797;
+            templateSoccer.salary = templateSoccerPlayerMetadata!=null? templateSoccerPlayerMetadata.salary: 7979;
 
             Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).update("{optaPlayerId: #}", templateSoccer.optaPlayerId).upsert().with(templateSoccer);
 
