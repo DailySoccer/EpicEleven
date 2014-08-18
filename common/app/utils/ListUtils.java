@@ -107,7 +107,8 @@ public class ListUtils {
         while (numElements > 0 && indexes.size() > 0) {
             int index = rand.nextInt(indexes.size());
 
-            result.add(list.get(index));
+            int elemIdx = indexes.get(index);
+            result.add(list.get(elemIdx));
 
             indexes.remove(index);
             numElements--;
