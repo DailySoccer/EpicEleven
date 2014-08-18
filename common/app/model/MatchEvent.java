@@ -2,6 +2,7 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import model.opta.OptaEvent;
+import model.opta.OptaEventType;
 import model.opta.OptaMatchEvent;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
@@ -38,7 +39,7 @@ public class MatchEvent {
 
     // Asocia un soccerPlayerId con fantasyPoints
     @JsonView(JsonViews.FullContest.class)
-    public HashMap<String, Integer> livePlayerToPoints = new HashMap<>();
+    public HashMap<String, LiveFantasyPoints> liveFantasyPoints = new HashMap<>();
 
     public PeriodType period = PeriodType.PRE_GAME;
     public int minutesPlayed;
@@ -111,11 +112,11 @@ public class MatchEvent {
     }
 
     public boolean containsSoccerPlayer(ObjectId soccerPlayerId) {
-        return livePlayerToPoints.containsKey(soccerPlayerId.toString());
+        return liveFantasyPoints.containsKey(soccerPlayerId.toString());
     }
 
     public int getFantasyPoints(ObjectId soccerPlayerId) {
-        return livePlayerToPoints.get(soccerPlayerId.toString());
+        return liveFantasyPoints.get(soccerPlayerId.toString()).points;
     }
 
     public void saveStats() {
@@ -263,29 +264,39 @@ public class MatchEvent {
         Iterable<OptaEvent> optaEventResults = Model.optaEvents().find("{optaPlayerId: #, gameId: #}",
                 soccerPlayer.optaPlayerId, optaMatchEventId).as(OptaEvent.class);
 
+        LiveFantasyPoints fantasyPoints = new LiveFantasyPoints();
+
         // Sumarlos
-        int points = 0;
         for (OptaEvent point: optaEventResults) {
-            points += point.points;
+            if (point.points != 0) {
+                int eventPoints = 0;
+                OptaEventType optaEventType = OptaEventType.getEnum(point.typeId);
+                if (fantasyPoints.events.containsKey(optaEventType.name())) {
+                    eventPoints = fantasyPoints.events.get(optaEventType.name());
+                }
+                fantasyPoints.events.put(optaEventType.name(), eventPoints + point.points);
+
+                fantasyPoints.points += point.points;
+            }
         }
         // if (points > 0) Logger.info("--> {}: {} = {}", soccerPlayer.optaPlayerId, soccerPlayer.name, points);
 
         // Actualizar sus puntos en cada LiverMatchEvent en el que participe
-        setLiveFantasyPointsOfSoccerPlayer(optaMatchEventId, soccerPlayer.templateSoccerPlayerId.toString(), points);
+        setLiveFantasyPointsOfSoccerPlayer(optaMatchEventId, soccerPlayer.templateSoccerPlayerId.toString(), fantasyPoints);
     }
 
     /**
      * Actualizar los puntos fantasy de un determinado futbolista en los partidos "live"
      */
-    static private void setLiveFantasyPointsOfSoccerPlayer(String optaMatchId, String soccerPlayerId, int points) {
+    static private void setLiveFantasyPointsOfSoccerPlayer(String optaMatchId, String soccerPlayerId, LiveFantasyPoints fantasyPoints) {
         //Logger.info("setLiveFantasyPoints: {} = {} fantasy points", soccerPlayerId, points);
 
-        String searchPattern = String.format("{optaMatchEventId: #, 'livePlayerToPoints.%s': {$exists: 1}}", soccerPlayerId);
-        String setPattern = String.format("{$set: {'livePlayerToPoints.%s': #}}", soccerPlayerId);
+        String searchPattern = String.format("{optaMatchEventId: #, 'liveFantasyPoints.%s': {$exists: 1}}", soccerPlayerId);
+        String setPattern = String.format("{$set: {'liveFantasyPoints.%s': #}}", soccerPlayerId);
         Model.matchEvents()
                 .update(searchPattern, optaMatchId)
                 .multi()
-                .with(setPattern, points);
+                .with(setPattern, fantasyPoints);
     }
 
     /**
@@ -311,7 +322,13 @@ public class MatchEvent {
 
     private void insertLivePlayersFromTeam(SoccerTeam soccerTeam) {
         for (SoccerPlayer soccerPlayer : soccerTeam.soccerPlayers) {
-            livePlayerToPoints.put(soccerPlayer.templateSoccerPlayerId.toString(), 0);
+            liveFantasyPoints.put(soccerPlayer.templateSoccerPlayerId.toString(), new LiveFantasyPoints());
         }
     }
+}
+
+class LiveFantasyPoints {
+    public int points;
+
+    public HashMap<String, Integer> events = new HashMap<>();
 }
