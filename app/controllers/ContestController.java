@@ -58,7 +58,7 @@ public class ContestController extends Controller {
         List<MatchEvent> matchEvents = MatchEvent.gatherFromTemplateContests(templateContests);
 
         // Averiguar nuestras contestEntries
-        List<ContestEntry> contestEntries = new ArrayList(contests.size());
+        List<ContestEntry> contestEntries = new ArrayList<>(contests.size());
         for (Contest contest : contests) {
             for (ContestEntry contestEntry : contest.contestEntries) {
                 if (contestEntry.userId.equals(theUser.userId)) {
