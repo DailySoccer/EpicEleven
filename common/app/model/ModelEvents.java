@@ -48,6 +48,7 @@ public class ModelEvents {
 
                 if (matchEvent.isStarted()) {
                     matchEvent.updateState();
+                    Contest.updateRanking(matchEvent.templateMatchEventId);
 
                     if (matchEvent.isFinished()) {
                         actionWhenMatchEventIsFinished(matchEvent);

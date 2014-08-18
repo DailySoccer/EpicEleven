@@ -121,8 +121,6 @@ public class MatchEvent {
     public void saveStats() {
         saveStats(soccerTeamA);
         saveStats(soccerTeamB);
-
-        Contest.updateRanking(templateMatchEventId);
     }
 
     public void saveStats(SoccerTeam soccerTeam) {
