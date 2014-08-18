@@ -29,7 +29,7 @@ public class ReturnHelper {
 
         try {
         	if (payload != null) {
-            	final String jsonPayload = new ObjectIdMapper().writerWithView(jsonView).writeValueAsString(payload);
+            	final String jsonPayload = objectIdMapper.writerWithView(jsonView).writeValueAsString(payload);
 
              	ret = new Content() {
                 	@Override public String body() { return jsonPayload; }
@@ -60,11 +60,8 @@ public class ReturnHelper {
 
     public ReturnHelper attachObject (String key, Object object, Class jsonView) {
         try {
-            // Preparamos el buffer (diferenciará entre el primer elemento o los siguientes)
-            prepareBuffer();
-
             // Añadimos un JsonData(name, value) al buffer
-            addJsonDataToBuffer(key, objectIdMapper.writerWithView(jsonView).writeValueAsString(object));
+            jsonDataBuilder.addJsonData(key, objectIdMapper.writerWithView(jsonView).writeValueAsString(object));
         } catch (JsonProcessingException exc) {
             Logger.error("ReturnHelper: attachObject: ", exc);
         }
@@ -73,43 +70,47 @@ public class ReturnHelper {
 
     public Result toContentResult() {
         return Results.ok(new Content() {
-            @Override public String body() { return getBodyFromBuffer(); }
+            @Override public String body() { return jsonDataBuilder.getBody(); }
             @Override public String contentType() { return "application/json"; }
         });
     }
 
-     private void prepareBuffer() {
-         // Primer Elemento?
-         if (stringBuffer == null) {
-             objectIdMapper = new ObjectIdMapper();
-             stringBuffer = new StringBuffer();
-             stringBuffer.append("{");
-         }
-         else {
-             // Siguientes...
-             stringBuffer.append(",");
-         }
+    class JsonDataBuilder {
+        public void addJsonData(String name, String value) {
+            // Preparamos el buffer (diferenciará entre el primer elemento o los siguientes)
+            prepare();
+
+            // Json Data :> "name" : value
+            stringBuffer.append("\"" + name + "\":");
+            stringBuffer.append(value);
+        }
+
+        public String getBody() {
+            if (stringBuffer == null)
+                throw new RuntimeException("WTF 771");
+
+            // Finalizamos el Json Object
+            stringBuffer.append("}");
+
+            // Lo convertimos en String
+            return stringBuffer.toString();
+        }
+
+        private void prepare() {
+            // Primer Elemento?
+            if (stringBuffer == null) {
+                stringBuffer = new StringBuffer();
+                stringBuffer.append("{");
+            } else {
+                // Siguientes...
+                stringBuffer.append(",");
+            }
+        }
+
+        private StringBuffer stringBuffer;
     }
 
-    private void addJsonDataToBuffer(String name, String value) {
-        // Json Data :> "name" : value
-        stringBuffer.append("\"" + name + "\":");
-        stringBuffer.append(value);
-    }
-
-    private String getBodyFromBuffer() {
-        if (stringBuffer == null)
-            throw new RuntimeException("WTF 771");
-
-        // Finalizamos el Json Object
-        stringBuffer.append("}");
-
-        // Lo convertimos en String
-        return stringBuffer.toString();
-    }
-
-    private StringBuffer stringBuffer;
-    private ObjectIdMapper objectIdMapper;
+    private JsonDataBuilder jsonDataBuilder = new JsonDataBuilder();
 
     // *************************************** //
 
@@ -133,4 +134,6 @@ public class ReturnHelper {
             this.payload = payload;
         }
     }
+
+    private ObjectIdMapper objectIdMapper = new ObjectIdMapper();
 }
