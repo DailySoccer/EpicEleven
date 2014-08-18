@@ -106,4 +106,10 @@ public class SimulatorController extends Controller {
     public static Result isSimulatorActivated() {
         return new ReturnHelper(ImmutableMap.of("simulator_activated", OptaSimulator.isCreated())).toResult();
     }
+
+    public static Result setSpeed(int simSpeed) {
+        OptaSimulator.instance().setSpeedFactor(simSpeed);
+        return ok();
+    }
+
 }
