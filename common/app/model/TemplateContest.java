@@ -39,6 +39,7 @@ public class TemplateContest implements JongoId, Initializer {
     public int salaryCap;
     public int entryFee;
     public PrizeType prizeType;
+    public List<Integer> prizes;
 
     public Date startDate;
 
@@ -141,6 +142,10 @@ public class TemplateContest implements JongoId, Initializer {
 
             Model.contests().withWriteConcern(WriteConcern.SAFE).insert(contest);
         }
+
+        // Incluir los premios del torneo (ya no se podrá cambiar la forma de calcularlo)
+        prizes = getPrizes();
+        Model.templateContests().update(templateContestId).with("{$set: {prizes: #}}", prizes);
     }
 
     public void instantiateMatchEvents() {
@@ -219,7 +224,7 @@ public class TemplateContest implements JongoId, Initializer {
     }
 
     private List<Integer> getPrizes() {
-        List<Integer> prizes = new ArrayList<Integer>();
+        List<Integer> prizes = new ArrayList<>();
 
         if      (prizeType.equals(PrizeType.FREE)) {
 

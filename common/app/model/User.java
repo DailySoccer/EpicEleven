@@ -85,6 +85,6 @@ public class User {
                         "position: 0" +
                     "}" +
                 "}}", userId);
-        Model.users().update("{_id: #}", userId).with("{$set: {wins: #}}", contestsGanados);
+        Model.users().update(userId).with("{$set: {wins: #}}", contestsGanados);
     }
 }
