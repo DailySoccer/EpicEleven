@@ -73,6 +73,26 @@ public class Contest implements JongoId {
         }
     }
 
+    public void givePrizes() {
+        ContestEntry winner = null;
+
+        for (ContestEntry contestEntry : contestEntries) {
+            if (contestEntry.position == 0) {
+                winner = contestEntry;
+                break;
+            }
+        }
+
+        if (winner == null)
+            throw new RuntimeException("WTF 7221: givePrizes, winner == null");
+
+        User user = User.findOne(winner.userId);
+
+        // TODO: Dar premios
+        // Actualmente únicamente actualizamos las estadísticas de torneos ganados
+        user.updateStats();
+    }
+
    private void updateRanking(TemplateContest templateContest, List<MatchEvent> matchEvents) {
         // Actualizamos los fantasy points
         for (ContestEntry contestEntry : contestEntries) {

@@ -197,6 +197,18 @@ public class TemplateContest implements JongoId, Initializer {
         return templateContest.isFinished();
     }
 
+    public void setClosed() {
+        givePrizes();
+    }
+
+    private void givePrizes() {
+        List<Contest> contests = Contest.findAllFromTemplateContest(templateContestId);
+
+        for (Contest contest : contests) {
+            contest.givePrizes();
+        }
+    }
+
     public int getPositionPrize(int position) {
         List<Integer> prizes = getPrizes();
         return (position < prizes.size()) ? prizes.get(position) : 0;

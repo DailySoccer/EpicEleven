@@ -22,7 +22,7 @@ public class ContestEntry implements JongoId {
     public List<ObjectId> soccerIds;    // Fantasy team
 
     @JsonView(JsonViews.FullContest.class)
-    public int position;
+    public int position = -1;
 
     @JsonView(JsonViews.FullContest.class)
     public int prize;
