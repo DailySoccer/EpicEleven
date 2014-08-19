@@ -11,7 +11,7 @@ public class TestController extends Controller {
             OptaSimulator.init();
 
         OptaSimulator.instance().reset(false);
-        return ok();
+        return ok("OK");
     }
 
     static public Result gotoDate(Long timestamp) {
@@ -21,6 +21,21 @@ public class TestController extends Controller {
             OptaSimulator.init();
 
         OptaSimulator.instance().gotoDate(date);
-        return ok();
+        return ok("OK");
+    }
+
+    static public Result importEverything() {
+        ImportController.importSalaries();
+        ImportController.importAllTeams();
+        ImportController.importAllSoccers();
+        ImportController.importAllMatchEvents();
+        return ok("OK");
+    }
+
+    static public Result initialSetup() {
+        importEverything();
+        PointsTranslationController.resetToDefault();
+        TemplateContestController.createAll();
+        return ok("OK");
     }
 }
