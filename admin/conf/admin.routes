@@ -76,6 +76,7 @@ GET         /is_created_simulator                                      controlle
 GET         /is_paused_simulator                                       controllers.admin.SimulatorController.isPaused()
 GET         /current_date_simulator                                    controllers.admin.SimulatorController.currentDate()
 GET         /simulator_speed/:speed                                    controllers.admin.SimulatorController.setSpeed(speed : Int)
+GET         /simulator_speed                                           controllers.admin.SimulatorController.getSpeed()
 
 GET         /simulator                                                 controllers.admin.SnapshotController.index()
 GET         /snapshot                                                  controllers.admin.SnapshotController.snapshot()

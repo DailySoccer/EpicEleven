@@ -240,9 +240,12 @@ public class OptaSimulator implements Runnable {
     }
 
     public void setSpeedFactor(int speedFactor) {
-        _speedFactor = speedFactor;
+        _state.speedFactor = speedFactor;
     }
 
+    public int getSpeedFactor() {
+        return _state.speedFactor;
+    }
 
     private boolean sleepUntil(Date nextStop) {
         Duration untilNextStop;
@@ -267,7 +270,7 @@ public class OptaSimulator implements Runnable {
 
 
                 Date nextDate = new DateTime(GlobalDate.getCurrentDate()).plus(sleeping).toDate();
-                Thread.sleep(sleeping.getMillis() / _speedFactor);
+                Thread.sleep(sleeping.getMillis() / _state.speedFactor);
 
                 if (!isPaused()) {
                     updateDate(nextDate);
@@ -329,7 +332,6 @@ public class OptaSimulator implements Runnable {
     private Date waitingForDate;
 
     private Duration _duration = new Duration(1000);
-    private int _speedFactor = 3600;
 
     OptaProcessor _optaProcessor;
     Snapshot _snapshot;
@@ -345,6 +347,7 @@ class OptaSimulatorState {
     public Date    pauseDate;
     public Date    lastParsedDate;
     public int     nextDocToParseIndex;
+    public int     speedFactor = 3600;
 
     public OptaSimulatorState() {}
 }

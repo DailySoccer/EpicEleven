@@ -58,6 +58,7 @@
         var is_created = "@SimulatorController.isSimulatorCreated()";
 
         $(document).ready(function() {
+            getSpeed();
             repaintButtons();
 
             window.setInterval(checkReload, 200);
@@ -69,6 +70,17 @@
                             url: "/admin/simulator_speed/"+new_speed
                         });
         }
+
+        function getSpeed() {
+            var temp = $.ajax({
+                            url: "/admin/simulator_speed",
+                            success: function (result) {
+                                $('#sim-speed option[value="'+result+'"]').prop('selected', true);
+                            }
+                        });
+        }
+
+
 
         function repaintButtons() {
             if (is_created == "true") {
@@ -162,8 +174,6 @@
                  }
             });
         });
-
-        $('#sim-speed').
 
         $('#date-pause-ok').click(function(){
             var localDate = new Date($("#date-pause").val());
