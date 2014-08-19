@@ -9,7 +9,6 @@ import play.mvc.Controller;
 import play.mvc.Result;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -135,12 +134,34 @@ public class TemplateContestController extends Controller {
     }
 
     public static void createMock(List<TemplateMatchEvent> templateMatchEvents) {
-        createMock(templateMatchEvents, 0, 20, PrizeType.FREE);
-        createMock(templateMatchEvents, 5, 2, PrizeType.WINNER_TAKES_ALL);
-        createMock(templateMatchEvents, 5, 20, PrizeType.WINNER_TAKES_ALL);
-        createMock(templateMatchEvents, 10, 20, PrizeType.TOP_3_GET_PRIZES);
-        createMock(templateMatchEvents, 25, 20, PrizeType.TOP_THIRD_GET_PRIZES);
-        createMock(templateMatchEvents, 50, 20, PrizeType.FIFTY_FIFTY);
+        createMock(templateMatchEvents, 0, 3, PrizeType.FREE);
+        createMock(templateMatchEvents, 0, 5, PrizeType.FREE);
+        createMock(templateMatchEvents, 0, 10, PrizeType.FREE);
+        createMock(templateMatchEvents, 0, 25, PrizeType.FREE);
+
+
+        for (int i = 1; i<=6; i++) {
+            createMock(templateMatchEvents, i, 2, PrizeType.WINNER_TAKES_ALL);
+            createMock(templateMatchEvents, i, 3, PrizeType.WINNER_TAKES_ALL);
+            createMock(templateMatchEvents, i, 5, PrizeType.WINNER_TAKES_ALL);
+            createMock(templateMatchEvents, i, 10, PrizeType.WINNER_TAKES_ALL);
+            createMock(templateMatchEvents, i, 25, PrizeType.WINNER_TAKES_ALL);
+
+            createMock(templateMatchEvents, i, 3, PrizeType.TOP_3_GET_PRIZES);
+            createMock(templateMatchEvents, i, 5, PrizeType.TOP_3_GET_PRIZES);
+            createMock(templateMatchEvents, i, 10, PrizeType.TOP_3_GET_PRIZES);
+            createMock(templateMatchEvents, i, 25, PrizeType.TOP_3_GET_PRIZES);
+
+            createMock(templateMatchEvents, i, 3, PrizeType.TOP_THIRD_GET_PRIZES);
+            createMock(templateMatchEvents, i, 5, PrizeType.TOP_THIRD_GET_PRIZES);
+            createMock(templateMatchEvents, i, 10, PrizeType.TOP_THIRD_GET_PRIZES);
+            createMock(templateMatchEvents, i, 25, PrizeType.TOP_THIRD_GET_PRIZES);
+
+            createMock(templateMatchEvents, i, 3, PrizeType.FIFTY_FIFTY);
+            createMock(templateMatchEvents, i, 5, PrizeType.FIFTY_FIFTY);
+            createMock(templateMatchEvents, i, 10, PrizeType.FIFTY_FIFTY);
+            createMock(templateMatchEvents, i, 25, PrizeType.FIFTY_FIFTY);
+        }
     }
 
     public static void createMock(List<TemplateMatchEvent> templateMatchEvents, int entryFee, int maxEntries, PrizeType prizeType) {
@@ -158,7 +179,7 @@ public class TemplateContestController extends Controller {
         templateContest.maxEntries = maxEntries;
         templateContest.prizeType = prizeType;
         templateContest.entryFee = entryFee;
-        templateContest.salaryCap = 100000;
+        templateContest.salaryCap = 90000;
         templateContest.startDate = startDate;
         templateContest.templateMatchEventIds = new ArrayList<>();
 

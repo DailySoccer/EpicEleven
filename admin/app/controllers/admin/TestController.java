@@ -24,18 +24,13 @@ public class TestController extends Controller {
         return ok("OK");
     }
 
-    static public Result importEverything() {
-        ImportController.importSalaries();
-        ImportController.importAllTeams();
-        ImportController.importAllSoccers();
-        ImportController.importAllMatchEvents();
+    static public Result initialSetup() {
+        DashboardController.initialSetup();
         return ok("OK");
     }
 
-    static public Result initialSetup() {
-        importEverything();
-        PointsTranslationController.resetToDefault();
-        TemplateContestController.createAll();
+    static public Result importEverything() {
+        DashboardController.importEverything();
         return ok("OK");
     }
 }

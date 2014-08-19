@@ -1,5 +1,6 @@
 GET         /                                                          controllers.admin.DashboardController.index()
 GET         /reset_db                                                  controllers.admin.DashboardController.resetDB()
+GET         /initial_setup                                             controllers.admin.DashboardController.initialSetup()
 
 GET         /import_teams                                              controllers.admin.ImportController.showImportTeams()
 GET         /import_all_new_teams                                      controllers.admin.ImportController.importAllNewTeams()
