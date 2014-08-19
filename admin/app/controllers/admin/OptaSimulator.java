@@ -3,6 +3,8 @@ package controllers.admin;
 import model.*;
 import model.opta.OptaProcessor;
 import org.jdom2.input.JDOMParseException;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
 import org.jongo.MongoCollection;
 import play.Logger;
 import play.db.DB;
@@ -12,9 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashSet;
-import java.util.TimeZone;
 
 public class OptaSimulator implements Runnable {
 
@@ -44,7 +44,7 @@ public class OptaSimulator implements Runnable {
             _state = new OptaSimulatorState();
 
             _state.useSnapshot = false;
-            _state.lastParsedDate = Model.getFirstDateFromOptaXML();
+            _state.lastParsedDate = new DateTime(Model.getFirstDateFromOptaXML()).minusSeconds(5).toDate();
 
             _state.competitionId = "4";     // Let's simulate just the World Cup
             _state.nextDocToParseIndex = 0;
@@ -71,7 +71,9 @@ public class OptaSimulator implements Runnable {
 
     public Date getNextStop() { return _state.pauseDate; }
     public String getNextStepDescription() { return "" + _state.nextDocToParseIndex; }
-    public boolean isPaused() { return _paused; }
+    public boolean isPaused() {
+        return (_paused || _stopLoop);
+    }
     public boolean isSnapshotEnabled() { return _state.useSnapshot; }
 
     public void start() {
@@ -83,6 +85,7 @@ public class OptaSimulator implements Runnable {
 
     public void pause() {
         _stopLoop = true;
+
 
         if (_optaThread != null) {
             try {
@@ -189,27 +192,37 @@ public class OptaSimulator implements Runnable {
                 }
             }
 
-            if (_optaResultSet.next()) {
-                Date createdAt = _optaResultSet.getTimestamp("created_at");
-
-                String sqlxml = _optaResultSet.getString("xml");
-                String name = _optaResultSet.getString("name");
-                String feedType = _optaResultSet.getString("feed_type");
-
-                Logger.debug(name + " " + GlobalDate.formatDate(createdAt));
-
-                if (feedType != null) {
-                    try {
-                        HashSet<String> changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, sqlxml);
-                        ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
-                    }
-                    catch (JDOMParseException e) {
-                        Logger.error("Failed parsing: {}", _optaResultSet.getInt("id"), e);
-                    }
+            if (waitingForDate == null) {
+                if (_optaResultSet.next()) {
+                    waitingForDate = _optaResultSet.getTimestamp("created_at");
                 }
 
-                _state.nextDocToParseIndex++;
-                updateDate(createdAt);
+            }
+            if (waitingForDate != null) {
+                if (sleepUntil(waitingForDate) && !waitingForDate.after(GlobalDate.getCurrentDate())) {
+                    waitingForDate = null;
+
+                    Date createdAt = _optaResultSet.getTimestamp("created_at");
+
+                    String sqlxml = _optaResultSet.getString("xml");
+                    String name = _optaResultSet.getString("name");
+                    String feedType = _optaResultSet.getString("feed_type");
+
+
+
+                    Logger.debug(name + " " + GlobalDate.formatDate(createdAt));
+
+                    if (feedType != null) {
+                        try {
+                            HashSet<String> changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, sqlxml);
+                            ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
+                        } catch (JDOMParseException e) {
+                            Logger.error("Failed parsing: {}", _optaResultSet.getInt("id"), e);
+                        }
+                    }
+
+                    _state.nextDocToParseIndex++;
+                }
             }
             else {
                 bFinished = true;
@@ -225,6 +238,52 @@ public class OptaSimulator implements Runnable {
 
         return bFinished;
     }
+
+    public void setSpeedFactor(int speedFactor) {
+        _state.speedFactor = speedFactor;
+    }
+
+    public int getSpeedFactor() {
+        return _state.speedFactor;
+    }
+
+    private boolean sleepUntil(Date nextStop) {
+        Duration untilNextStop;
+        Duration sleeping = null;
+        boolean reachedStop = false;
+        //sleeping = untilNextStop.compareTo(_duration)==-1? untilNextStop: _duration;
+
+        while (!reachedStop && !isPaused()) {
+            try {
+
+
+                untilNextStop = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(nextStop));
+                if (untilNextStop.compareTo(_duration) == -1) {
+                    sleeping = untilNextStop;
+                    reachedStop = true;
+                    if (sleeping.getMillis() == 0) {
+                        return reachedStop;
+                    }
+                } else {
+                    sleeping = _duration;
+                }
+
+
+                Date nextDate = new DateTime(GlobalDate.getCurrentDate()).plus(sleeping).toDate();
+                Thread.sleep(sleeping.getMillis() / _state.speedFactor);
+
+                if (!isPaused()) {
+                    updateDate(nextDate);
+                }
+
+            } catch (InterruptedException e) {
+                Logger.error("WTF 2311", e);
+            }
+
+        }
+        return reachedStop;
+    }
+
 
     private void createConnection() {
         _connection = DB.getConnection();
@@ -270,6 +329,10 @@ public class OptaSimulator implements Runnable {
     ResultSet _optaResultSet;
     Statement _stmt;
 
+    private Date waitingForDate;
+
+    private Duration _duration = new Duration(1000);
+
     OptaProcessor _optaProcessor;
     Snapshot _snapshot;
     OptaSimulatorState _state;
@@ -284,6 +347,8 @@ class OptaSimulatorState {
     public Date    pauseDate;
     public Date    lastParsedDate;
     public int     nextDocToParseIndex;
+    public int     speedFactor = 3600;
 
     public OptaSimulatorState() {}
 }
+
