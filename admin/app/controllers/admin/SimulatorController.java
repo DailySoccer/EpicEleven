@@ -113,6 +113,9 @@ public class SimulatorController extends Controller {
     }
 
     public static Result getSpeed() {
-        return ok(String.valueOf(OptaSimulator.instance().getSpeedFactor()));
+        if (OptaSimulator.isCreated())
+            return ok(String.valueOf(OptaSimulator.instance().getSpeedFactor()));
+        else
+            return ok("86400");
     }
 }

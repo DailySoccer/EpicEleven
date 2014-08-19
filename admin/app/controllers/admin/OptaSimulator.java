@@ -71,9 +71,7 @@ public class OptaSimulator implements Runnable {
 
     public Date getNextStop() { return _state.pauseDate; }
     public String getNextStepDescription() { return "" + _state.nextDocToParseIndex; }
-    public boolean isPaused() {
-        return (_paused || _stopLoop);
-    }
+    public boolean isPaused() { return (_paused || _stopLoop);  }
     public boolean isSnapshotEnabled() { return _state.useSnapshot; }
 
     public void start() {
@@ -167,59 +165,31 @@ public class OptaSimulator implements Runnable {
     public boolean nextStep() {
         boolean bFinished = false;
 
-        if (_connection == null) {
-            createConnection();
-        }
+        ensureConnection();
 
         try {
             if (_state.nextDocToParseIndex % RESULTS_PER_QUERY == 0 || _optaResultSet == null) {
-                if (_stmt != null) {
-                    _stmt.close();
-                    _stmt = null;
-                }
-
-                _stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-
-                if (_state.competitionId != null) {
-                    _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml " +
-                                                        "WHERE competition_id='" + _state.competitionId + "' "+
-                                                        "ORDER BY created_at LIMIT " +
-                                                         RESULTS_PER_QUERY + " OFFSET " + _state.nextDocToParseIndex + ";");
-                }
-                else {
-                    _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml ORDER BY created_at LIMIT " +
-                                                         RESULTS_PER_QUERY + " OFFSET " + _state.nextDocToParseIndex + ";");
-                }
+                queryNextResultSet();
             }
 
-            if (waitingForDate == null) {
-                if (_optaResultSet.next()) {
-                    waitingForDate = _optaResultSet.getTimestamp("created_at");
+            if (_nextDocDate == null && _optaResultSet.next()) {
+                _nextDocDate = _optaResultSet.getTimestamp("created_at");
+            }
+
+            if (_nextDocDate != null) {
+                boolean nextDocReached = false;
+
+                try {
+                    nextDocReached = sleepUntil(_nextDocDate);
+                }
+                catch (InterruptedException e) {
+                    Logger.error("WTF 2311", e);
                 }
 
-            }
-            if (waitingForDate != null) {
-                if (sleepUntil(waitingForDate) && !waitingForDate.after(GlobalDate.getCurrentDate())) {
-                    waitingForDate = null;
+                if (nextDocReached) {
+                    _nextDocDate = null;
 
-                    Date createdAt = _optaResultSet.getTimestamp("created_at");
-
-                    String sqlxml = _optaResultSet.getString("xml");
-                    String name = _optaResultSet.getString("name");
-                    String feedType = _optaResultSet.getString("feed_type");
-
-
-
-                    Logger.debug(name + " " + GlobalDate.formatDate(createdAt));
-
-                    if (feedType != null) {
-                        try {
-                            HashSet<String> changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, sqlxml);
-                            ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
-                        } catch (JDOMParseException e) {
-                            Logger.error("Failed parsing: {}", _optaResultSet.getInt("id"), e);
-                        }
-                    }
+                    processNextDoc();
 
                     _state.nextDocToParseIndex++;
                 }
@@ -239,6 +209,44 @@ public class OptaSimulator implements Runnable {
         return bFinished;
     }
 
+    private void processNextDoc() throws SQLException {
+        Date createdAt = _optaResultSet.getTimestamp("created_at");
+
+        String sqlxml = _optaResultSet.getString("xml");
+        String name = _optaResultSet.getString("name");
+        String feedType = _optaResultSet.getString("feed_type");
+
+        Logger.debug(name + " " + GlobalDate.formatDate(createdAt));
+
+        try {
+            HashSet<String> changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, sqlxml);
+            ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
+        }
+        catch (JDOMParseException e) {
+            Logger.error("Failed parsing: {}", _optaResultSet.getInt("id"), e);
+        }
+    }
+
+    private void queryNextResultSet() throws SQLException {
+        if (_stmt != null) {
+            _stmt.close();
+            _stmt = null;
+        }
+
+        _stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
+        if (_state.competitionId != null) {
+            _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml " +
+                                                "WHERE competition_id='" + _state.competitionId + "' "+
+                                                "ORDER BY created_at LIMIT " +
+                                                 RESULTS_PER_QUERY + " OFFSET " + _state.nextDocToParseIndex + ";");
+        }
+        else {
+            _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml ORDER BY created_at LIMIT " +
+                                                 RESULTS_PER_QUERY + " OFFSET " + _state.nextDocToParseIndex + ";");
+        }
+    }
+
     public void setSpeedFactor(int speedFactor) {
         _state.speedFactor = speedFactor;
     }
@@ -247,52 +255,41 @@ public class OptaSimulator implements Runnable {
         return _state.speedFactor;
     }
 
-    private boolean sleepUntil(Date nextStop) {
-        Duration untilNextStop;
-        Duration sleeping = null;
+    private boolean sleepUntil(Date nextStop) throws InterruptedException {
+
         boolean reachedStop = false;
-        //sleeping = untilNextStop.compareTo(_duration)==-1? untilNextStop: _duration;
 
         while (!reachedStop && !isPaused()) {
-            try {
 
+            Duration untilNextStop = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(nextStop));
+            Duration sleeping = SLEEPING_DURATION;
 
-                untilNextStop = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(nextStop));
-                if (untilNextStop.compareTo(_duration) == -1) {
-                    sleeping = untilNextStop;
-                    reachedStop = true;
-                    if (sleeping.getMillis() == 0) {
-                        return reachedStop;
-                    }
-                } else {
-                    sleeping = _duration;
-                }
+            if (untilNextStop.compareTo(SLEEPING_DURATION) < 0) {
+                sleeping = untilNextStop;
+                reachedStop = true;
+            }
 
-
+            if (sleeping.getMillis() != 0) {
                 Date nextDate = new DateTime(GlobalDate.getCurrentDate()).plus(sleeping).toDate();
                 Thread.sleep(sleeping.getMillis() / _state.speedFactor);
 
                 if (!isPaused()) {
                     updateDate(nextDate);
                 }
-
-            } catch (InterruptedException e) {
-                Logger.error("WTF 2311", e);
             }
-
         }
+
         return reachedStop;
     }
 
 
-    private void createConnection() {
+    private void ensureConnection() {
+
+        if (_connection != null) {
+            return;
+        }
+
         _connection = DB.getConnection();
-        try {
-            _connection.setAutoCommit(false);
-        }
-        catch (SQLException e) {
-            Logger.error("WTF 1231 SQLException: ", e);
-        }
     }
 
     private void closeConnection() {
@@ -329,9 +326,8 @@ public class OptaSimulator implements Runnable {
     ResultSet _optaResultSet;
     Statement _stmt;
 
-    private Date waitingForDate;
-
-    private Duration _duration = new Duration(1000);
+    Date _nextDocDate;
+    static final Duration SLEEPING_DURATION = new Duration(1000);
 
     OptaProcessor _optaProcessor;
     Snapshot _snapshot;
