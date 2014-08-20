@@ -235,13 +235,13 @@ public class OptaSimulator implements Runnable {
 
             if (_state.competitionId != null) {
                 _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml " +
-                        "WHERE competition_id='" + _state.competitionId + "' "+
-                        "ORDER BY created_at LIMIT " +
-                        RESULTS_PER_QUERY + " OFFSET " + _state.nextDocToParseIndex + ";");
+                                                    "WHERE competition_id='" + _state.competitionId + "' "+
+                                                    "ORDER BY created_at LIMIT " +
+                                                    RESULTS_PER_QUERY + " OFFSET " + _state.nextDocToParseIndex + ";");
             }
             else {
                 _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml ORDER BY created_at LIMIT " +
-                        RESULTS_PER_QUERY + " OFFSET " + _state.nextDocToParseIndex + ";");
+                                                    RESULTS_PER_QUERY + " OFFSET " + _state.nextDocToParseIndex + ";");
             }
 
             _nextDocDate = null;

@@ -174,7 +174,7 @@ public class TemplateContestController extends Controller {
 
         TemplateContest templateContest = new TemplateContest();
 
-        templateContest.name = GlobalDate.formatDate(startDate);
+        templateContest.name = "%StartDate";
         templateContest.minInstances = 3;
         templateContest.maxEntries = maxEntries;
         templateContest.prizeType = prizeType;
