@@ -269,19 +269,21 @@ public class OptaSimulator implements Runnable {
 
             Duration untilNextStop = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(nextStop));
             Duration sleeping = SLEEPING_DURATION;
+            Duration addedTime = new Duration(SLEEPING_DURATION.getMillis() * _state.speedFactor);
 
-            if (untilNextStop.compareTo(SLEEPING_DURATION) < 0) {
-                sleeping = untilNextStop;
+            if (untilNextStop.compareTo(addedTime) < 0) {
+                sleeping = new Duration(untilNextStop.getMillis() / _state.speedFactor);
+                addedTime = untilNextStop;
                 reachedStop = true;
             }
 
             if (sleeping.getMillis() != 0) {
-                Date nextDate = new DateTime(GlobalDate.getCurrentDate()).plus(sleeping).toDate();
-                Thread.sleep(sleeping.getMillis() / _state.speedFactor);
+                Thread.sleep(sleeping.getMillis());
+            }
 
-                if (!isPaused()) {
-                    updateDate(nextDate);
-                }
+            if (!isPaused()) {
+                Date nextDate = new DateTime(GlobalDate.getCurrentDate()).plus(addedTime).toDate();
+                updateDate(nextDate);
             }
         }
 
