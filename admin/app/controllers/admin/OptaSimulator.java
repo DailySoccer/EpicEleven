@@ -84,7 +84,6 @@ public class OptaSimulator implements Runnable {
     public void pause() {
         _stopLoop = true;
 
-
         if (_optaThread != null) {
             try {
                 // Tenemos que esperar a que muera, cuando salimos de aqui estamos seguros de que estamos pausados

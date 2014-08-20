@@ -24,7 +24,7 @@ public class GlobalDate {
 
     // Para mostrar fechas en sitios como el log o la zona de administracion, siempre tenemos que llamar aqui
     static public String formatDate(Date date) {
-        return new DateTime(date).toString(DateTimeFormat.mediumDateTime().withZoneUTC().withLocale(Locale.JAPAN) ) + " UTC";
+        return new DateTime(date).toString(DateTimeFormat.forPattern("dd/MM/YY HH:mm:ss").withZoneUTC()) + " UTC";
     }
 
     static public Date parseDate(String dateStr, String timezone) {
