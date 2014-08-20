@@ -43,7 +43,7 @@
             }
             <button id="date-pause-ok" name="date-pause-ok" type="button" class="btn btn-sim btn-primary fforward" style="position:relative;">Go to Date</button>
             <select id="sim-speed" onchange="changeSpeed()" class="form-control" style="width: inherit; display: inline-block;">
-                <option value="86400">1 day per second</option>
+                <option value=@Integer.MAX_VALUE.toString()>Max Speed</option>
                 <option value="3600">1 hour per second</option>
                 <option value="60">1 minute per second</option>
                 <option value="2">Twice as fast</option>
