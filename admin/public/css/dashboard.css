@@ -94,3 +94,9 @@ body {
   display: inline-block;
   border-radius: 50%;
 }
+
+.btn-with-symbol {
+  /*padding-left: 35px; /* XD */
+  padding-left: 25px; /* SD */
+}
+
