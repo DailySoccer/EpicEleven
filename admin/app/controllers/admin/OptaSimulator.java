@@ -168,13 +168,7 @@ public class OptaSimulator implements Runnable {
         ensureConnection();
 
         try {
-            if (_state.nextDocToParseIndex % RESULTS_PER_QUERY == 0 || _optaResultSet == null) {
-                queryNextResultSet();
-            }
-
-            if (_nextDocDate == null && _optaResultSet.next()) {
-                _nextDocDate = _optaResultSet.getTimestamp("created_at");
-            }
+            queryNextResultSet();
 
             if (_nextDocDate != null) {
                 boolean nextDocReached = false;
@@ -186,12 +180,10 @@ public class OptaSimulator implements Runnable {
                     Logger.error("WTF 2311", e);
                 }
 
-                if (nextDocReached) {
+                if (nextDocReached && !isPaused()) {
                     _nextDocDate = null;
 
                     processNextDoc();
-
-                    _state.nextDocToParseIndex++;
                 }
             }
             else {
@@ -210,6 +202,10 @@ public class OptaSimulator implements Runnable {
     }
 
     private void processNextDoc() throws SQLException {
+        if (_optaResultSet == null) {
+            throw new RuntimeException("WTF 7241: processNextDoc");
+        }
+
         Date createdAt = _optaResultSet.getTimestamp("created_at");
 
         String sqlxml = _optaResultSet.getString("xml");
@@ -225,25 +221,35 @@ public class OptaSimulator implements Runnable {
         catch (JDOMParseException e) {
             Logger.error("Failed parsing: {}", _optaResultSet.getInt("id"), e);
         }
+
+        _state.nextDocToParseIndex++;
     }
 
     private void queryNextResultSet() throws SQLException {
-        if (_stmt != null) {
-            _stmt.close();
-            _stmt = null;
+        if (_state.nextDocToParseIndex % RESULTS_PER_QUERY == 0 || _optaResultSet == null) {
+            if (_stmt != null) {
+                _stmt.close();
+                _stmt = null;
+            }
+
+            _stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+
+            if (_state.competitionId != null) {
+                _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml " +
+                        "WHERE competition_id='" + _state.competitionId + "' "+
+                        "ORDER BY created_at LIMIT " +
+                        RESULTS_PER_QUERY + " OFFSET " + _state.nextDocToParseIndex + ";");
+            }
+            else {
+                _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml ORDER BY created_at LIMIT " +
+                        RESULTS_PER_QUERY + " OFFSET " + _state.nextDocToParseIndex + ";");
+            }
+
+            _nextDocDate = null;
         }
 
-        _stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-
-        if (_state.competitionId != null) {
-            _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml " +
-                                                "WHERE competition_id='" + _state.competitionId + "' "+
-                                                "ORDER BY created_at LIMIT " +
-                                                 RESULTS_PER_QUERY + " OFFSET " + _state.nextDocToParseIndex + ";");
-        }
-        else {
-            _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml ORDER BY created_at LIMIT " +
-                                                 RESULTS_PER_QUERY + " OFFSET " + _state.nextDocToParseIndex + ";");
+        if (_nextDocDate == null && _optaResultSet.next()) {
+            _nextDocDate = _optaResultSet.getTimestamp("created_at");
         }
     }
 
