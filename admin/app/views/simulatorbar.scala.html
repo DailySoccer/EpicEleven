@@ -86,7 +86,8 @@
             if (is_created == "true") {
                 $(".switch").text("Off")
                 $(".btn-sim").removeClass("disabled");
-
+                $("#sim-speed").prop("disabled", false);
+                
 
                 if (is_paused == "false") {
                     $(".btn-sim.play").attr("href", "/admin/pause_simulator");
@@ -125,6 +126,7 @@
 
                 $(".btn-sim").removeClass("btn-success");
                 $(".btn-sim").addClass("btn-primary");
+                $("#sim-speed").prop("disabled", true);
             }
         }
 
