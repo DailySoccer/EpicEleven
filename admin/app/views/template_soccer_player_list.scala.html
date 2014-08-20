@@ -10,19 +10,30 @@
             return valid.test(n) && !isNaN(parseInt(n)) && isFinite(n) && (n % 1 === 0);
         }
 
+        function changeSalary(id, value) {
+            if (isInteger(value)) {
+                $.ajax({
+                    url: "/admin/template_soccer_player/"+id+"/salary/"+value
+                });
+            }
+            else {
+                window.alert("Número Entero inválido: " + value);
+            }
+        }
+
         $(document).ready( function(){
-            $(".edit-salary").blur(function() {
-                var value = $(this).html();
-                if (isInteger(value)) {
-                    var id = $(this).attr("data-player-id");
-                    $.ajax({
-                        url: "/admin/template_soccer_player/"+id+"/salary/"+value
-                    });
-                }
-                else {
-                    window.alert("Número Entero inválido: " + value);
-                }
-            });
+            $(".edit-salary")
+                .keypress(function(e) {
+                    if(event.which == 13 /*|| event.which == 9*/) {
+                        event.preventDefault();
+                        changeSalary($(this).attr("data-player-id"), $(this).html());
+
+                        //$(this).next().attr('data-player-id');
+                    }
+                })
+                .blur(function() {
+                    changeSalary($(this).attr("data-player-id"), $(this).html());
+                });
         })
 
     </script>
