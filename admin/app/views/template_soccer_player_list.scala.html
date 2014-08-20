@@ -1,8 +1,34 @@
 @(soccers: List[model.TemplateSoccerPlayer], templateSoccerTeamMap: HashMap[org.bson.types.ObjectId, model.TemplateSoccerTeam])
 
 @import controllers.admin.routes._
-        
-@main("Template Soccer Players - Admin") {
+
+@scripts = {
+<script type="text/javascript">
+
+        function isInteger(n) {
+            var valid = /^-?[0-9]+$/;
+            return valid.test(n) && !isNaN(parseInt(n)) && isFinite(n) && (n % 1 === 0);
+        }
+
+        $(document).ready( function(){
+            $(".edit-salary").blur(function() {
+                var value = $(this).html();
+                if (isInteger(value)) {
+                    var id = $(this).attr("data-player-id");
+                    $.ajax({
+                        url: "/admin/template_soccer_player/"+id+"/salary/"+value
+                    });
+                }
+                else {
+                    window.alert("Número Entero inválido: " + value);
+                }
+            });
+        })
+
+    </script>
+}
+
+@main("Template Soccer Players - Admin", scripts) {
 
 <h1 class="page-header">Template Soccer Players</h1>
 
@@ -28,7 +54,7 @@
             <td>@p.optaPlayerId</td>
             <td>@p.name</td>
             <td>@p.fieldPos</td>
-            <td>@p.salary</td>
+            <td class="edit-salary" contenteditable="true" data-player-id=@p.templateSoccerPlayerId>@p.salary</td>
             <td><a href="@TemplateSoccerPlayerController.showStats(p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
             <td>@p.stats.length</td>
             <td><a href="@TemplateSoccerTeamController.show(p.templateTeamId.toString())">@templateSoccerTeamMap(p.templateTeamId).name</a></td>

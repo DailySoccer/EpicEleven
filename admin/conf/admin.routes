@@ -58,6 +58,7 @@ GET         /template_soccer_teams                                     controlle
 GET         /template_soccer_team/:templateSoccerTeam                  controllers.admin.TemplateSoccerTeamController.show(templateSoccerTeam : String)
 
 GET         /template_soccer_players                                   controllers.admin.TemplateSoccerPlayerController.index()
+GET         /template_soccer_player/:soccerPlayer/salary/:salary       controllers.admin.TemplateSoccerPlayerController.changeSalary(soccerPlayer : String, salary : Int)
 
 GET         /opta_soccer_players                                       controllers.admin.OptaController.optaSoccerPlayers()
 GET         /opta_soccer_teams                                         controllers.admin.OptaController.optaSoccerTeams()

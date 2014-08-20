@@ -14,6 +14,11 @@ public class TemplateSoccerPlayerController extends Controller {
         return ok(views.html.template_soccer_player_list.render(TemplateSoccerPlayer.findAll(), TemplateSoccerTeam.findAllAsMap()));
     }
 
+    public static Result changeSalary(String templateSoccerPlayerId, Integer salary) {
+        Model.templateSoccerPlayers().update(new ObjectId(templateSoccerPlayerId)).with("{$set: {salary: #}}", salary);
+        return ok("OK");
+    }
+
     public static Result showFantasyPointsInContest(String contestId, String playerId) {
         List<OptaEvent> optaEventList = new ArrayList<>();
 
