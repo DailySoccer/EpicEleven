@@ -14,10 +14,18 @@
             return isInteger(value);
         }
 
-        function changeSalary(id, value) {
+        function changeSalary(element) {
+            var id = element.attr("data-player-id")
+            var value = element.html();
             if (isSalaryValid(value)) {
                 $.ajax({
-                    url: "/admin/template_soccer_player/"+id+"/salary/"+value
+                    url: "/admin/template_soccer_player/"+id+"/salary/"+value,
+                    success: function(result) {
+                        element.effect( "highlight", {}, 1000 );
+                    },
+                    error: function(result) {
+                        element.effect( "highlight", {color:"#FF0000"}, 1000 );
+                    }
                 });
                 return true;
             }
@@ -40,14 +48,14 @@
                             }
                             else {
                                 // Si no hay ningún elemento siguiente (es el último), cambiamos el salario aqui
-                                changeSalary($(this).attr("data-player-id"), $(this).html());
+                                changeSalary($(this));
                             }
                         }
                     }
                 })
                 .blur(function() {
                     // Cambiamos el salario al perder el foco
-                    changeSalary($(this).attr("data-player-id"), $(this).html());
+                    changeSalary($(this));
                 });
         })
 
