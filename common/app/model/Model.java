@@ -12,6 +12,7 @@ import utils.ListUtils;
 import java.sql.Connection;
 import java.sql.*;
 import java.util.Date;
+import java.util.Set;
 
 
 public class Model {
@@ -127,7 +128,14 @@ public class Model {
     };
 
     static private void dropDB(DB theMongoDB) {
-        theMongoDB.dropDatabase();
+        Set<String> collections = theMongoDB.getCollectionNames();
+        for (String collection: collections) {
+            if (!collection.contains("system.")) {
+                Logger.debug("About to delete collection: {}",collection);
+                theMongoDB.getCollection(collection).drop();
+            }
+        }
+        //theMongoDB.dropDatabase();
     }
 
 
