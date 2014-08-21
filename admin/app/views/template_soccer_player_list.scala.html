@@ -1,10 +1,78 @@
-@(soccers: List[model.TemplateSoccerPlayer], templateSoccerTeamMap: HashMap[org.bson.types.ObjectId, model.TemplateSoccerTeam])
+@(soccers: List[model.TemplateSoccerPlayer], templateSoccerTeamMap: HashMap[org.bson.types.ObjectId, model.TemplateSoccerTeam], canEditSalaries: Boolean)
 
 @import controllers.admin.routes._
-        
-@main("Template Soccer Players - Admin") {
+
+@scripts = {
+<script type="text/javascript">
+
+        function isInteger(n) {
+            var valid = /^-?[0-9]+$/;
+            return valid.test(n) && !isNaN(parseInt(n)) && isFinite(n) && (n % 1 === 0);
+        }
+
+        function isSalaryValid(value) {
+            return isInteger(value);
+        }
+
+        function changeSalary(element) {
+            var id = element.attr("data-player-id")
+            var value = element.html();
+            if (isSalaryValid(value)) {
+                $.ajax({
+                    url: "/admin/template_soccer_player/"+id+"/salary/"+value,
+                    success: function(result) {
+                        element.effect( "highlight", {}, 1000 );
+                    },
+                    error: function(result) {
+                        element.effect( "highlight", {color:"#FF0000"}, 1000 );
+                    }
+                });
+                return true;
+            }
+            else {
+                window.alert("Número Entero inválido: " + value);
+                return false;
+            }
+        }
+
+        $(document).ready( function(){
+            $(".edit-salary")
+                .keypress(function(e) {
+                    if(event.which == 13 || event.which == 9) {
+                        event.preventDefault();
+                        if (isSalaryValid($(this).html())) {
+                            var focusables = $(".edit-salary");
+                            var next = focusables.eq(focusables.index(this)+1);
+                            if (next.length) {
+                                next.focus();
+                            }
+                            else {
+                                // Si no hay ningún elemento siguiente (es el último), cambiamos el salario aqui
+                                changeSalary($(this));
+                            }
+                        }
+                    }
+                })
+                .blur(function() {
+                    // Cambiamos el salario al perder el foco
+                    changeSalary($(this));
+                });
+        })
+
+    </script>
+}
+
+@main("Template Soccer Players - Admin", scripts) {
 
 <h1 class="page-header">Template Soccer Players</h1>
+
+<div class="btn-group" style="display:inline-block;">
+@if(canEditSalaries) {
+    <a href="@TemplateSoccerPlayerController.index" class="btn btn-with-symbol btn-warning stop">Edit Salaries</a>
+} else {
+    <a href="@TemplateSoccerPlayerController.editSalaries" class="btn btn-with-symbol btn-success play">Edit Salaries</a>
+}
+</div>
 
 <h2 class="sub-header"></h2>
 <div class="table-responsive">
@@ -28,10 +96,10 @@
             <td>@p.optaPlayerId</td>
             <td>@p.name</td>
             <td>@p.fieldPos</td>
-            <td>@p.salary</td>
-            <td><a href="@TemplateSoccerPlayerController.showStats(p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
+            <td class="edit-salary" contenteditable=@canEditSalaries data-player-id=@p.templateSoccerPlayerId>@p.salary</td>
+            <td><a href="@TemplateSoccerPlayerController.showStats(p.templateSoccerPlayerId.toString())" tabIndex="-1">@p.fantasyPoints</a></td>
             <td>@p.stats.length</td>
-            <td><a href="@TemplateSoccerTeamController.show(p.templateTeamId.toString())">@templateSoccerTeamMap(p.templateTeamId).name</a></td>
+            <td><a href="@TemplateSoccerTeamController.show(p.templateTeamId.toString())" tabIndex="-1">@templateSoccerTeamMap(p.templateTeamId).name</a></td>
         </tr>
         }
         </tbody>

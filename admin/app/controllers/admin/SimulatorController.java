@@ -36,7 +36,7 @@ public class SimulatorController extends Controller {
     }
 
     public static Result nextStep() {
-        OptaSimulator.instance().nextStep();
+        OptaSimulator.instance().nextStep(OptaSimulator.MAX_SPEED);
         return ok();
     }
 
