@@ -31,8 +31,7 @@ if [ $# -eq 0 ]
         elif [[ "$branch_name" == "master" ]]
             then
                 destination="production"
-        elif [[ "$branch_name" == "develop" ]]
-            then 
+        else 
                 destination="staging"
         fi
     else
