@@ -35,7 +35,7 @@ public class OptaSimulator implements Runnable {
     }
 
     private OptaSimulator() {
-        _stopLoop = false;
+        _stopSignal = false;
         _optaProcessor = new OptaProcessor();
 
         _state = collection().findOne().as(OptaSimulatorState.class);
@@ -71,7 +71,7 @@ public class OptaSimulator implements Runnable {
 
     public Date getNextStop() { return _state.pauseDate; }
     public String getNextStepDescription() { return "" + _state.nextDocToParseIndex; }
-    public boolean isPaused() { return (_paused || _stopLoop);  }
+    public boolean isPaused() { return (_paused || _stopSignal);  }
     public boolean isSnapshotEnabled() { return _state.useSnapshot; }
 
     public void start() {
@@ -82,8 +82,7 @@ public class OptaSimulator implements Runnable {
     }
 
     public void pause() {
-        _stopLoop = true;
-
+        _stopSignal = true;
 
         if (_optaThread != null) {
             try {
@@ -120,22 +119,22 @@ public class OptaSimulator implements Runnable {
 
     @Override
     public void run() {
-        _stopLoop = false;
+        _stopSignal = false;
 
         _paused = false;
         saveState();
 
-        while (!_stopLoop) {
+        while (!_stopSignal) {
 
             if (_state.pauseDate != null && !_state.lastParsedDate.before(_state.pauseDate)) {
-                _stopLoop = true;
+                _stopSignal = true;
                 _state.pauseDate = null;
             }
             else {
-                boolean bFinished = nextStep();
+                boolean bFinished = nextStep(getSpeedFactor());
 
                 if (bFinished) {
-                    _stopLoop = true;
+                    _stopSignal = true;
                 }
             }
         }
@@ -144,6 +143,7 @@ public class OptaSimulator implements Runnable {
 
         // Salir del bucle implica que el thread muere y por lo tanto estamos pausados
         _optaThread = null;
+        _stopSignal = false;
         _paused = true;
         saveState();
 
@@ -162,7 +162,7 @@ public class OptaSimulator implements Runnable {
         ModelEvents.runTasks();
     }
 
-    public boolean nextStep() {
+    public boolean nextStep(int speedFactor) {
         boolean bFinished = false;
 
         ensureConnection();
@@ -174,13 +174,13 @@ public class OptaSimulator implements Runnable {
                 boolean nextDocReached = false;
 
                 try {
-                    nextDocReached = sleepUntil(_nextDocDate);
+                    nextDocReached = sleepUntil(_nextDocDate, speedFactor);
                 }
                 catch (InterruptedException e) {
                     Logger.error("WTF 2311", e);
                 }
 
-                if (nextDocReached && !isPaused()) {
+                if (nextDocReached) {
                     _nextDocDate = null;
 
                     processNextDoc();
@@ -261,18 +261,18 @@ public class OptaSimulator implements Runnable {
         return _state.speedFactor;
     }
 
-    private boolean sleepUntil(Date nextStop) throws InterruptedException {
+    private boolean sleepUntil(Date nextStop, int speedFactor) throws InterruptedException {
 
         boolean reachedStop = false;
 
-        while (!reachedStop && !isPaused()) {
+        while (!reachedStop && !_stopSignal) {
 
             Duration untilNextStop = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(nextStop));
             Duration sleeping = SLEEPING_DURATION;
-            Duration addedTime = new Duration(SLEEPING_DURATION.getMillis() * _state.speedFactor);
+            Duration addedTime = new Duration(SLEEPING_DURATION.getMillis() * speedFactor);
 
             if (untilNextStop.compareTo(addedTime) < 0) {
-                sleeping = new Duration(untilNextStop.getMillis() / _state.speedFactor);
+                sleeping = new Duration(untilNextStop.getMillis() / speedFactor);
                 addedTime = untilNextStop;
                 reachedStop = true;
             }
@@ -281,13 +281,13 @@ public class OptaSimulator implements Runnable {
                 Thread.sleep(sleeping.getMillis());
             }
 
-            if (!isPaused()) {
+            if (!_stopSignal) {
                 Date nextDate = new DateTime(GlobalDate.getCurrentDate()).plus(addedTime).toDate();
                 updateDate(nextDate);
             }
         }
 
-        return reachedStop;
+        return reachedStop && !_stopSignal;
     }
 
 
@@ -327,7 +327,7 @@ public class OptaSimulator implements Runnable {
 
     Thread _optaThread;
     volatile boolean _paused;
-    volatile boolean _stopLoop;
+    volatile boolean _stopSignal;
 
     final int RESULTS_PER_QUERY = 500;
     Connection _connection;
