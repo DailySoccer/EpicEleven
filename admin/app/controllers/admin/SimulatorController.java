@@ -36,7 +36,7 @@ public class SimulatorController extends Controller {
     }
 
     public static Result nextStep() {
-        OptaSimulator.instance().nextStep(Integer.MAX_VALUE);
+        OptaSimulator.instance().nextStep(true);
         return ok();
     }
 

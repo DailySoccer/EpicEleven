@@ -131,7 +131,7 @@ public class OptaSimulator implements Runnable {
                 _state.pauseDate = null;
             }
             else {
-                boolean bFinished = nextStep(getSpeedFactor());
+                boolean bFinished = nextStep(_state.speedFactor == Integer.MAX_VALUE);
 
                 if (bFinished) {
                     _stopSignal = true;
@@ -162,7 +162,7 @@ public class OptaSimulator implements Runnable {
         ModelEvents.runTasks();
     }
 
-    public boolean nextStep(int speedFactor) {
+    public boolean nextStep(boolean maxSpeed) {
         boolean bFinished = false;
 
         ensureConnection();
@@ -171,19 +171,17 @@ public class OptaSimulator implements Runnable {
             queryNextResultSet();
 
             if (_nextDocDate != null) {
-                boolean nextDocReached = false;
-
                 try {
-                    nextDocReached = sleepUntil(_nextDocDate, speedFactor);
+                    if (maxSpeed) {
+                        updateDate(_nextDocDate);
+                        processNextDoc();
+                    }
+                    else if (sleepUntil(_nextDocDate)) {
+                        processNextDoc();
+                    }
                 }
                 catch (InterruptedException e) {
                     Logger.error("WTF 2311", e);
-                }
-
-                if (nextDocReached) {
-                    _nextDocDate = null;
-
-                    processNextDoc();
                 }
             }
             else {
@@ -223,6 +221,7 @@ public class OptaSimulator implements Runnable {
         }
 
         _state.nextDocToParseIndex++;
+        _nextDocDate = null;
     }
 
     private void queryNextResultSet() throws SQLException {
@@ -254,25 +253,25 @@ public class OptaSimulator implements Runnable {
     }
 
     public void setSpeedFactor(int speedFactor) {
-        _state.speedFactor = speedFactor;
+       _state.speedFactor = speedFactor;
+       saveState();
     }
 
     public int getSpeedFactor() {
         return _state.speedFactor;
     }
 
-    private boolean sleepUntil(Date nextStop, int speedFactor) throws InterruptedException {
+    private boolean sleepUntil(Date nextStop) throws InterruptedException {
 
         boolean reachedStop = false;
 
         while (!reachedStop && !_stopSignal) {
-
             Duration untilNextStop = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(nextStop));
             Duration sleeping = SLEEPING_DURATION;
-            Duration addedTime = new Duration(SLEEPING_DURATION.getMillis() * speedFactor);
+            Duration addedTime = new Duration(SLEEPING_DURATION.getMillis() * _state.speedFactor);
 
             if (untilNextStop.compareTo(addedTime) < 0) {
-                sleeping = new Duration(untilNextStop.getMillis() / speedFactor);
+                sleeping = new Duration(untilNextStop.getMillis() / _state.speedFactor);
                 addedTime = untilNextStop;
                 reachedStop = true;
             }
