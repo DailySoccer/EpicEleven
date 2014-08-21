@@ -18,6 +18,8 @@ import java.util.HashSet;
 
 public class OptaSimulator implements Runnable {
 
+    static public final int MAX_SPEED = -1;
+
     static public boolean       isCreated() { return _instance != null;  }
     static public OptaSimulator instance()  { return _instance; }
 
@@ -131,7 +133,7 @@ public class OptaSimulator implements Runnable {
                 _state.pauseDate = null;
             }
             else {
-                boolean bFinished = nextStep(_state.speedFactor == Integer.MAX_VALUE);
+                boolean bFinished = nextStep(_state.speedFactor);
 
                 if (bFinished) {
                     _stopSignal = true;
@@ -162,7 +164,7 @@ public class OptaSimulator implements Runnable {
         ModelEvents.runTasks();
     }
 
-    public boolean nextStep(boolean maxSpeed) {
+    public boolean nextStep(int speedFactor) {
         boolean bFinished = false;
 
         ensureConnection();
@@ -172,11 +174,7 @@ public class OptaSimulator implements Runnable {
 
             if (_nextDocDate != null) {
                 try {
-                    if (maxSpeed) {
-                        updateDate(_nextDocDate);
-                        processNextDoc();
-                    }
-                    else if (sleepUntil(_nextDocDate)) {
+                    if (sleepUntil(_nextDocDate, speedFactor)) {
                         processNextDoc();
                     }
                 }
@@ -261,17 +259,21 @@ public class OptaSimulator implements Runnable {
         return _state.speedFactor;
     }
 
-    private boolean sleepUntil(Date nextStop) throws InterruptedException {
+    private boolean sleepUntil(Date nextStop, int speedFactor) throws InterruptedException {
 
         boolean reachedStop = false;
 
-        while (!reachedStop && !_stopSignal) {
+        if (speedFactor == MAX_SPEED) {
+            updateDate(nextStop);
+            reachedStop = true;
+        }
+        else {
             Duration untilNextStop = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(nextStop));
             Duration sleeping = SLEEPING_DURATION;
-            Duration addedTime = new Duration(SLEEPING_DURATION.getMillis() * _state.speedFactor);
+            Duration addedTime = new Duration(SLEEPING_DURATION.getMillis() * speedFactor);
 
             if (untilNextStop.compareTo(addedTime) < 0) {
-                sleeping = new Duration(untilNextStop.getMillis() / _state.speedFactor);
+                sleeping = new Duration(untilNextStop.getMillis() / speedFactor);
                 addedTime = untilNextStop;
                 reachedStop = true;
             }
