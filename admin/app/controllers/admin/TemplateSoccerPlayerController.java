@@ -11,7 +11,16 @@ import java.util.List;
 
 public class TemplateSoccerPlayerController extends Controller {
     public static Result index() {
-        return ok(views.html.template_soccer_player_list.render(TemplateSoccerPlayer.findAll(), TemplateSoccerTeam.findAllAsMap()));
+        return ok(views.html.template_soccer_player_list.render(TemplateSoccerPlayer.findAll(), TemplateSoccerTeam.findAllAsMap(), false));
+    }
+
+    public static Result editSalaries() {
+        return ok(views.html.template_soccer_player_list.render(TemplateSoccerPlayer.findAll(), TemplateSoccerTeam.findAllAsMap(), true));
+    }
+
+    public static Result changeSalary(String templateSoccerPlayerId, Integer salary) {
+        Model.templateSoccerPlayers().update(new ObjectId(templateSoccerPlayerId)).with("{$set: {salary: #}}", salary);
+        return ok("OK");
     }
 
     public static Result showFantasyPointsInContest(String contestId, String playerId) {
