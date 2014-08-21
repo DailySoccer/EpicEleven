@@ -10,28 +10,43 @@
             return valid.test(n) && !isNaN(parseInt(n)) && isFinite(n) && (n % 1 === 0);
         }
 
+        function isSalaryValid(value) {
+            return isInteger(value);
+        }
+
         function changeSalary(id, value) {
-            if (isInteger(value)) {
+            if (isSalaryValid(value)) {
                 $.ajax({
                     url: "/admin/template_soccer_player/"+id+"/salary/"+value
                 });
+                return true;
             }
             else {
                 window.alert("Número Entero inválido: " + value);
+                return false;
             }
         }
 
         $(document).ready( function(){
             $(".edit-salary")
                 .keypress(function(e) {
-                    if(event.which == 13 /*|| event.which == 9*/) {
+                    if(event.which == 13 || event.which == 9) {
                         event.preventDefault();
-                        changeSalary($(this).attr("data-player-id"), $(this).html());
-
-                        //$(this).next().attr('data-player-id');
+                        if (isSalaryValid($(this).html())) {
+                            var focusables = $(".edit-salary");
+                            var next = focusables.eq(focusables.index(this)+1);
+                            if (next.length) {
+                                next.focus();
+                            }
+                            else {
+                                // Si no hay ningún elemento siguiente (es el último), cambiamos el salario aqui
+                                changeSalary($(this).attr("data-player-id"), $(this).html());
+                            }
+                        }
                     }
                 })
                 .blur(function() {
+                    // Cambiamos el salario al perder el foco
                     changeSalary($(this).attr("data-player-id"), $(this).html());
                 });
         })
@@ -74,9 +89,9 @@
             <td>@p.name</td>
             <td>@p.fieldPos</td>
             <td class="edit-salary" contenteditable=@canEditSalaries data-player-id=@p.templateSoccerPlayerId>@p.salary</td>
-            <td><a href="@TemplateSoccerPlayerController.showStats(p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
+            <td><a href="@TemplateSoccerPlayerController.showStats(p.templateSoccerPlayerId.toString())" tabIndex="-1">@p.fantasyPoints</a></td>
             <td>@p.stats.length</td>
-            <td><a href="@TemplateSoccerTeamController.show(p.templateTeamId.toString())">@templateSoccerTeamMap(p.templateTeamId).name</a></td>
+            <td><a href="@TemplateSoccerTeamController.show(p.templateTeamId.toString())" tabIndex="-1">@templateSoccerTeamMap(p.templateTeamId).name</a></td>
         </tr>
         }
         </tbody>
