@@ -9,6 +9,13 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 // http://www.playframework.com/documentation/2.2.x/ScalaGlobal
 object Global extends GlobalSettings {
 
+  //Web dynos have PORT set while workers don't
+  val port = scala.util.Properties.envOrElse("PORT", null)
+  //Worker dynos are expected to have "worker" in their name
+  val dyno = scala.util.Properties.envOrElse("DYNO", "worker")
+
+  def isWorker: Boolean = { dyno.contains("worker") || port==null || port.equals("0") }
+
   val loggingFilter = Filter { (nextFilter, requestHeader) =>
     val startTime = System.currentTimeMillis
 
@@ -36,7 +43,11 @@ object Global extends GlobalSettings {
     Logger.info("Application has started")
 
     Model.init()
-    Scheduler.scheduleMethods();
+
+    if (isWorker) {
+      Logger.debug("I'm a worker")
+      Scheduler.scheduleMethods("jobs")
+    }
 
   }
 

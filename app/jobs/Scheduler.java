@@ -17,9 +17,7 @@ public class Scheduler {
 
     @SuppressWarnings("unchecked")
     public static void scheduleMethods(String... namespaces) {
-        if (namespaces.length == 0) {
-            namespaces = new String[]{""};
-        }
+
         final ConfigurationBuilder configBuilder = build(namespaces);
         final Reflections reflections = new Reflections(configBuilder.setScanners(new MethodAnnotationsScanner()));
         final Set<Method> schedules = reflections.getMethodsAnnotatedWith(Schedule.class);
@@ -57,9 +55,11 @@ public class Scheduler {
 
     private static ConfigurationBuilder build(String... namespaces) {
         final ConfigurationBuilder configBuilder = new ConfigurationBuilder();
+
         for(final String namespace : namespaces) {
             configBuilder.addUrls(ClasspathHelper.forPackage(namespace));
         }
+
         return configBuilder;
     }
 }

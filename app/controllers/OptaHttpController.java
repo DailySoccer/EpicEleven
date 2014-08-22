@@ -1,7 +1,6 @@
 package controllers;
 
 import actions.AllowCors;
-import jobs.Schedule;
 import model.GlobalDate;
 import model.Model;
 import model.ModelEvents;
@@ -24,15 +23,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 @AllowCors.Origin
 public class OptaHttpController extends Controller {
-
-    @Schedule(initialDelay = 1, timeUnit = TimeUnit.SECONDS, interval = 2)
-    public static void printLog() {
-        Logger.debug("Hola");
-    }
 
     @BodyParser.Of(value = BodyParser.TolerantText.class, maxLength = 4 * 1024 * 1024)
     public static Result optaXmlInput() {
