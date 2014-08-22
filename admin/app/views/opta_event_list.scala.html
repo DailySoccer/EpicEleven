@@ -1,4 +1,4 @@
-@(opta_events: List[model.opta.OptaEvent])
+@()
 
 @import controllers.admin.routes._
 @import model.GlobalDate
@@ -14,7 +14,7 @@
           "bServerSide": true,
           "bJQueryUI": true,
           "sPaginationType": "full_numbers",
-          "sAjaxSource": "/admin/opta_events_ajax"
+          "sAjaxSource": "/admin/opta_events/ajax"
         });
       });
     </script>
@@ -42,25 +42,6 @@
         </tr>
         </thead>
         <tbody>
-        @for(p <- opta_events) {
-        <tr>
-            <td>@p.pointsTranslationId</td>
-            <td>@p.competitionId</td>
-            <td>@p.gameId</td>
-            <td>@p.homeTeamId</td>
-            <td>@p.awayTeamId</td>
-            <td>@p.optaPlayerId</td>
-            <td>@p.typeId</td>
-            <td>@p.points</td>
-
-            <td>@GlobalDate.formatDate(p.timestamp)</td>
-         @if(p.lastModified != null) {
-            <td>@GlobalDate.formatDate(p.lastModified)</td>
-         } else {
-            <td></td>
-         }
-        </tr>
-        }
         </tbody>
     </table>
 </div>
