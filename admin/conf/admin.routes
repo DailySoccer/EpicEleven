@@ -65,6 +65,7 @@ GET         /opta_soccer_players                                       controlle
 GET         /opta_soccer_teams                                         controllers.admin.OptaController.optaSoccerTeams()
 GET         /opta_match_events                                         controllers.admin.OptaController.optaMatchEvents()
 GET         /opta_events                                               controllers.admin.OptaController.optaEvents()
+GET         /opta_events/ajax                                          controllers.admin.OptaController.optaEventsAjax()
 GET         /opta_events/update                                        controllers.admin.OptaController.updateOptaEvents()
 
 GET         /switch_simulator                                          controllers.admin.SimulatorController.switchSimulator()
