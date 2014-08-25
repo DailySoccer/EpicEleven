@@ -37,9 +37,6 @@ public class ModelEvents {
 
     public static void onOptaMatchEventIdsChanged(HashSet<String> changedOptaMatchEventIds) {
 
-        if (changedOptaMatchEventIds==null || changedOptaMatchEventIds.isEmpty())
-            return;
-
         for(String optaGameId : changedOptaMatchEventIds) {
             // Logger.info("optaGameId in gameId({})", optaGameId);
 
