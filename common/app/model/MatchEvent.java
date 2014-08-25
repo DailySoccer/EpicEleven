@@ -104,6 +104,9 @@ public class MatchEvent {
     }
 
     public int getFantasyPoints(SoccerTeam soccerTeam) {
+        if (soccerTeam != soccerTeamA && soccerTeam != soccerTeamB)
+            throw new RuntimeException("WTF 2771");
+
         int points = 0;
         for (SoccerPlayer soccerPlayer : soccerTeam.soccerPlayers) {
             points += getFantasyPoints(soccerPlayer.templateSoccerPlayerId);
