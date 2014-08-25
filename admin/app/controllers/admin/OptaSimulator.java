@@ -210,13 +210,8 @@ public class OptaSimulator implements Runnable {
 
         Logger.debug(name + " " + GlobalDate.formatDate(createdAt));
 
-        try {
-            HashSet<String> changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, sqlxml);
-            ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
-        }
-        catch (JDOMParseException e) {
-            Logger.error("Failed parsing: {}", _optaResultSet.getInt("id"), e);
-        }
+        HashSet<String> changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, sqlxml);
+        ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
 
         _state.nextDocToParseIndex++;
         _nextDocDate = null;

@@ -66,6 +66,8 @@ public class OptaHttpController extends Controller {
             }
         }
 
+        Logger.debug("OptaHttpController.optaXmlInput: About to insert {}", getHeader("X-Meta-Default-Filename", request().headers()));
+
         Model.insertXML(bodyText,
                         getHeadersString(request().headers()),
                         new Date(),
@@ -76,16 +78,7 @@ public class OptaHttpController extends Controller {
                         getHeader("X-Meta-Season-Id", request().headers()),
                         GlobalDate.parseDate(getHeader("X-Meta-Last-Updated", request().headers()), null));
 
-        OptaProcessor theProcessor = new OptaProcessor();
-        HashSet<String> updatedMatchEvents = null;
-
-        try {
-            updatedMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyText);
-        }
-        catch (JDOMParseException e) {
-            Logger.error("Exception parsing: {}", getHeader("X-Meta-Default-Filename", request().headers()), e);
-        }
-
+        HashSet<String> updatedMatchEvents = new OptaProcessor().processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyText);
         ModelEvents.onOptaMatchEventIdsChanged(updatedMatchEvents);
 
         return ok("Yeah, XML processed");

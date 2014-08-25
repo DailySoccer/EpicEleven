@@ -16,36 +16,33 @@ import java.util.*;
 public class OptaProcessor {
 
     // Retorna los Ids de opta (gameIds, optaMachEventId) de los partidos que han cambiado
-    public HashSet<String> processOptaDBInput(String feedType, String requestBody) throws JDOMParseException {
+    public HashSet<String> processOptaDBInput(String feedType, String requestBody) {
+        _dirtyMatchEvents = new HashSet<>();
+
         try {
-            SAXBuilder builder = new SAXBuilder();
-
-            Document document = (Document) builder.build(new StringReader(requestBody));
+            Document document = new SAXBuilder().build(new StringReader(requestBody));
             processOptaDBInput(feedType, document.getRootElement());
-
-        } catch (JDOMParseException e) {
-            throw e;
         }
         catch (Exception e) {
-            Logger.error("WTF 95634", e);
+            Logger.error("WTF 6312", e);
         }
 
         return _dirtyMatchEvents;
     }
 
     private void processOptaDBInput(String feedType, Element requestBody) {
-        _dirtyMatchEvents = new HashSet<>();
 
-        if (feedType != null) {
-            if (feedType.equals("F40")) {
-                processF9(requestBody);
-            } else if (feedType.equals("F24")) {
-                processEvents(requestBody);
-            } else if (feedType.equals("F1")) {
-                processF1(requestBody);
-            } else {
-                Logger.info("Not parsing file type: {}", feedType);
-            }
+        if (feedType.equals("F40")) {
+            processF9(requestBody);
+        }
+        else if (feedType.equals("F24")) {
+            processEvents(requestBody);
+        }
+        else if (feedType.equals("F1")) {
+            processF1(requestBody);
+        }
+        else {
+            Logger.debug("Not parsing file type: {}", feedType);
         }
     }
 
