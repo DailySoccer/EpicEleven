@@ -38,6 +38,7 @@ public class Model {
     static public MongoCollection pointsTranslation() { return _jongo.getCollection("pointsTranslation"); }
 
     static public void init() {
+
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
         MongoClientURI mongoClientURI = new MongoClientURI(mongodbUri);
 
@@ -108,34 +109,14 @@ public class Model {
         ensureDB(_mongoDB);
     }
 
-    static private String[] allCollectionNames = {
-            "users",
-            "sessions",
-
-            "templateContests",
-            "templateMatchEvents",
-            "templateSoccerTeams",
-            "templateSoccerPlayers",
-            "contests",
-            "matchEvents",
-            "liveMatchEvents",
-            "pointsTranslation",
-
-            "optaEvents",
-            "optaPlayers",
-            "optaTeams",
-            "optaMatchEvents"
-    };
-
     static private void dropDB(DB theMongoDB) {
-        Set<String> collections = theMongoDB.getCollectionNames();
-        for (String collection: collections) {
+
+        for (String collection: theMongoDB.getCollectionNames()) {
             if (!collection.contains("system.")) {
-                Logger.debug("About to delete collection: {}",collection);
+                Logger.debug("About to delete collection: {}", collection);
                 theMongoDB.getCollection(collection).drop();
             }
         }
-        //theMongoDB.dropDatabase();
     }
 
 
