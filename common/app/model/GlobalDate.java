@@ -34,14 +34,18 @@ public class GlobalDate {
         // Si la propia cadena contiene BST o GMT, es una de las que nos manda Opta en X-Meta-Last-Updated
         if (dateStr.contains("BST") || dateStr.contains("GMT")) {
             dateTime = DateTime.parse(dateStr.replace("BST ", "").replace("GMT ", ""),
-                                      DateTimeFormat.forPattern("E MMM dd HH:mm:ss yyyy").
-                                      withZone(DateTimeZone.forID("Europe/London")));
+                                      DateTimeFormat.forPattern("E MMM dd HH:mm:ss yyyy"));
         }
         else {
-            // Si no nos pasan timezone, asumimos que es una cadena ISO que o bien contendra una TZ o bien vendra siempre
-            // en horario del servidor de Londres
             if (timezone == null) {
-                dateTime = DateTime.parse(dateStr, ISODateTimeFormat.dateTimeParser().withZone(DateTimeZone.forID("Europe/London")));
+                // Si no nos pasan timezone, asumimos que es una cadena ISO que o bien contendra una TZ o bien vendra siempre
+                // en horario del servidor de Londres. A veces vienen con dashes & colons y a veces vienen sin ellos, en
+                // basicDateTime format. Sin embargo, no podemos usar basicDateTime pq cuando vienen asi traen un TZ +001 y
+                // el parser no se lo traga, asi que usamos un "forPattern".
+                if (dateStr.matches(".*:.*:.*"))
+                    dateTime = DateTime.parse(dateStr, ISODateTimeFormat.dateTimeParser());
+                else
+                    dateTime = DateTime.parse(dateStr, DateTimeFormat.forPattern("yyyyMMdd'T'HHmmssZ"));
             }
             else {
                 // Opta manda BST (British Summer Time) o GMT. Tanto BST como GMT son en realidad el horario de Londres, sea verano o no.
@@ -49,11 +53,12 @@ public class GlobalDate {
                 if (!timezone.equals("BST") && !timezone.equals("GMT"))
                     throw new RuntimeException("WTF 3911: Zona horaria de Opta desconocida. Revisar urgentemente!!! " + timezone);
 
-                dateTime = DateTime.parse(dateStr, DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss").withZone(DateTimeZone.forID("Europe/London")));
+                dateTime = DateTime.parse(dateStr, DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss"));
             }
         }
 
-        return dateTime.toDate();
+        // Cuando no viene la zona horaria, asumimos siempre que el servidor esta en Londres
+        return dateTime.withZone(DateTimeZone.forID("Europe/London")).toDate();
     }
 
     private static Date _fakeDate;
