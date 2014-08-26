@@ -1,5 +1,6 @@
 package model;
 
+import com.mongodb.BulkWriteOperation;
 import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
@@ -57,6 +58,8 @@ public class Contest implements JongoId {
     }
 
     static public void updateRanking(ObjectId templateMatchEventId) {
+        BulkWriteOperation bulkOperation = Model.contests().getDBCollection().initializeUnorderedBulkOperation();
+
         // Buscamos los template contests que incluyan ese partido
         List<TemplateContest> templateContests = ListUtils.asList(Model.templateContests().find("{templateMatchEventIds: {$in:[#]}}",
                 templateMatchEventId).as(TemplateContest.class));
@@ -68,9 +71,11 @@ public class Contest implements JongoId {
             // Actualizamos los rankings de cada contest
             List<Contest> contests = Contest.findAllFromTemplateContest(templateContest.templateContestId);
             for (Contest contest : contests) {
-                contest.updateRanking(templateContest, matchEvents);
+                contest.updateRanking(bulkOperation, templateContest, matchEvents);
             }
         }
+
+        bulkOperation.execute();
     }
 
     public void givePrizes() {
@@ -93,7 +98,7 @@ public class Contest implements JongoId {
         user.updateStats();
     }
 
-   private void updateRanking(TemplateContest templateContest, List<MatchEvent> matchEvents) {
+    private void updateRanking(BulkWriteOperation bulkOperation, TemplateContest templateContest, List<MatchEvent> matchEvents) {
         // Actualizamos los fantasy points
         for (ContestEntry contestEntry : contestEntries) {
             contestEntry.fantasyPoints = contestEntry.getFantasyPointsFromMatchEvents(matchEvents);
@@ -105,7 +110,8 @@ public class Contest implements JongoId {
         for (ContestEntry contestEntry : contestEntries) {
             contestEntry.position = index++;
             contestEntry.prize = templateContest.getPositionPrize(contestEntry.position);
-            contestEntry.updateRanking();
+            // contestEntry.updateRanking();
+            contestEntry.updateRanking(bulkOperation);
         }
     }
 
