@@ -213,21 +213,18 @@ public class MatchEvent {
         }
 
         if (period == PeriodType.PRE_GAME) {
-            // Primera Parte?
             if (Model.optaEvents().findOne("{gameId: #, periodId: 1}", optaMatchEventId).as(OptaEvent.class) != null) {
                 period = PeriodType.FIRST_HALF;
             }
         }
 
         if (period == PeriodType.FIRST_HALF) {
-            // Segunda Parte?
             if (Model.optaEvents().findOne("{gameId: #, periodId: 2}", optaMatchEventId).as(OptaEvent.class) != null) {
                 period = PeriodType.SECOND_HALF;
             }
         }
 
         if (period == PeriodType.SECOND_HALF) {
-            // Segunda Parte?
             if (Model.optaEvents().findOne("{gameId: #, periodId: 14}", optaMatchEventId).as(OptaEvent.class) != null) {
                 period = PeriodType.POST_GAME;
             }
@@ -247,7 +244,7 @@ public class MatchEvent {
      * Calcular y actualizar los puntos fantasy de un determinado partido "live"
      * Opera sobre cada uno de los futbolistas del partido (teamA y teamB)
      */
-    public void updateFantasyPoints() {
+    private void updateFantasyPoints() {
         Logger.info("update Live: matchEvent: {}", templateMatchEventId.toString());
 
         for (SoccerPlayer soccerPlayer : soccerTeamA.soccerPlayers) {
@@ -265,26 +262,27 @@ public class MatchEvent {
     private void updateFantasyPoints(SoccerPlayer soccerPlayer) {
         // Obtener los puntos fantasy obtenidos por el futbolista en un partido
         Iterable<OptaEvent> optaEventResults = Model.optaEvents().find("{optaPlayerId: #, gameId: #}",
-                soccerPlayer.optaPlayerId, optaMatchEventId).as(OptaEvent.class);
+                                                                       soccerPlayer.optaPlayerId, optaMatchEventId).as(OptaEvent.class);
 
         LiveFantasyPoints fantasyPoints = new LiveFantasyPoints();
 
         // Sumarlos
-        for (OptaEvent point: optaEventResults) {
+        for (OptaEvent point : optaEventResults) {
             if (point.points != 0) {
-                int eventPoints = 0;
+                int prevPoints = 0;
                 OptaEventType optaEventType = OptaEventType.getEnum(point.typeId);
-                if (fantasyPoints.events.containsKey(optaEventType.name())) {
-                    eventPoints = fantasyPoints.events.get(optaEventType.name());
-                }
-                fantasyPoints.events.put(optaEventType.name(), eventPoints + point.points);
 
+                if (fantasyPoints.events.containsKey(optaEventType.name())) {
+                    prevPoints = fantasyPoints.events.get(optaEventType.name());
+                }
+
+                fantasyPoints.events.put(optaEventType.name(), prevPoints + point.points);
                 fantasyPoints.points += point.points;
             }
         }
         // if (points > 0) Logger.info("--> {}: {} = {}", soccerPlayer.optaPlayerId, soccerPlayer.name, points);
 
-        // Actualizar sus puntos en cada LiverMatchEvent en el que participe
+        // Actualizar sus puntos en cada MatchEvent en el que participe
         setLiveFantasyPointsOfSoccerPlayer(optaMatchEventId, soccerPlayer.templateSoccerPlayerId.toString(), fantasyPoints);
     }
 
@@ -332,6 +330,5 @@ public class MatchEvent {
 
 class LiveFantasyPoints {
     public int points;
-
     public HashMap<String, Integer> events = new HashMap<>();
 }
