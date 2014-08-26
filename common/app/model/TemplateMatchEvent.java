@@ -57,16 +57,8 @@ public class TemplateMatchEvent implements JongoId, Initializer {
         return ListUtils.asList(Model.findObjectIds(Model.templateMatchEvents(), "_id", idList).as(TemplateMatchEvent.class));
     }
 
-    /**
-     *  Estado del partido
-     */
-    public boolean isStarted() {
-        return OptaEvent.isGameStarted(optaMatchEventId);
-    }
-
-    public boolean isFinished() {
-        return OptaEvent.isGameFinished(optaMatchEventId);
-    }
+    public boolean isStarted()  { return OptaEvent.isGameStarted(optaMatchEventId);  }
+    public boolean isFinished() { return OptaEvent.isGameFinished(optaMatchEventId); }
 
     static public boolean importMatchEvent(OptaMatchEvent optaMatchEvent) {
         TemplateSoccerTeam teamA = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.homeTeamId).as(TemplateSoccerTeam.class);

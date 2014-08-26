@@ -31,7 +31,7 @@ public class TemplateContest implements JongoId, Initializer {
 
     public State state = State.OFF;
 
-    public String name;             // Auto-gen if blank
+    public String name;
 
     public int minInstances;        // Minimum desired number of instances that we want running at any given moment
     public int maxEntries;
@@ -43,7 +43,7 @@ public class TemplateContest implements JongoId, Initializer {
 
     public Date startDate;
 
-    public List<ObjectId> templateMatchEventIds;  // We rather have it here that normalize it in a N:N table
+    public List<ObjectId> templateMatchEventIds;
 
     public Date activationAt;
     public Date createdAt;
@@ -118,7 +118,7 @@ public class TemplateContest implements JongoId, Initializer {
             }
         }
         catch(MongoException e) {
-            Logger.error("WTF 6742 MongoException: ", e);
+            Logger.error("WTF 6799", e);
         }
 
         return true;
@@ -148,7 +148,7 @@ public class TemplateContest implements JongoId, Initializer {
         Model.templateContests().update(templateContestId).with("{$set: {prizes: #}}", prizes);
     }
 
-    public void instantiateMatchEvents() {
+    private void instantiateMatchEvents() {
         List<TemplateMatchEvent> templateMatchEvents = getTemplateMatchEvents();
 
         for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
@@ -178,16 +178,14 @@ public class TemplateContest implements JongoId, Initializer {
     }
 
     public static boolean isStarted(String templateContestId) {
-        TemplateContest templateContest = findOne(new ObjectId(templateContestId));
-        return templateContest.isStarted();
+        return findOne(new ObjectId(templateContestId)).isStarted();
     }
 
     public boolean isFinished() {
         boolean finished = true;
 
         // El Contest ha terminado si TODOS sus partidos han terminado
-        Iterable<TemplateMatchEvent> templateContestResults = TemplateMatchEvent.findAll(templateMatchEventIds);
-        for(TemplateMatchEvent templateMatchEvent : templateContestResults) {
+        for (TemplateMatchEvent templateMatchEvent : TemplateMatchEvent.findAll(templateMatchEventIds)) {
             if (!templateMatchEvent.isFinished()) {
                 finished = false;
                 break;
@@ -198,8 +196,7 @@ public class TemplateContest implements JongoId, Initializer {
     }
 
     public static boolean isFinished(String templateContestId) {
-        TemplateContest templateContest = findOne(new ObjectId(templateContestId));
-        return templateContest.isFinished();
+        return findOne(new ObjectId(templateContestId)).isFinished();
     }
 
     public void setClosed() {

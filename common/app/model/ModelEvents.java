@@ -49,7 +49,8 @@ public class ModelEvents {
 
                     if (matchEvent.isFinished()) {
                         actionWhenMatchEventIsFinished(matchEvent);
-                    } else {
+                    }
+                    else {
                         actionWhenMatchEventIsStarted(matchEvent);
                     }
                 }
@@ -60,7 +61,7 @@ public class ModelEvents {
     }
 
     private static void actionWhenMatchEventIsStarted(MatchEvent matchEvent) {
-        // Los template contests (que incluyan este match event y que esten "activos") tendrian que ser marcados como "live"
+        // Los template contests (que incluyan este match event y que esten "activos") tienen que ser marcados como "live"
         Model.templateContests()
                 .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}", matchEvent.templateMatchEventId)
                 .multi()
@@ -70,7 +71,7 @@ public class ModelEvents {
     private static void actionWhenMatchEventIsFinished(MatchEvent matchEvent) {
         // Buscamos los template contests que incluyan ese partido y que esten en "LIVE"
         Iterable<TemplateContest> templateContests = Model.templateContests().find("{templateMatchEventIds: {$in:[#]}, state: \"LIVE\"}",
-                matchEvent.templateMatchEventId).as(TemplateContest.class);
+                                                                                   matchEvent.templateMatchEventId).as(TemplateContest.class);
 
         for (TemplateContest templateContest : templateContests) {
             // Si el contest ha terminado (true si todos sus partidos han terminado)
