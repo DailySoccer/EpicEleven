@@ -108,7 +108,7 @@ public class TemplateContestController extends Controller {
 
             // El partido es de un dia distinto?
             if (dateTime.dayOfYear().get() != matchDateTime.dayOfYear().get()) {
-                Logger.info("{} != {}", dateTime.dayOfYear().get(), matchDateTime.dayOfYear().get());
+                // Logger.info("{} != {}", dateTime.dayOfYear().get(), matchDateTime.dayOfYear().get());
 
                 // El dia anterior tenia un numero suficiente de partidos? (minimo 2)
                 if (matchEvents.size() >= 2) {
@@ -192,7 +192,7 @@ public class TemplateContestController extends Controller {
             templateContest.templateMatchEventIds.add(match.templateMatchEventId);
         }
 
-        Logger.info("MockData: Template Contest: {} ({})", templateContest.templateMatchEventIds, GlobalDate.formatDate(startDate));
+        // Logger.info("MockData: Template Contest: {} ({})", templateContest.templateMatchEventIds, GlobalDate.formatDate(startDate));
 
         Model.templateContests().insert(templateContest);
     }

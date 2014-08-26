@@ -12,6 +12,7 @@ import utils.ListUtils;
 import java.sql.Connection;
 import java.sql.*;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 
@@ -175,8 +176,11 @@ public class Model {
         if (!theMongoDB.collectionExists("templateSoccerPlayersMetadata"))
             theMongoDB.createCollection("templateSoccerPlayersMetadata", new BasicDBObject());
 
-        if (!theMongoDB.collectionExists("contests"))
-            theMongoDB.createCollection("contests", new BasicDBObject());
+        if (!theMongoDB.collectionExists("contests")) {
+            DBCollection contests = theMongoDB.createCollection("contests", new BasicDBObject());
+            contests.createIndex(new BasicDBObject("templateContestId", 1));
+            contests.createIndex(new BasicDBObject("contestEntries._id", 1));
+        }
 
         if (!theMongoDB.collectionExists("liveMatchEvents"))
             theMongoDB.createCollection("liveMatchEvents", new BasicDBObject());
@@ -188,10 +192,10 @@ public class Model {
      *
      * @param collection: MongoCollection a la que hacer la query
      * @param fieldId:    Identificador del campo a buscar (p ej, 'templateContestId')
-     * @param objectIdsIterable: Lista de ObjectId (de mongoDb)
+     * @param objectIds: Lista de ObjectId (de mongoDb)
      */
-    public static Find findObjectIds(MongoCollection collection, String fieldId, Iterable<ObjectId> objectIdsIterable) {
-        return collection.find(String.format("{%s: {$in: #}}", fieldId), ListUtils.asList(objectIdsIterable));
+    public static Find findObjectIds(MongoCollection collection, String fieldId, List<ObjectId> objectIds) {
+        return collection.find(String.format("{%s: {$in: #}}", fieldId), objectIds);
     }
 
     /**

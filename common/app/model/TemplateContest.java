@@ -113,8 +113,7 @@ public class TemplateContest implements JongoId, Initializer {
         try {
             WriteResult result = Model.templateContests().remove("{_id: #, state: \"OFF\"}", templateContest.templateContestId);
             if (result.getN() == 0) {
-                Logger.error("Template Contest: Error removing {}", templateContest.templateContestId.toString());
-                return false;
+                throw new RuntimeException(String.format("Template Contest: Error removing %s", templateContest.templateContestId.toString()));
             }
         }
         catch(MongoException e) {
