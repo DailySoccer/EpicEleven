@@ -189,7 +189,7 @@ public class OptaSimulator implements Runnable {
             }
         }
         catch (SQLException e) {
-            Logger.error("WTF 1533 SQLException: ", e);
+            Logger.error("WTF 1533", e);
         }
 
         saveState();
@@ -199,7 +199,7 @@ public class OptaSimulator implements Runnable {
 
     private void processNextDoc() throws SQLException {
         if (_optaResultSet == null) {
-            throw new RuntimeException("WTF 7241: processNextDoc");
+            throw new RuntimeException("WTF 7241");
         }
 
         Date createdAt = _optaResultSet.getTimestamp("created_at");
@@ -311,7 +311,7 @@ public class OptaSimulator implements Runnable {
             }
         }
         catch (SQLException e) {
-            Logger.error("WTF 742 SQLException: ", e);
+            Logger.error("WTF 742", e);
         }
     }
 
