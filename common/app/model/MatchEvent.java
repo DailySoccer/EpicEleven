@@ -55,13 +55,6 @@ public class MatchEvent {
         return templateMatchEventId;
     }
 
-    public boolean hasChanged(OptaMatchEvent optaMatchEvent) {
-        return !optaMatchEventId.equals(optaMatchEvent.optaMatchEventId) ||
-                !soccerTeamA.optaTeamId.equals(optaMatchEvent.homeTeamId) ||
-                !soccerTeamB.optaTeamId.equals(optaMatchEvent.awayTeamId) ||
-                !startDate.equals(optaMatchEvent.matchDate);
-    }
-
     static public MatchEvent findOne(ObjectId matchEventId) {
         return Model.matchEvents().findOne("{_id : #}", matchEventId).as(MatchEvent.class);
     }
@@ -135,11 +128,11 @@ public class MatchEvent {
             }
 
             // Generamos las nuevas estadísticas del partido
-            SoccerPlayerStats soccerPlayerStats = new SoccerPlayerStats(soccerPlayer.optaPlayerId, optaMatchEventId, getFantasyPoints(soccerPlayer.templateSoccerPlayerId));
+            SoccerPlayerStats soccerPlayerStats = new SoccerPlayerStats(startDate, soccerPlayer.optaPlayerId, optaMatchEventId, soccerTeam.templateSoccerTeamId, getFantasyPoints(soccerPlayer.templateSoccerPlayerId));
             soccerPlayerStats.updateStats();
 
             // El futbolista ha jugado en el partido?
-            if (soccerPlayerStats.playedMinutes > 0 && !soccerPlayerStats.events.isEmpty()) {
+            if (/*soccerPlayerStats.playedMinutes > 0 &&*/ !soccerPlayerStats.events.isEmpty()) {
 
                 templateSoccerPlayer.stats.add(soccerPlayerStats);
 
@@ -231,7 +224,7 @@ public class MatchEvent {
      * Opera sobre cada uno de los futbolistas del partido (teamA y teamB)
      */
     private void updateFantasyPoints() {
-        Logger.info("update Live: matchEvent: {}", templateMatchEventId.toString());
+        // Logger.info("update Live: matchEvent: {}", templateMatchEventId.toString());
 
         for (SoccerPlayer soccerPlayer : soccerTeamA.soccerPlayers) {
             updateFantasyPoints(soccerPlayer);

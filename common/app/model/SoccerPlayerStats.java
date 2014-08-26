@@ -2,6 +2,7 @@ package model;
 
 import com.google.common.collect.ImmutableList;
 import model.opta.*;
+import org.bson.types.ObjectId;
 import play.Logger;
 
 import java.util.*;
@@ -11,15 +12,20 @@ public class SoccerPlayerStats {
     public String optaPlayerId;
     public String optaMatchEventId;
 
+    public Date startDate;
+    public ObjectId templateSoccerTeamId;
     public int fantasyPoints;
     public int playedMinutes;
     public HashMap<String, Integer> events = new HashMap<>();
 
     public SoccerPlayerStats() { }
 
-    public SoccerPlayerStats(String optaPlayerId, String optaMatchEventId, int fantasyPoints) {
+    public SoccerPlayerStats(Date startDate, String optaPlayerId, String optaMatchEventId, ObjectId templateSoccerTeamId, int fantasyPoints) {
         this.optaMatchEventId = optaMatchEventId;
         this.optaPlayerId = optaPlayerId;
+
+        this.startDate = startDate;
+        this.templateSoccerTeamId = templateSoccerTeamId;
         this.fantasyPoints = fantasyPoints;
     }
 

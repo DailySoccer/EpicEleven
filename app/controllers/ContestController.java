@@ -248,8 +248,19 @@ public class ContestController extends Controller {
     public static Result getTemplateSoccerPlayerInfo(String templateSoccerPlayerId) {
 
         TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(templateSoccerPlayerId));
-        return new ReturnHelper(templateSoccerPlayer).toResult();
-        // return new ReturnHelper(ImmutableMap.of("stats", templateSoccerPlayer.stats)).toResult();
+
+        List<ObjectId> templateSoccerTeamIds = new ArrayList<>();
+        for (SoccerPlayerStats stats : templateSoccerPlayer.stats) {
+            templateSoccerTeamIds.add(stats.templateSoccerTeamId);
+        }
+
+        List<TemplateSoccerTeam> templateSoccerTeams = !templateSoccerTeamIds.isEmpty() ? TemplateSoccerTeam.findAll(templateSoccerTeamIds)
+                                                                                        : new ArrayList<TemplateSoccerTeam>();
+
+        return new ReturnHelper(ImmutableMap.of(
+                "soccerTeams", templateSoccerTeams,
+                "soccerPlayer", templateSoccerPlayer)
+        ).toResult();
     }
 
     public static Result getCurrentDate() {
