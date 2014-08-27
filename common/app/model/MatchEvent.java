@@ -115,7 +115,6 @@ public class MatchEvent {
 
     public void saveStats(SoccerTeam soccerTeam) {
         for (SoccerPlayer soccerPlayer : soccerTeam.soccerPlayers) {
-            // Buscamos el template
             TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(soccerPlayer.templateSoccerPlayerId);
 
             // Eliminamos las estadísticas del partido que hubieramos registrado anteriormente
@@ -127,25 +126,13 @@ public class MatchEvent {
                 }
             }
 
-            // Generamos las nuevas estadísticas del partido
+            // Generamos las nuevas estadísticas del partido para este futbolista
             SoccerPlayerStats soccerPlayerStats = new SoccerPlayerStats(startDate, soccerPlayer.optaPlayerId, optaMatchEventId, soccerTeam.templateSoccerTeamId, getFantasyPoints(soccerPlayer.templateSoccerPlayerId));
-            soccerPlayerStats.updateStats();
 
             // El futbolista ha jugado en el partido?
-            if (/*soccerPlayerStats.playedMinutes > 0 &&*/ !soccerPlayerStats.events.isEmpty()) {
+            if (soccerPlayerStats.playedMinutes > 0 || !soccerPlayerStats.statsCount.isEmpty()) {
 
-                templateSoccerPlayer.stats.add(soccerPlayerStats);
-
-                // Calculamos la media de los fantasyPoints
-                int fantasyPointsMedia = 0;
-                for (SoccerPlayerStats stats : templateSoccerPlayer.stats) {
-                    fantasyPointsMedia += stats.fantasyPoints;
-                }
-                fantasyPointsMedia /= templateSoccerPlayer.stats.size();
-
-                // Grabar cambios
-                Model.templateSoccerPlayers().update("{optaPlayerId: #}", soccerPlayerStats.optaPlayerId)
-                        .with("{$set: {fantasyPoints: #, stats: #}}", fantasyPointsMedia, templateSoccerPlayer.stats);
+                templateSoccerPlayer.addStats(soccerPlayerStats);
 
                 /*
                 Logger.debug("saveStats: {}({}) - minutes = {} - points = {} - events({})",

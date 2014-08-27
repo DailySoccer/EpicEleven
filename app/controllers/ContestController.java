@@ -77,24 +77,6 @@ public class ContestController extends Controller {
     }
 
     @UserAuthenticated
-    public static Result getMyNextContests() {
-        User theUser = (User)ctx().args.get("User");
-        return getMyContestsWithState(theUser, TemplateContest.State.ACTIVE).toResult();
-    }
-
-    @UserAuthenticated
-    public static Result getMyLiveContests() {
-        User theUser = (User)ctx().args.get("User");
-        return getMyContestsWithState(theUser, TemplateContest.State.LIVE).toResult(JsonViews.FullContest.class);
-    }
-
-    @UserAuthenticated
-    public static Result getMyHistoryContests() {
-        User theUser = (User)ctx().args.get("User");
-        return getMyContestsWithState(theUser, TemplateContest.State.HISTORY).toResult(JsonViews.FullContest.class);
-    }
-
-    @UserAuthenticated
     private static ReturnHelper getMyContestsWithState(User theUser, TemplateContest.State state) {
         // Obtenermos la lista de Contest Entries que el usuario ha creado y sus joins adicionales
         List<Contest> contests = Contest.findAllFromUser(theUser.userId);

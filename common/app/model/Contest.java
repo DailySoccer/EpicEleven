@@ -58,7 +58,7 @@ public class Contest implements JongoId {
     }
 
     static public void updateRanking(ObjectId templateMatchEventId) {
-        BulkWriteOperation bulkOperation = Model.contests().getDBCollection().initializeUnorderedBulkOperation();
+        BulkWriteOperation bulkOperation = Model.contests().getDBCollection().initializeOrderedBulkOperation();
 
         // Buscamos los template contests que incluyan ese partido
         List<TemplateContest> templateContests = ListUtils.asList(Model.templateContests().find("{templateMatchEventIds: {$in:[#]}}",

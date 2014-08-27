@@ -111,8 +111,7 @@ public enum SoccerPlayerStatType {
             );
         }
 
-        Logger.error("StatType: EventType {} unknown", this.id);
-        return null;
+        throw new RuntimeException(String.format("WTF 7378: StatType: EventType %s unknown", this.id));
     }
 }
 

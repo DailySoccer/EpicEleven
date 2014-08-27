@@ -143,7 +143,7 @@ public class TemplateContest implements JongoId, Initializer {
         }
 
         // Incluir los premios del torneo (ya no se podrá cambiar la forma de calcularlo)
-        prizes = getPrizes();
+        prizes = getPrizes(prizeType, maxEntries, getPrizePool());
         Model.templateContests().update(templateContestId).with("{$set: {prizes: #}}", prizes);
     }
 
@@ -198,11 +198,7 @@ public class TemplateContest implements JongoId, Initializer {
         return findOne(new ObjectId(templateContestId)).isFinished();
     }
 
-    public void setClosed() {
-        givePrizes();
-    }
-
-    private void givePrizes() {
+    public void givePrizes() {
         List<Contest> contests = Contest.findAllFromTemplateContest(templateContestId);
 
         for (Contest contest : contests) {
@@ -211,7 +207,6 @@ public class TemplateContest implements JongoId, Initializer {
     }
 
     public int getPositionPrize(int position) {
-        List<Integer> prizes = getPrizes();
         return (position < prizes.size()) ? prizes.get(position) : 0;
     }
 
@@ -219,19 +214,19 @@ public class TemplateContest implements JongoId, Initializer {
         return (int)((maxEntries * entryFee) * 0.90f);
     }
 
-    private List<Integer> getPrizes() {
+    static private List<Integer> getPrizes(PrizeType prizeType, int maxEntries, int prizePool) {
         List<Integer> prizes = new ArrayList<>();
 
         if      (prizeType.equals(PrizeType.FREE)) {
 
         }
         else if (prizeType.equals(PrizeType.WINNER_TAKES_ALL)) {
-            prizes.add(getPrizePool());
+            prizes.add(prizePool);
         }
         else if (prizeType.equals(PrizeType.TOP_3_GET_PRIZES)) {
-            prizes.add((int) (getPrizePool() * 0.5f));
-            prizes.add((int) (getPrizePool() * 0.3f));
-            prizes.add((int) (getPrizePool() * 0.2));
+            prizes.add((int) (prizePool * 0.5f));
+            prizes.add((int) (prizePool * 0.3f));
+            prizes.add((int) (prizePool * 0.2));
         }
         else if (prizeType.equals(PrizeType.TOP_THIRD_GET_PRIZES)) {
             // A cuantos repartiremos premios?
@@ -242,10 +237,10 @@ public class TemplateContest implements JongoId, Initializer {
 
             // Averiguar los puntos totales a repartir para saber cuánto vale el punto: n * (n+1) / 2  (suma el valor de "n" numeros)
             int totalPoints = third * (third + 1) / 2;
-            int prizeByPoint = (int) (getPrizePool() / totalPoints);
+            int prizeByPoint = (int) (prizePool / totalPoints);
 
             // A cada posición le damos el premio (sus puntos se corresponden con su posición "invertida": p.ej. para repartir a 6 usuarios: el 1º tiene 6 puntos, el 2º tiene 5 puntos, etc)
-            int totalPrize = getPrizePool();
+            int totalPrize = prizePool;
             for (int i = third; i > 0; i--) {
                 int prize = prizeByPoint * i;
                 prizes.add(prize);
@@ -259,7 +254,7 @@ public class TemplateContest implements JongoId, Initializer {
         else if (prizeType.equals(PrizeType.FIFTY_FIFTY)) {
             int mid = maxEntries / 2;
             for (int i = 0; i < mid; i++) {
-                prizes.add((int) (getPrizePool() / mid));
+                prizes.add((int) (prizePool / mid));
             }
         }
 

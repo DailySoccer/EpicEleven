@@ -16,9 +16,6 @@ GET         /get_active_contests                                    controllers.
 # Concursos asociados a usuario
 GET         /get_my_contests                                        controllers.ContestController.getMyContests()
 GET         /get_contest/:contest                                   controllers.ContestController.getFullContest(contest)
-GET         /get_my_next_contests                                   controllers.ContestController.getMyNextContests()
-GET         /get_my_live_contests                                   controllers.ContestController.getMyLiveContests()
-GET         /get_my_history_contests                                controllers.ContestController.getMyHistoryContests()
 
 # Live contests asociados a usuario
 GET         /get_live_match_events/template_contest/:contest        controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)

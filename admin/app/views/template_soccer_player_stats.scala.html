@@ -39,17 +39,17 @@
                 TemplateSoccerPlayer.findOneFromOptaId(p.optaPlayerId).templateSoccerPlayerId.toString()
                 )">@p.fantasyPoints</a></td>
             <td>@p.playedMinutes</td>
-            <td>@p.getStat(SoccerPlayerStatType.GOLES_ENCAJADOS)</td>
-            <td>@p.getStat(SoccerPlayerStatType.PARADAS)</td>
-            <td>@p.getStat(SoccerPlayerStatType.DESPEJES)</td>
-            <td>@p.getStat(SoccerPlayerStatType.PASES)</td>
-            <td>@p.getStat(SoccerPlayerStatType.RECUPERACIONES)</td>
-            <td>@p.getStat(SoccerPlayerStatType.PERDIDAS_BALON)</td>
-            <td>@p.getStat(SoccerPlayerStatType.PENALTIS_DETENIDOS)</td>
-            <td>@p.getStat(SoccerPlayerStatType.FALTAS_RECIBIDAS)</td>
-            <td>@p.getStat(SoccerPlayerStatType.FALTAS_COMETIDAS)</td>
-            <td>@p.getStat(SoccerPlayerStatType.TARJETAS_AMARILLAS)</td>
-            <td>@p.getStat(SoccerPlayerStatType.TARJETAS_ROJAS)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.GOLES_ENCAJADOS)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.PARADAS)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.DESPEJES)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.PASES)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.RECUPERACIONES)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.PERDIDAS_BALON)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.PENALTIS_DETENIDOS)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.FALTAS_RECIBIDAS)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.FALTAS_COMETIDAS)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.TARJETAS_AMARILLAS)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.TARJETAS_ROJAS)</td>
        </tr>
         }
         </tbody>
@@ -83,17 +83,17 @@
                 TemplateSoccerPlayer.findOneFromOptaId(p.optaPlayerId).templateSoccerPlayerId.toString()
                 )">@p.fantasyPoints</a></td>
             <td>@p.playedMinutes</td>
-            <td>@p.getStat(SoccerPlayerStatType.GOLES)</td>
-            <td>@p.getStat(SoccerPlayerStatType.TIROS)</td>
-            <td>@p.getStat(SoccerPlayerStatType.PASES)</td>
-            <td>@p.getStat(SoccerPlayerStatType.ASISTENCIAS)</td>
-            <td>@p.getStat(SoccerPlayerStatType.REGATES)</td>
-            <td>@p.getStat(SoccerPlayerStatType.RECUPERACIONES)</td>
-            <td>@p.getStat(SoccerPlayerStatType.PERDIDAS_BALON)</td>
-            <td>@p.getStat(SoccerPlayerStatType.FALTAS_RECIBIDAS)</td>
-            <td>@p.getStat(SoccerPlayerStatType.FALTAS_COMETIDAS)</td>
-            <td>@p.getStat(SoccerPlayerStatType.TARJETAS_AMARILLAS)</td>
-            <td>@p.getStat(SoccerPlayerStatType.TARJETAS_ROJAS)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.GOLES)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.TIROS)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.PASES)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.ASISTENCIAS)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.REGATES)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.RECUPERACIONES)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.PERDIDAS_BALON)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.FALTAS_RECIBIDAS)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.FALTAS_COMETIDAS)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.TARJETAS_AMARILLAS)</td>
+            <td>@p.getStatCount(SoccerPlayerStatType.TARJETAS_ROJAS)</td>
         </tr>
         }
         </tbody>

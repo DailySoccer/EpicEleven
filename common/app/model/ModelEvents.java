@@ -76,11 +76,10 @@ public class ModelEvents {
         for (TemplateContest templateContest : templateContests) {
             // Si el contest ha terminado (true si todos sus partidos han terminado)
             if (templateContest.isFinished()) {
-                // Cambiar el estado del contest a "HISTORY"
                 Model.templateContests().update("{_id: #, state: \"LIVE\"}", templateContest.templateContestId).with("{$set: {state: \"HISTORY\"}}");
 
-                // TODO: Se tendría que hacer cuando el TemplateContest se marque como CLOSED
-                templateContest.setClosed();
+                // Aqui es el único sitio donde se darán los premios
+                templateContest.givePrizes();
             }
         }
 
