@@ -47,6 +47,9 @@ public class MatchEvent {
     public Date startDate;
     public Date createdAt;
 
+    boolean started;
+    boolean finished;
+
     public MatchEvent() { }
 
     public void Initialize() { }
@@ -85,9 +88,18 @@ public class MatchEvent {
         return ListUtils.asList(Model.findObjectIds(Model.matchEvents(), "templateMatchEventId", templateMatchEventObjectIds).as(MatchEvent.class));
     }
 
+    public void setStarted() {
+        started = true;
+        Model.matchEvents().update(matchEventId).with("{$set: {started: #}}", started);
+    }
 
-    public boolean isStarted()  { return OptaEvent.isGameStarted(optaMatchEventId);  }
-    public boolean isFinished() { return OptaEvent.isGameFinished(optaMatchEventId); }
+    public void setFinished() {
+        finished = true;
+        Model.matchEvents().update(matchEventId).with("{$set: {finished: #}}", finished);
+    }
+
+    public boolean isStarted()  { return started;  }
+    public boolean isFinished() { return finished; }
 
     public int getFantasyPoints(SoccerTeam soccerTeam) {
         if (soccerTeam != soccerTeamA && soccerTeam != soccerTeamB)
