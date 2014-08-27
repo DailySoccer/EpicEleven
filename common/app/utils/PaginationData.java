@@ -17,8 +17,11 @@ import java.util.Map;
 public class PaginationData {
     public List<String> getFieldNames() { return null; }
     public String getFieldByIndex(Object data, Integer index) { return null; }
+    public String getFieldHtmlByIndex(Object data, Integer index) { return null; }
 
     public static <T> Result withAjax(Map<String, String[]> params, MongoCollection collection, final Class<T> clazz, PaginationData paginationData) {
+        long startTime = System.currentTimeMillis();
+
         long iTotalRecords = collection.count();
         long iTotalDisplayRecords = iTotalRecords;
         String filter = params.get("sSearch")[0];
@@ -76,6 +79,10 @@ public class PaginationData {
             }
         }
 
+        Logger.info("elapsed 0: {}", System.currentTimeMillis() - startTime);
+
+        startTime = System.currentTimeMillis();
+
         // Devolvemos los datos como lo espera DataTable
         ObjectNode result = Json.newObject();
 
@@ -88,11 +95,12 @@ public class PaginationData {
         for(T data : dataList) {
             ObjectNode row = Json.newObject();
             for (int i=0; i<fieldNames.size(); i++) {
-                row.put(String.valueOf(i), paginationData.getFieldByIndex(data, i));
+                row.put(String.valueOf(i), paginationData.getFieldHtmlByIndex(data, i));
             }
             an.add(row);
         }
 
+        Logger.info("elapsed 1: {}", System.currentTimeMillis() - startTime);
         return Results.ok(result);
     }
 }
