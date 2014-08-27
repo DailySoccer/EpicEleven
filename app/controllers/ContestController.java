@@ -14,6 +14,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
 import utils.ReturnHelper;
+import utils.ReturnHelperWithAttach;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -68,12 +69,12 @@ public class ContestController extends Controller {
         }
 
         // Enviamos nuestras contestEntries aparte (para poder proporcionar un jsonView con más información)
-        return new ReturnHelper()
+        return new ReturnHelperWithAttach()
                 .attachObject("contest_entries", contestEntries, JsonViews.FullContest.class)
                 .attachObject("match_events", matchEvents)
                 .attachObject("template_contests", templateContests)
                 .attachObject("contests", contests)
-                .toContentResult();
+                .toResult();
     }
 
     @UserAuthenticated
