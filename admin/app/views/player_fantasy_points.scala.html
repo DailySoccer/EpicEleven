@@ -7,7 +7,7 @@
 
         function updatePage() {
             $.ajax({
-                url: "/admin/is_paused",
+                url: "/admin/is_paused_simulator",
                 success: function(result) {
                     if (result == "false") {
                         window.location.reload(true);
