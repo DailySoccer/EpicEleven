@@ -31,8 +31,11 @@ public class OptaProcessor {
 
     private void processOptaDBInput(String feedType, Element requestBody) {
 
-        if (feedType.equals("F9") || feedType.equals("F40")) {
+        if (feedType.equals("F9")) {
             processF9(requestBody);
+        }
+        else if (feedType.equals("F40")) {
+            processF40(requestBody);
         }
         else if (feedType.equals("F24")) {
             processEvents(requestBody);
@@ -182,15 +185,25 @@ public class OptaProcessor {
         if (null == _pointsTranslationCache)
             resetPointsTranslationCache();
 
+        // Obtener las estadísticas (minutos jugados por los futbolistas) y eventos (cleanSheet, goalsAgainst)
         Element myF9 = f9.getChild("SoccerDocument");
 
         if (myF9.getAttribute("Type").getValue().equals("Result")) {
             processFinishedMatch(myF9);
         }
-        else if (myF9.getAttribute("Type").getValue().equals("STANDINGS Latest") ||
-                 myF9.getAttribute("Type").getValue().equals("SQUADS Latest") ) {
+    }
 
-            for (Element team : getTeamsFromF9(myF9)) {
+    private void processF40(Element f40) {
+
+        if (null == _pointsTranslationCache)
+            resetPointsTranslationCache();
+
+        // Obtener la lista de teams y players
+        Element myF40 = f40.getChild("SoccerDocument");
+
+        if (myF40.getAttribute("Type").getValue().equals("SQUADS Latest")) {
+
+            for (Element team : getTeamsFromF40(myF40)) {
 
                 OptaTeam myTeam = new OptaTeam();
                 myTeam.optaTeamId = getStringId(team, "uID", "_NO TEAM UID");
@@ -221,6 +234,9 @@ public class OptaProcessor {
                         Model.optaPlayers().update("{optaPlayerId: #}", playerId).upsert().with(myPlayer);
                 }
             }
+        }
+        else {
+            throw new RuntimeException("WTF 7349: processF40");
         }
     }
 
@@ -275,19 +291,11 @@ public class OptaProcessor {
     }
 
 
-    private List<Element> getTeamsFromF9(Element myF9) {
-        List<Element> teams = new ArrayList<Element>();
-
-        if (null != myF9.getChild("Team")) {
-            teams = myF9.getChildren("Team");
-        } else {
-            if (null != myF9.getChild("Match")) {
-                teams = myF9.getChild("Match").getChildren("Team");
-            } else {
-                Logger.info("WTF 34825: No match");
-            }
+    private List<Element> getTeamsFromF40(Element myF40) {
+        if (null == myF40.getChild("Team")) {
+            throw new RuntimeException("WTF 7812: getTeamsFromF40");
         }
-        return teams;
+        return myF40.getChildren("Team");
     }
 
 
