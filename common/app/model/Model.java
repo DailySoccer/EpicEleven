@@ -198,13 +198,6 @@ public class Model {
         return collection.find(String.format("{%s: {$in: #}}", fieldId), objectIds);
     }
 
-    /**
-     * Igual que la anterior pero añadiendo un filtro
-     */
-    public static Find findObjectIds(MongoCollection collection, String fieldId, String filter, Iterable<ObjectId> objectIdsIterable) {
-        return collection.find(String.format("{%s: {$in: #}, %s}", fieldId, filter), ListUtils.asList(objectIdsIterable));
-    }
-
 
     public static void insertXML(String xml, String headers, Date timestamp, String name, String feedType,
                                  String gameId, String competitionId, String seasonId, Date lastUpdated) {

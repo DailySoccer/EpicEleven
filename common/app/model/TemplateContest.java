@@ -92,9 +92,9 @@ public class TemplateContest implements JongoId, Initializer {
         return ListUtils.asList(Model.templateContests().find("{state: \"ACTIVE\"}").as(TemplateContest.class));
     }
 
-    static public List<TemplateContest> findAllFromContests(Iterable<Contest> contests) {
+    static public List<TemplateContest> findAllFromContests(List<Contest> contests) {
 
-        ArrayList<ObjectId> templateContestIds = new ArrayList<>();
+        ArrayList<ObjectId> templateContestIds = new ArrayList<>(contests.size());
 
         for (Contest contest : contests) {
             templateContestIds.add(contest.templateContestId);
@@ -165,8 +165,7 @@ public class TemplateContest implements JongoId, Initializer {
         boolean started = false;
 
         // El Contest ha comenzado si cualquiera de sus partidos ha comenzado
-        Iterable<TemplateMatchEvent> matchEventResults = TemplateMatchEvent.findAll(templateMatchEventIds);
-        for(TemplateMatchEvent templateMatchEvent : matchEventResults) {
+        for(TemplateMatchEvent templateMatchEvent : TemplateMatchEvent.findAll(templateMatchEventIds)) {
             if (templateMatchEvent.isStarted()) {
                 started = true;
                 break;

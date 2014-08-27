@@ -75,8 +75,8 @@ public class MatchEvent {
         return ListUtils.asList(Model.findObjectIds(Model.matchEvents(), "templateMatchEventId", idList).as(MatchEvent.class));
     }
 
-    static public List<MatchEvent> gatherFromTemplateContests(Iterable<TemplateContest> templateContests) {
-        List<ObjectId> templateMatchEventObjectIds = new ArrayList<>();
+    static public List<MatchEvent> gatherFromTemplateContests(List<TemplateContest> templateContests) {
+        List<ObjectId> templateMatchEventObjectIds = new ArrayList<>(templateContests.size());
 
         for (TemplateContest templateContest: templateContests) {
             templateMatchEventObjectIds.addAll(templateContest.templateMatchEventIds);
@@ -262,6 +262,6 @@ public class MatchEvent {
 }
 
 class LiveFantasyPoints {
-    public int points;
-    public HashMap<String, Integer> events = new HashMap<>();
+    public int points;                                          // Puntos totales de un SoccerPlayer
+    public HashMap<String, Integer> events = new HashMap<>();   // OptaEventType.name => fantasyPoints conseguidos gracias a el
 }
