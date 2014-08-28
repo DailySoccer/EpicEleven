@@ -1,5 +1,6 @@
 package model;
 
+import com.mongodb.BulkWriteOperation;
 import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
@@ -199,7 +200,16 @@ public class TemplateContest implements JongoId, Initializer {
 
     public void givePrizes() {
         List<Contest> contests = Contest.findAllFromTemplateContest(templateContestId);
+        List<MatchEvent> matchEvents = getMatchEvents();
 
+        // Actualizamos los rankings de cada contest
+        BulkWriteOperation bulkOperation = Model.contests().getDBCollection().initializeOrderedBulkOperation();
+         for (Contest contest : contests) {
+            contest.updateRanking(bulkOperation, this, matchEvents);
+        }
+        bulkOperation.execute();
+
+        // Damos los premios según la posición en el Ranking
         for (Contest contest : contests) {
             contest.givePrizes();
         }

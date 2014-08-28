@@ -57,25 +57,21 @@ public class Contest implements JongoId {
         return ListUtils.asList(Model.findObjectIds(Model.contests(), "templateContestId", ListUtils.convertToIdList(templateContests)).as(Contest.class));
     }
 
-    static public void updateRanking(ObjectId templateMatchEventId) {
-        BulkWriteOperation bulkOperation = Model.contests().getDBCollection().initializeOrderedBulkOperation();
-
-        // Buscamos los template contests que incluyan ese partido
-        List<TemplateContest> templateContests = ListUtils.asList(Model.templateContests().find("{templateMatchEventIds: {$in:[#]}}",
-                templateMatchEventId).as(TemplateContest.class));
-
-        for (TemplateContest templateContest : templateContests) {
-            // Obtenemos los partidos
-            List<MatchEvent> matchEvents = templateContest.getMatchEvents();
-
-            // Actualizamos los rankings de cada contest
-            List<Contest> contests = Contest.findAllFromTemplateContest(templateContest.templateContestId);
-            for (Contest contest : contests) {
-                contest.updateRanking(bulkOperation, templateContest, matchEvents);
-            }
+    public void updateRanking(BulkWriteOperation bulkOperation, TemplateContest templateContest, List<MatchEvent> matchEvents) {
+        // Actualizamos los fantasy points
+        for (ContestEntry contestEntry : contestEntries) {
+            contestEntry.fantasyPoints = contestEntry.getFantasyPointsFromMatchEvents(matchEvents);
         }
-
-        bulkOperation.execute();
+        // Los ordenamos según los fantasy points
+        Collections.sort (contestEntries, new ContestEntryComparable());
+        // Actualizamos sus "posiciones"
+        int index = 0;
+        for (ContestEntry contestEntry : contestEntries) {
+            contestEntry.position = index++;
+            contestEntry.prize = templateContest.getPositionPrize(contestEntry.position);
+            // contestEntry.updateRanking();
+            contestEntry.updateRanking(bulkOperation);
+        }
     }
 
     public void givePrizes() {
@@ -96,23 +92,6 @@ public class Contest implements JongoId {
         // TODO: Dar premios
         // Actualmente únicamente actualizamos las estadísticas de torneos ganados
         user.updateStats();
-    }
-
-    private void updateRanking(BulkWriteOperation bulkOperation, TemplateContest templateContest, List<MatchEvent> matchEvents) {
-        // Actualizamos los fantasy points
-        for (ContestEntry contestEntry : contestEntries) {
-            contestEntry.fantasyPoints = contestEntry.getFantasyPointsFromMatchEvents(matchEvents);
-        }
-        // Los ordenamos según los fantasy points
-        Collections.sort (contestEntries, new ContestEntryComparable());
-        // Actualizamos sus "posiciones"
-        int index = 0;
-        for (ContestEntry contestEntry : contestEntries) {
-            contestEntry.position = index++;
-            contestEntry.prize = templateContest.getPositionPrize(contestEntry.position);
-            // contestEntry.updateRanking();
-            contestEntry.updateRanking(bulkOperation);
-        }
     }
 
     class ContestEntryComparable implements Comparator<ContestEntry>{
