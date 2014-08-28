@@ -51,27 +51,63 @@ public class ContestController extends Controller {
     public static Result getMyContests() {
         User theUser = (User)ctx().args.get("User");
 
-        // Obtenermos la lista de Contest Entries que el usuario ha creado y sus joins adicionales
+        // Obtener los contests en los que esté inscrito el usuario
         List<Contest> contests = Contest.findAllFromUser(theUser.userId);
         List<TemplateContest> templateContests = TemplateContest.findAllFromContests(contests);
 
-        // Necesitamos devolver los partidos asociados a estos concursos
-        List<MatchEvent> matchEvents = MatchEvent.gatherFromTemplateContests(templateContests);
-
-        // Averiguar nuestras contestEntries
+        // Registraremos nuestras contestEntries y las de nuestros contrarios que estén en "Live"
         List<ContestEntry> contestEntries = new ArrayList<>(contests.size());
-        for (Contest contest : contests) {
-            for (ContestEntry contestEntry : contest.contestEntries) {
-                if (contestEntry.userId.equals(theUser.userId)) {
-                    contestEntries.add(contestEntry);
+
+        // Conjunto para almacenar aquellos matchEventIds que estén actualmente en "Live" (según su templateContest)
+        Set<ObjectId> liveTemplateMatchEventIds = new HashSet<>();
+
+        // Miramos qué templateContest estan en "live" o no
+        for (TemplateContest templateContest : templateContests) {
+            boolean isLive = templateContest.isLive();
+
+            if (isLive) {
+                liveTemplateMatchEventIds.addAll(templateContest.templateMatchEventIds);
+            }
+
+            // Buscar los contests de ese mismo template...
+            for (Contest contest : contests) {
+                if (contest.templateContestId.equals(templateContest.templateContestId)) {
+                    if (isLive) {
+                        // Añadir TODOS los contestEntries
+                        contestEntries.addAll(contest.contestEntries);
+                    }
+                    else {
+                        // Añadir NUESTRO contestEntry
+                        for (ContestEntry contestEntry : contest.contestEntries) {
+                            if (contestEntry.userId.equals(theUser.userId)) {
+                                contestEntries.add(contestEntry);
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        // Enviamos nuestras contestEntries aparte (para poder proporcionar un jsonView con más información)
+        // Obtenemos los partidos que son jugados por todos los templateContests
+        List<MatchEvent> matchEvents = MatchEvent.gatherFromTemplateContests(templateContests);
+
+        // Diferenciaremos entre los partidos que estén en live y los "otros" (JsonViews.Public)
+        List<MatchEvent> publicMatchEvents = new ArrayList<>();
+        List<MatchEvent> liveMatchEvents = new ArrayList<>();
+        for (MatchEvent matchEvent : matchEvents) {
+            if (liveTemplateMatchEventIds.contains(matchEvent.templateMatchEventId)) {
+                liveMatchEvents.add(matchEvent);
+            }
+            else {
+                publicMatchEvents.add(matchEvent);
+            }
+        }
+
+        // Enviamos nuestras contestEntries y las de nuestros contrarios aparte (además de los partidos "live" con "liveFantasyPoints")
         return new ReturnHelperWithAttach()
                 .attachObject("contest_entries", contestEntries, JsonViews.FullContest.class)
-                .attachObject("match_events", matchEvents)
+                .attachObject("match_events_0", liveMatchEvents, JsonViews.FullContest.class)
+                .attachObject("match_events_1", publicMatchEvents)
                 .attachObject("template_contests", templateContests)
                 .attachObject("contests", contests)
                 .toResult();

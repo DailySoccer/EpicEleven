@@ -38,14 +38,12 @@ public class ModelEvents {
     public static void onOptaMatchEventIdsChanged(HashSet<String> changedOptaMatchEventIds) {
 
         for(String optaGameId : changedOptaMatchEventIds) {
-            // Logger.info("optaGameId in gameId({})", optaGameId);
 
             // Buscamos todos los template Match Events asociados con ese partido de Opta
             for (MatchEvent matchEvent : Model.matchEvents().find("{optaMatchEventId: #}", optaGameId).as(MatchEvent.class)) {
 
                 if (matchEvent.isStarted()) {
                     matchEvent.updateState();
-                    Contest.updateRanking(matchEvent.templateMatchEventId);
 
                     if (matchEvent.isFinished()) {
                         actionWhenMatchEventIsFinished(matchEvent);
@@ -54,8 +52,6 @@ public class ModelEvents {
                         actionWhenMatchEventIsStarted(matchEvent);
                     }
                 }
-
-                // Logger.info("optaGameId in templateMatchEvent({})", find.templateMatchEventId);
             }
         }
     }
