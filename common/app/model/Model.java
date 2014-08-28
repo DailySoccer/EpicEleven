@@ -196,6 +196,7 @@ public class Model {
         if (!theMongoDB.collectionExists("matchEvents")) {
             DBCollection matchEvents = theMongoDB.createCollection("matchEvents", new BasicDBObject());
             matchEvents.createIndex(new BasicDBObject("templateMatchEventId", 1));
+            matchEvents.createIndex(new BasicDBObject("optaMatchEventId", 1));
         }
 
         if (!theMongoDB.collectionExists("liveMatchEvents"))
