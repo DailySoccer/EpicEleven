@@ -329,6 +329,8 @@ TABLAS DE PREMIOS DE FANDUEL
 
 Algoritmo "codificado":
 
+commissionFactor:10
+n=this.get("selectedPrivateLeagueSizeId");var j=parseInt(n,10)
 p=this.get("selectedPrivateLeagueEntryFee");var g=parseFloat(p)
 var h=(1-(this.commissionFactor*0.01))*g;var d=j*h;var m=d
 for(k=0;k<l.length;k++)
@@ -336,21 +338,22 @@ for(k=0;k<l.length;k++)
 
 Algoritmo "interpretado":
 
+commissionFactor:10
+max_entries (j) = selectedPrivateLeagueSizeId
 entry_fee (g) = selectedPrivateLeagueEntryFee
-max_entries (j)
 
-entry_fee_con_comision = (1-(this.commissionFactor*0.01))*entry_fee;
+entry_fee_con_comision (h) = (1-(commissionFactor*0.01))*entry_fee;
 
-dinero = max_entries * entry_fee_con_comision
-resto = dinero
+dinero (d) = max_entries * entry_fee_con_comision
+resto (m) = dinero
 
-para cada multiplicador
-    premio = multiplicador * dinero
+para cada multiplicador (l[k])
+    premio (o) = multiplicador * dinero
     premio = Math.round(premio * 2) * 0.5
     if (premio > resto) {
       premio = resto;
     }
-    if (ultimo_premio) {
+    if (es_ultimo_premio) {
       if (resto > premio) {
         premio = resto;
       }
