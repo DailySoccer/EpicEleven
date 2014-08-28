@@ -327,4 +327,34 @@ TABLAS DE PREMIOS DE FANDUEL
  }
 }
 
+Algoritmo "codificado":
+
+p=this.get("selectedPrivateLeagueEntryFee");var g=parseFloat(p)
+var h=(1-(this.commissionFactor*0.01))*g;var d=j*h;var m=d
+for(k=0;k<l.length;k++)
+    o=l[k]*d;o=Math.round(o*2)*0.5;if(o>m){o=m}if(k+1==l.length){if(m>o){o=m}}m-=o
+
+Algoritmo "interpretado":
+
+entry_fee (g) = selectedPrivateLeagueEntryFee
+max_entries (j)
+
+entry_fee_con_comision = (1-(this.commissionFactor*0.01))*entry_fee;
+
+dinero = max_entries * entry_fee_con_comision
+resto = dinero
+
+para cada multiplicador
+    premio = multiplicador * dinero
+    premio = Math.round(premio * 2) * 0.5
+    if (premio > resto) {
+      premio = resto;
+    }
+    if (ultimo_premio) {
+      if (resto > premio) {
+        premio = resto;
+      }
+    }
+    resto -= premio
+
 */
