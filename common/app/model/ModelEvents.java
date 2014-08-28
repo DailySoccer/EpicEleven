@@ -44,14 +44,14 @@ public class ModelEvents {
             for (MatchEvent matchEvent : Model.matchEvents().find("{optaMatchEventId: #}", optaGameId).as(MatchEvent.class)) {
 
                 // Los partidos que han terminado no los actualizamos
-                if (matchEvent.isFinished()) continue;
+                if (matchEvent.isGameFinished()) continue;
 
                 // Ya está marcado como Comenzado?
-                boolean matchEventStarted = matchEvent.isStarted();
+                boolean matchEventStarted = matchEvent.isGameStarted();
 
                 // Si NO estaba Comenzado y AHORA SÍ ha comenzado, lo marcamos y lanzamos las acciones de matchEventIsStarted
                 if (!matchEventStarted && OptaEvent.isGameStarted(matchEvent.optaMatchEventId)) {
-                    matchEvent.setStarted();
+                    matchEvent.setGameStarted();
                     actionWhenMatchEventIsStarted(matchEvent);
                     matchEventStarted = true;
                 }
@@ -61,8 +61,8 @@ public class ModelEvents {
                     matchEvent.updateState();
 
                     // Si HA TERMINADO, lo marcamos y lanzamos las acciones de matchEventIsFinished
-                    if (!matchEvent.isFinished() && OptaEvent.isGameFinished(matchEvent.optaMatchEventId)) {
-                        matchEvent.setFinished();
+                    if (!matchEvent.isGameFinished() && OptaEvent.isGameFinished(matchEvent.optaMatchEventId)) {
+                        matchEvent.setGameFinished();
                         actionWhenMatchEventIsFinished(matchEvent);
                     }
                 }

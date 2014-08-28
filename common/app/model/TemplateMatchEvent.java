@@ -1,7 +1,6 @@
 package model;
 
 
-import model.opta.OptaEvent;
 import model.opta.OptaMatchEvent;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
@@ -59,12 +58,12 @@ public class TemplateMatchEvent implements JongoId, Initializer {
 
     public boolean isStarted()  {
         MatchEvent matchEvent = MatchEvent.findOneFromTemplate(templateMatchEventId);
-        return (matchEvent != null) && matchEvent.isStarted();
+        return (matchEvent != null) && matchEvent.isGameStarted();
     }
 
     public boolean isFinished() {
         MatchEvent matchEvent = MatchEvent.findOneFromTemplate(templateMatchEventId);
-        return (matchEvent != null) && matchEvent.isFinished();
+        return (matchEvent != null) && matchEvent.isGameFinished();
     }
 
     static public boolean importMatchEvent(OptaMatchEvent optaMatchEvent) {
