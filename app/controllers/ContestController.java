@@ -77,42 +77,6 @@ public class ContestController extends Controller {
                 .toResult();
     }
 
-    @UserAuthenticated
-    private static ReturnHelper getMyContestsWithState(User theUser, TemplateContest.State state) {
-        // Obtenermos la lista de Contest Entries que el usuario ha creado y sus joins adicionales
-        List<Contest> contests = Contest.findAllFromUser(theUser.userId);
-        List<TemplateContest> templateContests = TemplateContest.findAllFromContests(contests);
-
-        // Registraremos los templateContests validos (del estado deseado)
-        Set<ObjectId> templateContestValids = new HashSet<>();
-
-        // Filtrar los templateContests en el estado correcto
-        List<TemplateContest> templateContestsFiltered = new ArrayList<>();
-        for (TemplateContest templateContest : templateContests) {
-            if (templateContest.state.equals(state)) {
-                templateContestsFiltered.add(templateContest);
-
-                // Marcarlo como valido
-                templateContestValids.add(templateContest.getId());
-            }
-        }
-
-        // Filtrar los Contests
-        List<Contest> contestFiltered = new ArrayList<>();
-        for (Contest contest : contests) {
-            if (templateContestValids.contains(contest.templateContestId)) {
-                contestFiltered.add(contest);
-            }
-        }
-
-        // Necesitamos devolver los partidos asociados a estos concursos
-        List<MatchEvent> matchEvents = MatchEvent.gatherFromTemplateContests(templateContests);
-
-        return new ReturnHelper(ImmutableMap.of("match_events", matchEvents,
-                                                "template_contests", templateContestsFiltered,
-                                                "contests", contestFiltered));
-    }
-
     /**
      * Obtener toda la información necesaria para mostrar un Contest
      */
@@ -233,8 +197,13 @@ public class ContestController extends Controller {
         TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(templateSoccerPlayerId));
 
         List<ObjectId> templateSoccerTeamIds = new ArrayList<>();
+
+        // Añadimos el equipo en el que juega actualmente el futbolista
+        templateSoccerTeamIds.add(templateSoccerPlayer.templateTeamId);
+
+        // Añadimos los equipos CONTRA los que ha jugado el futbolista
         for (SoccerPlayerStats stats : templateSoccerPlayer.stats) {
-            templateSoccerTeamIds.add(stats.templateSoccerTeamId);
+            templateSoccerTeamIds.add(stats.opponentTeamId);
         }
 
         List<TemplateSoccerTeam> templateSoccerTeams = !templateSoccerTeamIds.isEmpty() ? TemplateSoccerTeam.findAll(templateSoccerTeamIds)

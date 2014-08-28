@@ -13,19 +13,19 @@ public class SoccerPlayerStats {
     public String optaMatchEventId;
 
     public Date startDate;
-    public ObjectId templateSoccerTeamId;
+    public ObjectId opponentTeamId;
     public int fantasyPoints;
     public int playedMinutes;
     public HashMap<String, Integer> statsCount = new HashMap<>();   // SoccerPlayerStatType => num de veces que ha ocurrido
 
     public SoccerPlayerStats() { }
 
-    public SoccerPlayerStats(Date startDate, String optaPlayerId, String optaMatchEventId, ObjectId templateSoccerTeamId, int fantasyPoints) {
+    public SoccerPlayerStats(Date startDate, String optaPlayerId, String optaMatchEventId, ObjectId opponentTeamId, int fantasyPoints) {
         this.optaMatchEventId = optaMatchEventId;
         this.optaPlayerId = optaPlayerId;
 
         this.startDate = startDate;
-        this.templateSoccerTeamId = templateSoccerTeamId;
+        this.opponentTeamId = opponentTeamId;
         this.fantasyPoints = fantasyPoints;
 
         init();

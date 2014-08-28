@@ -127,7 +127,8 @@ public class MatchEvent {
             }
 
             // Generamos las nuevas estadísticas del partido para este futbolista
-            SoccerPlayerStats soccerPlayerStats = new SoccerPlayerStats(startDate, soccerPlayer.optaPlayerId, optaMatchEventId, soccerTeam.templateSoccerTeamId, getFantasyPoints(soccerPlayer.templateSoccerPlayerId));
+            SoccerTeam opponentTeam = soccerTeam.templateSoccerTeamId.equals(soccerTeamA.templateSoccerTeamId) ? soccerTeamB : soccerTeamA;
+            SoccerPlayerStats soccerPlayerStats = new SoccerPlayerStats(startDate, soccerPlayer.optaPlayerId, optaMatchEventId, opponentTeam.templateSoccerTeamId, getFantasyPoints(soccerPlayer.templateSoccerPlayerId));
 
             // El futbolista ha jugado en el partido?
             if (soccerPlayerStats.playedMinutes > 0 || !soccerPlayerStats.statsCount.isEmpty()) {
