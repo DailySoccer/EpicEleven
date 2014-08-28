@@ -118,7 +118,7 @@ public class Contest implements JongoId {
     class ContestEntryComparable implements Comparator<ContestEntry>{
         @Override
         public int compare(ContestEntry o1, ContestEntry o2) {
-            return (o1.fantasyPoints>o2.fantasyPoints ? -1 : (o1.fantasyPoints==o2.fantasyPoints ? 0 : 1));
+            return (o2.fantasyPoints - o1.fantasyPoints);
         }
     }
 }
