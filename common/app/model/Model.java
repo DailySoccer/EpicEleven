@@ -160,7 +160,6 @@ public class Model {
 
     static private void ensureContestsDB(DB theMongoDB) {
 
-        // TODO: Creacion de indexes
         if (!theMongoDB.collectionExists("templateContests")) {
             DBCollection templateContests = theMongoDB.createCollection("templateContests", new BasicDBObject());
             templateContests.createIndex(new BasicDBObject("templateMatchEventIds", 1));
@@ -198,9 +197,6 @@ public class Model {
             matchEvents.createIndex(new BasicDBObject("templateMatchEventId", 1));
             matchEvents.createIndex(new BasicDBObject("optaMatchEventId", 1));
         }
-
-        if (!theMongoDB.collectionExists("liveMatchEvents"))
-            theMongoDB.createCollection("liveMatchEvents", new BasicDBObject());
     }
 
 
