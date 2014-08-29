@@ -47,6 +47,9 @@ public class MatchEvent {
     public Date startDate;
     public Date createdAt;
 
+    public Date gameStartedDate;
+    public Date gameFinishedDate;
+
     public MatchEvent() { }
 
     public void Initialize() { }
@@ -85,9 +88,18 @@ public class MatchEvent {
         return ListUtils.asList(Model.findObjectIds(Model.matchEvents(), "templateMatchEventId", templateMatchEventObjectIds).as(MatchEvent.class));
     }
 
+    public void setGameStarted() {
+        gameStartedDate = GlobalDate.getCurrentDate();
+        Model.matchEvents().update(matchEventId).with("{$set: {gameStartedDate: #}}", gameStartedDate);
+    }
 
-    public boolean isStarted()  { return OptaEvent.isGameStarted(optaMatchEventId);  }
-    public boolean isFinished() { return OptaEvent.isGameFinished(optaMatchEventId); }
+    public void setGameFinished() {
+        gameFinishedDate = GlobalDate.getCurrentDate();
+        Model.matchEvents().update(matchEventId).with("{$set: {gameFinishedDate: #}}", gameFinishedDate);
+    }
+
+    public boolean isGameStarted()  { return gameStartedDate != null;  }
+    public boolean isGameFinished() { return gameFinishedDate != null; }
 
     public int getFantasyPoints(SoccerTeam soccerTeam) {
         if (soccerTeam != soccerTeamA && soccerTeam != soccerTeamB)

@@ -1,5 +1,6 @@
 package model;
 
+import model.opta.OptaEvent;
 import utils.ListUtils;
 
 import java.util.HashSet;
@@ -42,14 +43,27 @@ public class ModelEvents {
             // Buscamos todos los template Match Events asociados con ese partido de Opta
             for (MatchEvent matchEvent : Model.matchEvents().find("{optaMatchEventId: #}", optaGameId).as(MatchEvent.class)) {
 
-                if (matchEvent.isStarted()) {
+                // Los partidos que han terminado no los actualizamos
+                if (matchEvent.isGameFinished()) continue;
+
+                // Ya está marcado como Comenzado?
+                boolean matchEventStarted = matchEvent.isGameStarted();
+
+                // Si NO estaba Comenzado y AHORA SÍ ha comenzado, lo marcamos y lanzamos las acciones de matchEventIsStarted
+                if (!matchEventStarted && OptaEvent.isGameStarted(matchEvent.optaMatchEventId)) {
+                    matchEvent.setGameStarted();
+                    actionWhenMatchEventIsStarted(matchEvent);
+                    matchEventStarted = true;
+                }
+
+                // Si ha comenzado, actualizamos la información del "Live"
+                if (matchEventStarted) {
                     matchEvent.updateState();
 
-                    if (matchEvent.isFinished()) {
+                    // Si HA TERMINADO, lo marcamos y lanzamos las acciones de matchEventIsFinished
+                    if (!matchEvent.isGameFinished() && OptaEvent.isGameFinished(matchEvent.optaMatchEventId)) {
+                        matchEvent.setGameFinished();
                         actionWhenMatchEventIsFinished(matchEvent);
-                    }
-                    else {
-                        actionWhenMatchEventIsStarted(matchEvent);
                     }
                 }
             }

@@ -1,7 +1,6 @@
 package model;
 
 
-import model.opta.OptaEvent;
 import model.opta.OptaMatchEvent;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
@@ -57,8 +56,15 @@ public class TemplateMatchEvent implements JongoId, Initializer {
         return ListUtils.asList(Model.findObjectIds(Model.templateMatchEvents(), "_id", idList).as(TemplateMatchEvent.class));
     }
 
-    public boolean isStarted()  { return OptaEvent.isGameStarted(optaMatchEventId);  }
-    public boolean isFinished() { return OptaEvent.isGameFinished(optaMatchEventId); }
+    public boolean isStarted()  {
+        MatchEvent matchEvent = MatchEvent.findOneFromTemplate(templateMatchEventId);
+        return (matchEvent != null) && matchEvent.isGameStarted();
+    }
+
+    public boolean isFinished() {
+        MatchEvent matchEvent = MatchEvent.findOneFromTemplate(templateMatchEventId);
+        return (matchEvent != null) && matchEvent.isGameFinished();
+    }
 
     static public boolean importMatchEvent(OptaMatchEvent optaMatchEvent) {
         TemplateSoccerTeam teamA = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.homeTeamId).as(TemplateSoccerTeam.class);
