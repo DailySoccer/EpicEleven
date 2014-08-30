@@ -224,36 +224,4 @@ public class ContestController extends Controller {
 
         return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
     }
-
-    /**
-     * Obtener la información sobre un SoccerPlayer (estadísticas,...)
-     */
-    public static Result getTemplateSoccerPlayerInfo(String templateSoccerPlayerId) {
-
-        TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(templateSoccerPlayerId));
-
-        List<ObjectId> templateSoccerTeamIds = new ArrayList<>();
-
-        // Añadimos el equipo en el que juega actualmente el futbolista
-        templateSoccerTeamIds.add(templateSoccerPlayer.templateTeamId);
-
-        // Añadimos los equipos CONTRA los que ha jugado el futbolista
-        for (SoccerPlayerStats stats : templateSoccerPlayer.stats) {
-            templateSoccerTeamIds.add(stats.opponentTeamId);
-        }
-
-        List<TemplateSoccerTeam> templateSoccerTeams = !templateSoccerTeamIds.isEmpty() ? TemplateSoccerTeam.findAll(templateSoccerTeamIds)
-                                                                                        : new ArrayList<TemplateSoccerTeam>();
-
-        return new ReturnHelper(ImmutableMap.of(
-                "soccerTeams", templateSoccerTeams,
-                "soccerPlayer", templateSoccerPlayer)
-        ).toResult();
-    }
-
-    public static Result getCurrentDate() {
-        return new ReturnHelper(ImmutableMap.of(
-                "currentDate", GlobalDate.getCurrentDate()
-        )).toResult();
-    }
 }
