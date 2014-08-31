@@ -208,9 +208,9 @@ public class OptaSimulator implements Runnable {
         String name = _optaResultSet.getString("name");
         String feedType = _optaResultSet.getString("feed_type");
 
-        Logger.debug(name + " " + GlobalDate.formatDate(createdAt));
+        Logger.debug("OptaSimulator processing: {}, {}, {}", _state.nextDocToParseIndex, name, GlobalDate.formatDate(createdAt));
 
-        HashSet<String> changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, sqlxml);
+        HashSet<String> changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, name, sqlxml);
         ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
 
         _state.nextDocToParseIndex++;
