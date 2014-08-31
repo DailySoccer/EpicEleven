@@ -36,8 +36,11 @@ public class OptaHttpController extends Controller {
         String xMetaEncoding = request().headers().containsKey("X-Meta-Encoding")?
                                                     request().headers().get("X-Meta-Encoding")[0]: "UTF-8";
 
+        String detectedEncoding = null;
+
         if (contentType.indexOf("charset=") > 0) {
-            Logger.info("OptaHttpController.optaXmlInput: Mandaron encoding, revisar!!!! {}", contentType);
+            Logger.error("WTF 0198, Mandaron encoding, revisar!!!! {}", contentType);
+            detectedEncoding = contentType;
             bodyText = request().body().asText();
         }
         else {
@@ -49,7 +52,6 @@ public class OptaHttpController extends Controller {
                 Logger.error("WTF 9151", e);
             }
 
-            String detectedEncoding = null;
             try {
                 detectedEncoding = getDetectedEncoding(new ByteArrayInputStream(bodyOriginalBytes));
             }
@@ -68,19 +70,17 @@ public class OptaHttpController extends Controller {
         }
 
         String fileName = getHeader("X-Meta-Default-Filename", request().headers());
-        Logger.info("OptaHttpController.optaXmlInput: About to insert {}", fileName);
+        String feedType = getHeader("X-Meta-Feed-Type", request().headers());
 
-        Model.insertXML(bodyText,
-                        getHeadersString(request().headers()),
-                        new Date(),
-                        fileName,
-                        getHeader("X-Meta-Feed-Type", request().headers()),
+        Logger.info("About to insert {} with encoding {}", fileName, detectedEncoding);
+
+        Model.insertXML(bodyText, getHeadersString(request().headers()), new Date(), fileName, feedType,
                         getHeader("X-Meta-Game-Id", request().headers()),
                         getHeader("X-Meta-Competition-Id", request().headers()),
                         getHeader("X-Meta-Season-Id", request().headers()),
                         GlobalDate.parseDate(getHeader("X-Meta-Last-Updated", request().headers()), null));
 
-        HashSet<String> updatedMatchEvents = new OptaProcessor().processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyText);
+        HashSet<String> updatedMatchEvents = new OptaProcessor().processOptaDBInput(feedType, fileName, bodyText);
         ModelEvents.onOptaMatchEventIdsChanged(updatedMatchEvents);
 
         return ok("Yeah, XML processed");

@@ -233,7 +233,7 @@ public class Model {
                 stmt.execute();
 
                 if (stmt.getUpdateCount() == 1) {
-                    Logger.info("Successful insert in OptaXML {}", name);
+                    Logger.info("Successful insert of {}", name);
                 }
                 else {
                     Logger.error("WTF 1906, no se inserto el fichero de opta {}", name);
