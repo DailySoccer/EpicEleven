@@ -60,8 +60,8 @@
             var temp =  $.ajax({
                 url: "@RefresherController.inProgress",
                 success: function(result) {
+                        getLastXML();
                         if (result == "true" || document.getElementById("remaining").innerHTML == "0") {
-                            getLastXML();
                             $(".play.import").addClass("disabled");
                         } else {
                             $(".play.import").removeClass("disabled");

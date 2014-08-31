@@ -1,10 +1,15 @@
 package controllers.admin;
 
+import com.google.common.collect.ImmutableList;
+import model.GlobalDate;
 import model.Model;
 import model.opta.*;
+import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
+
 import utils.ListUtils;
+import utils.PaginationData;
 
 import java.util.List;
 
@@ -31,11 +36,44 @@ public class OptaController extends Controller {
     }
 
     public static Result optaEvents() {
-        Iterable<OptaEvent> optaEventResults = Model.optaEvents().find().as(OptaEvent.class);
-        List<OptaEvent> optaEventList = ListUtils.asList(optaEventResults);
+        return ok(views.html.opta_event_list.render());
+    }
 
-        return ok(views.html.opta_event_list.render(optaEventList));
-   }
+    public static Result optaEventsAjax() {
+         return PaginationData.withAjax(request().queryString(), Model.optaEvents(), OptaEvent.class, new PaginationData() {
+            public List<String> getFieldNames() {
+                return ImmutableList.of(
+                        "pointsTranslationId",
+                        "competitionId",
+                        "gameId",
+                        "homeTeamId",
+                        "awayTeamId",
+                        "optaPlayerId",
+                        "typeId",
+                        "points",
+                        "timestamp",
+                        "lastModified"
+                );
+            }
+
+            public String getFieldByIndex(Object data, Integer index) {
+                OptaEvent optaEvent = (OptaEvent) data;
+                switch (index) {
+                    case 0: return optaEvent.pointsTranslationId != null ? optaEvent.pointsTranslationId.toString() : "-";
+                    case 1: return optaEvent.competitionId;
+                    case 2: return optaEvent.gameId;
+                    case 3: return optaEvent.homeTeamId;
+                    case 4: return optaEvent.awayTeamId;
+                    case 5: return optaEvent.optaPlayerId;
+                    case 6: return String.valueOf(optaEvent.typeId);
+                    case 7: return String.valueOf(optaEvent.points);
+                    case 8: return GlobalDate.formatDate(optaEvent.timestamp);
+                    case 9: return GlobalDate.formatDate(optaEvent.lastModified);
+                }
+                return "<invalid value>";
+            }
+        });
+    }
 
     public static Result updateOptaEvents() {
 

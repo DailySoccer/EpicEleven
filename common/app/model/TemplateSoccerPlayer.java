@@ -78,6 +78,19 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: # }", templateSoccerTeamId).as(TemplateSoccerPlayer.class));
     }
 
+    public void addStats(SoccerPlayerStats soccerPlayerStats) {
+        stats.add(soccerPlayerStats);
+
+        // Calculamos la media de los fantasyPoints
+        int fantasyPointsMedia = 0;
+        for (SoccerPlayerStats stat : stats) {
+            fantasyPointsMedia += stat.fantasyPoints;
+        }
+        fantasyPointsMedia /= stats.size();
+
+        Model.templateSoccerPlayers().update("{optaPlayerId: #}", soccerPlayerStats.optaPlayerId)
+                .with("{$set: {fantasyPoints: #, stats: #}}", fantasyPointsMedia, stats);
+    }
 
     public boolean hasChanged(OptaPlayer optaPlayer) {
         return !optaPlayerId.equals(optaPlayer.optaPlayerId) ||

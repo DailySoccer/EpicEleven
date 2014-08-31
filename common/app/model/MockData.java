@@ -35,38 +35,38 @@ public final class MockData {
 
     public static void createPointsTranslation() {
         int[][] pointsTable = {
-                {OptaEventType.PASS_SUCCESSFUL._code, 2},               // pase bien hecho
-                {OptaEventType.TAKE_ON._code, 10},                      // regate
-                {OptaEventType.FOUL_RECEIVED._code, 10},                // falta recibida
-                {OptaEventType.TACKLE_EFFECTIVE._code, 15},             // recuperacion/entrada con posesion
-                {OptaEventType.INTERCEPTION._code, 15},                 // intercepcion
-                {OptaEventType.SAVE._code, 10},                         // parada
-                {OptaEventType.CLAIM._code, 10},                        // captura balon
-                {OptaEventType.CLEARANCE._code, 10},                    // parada
-                {OptaEventType.MISS._code, 15},                         // tiro a puerta
-                {OptaEventType.POST._code, 15},                         // tiro a puerta
-                {OptaEventType.ATTEMPT_SAVED._code, 15},                // tiro a puerta
-                {OptaEventType.ASSIST._code, 20},                       // asistencia
+                {OptaEventType.PASS_SUCCESSFUL.code, 1},               // pase bien hecho
+                {OptaEventType.TAKE_ON.code, 5},                       // regate
+                {OptaEventType.FOUL_RECEIVED.code, 3},                 // falta recibida
+                {OptaEventType.TACKLE_EFFECTIVE.code, 10},             // recuperacion/entrada con posesion
+                {OptaEventType.INTERCEPTION.code, 5},                 // intercepcion
+                {OptaEventType.SAVE.code, 10},                         // parada
+                {OptaEventType.CLAIM.code, 10},                        // captura balon
+                {OptaEventType.CLEARANCE.code, 5},                     // parada
+                {OptaEventType.MISS.code, 5},                          // tiro a puerta
+                {OptaEventType.POST.code, 5},                          // tiro a puerta
+                {OptaEventType.ATTEMPT_SAVED.code, 5},                 // tiro a puerta
+                {OptaEventType.ASSIST.code, 15},                       // asistencia
                 //{16, 100},                                            // gol
-                {OptaEventType.GOAL_SCORED_BY_GOALKEEPER._code, 100},   // gol del portero
-                {OptaEventType.GOAL_SCORED_BY_DEFENDER._code, 80},      // gol del defensa
-                {OptaEventType.GOAL_SCORED_BY_MIDFIELDER._code, 60},    // gol del medio
-                {OptaEventType.GOAL_SCORED_BY_FORWARD._code, 40},       // gol del delantero
-                {OptaEventType.OWN_GOAL._code, -10},                    // gol en contra
-                {OptaEventType.YELLOW_CARD._code, -25},                 // tarjeta amarilla
-                {OptaEventType.SECOND_YELLOW_CARD._code, -25},          // tarjeta amarilla (segunda)
-                {OptaEventType.PUNCH._code, 10},                        // despeje puños
-                {OptaEventType.PASS_UNSUCCESSFUL._code, -5},            // perdida de balon, pase perdido
-                {OptaEventType.DISPOSSESSED._code, -5},                 // perdida de balon
-                {OptaEventType.ERROR._code, -20},                       // perdida de balon
-                {OptaEventType.CAUGHT_OFFSIDE._code, -5},               // fuera de juego
-                {OptaEventType.FOUL_COMMITTED._code, -5},               // falta infligida
-                {OptaEventType.RED_CARD._code, -75},                   // tarjeta roja
-                {OptaEventType.PENALTY_COMMITTED._code, -30},           // penalty infligido
-                {OptaEventType.PENALTY_FAILED._code, -30},              // penalty fallado
-                {OptaEventType.GOALKEEPER_SAVES_PENALTY._code, 30},     // penalty parado por el portero
-                {OptaEventType.CLEAN_SHEET._code, 40},                  // clean sheet
-                {OptaEventType.GOAL_CONCEDED._code, -10},               // Gol al defensa
+                {OptaEventType.GOAL_SCORED_BY_GOALKEEPER.code, 75},    // gol del portero
+                {OptaEventType.GOAL_SCORED_BY_DEFENDER.code, 65},      // gol del defensa
+                {OptaEventType.GOAL_SCORED_BY_MIDFIELDER.code, 50},    // gol del medio
+                {OptaEventType.GOAL_SCORED_BY_FORWARD.code, 40},       // gol del delantero
+                {OptaEventType.OWN_GOAL.code, -10},                    // gol en contra
+                {OptaEventType.YELLOW_CARD.code, -20},                 // tarjeta amarilla
+                {OptaEventType.SECOND_YELLOW_CARD.code, -20},          // tarjeta amarilla (segunda)
+                {OptaEventType.PUNCH.code, 10},                        // despeje puños
+                {OptaEventType.PASS_UNSUCCESSFUL.code, -2},            // perdida de balon, pase perdido
+                {OptaEventType.DISPOSSESSED.code, -5},                 // perdida de balon
+                {OptaEventType.ERROR.code, -20},                       // perdida de balon
+                {OptaEventType.CAUGHT_OFFSIDE.code, -5},               // fuera de juego
+                {OptaEventType.FOUL_COMMITTED.code, -5},               // falta infligida
+                {OptaEventType.RED_CARD.code, -50},                    // tarjeta roja
+                {OptaEventType.PENALTY_COMMITTED.code, -20},           // penalty infligido
+                {OptaEventType.PENALTY_FAILED.code, -30},              // penalty fallado
+                {OptaEventType.GOALKEEPER_SAVES_PENALTY.code, 30},     // penalty parado por el portero
+                {OptaEventType.CLEAN_SHEET.code, 30},                  // clean sheet
+                {OptaEventType.GOAL_CONCEDED.code, -10},               // Gol al defensa
         };
 
         for (int i = 0; i < pointsTable.length; i++) {

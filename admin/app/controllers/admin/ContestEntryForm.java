@@ -80,7 +80,7 @@ public class ContestEntryForm {
         List<ValidationError> errors = new ArrayList<>();
 
         // Validar user
-        User aUser = User.find(userId);
+        User aUser = User.findOne(userId);
         if (aUser == null) {
             errors.add(new ValidationError("userId", "User invalid"));
         }

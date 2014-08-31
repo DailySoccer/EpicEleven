@@ -36,7 +36,7 @@ public class SimulatorController extends Controller {
     }
 
     public static Result nextStep() {
-        OptaSimulator.instance().nextStep();
+        OptaSimulator.instance().nextStep(OptaSimulator.MAX_SPEED);
         return ok();
     }
 
@@ -105,5 +105,17 @@ public class SimulatorController extends Controller {
     @AllowCors.Origin
     public static Result isSimulatorActivated() {
         return new ReturnHelper(ImmutableMap.of("simulator_activated", OptaSimulator.isCreated())).toResult();
+    }
+
+    public static Result setSpeed(int simSpeed) {
+        OptaSimulator.instance().setSpeedFactor(simSpeed);
+        return ok();
+    }
+
+    public static Result getSpeed() {
+        if (OptaSimulator.isCreated())
+            return ok(String.valueOf(OptaSimulator.instance().getSpeedFactor()));
+        else
+            return ok("86400");
     }
 }

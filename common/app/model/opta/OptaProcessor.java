@@ -6,7 +6,6 @@ import model.PointsTranslation;
 import org.bson.types.ObjectId;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.input.JDOMParseException;
 import org.jdom2.input.SAXBuilder;
 import play.Logger;
 
@@ -16,36 +15,36 @@ import java.util.*;
 public class OptaProcessor {
 
     // Retorna los Ids de opta (gameIds, optaMachEventId) de los partidos que han cambiado
-    public HashSet<String> processOptaDBInput(String feedType, String requestBody) throws JDOMParseException {
+    public HashSet<String> processOptaDBInput(String feedType, String requestBody) {
+        _dirtyMatchEvents = new HashSet<>();
+
         try {
-            SAXBuilder builder = new SAXBuilder();
-
-            Document document = (Document) builder.build(new StringReader(requestBody));
+            Document document = new SAXBuilder().build(new StringReader(requestBody));
             processOptaDBInput(feedType, document.getRootElement());
-
-        } catch (JDOMParseException e) {
-            throw e;
         }
         catch (Exception e) {
-            Logger.error("WTF 95634", e);
+            Logger.error("WTF 6312", e);
         }
 
         return _dirtyMatchEvents;
     }
 
     private void processOptaDBInput(String feedType, Element requestBody) {
-        _dirtyMatchEvents = new HashSet<>();
 
-        if (feedType != null) {
-            if (feedType.equals("F40")) {
-                processF9(requestBody);
-            } else if (feedType.equals("F24")) {
-                processEvents(requestBody);
-            } else if (feedType.equals("F1")) {
-                processF1(requestBody);
-            } else {
-                Logger.info("Not parsing file type: {}", feedType);
-            }
+        if (feedType.equals("F9")) {
+            processF9(requestBody);
+        }
+        else if (feedType.equals("F40")) {
+            processF40(requestBody);
+        }
+        else if (feedType.equals("F24")) {
+            processEvents(requestBody);
+        }
+        else if (feedType.equals("F1")) {
+            processF1(requestBody);
+        }
+        else {
+            Logger.debug("Not parsing file type: {}", feedType);
         }
     }
 
@@ -148,11 +147,13 @@ public class OptaProcessor {
 
         OptaMatchEvent optaMatchEvent = new OptaMatchEvent();
         optaMatchEvent.optaMatchEventId = getStringId(matchObject, "uID", "_NO UID");
+
         if (matchObject.getAttribute("last_modified") != null) {
             optaMatchEvent.lastModified = GlobalDate.parseDate(matchObject.getAttributeValue("last_modified"), null);
         }
-        optaMatchEvent.timeZone = matchInfo.getChild("TZ").getContent().get(0).getValue();
-        optaMatchEvent.matchDate = GlobalDate.parseDate(matchInfo.getChild("Date").getContent().get(0).getValue(), optaMatchEvent.timeZone);
+
+        optaMatchEvent.matchDate = GlobalDate.parseDate(matchInfo.getChild("Date").getContent().get(0).getValue(),
+                                                        matchInfo.getChild("TZ").getContent().get(0).getValue());
         optaMatchEvent.competitionId = getStringId(myF1, "competition_id", "_NO COMPETITION ID");
         optaMatchEvent.seasonId = getStringId(myF1, "season_id", "_NO SEASON ID");
 
@@ -169,6 +170,7 @@ public class OptaProcessor {
                 }
             }
         }
+
         Model.optaMatchEvents().update("{optaMatchEventId: #}", optaMatchEvent.optaMatchEventId).upsert().with(optaMatchEvent);
     }
 
@@ -186,15 +188,25 @@ public class OptaProcessor {
         if (null == _pointsTranslationCache)
             resetPointsTranslationCache();
 
+        // Obtener las estadísticas (minutos jugados por los futbolistas) y eventos (cleanSheet, goalsAgainst)
         Element myF9 = f9.getChild("SoccerDocument");
 
         if (myF9.getAttribute("Type").getValue().equals("Result")) {
             processFinishedMatch(myF9);
         }
-        else if (myF9.getAttribute("Type").getValue().equals("STANDINGS Latest") ||
-                 myF9.getAttribute("Type").getValue().equals("SQUADS Latest") ) {
+    }
 
-            for (Element team : getTeamsFromF9(myF9)) {
+    private void processF40(Element f40) {
+
+        if (null == _pointsTranslationCache)
+            resetPointsTranslationCache();
+
+        // Obtener la lista de teams y players
+        Element myF40 = f40.getChild("SoccerDocument");
+
+        if (myF40.getAttribute("Type").getValue().equals("SQUADS Latest")) {
+
+            for (Element team : getTeamsFromF40(myF40)) {
 
                 OptaTeam myTeam = new OptaTeam();
                 myTeam.optaTeamId = getStringId(team, "uID", "_NO TEAM UID");
@@ -225,6 +237,9 @@ public class OptaProcessor {
                         Model.optaPlayers().update("{optaPlayerId: #}", playerId).upsert().with(myPlayer);
                 }
             }
+        }
+        else {
+            throw new RuntimeException("WTF 7349: processF40");
         }
     }
 
@@ -279,19 +294,11 @@ public class OptaProcessor {
     }
 
 
-    private List<Element> getTeamsFromF9(Element myF9) {
-        List<Element> teams = new ArrayList<Element>();
-
-        if (null != myF9.getChild("Team")) {
-            teams = myF9.getChildren("Team");
-        } else {
-            if (null != myF9.getChild("Match")) {
-                teams = myF9.getChild("Match").getChildren("Team");
-            } else {
-                Logger.info("WTF 34825: No match");
-            }
+    private List<Element> getTeamsFromF40(Element myF40) {
+        if (null == myF40.getChild("Team")) {
+            throw new RuntimeException("WTF 7812: getTeamsFromF40");
         }
-        return teams;
+        return myF40.getChildren("Team");
     }
 
 
@@ -336,7 +343,7 @@ public class OptaProcessor {
                 for (Element stat : stats) {
                     if (stat.getAttribute("Type").getValue().equals("goals_conceded") &&
                         (Integer.parseInt(stat.getContent().get(0).getValue()) > 0)) {
-                        createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.GOAL_CONCEDED._code, 20001,
+                        createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.GOAL_CONCEDED.code, 20001,
                                     Integer.parseInt(stat.getContent().get(0).getValue()));
                     }
                 }
@@ -356,7 +363,7 @@ public class OptaProcessor {
                 for (Element stat : stats) {
                     if (stat.getAttribute("Type").getValue().equals("mins_played") &&
                         (Integer.parseInt(stat.getContent().get(0).getValue()) > 59)) {
-                        createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.CLEAN_SHEET._code, 20000, 1);
+                        createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.CLEAN_SHEET.code, 20000, 1);
                     }
                 }
             }

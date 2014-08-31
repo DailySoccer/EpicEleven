@@ -1,6 +1,9 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.mongodb.BasicDBObject;
+import com.mongodb.BulkWriteOperation;
+import com.mongodb.DBObject;
 import com.mongodb.MongoException;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
@@ -22,7 +25,7 @@ public class ContestEntry implements JongoId {
     public List<ObjectId> soccerIds;    // Fantasy team
 
     @JsonView(JsonViews.FullContest.class)
-    public int position;
+    public int position = -1;
 
     @JsonView(JsonViews.FullContest.class)
     public int prize;
@@ -46,12 +49,22 @@ public class ContestEntry implements JongoId {
     public ObjectId getId() { return contestEntryId; }
 
     public void updateRanking() {
-        // Logger.info("ContestEntry: {} | Position: {} | FantasyPoints: {}", contestEntryId, position, fantasyPoints);
+        // Logger.info("ContestEntry: {} | UserId: {} | Position: {} | FantasyPoints: {}", contestEntryId, userId, position, fantasyPoints);
 
         Model.contests()
             .update("{'contestEntries._id': #}", getId())
             .with("{$set: {'contestEntries.$.position': #, 'contestEntries.$.fantasyPoints': #, 'contestEntries.$.prize': #}}",
                     position, fantasyPoints, prize);
+    }
+
+    public void updateRanking(BulkWriteOperation bulkOperation) {
+        // Logger.info("ContestEntry: {} | UserId: {} | Position: {} | FantasyPoints: {}", contestEntryId, userId, position, fantasyPoints);
+
+        DBObject query = new BasicDBObject("contestEntries._id", getId());
+        DBObject update = new BasicDBObject("$set", new BasicDBObject("contestEntries.$.position", position)
+                                                              .append("contestEntries.$.fantasyPoints", fantasyPoints)
+                                                              .append("contestEntries.$.prize", prize));
+        bulkOperation.find(query).updateOne(update);
     }
 
     static public ContestEntry findOne(ObjectId contestEntryId) {

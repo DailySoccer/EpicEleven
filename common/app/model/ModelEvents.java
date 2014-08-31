@@ -1,5 +1,6 @@
 package model;
 
+import model.opta.OptaEvent;
 import utils.ListUtils;
 
 import java.util.HashSet;
@@ -37,32 +38,40 @@ public class ModelEvents {
 
     public static void onOptaMatchEventIdsChanged(HashSet<String> changedOptaMatchEventIds) {
 
-        if (changedOptaMatchEventIds==null || changedOptaMatchEventIds.isEmpty())
-            return;
-
         for(String optaGameId : changedOptaMatchEventIds) {
-            // Logger.info("optaGameId in gameId({})", optaGameId);
 
             // Buscamos todos los template Match Events asociados con ese partido de Opta
             for (MatchEvent matchEvent : Model.matchEvents().find("{optaMatchEventId: #}", optaGameId).as(MatchEvent.class)) {
 
-                if (matchEvent.isStarted()) {
-                    matchEvent.updateState();
+                // Los partidos que han terminado no los actualizamos
+                if (matchEvent.isGameFinished()) continue;
 
-                    if (matchEvent.isFinished()) {
-                        actionWhenMatchEventIsFinished(matchEvent);
-                    } else {
-                        actionWhenMatchEventIsStarted(matchEvent);
-                    }
+                // Ya está marcado como Comenzado?
+                boolean matchEventStarted = matchEvent.isGameStarted();
+
+                // Si NO estaba Comenzado y AHORA SÍ ha comenzado, lo marcamos y lanzamos las acciones de matchEventIsStarted
+                if (!matchEventStarted && OptaEvent.isGameStarted(matchEvent.optaMatchEventId)) {
+                    matchEvent.setGameStarted();
+                    actionWhenMatchEventIsStarted(matchEvent);
+                    matchEventStarted = true;
                 }
 
-                // Logger.info("optaGameId in templateMatchEvent({})", find.templateMatchEventId);
+                // Si ha comenzado, actualizamos la información del "Live"
+                if (matchEventStarted) {
+                    matchEvent.updateState();
+
+                    // Si HA TERMINADO, lo marcamos y lanzamos las acciones de matchEventIsFinished
+                    if (!matchEvent.isGameFinished() && OptaEvent.isGameFinished(matchEvent.optaMatchEventId)) {
+                        matchEvent.setGameFinished();
+                        actionWhenMatchEventIsFinished(matchEvent);
+                    }
+                }
             }
         }
     }
 
     private static void actionWhenMatchEventIsStarted(MatchEvent matchEvent) {
-        // Los template contests (que incluyan este match event y que esten "activos") tendrian que ser marcados como "live"
+        // Los template contests (que incluyan este match event y que esten "activos") tienen que ser marcados como "live"
         Model.templateContests()
                 .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}", matchEvent.templateMatchEventId)
                 .multi()
@@ -72,13 +81,15 @@ public class ModelEvents {
     private static void actionWhenMatchEventIsFinished(MatchEvent matchEvent) {
         // Buscamos los template contests que incluyan ese partido y que esten en "LIVE"
         Iterable<TemplateContest> templateContests = Model.templateContests().find("{templateMatchEventIds: {$in:[#]}, state: \"LIVE\"}",
-                matchEvent.templateMatchEventId).as(TemplateContest.class);
+                                                                                   matchEvent.templateMatchEventId).as(TemplateContest.class);
 
         for (TemplateContest templateContest : templateContests) {
             // Si el contest ha terminado (true si todos sus partidos han terminado)
             if (templateContest.isFinished()) {
-                // Cambiar el estado del contest a "HISTORY"
                 Model.templateContests().update("{_id: #, state: \"LIVE\"}", templateContest.templateContestId).with("{$set: {state: \"HISTORY\"}}");
+
+                // Aqui es el único sitio donde se darán los premios
+                templateContest.givePrizes();
             }
         }
 

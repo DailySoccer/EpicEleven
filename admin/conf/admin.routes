@@ -1,5 +1,6 @@
 GET         /                                                          controllers.admin.DashboardController.index()
 GET         /reset_db                                                  controllers.admin.DashboardController.resetDB()
+GET         /initial_setup                                             controllers.admin.DashboardController.initialSetup()
 
 GET         /import_teams                                              controllers.admin.ImportController.showImportTeams()
 GET         /import_all_new_teams                                      controllers.admin.ImportController.importAllNewTeams()
@@ -57,11 +58,14 @@ GET         /template_soccer_teams                                     controlle
 GET         /template_soccer_team/:templateSoccerTeam                  controllers.admin.TemplateSoccerTeamController.show(templateSoccerTeam : String)
 
 GET         /template_soccer_players                                   controllers.admin.TemplateSoccerPlayerController.index()
+GET         /template_soccer_player/edit_salaries                      controllers.admin.TemplateSoccerPlayerController.editSalaries()
+GET         /template_soccer_player/:soccerPlayer/salary/:salary       controllers.admin.TemplateSoccerPlayerController.changeSalary(soccerPlayer : String, salary : Int)
 
 GET         /opta_soccer_players                                       controllers.admin.OptaController.optaSoccerPlayers()
 GET         /opta_soccer_teams                                         controllers.admin.OptaController.optaSoccerTeams()
 GET         /opta_match_events                                         controllers.admin.OptaController.optaMatchEvents()
 GET         /opta_events                                               controllers.admin.OptaController.optaEvents()
+GET         /opta_events/ajax                                          controllers.admin.OptaController.optaEventsAjax()
 GET         /opta_events/update                                        controllers.admin.OptaController.updateOptaEvents()
 
 GET         /switch_simulator                                          controllers.admin.SimulatorController.switchSimulator()
@@ -75,6 +79,8 @@ GET         /next_stop_simulator                                       controlle
 GET         /is_created_simulator                                      controllers.admin.SimulatorController.isCreated()
 GET         /is_paused_simulator                                       controllers.admin.SimulatorController.isPaused()
 GET         /current_date_simulator                                    controllers.admin.SimulatorController.currentDate()
+GET         /simulator_speed/:speed                                    controllers.admin.SimulatorController.setSpeed(speed : Int)
+GET         /simulator_speed                                           controllers.admin.SimulatorController.getSpeed()
 
 GET         /simulator                                                 controllers.admin.SnapshotController.index()
 GET         /snapshot                                                  controllers.admin.SnapshotController.snapshot()
@@ -92,6 +98,8 @@ GET         /last_date                                                 controlle
 
 GET         /test_start                                                controllers.admin.TestController.start()
 GET         /test_goto_date/:timestamp                                 controllers.admin.TestController.gotoDate(timestamp : Long)
+GET         /test_import_everything                                    controllers.admin.TestController.importEverything()
+GET         /test_initial_setup                                        controllers.admin.TestController.initialSetup()
 
 # Informar al webclient si el simulator esta activado (requiere Json)
 GET         /is_simulator_activated                                    controllers.admin.SimulatorController.isSimulatorActivated()

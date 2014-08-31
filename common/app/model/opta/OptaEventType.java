@@ -40,25 +40,17 @@ public enum OptaEventType {
     GOAL_CONCEDED           (2001, "Goal conceded while player is on the field"),
     _INVALID_               (9999, "Clean sheet: More than 60 min played without conceding any goal");
 
-    public final int _code;
-    public final String _description;
+    public final int code;
+    public final String description;
 
-    OptaEventType(int c, String description) {
-        _code = c;
-        _description = description;
+    OptaEventType(int c, String desc) {
+        code = c;
+        description = desc;
     }
 
-    public int getCode(){
-        return _code;
-    }
-
-    public String get_description(){
-        return _description;
-    }
-
-    public static OptaEventType getEnum(int code) {
-        for (OptaEventType optaEventType: OptaEventType.values()){
-            if (optaEventType._code == code) {
+    public static OptaEventType getEnum(int c) {
+        for (OptaEventType optaEventType : OptaEventType.values()){
+            if (optaEventType.code == c) {
                 return optaEventType;
             }
         }
@@ -69,7 +61,7 @@ public enum OptaEventType {
         LinkedHashMap<String, String> vals = new LinkedHashMap<String, String>();
         for (OptaEventType eType : OptaEventType.values()) {
             if (!eType.equals(OptaEventType._INVALID_)){
-                vals.put(eType.name(), eType.name().concat(": ".concat(eType._description)));
+                vals.put(eType.name(), eType.name().concat(": ".concat(eType.description)));
             }
         }
         return vals;

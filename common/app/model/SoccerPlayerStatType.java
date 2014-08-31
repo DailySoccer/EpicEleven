@@ -53,66 +53,65 @@ public enum SoccerPlayerStatType {
     List<Integer> getEventTypes() {
         switch(this) {
             case GOLES: return ImmutableList.of(
-                    OptaEventType.GOAL_SCORED_BY_GOALKEEPER.getCode(),
-                    OptaEventType.GOAL_SCORED_BY_DEFENDER.getCode(),
-                    OptaEventType.GOAL_SCORED_BY_MIDFIELDER.getCode(),
-                    OptaEventType.GOAL_SCORED_BY_FORWARD.getCode()
+                    OptaEventType.GOAL_SCORED_BY_GOALKEEPER.code,
+                    OptaEventType.GOAL_SCORED_BY_DEFENDER.code,
+                    OptaEventType.GOAL_SCORED_BY_MIDFIELDER.code,
+                    OptaEventType.GOAL_SCORED_BY_FORWARD.code
             );
             case TIROS: return ImmutableList.of(
-                    OptaEventType.ATTEMPT_SAVED.getCode(),
-                    OptaEventType.MISS.getCode(),
-                    OptaEventType.POST.getCode()
+                    OptaEventType.ATTEMPT_SAVED.code,
+                    OptaEventType.MISS.code,
+                    OptaEventType.POST.code
             );
             case PASES: return ImmutableList.of(
-                    OptaEventType.PASS_SUCCESSFUL.getCode()
+                    OptaEventType.PASS_SUCCESSFUL.code
             );
             case ASISTENCIAS: return ImmutableList.of(
-                    OptaEventType.ASSIST.getCode()
+                    OptaEventType.ASSIST.code
             );
             case REGATES: return ImmutableList.of(
-                    OptaEventType.TAKE_ON.getCode()
+                    OptaEventType.TAKE_ON.code
             );
             case RECUPERACIONES: return ImmutableList.of(
-                    OptaEventType.TACKLE.getCode(),
-                    OptaEventType.INTERCEPTION.getCode(),
-                    OptaEventType.TACKLE_EFFECTIVE.getCode()
+                    OptaEventType.TACKLE.code,
+                    OptaEventType.INTERCEPTION.code,
+                    OptaEventType.TACKLE_EFFECTIVE.code
             );
             case PERDIDAS_BALON: return ImmutableList.of(
-                    OptaEventType.DISPOSSESSED.getCode(),
-                    OptaEventType.PASS_UNSUCCESSFUL.getCode(),
-                    OptaEventType.ERROR.getCode()
+                    OptaEventType.DISPOSSESSED.code,
+                    OptaEventType.PASS_UNSUCCESSFUL.code,
+                    OptaEventType.ERROR.code
             );
             case FALTAS_RECIBIDAS: return ImmutableList.of(
-                    OptaEventType.FOUL_RECEIVED.getCode()
+                    OptaEventType.FOUL_RECEIVED.code
             );
             case FALTAS_COMETIDAS: return ImmutableList.of(
-                    OptaEventType.FOUL_COMMITTED.getCode()
+                    OptaEventType.FOUL_COMMITTED.code
             );
             case TARJETAS_AMARILLAS: return ImmutableList.of(
-                    OptaEventType.YELLOW_CARD.getCode(),
-                    OptaEventType.SECOND_YELLOW_CARD.getCode()
+                    OptaEventType.YELLOW_CARD.code,
+                    OptaEventType.SECOND_YELLOW_CARD.code
             );
             case TARJETAS_ROJAS: return ImmutableList.of(
-                    OptaEventType.RED_CARD.getCode()
+                    OptaEventType.RED_CARD.code
             );
             case GOLES_ENCAJADOS: return ImmutableList.of(
-                    OptaEventType.GOAL_CONCEDED.getCode()
+                    OptaEventType.GOAL_CONCEDED.code
             );
             case PARADAS: return ImmutableList.of(
-                    OptaEventType.SAVE.getCode(),
-                    OptaEventType.CLAIM.getCode()
+                    OptaEventType.SAVE.code,
+                    OptaEventType.CLAIM.code
             );
             case DESPEJES: return ImmutableList.of(
-                    OptaEventType.CLEARANCE.getCode(),
-                    OptaEventType.PUNCH.getCode()
+                    OptaEventType.CLEARANCE.code,
+                    OptaEventType.PUNCH.code
             );
             case PENALTIS_DETENIDOS: return ImmutableList.of(
-                    OptaEventType.GOALKEEPER_SAVES_PENALTY.getCode()
+                    OptaEventType.GOALKEEPER_SAVES_PENALTY.code
             );
         }
 
-        Logger.error("StatType: EventType {} unknown", this.id);
-        return null;
+        throw new RuntimeException(String.format("WTF 7378: StatType: EventType %s unknown", this.id));
     }
 }
 

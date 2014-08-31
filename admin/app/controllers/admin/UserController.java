@@ -10,8 +10,7 @@ import java.util.List;
 
 public class UserController extends Controller {
     public static Result index() {
-        Iterable<User> userResults = Model.users().find().as(User.class);
-        List<User> userList = ListUtils.asList(userResults);
+        List<User> userList = ListUtils.asList(Model.users().find().as(User.class));
 
         return ok(views.html.user_list.render(userList));
     }

@@ -20,7 +20,6 @@
             <th>HomeTeamId</th>
             <th>AwayTeamId</th>
             <th>Match Date</th>
-            <th>TimeZone</th>
             <th>Last Modified</th>
         </tr>
         </thead>
@@ -35,7 +34,6 @@
             <td>@p.homeTeamId</td>
             <td>@p.awayTeamId</td>
             <td>@GlobalDate.formatDate(p.matchDate)</td>
-            <td>@p.timeZone</td>
         @if(p.lastModified != null) {
             <td>@GlobalDate.formatDate(p.lastModified)</td>
         } else {

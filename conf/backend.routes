@@ -1,6 +1,10 @@
-GET         /test                                                   controllers.MainController.test()
 GET         /ping                                                   controllers.MainController.ping()
-GET         /jsontest                                               controllers.MainController.jsonTest()
+
+# Informar de la fecha del server (usado por webclient para sincronizarse con la simulacion)
+GET         /current_date                                           controllers.MainController.getCurrentDate()
+
+# Informacion de un futbolista
+GET         /get_soccer_player_info/:soccerPlayer                   controllers.MainController.getTemplateSoccerPlayerInfo(soccerPlayer)
 
 # Enganche de la zona de administracion
 ->          /admin                                                  admin.Routes
@@ -10,15 +14,13 @@ POST        /login                                                  controllers.
 POST        /signup                                                 controllers.LoginController.signup()
 GET         /get_user_profile                                       controllers.LoginController.getUserProfile()
 
-# Concursos globales activos
+# Concursos globales activos (Lobby)
 GET         /get_active_contests                                    controllers.ContestController.getActiveContests()
+GET         /get_contest_info/:contest                              controllers.ContestController.getPublicContest(contest)
 
 # Concursos asociados a usuario
 GET         /get_my_contests                                        controllers.ContestController.getMyContests()
 GET         /get_contest/:contest                                   controllers.ContestController.getFullContest(contest)
-GET         /get_my_next_contests                                   controllers.ContestController.getMyNextContests()
-GET         /get_my_live_contests                                   controllers.ContestController.getMyLiveContests()
-GET         /get_my_history_contests                                controllers.ContestController.getMyHistoryContests()
 
 # Live contests asociados a usuario
 GET         /get_live_match_events/template_contest/:contest        controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)
@@ -26,12 +28,8 @@ GET         /get_live_match_events/template_contest/:contest        controllers.
 # Entrar en concurso
 POST        /add_contest_entry                                      controllers.ContestController.addContestEntry()
 
-# Informacion
-GET         /get_contest_info/:contest                              controllers.ContestController.getPublicContest(contest)
-GET         /get_soccer_player_info/:soccerPlayer                   controllers.ContestController.getTemplateSoccerPlayerInfo(soccerPlayer)
 
-
-# Debug
+# Sincronizacion de nuestras maquinas locales con los datos de Opta
 GET         /return_xml/:timestamp                                  controllers.OptaHttpController.returnXML(timestamp: Long)
 GET         /remaining/:timestamp                                   controllers.OptaHttpController.remainingXMLs(timestamp: Long)
 GET         /date_last_xml                                          controllers.OptaHttpController.dateLastXML()
@@ -39,8 +37,6 @@ GET         /date_last_xml                                          controllers.
 # Por aqui nos entran todos nuestros datos de opta
 POST        /opta                                                   controllers.OptaHttpController.optaXmlInput()
 
-# Informar de la fecha del server (usado por webclient para sincronizarse con la simulacion)
-GET         /current_date                                           controllers.ContestController.getCurrentDate()
 
 # Static assets
 GET         /                                                       controllers.Assets.at(path="/public", file="index.html")

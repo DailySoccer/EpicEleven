@@ -80,57 +80,57 @@ public class OptaEvent {
         // Pase exitoso o fracasado
         if (this.typeId == 1) {
             if (this.outcome == 1) {
-                this.typeId = OptaEventType.PASS_SUCCESSFUL._code;  //Pase exitoso-> 1001
+                this.typeId = OptaEventType.PASS_SUCCESSFUL.code;  //Pase exitoso-> 1001
             }
             else {
-                this.typeId = OptaEventType.PASS_UNSUCCESSFUL._code;  //Pase fracasado -> 1002
+                this.typeId = OptaEventType.PASS_UNSUCCESSFUL.code;  //Pase fracasado -> 1002
             }
         }
         // Asistencia
-        if (this.typeId == OptaEventType.PASS_SUCCESSFUL._code && this.qualifiers.contains(210)) {
-            this.typeId = OptaEventType.ASSIST._code;  //Asistencia -> 1210
+        if (this.typeId == OptaEventType.PASS_SUCCESSFUL.code && this.qualifiers.contains(210)) {
+            this.typeId = OptaEventType.ASSIST.code;  //Asistencia -> 1210
         }
         // Falta/Penalty infligido
-        else if (this.typeId == OptaEventType.FOUL_RECEIVED._code && this.outcome == 0) {
+        else if (this.typeId == OptaEventType.FOUL_RECEIVED.code && this.outcome == 0) {
             if (this.qualifiers.contains(9)) {
-                this.typeId = OptaEventType.PENALTY_COMMITTED._code;  //Penalty infligido -> 1409
+                this.typeId = OptaEventType.PENALTY_COMMITTED.code;  //Penalty infligido -> 1409
             } else {
-                this.typeId = OptaEventType.FOUL_COMMITTED._code;  // Falta infligida -> 1004
+                this.typeId = OptaEventType.FOUL_COMMITTED.code;  // Falta infligida -> 1004
             }
         }
         // Segunda tarjeta amarilla -> 1017
-        else if (this.typeId == OptaEventType.YELLOW_CARD._code && this.qualifiers.contains(32)) {
-            this.typeId = OptaEventType.SECOND_YELLOW_CARD._code;
+        else if (this.typeId == OptaEventType.YELLOW_CARD.code && this.qualifiers.contains(32)) {
+            this.typeId = OptaEventType.SECOND_YELLOW_CARD.code;
         }
         // Tarjeta roja -> 1117
-        else if (this.typeId == OptaEventType.YELLOW_CARD._code && this.qualifiers.contains(33)) {
-            this.typeId = OptaEventType.RED_CARD._code;
+        else if (this.typeId == OptaEventType.YELLOW_CARD.code && this.qualifiers.contains(33)) {
+            this.typeId = OptaEventType.RED_CARD.code;
         }
         // Penalty miss -> 1410
-        else if ((this.typeId == OptaEventType.MISS._code || this.typeId == OptaEventType.POST._code ||
-                this.typeId == OptaEventType.ATTEMPT_SAVED._code) &&
+        else if ((this.typeId == OptaEventType.MISS.code || this.typeId == OptaEventType.POST.code ||
+                this.typeId == OptaEventType.ATTEMPT_SAVED.code) &&
                 this.outcome == 0 && this.qualifiers.contains(9)) {
-            this.typeId = OptaEventType.PENALTY_FAILED._code;
+            this.typeId = OptaEventType.PENALTY_FAILED.code;
         } else if (this.typeId == 16 && this.outcome == 1) {
             // Gol en contra -> 1699
             if (this.qualifiers.contains(28)) {
-                this.typeId = OptaEventType.OWN_GOAL._code;
+                this.typeId = OptaEventType.OWN_GOAL.code;
             } else {
                 // Diferencias en goles:
                 try {
                     OptaPlayer scorer = Model.optaPlayers().findOne("{optaPlayerId: #}", this.optaPlayerId).as(OptaPlayer.class);
                     if (scorer.position.equals("Goalkeeper")) {
                         // Gol del portero
-                        this.typeId = OptaEventType.GOAL_SCORED_BY_GOALKEEPER._code;
+                        this.typeId = OptaEventType.GOAL_SCORED_BY_GOALKEEPER.code;
                     } else if (scorer.position.equals("Defender")) {
                         // Gol del defensa
-                        this.typeId = OptaEventType.GOAL_SCORED_BY_DEFENDER._code;
+                        this.typeId = OptaEventType.GOAL_SCORED_BY_DEFENDER.code;
                     } else if (scorer.position.equals("Midfielder")) {
                         // Gol del medio
-                        this.typeId = OptaEventType.GOAL_SCORED_BY_MIDFIELDER._code;
+                        this.typeId = OptaEventType.GOAL_SCORED_BY_MIDFIELDER.code;
                     } else if (scorer.position.equals("Forward")) {
                         // Gol del delantero
-                        this.typeId = OptaEventType.GOAL_SCORED_BY_FORWARD._code;
+                        this.typeId = OptaEventType.GOAL_SCORED_BY_FORWARD.code;
                     }
                 } catch (NullPointerException e) {
                     Logger.info("Player not found: " + this.optaPlayerId);
@@ -139,15 +139,15 @@ public class OptaEvent {
         }
         // Penalty parado -> 1058
         else if (this.typeId == 58 && !this.qualifiers.contains(186)) {
-            this.typeId = OptaEventType.GOALKEEPER_SAVES_PENALTY._code;
+            this.typeId = OptaEventType.GOALKEEPER_SAVES_PENALTY.code;
         }
         // Effective Tackle -> 1007
-        else if (this.typeId == OptaEventType.TACKLE._code && this.outcome == 1) {
-            this.typeId = OptaEventType.TACKLE_EFFECTIVE._code;
+        else if (this.typeId == OptaEventType.TACKLE.code && this.outcome == 1) {
+            this.typeId = OptaEventType.TACKLE_EFFECTIVE.code;
         }
         // Caught Offside -> 1072
         else if (this.typeId == 2 && this.qualifiers.contains(7)) {
-            this.typeId = OptaEventType.CAUGHT_OFFSIDE._code;
+            this.typeId = OptaEventType.CAUGHT_OFFSIDE.code;
             this.optaPlayerId = optaPlayerOffsideId;
         }
     }

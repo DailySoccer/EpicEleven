@@ -19,6 +19,8 @@ public class User {
     public String nickName;
 	public String email;
 
+    public int wins;
+
     @JsonView(JsonViews.NotForClient.class)
 	public String password;
 
@@ -38,22 +40,23 @@ public class User {
 	}
 
     public UserInfo info() {
-        return new UserInfo(userId, firstName, lastName, nickName);
+        return new UserInfo(userId, firstName, lastName, nickName, wins);
     }
 
     /**
      * Query de un usuario por su identificador en mongoDB (verifica la validez del mismo)
-     *
-     * @param userId Identificador del usuario
-     * @return User
      */
-    static public User find(String userId) {
+    static public User findOne(String userId) {
         User aUser = null;
         Boolean userValid = ObjectId.isValid(userId);
         if (userValid) {
-            aUser = Model.users().findOne(new ObjectId(userId)).as(User.class);
+            aUser = findOne(new ObjectId(userId));
         }
         return aUser;
+    }
+
+    static public User findOne(ObjectId userId) {
+        return Model.users().findOne(userId).as(User.class);
     }
 
     static public List<User> find(List<ContestEntry> contestEntries) {
@@ -68,5 +71,17 @@ public class User {
 
     static public User findByEmail(String email) {
         return Model.users().findOne("{email: #}", email).as(User.class);
+    }
+
+    public void updateStats() {
+        // Buscamos los contests en los que hayamos participado y ganado (position = 0)
+        int contestsGanados = (int) Model.contests().count(
+                "{ contestEntries: {" +
+                    "$elemMatch: {" +
+                        "userId: #, " +
+                        "position: 0" +
+                    "}" +
+                "}}", userId);
+        Model.users().update(userId).with("{$set: {wins: #}}", contestsGanados);
     }
 }

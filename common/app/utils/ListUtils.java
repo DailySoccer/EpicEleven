@@ -40,6 +40,9 @@ public class ListUtils {
     }
 
     public static <T> List<T> asList(Iterable<T> iterable) {
+        if (iterable instanceof List) {
+            return (List<T>) iterable;
+        }
         return asList(iterable.iterator());
     }
 
@@ -79,8 +82,8 @@ public class ListUtils {
         return list;
     }
 
-    public static <T extends JongoId> List<ObjectId> convertToIdList(Iterable<T> listOfPojos) {
-        List<ObjectId> ret = new ArrayList<>();
+    public static <T extends JongoId> List<ObjectId> convertToIdList(List<T> listOfPojos) {
+        List<ObjectId> ret = new ArrayList<>(listOfPojos.size());
 
         for (T pojo: listOfPojos)
             ret.add(pojo.getId());
@@ -107,7 +110,8 @@ public class ListUtils {
         while (numElements > 0 && indexes.size() > 0) {
             int index = rand.nextInt(indexes.size());
 
-            result.add(list.get(index));
+            int elemIdx = indexes.get(index);
+            result.add(list.get(elemIdx));
 
             indexes.remove(index);
             numElements--;

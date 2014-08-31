@@ -22,17 +22,10 @@ fi
 
 if [ $# -eq 0 ]
     then
-        if [[ "$branch_name" != "master" && "$branch_name" != "develop" ]]
-            then
-                #echo "You need to supply the Heroku remote. $remotes_allowed_message"
-                echo "If you want to push $branch_name to staging, you must say explicitly:"
-                echo "> ./deploy staging"
-                exit 1
-        elif [[ "$branch_name" == "master" ]]
+        if [[ "$branch_name" == "master" ]]
             then
                 destination="production"
-        elif [[ "$branch_name" == "develop" ]]
-            then 
+        else 
                 destination="staging"
         fi
     else
@@ -40,7 +33,7 @@ if [ $# -eq 0 ]
             then
                 echo $remotes_allowed_message
                 exit 1
-        elif [[ "$1" != "production" && "$branch_name" != "master" ]]
+        elif [[ "$1" != "staging" && "$1" != "production" && "$branch_name" != "master" ]]
             then
                 git checkout master
         fi

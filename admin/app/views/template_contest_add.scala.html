@@ -11,7 +11,7 @@
 }
 
 @myInputText(field: Field, _label: String = "", _size: Int = 10) = {
-<div class="form-group @if(field.hasErrors) {has-error}" title="En el nombre se pueden usar las variables: %MaxEntries, %SalaryCap, %PrizeType, %EntryFee">
+<div class="form-group @if(field.hasErrors) {has-error}" title="En el nombre se pueden usar las variables: %MaxEntries, %SalaryCap, %PrizeType, %EntryFee, %StartDate">
     @if(_label.nonEmpty) { <label class="control-label col-sm-3" for="@field.id">@_label</label> }
     <div class="col-sm-7">
         <input type="text" name="@field.id" id="@field.id" value="@field.value" size="@_size" class="form-control">
