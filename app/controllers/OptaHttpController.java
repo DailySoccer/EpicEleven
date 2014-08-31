@@ -37,6 +37,7 @@ public class OptaHttpController extends Controller {
                                                     request().headers().get("X-Meta-Encoding")[0]: "UTF-8";
 
         if (contentType.indexOf("charset=") > 0) {
+            Logger.info("OptaHttpController.optaXmlInput: Mandaron encoding, revisar!!!! {}", contentType);
             bodyText = request().body().asText();
         }
         else {
@@ -66,12 +67,13 @@ public class OptaHttpController extends Controller {
             }
         }
 
-        Logger.debug("OptaHttpController.optaXmlInput: About to insert {}", getHeader("X-Meta-Default-Filename", request().headers()));
+        String fileName = getHeader("X-Meta-Default-Filename", request().headers());
+        Logger.info("OptaHttpController.optaXmlInput: About to insert {}", fileName);
 
         Model.insertXML(bodyText,
                         getHeadersString(request().headers()),
                         new Date(),
-                        getHeader("X-Meta-Default-Filename", request().headers()),
+                        fileName,
                         getHeader("X-Meta-Feed-Type", request().headers()),
                         getHeader("X-Meta-Game-Id", request().headers()),
                         getHeader("X-Meta-Competition-Id", request().headers()),

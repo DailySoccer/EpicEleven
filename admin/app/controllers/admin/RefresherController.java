@@ -2,6 +2,7 @@ package controllers.admin;
 
 import model.GlobalDate;
 import model.Model;
+import org.joda.time.DateTime;
 import play.Logger;
 import play.db.DB;
 import play.libs.F;
@@ -34,7 +35,7 @@ public class RefresherController extends Controller {
         long last_date = findLastDate().getTime();
 
         while (last_date >= 0) {
-            Logger.debug("Importing xml date: " + last_date);
+            Logger.info("Importing xml date: {} {} ", last_date, GlobalDate.formatDate(new Date(last_date)));
             last_date = downloadAndImportXML(last_date);
         }
 

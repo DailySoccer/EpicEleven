@@ -230,13 +230,18 @@ public class Model {
                 stmt.setString(8, seasonId);
                 stmt.setTimestamp(9, new java.sql.Timestamp(lastUpdated.getTime()));
 
-                if (stmt.execute()) {
-                    Logger.info("Successful insert in OptaXML");
+                stmt.execute();
+
+                if (stmt.getUpdateCount() == 1) {
+                    Logger.info("Successful insert in OptaXML {}", name);
+                }
+                else {
+                    Logger.error("WTF 1906, no se inserto el fichero de opta {}", name);
                 }
             }
         }
         catch (java.sql.SQLException e) {
-            Logger.error("WTF 56312: ", e);
+            Logger.error("WTF 5039", e);
         }
     }
 
