@@ -170,6 +170,7 @@ public class OptaProcessor {
                 }
             }
         }
+
         Model.optaMatchEvents().update("{optaMatchEventId: #}", optaMatchEvent.optaMatchEventId).upsert().with(optaMatchEvent);
     }
 
