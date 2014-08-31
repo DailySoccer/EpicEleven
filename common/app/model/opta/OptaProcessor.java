@@ -147,11 +147,13 @@ public class OptaProcessor {
 
         OptaMatchEvent optaMatchEvent = new OptaMatchEvent();
         optaMatchEvent.optaMatchEventId = getStringId(matchObject, "uID", "_NO UID");
+
         if (matchObject.getAttribute("last_modified") != null) {
             optaMatchEvent.lastModified = GlobalDate.parseDate(matchObject.getAttributeValue("last_modified"), null);
         }
-        optaMatchEvent.timeZone = matchInfo.getChild("TZ").getContent().get(0).getValue();
-        optaMatchEvent.matchDate = GlobalDate.parseDate(matchInfo.getChild("Date").getContent().get(0).getValue(), optaMatchEvent.timeZone);
+
+        optaMatchEvent.matchDate = GlobalDate.parseDate(matchInfo.getChild("Date").getContent().get(0).getValue(),
+                                                        matchInfo.getChild("TZ").getContent().get(0).getValue());
         optaMatchEvent.competitionId = getStringId(myF1, "competition_id", "_NO COMPETITION ID");
         optaMatchEvent.seasonId = getStringId(myF1, "season_id", "_NO SEASON ID");
 
