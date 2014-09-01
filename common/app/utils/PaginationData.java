@@ -29,7 +29,7 @@ public class PaginationData {
     public String getRenderFieldByIndex(Object data, String fieldValue, Integer index) { return fieldValue; }
 
     public static <T> Result withAjax(Map<String, String[]> params, MongoCollection collection, final Class<T> clazz, PaginationData paginationData) {
-        long startTime = System.currentTimeMillis();
+        //long startTime = System.currentTimeMillis();
 
         long iTotalRecords = collection.count();
         long iTotalDisplayRecords = iTotalRecords;
@@ -142,7 +142,7 @@ public class PaginationData {
             an.add(row);
         }
 
-        play.Logger.info("elapsed: {}", System.currentTimeMillis() - startTime);
+        //play.Logger.info("elapsed: {}", System.currentTimeMillis() - startTime);
         return Results.ok(result);
     }
 }
