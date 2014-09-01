@@ -24,10 +24,10 @@ public class ContestController extends Controller {
             public List<String> getFieldNames() {
                 return ImmutableList.of(
                     "name",
-                    "name",
+                    "",
                     "maxEntries",
                     "templateContestId",
-                    "name"
+                    ""
                 );
             }
 
@@ -38,29 +38,34 @@ public class ContestController extends Controller {
                     case 1: return String.valueOf(contest.contestEntries.size());
                     case 2: return String.valueOf(contest.maxEntries);
                     case 3: return contest.templateContestId.toString();
-                    case 4: return "State";
+                    case 4: TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
+                            if(templateContest.isHistory()) {
+                                return "Finished";
+                            } else if(templateContest.isLive()) {
+                                return "Live";
+                            } else {
+                                return "Waiting";
+                            }
                 }
                 return "<invalid value>";
             }
 
-            public String getFieldHtmlByIndex(Object data, Integer index) {
+            public String getRenderFieldByIndex(Object data, String fieldValue, Integer index) {
                 Contest contest = (Contest) data;
                 switch (index) {
-                    case 0: return contest.name;
-                    case 1: return String.valueOf(contest.contestEntries.size());
-                    case 2: return String.valueOf(contest.maxEntries);
-                    case 3: return contest.templateContestId.toString();
+                    case 3: return String.format("<a href=\"%s\">%s</a>",
+                                routes.TemplateContestController.show(fieldValue).url(),
+                                fieldValue);
                     case 4:
-                        TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
-                        if(templateContest.isFinished()) {
+                        if(fieldValue.equals("Finished")) {
                             return "<button class=\"btn btn-danger\">Finished</button>";
-                        } else if(templateContest.isStarted()) {
+                        } else if(fieldValue.equals("Live")) {
                             return "<button class=\"btn btn-success\">Live</button>";
                         } else {
                             return "<button class=\"btn btn-warning\">Waiting</button>";
                         }
                 }
-                return "<invalid value>";
+                return fieldValue;
             }
         });
     }

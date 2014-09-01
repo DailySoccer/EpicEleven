@@ -34,19 +34,6 @@
     </script>
 }
 
-
-@contest_state(template_contest_id : String) = {
-    @if(TemplateContest.isFinished(template_contest_id)) {
-        <button class="btn btn-danger" value="@template_contest_id">Finished</button>
-    } else {
-        @if(TemplateContest.isStarted(template_contest_id)) {
-            <button class="btn btn-success" value="@template_contest_id">Live</button>
-        } else {
-            <button class="btn btn-warning" value="@template_contest_id">Waiting</button>
-        }
-    }
-}
-
 @main("Contests - Admin", scripts) {
 
 <h1 class="page-header">Contests</h1>
