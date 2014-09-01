@@ -20,6 +20,8 @@ public class PaginationData {
     public String getFieldHtmlByIndex(Object data, Integer index) { return null; }
 
     public static <T> Result withAjax(Map<String, String[]> params, MongoCollection collection, final Class<T> clazz, PaginationData paginationData) {
+        long startTime = System.currentTimeMillis();
+
         long iTotalRecords = collection.count();
         long iTotalDisplayRecords = iTotalRecords;
         String filter = params.get("sSearch")[0];
@@ -65,7 +67,7 @@ public class PaginationData {
                 // Lo consideramos válido si alguno de sus campos incluye el valor del filtro
                 boolean valid = false;
                 for (int i=0; i<fieldNames.size() && !valid; i++) {
-                    String fieldValue = paginationData.getFieldByIndex(data, i);
+                    String fieldValue = paginationData.getFieldHtmlByIndex(data, i);
                     valid = (fieldValue != null) && fieldValue.contains(filter);
                 }
                 if (valid) {
@@ -94,6 +96,7 @@ public class PaginationData {
             an.add(row);
         }
 
+        play.Logger.info("elapsed: {}", System.currentTimeMillis() - startTime);
         return Results.ok(result);
     }
 }

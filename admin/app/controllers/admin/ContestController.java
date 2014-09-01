@@ -51,14 +51,15 @@ public class ContestController extends Controller {
                     case 2: return String.valueOf(contest.maxEntries);
                     case 3: return contest.templateContestId.toString();
                     case 4:
-                        if(TemplateContest.isFinished(contest.templateContestId.toString())) {
+                        TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
+                        if(templateContest.isFinished()) {
                             return "<button class=\"btn btn-danger\">Finished</button>";
-                        } else if(TemplateContest.isStarted(contest.templateContestId.toString())) {
+                        } else if(templateContest.isStarted()) {
                             return "<button class=\"btn btn-success\">Live</button>";
                         } else {
                             return "<button class=\"btn btn-warning\">Waiting</button>";
                         }
-                 }
+                }
                 return "<invalid value>";
             }
         });
