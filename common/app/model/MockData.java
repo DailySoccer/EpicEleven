@@ -39,15 +39,15 @@ public final class MockData {
                 {OptaEventType.TAKE_ON.code, 5},                       // regate
                 {OptaEventType.FOUL_RECEIVED.code, 3},                 // falta recibida
                 {OptaEventType.TACKLE_EFFECTIVE.code, 10},             // recuperacion/entrada con posesion
-                {OptaEventType.INTERCEPTION.code, 5},                 // intercepcion
+                {OptaEventType.INTERCEPTION.code, 3},                  // intercepcion
                 {OptaEventType.SAVE.code, 10},                         // parada
                 {OptaEventType.CLAIM.code, 10},                        // captura balon
                 {OptaEventType.CLEARANCE.code, 5},                     // parada
                 {OptaEventType.MISS.code, 5},                          // tiro a puerta
                 {OptaEventType.POST.code, 5},                          // tiro a puerta
                 {OptaEventType.ATTEMPT_SAVED.code, 5},                 // tiro a puerta
-                {OptaEventType.ASSIST.code, 15},                       // asistencia
-                //{16, 100},                                            // gol
+                {OptaEventType.ASSIST.code, 10},                       // asistencia
+                //{16, 100},                                           // gol
                 {OptaEventType.GOAL_SCORED_BY_GOALKEEPER.code, 75},    // gol del portero
                 {OptaEventType.GOAL_SCORED_BY_DEFENDER.code, 65},      // gol del defensa
                 {OptaEventType.GOAL_SCORED_BY_MIDFIELDER.code, 50},    // gol del medio
@@ -55,7 +55,7 @@ public final class MockData {
                 {OptaEventType.OWN_GOAL.code, -10},                    // gol en contra
                 {OptaEventType.YELLOW_CARD.code, -20},                 // tarjeta amarilla
                 {OptaEventType.SECOND_YELLOW_CARD.code, -20},          // tarjeta amarilla (segunda)
-                {OptaEventType.PUNCH.code, 10},                        // despeje puños
+                {OptaEventType.PUNCH.code, 5},                        // despeje puños
                 {OptaEventType.PASS_UNSUCCESSFUL.code, -2},            // perdida de balon, pase perdido
                 {OptaEventType.DISPOSSESSED.code, -5},                 // perdida de balon
                 {OptaEventType.ERROR.code, -20},                       // perdida de balon
