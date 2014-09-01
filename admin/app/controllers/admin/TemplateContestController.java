@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import com.google.common.collect.ImmutableList;
 import model.*;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
@@ -7,6 +8,7 @@ import play.Logger;
 import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utils.PaginationData;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,7 +18,71 @@ import static play.data.Form.form;
 
 public class TemplateContestController extends Controller {
     public static Result index() {
-        return ok(views.html.template_contest_list.render(TemplateContest.findAll()));
+        return ok(views.html.template_contest_list.render());
+    }
+
+    public static Result indexAjax() {
+        return PaginationData.withAjax(request().queryString(), Model.templateContests(), TemplateContest.class, new PaginationData() {
+            public List<String> getFieldNames() {
+                return ImmutableList.of(
+                        "state",
+                        "name",
+                        "",              // Num. Matches
+                        "minInstances",
+                        "maxEntries",
+                        "salaryCap",
+                        "entryFee",
+                        "prizeType",
+                        "startDate",
+                        "activationAt",
+                        "",             // Edit
+                        ""              // Delete
+
+                );
+            }
+
+            public String getFieldByIndex(Object data, Integer index) {
+                TemplateContest templateContest = (TemplateContest) data;
+                switch (index) {
+                    case 0: return templateContest.state.toString();
+                    case 1: return templateContest.name;
+                    case 2: return String.valueOf(templateContest.templateMatchEventIds.size());
+                    case 3: return String.valueOf(templateContest.minInstances);
+                    case 4: return String.valueOf(templateContest.maxEntries);
+                    case 5: return String.valueOf(templateContest.salaryCap);
+                    case 6: return String.valueOf(templateContest.entryFee);
+                    case 7: return String.valueOf(templateContest.prizeType);
+                    case 8: return GlobalDate.formatDate(templateContest.startDate);
+                    case 9: return GlobalDate.formatDate(templateContest.activationAt);
+                    case 10: return "";
+                    case 11: return "";
+                }
+                return "<invalid value>";
+            }
+
+            public String getRenderFieldByIndex(Object data, String fieldValue, Integer index) {
+                TemplateContest templateContest = (TemplateContest) data;
+                switch (index) {
+                    case 0:
+                        if      (templateContest.isHistory())   return String.format("<button class=\"btn btn-danger\">%s</button>", templateContest.state);
+                        else if (templateContest.isLive())      return String.format("<button class=\"btn btn-success\">%s</button>", templateContest.state);
+                        else if (templateContest.isActive())    return String.format("<button class=\"btn btn-warning\">%s</button>", templateContest.state);
+                        return String.format("<button class=\"btn btn-warning disabled\">%s</button>", templateContest.state);
+                    case 1: return String.format("<a href=\"%s\" style=\"white-space: nowrap\">%s</a>",
+                                routes.TemplateContestController.show(templateContest.templateContestId.toString()),
+                                templateContest.name);
+                    case 10: return templateContest.isOff()
+                                ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">Edit</button></a>",
+                                        routes.TemplateContestController.edit(templateContest.templateContestId.toString()))
+                                : "";
+                    case 11: return templateContest.isOff()
+                                ? String.format("<a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
+                                        routes.TemplateContestController.destroy(templateContest.templateContestId.toString()))
+                                : "";
+                }
+                return fieldValue;
+            }
+        });
     }
 
     public static Result show(String templateContestId) {

@@ -24,10 +24,10 @@ public class ContestController extends Controller {
             public List<String> getFieldNames() {
                 return ImmutableList.of(
                     "name",
-                    "",
+                    "",                     // contestEntries.size
                     "maxEntries",
                     "templateContestId",
-                    ""
+                    ""                      // templateContest.state
                 );
             }
 

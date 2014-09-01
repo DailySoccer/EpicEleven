@@ -45,6 +45,7 @@ GET         /match_event/:templateMatchEventId                         controlle
 GET         /match_event/optaEvents/:matchEventId                      controllers.admin.MatchEventController.showOptaEvents(matchEventId : String)
 
 GET         /template_contests                                         controllers.admin.TemplateContestController.index()
+GET         /template_contests/ajax                                    controllers.admin.TemplateContestController.indexAjax()
 GET         /template_contest/create_all                               controllers.admin.TemplateContestController.createAll()
 GET         /template_contest/save/:templateContestId                  controllers.admin.TemplateContestController.edit(templateContestId : String)
 GET         /template_contest/save                                     controllers.admin.TemplateContestController.newForm()
