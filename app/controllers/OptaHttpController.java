@@ -29,50 +29,27 @@ public class OptaHttpController extends Controller {
 
     @BodyParser.Of(value = BodyParser.TolerantText.class, maxLength = 4 * 1024 * 1024)
     public static Result optaXmlInput() {
-        byte[] bodyOriginalBytes = null;
+
         String bodyText = null;
-        String contentType = request().headers().containsKey("Content-Type")?
-                                                    request().headers().get("Content-Type")[0]: "";
-        String xMetaEncoding = request().headers().containsKey("X-Meta-Encoding")?
-                                                    request().headers().get("X-Meta-Encoding")[0]: "UTF-8";
 
-        String detectedEncoding = null;
-
-        if (contentType.indexOf("charset=") > 0) {
-            Logger.error("WTF 0198, Mandaron encoding, revisar!!!! {}", contentType);
-            detectedEncoding = contentType;
-            bodyText = request().body().asText();
+        if (!request().headers().containsKey("X-Meta-Encoding") ||
+            !request().headers().get("X-Meta-Encoding")[0].equals("UTF-8")) {
+            Logger.error("WTF 0921: Nos ha llegado un fichero de Opta con codificacion no esperada. Asumimos UTF-8");
         }
-        else {
-            try {
-                // HTTP default encoding for POST requests is ISO-8859-1 if no charset is passed via "Content-Type" header.
-                bodyOriginalBytes = request().body().asText().getBytes("ISO-8859-1");
-            }
-            catch (UnsupportedEncodingException e) {
-                Logger.error("WTF 9151", e);
-            }
 
-            try {
-                detectedEncoding = getDetectedEncoding(new ByteArrayInputStream(bodyOriginalBytes));
-            }
-            catch (IOException e) {
-                Logger.error("WTF 1591", e);
-            }
-
-            detectedEncoding = detectedEncoding!=null? detectedEncoding : xMetaEncoding;
-
-            try {
-                bodyText = new String(bodyOriginalBytes, detectedEncoding);
-            }
-            catch (UnsupportedEncodingException e) {
-                Logger.error("WTF 5119", e);
-            }
+        try {
+            // HTTP default encoding for POST requests is ISO-8859-1 if no charset is passed via "Content-Type" header.
+            byte[] bodyOriginalBytes = request().body().asText().getBytes("ISO-8859-1");
+            bodyText = new String(bodyOriginalBytes, "UTF-8");
+        }
+        catch (UnsupportedEncodingException e) {
+            Logger.error("WTF 5119", e);
         }
 
         String fileName = getHeader("X-Meta-Default-Filename", request().headers());
         String feedType = getHeader("X-Meta-Feed-Type", request().headers());
 
-        Logger.info("About to insert {} with encoding {}", fileName, detectedEncoding);
+        Logger.info("About to insert {}", fileName);
 
         Model.insertXML(bodyText, getHeadersString(request().headers()), new Date(), fileName, feedType,
                         getHeader("X-Meta-Game-Id", request().headers()),
@@ -84,28 +61,6 @@ public class OptaHttpController extends Controller {
         ModelEvents.onOptaMatchEventIdsChanged(updatedMatchEvents);
 
         return ok("Yeah, XML processed");
-    }
-
-    private static String getDetectedEncoding(InputStream is) throws IOException {
-
-        UniversalDetector detector = new UniversalDetector(null);
-        byte[] buf = new byte[4096];
-        int nread;
-        while ((nread = is.read(buf)) > 0 && !detector.isDone()) {
-            detector.handleData(buf, 0, nread);
-        }
-        detector.dataEnd();
-
-        String encoding = detector.getDetectedCharset();
-
-        if (encoding != null) {
-            Logger.info("Detected enconding: {}", encoding);
-        }
-        else {
-            Logger.error("Encoding not detected properly");
-        }
-
-        return encoding;
     }
 
     private static String getHeadersString(Map<String, String[]> headers) {
