@@ -20,7 +20,6 @@ libraryDependencies ++= Seq(
   "org.seleniumhq.selenium" % "selenium-java" % "2.41.0" % "test",
   "org.scalatestplus" % "play_2.10" % "1.0.0" % "test",
   "com.saucelabs" % "sauce_junit" % "2.0.5" % "test",
-  "com.googlecode.juniversalchardet" % "juniversalchardet" % "1.0.3",
   "com.google.guava" % "guava" % "17.0"
 )
 
