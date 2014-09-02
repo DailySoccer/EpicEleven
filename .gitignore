@@ -17,4 +17,6 @@ dist
 /.target/
 .*.swp
 data/heroku_mongo_dump.sh
+data/heroku_staging_mongo_dump.sh
+data/heroku_production_mongo_dump.sh
 data/snapshot*.tar.gz
