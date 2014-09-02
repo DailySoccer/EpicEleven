@@ -130,7 +130,7 @@ public final class MockData {
             for (SoccerPlayer soccer : ListUtils.randomElements(forwards, 2))
                 soccerIds.add(soccer.templateSoccerPlayerId);
 
-            contest.contestEntries.add(new ContestEntry(user.userId, contest.contestId, soccerIds));
+            contest.contestEntries.add(new ContestEntry(user.userId, soccerIds));
         }
 
     }

@@ -19,7 +19,6 @@ public class ContestEntry implements JongoId {
     @Id
     public ObjectId contestEntryId;
     public ObjectId userId;             // Usuario que creo el equipo
-    public ObjectId contestId;          // Contest en el que se ha inscrito el usuario
 
     @JsonView(JsonViews.FullContest.class)
     public List<ObjectId> soccerIds;    // Fantasy team
@@ -38,10 +37,9 @@ public class ContestEntry implements JongoId {
 
     public ContestEntry() {}
 
-    public ContestEntry(ObjectId userId, ObjectId contestId, List<ObjectId> soccerIds) {
+    public ContestEntry(ObjectId userId, List<ObjectId> soccerIds) {
         this.contestEntryId = new ObjectId();
         this.userId = userId;
-        this.contestId = contestId;
         this.soccerIds = soccerIds;
         this.createdAt = GlobalDate.getCurrentDate();
     }
@@ -107,7 +105,7 @@ public class ContestEntry implements JongoId {
         try {
             Contest contest = Model.contests().findOne("{ _id: # }", contestId).as(Contest.class);
             if (contest != null) {
-                ContestEntry aContestEntry = new ContestEntry(user, contestId, soccers);
+                ContestEntry aContestEntry = new ContestEntry(user, soccers);
                 contest.contestEntries.add(aContestEntry);
                 Model.contests().update(contest.contestId).with(contest);
 
