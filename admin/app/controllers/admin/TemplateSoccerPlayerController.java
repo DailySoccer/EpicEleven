@@ -54,7 +54,7 @@ public class TemplateSoccerPlayerController extends Controller {
                 TemplateSoccerPlayer templateSoccerPlayer = (TemplateSoccerPlayer) data;
                 switch (index) {
                     case 3:
-                        return String.format("<p class=\"edit-salary\" contenteditable=@canEditSalaries data-player-id=%s>%s</p>",
+                        return String.format("<p class=\"edit-salary\" contenteditable=\"false\" data-player-id=%s>%s</p>",
                                     templateSoccerPlayer.templateSoccerPlayerId,
                                     fieldValue);
                     case 4:

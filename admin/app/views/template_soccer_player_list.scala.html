@@ -35,18 +35,10 @@
             }
         }
 
-        $(document).ready( function(){
-            $('#ajax_table_id').dataTable( {
-              "iDisplayLength": 100,
-              "bProcessing": true,
-              "aaSorting": [[ 0, "asc" ]],
-              "bServerSide": true,
-              "bJQueryUI": true,
-              "sPaginationType": "full_numbers",
-              "sAjaxSource": "/admin/template_soccer_players/ajax"
-            });
-
+        function registerToEditSalary() {
             $(".edit-salary")
+                .off()
+                .attr("contenteditable", @canEditSalaries)
                 .keypress(function(e) {
                     if(event.which == 13 || event.which == 9) {
                         event.preventDefault();
@@ -67,6 +59,21 @@
                     // Cambiamos el salario al perder el foco
                     changeSalary($(this));
                 });
+        }
+
+        $(document).ready( function(){
+            $('#ajax_table_id').dataTable( {
+              "iDisplayLength": 100,
+              "bProcessing": true,
+              "aaSorting": [[ 0, "asc" ]],
+              "bServerSide": true,
+              "bJQueryUI": true,
+              "sPaginationType": "full_numbers",
+              "sAjaxSource": "/admin/template_soccer_players/ajax",
+              "fnDrawCallback": function( oSettings ) {
+                registerToEditSalary();
+              }
+            });
         })
 
     </script>

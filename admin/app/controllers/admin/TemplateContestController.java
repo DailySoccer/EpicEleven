@@ -70,7 +70,7 @@ public class TemplateContestController extends Controller {
                         return String.format("<button class=\"btn btn-warning disabled\">%s</button>", templateContest.state);
                     case 1: return String.format("<a href=\"%s\" style=\"white-space: nowrap\">%s</a>",
                                 routes.TemplateContestController.show(templateContest.templateContestId.toString()),
-                                templateContest.name);
+                                fieldValue);
                     case 10: return templateContest.isOff()
                                 ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">Edit</button></a>",
                                         routes.TemplateContestController.edit(templateContest.templateContestId.toString()))
