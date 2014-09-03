@@ -39,11 +39,7 @@ public class ContestController extends Controller {
         // Tambien necesitamos devolver todos los concursos instancias asociados a los templates
         List<Contest> contests = Contest.findAllFromTemplateContests(templateContests);
 
-        // Todos los partidos asociados a todos los TemplateContests
-        List<MatchEvent> matchEvents = MatchEvent.gatherFromTemplateContests(templateContests);
-
-        return new ReturnHelper(ImmutableMap.of("match_events", matchEvents,
-                                                "template_contests", templateContests,
+        return new ReturnHelper(ImmutableMap.of("template_contests", templateContests,
                                                 "contests", contests)).toResult();
     }
 
@@ -107,9 +103,9 @@ public class ContestController extends Controller {
         return new ReturnHelperWithAttach()
                 .attachObject("contest_entries", contestEntries, JsonViews.FullContest.class)
                 .attachObject("match_events_0", liveMatchEvents, JsonViews.FullContest.class)
-                .attachObject("match_events_1", publicMatchEvents)
-                .attachObject("template_contests", templateContests)
-                .attachObject("contests", contests)
+                .attachObject("match_events_1", publicMatchEvents, JsonViews.Extended.class)
+                .attachObject("template_contests", templateContests, JsonViews.Extended.class)
+                .attachObject("contests", contests, JsonViews.Extended.class)
                 .toResult();
     }
 
@@ -126,7 +122,7 @@ public class ContestController extends Controller {
      * Obtener la información sobre un Contest
      */
     public static Result getPublicContest(String contestId) {
-        return getContest(contestId).toResult();
+        return getContest(contestId).toResult(JsonViews.Extended.class);
     }
 
     private static ReturnHelper getContest(String contestId) {
