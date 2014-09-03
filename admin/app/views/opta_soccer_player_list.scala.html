@@ -1,13 +1,13 @@
 @(soccers: List[model.opta.OptaPlayer])
 
+@import model.GlobalDate
 @import controllers.admin.routes._
 
 @main("Opta Soccer Players - Admin") {
 
 <h1 class="page-header">Opta Soccer Players</h1>
 
-<h2 class="sub-header"></h2>
-<div class="table-responsive">
+    <div class="table-responsive">
     <table id="table_id" class="table table-striped">
         <thead>
         <tr>
@@ -28,13 +28,10 @@
             <td>@p.position</td>
             <td>@p.teamId</td>
             <td>@p.teamName</td>
-            <td>@p.updatedTime</td>
+            <td>@GlobalDate.formatDate(p.updatedTime)</td>
         </tr>
         }
         </tbody>
     </table>
 </div>
-
-<a href='@DashboardController.index'>Back to Dashboard</a>
-
 }
