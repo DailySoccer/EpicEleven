@@ -21,6 +21,20 @@
             window.setInterval(updatePage, 10000);
 
             $('#ajax_table_id').dataTable( {
+              "columns": [
+                { "title": "State" },
+                { "title": "Name" },
+                { "title": "Num. Matches" },
+                { "title": "Min Instances" },
+                { "title": "Max Entries" },
+                { "title": "Salary Cap" },
+                { "title": "Entry Fee" },
+                { "title": "Prize Type" },
+                { "title": "Start Date" },
+                { "title": "Activation At" },
+                { "title": "" },
+                { "title": "" }
+              ],
               "iDisplayLength": 100,
               "bProcessing": true,
               "aaSorting": [[ 0, "asc" ]],
@@ -43,25 +57,6 @@
 
 <h2 class="sub-header"></h2>
 <div class="table-responsive">
-    <table id="ajax_table_id" class="table table-striped">
-        <thead>
-        <tr>
-            <th>State</th>
-            <th>Name</th>
-            <th>Num. Matches</th>
-            <th>Min Instances</th>
-            <th>Max Entries</th>
-            <th>Salary Cap</th>
-            <th>Entry Fee</th>
-            <th>Prize Type</th>
-            <th>Start Date</th>
-            <th>Activation At</th>
-            <th></th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+    <table id="ajax_table_id" class="table table-striped"></table>
 </div>
 }

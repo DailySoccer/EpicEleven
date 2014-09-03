@@ -72,9 +72,6 @@ public class ContestController extends Controller {
 
     public static Result show(String contestId) {
         Contest contest = Model.contests().findOne("{ _id : # }", new ObjectId(contestId)).as(Contest.class);
-        HashMap<Integer, String> map = new HashMap<>();
-        map.put(0, "hola");
-        map.put(1, "adios");
-        return ok(views.html.contest.render(contest, map));
+        return ok(views.html.contest.render(contest));
     }
 }
