@@ -27,7 +27,7 @@ common: &default_settings
   # For example, to report data to "My Application" and "My Application 2" use this:
   # app_name: My Application;My Application 2
   # This setting is required.
-  app_name: Daily Soccer
+  app_name: Daily Soccer Development
   
   # To enable high security, set this property to true. When in high
   # security mode, the agent will use SSL and obfuscated SQL. Additionally,
@@ -75,7 +75,7 @@ common: &default_settings
 
   # The name of the log file.
   # Default is newrelic_agent.log.
-  log_file_name: newrelic_agent.log
+  log_file_name: "newrelic_agent.log"
 
   # The log file directory.
   # Default is the logs directory in the newrelic.jar parent directory.
