@@ -12,7 +12,7 @@ common: &default_settings
   # You must specify the license key associated with your New Relic
   # account.  This key binds your Agent's data to your account in the
   # New Relic service.
-  license_key: '31b252ea57282908f568666842b464bd6fd9a25d'
+  license_key: '82c84c6a8fbeddaa6f4b9c2401a75780fdb27704'
 
   # Agent Enabled
   # Use this setting to disable the agent instead of removing it from the startup command.
