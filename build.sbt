@@ -20,7 +20,8 @@ libraryDependencies ++= Seq(
   "org.seleniumhq.selenium" % "selenium-java" % "2.41.0" % "test",
   "org.scalatestplus" % "play_2.10" % "1.0.0" % "test",
   "com.saucelabs" % "sauce_junit" % "2.0.5" % "test",
-  "com.google.guava" % "guava" % "17.0"
+  "com.google.guava" % "guava" % "17.0",
+  "com.newrelic.agent.java" % "newrelic-agent" % "3.10.0"
 )
 
 resolvers += "saucelabs-repository" at "http://repository-saucelabs.forge.cloudbees.com/release"
