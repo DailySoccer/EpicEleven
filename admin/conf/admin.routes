@@ -37,6 +37,7 @@ GET         /contest_enter/add/:contestId                              controlle
 POST        /contest_entry/add                                         controllers.admin.ContestEntryController.create()
 
 GET         /contests                                                  controllers.admin.ContestController.index()
+GET         /contests/ajax                                             controllers.admin.ContestController.indexAjax()
 GET         /contest/:contestId                                        controllers.admin.ContestController.show(contestId : String)
 
 GET         /match_events                                              controllers.admin.MatchEventController.index()
@@ -44,6 +45,7 @@ GET         /match_event/:templateMatchEventId                         controlle
 GET         /match_event/optaEvents/:matchEventId                      controllers.admin.MatchEventController.showOptaEvents(matchEventId : String)
 
 GET         /template_contests                                         controllers.admin.TemplateContestController.index()
+GET         /template_contests/ajax                                    controllers.admin.TemplateContestController.indexAjax()
 GET         /template_contest/create_all                               controllers.admin.TemplateContestController.createAll()
 GET         /template_contest/save/:templateContestId                  controllers.admin.TemplateContestController.edit(templateContestId : String)
 GET         /template_contest/save                                     controllers.admin.TemplateContestController.newForm()
@@ -58,6 +60,7 @@ GET         /template_soccer_teams                                     controlle
 GET         /template_soccer_team/:templateSoccerTeam                  controllers.admin.TemplateSoccerTeamController.show(templateSoccerTeam : String)
 
 GET         /template_soccer_players                                   controllers.admin.TemplateSoccerPlayerController.index()
+GET         /template_soccer_players/ajax                              controllers.admin.TemplateSoccerPlayerController.indexAjax()
 GET         /template_soccer_player/edit_salaries                      controllers.admin.TemplateSoccerPlayerController.editSalaries()
 GET         /template_soccer_player/:soccerPlayer/salary/:salary       controllers.admin.TemplateSoccerPlayerController.changeSalary(soccerPlayer : String, salary : Int)
 

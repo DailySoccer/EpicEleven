@@ -1,5 +1,6 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.BulkWriteOperation;
 import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
@@ -30,23 +31,32 @@ public class TemplateContest implements JongoId, Initializer {
     @Id
     public ObjectId templateContestId;
 
+    @JsonView(JsonViews.Extended.class)
     public State state = State.OFF;
 
     public String name;
 
+    @JsonView(JsonViews.NotForClient.class)
     public int minInstances;        // Minimum desired number of instances that we want running at any given moment
+
     public int maxEntries;
 
     public int salaryCap;
     public int entryFee;
     public PrizeType prizeType;
+
+    @JsonView(JsonViews.Extended.class)
     public List<Integer> prizes;
 
     public Date startDate;
 
+    @JsonView(JsonViews.Extended.class)
     public List<ObjectId> templateMatchEventIds;
 
+    @JsonView(JsonViews.NotForClient.class)
     public Date activationAt;
+
+    @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
     public TemplateContest() { }

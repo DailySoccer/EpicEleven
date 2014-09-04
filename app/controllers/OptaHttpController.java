@@ -5,18 +5,13 @@ import model.GlobalDate;
 import model.Model;
 import model.ModelEvents;
 import model.opta.OptaProcessor;
-import org.jdom2.input.JDOMParseException;
 import org.joda.time.DateTime;
-import org.mozilla.universalchardet.UniversalDetector;
 import play.Logger;
 import play.db.DB;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.*;
 import java.util.Date;
@@ -64,7 +59,7 @@ public class OptaHttpController extends Controller {
     }
 
     private static String getHeadersString(Map<String, String[]> headers) {
-        Map<String, String> plainHeaders = new HashMap<String, String>();
+        Map<String, String> plainHeaders = new HashMap<>();
         for (String key: headers.keySet()){
             plainHeaders.put(key, "'"+headers.get(key)[0]+"'");
         }

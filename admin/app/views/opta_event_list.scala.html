@@ -8,6 +8,18 @@
       /* Table initialisation */
       $(document).ready(function() {
         $('#ajax_table_id').dataTable( {
+          "columns": [
+            { "title": "Points Translation Id" },
+            { "title": "CompetitionId" },
+            { "title": "GameId" },
+            { "title": "HomeTeamId" },
+            { "title": "AwayTeamId" },
+            { "title": "OptaPlayerId" },
+            { "title": "TypeId" },
+            { "title": "Points" },
+            { "title": "TimeStamp" },
+            { "title": "LastModified" }
+          ],
           "iDisplayLength": 100,
           "bProcessing": true,
           "aaSorting": [[ 0, "asc" ]],
@@ -24,28 +36,7 @@
 
 <h1 class="page-header">Opta Events</h1>
 
-<h2 class="sub-header"></h2>
 <div class="table-responsive">
-    <table id="ajax_table_id" class="table table-striped">
-        <thead>
-        <tr>
-            <th>Points Translation Id</th>
-            <th>CompetitionId</th>
-            <th>GameId</th>
-            <th>HomeTeamId</th>
-            <th>AwayTeamId</th>
-            <th>OptaPlayerId</th>
-            <th>TypeId</th>
-            <th>Points</th>
-            <th>TimeStamp</th>
-            <th>LastModified</th>
-        </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
+    <table id="ajax_table_id" class="table table-striped"></table>
 </div>
-
-<a href='@DashboardController.index'>Back to Dashboard</a>
-
 }

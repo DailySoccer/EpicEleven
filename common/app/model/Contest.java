@@ -1,5 +1,6 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.BulkWriteOperation;
 import org.bson.types.ObjectId;
 import org.jongo.Find;
@@ -15,12 +16,22 @@ public class Contest implements JongoId {
     public ObjectId contestId;
     public ObjectId templateContestId;
 
+    @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
+
+    @JsonView(JsonViews.NotForClient.class)
     public String name;
 
+    @JsonView(JsonViews.Extended.class)
     public List<ContestEntry> contestEntries = new ArrayList<>();
-    public int maxEntries;
 
+    @JsonView(JsonViews.Public.class)
+    public int getNumEntries() {
+        return contestEntries.size();
+    }
+
+    @JsonView(JsonViews.NotForClient.class)
+    public int maxEntries;
 
     public Contest() {}
 
