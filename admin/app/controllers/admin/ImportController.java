@@ -115,20 +115,33 @@ public class ImportController extends Controller {
      *
      */
     private static void evaluateDirtySoccers(List<OptaPlayer> news, List<OptaPlayer> changes, List<OptaPlayer> invalidates) {
+        HashMap<String, Boolean> teamIsValid = new HashMap<>();
         Iterable<OptaPlayer> soccersDirty = Model.optaPlayers().find("{dirty: true}").as(OptaPlayer.class);
         for(OptaPlayer optaSoccer : soccersDirty) {
-            TemplateSoccerPlayer template = TemplateSoccerPlayer.findOneFromOptaId(optaSoccer.optaPlayerId);
-            if (template == null) {
-                if (TemplateSoccerPlayer.isInvalid(optaSoccer)) {
-                    if (invalidates != null)
-                        invalidates.add(optaSoccer);
-                }
-                else if (news != null) {
-                    news.add(optaSoccer);
-                }
+            Boolean isTeamValid = false;
+            if (teamIsValid.containsKey(optaSoccer.teamId)) {
+                isTeamValid = teamIsValid.get(optaSoccer.teamId);
             }
-            else if (changes != null && template.hasChanged(optaSoccer)) {
-                changes.add(optaSoccer);
+            else {
+                OptaTeam optaTeam = OptaTeam.findOne(optaSoccer.teamId);
+                for (int i=0; i<optaTeam.competitionIds.size() && !isTeamValid; i++) {
+                    String competitionId = optaTeam.competitionIds.get(i);
+                    isTeamValid = OptaCompetition.findOne(competitionId).activated;
+                }
+                teamIsValid.put(optaSoccer.teamId, isTeamValid);
+            }
+            if (isTeamValid) {
+                TemplateSoccerPlayer template = TemplateSoccerPlayer.findOneFromOptaId(optaSoccer.optaPlayerId);
+                if (template == null) {
+                    if (TemplateSoccerPlayer.isInvalid(optaSoccer)) {
+                        if (invalidates != null)
+                            invalidates.add(optaSoccer);
+                    } else if (news != null) {
+                        news.add(optaSoccer);
+                    }
+                } else if (changes != null && template.hasChanged(optaSoccer)) {
+                    changes.add(optaSoccer);
+                }
             }
         }
     }
