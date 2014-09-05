@@ -203,6 +203,22 @@ public class OptaProcessor {
         if (myF40.getAttribute("Type").getValue().equals("SQUADS Latest")) {
             String competitionId = myF40.getAttribute("competition_id").getValue();
 
+            OptaCompetition optaCompetition = OptaCompetition.findOne(competitionId);
+            if (optaCompetition == null) {
+                optaCompetition = new OptaCompetition(
+                                        competitionId,
+                                        myF40.getAttribute("competition_code").getValue(),
+                                        myF40.getAttribute("competition_name").getValue());
+                Model.optaCompetitions().insert(optaCompetition);
+            }
+            /*
+            else {
+                optaCompetition.competitionCode = myF40.getAttribute("competition_code").getValue();
+                optaCompetition.competitionName = myF40.getAttribute("competition_name").getValue();
+                Model.optaCompetitions().update("{competitionId: #}", competitionId).with(optaCompetition);
+            }
+            */
+
             for (Element team : getTeamsFromF40(myF40)) {
 
                 List<Element> playersList = team.getChildren("Player");

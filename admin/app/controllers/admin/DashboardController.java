@@ -2,27 +2,29 @@ package controllers.admin;
 
 import model.MockData;
 import model.Model;
+import model.opta.OptaCompetition;
 import play.mvc.Controller;
 import play.mvc.Result;
 
 public class DashboardController extends Controller {
     public static Result index() {
-        return ok(views.html.dashboard.render());
+        return ok(views.html.dashboard.render(OptaCompetition.findAllActive()));
     }
 
     static public Result importEverything() {
+        MockData.ensureCompetitionsActivated();
         ImportController.importSalaries();
         ImportController.importAllTeams();
         ImportController.importAllSoccers();
         ImportController.importAllMatchEvents();
-        return ok(views.html.dashboard.render());
+        return index();
     }
 
     static public Result initialSetup() {
         importEverything();
         PointsTranslationController.resetToDefault();
         TemplateContestController.createAll();
-        return ok(views.html.dashboard.render());
+        return index();
     }
 
     public static Result resetDB() {
@@ -30,6 +32,6 @@ public class DashboardController extends Controller {
         MockData.ensureMockDataUsers();
 
         FlashMessage.success("Reset DB: OK");
-        return ok(views.html.dashboard.render());
+        return index();
     }
 }

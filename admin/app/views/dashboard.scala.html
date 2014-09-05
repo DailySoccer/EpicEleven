@@ -1,4 +1,4 @@
-@()
+@(competitions_enabled : List[model.opta.OptaCompetition])
 
 @import controllers.admin.routes._
 
@@ -9,6 +9,17 @@
 
 <div>
     <a href="@DashboardController.initialSetup"><button class="btn btn-danger">Initial Setup</button></a>
+</div>
+<br/>
+<div>
+    <a href="@OptaController.optaCompetitions" class="btn btn-primary">Select Competitions</a>
+    @if(competitions_enabled.isEmpty) {
+        NONE
+    } else {
+        @for((p, index) <- competitions_enabled.zipWithIndex) {
+            @p.competitionName @if(index < competitions_enabled.size-1) { , }
+        }
+    }
 </div>
 <br/>
 <div>

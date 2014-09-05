@@ -1,6 +1,21 @@
-@(teams_new: List[model.opta.OptaTeam], teams_changed: List[model.opta.OptaTeam], teams_invalid: List[model.opta.OptaTeam], competitionFilter: String = "*", competitions: Set[String])
+@(teams_new: List[model.opta.OptaTeam], teams_changed: List[model.opta.OptaTeam], teams_invalid: List[model.opta.OptaTeam],
+        competitionFilter: String = "*", competitions: Set[String], competitionMap: HashMap[String, model.opta.OptaCompetition])
 
-@import controllers.admin.routes.ImportController
+@import controllers.admin.routes._
+
+@competition_names(competitionIds : List[String]) = {
+    @for((p, index) <- competitionIds.zipWithIndex) {
+        @competition_name(p) @if(index < competitionIds.size-1) { + ", " + }
+    }
+}
+
+@competition_name(competitionId : String) = {
+    @if(competitionMap.contains(competitionId)) {
+        '@competitionMap(competitionId).competitionName'
+    } else {
+        @competitionId
+    }
+}
 
 @include_columns() = {
     { "title": "Id" },
@@ -15,7 +30,7 @@
             "@p.optaTeamId",
             "@p.name",
             "@p.shortName",
-            "@p.competitionIds"
+            @competition_names(p.competitionIds)
         ] @if(index < team_list.size-1) { , }
     }
 }
@@ -61,7 +76,15 @@
 
 <h1 class="page-header">Import Teams</h1>
 
-<h2 class="sub-header"></h2>
+<h2 class="sub-header">
+    @if(competitionMap.isEmpty) {
+    <div class="alert alert-danger alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <div>Ninguna competición Activada <a href="@OptaController.optaCompetitions" class="btn btn-primary text-right">Select Competitions</a></div>
+    </div>
+    }
+</h2>
+
 
 <!--div class="col-md-12">
 @if((teams_new != null && !teams_new.isEmpty) || (teams_changed != null && !teams_changed.isEmpty)) {
@@ -78,13 +101,13 @@
             <a href="@ImportController.importAllNewTeamsFromCompetition(competitionFilter)" class="btn btn-success">Import New (@teams_new.size)</a>
         }
         <span class="dropdown">
-        <a data-toggle="dropdown" href="#">Competition: @competitionFilter</a>
+        <a data-toggle="dropdown" href="#">Competition: @competition_name(competitionFilter)</a>
         <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
             @if(competitionFilter != "*") {
-                <li><a href='@ImportController.showImportTeams'>Competition *</a></li>
+                <li><a href='@ImportController.showImportTeams'>All *</a></li>
             }
             @for(competition <- competitions) {
-                <li><a href='@ImportController.showImportTeamsFromCompetition(competition)'>Competition @competition</a></li>
+                <li><a href='@ImportController.showImportTeamsFromCompetition(competition)'>@competition_name(competition)</a></li>
             }
         </ul>
         </span>
