@@ -1,5 +1,5 @@
 @(teams_new: List[model.opta.OptaTeam], teams_changed: List[model.opta.OptaTeam], teams_invalid: List[model.opta.OptaTeam],
-        competitionFilter: String = "*", competitions: Set[String], competitionMap: HashMap[String, model.opta.OptaCompetition])
+        competitionFilter: String = "*", competitionMap: HashMap[String, model.opta.OptaCompetition])
 
 @import controllers.admin.routes._
 
@@ -10,10 +10,14 @@
 }
 
 @competition_name(competitionId : String) = {
-    @if(competitionMap.contains(competitionId)) {
-        '@competitionMap(competitionId).competitionName'
+    @if(competitionId == "*") {
+        "All Competitions"
     } else {
-        @competitionId
+        @if(competitionMap.contains(competitionId)) {
+            '@competitionMap(competitionId).competitionName'
+        } else {
+            @competitionId
+        }
     }
 }
 
@@ -74,7 +78,21 @@
 </ul>
 <br/>
 
-<h1 class="page-header">Import Teams</h1>
+<h1 class="page-header">Import Teams
+    <span class="dropdown">
+        <a data-toggle="dropdown" href="#">@competition_name(competitionFilter)</a>
+        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+            @if(competitionFilter != "*") {
+            <li><a href='@ImportController.showImportTeams'>All Competitions</a></li>
+            }
+            @for((key, competition) <- competitionMap) {
+                @if(competitionFilter != key) {
+                    <li><a href='@ImportController.showImportTeamsFromCompetition(key)'>@competition.competitionName</a></li>
+                }
+            }
+        </ul>
+    </span>
+</h1>
 
 <h2 class="sub-header">
     @if(competitionMap.isEmpty) {
@@ -100,17 +118,6 @@
         } else {
             <a href="@ImportController.importAllNewTeamsFromCompetition(competitionFilter)" class="btn btn-success">Import New (@teams_new.size)</a>
         }
-        <span class="dropdown">
-        <a data-toggle="dropdown" href="#">Competition: @competition_name(competitionFilter)</a>
-        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-            @if(competitionFilter != "*") {
-                <li><a href='@ImportController.showImportTeams'>All *</a></li>
-            }
-            @for(competition <- competitions) {
-                <li><a href='@ImportController.showImportTeamsFromCompetition(competition)'>@competition_name(competition)</a></li>
-            }
-        </ul>
-        </span>
     </div>
     <br/>
 

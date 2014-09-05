@@ -40,42 +40,6 @@ public class ImportController extends Controller {
          evaluateDirtyTeams(OptaCompetition.asIds(OptaCompetition.findAllActive()), news, changes, invalidates);
     }
 
-    private static List<String> getCompetitionIdsActivates() {
-        List<OptaCompetition> optaCompetitions = OptaCompetition.findAllActive();
-
-        List<String> competitionIds = new ArrayList<>();
-        for (OptaCompetition optaCompetition : optaCompetitions) {
-            competitionIds.add(optaCompetition.competitionId);
-        }
-        return competitionIds;
-    }
-
-    private static Set<String> getCompetitionsAvailables(List<String> competitionsIds) {
-        Set<String> competitions = new HashSet<>();
-
-        // Buscamos los equipos "modificados" (podrían ser "news", "changed" o "invalid")
-        Iterable<OptaTeam> teamsDirty = Model.optaTeams().find("{dirty: true, competitionIds: {$in: #}}", competitionsIds).as(OptaTeam.class);
-        for(OptaTeam optaTeam : teamsDirty) {
-            // Buscamos competiciones de los equipos "news" (no importados anteriormente)
-            for (String competition : optaTeam.competitionIds) {
-                // Verificamos antes si es una competición "nueva"
-                //  de esta forma evitamos tener que pedir el TemplateSoccerTeam si ya tenemos registrada la competición
-                if (!competitions.contains(competition)) {
-                    TemplateSoccerTeam template = TemplateSoccerTeam.findOneFromOptaId(optaTeam.optaTeamId);
-                    if (template == null && !TemplateSoccerTeam.isInvalid(optaTeam)) {
-                        // "NEW"
-                        competitions.add(competition);
-                    }
-                    else {
-                        break;
-                    }
-                }
-            }
-        }
-
-        return competitions;
-    }
-
     public static int importTeams(List<OptaTeam> teams) {
         for(OptaTeam optaTeam : teams) {
             TemplateSoccerTeam.importTeam(optaTeam);
@@ -89,9 +53,7 @@ public class ImportController extends Controller {
         List<OptaTeam> teamsChanged = new ArrayList<>();
         List<OptaTeam> teamsInvalidated = new ArrayList<>();
         evaluateDirtyTeams(competitionsActivated, teamsNew, teamsChanged, teamsInvalidated);
-
-        Set<String> competitions = getCompetitionsAvailables(competitionsActivated);
-        return ok(views.html.import_teams.render(teamsNew, teamsChanged, teamsInvalidated, "*", competitions, OptaCompetition.asMap(OptaCompetition.findAllActive())));
+        return ok(views.html.import_teams.render(teamsNew, teamsChanged, teamsInvalidated, "*", OptaCompetition.asMap(OptaCompetition.findAllActive())));
     }
 
     public static Result showImportTeamsFromCompetition(String competitionId) {
@@ -102,12 +64,7 @@ public class ImportController extends Controller {
         List<OptaTeam> teamsChanged = new ArrayList<>();
         List<OptaTeam> teamsInvalidated = new ArrayList<>();
         evaluateDirtyTeams(competitionsSelected, teamsNew, teamsChanged, teamsInvalidated);
-
-        List<String> competitionsActivated = OptaCompetition.asIds(OptaCompetition.findAllActive());
-        Set<String> competitionsAvailables = getCompetitionsAvailables(competitionsActivated);
-        competitionsAvailables.remove(competitionId);
-
-        return ok(views.html.import_teams.render(teamsNew, teamsChanged, teamsInvalidated, competitionId, competitionsAvailables, OptaCompetition.asMap(OptaCompetition.findAllActive())));
+        return ok(views.html.import_teams.render(teamsNew, teamsChanged, teamsInvalidated, competitionId, OptaCompetition.asMap(OptaCompetition.findAllActive())));
     }
 
     public static Result importAllTeams() {
