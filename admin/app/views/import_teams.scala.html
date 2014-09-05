@@ -80,7 +80,7 @@
 
 <h1 class="page-header">Import Teams
     <span class="dropdown">
-        <a data-toggle="dropdown" href="#">@competition_name(competitionFilter)</a>
+        <a data-toggle="dropdown" href="#">@competition_name(competitionFilter)</a><span class="caret"></span>
         <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
             @if(competitionFilter != "*") {
             <li><a href='@ImportController.showImportTeams'>All Competitions</a></li>
@@ -98,7 +98,7 @@
     @if(competitionMap.isEmpty) {
     <div class="alert alert-danger alert-dismissable">
         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-        <div>Ninguna competición Activada <a href="@OptaController.optaCompetitions" class="btn btn-primary text-right">Select Competitions</a></div>
+        <div>Ninguna competición Activada <a href="@OptaController.optaCompetitions" class="btn btn-primary">Select Competitions</a></div>
     </div>
     }
 </h2>
