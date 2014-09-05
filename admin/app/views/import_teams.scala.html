@@ -1,11 +1,12 @@
-@(teams_new: List[model.opta.OptaTeam], teams_changed: List[model.opta.OptaTeam], teams_invalid: List[model.opta.OptaTeam])
+@(teams_new: List[model.opta.OptaTeam], teams_changed: List[model.opta.OptaTeam], teams_invalid: List[model.opta.OptaTeam], competitionFilter: String = "*", competitions: Set[String])
 
 @import controllers.admin.routes.ImportController
 
 @include_columns() = {
     { "title": "Id" },
     { "title": "Name" },
-    { "title": "ShortName" }
+    { "title": "ShortName" },
+    { "title": "Competitions" }
 }
 
 @include_teams(team_list : List[model.opta.OptaTeam]) = {
@@ -13,7 +14,8 @@
         [
             "@p.optaTeamId",
             "@p.name",
-            "@p.shortName"
+            "@p.shortName",
+            "@p.competitionIds"
         ] @if(index < team_list.size-1) { , }
     }
 }
@@ -69,7 +71,24 @@
 
 <div class="col-md-6">
     @if(teams_new != null && !teams_new.isEmpty) {
-    <div><a href="@ImportController.importAllNewTeams"><button name="ok" type="submit" class="btn btn-success">Import New (@teams_new.size)</button></a></div>
+    <div>
+        @if(competitionFilter == "*") {
+            <a href="@ImportController.importAllNewTeams" class="btn btn-success">Import New (@teams_new.size)</a>
+        } else {
+            <a href="@ImportController.importAllNewTeamsFromCompetition(competitionFilter)" class="btn btn-success">Import New (@teams_new.size)</a>
+        }
+        <span class="dropdown">
+        <a data-toggle="dropdown" href="#">Competition: @competitionFilter</a>
+        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+            @if(competitionFilter != "*") {
+                <li><a href='@ImportController.showImportTeams'>Competition *</a></li>
+            }
+            @for(competition <- competitions) {
+                <li><a href='@ImportController.showImportTeamsFromCompetition(competition)'>Competition @competition</a></li>
+            }
+        </ul>
+        </span>
+    </div>
     <br/>
 
     <table id="ajax_table_new" class="table table-striped table-responsive">

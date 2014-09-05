@@ -10,17 +10,17 @@ import play.mvc.Result;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class ImportController extends Controller {
     /**
      * IMPORT TEAMS from OPTA
      *
      */
-    private static void evaluateDirtyTeams(List<OptaTeam> news, List<OptaTeam> changes, List<OptaTeam> invalidates) {
-        Iterable<OptaTeam> teamsDirty = Model.optaTeams().find("{dirty: true}").as(OptaTeam.class);
+    private static void evaluateDirtyTeams(String competitionId, List<OptaTeam> news, List<OptaTeam> changes, List<OptaTeam> invalidates) {
+        String query = (competitionId != null) ? String.format("{dirty: true, competitionIds: {$in: [\"%s\"]}}", competitionId) : "{dirty: true}";
+
+        Iterable<OptaTeam> teamsDirty = Model.optaTeams().find(query).as(OptaTeam.class);
         for(OptaTeam optaTeam : teamsDirty) {
             TemplateSoccerTeam template = TemplateSoccerTeam.findOneFromOptaId(optaTeam.optaTeamId);
             if (template == null) {
@@ -37,6 +37,35 @@ public class ImportController extends Controller {
             }
         }
     }
+    private static void evaluateDirtyTeams(List<OptaTeam> news, List<OptaTeam> changes, List<OptaTeam> invalidates) {
+        evaluateDirtyTeams(null, news, changes, invalidates);
+    }
+
+    private static Set<String> getCompetitionsAvailables() {
+        Set<String> competitions = new HashSet<>();
+
+        // Buscamos los equipos "modificados" (podrían ser "news", "changed" o "invalid")
+        Iterable<OptaTeam> teamsDirty = Model.optaTeams().find("{dirty: true}").as(OptaTeam.class);
+        for(OptaTeam optaTeam : teamsDirty) {
+            // Buscamos competiciones de los equipos "news" (no importados anteriormente)
+            for (String competition : optaTeam.competitionIds) {
+                // Verificamos antes si es una competición "nueva"
+                //  de esta forma evitamos tener que pedir el TemplateSoccerTeam si ya tenemos registrada la competición
+                if (!competitions.contains(competition)) {
+                    TemplateSoccerTeam template = TemplateSoccerTeam.findOneFromOptaId(optaTeam.optaTeamId);
+                    if (template == null && !TemplateSoccerTeam.isInvalid(optaTeam)) {
+                        // "NEW"
+                        competitions.add(competition);
+                    }
+                    else {
+                        break;
+                    }
+                }
+            }
+        }
+
+        return competitions;
+    }
 
     public static int importTeams(List<OptaTeam> teams) {
         for(OptaTeam optaTeam : teams) {
@@ -50,7 +79,20 @@ public class ImportController extends Controller {
         List<OptaTeam> teamsChanged = new ArrayList<>();
         List<OptaTeam> teamsInvalidated = new ArrayList<>();
         evaluateDirtyTeams(teamsNew, teamsChanged, teamsInvalidated);
-        return ok(views.html.import_teams.render(teamsNew, teamsChanged, teamsInvalidated));
+
+        Set<String> competitions = getCompetitionsAvailables();
+        return ok(views.html.import_teams.render(teamsNew, teamsChanged, teamsInvalidated, "*", competitions));
+    }
+
+    public static Result showImportTeamsFromCompetition(String competitionId) {
+        List<OptaTeam> teamsNew = new ArrayList<>();
+        List<OptaTeam> teamsChanged = new ArrayList<>();
+        List<OptaTeam> teamsInvalidated = new ArrayList<>();
+        evaluateDirtyTeams(competitionId, teamsNew, teamsChanged, teamsInvalidated);
+
+        Set<String> competitions = getCompetitionsAvailables();
+        competitions.remove(competitionId);
+        return ok(views.html.import_teams.render(teamsNew, teamsChanged, teamsInvalidated, competitionId, competitions));
     }
 
     public static Result importAllTeams() {
@@ -69,6 +111,15 @@ public class ImportController extends Controller {
     public static Result importAllNewTeams() {
         List<OptaTeam> teamsNew = new ArrayList<>();
         evaluateDirtyTeams(teamsNew, null, null);
+
+        int news = importTeams(teamsNew);
+        FlashMessage.success( String.format("Imported %d teams New", news) );
+        return redirect(routes.ImportController.showImportTeams());
+    }
+
+    public static Result importAllNewTeamsFromCompetition(String competitionId) {
+        List<OptaTeam> teamsNew = new ArrayList<>();
+        evaluateDirtyTeams(competitionId, teamsNew, null, null);
 
         int news = importTeams(teamsNew);
         FlashMessage.success( String.format("Imported %d teams New", news) );

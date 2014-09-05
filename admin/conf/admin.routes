@@ -3,7 +3,9 @@ GET         /reset_db                                                  controlle
 GET         /initial_setup                                             controllers.admin.DashboardController.initialSetup()
 
 GET         /import_teams                                              controllers.admin.ImportController.showImportTeams()
+GET         /import_teams/:competitionId                               controllers.admin.ImportController.showImportTeamsFromCompetition(competitionId : String)
 GET         /import_all_new_teams                                      controllers.admin.ImportController.importAllNewTeams()
+GET         /import_all_new_teams/:competitionId                       controllers.admin.ImportController.importAllNewTeamsFromCompetition(competitionId : String)
 GET         /import_all_changed_teams                                  controllers.admin.ImportController.importAllChangedTeams()
 GET         /import_all_teams                                          controllers.admin.ImportController.importAllTeams()
 GET         /import_soccers                                            controllers.admin.ImportController.showImportSoccers()
