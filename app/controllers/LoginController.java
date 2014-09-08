@@ -26,10 +26,10 @@ public class LoginController extends Controller {
 
     // https://github.com/playframework/playframework/tree/master/samples/java/forms
     public static class SignupParams {
-        @Required @MinLength(value = 4)
+
         public String firstName;
 
-        @Required @MinLength(value = 4)
+
         public String lastName;
 
         @Required @MinLength(value = 4)
