@@ -14,6 +14,22 @@ import java.util.*;
 
 public class OptaProcessor {
 
+    static public boolean isDocumentValidForProcessing(String feedType, String competitionId) {
+        boolean valid = false;
+
+        if (feedType.equals("F9") || feedType.equals("F24") || feedType.equals("F1")) {
+            OptaCompetition optaCompetition = OptaCompetition.findOne(competitionId);
+            valid = (optaCompetition != null) && optaCompetition.activated;
+        }
+        else
+        if (feedType.equals("F40")) {
+            // El "filtro" no podemos aplicarlo sobre los documentos "F40", puesto que en dicho documento procesamos las propias competiciones
+            valid = true;
+        }
+
+        return valid;
+    }
+
     // Retorna los Ids de opta (gameIds, optaMachEventId) de los partidos que han cambiado
     public HashSet<String> processOptaDBInput(String feedType, String fileName, String requestBody) {
         _dirtyMatchEvents = new HashSet<>();
@@ -32,9 +48,6 @@ public class OptaProcessor {
             }
             else if (feedType.equals("F1")) {
                 processF1(requestBodyElement);
-            }
-            else {
-                Logger.info("Not parsing file Type {}: {}", feedType, fileName);
             }
         }
         catch (Exception e) {
@@ -211,15 +224,8 @@ public class OptaProcessor {
                                         myF40.getAttribute("competition_name").getValue());
                 Model.optaCompetitions().insert(optaCompetition);
             }
-            /*
-            else {
-                optaCompetition.competitionCode = myF40.getAttribute("competition_code").getValue();
-                optaCompetition.competitionName = myF40.getAttribute("competition_name").getValue();
-                Model.optaCompetitions().update("{competitionId: #}", competitionId).with(optaCompetition);
-            }
-            */
 
-            for (Element team : getTeamsFromF40(myF40)) {
+            for (Element team : myF40.getChildren("Team")) {
 
                 List<Element> playersList = team.getChildren("Player");
 
@@ -309,15 +315,6 @@ public class OptaProcessor {
 
         return myPlayer;
     }
-
-
-    private List<Element> getTeamsFromF40(Element myF40) {
-        if (null == myF40.getChild("Team")) {
-            throw new RuntimeException("WTF 7812: getTeamsFromF40");
-        }
-        return myF40.getChildren("Team");
-    }
-
 
     private void processFinishedMatch(Element F9) {
         String gameId = getStringId(F9, "uID", "_NO GAME ID");
