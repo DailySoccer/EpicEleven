@@ -1,8 +1,8 @@
 package controllers.admin;
 
 import model.*;
+import model.opta.OptaCompetition;
 import model.opta.OptaProcessor;
-import org.jdom2.input.JDOMParseException;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.jongo.MongoCollection;
@@ -207,14 +207,38 @@ public class OptaSimulator implements Runnable {
         String sqlxml = _optaResultSet.getString("xml");
         String name = _optaResultSet.getString("name");
         String feedType = _optaResultSet.getString("feed_type");
+        String competitionId = _optaResultSet.getString("competition_id");
 
-        Logger.debug("OptaSimulator processing: {}, {}, {}", _state.nextDocToParseIndex, name, GlobalDate.formatDate(createdAt));
+        try {
+            if (isDocumentValidToProcessing(feedType, competitionId)) {
+                Logger.debug("OptaSimulator processing: {}, {}, {}", _state.nextDocToParseIndex, name, GlobalDate.formatDate(createdAt));
 
-        HashSet<String> changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, name, sqlxml);
-        ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
+                HashSet<String> changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, name, sqlxml);
+                ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
+            }
+            else {
+                // Logger.info("Ignorando documento: {}, {}, competitionId({})", _state.nextDocToParseIndex, name, competitionId);
+            }
+        }
+        catch (Exception e) {
+            Logger.error("WTF 7812", e);
+        }
 
         _state.nextDocToParseIndex++;
         _nextDocDate = null;
+    }
+
+    private boolean isDocumentValidToProcessing(String feedType, String competitionId) {
+        boolean valid = true;
+
+        // El "filtro" no lo aplicamos sobre los documentos "F40", puesto que en dicho documento procesamos las propias competiciones
+        if (feedType.equals("F9") || feedType.equals("F24") || feedType.equals("F1")) {
+            OptaCompetition optaCompetition = OptaCompetition.findOne(competitionId);
+            valid = (optaCompetition != null) && optaCompetition.activated;
+
+        }
+
+        return valid;
     }
 
     private void queryNextResultSet() throws SQLException {
