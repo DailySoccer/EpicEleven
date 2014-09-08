@@ -201,8 +201,30 @@ public class OptaProcessor {
         Element myF40 = f40.getChild("SoccerDocument");
 
         if (myF40.getAttribute("Type").getValue().equals("SQUADS Latest")) {
+            String competitionId = myF40.getAttribute("competition_id").getValue();
+
+            OptaCompetition optaCompetition = OptaCompetition.findOne(competitionId);
+            if (optaCompetition == null) {
+                optaCompetition = new OptaCompetition(
+                                        competitionId,
+                                        myF40.getAttribute("competition_code").getValue(),
+                                        myF40.getAttribute("competition_name").getValue());
+                Model.optaCompetitions().insert(optaCompetition);
+            }
+            /*
+            else {
+                optaCompetition.competitionCode = myF40.getAttribute("competition_code").getValue();
+                optaCompetition.competitionName = myF40.getAttribute("competition_name").getValue();
+                Model.optaCompetitions().update("{competitionId: #}", competitionId).with(optaCompetition);
+            }
+            */
 
             for (Element team : getTeamsFromF40(myF40)) {
+
+                List<Element> playersList = team.getChildren("Player");
+
+                if (playersList == null) // Si es un equipo placeholder nos lo saltamos
+                    continue;
 
                 OptaTeam myTeam = new OptaTeam();
                 myTeam.optaTeamId = getStringId(team, "uID", "_NO TEAM UID");
@@ -213,12 +235,11 @@ public class OptaProcessor {
                     myTeam.shortName = team.getChild("SYMID").getContent().get(0).getValue();//getAttributeValue("SYMID");
                 }
 
-                List<Element> playersList = team.getChildren("Player");
-
-                if (playersList == null) // Si es un equipo placeholder nos lo saltamos
-                    continue;
-
-                Model.optaTeams().update("{optaTeamId: #}", myTeam.optaTeamId).upsert().with(myTeam);
+                Model.optaTeams()
+                        .update("{optaTeamId: #}", myTeam.optaTeamId)
+                        .upsert()
+                        .with("{$set: {optaTeamId:#, name:#, shortName:#, updatedTime:#, dirty:#}, $addToSet: {competitionIds:#}}",
+                                myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty, competitionId);
 
                 for (Element player : playersList) {
                     String playerId = getStringId(player, "uID", "_NO PLAYER UID");

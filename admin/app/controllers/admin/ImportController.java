@@ -1,6 +1,7 @@
 package controllers.admin;
 
 import model.*;
+import model.opta.OptaCompetition;
 import model.opta.OptaMatchEvent;
 import model.opta.OptaPlayer;
 import model.opta.OptaTeam;
@@ -10,17 +11,15 @@ import play.mvc.Result;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class ImportController extends Controller {
     /**
      * IMPORT TEAMS from OPTA
      *
      */
-    private static void evaluateDirtyTeams(List<OptaTeam> news, List<OptaTeam> changes, List<OptaTeam> invalidates) {
-        Iterable<OptaTeam> teamsDirty = Model.optaTeams().find("{dirty: true}").as(OptaTeam.class);
+    private static void evaluateDirtyTeams(List<String> competitionIds, List<OptaTeam> news, List<OptaTeam> changes, List<OptaTeam> invalidates) {
+        Iterable<OptaTeam> teamsDirty = Model.optaTeams().find("{dirty: true, competitionIds: {$in: #}}", competitionIds).as(OptaTeam.class);
         for(OptaTeam optaTeam : teamsDirty) {
             TemplateSoccerTeam template = TemplateSoccerTeam.findOneFromOptaId(optaTeam.optaTeamId);
             if (template == null) {
@@ -37,6 +36,9 @@ public class ImportController extends Controller {
             }
         }
     }
+    private static void evaluateDirtyTeams(List<OptaTeam> news, List<OptaTeam> changes, List<OptaTeam> invalidates) {
+         evaluateDirtyTeams(OptaCompetition.asIds(OptaCompetition.findAllActive()), news, changes, invalidates);
+    }
 
     public static int importTeams(List<OptaTeam> teams) {
         for(OptaTeam optaTeam : teams) {
@@ -46,11 +48,23 @@ public class ImportController extends Controller {
     }
 
     public static Result showImportTeams() {
+        List<String> competitionsActivated = OptaCompetition.asIds(OptaCompetition.findAllActive());
         List<OptaTeam> teamsNew = new ArrayList<>();
         List<OptaTeam> teamsChanged = new ArrayList<>();
         List<OptaTeam> teamsInvalidated = new ArrayList<>();
-        evaluateDirtyTeams(teamsNew, teamsChanged, teamsInvalidated);
-        return ok(views.html.import_teams.render(teamsNew, teamsChanged, teamsInvalidated));
+        evaluateDirtyTeams(competitionsActivated, teamsNew, teamsChanged, teamsInvalidated);
+        return ok(views.html.import_teams.render(teamsNew, teamsChanged, teamsInvalidated, "*", OptaCompetition.asMap(OptaCompetition.findAllActive())));
+    }
+
+    public static Result showImportTeamsFromCompetition(String competitionId) {
+        List<String> competitionsSelected = new ArrayList<String>();
+        competitionsSelected.add(competitionId);
+
+        List<OptaTeam> teamsNew = new ArrayList<>();
+        List<OptaTeam> teamsChanged = new ArrayList<>();
+        List<OptaTeam> teamsInvalidated = new ArrayList<>();
+        evaluateDirtyTeams(competitionsSelected, teamsNew, teamsChanged, teamsInvalidated);
+        return ok(views.html.import_teams.render(teamsNew, teamsChanged, teamsInvalidated, competitionId, OptaCompetition.asMap(OptaCompetition.findAllActive())));
     }
 
     public static Result importAllTeams() {
@@ -75,6 +89,18 @@ public class ImportController extends Controller {
         return redirect(routes.ImportController.showImportTeams());
     }
 
+    public static Result importAllNewTeamsFromCompetition(String competitionId) {
+        List<String> competitionsSelected = new ArrayList<String>();
+        competitionsSelected.add(competitionId);
+
+        List<OptaTeam> teamsNew = new ArrayList<>();
+        evaluateDirtyTeams(competitionsSelected, teamsNew, null, null);
+
+        int news = importTeams(teamsNew);
+        FlashMessage.success( String.format("Imported %d teams New", news) );
+        return redirect(routes.ImportController.showImportTeams());
+    }
+
     public static Result importAllChangedTeams() {
         List<OptaTeam> teamsChanged = new ArrayList<>();
         evaluateDirtyTeams(null, teamsChanged, null);
@@ -89,20 +115,33 @@ public class ImportController extends Controller {
      *
      */
     private static void evaluateDirtySoccers(List<OptaPlayer> news, List<OptaPlayer> changes, List<OptaPlayer> invalidates) {
+        HashMap<String, Boolean> teamIsValid = new HashMap<>();
         Iterable<OptaPlayer> soccersDirty = Model.optaPlayers().find("{dirty: true}").as(OptaPlayer.class);
         for(OptaPlayer optaSoccer : soccersDirty) {
-            TemplateSoccerPlayer template = TemplateSoccerPlayer.findOneFromOptaId(optaSoccer.optaPlayerId);
-            if (template == null) {
-                if (TemplateSoccerPlayer.isInvalid(optaSoccer)) {
-                    if (invalidates != null)
-                        invalidates.add(optaSoccer);
-                }
-                else if (news != null) {
-                    news.add(optaSoccer);
-                }
+            Boolean isTeamValid = false;
+            if (teamIsValid.containsKey(optaSoccer.teamId)) {
+                isTeamValid = teamIsValid.get(optaSoccer.teamId);
             }
-            else if (changes != null && template.hasChanged(optaSoccer)) {
-                changes.add(optaSoccer);
+            else {
+                OptaTeam optaTeam = OptaTeam.findOne(optaSoccer.teamId);
+                for (int i=0; i<optaTeam.competitionIds.size() && !isTeamValid; i++) {
+                    String competitionId = optaTeam.competitionIds.get(i);
+                    isTeamValid = OptaCompetition.findOne(competitionId).activated;
+                }
+                teamIsValid.put(optaSoccer.teamId, isTeamValid);
+            }
+            if (isTeamValid) {
+                TemplateSoccerPlayer template = TemplateSoccerPlayer.findOneFromOptaId(optaSoccer.optaPlayerId);
+                if (template == null) {
+                    if (TemplateSoccerPlayer.isInvalid(optaSoccer)) {
+                        if (invalidates != null)
+                            invalidates.add(optaSoccer);
+                    } else if (news != null) {
+                        news.add(optaSoccer);
+                    }
+                } else if (changes != null && template.hasChanged(optaSoccer)) {
+                    changes.add(optaSoccer);
+                }
             }
         }
     }

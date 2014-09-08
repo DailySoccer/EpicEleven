@@ -48,7 +48,7 @@ public class OptaSimulator implements Runnable {
             _state.useSnapshot = false;
             _state.lastParsedDate = new DateTime(Model.getFirstDateFromOptaXML()).minusSeconds(5).toDate();
 
-            _state.competitionId = "4";     // Let's simulate just the World Cup
+            _state.competitionId = null;
             _state.nextDocToParseIndex = 0;
 
             saveState();
