@@ -30,6 +30,17 @@ public class SoccerTeam {
         shortName = template.shortName;
     }
 
+    public SoccerPlayer findSoccerPlayer(ObjectId soccerPlayerId) {
+        SoccerPlayer ret = null;
+        for (SoccerPlayer soccerPlayer: soccerPlayers) {
+            if (soccerPlayer.templateSoccerPlayerId.equals(soccerPlayerId)) {
+                soccerPlayer = ret;
+                break;
+            }
+        }
+        return ret;
+    }
+
     /**
      * Setup Team (incrustando a los futbolistas en el equipo)
      */

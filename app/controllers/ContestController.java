@@ -162,14 +162,40 @@ public class ContestController extends Controller {
 
             // Obtener el contestId : ObjectId
             Contest aContest = Contest.findOne(params.contestId);
+
+            // Verificar que el contest sea válido
             if (aContest == null) {
                 contestEntryForm.reject("contestId", "Contest invalid");
             }
+            else {
+                // Verificar que el contest no esté lleno
+                if (aContest.contestEntries.size() >= aContest.maxEntries) {
+                    contestEntryForm.reject("contestId", "Contest full");
+                }
+            }
+
+            TemplateContest templateContest = TemplateContest.findOne(aContest.templateContestId);
+            List<MatchEvent> matchEvents = templateContest.getMatchEvents();
 
             // Obtener los soccerIds de los futbolistas : List<ObjectId>
             List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
             List<TemplateSoccerPlayer> soccers = TemplateSoccerPlayer.findAll(idsList);
             List<ObjectId> soccerIds = ListUtils.convertToIdList(soccers);
+
+            // Buscar todos los soccerPlayers
+            List<SoccerPlayer> soccerPlayers = new ArrayList<>();
+            for (ObjectId soccerPlayerId : idsList) {
+                for (MatchEvent matchEvent : matchEvents) {
+                    if (matchEvent.containsSoccerPlayer(soccerPlayerId)) {
+                        soccerPlayers.add(matchEvent.findSoccerPlayer(soccerPlayerId));
+                        break;
+                    }
+                }
+            }
+
+            // Verificar que los futbolistas seleccionados participen en los partidos del contest
+            // Verificar que los futbolistas no cuestan más que el salaryCap del templateContest
+            // Verificar que todos las posiciones del team están completas
 
             // Si no hemos podido encontrar todos los futbolistas referenciados por el contest entry
             if (soccerIds.size() != idsList.size()) {
