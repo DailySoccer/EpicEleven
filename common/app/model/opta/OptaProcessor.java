@@ -157,7 +157,7 @@ public class OptaProcessor {
         Element matchInfo = matchObject.getChild("MatchInfo");
 
         OptaMatchEvent optaMatchEvent = new OptaMatchEvent();
-        optaMatchEvent.optaMatchEventId = getStringId(matchObject, "uID", "_NO UID");
+        optaMatchEvent.optaMatchEventId = getStringId(matchObject, "uID");
 
         if (matchObject.getAttribute("last_modified") != null) {
             optaMatchEvent.lastModified = GlobalDate.parseDate(matchObject.getAttributeValue("last_modified"), null);
@@ -165,8 +165,8 @@ public class OptaProcessor {
 
         optaMatchEvent.matchDate = GlobalDate.parseDate(matchInfo.getChild("Date").getContent().get(0).getValue(),
                                                         matchInfo.getChild("TZ").getContent().get(0).getValue());
-        optaMatchEvent.competitionId = getStringId(myF1, "competition_id", "_NO COMPETITION ID");
-        optaMatchEvent.seasonId = getStringId(myF1, "season_id", "_NO SEASON ID");
+        optaMatchEvent.competitionId = getStringId(myF1, "competition_id");
+        optaMatchEvent.seasonId = getStringId(myF1, "season_id");
 
         optaMatchEvent.seasonName = (myF1.getAttribute("season_name")!=null)? myF1.getAttributeValue("season_name"): "NO SEASON NAME";
         optaMatchEvent.competitionName = (myF1.getAttribute("competition_name")!=null)? myF1.getAttributeValue("competition_name"): "NO COMPETITION NAME";
@@ -175,9 +175,9 @@ public class OptaProcessor {
         if (teams != null) {
             for (Element team : teams) {
                 if (team.getAttributeValue("Side").equals("Home")) {
-                    optaMatchEvent.homeTeamId = getStringId(team, "TeamRef", "_NO HOME TEAM ID");
+                    optaMatchEvent.homeTeamId = getStringId(team, "TeamRef");
                 } else {
-                    optaMatchEvent.awayTeamId =  getStringId(team, "TeamRef", "_NO AWAY TEAM ID");
+                    optaMatchEvent.awayTeamId =  getStringId(team, "TeamRef");
                 }
             }
         }
@@ -185,13 +185,14 @@ public class OptaProcessor {
         Model.optaMatchEvents().update("{optaMatchEventId: #}", optaMatchEvent.optaMatchEventId).upsert().with(optaMatchEvent);
     }
 
-    static public String getStringId(Element document, String key, String defaultValue){
-        String value = getStringValue(document, key, defaultValue);
-        return Character.isDigit(value.charAt(0))? value : value.substring(1);
-    }
+    static public String getStringId(Element document, String key){
 
-    static private String getStringValue(Element document, String key, String defaultValue){
-        return (document.getAttribute(key)!=null)? document.getAttributeValue(key) : defaultValue;
+        if (document.getAttribute(key) == null) {
+            throw new RuntimeException("WTF 2906: " + key);
+        }
+
+        String value = document.getAttributeValue(key);
+        return Character.isDigit(value.charAt(0))? value : value.substring(1);
     }
 
     private void processF9(Element f9) {
@@ -234,7 +235,7 @@ public class OptaProcessor {
                 continue;
 
             OptaTeam myTeam = new OptaTeam();
-            myTeam.optaTeamId = getStringId(team, "uID", "_NO TEAM UID");
+            myTeam.optaTeamId = getStringId(team, "uID");
             myTeam.name = team.getChild("Name").getContent().get(0).getValue();// AttributeValue("Name");
             myTeam.updatedTime = GlobalDate.getCurrentDate();
 
@@ -249,7 +250,7 @@ public class OptaProcessor {
                             myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty, competitionId);
 
             for (Element player : playersList) {
-                String playerId = getStringId(player, "uID", "_NO PLAYER UID");
+                String playerId = getStringId(player, "uID");
 
                 OptaPlayer myPlayer = createPlayer(player, team);
                 Model.optaPlayers().update("{optaPlayerId: #}", playerId).upsert().with(myPlayer);
@@ -261,22 +262,22 @@ public class OptaProcessor {
         OptaPlayer myPlayer = new OptaPlayer();
 
         if (playerObject.getAttribute("firstname") != null) {
-            myPlayer.optaPlayerId = getStringId(playerObject, "id", "_NO PLAYER ID");
+            myPlayer.optaPlayerId = getStringId(playerObject, "id");
             myPlayer.firstname = playerObject.getAttributeValue("firstname");
             myPlayer.lastname = playerObject.getAttributeValue("lastname");
             myPlayer.name = myPlayer.firstname + " " + myPlayer.lastname;
             myPlayer.position = playerObject.getAttributeValue("position");
-            myPlayer.teamId = getStringId(teamObject, "id", "_NO TEAM ID");
+            myPlayer.teamId = getStringId(teamObject, "id");
             myPlayer.teamName = teamObject.getAttributeValue("name");
         }
         else {
             if (playerObject.getAttribute("uID") != null) {
-                myPlayer.optaPlayerId = getStringId(playerObject, "uID", "_NO PLAYER ID");
+                myPlayer.optaPlayerId = getStringId(playerObject, "uID");
             }
 
             if (playerObject.getChild("Name") != null) {
                 myPlayer.name = playerObject.getChild("Name").getContent().get(0).getValue();
-                myPlayer.optaPlayerId = getStringId(playerObject, "uID", "_NO PLAYER ID");
+                myPlayer.optaPlayerId = getStringId(playerObject, "uID");
                 myPlayer.position = playerObject.getChild("Position").getContent().get(0).getValue();
             }
             else if (playerObject.getChild("PersonName") != null) {
@@ -298,7 +299,7 @@ public class OptaProcessor {
                 }
             }
 
-            myPlayer.teamId = getStringId(teamObject, "uID", "_NO TEAM ID");
+            myPlayer.teamId = getStringId(teamObject, "uID");
             myPlayer.teamName = teamObject.getChild("Name").getContent().get(0).getValue();
         }
 
@@ -308,7 +309,7 @@ public class OptaProcessor {
     }
 
     private void processFinishedMatch(Element F9) {
-        String gameId = getStringId(F9, "uID", "_NO GAME ID");
+        String gameId = getStringId(F9, "uID");
 
         OptaMatchEventStats stats = new OptaMatchEventStats(gameId);
 
@@ -339,7 +340,7 @@ public class OptaProcessor {
 
     private void processGoalsAgainst(Element F9, String gameId, Element teamData) {
         List<Element> matchPlayers = teamData.getChild("PlayerLineUp").getChildren("MatchPlayer");
-        int teamRef = Integer.parseInt(getStringId(teamData,"TeamRef","999"));
+        int teamRef = Integer.parseInt(getStringId(teamData,"TeamRef"));
 
         for (Element matchPlayer : matchPlayers) {
             if (matchPlayer.getAttribute("Position").getValue().equals("Goalkeeper") ||
@@ -359,7 +360,7 @@ public class OptaProcessor {
 
     private void processCleanSheet(Element F9, String gameId, Element teamData) {
         List<Element> matchPlayers = teamData.getChild("PlayerLineUp").getChildren("MatchPlayer");
-        int teamRef = Integer.parseInt(getStringId(teamData,"TeamRef","999"));
+        int teamRef = Integer.parseInt(getStringId(teamData,"TeamRef"));
 
         for (Element matchPlayer : matchPlayers) {
             if (matchPlayer.getChild("Position").getValue().equals("Goalkeeper") ||
@@ -377,8 +378,8 @@ public class OptaProcessor {
     }
 
     private void createEvent(Element F9, String gameId, Element matchPlayer, int teamId, int typeId, int eventId, int times) {
-        String playerId = getStringId(matchPlayer, "PlayerRef", "_NO PLAYER ID");
-        String competitionId = getStringId(F9.getChild("Competition"), "uID", "_NO COMPETITION UID");
+        String playerId = getStringId(matchPlayer, "PlayerRef");
+        String competitionId = getStringId(F9.getChild("Competition"), "uID");
         Date timestamp = GlobalDate.parseDate(F9.getChild("MatchData").getChild("MatchInfo").getAttributeValue("TimeStamp"), null);
 
         Model.optaEvents().remove("{typeId: #, eventId: #, optaPlayerId: #, teamId: #, gameId: #, competitionId: #}",
