@@ -124,11 +124,11 @@ public class LoginController extends Controller {
                     // por ejemplo usando Postman
                     response().setCookie("sessionToken", theUser.email);
 
-                    returnHelper.setOK(new Session(theUser.email, theUser.userId, new Date()));
+                    returnHelper.setOK(new Session(theUser.email, theUser.userId, GlobalDate.getCurrentDate()));
                 }
                 else {
                     String sessionToken = Crypto.generateSignedToken();
-                    Session newSession = new Session(sessionToken, theUser.userId, new Date());
+                    Session newSession = new Session(sessionToken, theUser.userId, GlobalDate.getCurrentDate());
                     Model.sessions().insert(newSession);
 
                     returnHelper.setOK(newSession);

@@ -189,7 +189,7 @@ public class OptaProcessor {
     }
 
     static private String getStringValue(Element document, String key, String defaultValue){
-        return (document.getAttribute(key)!=null)? document.getAttributeValue(key) : defaultValue ;
+        return (document.getAttribute(key)!=null)? document.getAttributeValue(key) : defaultValue;
     }
 
     private void processF9(Element f9) {
@@ -216,13 +216,10 @@ public class OptaProcessor {
         if (myF40.getAttribute("Type").getValue().equals("SQUADS Latest")) {
             String competitionId = myF40.getAttribute("competition_id").getValue();
 
-            OptaCompetition optaCompetition = OptaCompetition.findOne(competitionId);
-            if (optaCompetition == null) {
-                optaCompetition = new OptaCompetition(
-                                        competitionId,
-                                        myF40.getAttribute("competition_code").getValue(),
-                                        myF40.getAttribute("competition_name").getValue());
-                Model.optaCompetitions().insert(optaCompetition);
+            if (OptaCompetition.findOne(competitionId) == null) {
+                Model.optaCompetitions().insert(new OptaCompetition(competitionId,
+                                                                    myF40.getAttribute("competition_code").getValue(),
+                                                                    myF40.getAttribute("competition_name").getValue()));
             }
 
             for (Element team : myF40.getChildren("Team")) {
@@ -235,7 +232,7 @@ public class OptaProcessor {
                 OptaTeam myTeam = new OptaTeam();
                 myTeam.optaTeamId = getStringId(team, "uID", "_NO TEAM UID");
                 myTeam.name = team.getChild("Name").getContent().get(0).getValue();// AttributeValue("Name");
-                myTeam.updatedTime = new Date();
+                myTeam.updatedTime = GlobalDate.getCurrentDate();
 
                 if (null != team.getChild("SYMID") && team.getChild("SYMID").getContentSize() > 0) {
                     myTeam.shortName = team.getChild("SYMID").getContent().get(0).getValue();//getAttributeValue("SYMID");
@@ -255,9 +252,7 @@ public class OptaProcessor {
                         continue;
 
                     OptaPlayer myPlayer = createPlayer(player, team);
-
-                    if (myPlayer != null)
-                        Model.optaPlayers().update("{optaPlayerId: #}", playerId).upsert().with(myPlayer);
+                    Model.optaPlayers().update("{optaPlayerId: #}", playerId).upsert().with(myPlayer);
                 }
             }
         }
@@ -297,7 +292,7 @@ public class OptaProcessor {
                 myPlayer.name = myPlayer.firstname + " " + myPlayer.lastname;
             }
             else {
-                Logger.error("Not getting name for: " + myPlayer.optaPlayerId);
+                Logger.error("WTF 29211: No name for optaPlayerId " + myPlayer.optaPlayerId);
             }
 
             if (playerObject.getChild("Position") != null){
@@ -311,7 +306,7 @@ public class OptaProcessor {
             myPlayer.teamName = teamObject.getChild("Name").getContent().get(0).getValue();
         }
 
-        myPlayer.updatedTime = new Date();
+        myPlayer.updatedTime = GlobalDate.getCurrentDate();
 
         return myPlayer;
     }
