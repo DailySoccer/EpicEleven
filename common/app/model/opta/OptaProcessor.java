@@ -23,7 +23,8 @@ public class OptaProcessor {
         }
         else
         if (feedType.equals("F40")) {
-            // El filtro no podemos aplicarlo cuando en los documentos "F40" se procesa una nueva competición
+            // El filtro no podemos aplicarlo cuando en los documentos "F40"
+            //   se procesa una nueva competición o es una competición que está activa
             OptaCompetition optaCompetition = OptaCompetition.findOne(competitionId);
             valid = (optaCompetition == null) || optaCompetition.activated;
         }
