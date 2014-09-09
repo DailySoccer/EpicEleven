@@ -1,11 +1,13 @@
 package model.opta;
 
+import model.GlobalDate;
 import model.Model;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import utils.ListUtils;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -14,6 +16,7 @@ public class OptaCompetition {
     public String competitionId;
     public String competitionCode;
     public String competitionName;
+    public Date createdAt;
 
     public OptaCompetition() {}
     public OptaCompetition(String competitionId, String competitionCode, String competitionName) {
@@ -21,6 +24,7 @@ public class OptaCompetition {
         this.competitionId = competitionId;
         this.competitionCode = competitionCode;
         this.competitionName = competitionName;
+        this.createdAt = GlobalDate.getCurrentDate();
     }
 
     public static OptaCompetition findOne(String competitionId) {
