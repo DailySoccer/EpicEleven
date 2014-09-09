@@ -234,7 +234,7 @@ public class ImportController extends Controller {
         List<OptaMatchEvent> matchesChanged = new ArrayList<>();
         List<OptaMatchEvent> matchesInvalidated = new ArrayList<>();
         evaluateDirtyMatchEvents(matchesNew, matchesChanged, matchesInvalidated);
-        return ok(views.html.import_match_events.render(matchesNew, matchesChanged, matchesInvalidated));
+        return ok(views.html.import_match_events.render(matchesNew, matchesChanged, matchesInvalidated, OptaTeam.findAllAsMap()));
     }
 
     public static Result importAllMatchEvents() {
