@@ -2,6 +2,7 @@ package controllers.admin;
 
 import com.google.common.collect.ImmutableList;
 import model.GlobalDate;
+import model.MockData;
 import model.Model;
 import model.opta.*;
 import org.bson.types.ObjectId;
@@ -23,6 +24,11 @@ public class OptaController extends Controller {
     public static Result changeCompetitionState(String competitionId, String state) {
         Model.optaCompetitions().update("{competitionId: #}", competitionId).with("{$set: {activated: #}}", state.toLowerCase().equals("true"));
         return ok("OK");
+    }
+
+    public static Result createAllCompetitions() {
+        MockData.ensureCompetitionsActivated();
+        return optaCompetitions();
     }
 
     public static Result optaSoccerPlayers() {
