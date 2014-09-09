@@ -14,10 +14,10 @@
 <div>
     <a href="@OptaController.optaCompetitions" class="btn btn-primary">Select Competitions</a>
     @if(competitions_enabled.isEmpty) {
-        NONE
+        <span class="bg-danger text-danger" style="padding:5px">&#8999; Ninguna Competición</span>
     } else {
         @for((p, index) <- competitions_enabled.zipWithIndex) {
-            @p.competitionName @if(index < competitions_enabled.size-1) { , }
+            <em class="bg-success text-primary" style="margin:5px; padding:5px">&#10003; @p.competitionName</em>
         }
     }
 </div>
