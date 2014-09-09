@@ -27,7 +27,7 @@ public class OptaController extends Controller {
     }
 
     public static Result createAllCompetitions() {
-        MockData.ensureCompetitionsActivated();
+        MockData.ensureCompetitions();
         return optaCompetitions();
     }
 

@@ -34,16 +34,17 @@ public final class MockData {
         Model.users().insert(new User(firstName, lastName, nickName, email, password));
     }
 
-    public static void ensureCompetitionsActivated() {
-        createCompetition( true,    "4",        "IG_WC",        "World Cup" );
-        createCompetition( false,   "5",        "EU_CL",        "Champions League" );
-        createCompetition( false,   "23",       "ES_PL",        "Spanish La Liga" );
+    public static void ensureCompetitions() {
+        createCompetition("4", "IG_WC", "World Cup");
+        createCompetition("5", "EU_CL", "Champions League");
+        createCompetition("23", "ES_PL", "Spanish La Liga");
     }
 
-    static private void createCompetition(boolean activated, String competitionId, String competitionCode, String competitionName) {
-        OptaCompetition optaCompetition = new OptaCompetition(competitionId, competitionCode, competitionName);
-        optaCompetition.activated = activated;
-        Model.optaCompetitions().update("{competitionId: #}", competitionId).upsert().with(optaCompetition);
+    static private void createCompetition(String competitionId, String competitionCode, String competitionName) {
+        OptaCompetition optaCompetition = OptaCompetition.findOne(competitionId);
+        if (optaCompetition == null) {
+            Model.optaCompetitions().insert(new OptaCompetition(competitionId, competitionCode, competitionName));
+        }
     }
 
     public static void createPointsTranslation() {

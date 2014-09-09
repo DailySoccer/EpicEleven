@@ -12,7 +12,6 @@ public class DashboardController extends Controller {
     }
 
     static public Result importEverything() {
-        MockData.ensureCompetitionsActivated();
         ImportController.importSalaries();
         ImportController.importAllTeams();
         ImportController.importAllSoccers();
