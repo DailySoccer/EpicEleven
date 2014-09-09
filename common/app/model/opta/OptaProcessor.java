@@ -249,10 +249,6 @@ public class OptaProcessor {
             for (Element player : playersList) {
                 String playerId = getStringId(player, "uID", "_NO PLAYER UID");
 
-                // First search if player already exists:
-                if (playerId == null) // || playerObject.containsKey("PersonName"))
-                    continue;
-
                 OptaPlayer myPlayer = createPlayer(player, team);
                 Model.optaPlayers().update("{optaPlayerId: #}", playerId).upsert().with(myPlayer);
             }
