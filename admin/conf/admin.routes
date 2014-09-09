@@ -65,6 +65,7 @@ GET         /template_soccer_players                                   controlle
 GET         /template_soccer_players/ajax                              controllers.admin.TemplateSoccerPlayerController.indexAjax()
 GET         /template_soccer_player/edit_salaries                      controllers.admin.TemplateSoccerPlayerController.editSalaries()
 GET         /template_soccer_player/:soccerPlayer/salary/:salary       controllers.admin.TemplateSoccerPlayerController.changeSalary(soccerPlayer : String, salary : Int)
+GET         /template_soccer_player/:soccerPlayer/activated/:state     controllers.admin.TemplateSoccerPlayerController.changeState(soccerPlayer : String, state : String)
 
 GET         /opta_competitions                                         controllers.admin.OptaController.optaCompetitions()
 GET         /opta_competitions/:competition/activated/:state           controllers.admin.OptaController.changeCompetitionState(competition : String, state : String)
