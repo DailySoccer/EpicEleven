@@ -206,16 +206,18 @@ public class ContestController extends Controller {
             }
 
             TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
+
+            // Verificar que el templateContest esté activo (ni "live" ni "history")
             if (!templateContest.isActive()) {
                 errores.add(ERROR_CONTEST_NOT_ACTIVE);
             }
 
             List<MatchEvent> matchEvents = templateContest.getMatchEvents();
 
-            // Buscar todos los soccerPlayers
+            // Buscar los soccerPlayers dentro de los partidos del contest
             List<SoccerPlayer> soccerPlayers = getSoccerPlayersFromMatchEvents(objectIds, matchEvents);
 
-            // Verificar que los futbolistas seleccionados participen en los partidos del contest
+            // Verificar que TODOS los futbolistas seleccionados participen en los partidos del contest
             if (objectIds.size() != soccerPlayers.size()) {
                 // No hemos podido encontrar todos los futbolistas referenciados por el contest entry
                 errores.add(ERROR_FANTASY_TEAM_INCOMPLETE);
