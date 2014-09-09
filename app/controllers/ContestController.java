@@ -139,6 +139,7 @@ public class ContestController extends Controller {
 
     private static final String CONTEST_ENTRY_KEY = "error";
     private static final String ERROR_CONTEST_INVALID = "ERROR_CONTEST_INVALID";
+    private static final String ERROR_CONTEST_NOT_ACTIVE = "ERROR_CONTEST_NOT_ACTIVE";
     private static final String ERROR_CONTEST_FULL = "ERROR_CONTEST_FULL";
     private static final String ERROR_FANTASY_TEAM_INCOMPLETE = "ERROR_FANTASY_TEAM_INCOMPLETE";
     private static final String ERROR_SALARYCAP_INVALID = "ERROR_SALARYCAP_INVALID";
@@ -177,6 +178,7 @@ public class ContestController extends Controller {
             if (errores.isEmpty()) {
                 ContestEntry.create(theUser.userId, aContest.contestId, idsList);
             } else {
+                // TODO: ¿Queremos informar de los distintos errores?
                 for (String error : errores) {
                     contestEntryForm.reject(CONTEST_ENTRY_KEY, error);
                 }
@@ -197,34 +199,38 @@ public class ContestController extends Controller {
         // Verificar que el contest sea válido
         if (contest == null) {
             errores.add(ERROR_CONTEST_INVALID);
-        }
-        else {
+        } else {
             // Verificar que el contest no esté lleno
             if (contest.contestEntries.size() >= contest.maxEntries) {
                 errores.add(ERROR_CONTEST_FULL);
             }
-        }
 
-        TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
-        List<MatchEvent> matchEvents = templateContest.getMatchEvents();
+            TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
+            if (!templateContest.isActive()) {
+                errores.add(ERROR_CONTEST_NOT_ACTIVE);
+            }
 
-        // Buscar todos los soccerPlayers
-        List<SoccerPlayer> soccerPlayers = getSoccerPlayersFromMatchEvents(objectIds, matchEvents);
+            List<MatchEvent> matchEvents = templateContest.getMatchEvents();
 
-        // Verificar que los futbolistas seleccionados participen en los partidos del contest
-        if (objectIds.size() != soccerPlayers.size()) {
-            // No hemos podido encontrar todos los futbolistas referenciados por el contest entry
-            errores.add(ERROR_FANTASY_TEAM_INCOMPLETE);
-        }
+            // Buscar todos los soccerPlayers
+            List<SoccerPlayer> soccerPlayers = getSoccerPlayersFromMatchEvents(objectIds, matchEvents);
 
-        // Verificar que los futbolistas no cuestan más que el salaryCap del templateContest
-        if (getSalaryCap(soccerPlayers) > templateContest.salaryCap) {
-            errores.add(ERROR_SALARYCAP_INVALID);
-        }
+            // Verificar que los futbolistas seleccionados participen en los partidos del contest
+            if (objectIds.size() != soccerPlayers.size()) {
+                // No hemos podido encontrar todos los futbolistas referenciados por el contest entry
+                errores.add(ERROR_FANTASY_TEAM_INCOMPLETE);
+            }
+            else {
+                // Verificar que los futbolistas no cuestan más que el salaryCap del templateContest
+                if (getSalaryCap(soccerPlayers) > templateContest.salaryCap) {
+                    errores.add(ERROR_SALARYCAP_INVALID);
+                }
 
-        // Verificar que todos las posiciones del team están completas
-        if (!isFormationValid(soccerPlayers)) {
-            errores.add(ERROR_FORMATION_INVALID);
+                // Verificar que todos las posiciones del team están completas
+                if (!isFormationValid(soccerPlayers)) {
+                    errores.add(ERROR_FORMATION_INVALID);
+                }
+            }
         }
 
         return errores;
