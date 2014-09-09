@@ -65,8 +65,16 @@ public class ContestEntry implements JongoId {
         bulkOperation.find(query).updateOne(update);
     }
 
+    static public ContestEntry findOne(String contestId) {
+        ContestEntry aContestEntry = null;
+        if (ObjectId.isValid(contestId)) {
+            aContestEntry = findOne(new ObjectId(contestId));
+        }
+        return aContestEntry;
+    }
+
     static public ContestEntry findOne(ObjectId contestEntryId) {
-        Contest contest = Model.contests().findOne("{'contestEntries._id' : #}", contestEntryId).as(Contest.class);
+        Contest contest = Contest.findOneFromContestEntry(contestEntryId);
 
         ContestEntry contestEntry = null;
 
@@ -114,6 +122,31 @@ public class ContestEntry implements JongoId {
         }
         catch (MongoException exc) {
             Logger.error("WTF 2032: ", exc);
+        }
+
+        return bRet;
+    }
+
+    public static boolean remove(ObjectId contestId, ObjectId contestEntryId) {
+
+        boolean bRet = false;
+
+        try {
+            Contest contest = Model.contests().findOne("{ _id: # }", contestId).as(Contest.class);
+            if (contest != null) {
+                ContestEntry contestToRemove = contest.findContestEntry(contestEntryId);
+                if (contestToRemove != null) {
+                    contest.contestEntries.remove(contestToRemove);
+                    Model.contests().update(contest.contestId).with(contest);
+                }
+                // TODO: Más rápido pero algo más peligroso (hemos de mantener "numEntries" actualizado)
+                // Model.contests().update("{ contestEntries._id: # }", contestEntryId).with("{ $pull: { contestEntries: { _id: # } }, $inc: { numEntries: -1 } }", contestEntryId);
+
+                bRet = true;
+            }
+        }
+        catch (MongoException exc) {
+            Logger.error("WTF 7801: ", exc);
         }
 
         return bRet;
