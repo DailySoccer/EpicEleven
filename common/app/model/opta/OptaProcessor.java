@@ -213,51 +213,49 @@ public class OptaProcessor {
         // Obtener la lista de teams y players
         Element myF40 = f40.getChild("SoccerDocument");
 
-        if (myF40.getAttribute("Type").getValue().equals("SQUADS Latest")) {
-            String competitionId = myF40.getAttribute("competition_id").getValue();
+        if (!myF40.getAttribute("Type").getValue().equals("SQUADS Latest"))
+            throw new RuntimeException("WTF 7349: processF40");
 
-            if (OptaCompetition.findOne(competitionId) == null) {
-                Model.optaCompetitions().insert(new OptaCompetition(competitionId,
-                                                                    myF40.getAttribute("competition_code").getValue(),
-                                                                    myF40.getAttribute("competition_name").getValue()));
+        String competitionId = myF40.getAttribute("competition_id").getValue();
+
+        if (OptaCompetition.findOne(competitionId) == null) {
+            Model.optaCompetitions().insert(new OptaCompetition(competitionId,
+                                                                myF40.getAttribute("competition_code").getValue(),
+                                                                myF40.getAttribute("competition_name").getValue()));
+        }
+
+        for (Element team : myF40.getChildren("Team")) {
+
+            List<Element> playersList = team.getChildren("Player");
+
+            if (playersList == null) // Si es un equipo placeholder nos lo saltamos
+                continue;
+
+            OptaTeam myTeam = new OptaTeam();
+            myTeam.optaTeamId = getStringId(team, "uID", "_NO TEAM UID");
+            myTeam.name = team.getChild("Name").getContent().get(0).getValue();// AttributeValue("Name");
+            myTeam.updatedTime = GlobalDate.getCurrentDate();
+
+            if (null != team.getChild("SYMID") && team.getChild("SYMID").getContentSize() > 0) {
+                myTeam.shortName = team.getChild("SYMID").getContent().get(0).getValue();//getAttributeValue("SYMID");
             }
 
-            for (Element team : myF40.getChildren("Team")) {
+            Model.optaTeams()
+                    .update("{optaTeamId: #}", myTeam.optaTeamId)
+                    .upsert()
+                    .with("{$set: {optaTeamId:#, name:#, shortName:#, updatedTime:#, dirty:#}, $addToSet: {competitionIds:#}}",
+                            myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty, competitionId);
 
-                List<Element> playersList = team.getChildren("Player");
+            for (Element player : playersList) {
+                String playerId = getStringId(player, "uID", "_NO PLAYER UID");
 
-                if (playersList == null) // Si es un equipo placeholder nos lo saltamos
+                // First search if player already exists:
+                if (playerId == null) // || playerObject.containsKey("PersonName"))
                     continue;
 
-                OptaTeam myTeam = new OptaTeam();
-                myTeam.optaTeamId = getStringId(team, "uID", "_NO TEAM UID");
-                myTeam.name = team.getChild("Name").getContent().get(0).getValue();// AttributeValue("Name");
-                myTeam.updatedTime = GlobalDate.getCurrentDate();
-
-                if (null != team.getChild("SYMID") && team.getChild("SYMID").getContentSize() > 0) {
-                    myTeam.shortName = team.getChild("SYMID").getContent().get(0).getValue();//getAttributeValue("SYMID");
-                }
-
-                Model.optaTeams()
-                        .update("{optaTeamId: #}", myTeam.optaTeamId)
-                        .upsert()
-                        .with("{$set: {optaTeamId:#, name:#, shortName:#, updatedTime:#, dirty:#}, $addToSet: {competitionIds:#}}",
-                                myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty, competitionId);
-
-                for (Element player : playersList) {
-                    String playerId = getStringId(player, "uID", "_NO PLAYER UID");
-
-                    // First search if player already exists:
-                    if (playerId == null) // || playerObject.containsKey("PersonName"))
-                        continue;
-
-                    OptaPlayer myPlayer = createPlayer(player, team);
-                    Model.optaPlayers().update("{optaPlayerId: #}", playerId).upsert().with(myPlayer);
-                }
+                OptaPlayer myPlayer = createPlayer(player, team);
+                Model.optaPlayers().update("{optaPlayerId: #}", playerId).upsert().with(myPlayer);
             }
-        }
-        else {
-            throw new RuntimeException("WTF 7349: processF40");
         }
     }
 
