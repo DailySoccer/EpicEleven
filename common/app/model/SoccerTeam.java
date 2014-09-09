@@ -34,7 +34,7 @@ public class SoccerTeam {
         SoccerPlayer ret = null;
         for (SoccerPlayer soccerPlayer: soccerPlayers) {
             if (soccerPlayer.templateSoccerPlayerId.equals(soccerPlayerId)) {
-                soccerPlayer = ret;
+                ret = soccerPlayer;
                 break;
             }
         }
