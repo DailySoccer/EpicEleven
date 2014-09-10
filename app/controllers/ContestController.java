@@ -144,8 +144,10 @@ public class ContestController extends Controller {
     private static final String ERROR_FANTASY_TEAM_INCOMPLETE = "ERROR_FANTASY_TEAM_INCOMPLETE";
     private static final String ERROR_SALARYCAP_INVALID = "ERROR_SALARYCAP_INVALID";
     private static final String ERROR_FORMATION_INVALID = "ERROR_FORMATION_INVALID";
+    private static final String ERROR_CONTEST_ENTRY_INVALID = "ERROR_CONTEST_ENTRY_INVALID";
+    private static final String ERROR_OP_UNAUTHORIZED = "ERROR_OP_UNAUTHORIZED";
 
-    public static class ContestEntryParams {
+    public static class AddContestEntryParams {
         @Constraints.Required
         public String contestId;
 
@@ -159,10 +161,10 @@ public class ContestController extends Controller {
      */
     @UserAuthenticated
     public static Result addContestEntry() {
-        Form<ContestEntryParams> contestEntryForm = form(ContestEntryParams.class).bindFromRequest();
+        Form<AddContestEntryParams> contestEntryForm = form(AddContestEntryParams.class).bindFromRequest();
 
         if (!contestEntryForm.hasErrors()) {
-            ContestEntryParams params = contestEntryForm.get();
+            AddContestEntryParams params = contestEntryForm.get();
 
             Logger.info("addContestEntry: contestId({}) soccerTeam({})", params.contestId, params.soccerTeam);
 
@@ -274,6 +276,55 @@ public class ContestController extends Controller {
             }
         }
         return count;
+    }
+
+    public static class CancelContestEntryParams {
+        @Constraints.Required
+        public String contestEntryId;
+    }
+
+    @UserAuthenticated
+    public static Result cancelContestEntry() {
+        Form<CancelContestEntryParams> contestEntryForm = form(CancelContestEntryParams.class).bindFromRequest();
+
+        if (!contestEntryForm.hasErrors()) {
+            CancelContestEntryParams params = contestEntryForm.get();
+
+            Logger.info("cancelContestEntry: contestEntryId({})", params.contestEntryId);
+
+            User theUser = (User) ctx().args.get("User");
+
+            // Verificar que es un contestEntry válido
+            ContestEntry contestEntry = ContestEntry.findOne(params.contestEntryId);
+            if (contestEntry != null) {
+                // Verificar que el usuario propietario del fantasyTeam sea el mismo que lo intenta borrar
+                if (!contestEntry.userId.equals(theUser.userId)) {
+                    contestEntryForm.reject(CONTEST_ENTRY_KEY, ERROR_OP_UNAUTHORIZED);
+                }
+
+                Contest contest = Contest.findOneFromContestEntry(contestEntry.contestEntryId);
+                TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
+
+                // Verificar que el contest sigue estando activo (ni "live" ni "history")
+                if (!templateContest.isActive()) {
+                    contestEntryForm.reject(CONTEST_ENTRY_KEY, ERROR_CONTEST_NOT_ACTIVE);
+                }
+
+                if (!contestEntryForm.hasErrors()) {
+                    ContestEntry.remove(contest.contestId, contestEntry.contestEntryId);
+                }
+            }
+            else {
+                contestEntryForm.reject(CONTEST_ENTRY_KEY, ERROR_CONTEST_ENTRY_INVALID);
+            }
+        }
+
+        JsonNode result = contestEntryForm.errorsAsJson();
+
+        if (!contestEntryForm.hasErrors()) {
+            result = new ObjectMapper().createObjectNode().put("result", "ok");
+        }
+        return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
     }
 
     /**
