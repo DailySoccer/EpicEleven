@@ -137,6 +137,14 @@ public class ContestController extends Controller {
                                                 "match_events", matchEvents));
     }
 
+    private static final String CONTEST_ENTRY_KEY = "error";
+    private static final String ERROR_CONTEST_INVALID = "ERROR_CONTEST_INVALID";
+    private static final String ERROR_CONTEST_NOT_ACTIVE = "ERROR_CONTEST_NOT_ACTIVE";
+    private static final String ERROR_CONTEST_FULL = "ERROR_CONTEST_FULL";
+    private static final String ERROR_FANTASY_TEAM_INCOMPLETE = "ERROR_FANTASY_TEAM_INCOMPLETE";
+    private static final String ERROR_SALARYCAP_INVALID = "ERROR_SALARYCAP_INVALID";
+    private static final String ERROR_FORMATION_INVALID = "ERROR_FORMATION_INVALID";
+
     public static class ContestEntryParams {
         @Constraints.Required
         public String contestId;
@@ -158,33 +166,22 @@ public class ContestController extends Controller {
 
             Logger.info("addContestEntry: contestId({}) soccerTeam({})", params.contestId, params.soccerTeam);
 
-            User theUser = (User)ctx().args.get("User");
+            User theUser = (User) ctx().args.get("User");
 
             // Obtener el contestId : ObjectId
             Contest aContest = Contest.findOne(params.contestId);
-            if (aContest == null) {
-                contestEntryForm.reject("contestId", "Contest invalid");
-            }
 
             // Obtener los soccerIds de los futbolistas : List<ObjectId>
             List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
-            List<TemplateSoccerPlayer> soccers = TemplateSoccerPlayer.findAll(idsList);
-            List<ObjectId> soccerIds = ListUtils.convertToIdList(soccers);
 
-            // Si no hemos podido encontrar todos los futbolistas referenciados por el contest entry
-            if (soccerIds.size() != idsList.size()) {
-                contestEntryForm.reject("contestId", "SoccerTeam invalid");
-            }
-
-            if (!contestEntryForm.hasErrors()) {
-                String soccerNames = "";    // Requerido para Logger.info
-                for (TemplateSoccerPlayer soccer : soccers) {
-                    soccerNames += soccer.name + " / ";
+            List<String> errores = validateContestEntry(aContest, idsList);
+            if (errores.isEmpty()) {
+                ContestEntry.create(theUser.userId, aContest.contestId, idsList);
+            } else {
+                // TODO: ¿Queremos informar de los distintos errores?
+                for (String error : errores) {
+                    contestEntryForm.reject(CONTEST_ENTRY_KEY, error);
                 }
-                Logger.info("contestEntry: User[{}] / Contest[{}] = ({}) => {}", theUser.nickName, aContest.name, soccerIds.size(), soccerNames);
-
-                // Crear el equipo en mongoDb.contestEntryCollection
-                ContestEntry.create(theUser.userId, new ObjectId(params.contestId), soccerIds);
             }
         }
 
@@ -194,6 +191,89 @@ public class ContestController extends Controller {
             result = new ObjectMapper().createObjectNode().put("result", "ok");
         }
         return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
+    }
+
+    private static List<String> validateContestEntry (Contest contest, List<ObjectId> objectIds) {
+        List<String> errores = new ArrayList<>();
+
+        // Verificar que el contest sea válido
+        if (contest == null) {
+            errores.add(ERROR_CONTEST_INVALID);
+        } else {
+            // Verificar que el contest no esté lleno
+            if (contest.contestEntries.size() >= contest.maxEntries) {
+                errores.add(ERROR_CONTEST_FULL);
+            }
+
+            TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
+
+            // Verificar que el templateContest esté activo (ni "live" ni "history")
+            if (!templateContest.isActive()) {
+                errores.add(ERROR_CONTEST_NOT_ACTIVE);
+            }
+
+            List<MatchEvent> matchEvents = templateContest.getMatchEvents();
+
+            // Buscar los soccerPlayers dentro de los partidos del contest
+            List<SoccerPlayer> soccerPlayers = getSoccerPlayersFromMatchEvents(objectIds, matchEvents);
+
+            // Verificar que TODOS los futbolistas seleccionados participen en los partidos del contest
+            if (objectIds.size() != soccerPlayers.size()) {
+                // No hemos podido encontrar todos los futbolistas referenciados por el contest entry
+                errores.add(ERROR_FANTASY_TEAM_INCOMPLETE);
+            }
+            else {
+                // Verificar que los futbolistas no cuestan más que el salaryCap del templateContest
+                if (getSalaryCap(soccerPlayers) > templateContest.salaryCap) {
+                    errores.add(ERROR_SALARYCAP_INVALID);
+                }
+
+                // Verificar que todos las posiciones del team están completas
+                if (!isFormationValid(soccerPlayers)) {
+                    errores.add(ERROR_FORMATION_INVALID);
+                }
+            }
+        }
+
+        return errores;
+    }
+
+    private static List<SoccerPlayer> getSoccerPlayersFromMatchEvents(List<ObjectId> ids, List<MatchEvent> matchEvents) {
+        List<SoccerPlayer> soccerPlayers = new ArrayList<>();
+        for (ObjectId soccerPlayerId : ids) {
+            for (MatchEvent matchEvent : matchEvents) {
+                if (matchEvent.containsSoccerPlayer(soccerPlayerId)) {
+                    soccerPlayers.add(matchEvent.findSoccerPlayer(soccerPlayerId));
+                    break;
+                }
+            }
+        }
+        return soccerPlayers;
+    }
+
+    private static int getSalaryCap(List<SoccerPlayer> soccerPlayers) {
+        int salaryCapTeam = 0;
+        for (SoccerPlayer soccer : soccerPlayers) {
+            salaryCapTeam += soccer.salary;
+        }
+        return salaryCapTeam;
+    }
+
+    private static boolean isFormationValid(List<SoccerPlayer> soccerPlayers) {
+        return  (countFieldPos(FieldPos.GOALKEEPER, soccerPlayers) == 1) &&
+                (countFieldPos(FieldPos.DEFENSE, soccerPlayers) == 4) &&
+                (countFieldPos(FieldPos.MIDDLE, soccerPlayers) == 4) &&
+                (countFieldPos(FieldPos.FORWARD, soccerPlayers) == 2);
+    }
+
+    private static int countFieldPos(FieldPos fieldPos, List<SoccerPlayer> soccerPlayers) {
+        int count = 0;
+        for (SoccerPlayer soccerPlayer : soccerPlayers) {
+            if (soccerPlayer.fieldPos.equals(fieldPos)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
