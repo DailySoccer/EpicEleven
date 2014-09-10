@@ -98,6 +98,7 @@ public class OptaSimulator implements Runnable {
 
         Model.resetDB();
         MockData.ensureMockDataUsers();
+        MockData.ensureCompetitions();
 
         _instance = new OptaSimulator();
 
