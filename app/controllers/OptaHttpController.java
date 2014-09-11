@@ -5,18 +5,13 @@ import model.GlobalDate;
 import model.Model;
 import model.ModelEvents;
 import model.opta.OptaProcessor;
-import org.jdom2.input.JDOMParseException;
 import org.joda.time.DateTime;
-import org.mozilla.universalchardet.UniversalDetector;
 import play.Logger;
 import play.db.DB;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.sql.*;
 import java.util.Date;
@@ -29,92 +24,42 @@ public class OptaHttpController extends Controller {
 
     @BodyParser.Of(value = BodyParser.TolerantText.class, maxLength = 4 * 1024 * 1024)
     public static Result optaXmlInput() {
-        byte[] bodyOriginalBytes = null;
+
         String bodyText = null;
-        String contentType = request().headers().containsKey("Content-Type")?
-                                                    request().headers().get("Content-Type")[0]: "";
-        String xMetaEncoding = request().headers().containsKey("X-Meta-Encoding")?
-                                                    request().headers().get("X-Meta-Encoding")[0]: "UTF-8";
 
-        if (contentType.indexOf("charset=") > 0) {
-            bodyText = request().body().asText();
-        }
-        else {
-            try {
-                // HTTP default encoding for POST requests is ISO-8859-1 if no charset is passed via "Content-Type" header.
-                bodyOriginalBytes = request().body().asText().getBytes("ISO-8859-1");
-            }
-            catch (UnsupportedEncodingException e) {
-                Logger.error("WTF 9151", e);
-            }
-
-            String detectedEncoding = null;
-            try {
-                detectedEncoding = getDetectedEncoding(new ByteArrayInputStream(bodyOriginalBytes));
-            }
-            catch (IOException e) {
-                Logger.error("WTF 1591", e);
-            }
-
-            detectedEncoding = detectedEncoding!=null? detectedEncoding : xMetaEncoding;
-
-            try {
-                bodyText = new String(bodyOriginalBytes, detectedEncoding);
-            }
-            catch (UnsupportedEncodingException e) {
-                Logger.error("WTF 5119", e);
-            }
+        if (!request().headers().containsKey("X-Meta-Encoding") ||
+            !request().headers().get("X-Meta-Encoding")[0].equals("UTF-8")) {
+            Logger.error("WTF 0921: Nos ha llegado un fichero de Opta con codificacion no esperada. Asumimos UTF-8");
         }
 
-        Model.insertXML(bodyText,
-                        getHeadersString(request().headers()),
-                        new Date(),
-                        getHeader("X-Meta-Default-Filename", request().headers()),
-                        getHeader("X-Meta-Feed-Type", request().headers()),
+        try {
+            // HTTP default encoding for POST requests is ISO-8859-1 if no charset is passed via "Content-Type" header.
+            byte[] bodyOriginalBytes = request().body().asText().getBytes("ISO-8859-1");
+            bodyText = new String(bodyOriginalBytes, "UTF-8");
+        }
+        catch (UnsupportedEncodingException e) {
+            Logger.error("WTF 5119", e);
+        }
+
+        String fileName = getHeader("X-Meta-Default-Filename", request().headers());
+        String feedType = getHeader("X-Meta-Feed-Type", request().headers());
+
+        Logger.info("About to insert {}", fileName);
+
+        Model.insertXML(bodyText, getHeadersString(request().headers()), new Date(), fileName, feedType,
                         getHeader("X-Meta-Game-Id", request().headers()),
                         getHeader("X-Meta-Competition-Id", request().headers()),
                         getHeader("X-Meta-Season-Id", request().headers()),
                         GlobalDate.parseDate(getHeader("X-Meta-Last-Updated", request().headers()), null));
 
-        OptaProcessor theProcessor = new OptaProcessor();
-        HashSet<String> updatedMatchEvents = null;
-
-        try {
-            updatedMatchEvents = theProcessor.processOptaDBInput(getHeader("X-Meta-Feed-Type", request().headers()), bodyText);
-        }
-        catch (JDOMParseException e) {
-            Logger.error("Exception parsing: {}", getHeader("X-Meta-Default-Filename", request().headers()), e);
-        }
-
+        HashSet<String> updatedMatchEvents = new OptaProcessor().processOptaDBInput(feedType, fileName, bodyText);
         ModelEvents.onOptaMatchEventIdsChanged(updatedMatchEvents);
 
         return ok("Yeah, XML processed");
     }
 
-    private static String getDetectedEncoding(InputStream is) throws IOException {
-
-        UniversalDetector detector = new UniversalDetector(null);
-        byte[] buf = new byte[4096];
-        int nread;
-        while ((nread = is.read(buf)) > 0 && !detector.isDone()) {
-            detector.handleData(buf, 0, nread);
-        }
-        detector.dataEnd();
-
-        String encoding = detector.getDetectedCharset();
-
-        if (encoding != null) {
-            Logger.info("Detected enconding: {}", encoding);
-        }
-        else {
-            Logger.error("Encoding not detected properly");
-        }
-
-        return encoding;
-    }
-
     private static String getHeadersString(Map<String, String[]> headers) {
-        Map<String, String> plainHeaders = new HashMap<String, String>();
+        Map<String, String> plainHeaders = new HashMap<>();
         for (String key: headers.keySet()){
             plainHeaders.put(key, "'"+headers.get(key)[0]+"'");
         }

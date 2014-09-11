@@ -8,6 +8,7 @@ import play.libs.F;
 import play.libs.WS;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utils.StringUtils;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -34,7 +35,6 @@ public class RefresherController extends Controller {
         long last_date = findLastDate().getTime();
 
         while (last_date >= 0) {
-            Logger.debug("Importing xml date: " + last_date);
             last_date = downloadAndImportXML(last_date);
         }
 
@@ -70,20 +70,17 @@ public class RefresherController extends Controller {
 
     private static long downloadAndImportXML(long last_timestamp) {
 
+        Logger.info("Importing xml date: {}, in miliseconds {}", GlobalDate.formatDate(new Date(last_timestamp)), last_timestamp);
+
         F.Promise<WS.Response> responsePromise = WS.url("http://dailysoccer.herokuapp.com/return_xml/" + last_timestamp).get();
         WS.Response response = responsePromise.get(100000);
 
-        if (response.getStatus() != 200) {
-            Logger.error("Response not OK: " + response.getStatus());
-            return -2L;
-        }
-        else {
+        long ret = -1L;
+
+        if (response.getStatus() == 200) {
             String bodyText = response.getBody();
 
-            if (bodyText.equals("NULL")) {
-                return -1L;
-            }
-            else {
+            if (!bodyText.equals("NULL")) {
                 String headers = response.getHeader("headers");
                 String feedType = response.getHeader("feed-type");
                 String gameId = response.getHeader("game-id");
@@ -94,15 +91,20 @@ public class RefresherController extends Controller {
                 String name = response.getHeader("name");
 
                 if (createdAt.after(new Date(last_timestamp))) {
+                    Logger.info("About to insert {}, size {}", name, StringUtils.humanReadableByteCount(bodyText.length(), false));
+
                     Model.insertXML(bodyText, headers, createdAt, name, feedType, gameId, competitionId, seasonId, lastUpdated);
-                    return createdAt.getTime();
-                }
-                else {
-                    return -2L;
+                    ret = createdAt.getTime();
                 }
             }
         }
+        else {
+            Logger.error("Response not OK: " + response.getStatus());
+        }
+
+        return ret;
     }
+
 
     public static boolean _inProgress = false;
 }

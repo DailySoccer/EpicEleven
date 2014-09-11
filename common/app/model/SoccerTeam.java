@@ -2,6 +2,7 @@ package model;
 
 import org.bson.types.ObjectId;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SoccerTeam {
     public ObjectId templateSoccerTeamId;
@@ -29,14 +30,25 @@ public class SoccerTeam {
         shortName = template.shortName;
     }
 
+    public SoccerPlayer findSoccerPlayer(ObjectId soccerPlayerId) {
+        SoccerPlayer ret = null;
+        for (SoccerPlayer soccerPlayer: soccerPlayers) {
+            if (soccerPlayer.templateSoccerPlayerId.equals(soccerPlayerId)) {
+                ret = soccerPlayer;
+                break;
+            }
+        }
+        return ret;
+    }
+
     /**
      * Setup Team (incrustando a los futbolistas en el equipo)
      */
     public static SoccerTeam create(MatchEvent matchEvent, TemplateSoccerTeam templateTeam) {
         SoccerTeam team = new SoccerTeam(templateTeam);
 
-        Iterable<TemplateSoccerPlayer> playersTeamA = Model.templateSoccerPlayers().find("{ templateTeamId: # }", templateTeam.templateSoccerTeamId).as(TemplateSoccerPlayer.class);
-        for(TemplateSoccerPlayer templateSoccer : playersTeamA) {
+        List<TemplateSoccerPlayer> playersTeam = TemplateSoccerPlayer.findAllActiveFromTemplateTeam(templateTeam.templateSoccerTeamId);
+        for(TemplateSoccerPlayer templateSoccer : playersTeam) {
             team.soccerPlayers.add(new SoccerPlayer(templateSoccer));
         }
         return team;

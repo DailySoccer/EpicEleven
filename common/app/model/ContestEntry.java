@@ -1,6 +1,9 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.mongodb.BasicDBObject;
+import com.mongodb.BulkWriteOperation;
+import com.mongodb.DBObject;
 import com.mongodb.MongoException;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
@@ -16,7 +19,6 @@ public class ContestEntry implements JongoId {
     @Id
     public ObjectId contestEntryId;
     public ObjectId userId;             // Usuario que creo el equipo
-    public ObjectId contestId;          // Contest en el que se ha inscrito el usuario
 
     @JsonView(JsonViews.FullContest.class)
     public List<ObjectId> soccerIds;    // Fantasy team
@@ -35,10 +37,9 @@ public class ContestEntry implements JongoId {
 
     public ContestEntry() {}
 
-    public ContestEntry(ObjectId userId, ObjectId contestId, List<ObjectId> soccerIds) {
+    public ContestEntry(ObjectId userId, List<ObjectId> soccerIds) {
         this.contestEntryId = new ObjectId();
         this.userId = userId;
-        this.contestId = contestId;
         this.soccerIds = soccerIds;
         this.createdAt = GlobalDate.getCurrentDate();
     }
@@ -54,8 +55,26 @@ public class ContestEntry implements JongoId {
                     position, fantasyPoints, prize);
     }
 
+    public void updateRanking(BulkWriteOperation bulkOperation) {
+        // Logger.info("ContestEntry: {} | UserId: {} | Position: {} | FantasyPoints: {}", contestEntryId, userId, position, fantasyPoints);
+
+        DBObject query = new BasicDBObject("contestEntries._id", getId());
+        DBObject update = new BasicDBObject("$set", new BasicDBObject("contestEntries.$.position", position)
+                                                              .append("contestEntries.$.fantasyPoints", fantasyPoints)
+                                                              .append("contestEntries.$.prize", prize));
+        bulkOperation.find(query).updateOne(update);
+    }
+
+    static public ContestEntry findOne(String contestId) {
+        ContestEntry aContestEntry = null;
+        if (ObjectId.isValid(contestId)) {
+            aContestEntry = findOne(new ObjectId(contestId));
+        }
+        return aContestEntry;
+    }
+
     static public ContestEntry findOne(ObjectId contestEntryId) {
-        Contest contest = Model.contests().findOne("{'contestEntries._id' : #}", contestEntryId).as(Contest.class);
+        Contest contest = Contest.findOneFromContestEntry(contestEntryId);
 
         ContestEntry contestEntry = null;
 
@@ -94,7 +113,7 @@ public class ContestEntry implements JongoId {
         try {
             Contest contest = Model.contests().findOne("{ _id: # }", contestId).as(Contest.class);
             if (contest != null) {
-                ContestEntry aContestEntry = new ContestEntry(user, contestId, soccers);
+                ContestEntry aContestEntry = new ContestEntry(user, soccers);
                 contest.contestEntries.add(aContestEntry);
                 Model.contests().update(contest.contestId).with(contest);
 
@@ -103,6 +122,31 @@ public class ContestEntry implements JongoId {
         }
         catch (MongoException exc) {
             Logger.error("WTF 2032: ", exc);
+        }
+
+        return bRet;
+    }
+
+    public static boolean remove(ObjectId contestId, ObjectId contestEntryId) {
+
+        boolean bRet = false;
+
+        try {
+            Contest contest = Model.contests().findOne("{ _id: # }", contestId).as(Contest.class);
+            if (contest != null) {
+                ContestEntry contestToRemove = contest.findContestEntry(contestEntryId);
+                if (contestToRemove != null) {
+                    contest.contestEntries.remove(contestToRemove);
+                    Model.contests().update(contest.contestId).with(contest);
+                }
+                // TODO: Más rápido pero algo más peligroso (hemos de mantener "numEntries" actualizado)
+                // Model.contests().update("{ contestEntries._id: # }", contestEntryId).with("{ $pull: { contestEntries: { _id: # } }, $inc: { numEntries: -1 } }", contestEntryId);
+
+                bRet = true;
+            }
+        }
+        catch (MongoException exc) {
+            Logger.error("WTF 7801: ", exc);
         }
 
         return bRet;

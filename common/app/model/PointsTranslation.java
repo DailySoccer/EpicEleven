@@ -35,7 +35,7 @@ public class PointsTranslation implements JongoId, Initializer {
         PointsTranslation pointsTranslation = new PointsTranslation();
         pointsTranslation.eventTypeId = eventType;
         pointsTranslation.points = points;
-        pointsTranslation.timestamp = new Date();
+        pointsTranslation.timestamp = GlobalDate.getCurrentDate();
         pointsTranslation.unixtimestamp = pointsTranslation.timestamp.getTime();
         pointsTranslation.createdAt = GlobalDate.getCurrentDate();
         Model.pointsTranslation().insert(pointsTranslation);

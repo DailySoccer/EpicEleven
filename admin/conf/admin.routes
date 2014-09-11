@@ -3,7 +3,9 @@ GET         /reset_db                                                  controlle
 GET         /initial_setup                                             controllers.admin.DashboardController.initialSetup()
 
 GET         /import_teams                                              controllers.admin.ImportController.showImportTeams()
+GET         /import_teams/:competitionId                               controllers.admin.ImportController.showImportTeamsFromCompetition(competitionId : String)
 GET         /import_all_new_teams                                      controllers.admin.ImportController.importAllNewTeams()
+GET         /import_all_new_teams/:competitionId                       controllers.admin.ImportController.importAllNewTeamsFromCompetition(competitionId : String)
 GET         /import_all_changed_teams                                  controllers.admin.ImportController.importAllChangedTeams()
 GET         /import_all_teams                                          controllers.admin.ImportController.importAllTeams()
 GET         /import_soccers                                            controllers.admin.ImportController.showImportSoccers()
@@ -37,6 +39,7 @@ GET         /contest_enter/add/:contestId                              controlle
 POST        /contest_entry/add                                         controllers.admin.ContestEntryController.create()
 
 GET         /contests                                                  controllers.admin.ContestController.index()
+GET         /contests/ajax                                             controllers.admin.ContestController.indexAjax()
 GET         /contest/:contestId                                        controllers.admin.ContestController.show(contestId : String)
 
 GET         /match_events                                              controllers.admin.MatchEventController.index()
@@ -44,6 +47,7 @@ GET         /match_event/:templateMatchEventId                         controlle
 GET         /match_event/optaEvents/:matchEventId                      controllers.admin.MatchEventController.showOptaEvents(matchEventId : String)
 
 GET         /template_contests                                         controllers.admin.TemplateContestController.index()
+GET         /template_contests/ajax                                    controllers.admin.TemplateContestController.indexAjax()
 GET         /template_contest/create_all                               controllers.admin.TemplateContestController.createAll()
 GET         /template_contest/save/:templateContestId                  controllers.admin.TemplateContestController.edit(templateContestId : String)
 GET         /template_contest/save                                     controllers.admin.TemplateContestController.newForm()
@@ -58,13 +62,19 @@ GET         /template_soccer_teams                                     controlle
 GET         /template_soccer_team/:templateSoccerTeam                  controllers.admin.TemplateSoccerTeamController.show(templateSoccerTeam : String)
 
 GET         /template_soccer_players                                   controllers.admin.TemplateSoccerPlayerController.index()
+GET         /template_soccer_players/ajax                              controllers.admin.TemplateSoccerPlayerController.indexAjax()
 GET         /template_soccer_player/edit_salaries                      controllers.admin.TemplateSoccerPlayerController.editSalaries()
 GET         /template_soccer_player/:soccerPlayer/salary/:salary       controllers.admin.TemplateSoccerPlayerController.changeSalary(soccerPlayer : String, salary : Int)
+GET         /template_soccer_player/:soccerPlayer/activated/:state     controllers.admin.TemplateSoccerPlayerController.changeState(soccerPlayer : String, state : String)
 
+GET         /opta_competitions                                         controllers.admin.OptaController.optaCompetitions()
+GET         /opta_competitions/:competition/activated/:state           controllers.admin.OptaController.changeCompetitionState(competition : String, state : String)
+GET         /opta_competitions/create_all                              controllers.admin.OptaController.createAllCompetitions()
 GET         /opta_soccer_players                                       controllers.admin.OptaController.optaSoccerPlayers()
 GET         /opta_soccer_teams                                         controllers.admin.OptaController.optaSoccerTeams()
 GET         /opta_match_events                                         controllers.admin.OptaController.optaMatchEvents()
 GET         /opta_events                                               controllers.admin.OptaController.optaEvents()
+GET         /opta_events/ajax                                          controllers.admin.OptaController.optaEventsAjax()
 GET         /opta_events/update                                        controllers.admin.OptaController.updateOptaEvents()
 
 GET         /switch_simulator                                          controllers.admin.SimulatorController.switchSimulator()

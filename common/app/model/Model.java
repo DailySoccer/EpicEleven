@@ -12,6 +12,7 @@ import utils.ListUtils;
 import java.sql.Connection;
 import java.sql.*;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 
@@ -30,6 +31,7 @@ public class Model {
     static public MongoCollection contests() { return _jongo.getCollection("contests"); }
     static public MongoCollection matchEvents() { return _jongo.getCollection("matchEvents"); }
 
+    static public MongoCollection optaCompetitions() { return _jongo.getCollection("optaCompetitions"); }
     static public MongoCollection optaEvents() { return _jongo.getCollection("optaEvents"); }
     static public MongoCollection optaPlayers() { return _jongo.getCollection("optaPlayers"); }
     static public MongoCollection optaTeams() { return _jongo.getCollection("optaTeams"); }
@@ -38,6 +40,7 @@ public class Model {
     static public MongoCollection pointsTranslation() { return _jongo.getCollection("pointsTranslation"); }
 
     static public void init() {
+
         String mongodbUri = Play.application().configuration().getString("mongodb.uri");
         MongoClientURI mongoClientURI = new MongoClientURI(mongodbUri);
 
@@ -108,34 +111,14 @@ public class Model {
         ensureDB(_mongoDB);
     }
 
-    static private String[] allCollectionNames = {
-            "users",
-            "sessions",
-
-            "templateContests",
-            "templateMatchEvents",
-            "templateSoccerTeams",
-            "templateSoccerPlayers",
-            "contests",
-            "matchEvents",
-            "liveMatchEvents",
-            "pointsTranslation",
-
-            "optaEvents",
-            "optaPlayers",
-            "optaTeams",
-            "optaMatchEvents"
-    };
-
     static private void dropDB(DB theMongoDB) {
-        Set<String> collections = theMongoDB.getCollectionNames();
-        for (String collection: collections) {
+
+        for (String collection: theMongoDB.getCollectionNames()) {
             if (!collection.contains("system.")) {
-                Logger.debug("About to delete collection: {}",collection);
+                Logger.debug("About to delete collection: {}", collection);
                 theMongoDB.getCollection(collection).drop();
             }
         }
-        //theMongoDB.dropDatabase();
     }
 
 
@@ -160,6 +143,9 @@ public class Model {
 
     private static void ensureOptaDB(DB theMongoDB) {
 
+        DBCollection optaCompetitions = theMongoDB.getCollection("optaCompetitions");
+        optaCompetitions.createIndex(new BasicDBObject("competitionId", 1));
+
         DBCollection optaEvents = theMongoDB.getCollection("optaEvents");
         optaEvents.createIndex(new BasicDBObject("parentId", 1));
         optaEvents.createIndex(new BasicDBObject("eventId", 1));
@@ -178,27 +164,43 @@ public class Model {
 
     static private void ensureContestsDB(DB theMongoDB) {
 
-        // TODO: Creacion de indexes
-        if (!theMongoDB.collectionExists("templateContests"))
-            theMongoDB.createCollection("templateContests", new BasicDBObject());
+        if (!theMongoDB.collectionExists("templateContests")) {
+            DBCollection templateContests = theMongoDB.createCollection("templateContests", new BasicDBObject());
+            templateContests.createIndex(new BasicDBObject("templateMatchEventIds", 1));
+            templateContests.createIndex(new BasicDBObject("state", 1));
+        }
 
-        if (!theMongoDB.collectionExists("templateMatchEvents"))
-            theMongoDB.createCollection("templateMatchEvents", new BasicDBObject());
+        if (!theMongoDB.collectionExists("templateMatchEvents")) {
+            DBCollection templateMatchEvents = theMongoDB.createCollection("templateMatchEvents", new BasicDBObject());
+            templateMatchEvents.createIndex(new BasicDBObject("optaMatchEventId", 1));
+        }
 
-        if (!theMongoDB.collectionExists("templateSoccerTeams"))
-            theMongoDB.createCollection("templateSoccerTeams", new BasicDBObject());
+        if (!theMongoDB.collectionExists("templateSoccerTeams")) {
+            DBCollection templateSoccerTeams = theMongoDB.createCollection("templateSoccerTeams", new BasicDBObject());
+            templateSoccerTeams.createIndex(new BasicDBObject("optaTeamId", 1));
+        }
 
-        if (!theMongoDB.collectionExists("templateSoccerPlayers"))
-            theMongoDB.createCollection("templateSoccerPlayers", new BasicDBObject());
+        if (!theMongoDB.collectionExists("templateSoccerPlayers")) {
+            DBCollection templateSoccerPlayers = theMongoDB.createCollection("templateSoccerPlayers", new BasicDBObject());
+            templateSoccerPlayers.createIndex(new BasicDBObject("templateTeamId", 1));
+            templateSoccerPlayers.createIndex(new BasicDBObject("optaPlayerId", 1));
+        }
 
         if (!theMongoDB.collectionExists("templateSoccerPlayersMetadata"))
             theMongoDB.createCollection("templateSoccerPlayersMetadata", new BasicDBObject());
 
-        if (!theMongoDB.collectionExists("contests"))
-            theMongoDB.createCollection("contests", new BasicDBObject());
+        if (!theMongoDB.collectionExists("contests")) {
+            DBCollection contests = theMongoDB.createCollection("contests", new BasicDBObject());
+            contests.createIndex(new BasicDBObject("templateContestId", 1));
+            contests.createIndex(new BasicDBObject("contestEntries._id", 1));
+            contests.createIndex(new BasicDBObject("contestEntries.userId", 1));
+        }
 
-        if (!theMongoDB.collectionExists("liveMatchEvents"))
-            theMongoDB.createCollection("liveMatchEvents", new BasicDBObject());
+        if (!theMongoDB.collectionExists("matchEvents")) {
+            DBCollection matchEvents = theMongoDB.createCollection("matchEvents", new BasicDBObject());
+            matchEvents.createIndex(new BasicDBObject("templateMatchEventId", 1));
+            matchEvents.createIndex(new BasicDBObject("optaMatchEventId", 1));
+        }
     }
 
 
@@ -207,17 +209,10 @@ public class Model {
      *
      * @param collection: MongoCollection a la que hacer la query
      * @param fieldId:    Identificador del campo a buscar (p ej, 'templateContestId')
-     * @param objectIdsIterable: Lista de ObjectId (de mongoDb)
+     * @param objectIds: Lista de ObjectId (de mongoDb)
      */
-    public static Find findObjectIds(MongoCollection collection, String fieldId, Iterable<ObjectId> objectIdsIterable) {
-        return collection.find(String.format("{%s: {$in: #}}", fieldId), ListUtils.asList(objectIdsIterable));
-    }
-
-    /**
-     * Igual que la anterior pero añadiendo un filtro
-     */
-    public static Find findObjectIds(MongoCollection collection, String fieldId, String filter, Iterable<ObjectId> objectIdsIterable) {
-        return collection.find(String.format("{%s: {$in: #}, %s}", fieldId, filter), ListUtils.asList(objectIdsIterable));
+    public static Find findObjectIds(MongoCollection collection, String fieldId, List<ObjectId> objectIds) {
+        return collection.find(String.format("{%s: {$in: #}}", fieldId), objectIds);
     }
 
 
@@ -239,13 +234,18 @@ public class Model {
                 stmt.setString(8, seasonId);
                 stmt.setTimestamp(9, new java.sql.Timestamp(lastUpdated.getTime()));
 
-                if (stmt.execute()) {
-                    Logger.info("Successful insert in OptaXML");
+                stmt.execute();
+
+                if (stmt.getUpdateCount() == 1) {
+                    Logger.info("Successful insert of {}", name);
+                }
+                else {
+                    Logger.error("WTF 1906, no se inserto el fichero de opta {}", name);
                 }
             }
         }
         catch (java.sql.SQLException e) {
-            Logger.error("WTF 56312: ", e);
+            Logger.error("WTF 5039", e);
         }
     }
 

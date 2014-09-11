@@ -1,5 +1,7 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.mongodb.BulkWriteOperation;
 import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
@@ -14,12 +16,22 @@ public class Contest implements JongoId {
     public ObjectId contestId;
     public ObjectId templateContestId;
 
+    @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
+
+    @JsonView(JsonViews.NotForClient.class)
     public String name;
 
+    @JsonView(JsonViews.Extended.class)
     public List<ContestEntry> contestEntries = new ArrayList<>();
-    public int maxEntries;
 
+    @JsonView(JsonViews.Public.class)
+    public int getNumEntries() {
+        return contestEntries.size();
+    }
+
+    @JsonView(JsonViews.NotForClient.class)
+    public int maxEntries;
 
     public Contest() {}
 
@@ -31,6 +43,17 @@ public class Contest implements JongoId {
     }
 
     public ObjectId getId() { return contestId; }
+
+    public ContestEntry findContestEntry(ObjectId contestEntryId) {
+        ContestEntry ret = null;
+        for (ContestEntry contestEntry : contestEntries) {
+            if (contestEntry.contestEntryId.equals(contestEntryId)) {
+                ret = contestEntry;
+                break;
+            }
+        }
+        return ret;
+    }
 
     static public Contest findOne(ObjectId contestId) {
         return Model.contests().findOne("{_id : #}", contestId).as(Contest.class);
@@ -44,6 +67,10 @@ public class Contest implements JongoId {
         return aContest;
     }
 
+    static public Contest findOneFromContestEntry(ObjectId contestEntryId) {
+        return Model.contests().findOne("{'contestEntries._id' : #}", contestEntryId).as(Contest.class);
+    }
+
     public static List<Contest> findAllFromUser(ObjectId userId) {
         return ListUtils.asList(Model.contests().find("{'contestEntries.userId': #}", userId).as(Contest.class));
     }
@@ -52,24 +79,24 @@ public class Contest implements JongoId {
         return ListUtils.asList(Model.contests().find("{templateContestId: #}", templateContestId).as(Contest.class));
     }
 
-    static public List<Contest> findAllFromTemplateContests(Iterable<TemplateContest> templateContests) {
+    static public List<Contest> findAllFromTemplateContests(List<TemplateContest> templateContests) {
         return ListUtils.asList(Model.findObjectIds(Model.contests(), "templateContestId", ListUtils.convertToIdList(templateContests)).as(Contest.class));
     }
 
-    static public void updateRanking(ObjectId templateMatchEventId) {
-        // Buscamos los template contests que incluyan ese partido
-        List<TemplateContest> templateContests = ListUtils.asList(Model.templateContests().find("{templateMatchEventIds: {$in:[#]}}",
-                templateMatchEventId).as(TemplateContest.class));
-
-        for (TemplateContest templateContest : templateContests) {
-            // Obtenemos los partidos
-            List<MatchEvent> matchEvents = templateContest.getMatchEvents();
-
-            // Actualizamos los rankings de cada contest
-            List<Contest> contests = Contest.findAllFromTemplateContest(templateContest.templateContestId);
-            for (Contest contest : contests) {
-                contest.updateRanking(templateContest, matchEvents);
-            }
+    public void updateRanking(BulkWriteOperation bulkOperation, TemplateContest templateContest, List<MatchEvent> matchEvents) {
+        // Actualizamos los fantasy points
+        for (ContestEntry contestEntry : contestEntries) {
+            contestEntry.fantasyPoints = contestEntry.getFantasyPointsFromMatchEvents(matchEvents);
+        }
+        // Los ordenamos según los fantasy points
+        Collections.sort (contestEntries, new ContestEntryComparable());
+        // Actualizamos sus "posiciones"
+        int index = 0;
+        for (ContestEntry contestEntry : contestEntries) {
+            contestEntry.position = index++;
+            contestEntry.prize = templateContest.getPositionPrize(contestEntry.position);
+            // contestEntry.updateRanking();
+            contestEntry.updateRanking(bulkOperation);
         }
     }
 
@@ -93,26 +120,10 @@ public class Contest implements JongoId {
         user.updateStats();
     }
 
-   private void updateRanking(TemplateContest templateContest, List<MatchEvent> matchEvents) {
-        // Actualizamos los fantasy points
-        for (ContestEntry contestEntry : contestEntries) {
-            contestEntry.fantasyPoints = contestEntry.getFantasyPointsFromMatchEvents(matchEvents);
-        }
-        // Los ordenamos según los fantasy points
-        Collections.sort (contestEntries, new ContestEntryComparable());
-        // Actualizamos sus "posiciones"
-        int index = 0;
-        for (ContestEntry contestEntry : contestEntries) {
-            contestEntry.position = index++;
-            contestEntry.prize = templateContest.getPositionPrize(contestEntry.position);
-            contestEntry.updateRanking();
-        }
-    }
-
     class ContestEntryComparable implements Comparator<ContestEntry>{
         @Override
         public int compare(ContestEntry o1, ContestEntry o2) {
-            return (o1.fantasyPoints>o2.fantasyPoints ? -1 : (o1.fantasyPoints==o2.fantasyPoints ? 0 : 1));
+            return (o2.fantasyPoints - o1.fantasyPoints);
         }
     }
 }

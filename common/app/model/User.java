@@ -45,9 +45,6 @@ public class User {
 
     /**
      * Query de un usuario por su identificador en mongoDB (verifica la validez del mismo)
-     *
-     * @param userId Identificador del usuario
-     * @return User
      */
     static public User findOne(String userId) {
         User aUser = null;

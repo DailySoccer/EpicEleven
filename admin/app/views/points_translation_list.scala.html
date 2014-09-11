@@ -26,7 +26,7 @@
         @for(p <- points_translation) {
         <tr>
             <td><a href="@PointsTranslationController.history(p.eventTypeId)">@OptaEventType.getEnum(p.eventTypeId).name()</td>
-            <td>@OptaEventType.getEnum(p.eventTypeId)._description</td>
+            <td>@OptaEventType.getEnum(p.eventTypeId).description</td>
             <td><a href="@PointsTranslationController.edit(p.pointsTranslationId.toString())">@p.points</td>
             <td>@GlobalDate.formatDate(p.timestamp)</td>
         </tr>
@@ -34,7 +34,4 @@
         </tbody>
     </table>
 </div>
-
-<a href='@DashboardController.index'>Back to Dashboard</a>
-
 }

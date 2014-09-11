@@ -1,30 +1,56 @@
 package controllers;
 
-import model.Model;
-import play.libs.Json;
-import play.mvc.*;
-import play.mvc.Http.RequestBody;
+import actions.AllowCors;
+import com.google.common.collect.ImmutableMap;
+import model.GlobalDate;
+import model.SoccerPlayerStats;
+import model.TemplateSoccerPlayer;
+import model.TemplateSoccerTeam;
+import org.bson.types.ObjectId;
+import play.mvc.Controller;
+import play.mvc.Result;
+import utils.ReturnHelper;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@AllowCors.Origin
 public class MainController extends Controller {
 
-    public static class TestClass {
-        public String key1;
-        public String key2;
-    }
-
-    public static Result test() {
-    	return ok(Json.toJson(new TestClass()));
-    }
-    
     public static Result ping() {
-    	// A little test of reading the application.conf
-    	//return ok(ping.render(Play.application().configuration().getString("db.default.url")));
     	return ok("Pong");
     }
 
-    @BodyParser.Of(BodyParser.Json.class)
-    public static Result jsonTest() {
-    	RequestBody body = request().body();
-    	return ok("Got json: " + body.asJson());
+    /*
+     * Fecha actual del servidor: Puede ser la hora en tiempo real o la fecha de simulacion
+     */
+    public static Result getCurrentDate() {
+        return new ReturnHelper(ImmutableMap.of("currentDate", GlobalDate.getCurrentDate())).toResult();
+    }
+
+    /*
+     * Obtener la información sobre un SoccerPlayer (estadísticas,...)
+     */
+    public static Result getTemplateSoccerPlayerInfo(String templateSoccerPlayerId) {
+
+        TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(templateSoccerPlayerId));
+
+        List<ObjectId> templateSoccerTeamIds = new ArrayList<>();
+
+        // Añadimos el equipo en el que juega actualmente el futbolista
+        templateSoccerTeamIds.add(templateSoccerPlayer.templateTeamId);
+
+        // Añadimos los equipos CONTRA los que ha jugado el futbolista
+        for (SoccerPlayerStats stats : templateSoccerPlayer.stats) {
+            templateSoccerTeamIds.add(stats.opponentTeamId);
+        }
+
+        List<TemplateSoccerTeam> templateSoccerTeams = !templateSoccerTeamIds.isEmpty() ? TemplateSoccerTeam.findAll(templateSoccerTeamIds)
+                : new ArrayList<TemplateSoccerTeam>();
+
+        return new ReturnHelper(ImmutableMap.of(
+                "soccerTeams", templateSoccerTeams,
+                "soccerPlayer", templateSoccerPlayer)
+        ).toResult();
     }
 }

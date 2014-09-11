@@ -26,10 +26,10 @@ public class LoginController extends Controller {
 
     // https://github.com/playframework/playframework/tree/master/samples/java/forms
     public static class SignupParams {
-        @Required @MinLength(value = 4)
+
         public String firstName;
 
-        @Required @MinLength(value = 4)
+
         public String lastName;
 
         @Required @MinLength(value = 4)
@@ -124,11 +124,11 @@ public class LoginController extends Controller {
                     // por ejemplo usando Postman
                     response().setCookie("sessionToken", theUser.email);
 
-                    returnHelper.setOK(new Session(theUser.email, theUser.userId, new Date()));
+                    returnHelper.setOK(new Session(theUser.email, theUser.userId, GlobalDate.getCurrentDate()));
                 }
                 else {
                     String sessionToken = Crypto.generateSignedToken();
-                    Session newSession = new Session(sessionToken, theUser.userId, new Date());
+                    Session newSession = new Session(sessionToken, theUser.userId, GlobalDate.getCurrentDate());
                     Model.sessions().insert(newSession);
 
                     returnHelper.setOK(newSession);

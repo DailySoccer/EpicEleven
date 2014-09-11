@@ -1,14 +1,36 @@
 package controllers.admin;
 
+import com.google.common.collect.ImmutableList;
+import model.GlobalDate;
+import model.MockData;
 import model.Model;
 import model.opta.*;
+import org.bson.types.ObjectId;
+import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
+
 import utils.ListUtils;
+import utils.PaginationData;
 
 import java.util.List;
 
 public class OptaController extends Controller {
+    public static Result optaCompetitions() {
+        List<OptaCompetition> optaCompetitions = ListUtils.asList(Model.optaCompetitions().find().as(OptaCompetition.class));
+        return ok(views.html.opta_competition_list.render(optaCompetitions));
+    }
+
+    public static Result changeCompetitionState(String competitionId, String state) {
+        Model.optaCompetitions().update("{competitionId: #}", competitionId).with("{$set: {activated: #}}", state.toLowerCase().equals("true"));
+        return ok("OK");
+    }
+
+    public static Result createAllCompetitions() {
+        MockData.ensureCompetitions();
+        return optaCompetitions();
+    }
+
     public static Result optaSoccerPlayers() {
         Iterable<OptaPlayer> optaPlayerResults = Model.optaPlayers().find().as(OptaPlayer.class);
         List<OptaPlayer> optaPlayerList = ListUtils.asList(optaPlayerResults);
@@ -31,11 +53,44 @@ public class OptaController extends Controller {
     }
 
     public static Result optaEvents() {
-        Iterable<OptaEvent> optaEventResults = Model.optaEvents().find().as(OptaEvent.class);
-        List<OptaEvent> optaEventList = ListUtils.asList(optaEventResults);
+        return ok(views.html.opta_event_list.render());
+    }
 
-        return ok(views.html.opta_event_list.render(optaEventList));
-   }
+    public static Result optaEventsAjax() {
+         return PaginationData.withAjax(request().queryString(), Model.optaEvents(), OptaEvent.class, new PaginationData() {
+            public List<String> getFieldNames() {
+                return ImmutableList.of(
+                        "pointsTranslationId",
+                        "competitionId",
+                        "gameId",
+                        "homeTeamId",
+                        "awayTeamId",
+                        "optaPlayerId",
+                        "typeId",
+                        "points",
+                        "timestamp",
+                        "lastModified"
+                );
+            }
+
+            public String getFieldByIndex(Object data, Integer index) {
+                OptaEvent optaEvent = (OptaEvent) data;
+                switch (index) {
+                    case 0: return optaEvent.pointsTranslationId != null ? optaEvent.pointsTranslationId.toString() : "-";
+                    case 1: return optaEvent.competitionId;
+                    case 2: return optaEvent.gameId;
+                    case 3: return optaEvent.homeTeamId;
+                    case 4: return optaEvent.awayTeamId;
+                    case 5: return optaEvent.optaPlayerId;
+                    case 6: return String.valueOf(optaEvent.typeId);
+                    case 7: return String.valueOf(optaEvent.points);
+                    case 8: return GlobalDate.formatDate(optaEvent.timestamp);
+                    case 9: return GlobalDate.formatDate(optaEvent.lastModified);
+                }
+                return "<invalid value>";
+            }
+        });
+    }
 
     public static Result updateOptaEvents() {
 

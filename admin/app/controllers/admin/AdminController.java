@@ -11,28 +11,20 @@ import utils.ListUtils;
 
 public class AdminController extends Controller {
 
-
     public static Result lobby() {
+        // Obtenemos la lista de TemplateContests activos
+        List<TemplateContest> templateContests = TemplateContest.findAllActive();
 
-        List<Contest> contestList = ListUtils.asList(Model.contests().find().as(Contest.class));
+        // Tambien necesitamos devolver todos los concursos instancias asociados a los templates
+        List<Contest> contestList = Contest.findAllFromTemplateContests(templateContests);
 
-        HashMap<ObjectId, TemplateContest> templateContestMap = getTemplateContestsFromList(contestList);
-
-        return ok(views.html.lobby.render(contestList, templateContestMap));
-    }
-
-    public static HashMap<ObjectId, TemplateContest> getTemplateContestsFromList(List<Contest> contestList) {
-
-        Iterable<TemplateContest> templateContestResults = TemplateContest.findAllFromContests(contestList);
-
-        // Convertirlo a map
-        HashMap<ObjectId, TemplateContest> ret = new HashMap<>();
-
-        for (TemplateContest template : templateContestResults) {
-            ret.put(template.templateContestId, template);
+        // Acceso mediante mapa a los templateContests
+        HashMap<ObjectId, TemplateContest> templateContestMap = new HashMap<>();
+        for (TemplateContest template : templateContests) {
+            templateContestMap.put(template.templateContestId, template);
         }
 
-        return ret;
+        return ok(views.html.lobby.render(contestList, templateContestMap));
     }
 
 }

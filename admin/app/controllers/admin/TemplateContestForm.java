@@ -52,8 +52,7 @@ public class TemplateContestForm {
         entryFee = templateContest.entryFee;
         prizeType = templateContest.prizeType;
 
-        Iterable<TemplateMatchEvent> templateMatchEventsResults = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
-        for(TemplateMatchEvent matchEvent : templateMatchEventsResults) {
+        for(TemplateMatchEvent matchEvent : TemplateMatchEvent.findAll(templateContest.templateMatchEventIds)) {
             templateMatchEvents.add(matchEvent.templateMatchEventId.toString());
         }
 
