@@ -176,7 +176,7 @@ public class ContestController extends Controller {
             // Obtener los soccerIds de los futbolistas : List<ObjectId>
             List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
 
-            List<String> errores = validateContestEntry(aContest, idsList);
+            List<String> errores = validateContestEntry(aContest, idsList, false);
             if (errores.isEmpty()) {
                 ContestEntry.create(theUser.userId, aContest.contestId, idsList);
             } else {
@@ -195,15 +195,66 @@ public class ContestController extends Controller {
         return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
     }
 
-    private static List<String> validateContestEntry (Contest contest, List<ObjectId> objectIds) {
+    public static class EditContestEntryParams {
+        @Constraints.Required
+        public String contestEntryId;
+
+        @Constraints.Required
+        public String soccerTeam;   // JSON con la lista de futbolistas seleccionados
+    }
+
+    @UserAuthenticated
+    public static Result editContestEntry() {
+        Form<EditContestEntryParams> contestEntryForm = form(EditContestEntryParams.class).bindFromRequest();
+
+        if (!contestEntryForm.hasErrors()) {
+            EditContestEntryParams params = contestEntryForm.get();
+
+            Logger.info("editContestEntry: contestEntryId({}) soccerTeam({})", params.contestEntryId, params.soccerTeam);
+
+            User theUser = (User) ctx().args.get("User");
+
+            ContestEntry contestEntry = ContestEntry.findOne(params.contestEntryId);
+            if (contestEntry != null) {
+
+                // Obtener el contestId : ObjectId
+                Contest aContest = Contest.findOneFromContestEntry(contestEntry.contestEntryId);
+
+                // Obtener los soccerIds de los futbolistas : List<ObjectId>
+                List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
+
+                List<String> errores = validateContestEntry(aContest, idsList, true);
+                if (errores.isEmpty()) {
+                    ContestEntry.update(contestEntry.contestEntryId, idsList);
+                } else {
+                    // TODO: ¿Queremos informar de los distintos errores?
+                    for (String error : errores) {
+                        contestEntryForm.reject(CONTEST_ENTRY_KEY, error);
+                    }
+                }
+            }
+            else {
+                contestEntryForm.reject(CONTEST_ENTRY_KEY, ERROR_CONTEST_ENTRY_INVALID);
+            }
+        }
+
+        JsonNode result = contestEntryForm.errorsAsJson();
+
+        if (!contestEntryForm.hasErrors()) {
+            result = new ObjectMapper().createObjectNode().put("result", "ok");
+        }
+        return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
+    }
+
+    private static List<String> validateContestEntry (Contest contest, List<ObjectId> objectIds, boolean editing) {
         List<String> errores = new ArrayList<>();
 
         // Verificar que el contest sea válido
         if (contest == null) {
             errores.add(ERROR_CONTEST_INVALID);
         } else {
-            // Verificar que el contest no esté lleno
-            if (contest.contestEntries.size() >= contest.maxEntries) {
+            // Si NO está editando el contestEntry (ocupará un sitio extra), verificar que el contest no esté lleno
+            if (!editing && contest.contestEntries.size() >= contest.maxEntries) {
                 errores.add(ERROR_CONTEST_FULL);
             }
 
