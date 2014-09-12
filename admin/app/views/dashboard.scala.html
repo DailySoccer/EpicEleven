@@ -1,4 +1,4 @@
-@()
+@(competitions_enabled : List[model.opta.OptaCompetition])
 
 @import controllers.admin.routes._
 
@@ -8,16 +8,31 @@
 
 
 <div>
-    <a href="@DashboardController.initialSetup"><button class="btn btn-danger">Initial Setup</button></a>
+    @if(competitions_enabled.isEmpty) {
+        <a href="@DashboardController.initialSetup" class="btn btn-danger disabled">Initial Setup</a>
+    } else {
+        <a href="@DashboardController.initialSetup" class="btn btn-danger">Initial Setup</a>
+    }
+</div>
+<br/>
+<div>
+    <a href="@OptaController.optaCompetitions" class="btn btn-primary">Select Competitions</a>
+    @if(competitions_enabled.isEmpty) {
+        <span class="bg-danger text-danger" style="padding:5px">&#8999; Ninguna Competición</span>
+    } else {
+        @for((p, index) <- competitions_enabled.zipWithIndex) {
+            <em class="bg-success text-primary" style="margin:5px; padding:5px">&#10003; @p.competitionName</em>
+        }
+    }
 </div>
 <br/>
 <div>
     <a class="btn btn-primary" href="@ImportController.importSalaries" title="Import Players' salaries from a CSV file.">
         Import Salaries
     </a>
-    <a href="@ImportController.showImportTeams"><button class="btn btn-warning">Import Teams</button></a>
-    <a href="@ImportController.showImportSoccers"><button class="btn btn-warning">Import SoccerPlayers</button></a>
-    <a href="@ImportController.showImportMatchEvents"><button class="btn btn-warning">Import MatchEvents</button></a>
+    <a href="@ImportController.showImportTeams" class="btn btn-warning">Import Teams</a>
+    <a href="@ImportController.showImportSoccers" class="btn btn-warning">Import SoccerPlayers</a>
+    <a href="@ImportController.showImportMatchEvents" class="btn btn-warning">Import MatchEvents</a>
 </div>
 
 <br/>

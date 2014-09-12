@@ -2,8 +2,10 @@ package controllers.admin;
 
 import com.google.common.collect.ImmutableList;
 import model.GlobalDate;
+import model.MockData;
 import model.Model;
 import model.opta.*;
+import org.bson.types.ObjectId;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -14,6 +16,21 @@ import utils.PaginationData;
 import java.util.List;
 
 public class OptaController extends Controller {
+    public static Result optaCompetitions() {
+        List<OptaCompetition> optaCompetitions = ListUtils.asList(Model.optaCompetitions().find().as(OptaCompetition.class));
+        return ok(views.html.opta_competition_list.render(optaCompetitions));
+    }
+
+    public static Result changeCompetitionState(String competitionId, String state) {
+        Model.optaCompetitions().update("{competitionId: #}", competitionId).with("{$set: {activated: #}}", state.toLowerCase().equals("true"));
+        return ok("OK");
+    }
+
+    public static Result createAllCompetitions() {
+        MockData.ensureCompetitions();
+        return optaCompetitions();
+    }
+
     public static Result optaSoccerPlayers() {
         Iterable<OptaPlayer> optaPlayerResults = Model.optaPlayers().find().as(OptaPlayer.class);
         List<OptaPlayer> optaPlayerList = ListUtils.asList(optaPlayerResults);

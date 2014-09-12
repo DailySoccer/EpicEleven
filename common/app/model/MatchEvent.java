@@ -120,6 +120,11 @@ public class MatchEvent {
         return liveFantasyPoints.get(soccerPlayerId.toString()).points;
     }
 
+    public SoccerPlayer findSoccerPlayer(ObjectId soccerPlayerId) {
+        SoccerPlayer ret = soccerTeamA.findSoccerPlayer(soccerPlayerId);
+        return (ret != null) ? ret : soccerTeamB.findSoccerPlayer(soccerPlayerId);
+    }
+
     public void saveStats() {
         saveStats(soccerTeamA);
         saveStats(soccerTeamB);

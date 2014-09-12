@@ -26,6 +26,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
     public ObjectId templateTeamId;
 
     public Date createdAt;
+    public boolean activated;
 
     public List<SoccerPlayerStats> stats = new ArrayList<>();
 
@@ -37,6 +38,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         fieldPos = transformToFieldPosFromOptaPos(optaPlayer.position);
         templateTeamId = aTemplateTeamId;
         createdAt = GlobalDate.getCurrentDate();
+        activated = true;
     }
 
     public void Initialize() { }
@@ -76,6 +78,10 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
 
     static public List<TemplateSoccerPlayer> findAllFromTemplateTeam(ObjectId templateSoccerTeamId) {
         return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: # }", templateSoccerTeamId).as(TemplateSoccerPlayer.class));
+    }
+
+    static public List<TemplateSoccerPlayer> findAllActiveFromTemplateTeam(ObjectId templateSoccerTeamId) {
+        return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: #, activated: # }", templateSoccerTeamId, true).as(TemplateSoccerPlayer.class));
     }
 
     public void addStats(SoccerPlayerStats soccerPlayerStats) {

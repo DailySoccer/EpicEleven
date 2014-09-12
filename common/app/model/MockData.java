@@ -1,5 +1,6 @@
 package model;
 
+import model.opta.OptaCompetition;
 import model.opta.OptaEventType;
 import org.bson.types.ObjectId;
 import utils.ListUtils;
@@ -31,6 +32,19 @@ public final class MockData {
 
     static private void createUser(String firstName, String lastName, String nickName, String email, String password) {
         Model.users().insert(new User(firstName, lastName, nickName, email, password));
+    }
+
+    public static void ensureCompetitions() {
+        createCompetition("4", "IG_WC", "World Cup");
+        createCompetition("5", "EU_CL", "Champions League");
+        createCompetition("23", "ES_PL", "Spanish La Liga");
+    }
+
+    static private void createCompetition(String competitionId, String competitionCode, String competitionName) {
+        OptaCompetition optaCompetition = OptaCompetition.findOne(competitionId);
+        if (optaCompetition == null) {
+            Model.optaCompetitions().insert(new OptaCompetition(competitionId, competitionCode, competitionName));
+        }
     }
 
     public static void createPointsTranslation() {

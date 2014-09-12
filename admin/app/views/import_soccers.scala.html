@@ -54,7 +54,14 @@
 
 @main("Import Soccers - Admin", scripts) {
 
-<h1 class="page-header">Import Soccers</h1>
+<ul class="nav nav-tabs" role="tablist">
+    <li><a href="@ImportController.showImportTeams" role="tab">Import Teams</a></li>
+    <li class="active"><a href="@ImportController.showImportSoccers" role="tab">Import SoccerPlayers</a></li>
+    <li><a href="@ImportController.showImportMatchEvents" role="tab">Import MatchEvents</a></li>
+</ul>
+<br/>
+
+<h1 class="page-header">Import Soccers Players</h1>
 
 <h2 class="sub-header"></h2>
 

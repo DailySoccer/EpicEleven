@@ -1,4 +1,4 @@
-@(matchs_new: List[model.opta.OptaMatchEvent], matchs_changed: List[model.opta.OptaMatchEvent], matchs_invalid: List[model.opta.OptaMatchEvent])
+@(matchs_new: List[model.opta.OptaMatchEvent], matchs_changed: List[model.opta.OptaMatchEvent], matchs_invalid: List[model.opta.OptaMatchEvent], optaTeamMap: HashMap[String, model.opta.OptaTeam])
 
 @import controllers.admin.routes.ImportController
 @import model.GlobalDate
@@ -20,8 +20,8 @@
             "@p.competitionName",
             "@p.seasonId",
             "@p.seasonName",
-            "@p.homeTeamId",
-            "@p.awayTeamId",
+            "@optaTeamMap(p.homeTeamId).name (@p.homeTeamId)",
+            "@optaTeamMap(p.awayTeamId).name (@p.awayTeamId)",
             "@GlobalDate.formatDate(p.matchDate)"
         ] @if(index < match_list.size-1) { , }
     }
@@ -58,6 +58,13 @@
 }
 
 @main("Import Match Events - Admin", scripts) {
+
+<ul class="nav nav-tabs" role="tablist">
+    <li><a href="@ImportController.showImportTeams" role="tab">Import Teams</a></li>
+    <li><a href="@ImportController.showImportSoccers" role="tab">Import SoccerPlayers</a></li>
+    <li class="active"><a href="@ImportController.showImportMatchEvents" role="tab">Import MatchEvents</a></li>
+</ul>
+<br/>
 
 <h1 class="page-header">Import Match Events</h1>
 

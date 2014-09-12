@@ -31,6 +31,7 @@ public class Model {
     static public MongoCollection contests() { return _jongo.getCollection("contests"); }
     static public MongoCollection matchEvents() { return _jongo.getCollection("matchEvents"); }
 
+    static public MongoCollection optaCompetitions() { return _jongo.getCollection("optaCompetitions"); }
     static public MongoCollection optaEvents() { return _jongo.getCollection("optaEvents"); }
     static public MongoCollection optaPlayers() { return _jongo.getCollection("optaPlayers"); }
     static public MongoCollection optaTeams() { return _jongo.getCollection("optaTeams"); }
@@ -141,6 +142,9 @@ public class Model {
     }
 
     private static void ensureOptaDB(DB theMongoDB) {
+
+        DBCollection optaCompetitions = theMongoDB.getCollection("optaCompetitions");
+        optaCompetitions.createIndex(new BasicDBObject("competitionId", 1));
 
         DBCollection optaEvents = theMongoDB.getCollection("optaEvents");
         optaEvents.createIndex(new BasicDBObject("parentId", 1));

@@ -44,6 +44,17 @@ public class Contest implements JongoId {
 
     public ObjectId getId() { return contestId; }
 
+    public ContestEntry findContestEntry(ObjectId contestEntryId) {
+        ContestEntry ret = null;
+        for (ContestEntry contestEntry : contestEntries) {
+            if (contestEntry.contestEntryId.equals(contestEntryId)) {
+                ret = contestEntry;
+                break;
+            }
+        }
+        return ret;
+    }
+
     static public Contest findOne(ObjectId contestId) {
         return Model.contests().findOne("{_id : #}", contestId).as(Contest.class);
     }
@@ -54,6 +65,10 @@ public class Contest implements JongoId {
             aContest = Model.contests().findOne(new ObjectId(contestId)).as(Contest.class);
         }
         return aContest;
+    }
+
+    static public Contest findOneFromContestEntry(ObjectId contestEntryId) {
+        return Model.contests().findOne("{'contestEntries._id' : #}", contestEntryId).as(Contest.class);
     }
 
     public static List<Contest> findAllFromUser(ObjectId userId) {

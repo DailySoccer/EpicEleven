@@ -31,7 +31,7 @@ public class OptaMatchEventStats {
            List<Element> elementStats = matchPlayer.getChildren("Stat");
             for (Element stat : elementStats) {
                 if (stat.getAttribute("Type").getValue().equals("mins_played")) {
-                    String playerId = OptaProcessor.getStringId(matchPlayer, "PlayerRef", "_NO PLAYER ID");
+                    String playerId = OptaProcessor.getStringId(matchPlayer, "PlayerRef");
                     int playedMinutes = Integer.parseInt(stat.getContent().get(0).getValue());
                     stats.put(playerId, new OptaPlayerStats(playedMinutes));
                     // Logger.debug("{} - minutes: {}", playerId, playedMinutes);

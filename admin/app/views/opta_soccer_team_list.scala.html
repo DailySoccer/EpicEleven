@@ -10,6 +10,7 @@
                     { "title": "Id" },
                     { "title": "Name" },
                     { "title": "ShortName" },
+                    { "title": "Competitions" },
                     { "title": "Updated Time" }
                 ],
                 "data": [
@@ -18,6 +19,7 @@
                             "@p.optaTeamId",
                             "@p.name",
                             "@p.shortName",
+                            "@p.competitionIds",
                             "@p.updatedTime"
                         ] @if(index < teams.size-1) { , }
                     }
