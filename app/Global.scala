@@ -9,12 +9,10 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 // http://www.playframework.com/documentation/2.2.x/ScalaGlobal
 object Global extends GlobalSettings {
 
-  //Web dynos have PORT set while workers don't
+  // Use the environment var "PORT" to determine whether we are a worker process or not
   val port = scala.util.Properties.envOrElse("PORT", null)
-  //Worker dynos are expected to have "worker" in their name
-  val dyno = scala.util.Properties.envOrElse("DYNO", "worker")
 
-  def isWorker: Boolean = { dyno.contains("worker") || port==null || port.equals("0") }
+  def isWorker: Boolean = { port == null || port.equals("0") }
 
   val loggingFilter = Filter { (nextFilter, requestHeader) =>
     val startTime = System.currentTimeMillis
@@ -26,7 +24,7 @@ object Global extends GlobalSettings {
       //Logger.info(s"${requestHeader.method} ${requestHeader.uri} took ${requestTime}ms " + s"and returned ${result.header.status}")
       //val action = requestHeader.tags(Routes.ROUTE_CONTROLLER) + "." + requestHeader.tags(Routes.ROUTE_ACTION_METHOD)
 
-      // Quitamos los logs que vienen de la descarga de Assets
+      // Quitamos los logs que vienen de la descarga de Assets y de la zona de admin
       if (!requestHeader.tags(Routes.ROUTE_CONTROLLER).contains("Assets") && !requestHeader.tags(Routes.ROUTE_CONTROLLER).contains("admin")) {
         Logger.info(requestHeader.tags(Routes.ROUTE_ACTION_METHOD) + s" took ${requestTime}ms")
       }
@@ -45,10 +43,8 @@ object Global extends GlobalSettings {
     Model.init()
 
     if (isWorker) {
-      Logger.debug("I'm a worker")
       Scheduler.scheduleMethods("jobs")
     }
-
   }
 
   override def onStop(app: Application) {

@@ -33,5 +33,5 @@ lazy val backend = project.in(file(".")).aggregate(common, admin).dependsOn(comm
 // Hacemos el hook de las rutas hijas (por ejemplo, admin/) dentro del fichero de routas ('backend.routes'), como
 // esta documentado que hay que hacerlo, con la sintaxis de flecha "-> /admin admin.routes". Esto genera un warning
 // sobre que debemos activar las reflectiveCalls en Scala. Pero como no sabemos las implicaciones de hacer esto,
-// preferimos dejarlo sin activar hasta que investiguemos mas.
+// preferimos dejarlo sin activar hasta que investiguemos mas y que siga saltando el warning.
 //scalacOptions ++= { Seq("-feature", "-language:reflectiveCalls") }

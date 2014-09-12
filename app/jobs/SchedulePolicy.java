@@ -8,10 +8,9 @@ import java.util.concurrent.TimeUnit;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Schedule {
-    public int initialDelay() default 500;
+public @interface SchedulePolicy {
 
-    public TimeUnit timeUnit() default TimeUnit.MILLISECONDS;
-
-    public int interval() default 1000;
+    public int      initialDelay()  default 0;
+    public TimeUnit timeUnit()      default TimeUnit.MILLISECONDS;
+    public int      interval()      default 1000;
 }

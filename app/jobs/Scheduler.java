@@ -15,40 +15,45 @@ import java.util.concurrent.TimeUnit;
 
 public class Scheduler {
 
-    @SuppressWarnings("unchecked")
+    // Manda a ejecutar a traves de Akka los metodos que esten marcados como "SchedulePolicy" en la lista de namespaces que
+    // se le pasen.
     public static void scheduleMethods(String... namespaces) {
 
         final ConfigurationBuilder configBuilder = build(namespaces);
         final Reflections reflections = new Reflections(configBuilder.setScanners(new MethodAnnotationsScanner()));
-        final Set<Method> schedules = reflections.getMethodsAnnotatedWith(Schedule.class);
-        if(!schedules.isEmpty()) {
-            Logger.debug("Scheduling methods:");
-        }
-        for(final Method schedule : schedules) {
-            final Schedule annotation = schedule.getAnnotation(Schedule.class);
+        final Set<Method> schedules = reflections.getMethodsAnnotatedWith(SchedulePolicy.class);
 
-            long initialDelay = annotation.initialDelay();
-            TimeUnit timeUnitInitial = annotation.timeUnit();
-            long interval = annotation.interval();
-            TimeUnit timeUnitInterval = annotation.timeUnit();
+        for (final Method schedule : schedules) {
+            final SchedulePolicy annotation = schedule.getAnnotation(SchedulePolicy.class);
+
+            final long initialDelay = annotation.initialDelay();
+            final TimeUnit timeUnit = annotation.timeUnit();
+            final long interval = annotation.interval();
 
             Akka.system().scheduler().schedule(
-                    Duration.apply(initialDelay, timeUnitInterval),
-                    Duration.apply(interval, timeUnitInterval),
+
+                    Duration.apply(initialDelay, timeUnit),
+                    Duration.apply(interval, timeUnit),
+
                     new Runnable() {
                         public void run() {
                             try {
                                 schedule.invoke(null);
-                            } catch (IllegalAccessException e) {
-                                Logger.error("WTF 7472", e);
-                            } catch (InvocationTargetException e) {
-                                Logger.error("WTF 7473", e);
+                            }
+                            catch (Exception e) {
+                                Logger.error("WTF 0693", e);
                             }
                         }
                     },
+
                     Akka.system().dispatcher()
             );
-            Logger.debug(schedule + " on delay: " + initialDelay + " " + timeUnitInitial + " interval: " + interval + " " + timeUnitInterval);
+
+            Logger.info(schedule + " on delay: " + initialDelay + " " + timeUnit + " interval: " + interval + " " + timeUnit);
+        }
+
+        if (schedules.isEmpty()) {
+            Logger.info("No Schedule methods found");
         }
     }
 
