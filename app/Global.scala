@@ -1,6 +1,6 @@
 import jobs.Scheduler
 import model.Model
-import play.Logger
+import play.{Play, Logger}
 import play.api._
 import play.api.mvc.{Filter, Filters, EssentialAction}
 import play.filters.gzip.GzipFilter
@@ -9,10 +9,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 // http://www.playframework.com/documentation/2.2.x/ScalaGlobal
 object Global extends GlobalSettings {
 
-  // Use the environment var "PORT" to determine whether we are a worker process or not
-  val port = scala.util.Properties.envOrElse("PORT", null)
-
-  def isWorker: Boolean = { port == null || port.equals("0") }
+  def isWorker: Boolean = { scala.util.Properties.propOrNull("config.isworker") == "true" }
 
   val loggingFilter = Filter { (nextFilter, requestHeader) =>
     val startTime = System.currentTimeMillis
