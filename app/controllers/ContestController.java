@@ -176,7 +176,7 @@ public class ContestController extends Controller {
             // Obtener los soccerIds de los futbolistas : List<ObjectId>
             List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
 
-            List<String> errores = validateContestEntry(aContest, idsList, false);
+            List<String> errores = validateContestEntry(aContest, idsList, true);
             if (errores.isEmpty()) {
                 ContestEntry.create(theUser.userId, aContest.contestId, idsList);
             } else {
@@ -223,7 +223,7 @@ public class ContestController extends Controller {
                 // Obtener los soccerIds de los futbolistas : List<ObjectId>
                 List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
 
-                List<String> errores = validateContestEntry(aContest, idsList, true);
+                List<String> errores = validateContestEntry(aContest, idsList, false);
                 if (errores.isEmpty()) {
                     ContestEntry.update(contestEntry.contestEntryId, idsList);
                 } else {
@@ -246,15 +246,15 @@ public class ContestController extends Controller {
         return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
     }
 
-    private static List<String> validateContestEntry (Contest contest, List<ObjectId> objectIds, boolean editing) {
+    private static List<String> validateContestEntry (Contest contest, List<ObjectId> objectIds, boolean newEntry) {
         List<String> errores = new ArrayList<>();
 
         // Verificar que el contest sea válido
         if (contest == null) {
             errores.add(ERROR_CONTEST_INVALID);
         } else {
-            // Si NO está editando el contestEntry (ocupará un sitio extra), verificar que el contest no esté lleno
-            if (!editing && contest.contestEntries.size() >= contest.maxEntries) {
+            // Si se va a crear una nueva ContestEntry, verificar que el contest no esté lleno
+            if (newEntry && contest.contestEntries.size() >= contest.maxEntries) {
                 errores.add(ERROR_CONTEST_FULL);
             }
 
