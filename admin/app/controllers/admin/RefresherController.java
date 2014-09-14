@@ -1,7 +1,7 @@
 package controllers.admin;
 
 import model.GlobalDate;
-import model.Model;
+import model.opta.OptaXmlUtils;
 import play.Logger;
 import play.db.DB;
 import play.libs.F;
@@ -93,7 +93,7 @@ public class RefresherController extends Controller {
                 if (createdAt.after(new Date(last_timestamp))) {
                     Logger.info("About to insert {}, size {}", name, StringUtils.humanReadableByteCount(bodyText.length(), false));
 
-                    Model.insertXML(bodyText, headers, createdAt, name, feedType, gameId, competitionId, seasonId, lastUpdated);
+                    OptaXmlUtils.insertXML(bodyText, headers, createdAt, name, feedType, gameId, competitionId, seasonId, lastUpdated);
                     ret = createdAt.getTime();
                 }
             }
