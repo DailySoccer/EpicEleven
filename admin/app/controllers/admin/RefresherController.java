@@ -32,7 +32,7 @@ public class RefresherController extends Controller {
 
         _inProgress = true;
 
-        long last_date = findLastDate().getTime();
+        long last_date = OptaXmlUtils.getLastDateFromOptaXML().getTime();
 
         while (last_date >= 0) {
             last_date = downloadAndImportXML(last_date);
@@ -43,29 +43,8 @@ public class RefresherController extends Controller {
         return ok("Finished importing");
     }
 
-    private static Date findLastDate() {
-
-        String selectString = "SELECT created_at FROM optaxml ORDER BY created_at DESC LIMIT 1;";
-        ResultSet results = null;
-
-        try (Connection connection = DB.getConnection()) {
-            try (Statement stmt = connection.createStatement()) {
-                results = stmt.executeQuery(selectString);
-
-                if (results.next()) {
-                    return results.getTimestamp("created_at");
-                }
-            }
-        }
-        catch (java.sql.SQLException e) {
-            Logger.error("WTF SQL 92374");
-        }
-
-        return new Date(0L);
-    }
-
     public static Result lastDate() {
-        return ok(String.valueOf(findLastDate().getTime()));    // Returns date in millis
+        return ok(String.valueOf(OptaXmlUtils.getLastDateFromOptaXML().getTime()));    // Returns date in millis
     }
 
     private static long downloadAndImportXML(long last_timestamp) {
