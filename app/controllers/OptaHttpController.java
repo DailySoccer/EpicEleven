@@ -2,9 +2,7 @@ package controllers;
 
 import actions.AllowCors;
 import model.GlobalDate;
-import model.Model;
-import model.ModelEvents;
-import model.opta.OptaProcessor;
+import model.opta.OptaXmlUtils;
 import org.joda.time.DateTime;
 import play.Logger;
 import play.db.DB;
@@ -12,11 +10,9 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 
-import java.io.UnsupportedEncodingException;
 import java.sql.*;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 @AllowCors.Origin
@@ -34,28 +30,23 @@ public class OptaHttpController extends Controller {
 
         try {
             // HTTP default encoding for POST requests is ISO-8859-1 if no charset is passed via "Content-Type" header.
-            byte[] bodyOriginalBytes = request().body().asText().getBytes("ISO-8859-1");
-            bodyText = new String(bodyOriginalBytes, "UTF-8");
+            bodyText = new String(request().body().asText().getBytes("ISO-8859-1"), "UTF-8");
+
+            String fileName = getHeader("X-Meta-Default-Filename", request().headers());
+            Logger.info("About to insert {}", fileName);
+
+            OptaXmlUtils.insertXML(bodyText, getHeadersString(request().headers()), new Date(), fileName,
+                                   getHeader("X-Meta-Feed-Type", request().headers()),
+                                   getHeader("X-Meta-Game-Id", request().headers()),
+                                   getHeader("X-Meta-Competition-Id", request().headers()),
+                                   getHeader("X-Meta-Season-Id", request().headers()),
+                                   GlobalDate.parseDate(getHeader("X-Meta-Last-Updated", request().headers()), null));
         }
-        catch (UnsupportedEncodingException e) {
+        catch (Exception e) {
             Logger.error("WTF 5119", e);
         }
 
-        String fileName = getHeader("X-Meta-Default-Filename", request().headers());
-        String feedType = getHeader("X-Meta-Feed-Type", request().headers());
-
-        Logger.info("About to insert {}", fileName);
-
-        Model.insertXML(bodyText, getHeadersString(request().headers()), new Date(), fileName, feedType,
-                        getHeader("X-Meta-Game-Id", request().headers()),
-                        getHeader("X-Meta-Competition-Id", request().headers()),
-                        getHeader("X-Meta-Season-Id", request().headers()),
-                        GlobalDate.parseDate(getHeader("X-Meta-Last-Updated", request().headers()), null));
-
-        HashSet<String> updatedMatchEvents = new OptaProcessor().processOptaDBInput(feedType, fileName, bodyText);
-        ModelEvents.onOptaMatchEventIdsChanged(updatedMatchEvents);
-
-        return ok("Yeah, XML processed");
+        return ok("Yeah, XML inserted");
     }
 
     private static String getHeadersString(Map<String, String[]> headers) {
@@ -100,7 +91,7 @@ public class OptaHttpController extends Controller {
     }
 
     public static Result dateLastXML() {
-        return ok(GlobalDate.formatDate(Model.getLastDateFromOptaXML()));
+        return ok(GlobalDate.formatDate(OptaXmlUtils.getLastDateFromOptaXML()));
     }
 
     public static Result remainingXMLs(long last_timestamp) {

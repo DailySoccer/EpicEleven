@@ -2,6 +2,7 @@ package controllers.admin;
 
 import model.*;
 import model.opta.OptaProcessor;
+import model.opta.OptaXmlUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.jongo.MongoCollection;
@@ -39,13 +40,13 @@ public class OptaSimulator implements Runnable {
         _stopSignal = false;
         _optaProcessor = new OptaProcessor();
 
-        _state = collection().findOne().as(OptaSimulatorState.class);
+        _state = Model.simulator().findOne().as(OptaSimulatorState.class);
 
         if (_state == null) {
             _state = new OptaSimulatorState();
 
             _state.useSnapshot = false;
-            _state.lastParsedDate = new DateTime(Model.getFirstDateFromOptaXML()).minusSeconds(5).toDate();
+            _state.lastParsedDate = new DateTime(OptaXmlUtils.getFirstDateFromOptaXML()).minusSeconds(5).toDate();
 
             _state.nextDocToParseIndex = 0;
 
@@ -320,10 +321,8 @@ public class OptaSimulator implements Runnable {
         }
     }
 
-    private MongoCollection collection() { return Model.jongo().getCollection("simulator"); }
-
     private void saveState() {
-        collection().update("{stateId: #}", _state.stateId).upsert().with(_state);
+        Model.simulator().update("{stateId: #}", _state.stateId).upsert().with(_state);
     }
 
     Thread _optaThread;
