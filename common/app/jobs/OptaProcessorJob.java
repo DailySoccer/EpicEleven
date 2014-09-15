@@ -39,25 +39,23 @@ public class OptaProcessorJob {
         }
     }
 
-    public static Date processResultSet(ResultSet resultSet, OptaProcessor processor) {
-
-        Date processedDate = null;
+    public static void processResultSet(ResultSet resultSet, OptaProcessor processor) {
 
         try {
-            processedDate = resultSet.getTimestamp("created_at");
+            Date created_at = resultSet.getTimestamp("created_at");
 
             String sqlxml = resultSet.getString("xml");
             String name = resultSet.getString("name");
             String feedType = resultSet.getString("feed_type");
             String competitionId = resultSet.getString("competition_id");
 
-            Logger.info("OptaProcessorJob: {}, {}, {}, competitionId({})", feedType, name, GlobalDate.formatDate(processedDate), competitionId);
+            Logger.info("OptaProcessorJob: {}, {}, {}, competitionId({})", feedType, name, GlobalDate.formatDate(created_at), competitionId);
 
             HashSet<String> changedOptaMatchEventIds = processor.processOptaDBInput(feedType, competitionId, sqlxml);
             ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
 
             OptaProcessorState state = new OptaProcessorState();
-            state.lastProcessedDate = processedDate;
+            state.lastProcessedDate = created_at;
 
             // Si el simulador nos avanza llamando aqui, nosotros registramos correctamente donde estamos. Sin embargo al contrario no es cierto,
             // es decir, si avanzamos a traves del Scheduler el simulador no se entera. Hay una tarea en Asana sobre unificar este estado.
@@ -66,8 +64,6 @@ public class OptaProcessorJob {
         catch (SQLException e) {
             Logger.error("WTF 7817", e);
         }
-
-        return processedDate;
     }
 
     static private class OptaProcessorState {
