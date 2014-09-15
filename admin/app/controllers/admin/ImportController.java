@@ -18,8 +18,8 @@ public class ImportController extends Controller {
      * IMPORT TEAMS from OPTA
      *
      */
-    private static void evaluateDirtyTeams(List<String> competitionIds, List<OptaTeam> news, List<OptaTeam> changes, List<OptaTeam> invalidates) {
-        Iterable<OptaTeam> teamsDirty = Model.optaTeams().find("{dirty: true, seasonCompetitionIds: {$in: #}}", competitionIds).as(OptaTeam.class);
+    private static void evaluateDirtyTeams(List<String> seasonCompetitionIds, List<OptaTeam> news, List<OptaTeam> changes, List<OptaTeam> invalidates) {
+        Iterable<OptaTeam> teamsDirty = Model.optaTeams().find("{dirty: true, seasonCompetitionIds: {$in: #}}", seasonCompetitionIds).as(OptaTeam.class);
         for(OptaTeam optaTeam : teamsDirty) {
             TemplateSoccerTeam template = TemplateSoccerTeam.findOneFromOptaId(optaTeam.optaTeamId);
             if (template == null) {
@@ -125,8 +125,7 @@ public class ImportController extends Controller {
             else {
                 OptaTeam optaTeam = OptaTeam.findOne(optaSoccer.teamId);
                 for (int i=0; i<optaTeam.seasonCompetitionIds.size() && !isTeamValid; i++) {
-                    String seasonCompetitionId = optaTeam.seasonCompetitionIds.get(i);
-                    isTeamValid = OptaCompetition.findOne(seasonCompetitionId).activated;
+                    isTeamValid = OptaCompetition.findOne(optaTeam.seasonCompetitionIds.get(i)).activated;
                 }
                 teamIsValid.put(optaSoccer.teamId, isTeamValid);
             }
