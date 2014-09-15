@@ -14,18 +14,18 @@ import java.util.*;
 
 public class OptaProcessor {
 
-    static public boolean isDocumentValidForProcessing(String feedType, String competitionId) {
+    static public boolean isDocumentValidForProcessing(String feedType, String competitionId, String seasonId) {
         boolean valid = false;
 
         if (feedType.equals("F9") || feedType.equals("F24") || feedType.equals("F1")) {
-            OptaCompetition optaCompetition = OptaCompetition.findOne(competitionId);
+            OptaCompetition optaCompetition = OptaCompetition.findOne(competitionId, seasonId);
             valid = (optaCompetition != null) && optaCompetition.activated;
         }
         else
         if (feedType.equals("F40")) {
             // El filtro no podemos aplicarlo cuando en los documentos "F40"
             //   se procesa una nueva competición o es una competición que está activa
-            OptaCompetition optaCompetition = OptaCompetition.findOne(competitionId);
+            OptaCompetition optaCompetition = OptaCompetition.findOne(competitionId, seasonId);
             valid = (optaCompetition == null) || optaCompetition.activated;
         }
 
@@ -220,11 +220,13 @@ public class OptaProcessor {
             throw new RuntimeException("WTF 7349: processF40");
 
         String competitionId = myF40.getAttribute("competition_id").getValue();
+        String seasonId = myF40.getAttribute("season_id").getValue();
 
-        if (OptaCompetition.findOne(competitionId) == null) {
+        if (OptaCompetition.findOne(competitionId, seasonId) == null) {
             Model.optaCompetitions().insert(new OptaCompetition(competitionId,
                                                                 myF40.getAttribute("competition_code").getValue(),
-                                                                myF40.getAttribute("competition_name").getValue()));
+                                                                myF40.getAttribute("competition_name").getValue(),
+                                                                seasonId));
         }
 
         for (Element team : myF40.getChildren("Team")) {
@@ -246,8 +248,9 @@ public class OptaProcessor {
             Model.optaTeams()
                     .update("{optaTeamId: #}", myTeam.optaTeamId)
                     .upsert()
-                    .with("{$set: {optaTeamId:#, name:#, shortName:#, updatedTime:#, dirty:#}, $addToSet: {competitionIds:#}}",
-                            myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty, competitionId);
+                    .with("{$set: {optaTeamId:#, name:#, shortName:#, updatedTime:#, dirty:#}, $addToSet: {seasonCompetitionIds:#}}",
+                            myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty,
+                            OptaCompetition.createId(seasonId, competitionId));
 
             for (Element player : playersList) {
                 String playerId = getStringId(player, "uID");
