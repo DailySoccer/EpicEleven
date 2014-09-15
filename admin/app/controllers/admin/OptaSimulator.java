@@ -207,9 +207,10 @@ public class OptaSimulator implements Runnable {
         String name = _optaResultSet.getString("name");
         String feedType = _optaResultSet.getString("feed_type");
         String competitionId = _optaResultSet.getString("competition_id");
+        String seasonId = _optaResultSet.getString("season_id");
 
         try {
-            if (OptaProcessor.isDocumentValidForProcessing(feedType, competitionId)) {
+            if (OptaProcessor.isDocumentValidForProcessing(feedType, competitionId, seasonId)) {
                 Logger.info("OptaSimulator processing: {}, {}, {}, {}, competitionId({})", _state.nextDocToParseIndex, feedType, name, GlobalDate.formatDate(createdAt), competitionId);
 
                 HashSet<String> changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, name, sqlxml);

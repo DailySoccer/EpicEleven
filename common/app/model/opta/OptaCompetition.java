@@ -16,19 +16,25 @@ public class OptaCompetition {
     public String competitionId;
     public String competitionCode;
     public String competitionName;
+    public String seasonId;
     public Date createdAt;
 
     public OptaCompetition() {}
-    public OptaCompetition(String competitionId, String competitionCode, String competitionName) {
+    public OptaCompetition(String competitionId, String competitionCode, String competitionName, String seasonId) {
         activated = false;
         this.competitionId = competitionId;
         this.competitionCode = competitionCode;
         this.competitionName = competitionName;
+        this.seasonId = seasonId;
         this.createdAt = GlobalDate.getCurrentDate();
     }
 
-    public static OptaCompetition findOne(String competitionId) {
-        return Model.optaCompetitions().findOne("{competitionId: #}", competitionId).as(OptaCompetition.class);
+    public static OptaCompetition findOne(String competitionId, String seasonId) {
+        return Model.optaCompetitions().findOne("{competitionId: #, seasonId: #}", competitionId, seasonId).as(OptaCompetition.class);
+    }
+
+    public static boolean existsOneActivated(String competitionId) {
+        return Model.optaCompetitions().findOne("{competitionId: #, activated: true}", competitionId).as(OptaCompetition.class) != null;
     }
 
     static public List<OptaCompetition> findAll() {

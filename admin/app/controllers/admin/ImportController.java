@@ -57,7 +57,7 @@ public class ImportController extends Controller {
     }
 
     public static Result showImportTeamsFromCompetition(String competitionId) {
-        List<String> competitionsSelected = new ArrayList<String>();
+        List<String> competitionsSelected = new ArrayList<>();
         competitionsSelected.add(competitionId);
 
         List<OptaTeam> teamsNew = new ArrayList<>();
@@ -90,7 +90,7 @@ public class ImportController extends Controller {
     }
 
     public static Result importAllNewTeamsFromCompetition(String competitionId) {
-        List<String> competitionsSelected = new ArrayList<String>();
+        List<String> competitionsSelected = new ArrayList<>();
         competitionsSelected.add(competitionId);
 
         List<OptaTeam> teamsNew = new ArrayList<>();
@@ -126,7 +126,7 @@ public class ImportController extends Controller {
                 OptaTeam optaTeam = OptaTeam.findOne(optaSoccer.teamId);
                 for (int i=0; i<optaTeam.competitionIds.size() && !isTeamValid; i++) {
                     String competitionId = optaTeam.competitionIds.get(i);
-                    isTeamValid = OptaCompetition.findOne(competitionId).activated;
+                    isTeamValid = OptaCompetition.existsOneActivated(competitionId);
                 }
                 teamIsValid.put(optaSoccer.teamId, isTeamValid);
             }
