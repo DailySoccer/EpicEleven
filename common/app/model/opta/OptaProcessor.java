@@ -248,8 +248,9 @@ public class OptaProcessor {
             Model.optaTeams()
                     .update("{optaTeamId: #}", myTeam.optaTeamId)
                     .upsert()
-                    .with("{$set: {optaTeamId:#, name:#, shortName:#, updatedTime:#, dirty:#}, $addToSet: {competitionIds:#}}",
-                            myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty, competitionId);
+                    .with("{$set: {optaTeamId:#, name:#, shortName:#, updatedTime:#, dirty:#}, $addToSet: {seasonCompetitionIds:#}}",
+                            myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty,
+                            OptaCompetition.createId(seasonId, competitionId));
 
             for (Element player : playersList) {
                 String playerId = getStringId(player, "uID");
