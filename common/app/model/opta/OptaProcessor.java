@@ -4,17 +4,45 @@ import model.GlobalDate;
 import model.Model;
 import model.PointsTranslation;
 import org.bson.types.ObjectId;
-import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.input.JDOMParseException;
 import org.jdom2.input.SAXBuilder;
 import play.Logger;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
 
 public class OptaProcessor {
 
-    static public boolean isDocumentValidForProcessing(String feedType, String competitionId) {
+    // Retorna los Ids de opta (gameIds, optaMachEventId) de los partidos que han cambiado
+    public HashSet<String> processOptaDBInput(String feedType, String competitionId, String requestBody) {
+        _dirtyMatchEvents = new HashSet<>();
+
+        try {
+            if (isDocumentValidForProcessing(feedType, competitionId)) {
+                Element requestBodyElement = new SAXBuilder().build(new StringReader(requestBody)).getRootElement();
+
+                if (feedType.equals("F9")) {
+                    processF9(requestBodyElement);
+                } else if (feedType.equals("F40")) {
+                    processF40(requestBodyElement);
+                } else if (feedType.equals("F24")) {
+                    processEvents(requestBodyElement);
+                } else if (feedType.equals("F1")) {
+                    processF1(requestBodyElement);
+                }
+            }
+        }
+        catch (Exception e) {
+            Logger.error("WTF 6312", e);
+        }
+
+        return _dirtyMatchEvents;
+    }
+
+    static private boolean isDocumentValidForProcessing(String feedType, String competitionId) {
         boolean valid = false;
 
         if (feedType.equals("F9") || feedType.equals("F24") || feedType.equals("F1")) {
@@ -30,33 +58,6 @@ public class OptaProcessor {
         }
 
         return valid;
-    }
-
-    // Retorna los Ids de opta (gameIds, optaMachEventId) de los partidos que han cambiado
-    public HashSet<String> processOptaDBInput(String feedType, String fileName, String requestBody) {
-        _dirtyMatchEvents = new HashSet<>();
-
-        try {
-            Element requestBodyElement = new SAXBuilder().build(new StringReader(requestBody)).getRootElement();
-
-            if (feedType.equals("F9")) {
-                processF9(requestBodyElement);
-            }
-            else if (feedType.equals("F40")) {
-                processF40(requestBodyElement);
-            }
-            else if (feedType.equals("F24")) {
-                processEvents(requestBodyElement);
-            }
-            else if (feedType.equals("F1")) {
-                processF1(requestBodyElement);
-            }
-        }
-        catch (Exception e) {
-            Logger.error("WTF 6312", e);
-        }
-
-        return _dirtyMatchEvents;
     }
 
     private void processEvents(Element gamesObj) {

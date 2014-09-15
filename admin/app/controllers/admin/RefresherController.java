@@ -3,16 +3,12 @@ package controllers.admin;
 import model.GlobalDate;
 import model.opta.OptaXmlUtils;
 import play.Logger;
-import play.db.DB;
 import play.libs.F;
 import play.libs.WS;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.StringUtils;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.Date;
 
 public class RefresherController extends Controller {
@@ -32,7 +28,7 @@ public class RefresherController extends Controller {
 
         _inProgress = true;
 
-        long last_date = OptaXmlUtils.getLastDateFromOptaXML().getTime();
+        long last_date = OptaXmlUtils.getLastDate().getTime();
 
         while (last_date >= 0) {
             last_date = downloadAndImportXML(last_date);
@@ -44,7 +40,7 @@ public class RefresherController extends Controller {
     }
 
     public static Result lastDate() {
-        return ok(String.valueOf(OptaXmlUtils.getLastDateFromOptaXML().getTime()));    // Returns date in millis
+        return ok(String.valueOf(OptaXmlUtils.getLastDate().getTime()));    // Returns date in millis
     }
 
     private static long downloadAndImportXML(long last_timestamp) {
@@ -72,7 +68,7 @@ public class RefresherController extends Controller {
                 if (createdAt.after(new Date(last_timestamp))) {
                     Logger.info("About to insert {}, size {}", name, StringUtils.humanReadableByteCount(bodyText.length(), false));
 
-                    OptaXmlUtils.insertXML(bodyText, headers, createdAt, name, feedType, gameId, competitionId, seasonId, lastUpdated);
+                    OptaXmlUtils.insertXml(bodyText, headers, createdAt, name, feedType, gameId, competitionId, seasonId, lastUpdated);
                     ret = createdAt.getTime();
                 }
             }

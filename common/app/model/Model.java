@@ -115,7 +115,7 @@ public class Model {
 
     static private void dropDB(DB theMongoDB) {
 
-        for (String collection: theMongoDB.getCollectionNames()) {
+        for (String collection : theMongoDB.getCollectionNames()) {
             if (!collection.contains("system.")) {
                 Logger.debug("About to delete collection: {}", collection);
                 theMongoDB.getCollection(collection).drop();
@@ -162,6 +162,8 @@ public class Model {
 
         DBCollection pointsTranslation = theMongoDB.getCollection("pointsTranslation");
         pointsTranslation.createIndex(new BasicDBObject("eventTypeId", 1));
+
+        DBCollection optaProcessor = theMongoDB.getCollection("optaProcessor");
     }
 
     static private void ensureContestsDB(DB theMongoDB) {

@@ -1,5 +1,3 @@
-import jobs.Scheduler
-import model.Model
 import play.{Play, Logger}
 import play.api._
 import play.api.mvc.{Filter, Filters, EssentialAction}
@@ -37,17 +35,17 @@ object Global extends GlobalSettings {
   override def onStart(app: Application) {
     Logger.info("Application has started")
 
-    Model.init()
+    model.Model.init()
 
     if (isWorker) {
-      Scheduler.scheduleMethods("jobs")
+      jobs.Scheduler.scheduleMethods("jobs")
     }
   }
 
   override def onStop(app: Application) {
     Logger.info("Application shutdown...")
 
-    Model.shutdown()
+    model.Model.shutdown()
   }
 }
 
