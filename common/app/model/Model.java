@@ -164,6 +164,7 @@ public class Model {
         pointsTranslation.createIndex(new BasicDBObject("eventTypeId", 1));
 
         DBCollection optaProcessor = theMongoDB.getCollection("optaProcessor");
+        optaProcessor.createIndex(new BasicDBObject("stateId", 1));
     }
 
     static private void ensureContestsDB(DB theMongoDB) {

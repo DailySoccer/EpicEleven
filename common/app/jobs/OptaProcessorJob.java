@@ -19,11 +19,17 @@ public class OptaProcessorJob {
     @SchedulePolicy(initialDelay = 0, timeUnit = TimeUnit.SECONDS, interval = 1)
     public static void checkAndProcessNextOptaXml() {
 
-        OptaProcessorState state = Model.optaProcessor().findOne().as(OptaProcessorState.class);
-
+        OptaProcessorState state = Model.optaProcessor().findAndModify("{stateId: #}", OptaProcessorState.UNIQUE_ID)
+                                                        .upsert()
+                                                        .with("{$set: {isProcessing: true}}")
+                                                        .as(OptaProcessorState.class);
         if (state == null) {
             state = new OptaProcessorState();
             state.lastProcessedDate = new Date(0L);
+        }
+        else
+        if (state.isProcessing) {
+            throw new RuntimeException("WTF 3885");
         }
 
         try (Connection conn = play.db.DB.getConnection()) {
@@ -59,7 +65,7 @@ public class OptaProcessorJob {
 
             // Si el simulador nos avanza llamando aqui, nosotros registramos correctamente donde estamos. Sin embargo al contrario no es cierto,
             // es decir, si avanzamos a traves del Scheduler el simulador no se entera. Hay una tarea en Asana sobre unificar este estado.
-            Model.optaProcessor().update("{stateId: #}", state.stateId).upsert().with(state);
+            Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).upsert().with(state);
         }
         catch (SQLException e) {
             Logger.error("WTF 7817", e);
@@ -67,7 +73,10 @@ public class OptaProcessorJob {
     }
 
     static private class OptaProcessorState {
-        public String stateId = "--unique id--";
+        static final String UNIQUE_ID = "--OptaProcessorState--";
+
+        public String stateId = UNIQUE_ID;
         public Date lastProcessedDate;
+        public boolean isProcessing;
     }
 }
