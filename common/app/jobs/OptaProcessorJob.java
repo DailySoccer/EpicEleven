@@ -20,6 +20,8 @@ public class OptaProcessorJob {
     @SchedulePolicy(initialDelay = 0, timeUnit = TimeUnit.SECONDS, interval = 1)
     public static void checkAndProcessNextOptaXml() {
 
+        // Evitamos que se produzcan actualizaciones simultaneas, por si en algun momento nos equivocamos y lanzamos
+        // este worker process varias veces.
         OptaProcessorState state = Model.optaProcessor().findAndModify("{stateId: #}", OptaProcessorState.UNIQUE_ID)
                                                         .upsert()
                                                         .with("{$set: {isProcessing: true}}")

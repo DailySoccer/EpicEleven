@@ -44,7 +44,8 @@ public class ModelEvents {
             for (MatchEvent matchEvent : Model.matchEvents().find("{optaMatchEventId: #}", optaGameId).as(MatchEvent.class)) {
 
                 // Los partidos que han terminado no los actualizamos
-                if (matchEvent.isGameFinished()) continue;
+                if (matchEvent.isGameFinished())
+                    continue;
 
                 // Ya está marcado como Comenzado?
                 boolean matchEventStarted = matchEvent.isGameStarted();
