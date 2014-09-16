@@ -39,6 +39,8 @@ GET         /date_last_xml                                          controllers.
 # Por aqui nos entran todos nuestros datos de opta
 POST        /opta                                                   controllers.OptaHttpController.optaXmlInput()
 
+# Loguear error del cliente
+POST        /log                                                    controllers.LoggerController.postLog()
 
 # Static assets
 GET         /                                                       controllers.Assets.at(path="/public", file="index.html")
