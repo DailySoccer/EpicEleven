@@ -120,6 +120,12 @@ public class Contest implements JongoId {
         user.updateStats();
     }
 
+    public Contest getSameContestWithFreeSlot() {
+        String query = String.format("{templateContestId: #, 'contestEntries.%s': {$exists: false}}", maxEntries-1);
+        Contest contest = Model.contests().findOne(query, templateContestId).as(Contest.class);
+        return contest;
+    }
+
     class ContestEntryComparable implements Comparator<ContestEntry>{
         @Override
         public int compare(ContestEntry o1, ContestEntry o2) {
