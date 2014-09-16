@@ -32,7 +32,7 @@ public class OptaCompetition {
     }
 
     public static String createId(String seasonId, String competitionId) {
-        return String.format("%s/%s", seasonId, competitionId);
+        return String.format("%s-%s", seasonId, competitionId);
     }
 
     public static OptaCompetition findOne(String seasonCompetitionId) {
