@@ -43,10 +43,6 @@ public class OptaCompetition {
         return findOne(createId(seasonId, competitionId));
     }
 
-    public static boolean existsOneActivated(String competitionId, String seasonId) {
-        return Model.optaCompetitions().findOne("{seasonCompetitionId: #, activated: true}", createId(seasonId, competitionId)).as(OptaCompetition.class) != null;
-    }
-
     static public List<OptaCompetition> findAll() {
         return ListUtils.asList(Model.optaCompetitions().find().as(OptaCompetition.class));
     }
