@@ -1,11 +1,11 @@
 package controllers.admin;
 
+import jobs.OptaProcessorJob;
 import model.*;
 import model.opta.OptaProcessor;
 import model.opta.OptaXmlUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
-import org.jongo.MongoCollection;
 import play.Logger;
 import play.db.DB;
 
@@ -14,7 +14,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
-import java.util.HashSet;
 
 public class OptaSimulator implements Runnable {
 
@@ -46,8 +45,7 @@ public class OptaSimulator implements Runnable {
             _state = new OptaSimulatorState();
 
             _state.useSnapshot = false;
-            _state.lastParsedDate = new DateTime(OptaXmlUtils.getFirstDateFromOptaXML()).minusSeconds(5).toDate();
-
+            _state.lastParsedDate = new DateTime(OptaXmlUtils.getFirstDate()).minusSeconds(5).toDate();
             _state.nextDocToParseIndex = 0;
 
             saveState();
@@ -175,7 +173,11 @@ public class OptaSimulator implements Runnable {
             if (_nextDocDate != null) {
                 try {
                     if (sleepUntil(_nextDocDate, speedFactor)) {
-                        processNextDoc();
+                        // Tickeamos el OptaProcessorJob como si fueramos un proceso scheduleado
+                        OptaProcessorJob.processResultSet(_optaResultSet, _optaProcessor);
+
+                        _state.nextDocToParseIndex++;
+                        _nextDocDate = null;
                     }
                 }
                 catch (InterruptedException e) {
@@ -196,41 +198,6 @@ public class OptaSimulator implements Runnable {
 
         return bFinished;
     }
-
-    private void processNextDoc() throws SQLException {
-        if (_optaResultSet == null) {
-            throw new RuntimeException("WTF 7241");
-        }
-
-        Date createdAt = _optaResultSet.getTimestamp("created_at");
-
-        String sqlxml = _optaResultSet.getString("xml");
-        String name = _optaResultSet.getString("name");
-        String feedType = _optaResultSet.getString("feed_type");
-        String competitionId = _optaResultSet.getString("competition_id");
-        String seasonId = _optaResultSet.getString("season_id");
-
-        try {
-            if (OptaProcessor.isDocumentValidForProcessing(feedType, competitionId, seasonId)) {
-                Logger.info("OptaSimulator processing: {}, {}, {}, {}, competitionId({})", _state.nextDocToParseIndex, feedType, name, GlobalDate.formatDate(createdAt), competitionId);
-
-                HashSet<String> changedOptaMatchEventIds = _optaProcessor.processOptaDBInput(feedType, name, sqlxml);
-                ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
-            }
-            /*
-            else {
-                Logger.info("OptaSimulator ignoring: {}, {}, {}, {}, competitionId({})", _state.nextDocToParseIndex, feedType, name, GlobalDate.formatDate(createdAt), competitionId);
-            }
-            */
-        }
-        catch (Exception e) {
-            Logger.error("WTF 7812", e);
-        }
-
-        _state.nextDocToParseIndex++;
-        _nextDocDate = null;
-    }
-
 
     private void queryNextResultSet() throws SQLException {
         if (_state.nextDocToParseIndex % RESULTS_PER_QUERY == 0 || _optaResultSet == null) {
@@ -343,16 +310,16 @@ public class OptaSimulator implements Runnable {
     OptaSimulatorState _state;
 
     static OptaSimulator _instance;
-}
 
-class OptaSimulatorState {
-    public String  stateId = "--unique id--";
-    public boolean useSnapshot;
-    public Date    pauseDate;
-    public Date    lastParsedDate;
-    public int     nextDocToParseIndex;
-    public int     speedFactor = 3600;
+    static private class OptaSimulatorState {
+        public String  stateId = "--unique id--";
+        public boolean useSnapshot;
+        public Date    pauseDate;
+        public Date    lastParsedDate;
+        public int     nextDocToParseIndex;
+        public int     speedFactor = 3600;
 
-    public OptaSimulatorState() {}
+        public OptaSimulatorState() {}
+    }
 }
 

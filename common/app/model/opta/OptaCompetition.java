@@ -23,7 +23,7 @@ public class OptaCompetition {
     public OptaCompetition() {}
     public OptaCompetition(String competitionId, String competitionCode, String competitionName, String seasonId) {
         activated = false;
-        this.seasonCompetitionId = String.format("%s/%s", seasonId, competitionId);
+        this.seasonCompetitionId = createId(seasonId, competitionId);
         this.competitionId = competitionId;
         this.competitionCode = competitionCode;
         this.competitionName = competitionName;

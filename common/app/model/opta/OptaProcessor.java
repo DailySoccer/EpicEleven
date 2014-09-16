@@ -4,7 +4,6 @@ import model.GlobalDate;
 import model.Model;
 import model.PointsTranslation;
 import org.bson.types.ObjectId;
-import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 import play.Logger;
@@ -14,42 +13,23 @@ import java.util.*;
 
 public class OptaProcessor {
 
-    static public boolean isDocumentValidForProcessing(String feedType, String competitionId, String seasonId) {
-        boolean valid = false;
-
-        if (feedType.equals("F9") || feedType.equals("F24") || feedType.equals("F1")) {
-            OptaCompetition optaCompetition = OptaCompetition.findOne(competitionId, seasonId);
-            valid = (optaCompetition != null) && optaCompetition.activated;
-        }
-        else
-        if (feedType.equals("F40")) {
-            // El filtro no podemos aplicarlo cuando en los documentos "F40"
-            //   se procesa una nueva competición o es una competición que está activa
-            OptaCompetition optaCompetition = OptaCompetition.findOne(competitionId, seasonId);
-            valid = (optaCompetition == null) || optaCompetition.activated;
-        }
-
-        return valid;
-    }
-
     // Retorna los Ids de opta (gameIds, optaMachEventId) de los partidos que han cambiado
-    public HashSet<String> processOptaDBInput(String feedType, String fileName, String requestBody) {
+    public HashSet<String> processOptaDBInput(String feedType, String seasonCompetitionId, String requestBody) {
         _dirtyMatchEvents = new HashSet<>();
 
         try {
-            Element requestBodyElement = new SAXBuilder().build(new StringReader(requestBody)).getRootElement();
+            if (isDocumentValidForProcessing(feedType, seasonCompetitionId)) {
+                Element requestBodyElement = new SAXBuilder().build(new StringReader(requestBody)).getRootElement();
 
-            if (feedType.equals("F9")) {
-                processF9(requestBodyElement);
-            }
-            else if (feedType.equals("F40")) {
-                processF40(requestBodyElement);
-            }
-            else if (feedType.equals("F24")) {
-                processEvents(requestBodyElement);
-            }
-            else if (feedType.equals("F1")) {
-                processF1(requestBodyElement);
+                if (feedType.equals("F9")) {
+                    processF9(requestBodyElement);
+                } else if (feedType.equals("F40")) {
+                    processF40(requestBodyElement);
+                } else if (feedType.equals("F24")) {
+                    processEvents(requestBodyElement);
+                } else if (feedType.equals("F1")) {
+                    processF1(requestBodyElement);
+                }
             }
         }
         catch (Exception e) {
@@ -57,6 +37,23 @@ public class OptaProcessor {
         }
 
         return _dirtyMatchEvents;
+    }
+
+    static private boolean isDocumentValidForProcessing(String feedType, String seasonCompetitionId) {
+        boolean valid = false;
+
+        if (feedType.equals("F9") || feedType.equals("F24") || feedType.equals("F1")) {
+            OptaCompetition optaCompetition = OptaCompetition.findOne(seasonCompetitionId);
+            valid = (optaCompetition != null) && optaCompetition.activated;
+        }
+        else
+        if (feedType.equals("F40")) {
+            // El filtro no podemos aplicarlo cuando en los documentos "F40" se procesa una nueva competición o es una competición que está activa
+            OptaCompetition optaCompetition = OptaCompetition.findOne(seasonCompetitionId);
+            valid = (optaCompetition == null) || optaCompetition.activated;
+        }
+
+        return valid;
     }
 
     private void processEvents(Element gamesObj) {

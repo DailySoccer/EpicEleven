@@ -1,16 +1,13 @@
 package model.opta;
 
 import play.Logger;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Date;
 
 
 public class OptaXmlUtils {
-    public static void insertXML(String xml, String headers, Date timestamp, String name, String feedType,
+
+    public static void insertXml(String xml, String headers, Date timestamp, String name, String feedType,
                                  String gameId, String competitionId, String seasonId, Date lastUpdated) {
 
         String insertString = "INSERT INTO optaxml (xml, headers, created_at, name, feed_type, game_id, competition_id," +
@@ -43,7 +40,7 @@ public class OptaXmlUtils {
         }
     }
 
-    public static Date getFirstDateFromOptaXML() {
+    public static Date getFirstDate() {
         Date dateFirst = new Date(0L);
 
         try (Connection connection = play.db.DB.getConnection()) {
@@ -63,7 +60,7 @@ public class OptaXmlUtils {
         return dateFirst;
     }
 
-    public static Date getLastDateFromOptaXML() {
+    public static Date getLastDate() {
         Date dateLast = new Date(0L);
 
         try (Connection connection = play.db.DB.getConnection()) {
@@ -81,5 +78,21 @@ public class OptaXmlUtils {
         }
 
         return dateLast;
+    }
+
+    public static ResultSet getNextXmlByDate(Connection connection, Date askedDate) throws SQLException {
+        Timestamp last_date = new Timestamp(askedDate.getTime());
+        String selectString = "SELECT * FROM optaxml WHERE created_at > '"+last_date+"' ORDER BY created_at LIMIT 1;";
+
+        Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        return stmt.executeQuery(selectString);
+    }
+
+    public static ResultSet getRemainingXmlCount(Connection connection, Date askedDate) throws SQLException {
+        Timestamp last_date = new Timestamp(askedDate.getTime());
+        String selectString = "SELECT count(*) as remaining FROM optaxml WHERE created_at > '"+last_date+"';";
+
+        Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        return stmt.executeQuery(selectString);
     }
 }
