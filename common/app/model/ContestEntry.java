@@ -117,6 +117,11 @@ public class ContestEntry implements JongoId {
                 contest.contestEntries.add(aContestEntry);
                 Model.contests().update(contest.contestId).with(contest);
 
+                // Crear instancias automáticamente según se vayan llenando las anteriores
+                if (contest.isFull()) {
+                    TemplateContest.findOne(contest.templateContestId).instantiateContest(false);
+                }
+
                 bRet = true;
             }
         }

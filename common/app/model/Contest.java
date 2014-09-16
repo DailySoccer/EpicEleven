@@ -44,6 +44,8 @@ public class Contest implements JongoId {
 
     public ObjectId getId() { return contestId; }
 
+    public boolean isFull() { return getNumEntries() >= maxEntries; }
+
     public ContestEntry findContestEntry(ObjectId contestEntryId) {
         ContestEntry ret = null;
         for (ContestEntry contestEntry : contestEntries) {
