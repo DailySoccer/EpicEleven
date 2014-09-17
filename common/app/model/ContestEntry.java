@@ -98,23 +98,23 @@ public class ContestEntry implements JongoId {
 
     /**
      * Creacion de un contest entry (se añade a la base de datos)
-     * @param user      Usuario al que pertenece el equipo
+     * @param userId      Usuario al que pertenece el equipo
      * @param contestId   Contest al que se apunta
      * @param soccersIds   Lista de futbolistas con la que se apunta
      * @return Si se ha realizado correctamente su creacion
      */
-    public static boolean create(ObjectId user, ObjectId contestId, List<ObjectId> soccersIds) {
+    public static boolean create(ObjectId userId, ObjectId contestId, List<ObjectId> soccersIds) {
 
         boolean bRet = false;
 
         try {
             Contest contest = Contest.findOne(contestId);
             if (contest != null) {
-                ContestEntry aContestEntry = new ContestEntry(user, soccersIds);
+                ContestEntry aContestEntry = new ContestEntry(userId, soccersIds);
                 contest.contestEntries.add(aContestEntry);
 
                 // Comprobamos que el contest siga ACTIVE y que existan Huecos Libres
-                String query = String.format("{_id: #, state: \"ACTIVE\", \"contestEntries.%s\": {$exists: false}}", contest.maxEntries-1);
+                String query = String.format("{_id: #, state: \"ACTIVE\", contestEntries.%s: {$exists: false}}", contest.maxEntries-1);
                 WriteResult result = Model.contests().update(query, contestId)
                         .with("{$addToSet: {contestEntries: #}}", aContestEntry);
 
@@ -134,21 +134,17 @@ public class ContestEntry implements JongoId {
         return bRet;
     }
 
-    public static boolean update(ObjectId contestEntryId, List<ObjectId> soccersIds) {
+    public static boolean update(ObjectId userId, ObjectId contestId, ObjectId contestEntryId, List<ObjectId> soccersIds) {
 
         boolean bRet = false;
 
         try {
-            Contest contest = Contest.findOneFromContestEntry(contestEntryId);
-            if (contest != null) {
-                ContestEntry contestToEdit = contest.findContestEntry(contestEntryId);
-                if (contestToEdit != null) {
-                    contestToEdit.soccerIds = soccersIds;
-                    Model.contests().update(contest.contestId).with(contest);
+            WriteResult result = Model.contests()
+                    .update("{_id: #, state: \"ACTIVE\", contestEntries._id: #, contestEntries.userId: #}", contestId, contestEntryId, userId)
+                    .with("{$set: {contestEntries.$.soccerIds: #}}", soccersIds);
 
-                    bRet = true;
-                }
-            }
+            // Comprobamos el número de documentos afectados (error == 0)
+            bRet = (result.getN() > 0);
         }
         catch (MongoException exc) {
             Logger.error("WTF 3032: ", exc);
@@ -157,13 +153,13 @@ public class ContestEntry implements JongoId {
         return bRet;
     }
 
-    public static boolean remove(ObjectId contestId, ObjectId contestEntryId) {
+    public static boolean remove(ObjectId userId, ObjectId contestId, ObjectId contestEntryId) {
 
         boolean bRet = false;
 
         try {
             WriteResult result = Model.contests()
-                    .update("{_id: #, contestEntries._id: #, state: \"ACTIVE\"}", contestId, contestEntryId)
+                    .update("{_id: #, state: \"ACTIVE\", contestEntries._id: #, contestEntries.userId: #}", contestId, contestEntryId, userId)
                     .with("{$pull: {contestEntries: {_id: #}}}", contestEntryId);
 
             // Comprobamos el número de documentos afectados (error == 0)
