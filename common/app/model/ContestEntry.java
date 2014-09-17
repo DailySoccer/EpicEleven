@@ -115,7 +115,8 @@ public class ContestEntry implements JongoId {
 
                 // Comprobamos que el contest siga ACTIVE y que existan Huecos Libres
                 String query = String.format("{_id: #, state: \"ACTIVE\", \"contestEntries.%s\": {$exists: false}}", contest.maxEntries-1);
-                WriteResult result = Model.contests().update(query, contestId).with(contest);
+                WriteResult result = Model.contests().update(query, contestId)
+                        .with("{$addToSet: {contestEntries: #}}", aContestEntry);
 
                 // Comprobamos el número de documentos afectados (error == 0)
                 bRet = (result.getN() > 0);
@@ -161,18 +162,12 @@ public class ContestEntry implements JongoId {
         boolean bRet = false;
 
         try {
-            Contest contest = Model.contests().findOne("{ _id: # }", contestId).as(Contest.class);
-            if (contest != null) {
-                ContestEntry contestToRemove = contest.findContestEntry(contestEntryId);
-                if (contestToRemove != null) {
-                    contest.contestEntries.remove(contestToRemove);
-                    Model.contests().update(contest.contestId).with(contest);
-                }
-                // TODO: Más rápido pero algo más peligroso (hemos de mantener "numEntries" actualizado)
-                // Model.contests().update("{ contestEntries._id: # }", contestEntryId).with("{ $pull: { contestEntries: { _id: # } }, $inc: { numEntries: -1 } }", contestEntryId);
+            WriteResult result = Model.contests()
+                    .update("{_id: #, contestEntries._id: #, state: \"ACTIVE\"}", contestId, contestEntryId)
+                    .with("{$pull: {contestEntries: {_id: #}}}", contestEntryId);
 
-                bRet = true;
-            }
+            // Comprobamos el número de documentos afectados (error == 0)
+            bRet = (result.getN() > 0);
         }
         catch (MongoException exc) {
             Logger.error("WTF 7801: ", exc);
