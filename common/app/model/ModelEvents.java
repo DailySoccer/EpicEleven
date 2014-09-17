@@ -28,7 +28,7 @@ public class ModelEvents {
         List<TemplateContest> templateContestsOff = ListUtils.asList(templateContestsResults);
 
         for (TemplateContest templateContest : templateContestsOff) {
-            templateContest.state = TemplateContest.State.ACTIVE;
+            templateContest.state = ContestState.ACTIVE;
 
             templateContest.instantiate();
 
@@ -77,7 +77,11 @@ public class ModelEvents {
                 .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}", matchEvent.templateMatchEventId)
                 .multi()
                 .with("{$set: {state: \"LIVE\"}}");
-    }
+
+        Model.contests()
+                .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}", matchEvent.templateMatchEventId)
+                .multi()
+                .with("{$set: {state: \"LIVE\"}}");   }
 
     private static void actionWhenMatchEventIsFinished(MatchEvent matchEvent) {
         // Buscamos los template contests que incluyan ese partido y que esten en "LIVE"
@@ -88,6 +92,7 @@ public class ModelEvents {
             // Si el contest ha terminado (true si todos sus partidos han terminado)
             if (templateContest.isFinished()) {
                 Model.templateContests().update("{_id: #, state: \"LIVE\"}", templateContest.templateContestId).with("{$set: {state: \"HISTORY\"}}");
+                Model.contests().update("{templateContestId: #, state: \"LIVE\"}", templateContest.templateContestId).with("{$set: {state: \"HISTORY\"}}");
 
                 // Aqui es el único sitio donde se darán los premios
                 templateContest.givePrizes();

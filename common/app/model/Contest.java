@@ -19,7 +19,9 @@ public class Contest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
-    @JsonView(JsonViews.NotForClient.class)
+    @JsonView(JsonViews.Extended.class)
+    public ContestState state = ContestState.OFF;
+
     public String name;
 
     @JsonView(JsonViews.Public.class)
@@ -30,19 +32,42 @@ public class Contest implements JongoId {
         return contestEntries.size();
     }
 
-    @JsonView(JsonViews.NotForClient.class)
     public int maxEntries;
+
+    public int salaryCap;
+    public int entryFee;
+    public PrizeType prizeType;
+
+    @JsonView(JsonViews.Extended.class)
+    public List<Integer> prizes;
+
+    public Date startDate;
+
+    @JsonView(JsonViews.Extended.class)
+    public List<ObjectId> templateMatchEventIds;
 
     public Contest() {}
 
     public Contest(TemplateContest template) {
         templateContestId = template.templateContestId;
+        state = template.state;
         name = template.name;
         maxEntries = template.maxEntries;
+        salaryCap = template.salaryCap;
+        entryFee = template.entryFee;
+        prizeType = template.prizeType;
+        prizes = template.prizes;
+        startDate = template.startDate;
+        templateMatchEventIds = template.templateMatchEventIds;
         createdAt = GlobalDate.getCurrentDate();
     }
 
     public ObjectId getId() { return contestId; }
+
+    public boolean isOff()      { return (state == ContestState.OFF); }
+    public boolean isActive()   { return (state == ContestState.ACTIVE); }
+    public boolean isLive()     { return (state == ContestState.LIVE); }
+    public boolean isHistory()  { return (state == ContestState.HISTORY); }
 
     public boolean isFull() { return getNumEntries() >= maxEntries; }
 
@@ -83,6 +108,22 @@ public class Contest implements JongoId {
 
     static public List<Contest> findAllFromTemplateContests(List<TemplateContest> templateContests) {
         return ListUtils.asList(Model.findObjectIds(Model.contests(), "templateContestId", ListUtils.convertToIdList(templateContests)).as(Contest.class));
+    }
+
+    static public List<Contest> findAllActive() {
+        return ListUtils.asList(Model.contests().find("{state: \"ACTIVE\"}").as(Contest.class));
+    }
+
+    static public List<Contest> findAllMyActive(ObjectId userId) {
+        return ListUtils.asList(Model.contests().find("{state: \"ACTIVE\", \"contestEntries.userId\": #}", userId).as(Contest.class));
+    }
+
+    static public List<Contest> findAllMyLive(ObjectId userId) {
+        return ListUtils.asList(Model.contests().find("{state: \"LIVE\", \"contestEntries.userId\": #}", userId).as(Contest.class));
+    }
+
+    static public List<Contest> findAllMyHistory(ObjectId userId) {
+        return ListUtils.asList(Model.contests().find("{state: \"HISTORY\", \"contestEntries.userId\": #}", userId).as(Contest.class));
     }
 
     public void updateRanking(BulkWriteOperation bulkOperation, TemplateContest templateContest, List<MatchEvent> matchEvents) {

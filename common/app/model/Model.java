@@ -197,6 +197,8 @@ public class Model {
         if (!theMongoDB.collectionExists("contests")) {
             DBCollection contests = theMongoDB.createCollection("contests", new BasicDBObject());
             contests.createIndex(new BasicDBObject("templateContestId", 1));
+            contests.createIndex(new BasicDBObject("templateMatchEventIds", 1));
+            contests.createIndex(new BasicDBObject("state", 1));
             contests.createIndex(new BasicDBObject("contestEntries._id", 1));
             contests.createIndex(new BasicDBObject("contestEntries.userId", 1));
         }
