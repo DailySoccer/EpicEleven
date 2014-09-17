@@ -8,3 +8,7 @@ libraryDependencies ++= Seq(
   cache,
   filters
 )
+
+sources in (Compile,doc) := Seq.empty
+
+publishArtifact in (Compile, packageDoc) := false
