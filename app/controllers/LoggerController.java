@@ -10,17 +10,27 @@ import static play.data.Form.form;
 
 @AllowCors.Origin
 public class LoggerController extends Controller {
+
     public static class Params {
         public String level;
+        public String time;
         public String errorMessage;
     }
+
     public static Result logPost() {
+
         Form<Params> errorForm = form(Params.class).bindFromRequest();
         Params params = errorForm.get();
-        Logger.error("WTF 101: Client exception: {}", params.level);
-        Logger.error("--------------------------");
-        Logger.error(params.errorMessage);
-        Logger.error("--------------------------");
+
+        Logger.error("\n[Client {}] WTF 101: Client exception at {}:\n" +
+                     "[Client {}]--------------------------\n" +
+                     "[Client {}]{}\n" +
+                     "[Client {}]--------------------------",
+                     params.level, params.time,
+                     params.level,
+                     params.level, params.errorMessage,
+                     params.level);
+
         return ok("Stacktrace logged");
     }
 
