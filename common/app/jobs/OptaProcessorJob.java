@@ -40,39 +40,38 @@ public class OptaProcessorJob {
             ResultSet resultSet = OptaXmlUtils.getNextXmlByDate(conn, state.lastProcessedDate);
 
             if (resultSet != null && resultSet.next()) {
-                processResultSet(resultSet, new OptaProcessor());
+                state.lastProcessedDate = processResultSet(resultSet, new OptaProcessor());
             }
         }
         catch (Exception e) {
             Logger.error("WTF 8816", e);
         }
+
+        Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with(state);
     }
 
-    public static void processResultSet(ResultSet resultSet, OptaProcessor processor) {
+    public static Date processResultSet(ResultSet resultSet, OptaProcessor processor) {
+
+        Date processedDate = null;
 
         try {
-            Date created_at = resultSet.getTimestamp("created_at");
+            processedDate = resultSet.getTimestamp("created_at");
 
             String sqlxml = resultSet.getString("xml");
             String name = resultSet.getString("name");
             String feedType = resultSet.getString("feed_type");
             String seasonCompetitionId = OptaCompetition.createId(resultSet.getString("season_id"), resultSet.getString("competition_id"));
 
-            Logger.info("OptaProcessorJob: {}, {}, {}, {}", feedType, name, GlobalDate.formatDate(created_at), seasonCompetitionId);
+            Logger.info("OptaProcessorJob: {}, {}, {}, {}", feedType, name, GlobalDate.formatDate(processedDate), seasonCompetitionId);
 
             HashSet<String> changedOptaMatchEventIds = processor.processOptaDBInput(feedType, seasonCompetitionId, sqlxml);
             ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
-
-            OptaProcessorState state = new OptaProcessorState();
-            state.lastProcessedDate = created_at;
-
-            // TODO: Si el simulador nos avanza llamando aqui, nosotros registramos correctamente donde estamos.
-            //       Sin embargo al contrario no es cierto, si avanzamos a traves del Scheduler el simulador no se entera.
-            Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).upsert().with(state);
         }
         catch (SQLException e) {
             Logger.error("WTF 7817", e);
         }
+
+        return processedDate;
     }
 
     static private class OptaProcessorState {
