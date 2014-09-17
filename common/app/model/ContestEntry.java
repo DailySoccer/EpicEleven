@@ -23,13 +23,13 @@ public class ContestEntry implements JongoId {
     @JsonView(JsonViews.FullContest.class)
     public List<ObjectId> soccerIds;    // Fantasy team
 
-    @JsonView(JsonViews.FullContest.class)
+    @JsonView(JsonViews.Extended.class)
     public int position = -1;
 
-    @JsonView(JsonViews.FullContest.class)
+    @JsonView(JsonViews.Extended.class)
     public int prize;
 
-    @JsonView(JsonViews.FullContest.class)
+    @JsonView(JsonViews.Extended.class)
     public int fantasyPoints;
 
     @JsonView(JsonViews.NotForClient.class)

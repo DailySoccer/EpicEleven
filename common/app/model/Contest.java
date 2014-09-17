@@ -12,6 +12,14 @@ import java.util.*;
 
 public class Contest implements JongoId {
 
+    public static String FILTER_NONE = "";
+    public static String FILTER_ACTIVE_CONTESTS = "state:0, prizes:0, templateMatchEventIds:0, activationAt:0, createdAt:0," +
+            " contestEntries.soccerIds:0, contestEntries.position:0, contestEntries.prize:0, contestEntries.fantasyPoints:0, contestEntries.createdAt:0";
+    public static String FILTER_MY_ACTIVE_CONTESTS = "prizes:0, templateMatchEventIds:0, activationAt:0, createdAt:0," +
+            " contestEntries.soccerIds:0, contestEntries.position:0, contestEntries.prize:0, contestEntries.fantasyPoints:0, contestEntries.createdAt:0";
+    public static String FILTER_MY_LIVE_CONTESTS = "prizes:0, activationAt:0, createdAt:0, contestEntries.position:0, contestEntries.prize:0, contestEntries.fantasyPoints:0, contestEntries.createdAt:0";
+    public static String FILTER_MY_HISTORY_CONTESTS = "activationAt:0, createdAt:0, contestEntries.createdAt:0, contestEntries.soccerIds:0";
+
     @Id
     public ObjectId contestId;
     public ObjectId templateContestId;
@@ -110,20 +118,20 @@ public class Contest implements JongoId {
         return ListUtils.asList(Model.findObjectIds(Model.contests(), "templateContestId", ListUtils.convertToIdList(templateContests)).as(Contest.class));
     }
 
-    static public List<Contest> findAllActive() {
-        return ListUtils.asList(Model.contests().find("{state: \"ACTIVE\"}").as(Contest.class));
+    static public List<Contest> findAllActive(String filter) {
+        return ListUtils.asList(Model.contests().find("{state: \"ACTIVE\"}").projection(String.format("{%s}", filter)).as(Contest.class));
     }
 
-    static public List<Contest> findAllMyActive(ObjectId userId) {
-        return ListUtils.asList(Model.contests().find("{state: \"ACTIVE\", \"contestEntries.userId\": #}", userId).as(Contest.class));
+    static public List<Contest> findAllMyActive(ObjectId userId, String filter) {
+        return ListUtils.asList(Model.contests().find("{state: \"ACTIVE\", \"contestEntries.userId\": #}", userId).projection(String.format("{%s}", filter)).as(Contest.class));
     }
 
-    static public List<Contest> findAllMyLive(ObjectId userId) {
-        return ListUtils.asList(Model.contests().find("{state: \"LIVE\", \"contestEntries.userId\": #}", userId).as(Contest.class));
+    static public List<Contest> findAllMyLive(ObjectId userId, String filter) {
+        return ListUtils.asList(Model.contests().find("{state: \"LIVE\", \"contestEntries.userId\": #}", userId).projection(String.format("{%s}", filter)).as(Contest.class));
     }
 
-    static public List<Contest> findAllMyHistory(ObjectId userId) {
-        return ListUtils.asList(Model.contests().find("{state: \"HISTORY\", \"contestEntries.userId\": #}", userId).as(Contest.class));
+    static public List<Contest> findAllMyHistory(ObjectId userId, String filter) {
+        return ListUtils.asList(Model.contests().find("{state: \"HISTORY\", \"contestEntries.userId\": #}", userId).projection(String.format("{%s}", filter)).as(Contest.class));
     }
 
     public void updateRanking(BulkWriteOperation bulkOperation, TemplateContest templateContest, List<MatchEvent> matchEvents) {

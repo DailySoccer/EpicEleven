@@ -34,7 +34,7 @@ public class ContestController extends Controller {
      */
     public static Result getActiveContests() {
         // Tambien necesitamos devolver todos los concursos instancias asociados a los templates
-        List<Contest> contests = Contest.findAllActive();
+        List<Contest> contests = Contest.findAllActive(Contest.FILTER_ACTIVE_CONTESTS);
         return new ReturnHelper(ImmutableMap.of("contests", contests)).toResult();
     }
 
@@ -42,9 +42,9 @@ public class ContestController extends Controller {
     public static Result getMyContests() {
         User theUser = (User)ctx().args.get("User");
 
-        List<Contest> myActiveContests = Contest.findAllMyActive(theUser.userId);
-        List<Contest> myLiveContests = Contest.findAllMyLive(theUser.userId);
-        List<Contest> myHistoryContests = Contest.findAllMyHistory(theUser.userId);
+        List<Contest> myActiveContests = Contest.findAllMyActive(theUser.userId, Contest.FILTER_MY_ACTIVE_CONTESTS);
+        List<Contest> myLiveContests = Contest.findAllMyLive(theUser.userId, Contest.FILTER_MY_LIVE_CONTESTS);
+        List<Contest> myHistoryContests = Contest.findAllMyHistory(theUser.userId, Contest.FILTER_MY_HISTORY_CONTESTS);
 
         List<ObjectId> liveMatchEventsIds = new ArrayList<>();
         for (Contest liveContest : myLiveContests) {
