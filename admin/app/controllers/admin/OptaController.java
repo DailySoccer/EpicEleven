@@ -21,8 +21,8 @@ public class OptaController extends Controller {
         return ok(views.html.opta_competition_list.render(optaCompetitions));
     }
 
-    public static Result changeCompetitionState(String competitionId, String state) {
-        Model.optaCompetitions().update("{competitionId: #}", competitionId).with("{$set: {activated: #}}", state.toLowerCase().equals("true"));
+    public static Result changeCompetitionState(String seasonCompetitionId, String state) {
+        Model.optaCompetitions().update("{seasonCompetitionId: #}", seasonCompetitionId).with("{$set: {activated: #}}", state.toLowerCase().equals("true"));
         return ok("OK");
     }
 

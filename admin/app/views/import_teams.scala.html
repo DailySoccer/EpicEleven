@@ -3,20 +3,18 @@
 
 @import controllers.admin.routes._
 
-@competition_names(competitionIds : List[String]) = {
-    @for((p, index) <- competitionIds.zipWithIndex) {
-        @competition_name(p) @if(index < competitionIds.size-1) { + ", " + }
-    }
+@competition_names(competitionIds : List[String]) = @{
+    competitionIds.filter( (p) => competitionMap.contains(p) ).map( (p) => competition_name(p) ).mkString(", ")
 }
 
-@competition_name(competitionId : String) = {
-    @if(competitionId == "*") {
+@competition_name(competitionId : String) = @{
+    if(competitionId == "*") {
         "All Competitions"
     } else {
-        @if(competitionMap.contains(competitionId)) {
-            '@competitionMap(competitionId).competitionName'
+        if(competitionMap.contains(competitionId)) {
+            competitionMap(competitionId).competitionName + "/" + competitionMap(competitionId).seasonId
         } else {
-            @competitionId
+            competitionId
         }
     }
 }
@@ -34,7 +32,7 @@
             "@p.optaTeamId",
             "@p.name",
             "@p.shortName",
-            @competition_names(p.competitionIds)
+            "@competition_names(p.seasonCompetitionIds)"
         ] @if(index < team_list.size-1) { , }
     }
 }
@@ -87,7 +85,7 @@
             }
             @for((key, competition) <- competitionMap) {
                 @if(competitionFilter != key) {
-                    <li><a href='@ImportController.showImportTeamsFromCompetition(key)'>@competition.competitionName</a></li>
+                    <li><a href='@ImportController.showImportTeamsFromCompetition(key)'>@competition.competitionName/@competition.seasonId</a></li>
                 }
             }
         </ul>

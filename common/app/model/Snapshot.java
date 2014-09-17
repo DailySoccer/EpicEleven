@@ -81,7 +81,7 @@ public class Snapshot {
 
         //MongoCollection collectionSource = Model.jongo().getCollection(snapshotName);
         MongoCollection collectionSource = _jongoSnapshot.getCollection(collectionName);
-        MongoCollection collectionTarget = Model.jongo().getCollection(collectionName);
+        MongoCollection collectionTarget = _jongoRegular.getCollection(collectionName);
 
         Iterable<T> results = collectionSource.find("{createdAt: {$gte: #, $lte: #}}", updatedDate, nextDate).as(classType);
         List<T> list = utils.ListUtils.asList(results);
@@ -108,17 +108,18 @@ public class Snapshot {
     }
 
     static private void init() {
-        String mongodbUri = Play.application().configuration().getString("mongodb.uri");
-        MongoClientURI mongoClientURI = new MongoClientURI(mongodbUri);
+        MongoClientURI mongoClientURI = new MongoClientURI(Play.application().configuration().getString("mongodb.uri"));
 
         try {
             MongoClient mongoClient = new MongoClient(mongoClientURI);
+
             _mongoDBAdmin = mongoClient.getDB("admin");
-
             _mongoDBSnapshot = mongoClient.getDB("snapshot");
-            _jongoSnapshot = new Jongo(_mongoDBSnapshot);
 
-        } catch (Exception exc) {
+            _jongoSnapshot = new Jongo(_mongoDBSnapshot);
+            _jongoRegular = new Jongo(mongoClient.getDB(mongoClientURI.getDatabase()));
+        }
+        catch (Exception exc) {
             Logger.error("Snapshot: Error initializating MongoDB {}/{}: {}", mongoClientURI.getHosts(),
                          mongoClientURI.getDatabase(), exc.toString());
         }
@@ -135,6 +136,7 @@ public class Snapshot {
     static private DB _mongoDBAdmin;
     static private DB _mongoDBSnapshot;
     static private Jongo _jongoSnapshot;
+    static private Jongo _jongoRegular;
 
     @JsonIgnore
     private Date updatedDate;

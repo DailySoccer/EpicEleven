@@ -134,6 +134,19 @@ public class TemplateContest implements JongoId, Initializer {
         return true;
     }
 
+    public Contest instantiateContest(boolean addMockDataUsers) {
+        Contest contest = new Contest(this);
+
+        // TODO: <MockData> Cuándo activar o no esta "funcionalidad"
+        if (addMockDataUsers) {
+            MockData.addContestEntries(contest, contest.maxEntries - 1);
+        }
+
+        Model.contests().withWriteConcern(WriteConcern.SAFE).insert(contest);
+
+        return contest;
+    }
+
     public void instantiate() {
         assert(isActive());
 
@@ -145,12 +158,7 @@ public class TemplateContest implements JongoId, Initializer {
         long instances = Model.contests().count("{templateContestId: #}", templateContestId);
 
         for(long i=instances; i<minInstances; i++) {
-            Contest contest = new Contest(this);
-
-            // TODO: <MockData> Cuándo activar o no esta "funcionalidad"
-            MockData.addContestEntries(contest, contest.maxEntries-1);
-
-            Model.contests().withWriteConcern(WriteConcern.SAFE).insert(contest);
+            instantiateContest(true);
         }
 
         // Incluir los premios del torneo (ya no se podrá cambiar la forma de calcularlo)

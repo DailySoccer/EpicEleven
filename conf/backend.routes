@@ -27,6 +27,7 @@ GET         /get_live_match_events/template_contest/:contest        controllers.
 
 # Entrar en concurso
 POST        /add_contest_entry                                      controllers.ContestController.addContestEntry()
+POST        /edit_contest_entry                                     controllers.ContestController.editContestEntry()
 # Cancelar la entrada a un concurso
 POST        /cancel_contest_entry                                   controllers.ContestController.cancelContestEntry()
 

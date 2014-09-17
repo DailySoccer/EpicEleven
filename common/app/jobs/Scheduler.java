@@ -8,7 +8,6 @@ import play.Logger;
 import play.libs.Akka;
 import scala.concurrent.duration.Duration;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;

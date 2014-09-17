@@ -7,7 +7,7 @@ public class SampleJob {
 
     @SchedulePolicy(initialDelay = 0, timeUnit = TimeUnit.SECONDS, interval = 10)
     public static void printLog() {
-        Logger.debug("Hello from SampleJob.printLog {}", _counter++);
+        //Logger.debug("Hello from SampleJob.printLog {}", _counter++);
     }
     static private int _counter = 0;
 }

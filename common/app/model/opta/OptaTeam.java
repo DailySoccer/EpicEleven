@@ -13,7 +13,7 @@ public class OptaTeam {
     public String optaTeamId;
     public String name;
     public String shortName;
-    public ArrayList<String> competitionIds;
+    public ArrayList<String> seasonCompetitionIds;  // formato: <optaSeasonId>/<optaCompetitionId>
     public Date updatedTime;
     public boolean dirty = true;
 

@@ -35,15 +35,15 @@ public final class MockData {
     }
 
     public static void ensureCompetitions() {
-        createCompetition("4", "IG_WC", "World Cup");
-        createCompetition("5", "EU_CL", "Champions League");
-        createCompetition("23", "ES_PL", "Spanish La Liga");
+        createCompetition("4", "IG_WC", "World Cup", "2013");
+        createCompetition("5", "EU_CL", "Champions League", "2014");
+        createCompetition("23", "ES_PL", "Spanish La Liga", "2014");
     }
 
-    static private void createCompetition(String competitionId, String competitionCode, String competitionName) {
-        OptaCompetition optaCompetition = OptaCompetition.findOne(competitionId);
+    static private void createCompetition(String competitionId, String competitionCode, String competitionName, String seasonId) {
+        OptaCompetition optaCompetition = OptaCompetition.findOne(competitionId, seasonId);
         if (optaCompetition == null) {
-            Model.optaCompetitions().insert(new OptaCompetition(competitionId, competitionCode, competitionName));
+            Model.optaCompetitions().insert(new OptaCompetition(competitionId, competitionCode, competitionName, seasonId));
         }
     }
 

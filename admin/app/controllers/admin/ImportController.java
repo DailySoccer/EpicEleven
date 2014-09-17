@@ -18,8 +18,8 @@ public class ImportController extends Controller {
      * IMPORT TEAMS from OPTA
      *
      */
-    private static void evaluateDirtyTeams(List<String> competitionIds, List<OptaTeam> news, List<OptaTeam> changes, List<OptaTeam> invalidates) {
-        Iterable<OptaTeam> teamsDirty = Model.optaTeams().find("{dirty: true, competitionIds: {$in: #}}", competitionIds).as(OptaTeam.class);
+    private static void evaluateDirtyTeams(List<String> seasonCompetitionIds, List<OptaTeam> news, List<OptaTeam> changes, List<OptaTeam> invalidates) {
+        Iterable<OptaTeam> teamsDirty = Model.optaTeams().find("{dirty: true, seasonCompetitionIds: {$in: #}}", seasonCompetitionIds).as(OptaTeam.class);
         for(OptaTeam optaTeam : teamsDirty) {
             TemplateSoccerTeam template = TemplateSoccerTeam.findOneFromOptaId(optaTeam.optaTeamId);
             if (template == null) {
@@ -57,7 +57,7 @@ public class ImportController extends Controller {
     }
 
     public static Result showImportTeamsFromCompetition(String competitionId) {
-        List<String> competitionsSelected = new ArrayList<String>();
+        List<String> competitionsSelected = new ArrayList<>();
         competitionsSelected.add(competitionId);
 
         List<OptaTeam> teamsNew = new ArrayList<>();
@@ -90,7 +90,7 @@ public class ImportController extends Controller {
     }
 
     public static Result importAllNewTeamsFromCompetition(String competitionId) {
-        List<String> competitionsSelected = new ArrayList<String>();
+        List<String> competitionsSelected = new ArrayList<>();
         competitionsSelected.add(competitionId);
 
         List<OptaTeam> teamsNew = new ArrayList<>();
@@ -124,9 +124,8 @@ public class ImportController extends Controller {
             }
             else {
                 OptaTeam optaTeam = OptaTeam.findOne(optaSoccer.teamId);
-                for (int i=0; i<optaTeam.competitionIds.size() && !isTeamValid; i++) {
-                    String competitionId = optaTeam.competitionIds.get(i);
-                    isTeamValid = OptaCompetition.findOne(competitionId).activated;
+                for (int i=0; i<optaTeam.seasonCompetitionIds.size() && !isTeamValid; i++) {
+                    isTeamValid = OptaCompetition.findOne(optaTeam.seasonCompetitionIds.get(i)).activated;
                 }
                 teamIsValid.put(optaSoccer.teamId, isTeamValid);
             }

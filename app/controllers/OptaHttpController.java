@@ -2,9 +2,7 @@ package controllers;
 
 import actions.AllowCors;
 import model.GlobalDate;
-import model.Model;
-import model.ModelEvents;
-import model.opta.OptaProcessor;
+import model.opta.OptaXmlUtils;
 import org.joda.time.DateTime;
 import play.Logger;
 import play.db.DB;
@@ -12,11 +10,12 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 
-import java.io.UnsupportedEncodingException;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 @AllowCors.Origin
@@ -34,28 +33,23 @@ public class OptaHttpController extends Controller {
 
         try {
             // HTTP default encoding for POST requests is ISO-8859-1 if no charset is passed via "Content-Type" header.
-            byte[] bodyOriginalBytes = request().body().asText().getBytes("ISO-8859-1");
-            bodyText = new String(bodyOriginalBytes, "UTF-8");
+            bodyText = new String(request().body().asText().getBytes("ISO-8859-1"), "UTF-8");
+
+            String fileName = getHeader("X-Meta-Default-Filename", request().headers());
+            Logger.info("About to insert {}", fileName);
+
+            OptaXmlUtils.insertXml(bodyText, getHeadersString(request().headers()), new Date(), fileName,
+                                   getHeader("X-Meta-Feed-Type", request().headers()),
+                                   getHeader("X-Meta-Game-Id", request().headers()),
+                                   getHeader("X-Meta-Competition-Id", request().headers()),
+                                   getHeader("X-Meta-Season-Id", request().headers()),
+                                   GlobalDate.parseDate(getHeader("X-Meta-Last-Updated", request().headers()), null));
         }
-        catch (UnsupportedEncodingException e) {
+        catch (Exception e) {
             Logger.error("WTF 5119", e);
         }
 
-        String fileName = getHeader("X-Meta-Default-Filename", request().headers());
-        String feedType = getHeader("X-Meta-Feed-Type", request().headers());
-
-        Logger.info("About to insert {}", fileName);
-
-        Model.insertXML(bodyText, getHeadersString(request().headers()), new Date(), fileName, feedType,
-                        getHeader("X-Meta-Game-Id", request().headers()),
-                        getHeader("X-Meta-Competition-Id", request().headers()),
-                        getHeader("X-Meta-Season-Id", request().headers()),
-                        GlobalDate.parseDate(getHeader("X-Meta-Last-Updated", request().headers()), null));
-
-        HashSet<String> updatedMatchEvents = new OptaProcessor().processOptaDBInput(feedType, fileName, bodyText);
-        ModelEvents.onOptaMatchEventIdsChanged(updatedMatchEvents);
-
-        return ok("Yeah, XML processed");
+        return ok("Yeah, XML inserted");
     }
 
     private static String getHeadersString(Map<String, String[]> headers) {
@@ -78,14 +72,12 @@ public class OptaHttpController extends Controller {
     }
 
     public static Result returnXML(long last_timestamp) {
-
         Date askedDate = new Date(last_timestamp);
-
         String retXML = "NULL";
 
         try (Connection connection = DB.getConnection()) {
 
-            ResultSet nextOptaData = findXML(connection, askedDate);
+            ResultSet nextOptaData = OptaXmlUtils.getNextXmlByDate(connection, askedDate);
 
             if (nextOptaData != null && nextOptaData.next()) {
                 setResponseHeaders(nextOptaData);
@@ -100,17 +92,16 @@ public class OptaHttpController extends Controller {
     }
 
     public static Result dateLastXML() {
-        return ok(GlobalDate.formatDate(Model.getLastDateFromOptaXML()));
+        return ok(GlobalDate.formatDate(OptaXmlUtils.getLastDate()));
     }
 
     public static Result remainingXMLs(long last_timestamp) {
-
         Date askedDate = new Date(last_timestamp);
         String remainingXML = "0";
 
         try (Connection connection = DB.getConnection()) {
 
-            ResultSet remainingOptaData = getRemaining(connection, askedDate);
+            ResultSet remainingOptaData = OptaXmlUtils.getRemainingXmlCount(connection, askedDate);
 
             if (remainingOptaData != null && remainingOptaData.next()) {
                 remainingXML = String.valueOf(remainingOptaData.getInt("remaining"));
@@ -158,22 +149,5 @@ public class OptaHttpController extends Controller {
         if (lastUpdated != null) {
             response().setHeader("last-updated", new DateTime(lastUpdated).toString());
         }
-    }
-
-    private static ResultSet findXML(Connection connection, Date askedDate) throws SQLException {
-
-        Timestamp last_date = new Timestamp(askedDate.getTime());
-        String selectString = "SELECT * FROM optaxml WHERE created_at > '"+last_date+"' ORDER BY created_at LIMIT 1;";
-
-        Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-        return stmt.executeQuery(selectString);
-    }
-
-    private static ResultSet getRemaining(Connection connection, Date askedDate) throws SQLException {
-        Timestamp last_date = new Timestamp(askedDate.getTime());
-        String selectString = "SELECT count(*) as remaining FROM optaxml WHERE created_at > '"+last_date+"';";
-
-        Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-        return stmt.executeQuery(selectString);
     }
 }

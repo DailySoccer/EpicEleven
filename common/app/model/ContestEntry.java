@@ -65,10 +65,10 @@ public class ContestEntry implements JongoId {
         bulkOperation.find(query).updateOne(update);
     }
 
-    static public ContestEntry findOne(String contestId) {
+    static public ContestEntry findOne(String contestEntryId) {
         ContestEntry aContestEntry = null;
-        if (ObjectId.isValid(contestId)) {
-            aContestEntry = findOne(new ObjectId(contestId));
+        if (ObjectId.isValid(contestEntryId)) {
+            aContestEntry = findOne(new ObjectId(contestEntryId));
         }
         return aContestEntry;
     }
@@ -103,25 +103,53 @@ public class ContestEntry implements JongoId {
      * Creacion de un contest entry (se añade a la base de datos)
      * @param user      Usuario al que pertenece el equipo
      * @param contestId   Contest al que se apunta
-     * @param soccers   Lista de futbolistas con la que se apunta
+     * @param soccersIds   Lista de futbolistas con la que se apunta
      * @return Si se ha realizado correctamente su creacion
      */
-    public static boolean create(ObjectId user, ObjectId contestId, List<ObjectId> soccers) {
+    public static boolean create(ObjectId user, ObjectId contestId, List<ObjectId> soccersIds) {
 
         boolean bRet = false;
 
         try {
-            Contest contest = Model.contests().findOne("{ _id: # }", contestId).as(Contest.class);
+            Contest contest = Contest.findOne(contestId);
             if (contest != null) {
-                ContestEntry aContestEntry = new ContestEntry(user, soccers);
+                ContestEntry aContestEntry = new ContestEntry(user, soccersIds);
                 contest.contestEntries.add(aContestEntry);
                 Model.contests().update(contest.contestId).with(contest);
+
+                // Crear instancias automáticamente según se vayan llenando las anteriores
+                if (contest.isFull()) {
+                    TemplateContest.findOne(contest.templateContestId).instantiateContest(false);
+                }
 
                 bRet = true;
             }
         }
         catch (MongoException exc) {
             Logger.error("WTF 2032: ", exc);
+        }
+
+        return bRet;
+    }
+
+    public static boolean update(ObjectId contestEntryId, List<ObjectId> soccersIds) {
+
+        boolean bRet = false;
+
+        try {
+            Contest contest = Contest.findOneFromContestEntry(contestEntryId);
+            if (contest != null) {
+                ContestEntry contestToEdit = contest.findContestEntry(contestEntryId);
+                if (contestToEdit != null) {
+                    contestToEdit.soccerIds = soccersIds;
+                    Model.contests().update(contest.contestId).with(contest);
+
+                    bRet = true;
+                }
+            }
+        }
+        catch (MongoException exc) {
+            Logger.error("WTF 3032: ", exc);
         }
 
         return bRet;

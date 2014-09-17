@@ -34,15 +34,17 @@
                     { "title": "Competition Id" },
                     { "title": "Competition Code" },
                     { "title": "Competition Name" },
+                    { "title": "Season Id" },
                     { "title": "Created At" }
                 ],
                 "data": [
                     @for((p, index) <- competitions.zipWithIndex) {
                         [
-                            "@p.competitionId~@p.activated",
+                            "@p.seasonCompetitionId~@p.activated",
                             "@p.competitionId",
                             "@p.competitionCode",
                             "@p.competitionName",
+                            "@p.seasonId",
                             "@GlobalDate.formatDate(p.createdAt)"
                         ] @if(index < competitions.size-1) { , }
                     }

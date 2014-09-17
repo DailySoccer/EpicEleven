@@ -4,7 +4,6 @@ import model.GlobalDate;
 import model.Model;
 import model.PointsTranslation;
 import org.bson.types.ObjectId;
-import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 import play.Logger;
@@ -14,42 +13,29 @@ import java.util.*;
 
 public class OptaProcessor {
 
-    static public boolean isDocumentValidForProcessing(String feedType, String competitionId) {
-        boolean valid = false;
-
-        if (feedType.equals("F9") || feedType.equals("F24") || feedType.equals("F1")) {
-            OptaCompetition optaCompetition = OptaCompetition.findOne(competitionId);
-            valid = (optaCompetition != null) && optaCompetition.activated;
-        }
-        else
-        if (feedType.equals("F40")) {
-            // El filtro no podemos aplicarlo cuando en los documentos "F40"
-            //   se procesa una nueva competición o es una competición que está activa
-            OptaCompetition optaCompetition = OptaCompetition.findOne(competitionId);
-            valid = (optaCompetition == null) || optaCompetition.activated;
-        }
-
-        return valid;
-    }
-
     // Retorna los Ids de opta (gameIds, optaMachEventId) de los partidos que han cambiado
-    public HashSet<String> processOptaDBInput(String feedType, String fileName, String requestBody) {
+    public HashSet<String> processOptaDBInput(String feedType, String seasonCompetitionId, String requestBody) {
         _dirtyMatchEvents = new HashSet<>();
 
         try {
-            Element requestBodyElement = new SAXBuilder().build(new StringReader(requestBody)).getRootElement();
+            if (isDocumentValidForProcessing(feedType, seasonCompetitionId)) {
+                Element requestBodyElement = new SAXBuilder().build(new StringReader(requestBody)).getRootElement();
 
-            if (feedType.equals("F9")) {
-                processF9(requestBodyElement);
-            }
-            else if (feedType.equals("F40")) {
-                processF40(requestBodyElement);
-            }
-            else if (feedType.equals("F24")) {
-                processEvents(requestBodyElement);
-            }
-            else if (feedType.equals("F1")) {
-                processF1(requestBodyElement);
+                if (feedType.equals("F9")) {
+                    processF9(requestBodyElement);
+                }
+                else
+                if (feedType.equals("F40")) {
+                    processF40(requestBodyElement, ensureCompetition(requestBodyElement, seasonCompetitionId));
+                }
+                else
+                if (feedType.equals("F24")) {
+                    processEvents(requestBodyElement);
+                }
+                else
+                if (feedType.equals("F1")) {
+                    processF1(requestBodyElement);
+                }
             }
         }
         catch (Exception e) {
@@ -57,6 +43,42 @@ public class OptaProcessor {
         }
 
         return _dirtyMatchEvents;
+    }
+
+    static private OptaCompetition ensureCompetition(Element f40, String seasonCompetitionId) {
+
+        OptaCompetition ret = OptaCompetition.findOne(seasonCompetitionId);
+
+        if (ret == null) {
+            Element myF40 = f40.getChild("SoccerDocument");
+
+           ret = new OptaCompetition(myF40.getAttribute("competition_id").getValue(),
+                                     myF40.getAttribute("competition_code").getValue(),
+                                     myF40.getAttribute("competition_name").getValue(),
+                                     myF40.getAttribute("season_id").getValue());
+            // Por convenio
+            ret.activated = false;
+
+            Model.optaCompetitions().insert(ret);
+        }
+
+        return ret;
+    }
+
+    static private boolean isDocumentValidForProcessing(String feedType, String seasonCompetitionId) {
+        boolean valid = false;
+
+        // Solo procesamos documentos de competiciones activas
+        if (feedType.equals("F9") || feedType.equals("F24") || feedType.equals("F1")) {
+            OptaCompetition optaCompetition = OptaCompetition.findOne(seasonCompetitionId);
+            valid = (optaCompetition != null) && optaCompetition.activated;
+        }
+        else
+        if (feedType.equals("F40")) {
+            valid = true;   // Los F40 siempre nos resulta interesante mirar al menos si es una nueva competicion
+        }
+
+        return valid;
     }
 
     private void processEvents(Element gamesObj) {
@@ -208,24 +230,18 @@ public class OptaProcessor {
         }
     }
 
-    private void processF40(Element f40) {
+    private void processF40(Element f40, OptaCompetition optaCompetition) {
+
+        if (!optaCompetition.activated)
+            return;
 
         if (null == _pointsTranslationCache)
             resetPointsTranslationCache();
 
-        // Obtener la lista de teams y players
         Element myF40 = f40.getChild("SoccerDocument");
 
-        if (!myF40.getAttribute("Type").getValue().equals("SQUADS Latest"))
-            throw new RuntimeException("WTF 7349: processF40");
-
         String competitionId = myF40.getAttribute("competition_id").getValue();
-
-        if (OptaCompetition.findOne(competitionId) == null) {
-            Model.optaCompetitions().insert(new OptaCompetition(competitionId,
-                                                                myF40.getAttribute("competition_code").getValue(),
-                                                                myF40.getAttribute("competition_name").getValue()));
-        }
+        String seasonId = myF40.getAttribute("season_id").getValue();
 
         for (Element team : myF40.getChildren("Team")) {
 
@@ -236,18 +252,17 @@ public class OptaProcessor {
 
             OptaTeam myTeam = new OptaTeam();
             myTeam.optaTeamId = getStringId(team, "uID");
-            myTeam.name = team.getChild("Name").getContent().get(0).getValue();// AttributeValue("Name");
+            myTeam.name = team.getChild("Name").getContent().get(0).getValue();
             myTeam.updatedTime = GlobalDate.getCurrentDate();
 
             if (null != team.getChild("SYMID") && team.getChild("SYMID").getContentSize() > 0) {
-                myTeam.shortName = team.getChild("SYMID").getContent().get(0).getValue();//getAttributeValue("SYMID");
+                myTeam.shortName = team.getChild("SYMID").getContent().get(0).getValue();
             }
 
-            Model.optaTeams()
-                    .update("{optaTeamId: #}", myTeam.optaTeamId)
-                    .upsert()
-                    .with("{$set: {optaTeamId:#, name:#, shortName:#, updatedTime:#, dirty:#}, $addToSet: {competitionIds:#}}",
-                            myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty, competitionId);
+            Model.optaTeams().update("{optaTeamId: #}", myTeam.optaTeamId).upsert()
+                             .with("{$set: {optaTeamId:#, name:#, shortName:#, updatedTime:#, dirty:#}, $addToSet: {seasonCompetitionIds:#}}",
+                                     myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty,
+                                     OptaCompetition.createId(seasonId, competitionId));
 
             for (Element player : playersList) {
                 String playerId = getStringId(player, "uID");

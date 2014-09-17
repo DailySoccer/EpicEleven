@@ -163,6 +163,8 @@ public class ContestController extends Controller {
     public static Result addContestEntry() {
         Form<AddContestEntryParams> contestEntryForm = form(AddContestEntryParams.class).bindFromRequest();
 
+        String contestId = "";
+
         if (!contestEntryForm.hasErrors()) {
             AddContestEntryParams params = contestEntryForm.get();
 
@@ -176,14 +178,75 @@ public class ContestController extends Controller {
             // Obtener los soccerIds de los futbolistas : List<ObjectId>
             List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
 
+            if (aContest != null) {
+                // Verificar que el contest no esté lleno
+                if (aContest.contestEntries.size() >= aContest.maxEntries) {
+                    // Buscar otro contest de características similares
+                    aContest = aContest.getSameContestWithFreeSlot();
+                }
+            }
+
             List<String> errores = validateContestEntry(aContest, idsList);
             if (errores.isEmpty()) {
                 ContestEntry.create(theUser.userId, aContest.contestId, idsList);
+
+                contestId = aContest.contestId.toString();
             } else {
                 // TODO: ¿Queremos informar de los distintos errores?
                 for (String error : errores) {
                     contestEntryForm.reject(CONTEST_ENTRY_KEY, error);
                 }
+            }
+        }
+
+        JsonNode result = contestEntryForm.errorsAsJson();
+
+        if (!contestEntryForm.hasErrors()) {
+            result = new ObjectMapper().createObjectNode().put("result", "ok").put("contestId", contestId);
+        }
+        return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
+    }
+
+    public static class EditContestEntryParams {
+        @Constraints.Required
+        public String contestEntryId;
+
+        @Constraints.Required
+        public String soccerTeam;   // JSON con la lista de futbolistas seleccionados
+    }
+
+    @UserAuthenticated
+    public static Result editContestEntry() {
+        Form<EditContestEntryParams> contestEntryForm = form(EditContestEntryParams.class).bindFromRequest();
+
+        if (!contestEntryForm.hasErrors()) {
+            EditContestEntryParams params = contestEntryForm.get();
+
+            Logger.info("editContestEntry: contestEntryId({}) soccerTeam({})", params.contestEntryId, params.soccerTeam);
+
+            User theUser = (User) ctx().args.get("User");
+
+            ContestEntry contestEntry = ContestEntry.findOne(params.contestEntryId);
+            if (contestEntry != null) {
+
+                // Obtener el contestId : ObjectId
+                Contest aContest = Contest.findOneFromContestEntry(contestEntry.contestEntryId);
+
+                // Obtener los soccerIds de los futbolistas : List<ObjectId>
+                List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
+
+                List<String> errores = validateContestEntry(aContest, idsList);
+                if (errores.isEmpty()) {
+                    ContestEntry.update(contestEntry.contestEntryId, idsList);
+                } else {
+                    // TODO: ¿Queremos informar de los distintos errores?
+                    for (String error : errores) {
+                        contestEntryForm.reject(CONTEST_ENTRY_KEY, error);
+                    }
+                }
+            }
+            else {
+                contestEntryForm.reject(CONTEST_ENTRY_KEY, ERROR_CONTEST_ENTRY_INVALID);
             }
         }
 
@@ -202,11 +265,6 @@ public class ContestController extends Controller {
         if (contest == null) {
             errores.add(ERROR_CONTEST_INVALID);
         } else {
-            // Verificar que el contest no esté lleno
-            if (contest.contestEntries.size() >= contest.maxEntries) {
-                errores.add(ERROR_CONTEST_FULL);
-            }
-
             TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
 
             // Verificar que el templateContest esté activo (ni "live" ni "history")
