@@ -12,4 +12,8 @@ libraryDependencies ++= Seq(
 
 play.Project.playJavaSettings
 
+sources in (Compile,doc) := Seq.empty
+
+publishArtifact in (Compile, packageDoc) := false
+
 //javacOptions := List("-encoding", "utf-8", "-Xlint:unchecked")

@@ -21,6 +21,10 @@ libraryDependencies ++= Seq(
   "com.newrelic.agent.java" % "newrelic-agent" % "3.10.0"
 )
 
+sources in (Compile,doc) := Seq.empty
+
+publishArtifact in (Compile, packageDoc) := false
+
 // Definimos nuestros projectos y las dependencias entre ellos
 lazy val common = project
 
