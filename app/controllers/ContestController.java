@@ -214,14 +214,12 @@ public class ContestController extends Controller {
         if (contest == null) {
             errores.add(ERROR_CONTEST_INVALID);
         } else {
-            TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
-
             // Verificar que el templateContest esté activo (ni "live" ni "history")
-            if (!templateContest.isActive()) {
+            if (!contest.isActive()) {
                 errores.add(ERROR_CONTEST_NOT_ACTIVE);
             }
 
-            List<MatchEvent> matchEvents = templateContest.getMatchEvents();
+            List<MatchEvent> matchEvents = contest.getMatchEvents();
 
             // Buscar los soccerPlayers dentro de los partidos del contest
             List<SoccerPlayer> soccerPlayers = getSoccerPlayersFromMatchEvents(objectIds, matchEvents);
@@ -233,7 +231,7 @@ public class ContestController extends Controller {
             }
             else {
                 // Verificar que los futbolistas no cuestan más que el salaryCap del templateContest
-                if (getSalaryCap(soccerPlayers) > templateContest.salaryCap) {
+                if (getSalaryCap(soccerPlayers) > contest.salaryCap) {
                     errores.add(ERROR_SALARYCAP_INVALID);
                 }
 

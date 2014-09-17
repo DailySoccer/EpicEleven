@@ -1,10 +1,7 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.mongodb.BasicDBObject;
-import com.mongodb.BulkWriteOperation;
-import com.mongodb.DBObject;
-import com.mongodb.MongoException;
+import com.mongodb.*;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
@@ -115,14 +112,18 @@ public class ContestEntry implements JongoId {
             if (contest != null) {
                 ContestEntry aContestEntry = new ContestEntry(user, soccersIds);
                 contest.contestEntries.add(aContestEntry);
-                Model.contests().update(contest.contestId).with(contest);
+
+                // Comprobamos que el contest siga ACTIVE y que existan Huecos Libres
+                String query = String.format("{_id: #, state: \"ACTIVE\", \"contestEntries.%s\": {$exists: false}}", contest.maxEntries-1);
+                WriteResult result = Model.contests().update(query, contestId).with(contest);
+
+                // Comprobamos el número de documentos afectados (error == 0)
+                bRet = (result.getN() > 0);
 
                 // Crear instancias automáticamente según se vayan llenando las anteriores
                 if (contest.isFull()) {
                     TemplateContest.findOne(contest.templateContestId).instantiateContest(false);
                 }
-
-                bRet = true;
             }
         }
         catch (MongoException exc) {
