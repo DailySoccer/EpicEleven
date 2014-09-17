@@ -40,7 +40,7 @@ public class Scheduler {
                                 schedule.invoke(null);
                             }
                             catch (Exception e) {
-                                Logger.error("WTF 0693", e);
+                                Logger.error("WTF 0693", e.getCause());
                             }
                         }
                     },
