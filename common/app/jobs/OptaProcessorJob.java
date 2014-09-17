@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 public class OptaProcessorJob {
 
-    @SchedulePolicy(initialDelay = 0, timeUnit = TimeUnit.SECONDS, interval = 1)
+    @SchedulePolicy(initialDelay = 0, timeUnit = TimeUnit.MILLISECONDS, interval = 1000)
     public static void checkAndProcessNextOptaXml() {
 
         // Evitamos que se produzcan actualizaciones simultaneas, por si en algun momento nos equivocamos y lanzamos
@@ -32,7 +32,7 @@ public class OptaProcessorJob {
         }
         else
         if (state.isProcessing) {
-            throw new RuntimeException("WTF 3885");
+            throw new RuntimeException("WTF 3885: Colision entre dos worker processes");
         }
 
         try (Connection conn = play.db.DB.getConnection()) {
