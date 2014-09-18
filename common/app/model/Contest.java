@@ -12,7 +12,7 @@ public class Contest implements JongoId {
 
     public static String FILTER_NONE = "";
     public static String FILTER_ACTIVE_CONTESTS = "state:0, prizes:0, templateMatchEventIds:0, activationAt:0, createdAt:0," +
-            " contestEntries.soccerIds:0, contestEntries.position:0, contestEntries.prize:0, contestEntries.fantasyPoints:0, contestEntries.createdAt:0";
+            " contestEntries.userId:0, contestEntries.soccerIds:0, contestEntries.position:0, contestEntries.prize:0, contestEntries.fantasyPoints:0, contestEntries.createdAt:0";
     public static String FILTER_MY_ACTIVE_CONTESTS = "prizes:0, templateMatchEventIds:0, activationAt:0, createdAt:0," +
             " contestEntries.soccerIds:0, contestEntries.position:0, contestEntries.prize:0, contestEntries.fantasyPoints:0, contestEntries.createdAt:0";
     public static String FILTER_MY_LIVE_CONTESTS = "prizes:0, activationAt:0, createdAt:0, contestEntries.position:0, contestEntries.prize:0, contestEntries.fantasyPoints:0, contestEntries.createdAt:0";
@@ -30,7 +30,7 @@ public class Contest implements JongoId {
 
     public String name;
 
-    @JsonView(JsonViews.Public.class)
+    @JsonView(JsonViews.Extended.class)
     public List<ContestEntry> contestEntries = new ArrayList<>();
 
     @JsonView(JsonViews.Public.class)
