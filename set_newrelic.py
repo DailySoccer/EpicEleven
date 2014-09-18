@@ -18,7 +18,7 @@ def get_setter_cmd(java_opts):
     return 'heroku config:set JAVA_OPTS="{}" --app {}'.format(java_opts, APP)
 
 
-RELIC_OPTS = ' -J-javaagent:newrelic/newrelic.jar -J-Dnewrelic.config.file=newrelic/newrelic.yml'
+RELIC_OPTS = ' -javaagent:newrelic/newrelic.jar -Dnewrelic.config.file=newrelic/newrelic.yml'
 CONFIG_GET_CMD = 'heroku config:get JAVA_OPTS --app {}'.format(APP)
 
 heroku_opts = subprocess.check_output(shlex.split(CONFIG_GET_CMD))[0:-1]
