@@ -3,6 +3,10 @@ import sys
 import shlex
 import subprocess
 
+if len(sys.argv) < 3 or sys.argv[1] not in ['dailysoccer', 'dailysoccer-staging']:
+    print 'Usage: {} dailysoccer/dailysoccer-staging on/off'.format(sys.argv[0])
+    sys.exit()
+
 APP = sys.argv[1]
 NEW_STATE = sys.argv[2]
 
