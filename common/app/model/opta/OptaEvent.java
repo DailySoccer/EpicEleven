@@ -150,6 +150,10 @@ public class OptaEvent {
             this.typeId = OptaEventType.CAUGHT_OFFSIDE.code;
             this.optaPlayerId = optaPlayerOffsideId;
         }
+        // Player Saves -> 1010
+        else if (this.typeId == OptaEventType.SAVE_GOALKEEPER.code && this.qualifiers.contains(93)) {
+            this.typeId = OptaEventType.SAVE_PLAYER.code;
+        }
     }
 
     static public OptaEvent findLast(String optaMatchEventId) {

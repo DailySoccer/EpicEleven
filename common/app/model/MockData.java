@@ -54,7 +54,8 @@ public final class MockData {
                 {OptaEventType.FOUL_RECEIVED.code, 3},                 // falta recibida
                 {OptaEventType.TACKLE_EFFECTIVE.code, 10},             // recuperacion/entrada con posesion
                 {OptaEventType.INTERCEPTION.code, 3},                  // intercepcion
-                {OptaEventType.SAVE.code, 10},                         // parada
+                {OptaEventType.SAVE_GOALKEEPER.code, 10},              // parada
+                {OptaEventType.SAVE_PLAYER.code, 10},                  // tiro bloqueado por jugador
                 {OptaEventType.CLAIM.code, 10},                        // captura balon
                 {OptaEventType.CLEARANCE.code, 5},                     // parada
                 {OptaEventType.MISS.code, 5},                          // tiro a puerta

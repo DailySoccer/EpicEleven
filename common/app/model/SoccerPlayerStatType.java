@@ -3,7 +3,6 @@ package model;
 
 import com.google.common.collect.ImmutableList;
 import model.opta.OptaEventType;
-import play.Logger;
 
 import java.util.List;
 
@@ -23,7 +22,7 @@ import java.util.List;
     Tarjetas rojas: RED_CARD
 
     Goles encajados: GOAL_CONCEDED
-    Paradas: SAVE + CLAIM
+    Paradas: SAVE_GOALKEEPER + CLAIM
     Despejes: CLEARANCE + PUNCH
     Penaltis detenidos: GOALKEEPER_SAVES_PENALTY
 */
@@ -40,7 +39,7 @@ public enum SoccerPlayerStatType {
     TARJETAS_AMARILLAS      (9),    // YELLOW_CARD
     TARJETAS_ROJAS          (10),   // RED_CARD
     GOLES_ENCAJADOS         (11),   // GOAL_CONCEDED
-    PARADAS                 (12),   // SAVE + CLAIM
+    PARADAS                 (12),   // SAVE_GOALKEEPER + CLAIM
     DESPEJES                (13),   // CLEARANCE + PUNCH
     PENALTIS_DETENIDOS      (14);   // GOALKEEPER_SAVES_PENALTY
 
@@ -99,7 +98,7 @@ public enum SoccerPlayerStatType {
                     OptaEventType.GOAL_CONCEDED.code
             );
             case PARADAS: return ImmutableList.of(
-                    OptaEventType.SAVE.code,
+                    OptaEventType.SAVE_GOALKEEPER.code,
                     OptaEventType.CLAIM.code
             );
             case DESPEJES: return ImmutableList.of(
