@@ -12,5 +12,5 @@ public @interface SchedulePolicy {
 
     public int      initialDelay()  default 0;
     public TimeUnit timeUnit()      default TimeUnit.MILLISECONDS;
-    public int      interval()      default 1000;
+    public int      interval()      default 0;  // Por convenio, un intervalo de 0 significa invokar solo vez.
 }

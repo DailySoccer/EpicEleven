@@ -17,7 +17,46 @@ import java.util.concurrent.TimeUnit;
 
 public class OptaProcessorJob {
 
-    @SchedulePolicy(initialDelay = 0, timeUnit = TimeUnit.MILLISECONDS, interval = 1000)
+    @SchedulePolicy(initialDelay = 0, timeUnit = TimeUnit.SECONDS, interval = 0)
+    public static void init() {
+        OptaProcessorState state = Model.optaProcessor().findOne("{stateId: #}", OptaProcessorState.UNIQUE_ID).as(OptaProcessorState.class);
+
+        try {
+            if (state != null && state.isProcessing) {
+                Logger.error("WTF 0263: Se ha detectado isProcessing == true durante la inicializacion. Esperamos X segundos para reparar!");
+
+                Scheduler.invokeOnce(20, TimeUnit.SECONDS, OptaProcessorJob.class.getMethod("initAfterDelay", Date.class), state.lastProcessedDate);
+            }
+            else {
+                Scheduler.scheduleMethod(0, 1, TimeUnit.SECONDS, OptaProcessorJob.class.getMethod("checkAndProcessNextOptaXml"));
+            }
+        }
+        catch (NoSuchMethodException e) {
+            throw new RuntimeException("WTF 1102");
+        }
+    }
+
+    public static void initAfterDelay(Date prevLastProcessedDate) {
+        OptaProcessorState state = Model.optaProcessor().findOne("{stateId: #}", OptaProcessorState.UNIQUE_ID).as(OptaProcessorState.class);
+
+        // Chequeamos que no hay dos worker process
+        if (state == null || !state.isProcessing || !state.lastProcessedDate.equals(prevLastProcessedDate)) {
+            throw new RuntimeException("WTF 0003: Este worker process se lanzo mientras habia otro procesando");
+        }
+
+        // La fecha coincide con la de hace X segundos. Asumimos que el worker process que la dejo asi esta muerto.
+        Logger.info("WTF 0263: Reparando un isProcessing == true que ocurrio durante la inicializacion");
+        Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with("{$set: {isProcessing: false}}");
+        Logger.info("WTF 0263: Lo conseguimos, isProcessing == true reparado");
+
+        try {
+            Scheduler.scheduleMethod(0, 1, TimeUnit.SECONDS, OptaProcessorJob.class.getMethod("checkAndProcessNextOptaXml"));
+        }
+        catch (NoSuchMethodException e) {
+            throw new RuntimeException("WTF 5112");
+        }
+    }
+
     public static void checkAndProcessNextOptaXml() {
 
         // Evitamos que se produzcan actualizaciones simultaneas, por si en algun momento nos equivocamos y lanzamos
@@ -26,13 +65,14 @@ public class OptaProcessorJob {
                                                         .upsert()
                                                         .with("{$set: {isProcessing: true}}")
                                                         .as(OptaProcessorState.class);
+
+        if (state != null && state.isProcessing) {
+            throw new RuntimeException("WTF 3885: Colision entre dos worker processes");
+        }
+
         if (state == null) {
             state = new OptaProcessorState();
             state.lastProcessedDate = new Date(0L);
-        }
-        else
-        if (state.isProcessing) {
-            throw new RuntimeException("WTF 3885: Colision entre dos worker processes");
         }
 
         try (Connection conn = play.db.DB.getConnection()) {
@@ -42,8 +82,7 @@ public class OptaProcessorJob {
             if (resultSet != null && resultSet.next()) {
                 state.lastProcessedDate = processResultSet(resultSet, new OptaProcessor());
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Logger.error("WTF 8816", e);
         }
 
