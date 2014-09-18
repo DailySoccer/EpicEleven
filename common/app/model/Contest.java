@@ -3,9 +3,7 @@ package model;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.BulkWriteOperation;
 import org.bson.types.ObjectId;
-import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
-import play.Logger;
 import utils.ListUtils;
 
 import java.util.*;
@@ -80,7 +78,7 @@ public class Contest implements JongoId {
     public boolean isFull() { return getNumEntries() >= maxEntries; }
 
     public List<MatchEvent> getMatchEvents() {
-        return MatchEvent.findAllFromTemplate(templateMatchEventIds);
+        return MatchEvent.findAllFromTemplates(templateMatchEventIds);
     }
 
     public ContestEntry findContestEntry(ObjectId contestEntryId) {

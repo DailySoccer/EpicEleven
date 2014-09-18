@@ -15,12 +15,8 @@ import play.mvc.Result;
 import utils.ListUtils;
 import utils.ReturnHelper;
 import utils.ReturnHelperWithAttach;
-
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import static play.data.Form.form;
 
 
@@ -29,11 +25,8 @@ public class ContestController extends Controller {
 
     /*
      * Devuelve la lista de contests activos (aquellos a los que un usuario puede apuntarse)
-     * Incluye los datos referenciados por cada uno de los contest (sus templates y sus match events)
-     * de forma que el cliente tenga todos los datos referenciados por un determinado contest
      */
     public static Result getActiveContests() {
-        // Tambien necesitamos devolver todos los concursos instancias asociados a los templates
         List<Contest> contests = Contest.findAllActive(Contest.FILTER_ACTIVE_CONTESTS);
         return new ReturnHelper(ImmutableMap.of("contests", contests)).toResult();
     }
@@ -46,11 +39,7 @@ public class ContestController extends Controller {
         List<Contest> myLiveContests = Contest.findAllMyLive(theUser.userId, Contest.FILTER_MY_LIVE_CONTESTS);
         List<Contest> myHistoryContests = Contest.findAllMyHistory(theUser.userId, Contest.FILTER_MY_HISTORY_CONTESTS);
 
-        List<ObjectId> liveMatchEventsIds = new ArrayList<>();
-        for (Contest liveContest : myLiveContests) {
-            liveMatchEventsIds.addAll(liveContest.templateMatchEventIds);
-        }
-        List<MatchEvent> liveMatchEvents = MatchEvent.findAllFromTemplate(liveMatchEventsIds);
+        List<MatchEvent> liveMatchEvents = MatchEvent.gatherFromContests(myLiveContests);
 
         return new ReturnHelperWithAttach()
                 .attachObject("contests_0", myActiveContests, JsonViews.Public.class)
@@ -77,9 +66,9 @@ public class ContestController extends Controller {
     }
 
     private static ReturnHelper getContest(String contestId) {
-         Contest contest = Contest.findOne(contestId);
+        Contest contest = Contest.findOne(contestId);
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
-        List<MatchEvent> matchEvents = MatchEvent.findAllFromTemplate(contest.templateMatchEventIds);
+        List<MatchEvent> matchEvents = MatchEvent.findAllFromTemplates(contest.templateMatchEventIds);
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                                                 "users_info", usersInfoInContest,
@@ -352,7 +341,7 @@ public class ContestController extends Controller {
         }
 
         // Consultar por los partidos del TemplateContest (queremos su version "live")
-        List<MatchEvent> liveMatchEventList = MatchEvent.findAllFromTemplate(templateContest.templateMatchEventIds);
+        List<MatchEvent> liveMatchEventList = MatchEvent.findAllFromTemplates(templateContest.templateMatchEventIds);
 
         return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
     }

@@ -67,7 +67,7 @@ public class TemplateContest implements JongoId, Initializer {
     }
 
     public List<MatchEvent> getMatchEvents() {
-        return MatchEvent.findAllFromTemplate(templateMatchEventIds);
+        return MatchEvent.findAllFromTemplates(templateMatchEventIds);
     }
 
     static public TemplateContest findOne(ObjectId templateContestId) {
