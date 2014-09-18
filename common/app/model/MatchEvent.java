@@ -70,22 +70,22 @@ public class MatchEvent {
         return Model.matchEvents().findOne("{templateMatchEventId : #}", templateMatchEventId).as(MatchEvent.class);
     }
 
+    public static List<MatchEvent> findAllFromTemplates(List<ObjectId> idList) {
+        return ListUtils.asList(Model.findObjectIds(Model.matchEvents(), "templateMatchEventId", idList).as(MatchEvent.class));
+    }
+
     public static List<MatchEvent> findAll() {
         return ListUtils.asList(Model.matchEvents().find().as(MatchEvent.class));
     }
 
-    public static List<MatchEvent> findAllFromTemplate(List<ObjectId> idList) {
-        return ListUtils.asList(Model.findObjectIds(Model.matchEvents(), "templateMatchEventId", idList).as(MatchEvent.class));
-    }
+    static public List<MatchEvent> gatherFromContests(List<Contest> contests) {
+        HashSet<ObjectId> liveMatchEventsIds = new HashSet<>();
 
-    static public List<MatchEvent> gatherFromTemplateContests(List<TemplateContest> templateContests) {
-        List<ObjectId> templateMatchEventObjectIds = new ArrayList<>(templateContests.size());
-
-        for (TemplateContest templateContest: templateContests) {
-            templateMatchEventObjectIds.addAll(templateContest.templateMatchEventIds);
+        for (Contest liveContest : contests) {
+            liveMatchEventsIds.addAll(liveContest.templateMatchEventIds);
         }
 
-        return ListUtils.asList(Model.findObjectIds(Model.matchEvents(), "templateMatchEventId", templateMatchEventObjectIds).as(MatchEvent.class));
+        return findAllFromTemplates(new ArrayList<>(liveMatchEventsIds));
     }
 
     public void setGameStarted() {

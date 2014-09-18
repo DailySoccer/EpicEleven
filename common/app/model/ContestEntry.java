@@ -1,10 +1,7 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.mongodb.BasicDBObject;
-import com.mongodb.BulkWriteOperation;
-import com.mongodb.DBObject;
-import com.mongodb.MongoException;
+import com.mongodb.*;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
@@ -23,13 +20,13 @@ public class ContestEntry implements JongoId {
     @JsonView(JsonViews.FullContest.class)
     public List<ObjectId> soccerIds;    // Fantasy team
 
-    @JsonView(JsonViews.FullContest.class)
+    @JsonView(JsonViews.Extended.class)
     public int position = -1;
 
-    @JsonView(JsonViews.FullContest.class)
+    @JsonView(JsonViews.Extended.class)
     public int prize;
 
-    @JsonView(JsonViews.FullContest.class)
+    @JsonView(JsonViews.Extended.class)
     public int fantasyPoints;
 
     @JsonView(JsonViews.NotForClient.class)
@@ -101,28 +98,33 @@ public class ContestEntry implements JongoId {
 
     /**
      * Creacion de un contest entry (se añade a la base de datos)
-     * @param user      Usuario al que pertenece el equipo
+     * @param userId      Usuario al que pertenece el equipo
      * @param contestId   Contest al que se apunta
      * @param soccersIds   Lista de futbolistas con la que se apunta
      * @return Si se ha realizado correctamente su creacion
      */
-    public static boolean create(ObjectId user, ObjectId contestId, List<ObjectId> soccersIds) {
+    public static boolean create(ObjectId userId, ObjectId contestId, List<ObjectId> soccersIds) {
 
         boolean bRet = false;
 
         try {
             Contest contest = Contest.findOne(contestId);
             if (contest != null) {
-                ContestEntry aContestEntry = new ContestEntry(user, soccersIds);
+                ContestEntry aContestEntry = new ContestEntry(userId, soccersIds);
                 contest.contestEntries.add(aContestEntry);
-                Model.contests().update(contest.contestId).with(contest);
+
+                // Comprobamos que el contest siga ACTIVE y que existan Huecos Libres
+                String query = String.format("{_id: #, state: \"ACTIVE\", contestEntries.%s: {$exists: false}}", contest.maxEntries-1);
+                WriteResult result = Model.contests().update(query, contestId)
+                        .with("{$addToSet: {contestEntries: #}}", aContestEntry);
+
+                // Comprobamos el número de documentos afectados (error == 0)
+                bRet = (result.getN() > 0);
 
                 // Crear instancias automáticamente según se vayan llenando las anteriores
                 if (contest.isFull()) {
                     TemplateContest.findOne(contest.templateContestId).instantiateContest(false);
                 }
-
-                bRet = true;
             }
         }
         catch (MongoException exc) {
@@ -132,21 +134,17 @@ public class ContestEntry implements JongoId {
         return bRet;
     }
 
-    public static boolean update(ObjectId contestEntryId, List<ObjectId> soccersIds) {
+    public static boolean update(ObjectId userId, ObjectId contestId, ObjectId contestEntryId, List<ObjectId> soccersIds) {
 
         boolean bRet = false;
 
         try {
-            Contest contest = Contest.findOneFromContestEntry(contestEntryId);
-            if (contest != null) {
-                ContestEntry contestToEdit = contest.findContestEntry(contestEntryId);
-                if (contestToEdit != null) {
-                    contestToEdit.soccerIds = soccersIds;
-                    Model.contests().update(contest.contestId).with(contest);
+            WriteResult result = Model.contests()
+                    .update("{_id: #, state: \"ACTIVE\", contestEntries._id: #, contestEntries.userId: #}", contestId, contestEntryId, userId)
+                    .with("{$set: {contestEntries.$.soccerIds: #}}", soccersIds);
 
-                    bRet = true;
-                }
-            }
+            // Comprobamos el número de documentos afectados (error == 0)
+            bRet = (result.getN() > 0);
         }
         catch (MongoException exc) {
             Logger.error("WTF 3032: ", exc);
@@ -155,23 +153,17 @@ public class ContestEntry implements JongoId {
         return bRet;
     }
 
-    public static boolean remove(ObjectId contestId, ObjectId contestEntryId) {
+    public static boolean remove(ObjectId userId, ObjectId contestId, ObjectId contestEntryId) {
 
         boolean bRet = false;
 
         try {
-            Contest contest = Model.contests().findOne("{ _id: # }", contestId).as(Contest.class);
-            if (contest != null) {
-                ContestEntry contestToRemove = contest.findContestEntry(contestEntryId);
-                if (contestToRemove != null) {
-                    contest.contestEntries.remove(contestToRemove);
-                    Model.contests().update(contest.contestId).with(contest);
-                }
-                // TODO: Más rápido pero algo más peligroso (hemos de mantener "numEntries" actualizado)
-                // Model.contests().update("{ contestEntries._id: # }", contestEntryId).with("{ $pull: { contestEntries: { _id: # } }, $inc: { numEntries: -1 } }", contestEntryId);
+            WriteResult result = Model.contests()
+                    .update("{_id: #, state: \"ACTIVE\", contestEntries._id: #, contestEntries.userId: #}", contestId, contestEntryId, userId)
+                    .with("{$pull: {contestEntries: {_id: #}}}", contestEntryId);
 
-                bRet = true;
-            }
+            // Comprobamos el número de documentos afectados (error == 0)
+            bRet = (result.getN() > 0);
         }
         catch (MongoException exc) {
             Logger.error("WTF 7801: ", exc);

@@ -15,24 +15,11 @@ import java.util.Date;
 import java.util.List;
 
 public class TemplateContest implements JongoId, Initializer {
-    public enum State {
-        OFF(0),
-        ACTIVE(1),
-        LIVE(2),
-        HISTORY(3);
-
-        public final int id;
-
-        State(int id) {
-            this.id = id;
-        }
-    }
-
     @Id
     public ObjectId templateContestId;
 
     @JsonView(JsonViews.Extended.class)
-    public State state = State.OFF;
+    public ContestState state = ContestState.OFF;
 
     public String name;
 
@@ -62,17 +49,17 @@ public class TemplateContest implements JongoId, Initializer {
     public TemplateContest() { }
 
     public void Initialize() {
-        state = State.OFF;
+        state = ContestState.OFF;
     }
 
     public ObjectId getId() {
         return templateContestId;
     }
 
-    public boolean isOff()      { return (state == State.OFF); }
-    public boolean isActive()   { return (state == State.ACTIVE); }
-    public boolean isLive()     { return (state == State.LIVE); }
-    public boolean isHistory()  { return (state == State.HISTORY); }
+    public boolean isOff()      { return (state == ContestState.OFF); }
+    public boolean isActive()   { return (state == ContestState.ACTIVE); }
+    public boolean isLive()     { return (state == ContestState.LIVE); }
+    public boolean isHistory()  { return (state == ContestState.HISTORY); }
 
 
     public List<TemplateMatchEvent> getTemplateMatchEvents() {
@@ -80,7 +67,7 @@ public class TemplateContest implements JongoId, Initializer {
     }
 
     public List<MatchEvent> getMatchEvents() {
-        return MatchEvent.findAllFromTemplate(templateMatchEventIds);
+        return MatchEvent.findAllFromTemplates(templateMatchEventIds);
     }
 
     static public TemplateContest findOne(ObjectId templateContestId) {
@@ -136,6 +123,8 @@ public class TemplateContest implements JongoId, Initializer {
 
     public Contest instantiateContest(boolean addMockDataUsers) {
         Contest contest = new Contest(this);
+        contest.prizes = getPrizes(prizeType, maxEntries, getPrizePool());
+        contest.state = ContestState.ACTIVE;
 
         // TODO: <MockData> Cuándo activar o no esta "funcionalidad"
         if (addMockDataUsers) {

@@ -3,6 +3,10 @@ import sys
 import shlex
 import subprocess
 
+if len(sys.argv) < 3 or sys.argv[1] not in ['dailysoccer', 'dailysoccer-staging']:
+    print 'Usage: {} dailysoccer/dailysoccer-staging on/off'.format(sys.argv[0])
+    sys.exit()
+
 APP = sys.argv[1]
 NEW_STATE = sys.argv[2]
 
@@ -14,7 +18,7 @@ def get_setter_cmd(java_opts):
     return 'heroku config:set JAVA_OPTS="{}" --app {}'.format(java_opts, APP)
 
 
-RELIC_OPTS = ' -J-javaagent:newrelic/newrelic.jar -J-Dnewrelic.config.file=newrelic/newrelic.yml'
+RELIC_OPTS = ' -javaagent:newrelic/newrelic.jar -Dnewrelic.config.file=newrelic/newrelic.yml'
 CONFIG_GET_CMD = 'heroku config:get JAVA_OPTS --app {}'.format(APP)
 
 heroku_opts = subprocess.check_output(shlex.split(CONFIG_GET_CMD))[0:-1]

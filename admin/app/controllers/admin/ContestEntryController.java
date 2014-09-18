@@ -5,7 +5,6 @@ import org.bson.types.ObjectId;
 import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utils.ListUtils;
 
 import java.util.List;
 
@@ -83,6 +82,6 @@ public class ContestEntryController extends Controller {
         // Pasar la lista de partidos
         Contest contest = Contest.findOne(new ObjectId(contestId));
         TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
-        return MatchEvent.findAllFromTemplate(templateContest.templateMatchEventIds);
+        return MatchEvent.findAllFromTemplates(templateContest.templateMatchEventIds);
     }
 }

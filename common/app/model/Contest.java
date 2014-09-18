@@ -3,14 +3,20 @@ package model;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.BulkWriteOperation;
 import org.bson.types.ObjectId;
-import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
-import play.Logger;
 import utils.ListUtils;
 
 import java.util.*;
 
 public class Contest implements JongoId {
+
+    public static String FILTER_NONE = "";
+    public static String FILTER_ACTIVE_CONTESTS = "state:0, prizes:0, templateMatchEventIds:0, activationAt:0, createdAt:0," +
+            " contestEntries.userId:0, contestEntries.soccerIds:0, contestEntries.position:0, contestEntries.prize:0, contestEntries.fantasyPoints:0, contestEntries.createdAt:0";
+    public static String FILTER_MY_ACTIVE_CONTESTS = "prizes:0, templateMatchEventIds:0, activationAt:0, createdAt:0," +
+            " contestEntries.soccerIds:0, contestEntries.position:0, contestEntries.prize:0, contestEntries.fantasyPoints:0, contestEntries.createdAt:0";
+    public static String FILTER_MY_LIVE_CONTESTS = "prizes:0, activationAt:0, createdAt:0, contestEntries.position:0, contestEntries.prize:0, contestEntries.fantasyPoints:0, contestEntries.createdAt:0";
+    public static String FILTER_MY_HISTORY_CONTESTS = "activationAt:0, createdAt:0, contestEntries.createdAt:0, contestEntries.soccerIds:0";
 
     @Id
     public ObjectId contestId;
@@ -19,10 +25,12 @@ public class Contest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
-    @JsonView(JsonViews.NotForClient.class)
+    @JsonView(JsonViews.Extended.class)
+    public ContestState state = ContestState.OFF;
+
     public String name;
 
-    @JsonView(JsonViews.Public.class)
+    @JsonView(JsonViews.Extended.class)
     public List<ContestEntry> contestEntries = new ArrayList<>();
 
     @JsonView(JsonViews.Public.class)
@@ -30,21 +38,48 @@ public class Contest implements JongoId {
         return contestEntries.size();
     }
 
-    @JsonView(JsonViews.NotForClient.class)
     public int maxEntries;
+
+    public int salaryCap;
+    public int entryFee;
+    public PrizeType prizeType;
+
+    @JsonView(JsonViews.Extended.class)
+    public List<Integer> prizes;
+
+    public Date startDate;
+
+    @JsonView(JsonViews.Extended.class)
+    public List<ObjectId> templateMatchEventIds;
 
     public Contest() {}
 
     public Contest(TemplateContest template) {
         templateContestId = template.templateContestId;
+        state = template.state;
         name = template.name;
         maxEntries = template.maxEntries;
+        salaryCap = template.salaryCap;
+        entryFee = template.entryFee;
+        prizeType = template.prizeType;
+        prizes = template.prizes;
+        startDate = template.startDate;
+        templateMatchEventIds = template.templateMatchEventIds;
         createdAt = GlobalDate.getCurrentDate();
     }
 
     public ObjectId getId() { return contestId; }
 
+    public boolean isOff()      { return (state == ContestState.OFF); }
+    public boolean isActive()   { return (state == ContestState.ACTIVE); }
+    public boolean isLive()     { return (state == ContestState.LIVE); }
+    public boolean isHistory()  { return (state == ContestState.HISTORY); }
+
     public boolean isFull() { return getNumEntries() >= maxEntries; }
+
+    public List<MatchEvent> getMatchEvents() {
+        return MatchEvent.findAllFromTemplates(templateMatchEventIds);
+    }
 
     public ContestEntry findContestEntry(ObjectId contestEntryId) {
         ContestEntry ret = null;
@@ -83,6 +118,22 @@ public class Contest implements JongoId {
 
     static public List<Contest> findAllFromTemplateContests(List<TemplateContest> templateContests) {
         return ListUtils.asList(Model.findObjectIds(Model.contests(), "templateContestId", ListUtils.convertToIdList(templateContests)).as(Contest.class));
+    }
+
+    static public List<Contest> findAllActive(String filter) {
+        return ListUtils.asList(Model.contests().find("{state: \"ACTIVE\"}").projection(String.format("{%s}", filter)).as(Contest.class));
+    }
+
+    static public List<Contest> findAllMyActive(ObjectId userId, String filter) {
+        return ListUtils.asList(Model.contests().find("{state: \"ACTIVE\", \"contestEntries.userId\": #}", userId).projection(String.format("{%s}", filter)).as(Contest.class));
+    }
+
+    static public List<Contest> findAllMyLive(ObjectId userId, String filter) {
+        return ListUtils.asList(Model.contests().find("{state: \"LIVE\", \"contestEntries.userId\": #}", userId).projection(String.format("{%s}", filter)).as(Contest.class));
+    }
+
+    static public List<Contest> findAllMyHistory(ObjectId userId, String filter) {
+        return ListUtils.asList(Model.contests().find("{state: \"HISTORY\", \"contestEntries.userId\": #}", userId).projection(String.format("{%s}", filter)).as(Contest.class));
     }
 
     public void updateRanking(BulkWriteOperation bulkOperation, TemplateContest templateContest, List<MatchEvent> matchEvents) {
