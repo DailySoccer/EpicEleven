@@ -15,12 +15,8 @@ import play.mvc.Result;
 import utils.ListUtils;
 import utils.ReturnHelper;
 import utils.ReturnHelperWithAttach;
-
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
 import static play.data.Form.form;
 
 
@@ -29,83 +25,27 @@ public class ContestController extends Controller {
 
     /*
      * Devuelve la lista de contests activos (aquellos a los que un usuario puede apuntarse)
-     * Incluye los datos referenciados por cada uno de los contest (sus templates y sus match events)
-     * de forma que el cliente tenga todos los datos referenciados por un determinado contest
      */
     public static Result getActiveContests() {
-        // Obtenemos la lista de TemplateContests activos
-        List<TemplateContest> templateContests = TemplateContest.findAllActive();
-
-        // Tambien necesitamos devolver todos los concursos instancias asociados a los templates
-        List<Contest> contests = Contest.findAllFromTemplateContests(templateContests);
-
-        return new ReturnHelper(ImmutableMap.of("template_contests", templateContests,
-                                                "contests", contests)).toResult();
+        List<Contest> contests = Contest.findAllActive(Contest.FILTER_ACTIVE_CONTESTS);
+        return new ReturnHelper(ImmutableMap.of("contests", contests)).toResult();
     }
 
     @UserAuthenticated
     public static Result getMyContests() {
         User theUser = (User)ctx().args.get("User");
 
-        // Obtener los contests en los que esté inscrito el usuario
-        List<Contest> contests = Contest.findAllFromUser(theUser.userId);
-        List<TemplateContest> templateContests = TemplateContest.findAllFromContests(contests);
+        List<Contest> myActiveContests = Contest.findAllMyActive(theUser.userId, Contest.FILTER_MY_ACTIVE_CONTESTS);
+        List<Contest> myLiveContests = Contest.findAllMyLive(theUser.userId, Contest.FILTER_MY_LIVE_CONTESTS);
+        List<Contest> myHistoryContests = Contest.findAllMyHistory(theUser.userId, Contest.FILTER_MY_HISTORY_CONTESTS);
 
-        // Registraremos nuestras contestEntries y las de nuestros contrarios que estén en "Live"
-        List<ContestEntry> contestEntries = new ArrayList<>(contests.size());
+        List<MatchEvent> liveMatchEvents = MatchEvent.gatherFromContests(myLiveContests);
 
-        // Conjunto para almacenar aquellos matchEventIds que estén actualmente en "Live" (según su templateContest)
-        Set<ObjectId> liveTemplateMatchEventIds = new HashSet<>();
-
-        // Miramos qué templateContest estan en "live" o no
-        for (TemplateContest templateContest : templateContests) {
-            boolean isLive = templateContest.isLive();
-
-            if (isLive) {
-                liveTemplateMatchEventIds.addAll(templateContest.templateMatchEventIds);
-            }
-
-            // Buscar los contests de ese mismo template...
-            for (Contest contest : contests) {
-                if (contest.templateContestId.equals(templateContest.templateContestId)) {
-                    if (isLive) {
-                        // Añadir TODOS los contestEntries
-                        contestEntries.addAll(contest.contestEntries);
-                    }
-                    else {
-                        // Añadir NUESTRO contestEntry
-                        for (ContestEntry contestEntry : contest.contestEntries) {
-                            if (contestEntry.userId.equals(theUser.userId)) {
-                                contestEntries.add(contestEntry);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Obtenemos los partidos que son jugados por todos los templateContests
-        List<MatchEvent> matchEvents = MatchEvent.gatherFromTemplateContests(templateContests);
-
-        // Diferenciaremos entre los partidos que estén en live y los "otros" (JsonViews.Public)
-        List<MatchEvent> publicMatchEvents = new ArrayList<>();
-        List<MatchEvent> liveMatchEvents = new ArrayList<>();
-        for (MatchEvent matchEvent : matchEvents) {
-            if (liveTemplateMatchEventIds.contains(matchEvent.templateMatchEventId)) {
-                liveMatchEvents.add(matchEvent);
-            }
-            else {
-                publicMatchEvents.add(matchEvent);
-            }
-        }
-
-        // Enviamos nuestras contestEntries y las de nuestros contrarios aparte (además de los partidos "live" con "liveFantasyPoints")
         return new ReturnHelperWithAttach()
-                .attachObject("contest_entries", contestEntries, JsonViews.FullContest.class)
+                .attachObject("contests_0", myActiveContests, JsonViews.Public.class)
+                .attachObject("contests_1", myLiveContests, JsonViews.FullContest.class)
+                .attachObject("contests_2", myHistoryContests, JsonViews.Extended.class)
                 .attachObject("match_events_0", liveMatchEvents, JsonViews.FullContest.class)
-                .attachObject("match_events_1", publicMatchEvents, JsonViews.Extended.class)
-                .attachObject("template_contests", templateContests, JsonViews.Extended.class)
-                .attachObject("contests", contests, JsonViews.Extended.class)
                 .toResult();
     }
 
@@ -126,14 +66,12 @@ public class ContestController extends Controller {
     }
 
     private static ReturnHelper getContest(String contestId) {
-         Contest contest = Contest.findOne(contestId);
+        Contest contest = Contest.findOne(contestId);
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
-        TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
-        List<MatchEvent> matchEvents = MatchEvent.findAllFromTemplate(templateContest.templateMatchEventIds);
+        List<MatchEvent> matchEvents = MatchEvent.findAllFromTemplates(contest.templateMatchEventIds);
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                                                 "users_info", usersInfoInContest,
-                                                "template_contest", templateContest,
                                                 "match_events", matchEvents));
     }
 
@@ -237,12 +175,61 @@ public class ContestController extends Controller {
 
                 List<String> errores = validateContestEntry(aContest, idsList);
                 if (errores.isEmpty()) {
-                    ContestEntry.update(contestEntry.contestEntryId, idsList);
+                    ContestEntry.update(theUser.userId, aContest.contestId, contestEntry.contestEntryId, idsList);
                 } else {
                     // TODO: ¿Queremos informar de los distintos errores?
                     for (String error : errores) {
                         contestEntryForm.reject(CONTEST_ENTRY_KEY, error);
                     }
+                }
+            }
+            else {
+                contestEntryForm.reject(CONTEST_ENTRY_KEY, ERROR_CONTEST_ENTRY_INVALID);
+            }
+        }
+
+        JsonNode result = contestEntryForm.errorsAsJson();
+
+        if (!contestEntryForm.hasErrors()) {
+            result = new ObjectMapper().createObjectNode().put("result", "ok");
+        }
+        return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
+    }
+
+
+    public static class CancelContestEntryParams {
+        @Constraints.Required
+        public String contestEntryId;
+    }
+
+    @UserAuthenticated
+    public static Result cancelContestEntry() {
+        Form<CancelContestEntryParams> contestEntryForm = form(CancelContestEntryParams.class).bindFromRequest();
+
+        if (!contestEntryForm.hasErrors()) {
+            CancelContestEntryParams params = contestEntryForm.get();
+
+            Logger.info("cancelContestEntry: contestEntryId({})", params.contestEntryId);
+
+            User theUser = (User) ctx().args.get("User");
+
+            // Verificar que es un contestEntry válido
+            ContestEntry contestEntry = ContestEntry.findOne(params.contestEntryId);
+            if (contestEntry != null) {
+                // Verificar que el usuario propietario del fantasyTeam sea el mismo que lo intenta borrar
+                if (!contestEntry.userId.equals(theUser.userId)) {
+                    contestEntryForm.reject(CONTEST_ENTRY_KEY, ERROR_OP_UNAUTHORIZED);
+                }
+
+                Contest contest = Contest.findOneFromContestEntry(contestEntry.contestEntryId);
+
+                // Verificar que el contest sigue estando activo (ni "live" ni "history")
+                if (!contest.isActive()) {
+                    contestEntryForm.reject(CONTEST_ENTRY_KEY, ERROR_CONTEST_NOT_ACTIVE);
+                }
+
+                if (!contestEntryForm.hasErrors()) {
+                    ContestEntry.remove(theUser.userId, contest.contestId, contestEntry.contestEntryId);
                 }
             }
             else {
@@ -265,14 +252,12 @@ public class ContestController extends Controller {
         if (contest == null) {
             errores.add(ERROR_CONTEST_INVALID);
         } else {
-            TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
-
-            // Verificar que el templateContest esté activo (ni "live" ni "history")
-            if (!templateContest.isActive()) {
+            // Verificar que el contest esté activo (ni "live" ni "history")
+            if (!contest.isActive()) {
                 errores.add(ERROR_CONTEST_NOT_ACTIVE);
             }
 
-            List<MatchEvent> matchEvents = templateContest.getMatchEvents();
+            List<MatchEvent> matchEvents = contest.getMatchEvents();
 
             // Buscar los soccerPlayers dentro de los partidos del contest
             List<SoccerPlayer> soccerPlayers = getSoccerPlayersFromMatchEvents(objectIds, matchEvents);
@@ -283,8 +268,8 @@ public class ContestController extends Controller {
                 errores.add(ERROR_FANTASY_TEAM_INCOMPLETE);
             }
             else {
-                // Verificar que los futbolistas no cuestan más que el salaryCap del templateContest
-                if (getSalaryCap(soccerPlayers) > templateContest.salaryCap) {
+                // Verificar que los futbolistas no cuestan más que el salaryCap del contest
+                if (getSalaryCap(soccerPlayers) > contest.salaryCap) {
                     errores.add(ERROR_SALARYCAP_INVALID);
                 }
 
@@ -336,55 +321,6 @@ public class ContestController extends Controller {
         return count;
     }
 
-    public static class CancelContestEntryParams {
-        @Constraints.Required
-        public String contestEntryId;
-    }
-
-    @UserAuthenticated
-    public static Result cancelContestEntry() {
-        Form<CancelContestEntryParams> contestEntryForm = form(CancelContestEntryParams.class).bindFromRequest();
-
-        if (!contestEntryForm.hasErrors()) {
-            CancelContestEntryParams params = contestEntryForm.get();
-
-            Logger.info("cancelContestEntry: contestEntryId({})", params.contestEntryId);
-
-            User theUser = (User) ctx().args.get("User");
-
-            // Verificar que es un contestEntry válido
-            ContestEntry contestEntry = ContestEntry.findOne(params.contestEntryId);
-            if (contestEntry != null) {
-                // Verificar que el usuario propietario del fantasyTeam sea el mismo que lo intenta borrar
-                if (!contestEntry.userId.equals(theUser.userId)) {
-                    contestEntryForm.reject(CONTEST_ENTRY_KEY, ERROR_OP_UNAUTHORIZED);
-                }
-
-                Contest contest = Contest.findOneFromContestEntry(contestEntry.contestEntryId);
-                TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
-
-                // Verificar que el contest sigue estando activo (ni "live" ni "history")
-                if (!templateContest.isActive()) {
-                    contestEntryForm.reject(CONTEST_ENTRY_KEY, ERROR_CONTEST_NOT_ACTIVE);
-                }
-
-                if (!contestEntryForm.hasErrors()) {
-                    ContestEntry.remove(contest.contestId, contestEntry.contestEntryId);
-                }
-            }
-            else {
-                contestEntryForm.reject(CONTEST_ENTRY_KEY, ERROR_CONTEST_ENTRY_INVALID);
-            }
-        }
-
-        JsonNode result = contestEntryForm.errorsAsJson();
-
-        if (!contestEntryForm.hasErrors()) {
-            result = new ObjectMapper().createObjectNode().put("result", "ok");
-        }
-        return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
-    }
-
     /**
      * Obtener los partidos "live" correspondientes a un template contest
      *  Incluye los fantasy points obtenidos por cada uno de los futbolistas
@@ -405,7 +341,7 @@ public class ContestController extends Controller {
         }
 
         // Consultar por los partidos del TemplateContest (queremos su version "live")
-        List<MatchEvent> liveMatchEventList = MatchEvent.findAllFromTemplate(templateContest.templateMatchEventIds);
+        List<MatchEvent> liveMatchEventList = MatchEvent.findAllFromTemplates(templateContest.templateMatchEventIds);
 
         return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
     }

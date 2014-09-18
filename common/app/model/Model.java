@@ -1,10 +1,13 @@
 package model;
 
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.mongodb.*;
 import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.jongo.Jongo;
+import org.jongo.Mapper;
 import org.jongo.MongoCollection;
+import org.jongo.marshall.jackson.JacksonMapper;
 import play.Logger;
 import play.Play;
 import utils.ListUtils;
@@ -51,7 +54,13 @@ public class Model {
         try {
             _mongoClient = new MongoClient(mongoClientURI);
             _mongoDB = _mongoClient.getDB(mongoClientURI.getDatabase());
-            _jongo = new Jongo(_mongoDB);
+
+            Mapper mapper = new JacksonMapper.Builder()
+                    .disable(MapperFeature.AUTO_DETECT_GETTERS)
+                    .disable(MapperFeature.AUTO_DETECT_IS_GETTERS)
+                    .disable(MapperFeature.AUTO_DETECT_SETTERS)
+                    .build();
+            _jongo = new Jongo(_mongoDB, mapper);
 
             // Let's make sure our DB has the neccesary collections and indexes
             ensureDB(_mongoDB);
@@ -197,6 +206,8 @@ public class Model {
         if (!theMongoDB.collectionExists("contests")) {
             DBCollection contests = theMongoDB.createCollection("contests", new BasicDBObject());
             contests.createIndex(new BasicDBObject("templateContestId", 1));
+            contests.createIndex(new BasicDBObject("templateMatchEventIds", 1));
+            contests.createIndex(new BasicDBObject("state", 1));
             contests.createIndex(new BasicDBObject("contestEntries._id", 1));
             contests.createIndex(new BasicDBObject("contestEntries.userId", 1));
         }

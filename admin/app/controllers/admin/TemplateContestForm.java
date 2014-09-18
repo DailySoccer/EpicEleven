@@ -10,7 +10,7 @@ import java.util.*;
 public class TemplateContestForm {
     public String id;
 
-    public TemplateContest.State state;
+    public ContestState state;
 
     @Constraints.Required
     public String name;             // Auto-gen if blank
@@ -37,7 +37,7 @@ public class TemplateContestForm {
     public long createdAt;
 
     public TemplateContestForm() {
-        state = TemplateContest.State.OFF;
+        state = ContestState.OFF;
         activationAt = GlobalDate.getCurrentDate();
         createdAt = GlobalDate.getCurrentDate().getTime();
     }
