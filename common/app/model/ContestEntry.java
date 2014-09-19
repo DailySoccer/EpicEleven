@@ -122,7 +122,7 @@ public class ContestEntry implements JongoId {
                 bRet = (result.getN() > 0);
 
                 // Crear instancias automáticamente según se vayan llenando las anteriores
-                if (contest.isFull()) {
+                if (bRet && contest.isFull()) {
                     TemplateContest.findOne(contest.templateContestId).instantiateContest(false);
                 }
             }
