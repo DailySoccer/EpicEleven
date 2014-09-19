@@ -17,6 +17,13 @@ public class LoggerController extends Controller {
         public String errorMessage;
     }
 
+    public static Result logOptions() {
+        response().setHeader("Access-Control-Allow-Methods", "POST");
+        response().setHeader("Access-Control-Allow-Headers", "accept, origin, Content-type, x-json, x-prototype-version, x-requested-with");
+        response().setHeader("Access-Control-Max-Age", "3600");
+        return ok();
+    }
+
     public static Result log() {
 
         Form<Params> errorForm = form(Params.class).bindFromRequest();
@@ -31,7 +38,7 @@ public class LoggerController extends Controller {
                      params.level, params.errorMessage,
                      params.level);
 
-        return ok("");
+        return ok("Stacktrace logged");
     }
 
 }

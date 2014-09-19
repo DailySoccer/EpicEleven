@@ -41,6 +41,7 @@ POST        /opta                                                   controllers.
 
 # Loguear error del cliente
 POST        /log                                                    controllers.LoggerController.log()
+OPTIONS     /log                                                    controllers.LoggerController.logOptions()
 
 # Static assets
 GET         /                                                       controllers.Assets.at(path="/public", file="index.html")
