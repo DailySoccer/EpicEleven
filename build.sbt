@@ -20,6 +20,8 @@ libraryDependencies ++= Seq(
   "org.jongo" % "jongo" % "1.0",                                    // http://jongo.org/
   "postgresql" % "postgresql" % "9.1-901-1.jdbc4",
   "com.google.guava" % "guava" % "17.0",
+  "com.stormpath.sdk" % "stormpath-sdk-httpclient" % "0.9.1",
+  "com.stormpath.scala" % "stormpath-scala-core_2.10" % "0.1.0",
   "com.newrelic.agent.java" % "newrelic-agent" % "3.10.0"
 )
 
