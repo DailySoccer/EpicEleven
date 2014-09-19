@@ -40,7 +40,7 @@ GET         /date_last_xml                                          controllers.
 POST        /opta                                                   controllers.OptaHttpController.optaXmlInput()
 
 # Loguear error del cliente
-POST        /log                                                    controllers.LoggerController.logPost()
+POST        /log                                                    controllers.LoggerController.log()
 
 # Static assets
 GET         /                                                       controllers.Assets.at(path="/public", file="index.html")

@@ -17,21 +17,21 @@ public class LoggerController extends Controller {
         public String errorMessage;
     }
 
-    public static Result logPost() {
+    public static Result log() {
 
         Form<Params> errorForm = form(Params.class).bindFromRequest();
         Params params = errorForm.get();
 
         Logger.error("\n[Client {}] WTF 101: Client exception at {}:\n" +
                      "[Client {}]--------------------------\n" +
-                     "[Client {}]{}\n" +
+                     "[Client {}] {}\n" +
                      "[Client {}]--------------------------",
                      params.level, params.time,
                      params.level,
                      params.level, params.errorMessage,
                      params.level);
 
-        return ok("Stacktrace logged");
+        return ok("");
     }
 
 }
