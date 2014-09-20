@@ -29,7 +29,7 @@ public class LoggerController extends Controller {
         Form<Params> errorForm = form(Params.class).bindFromRequest();
         Params params = errorForm.get();
 
-        Logger.error("\n[Client {}] WTF 101: Client exception at {}:\n" +
+        Logger.error("\n[Client {}] WTF 101: Client message at {}:\n" +
                      "[Client {}]--------------------------\n" +
                      "[Client {}] {}\n" +
                      "[Client {}]--------------------------",
