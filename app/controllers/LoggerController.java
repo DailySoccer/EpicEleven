@@ -14,7 +14,7 @@ public class LoggerController extends Controller {
     public static class Params {
         public String level;
         public String time;
-        public String errorMessage;
+        public String message;
     }
 
     public static Result logOptions() {
@@ -29,14 +29,21 @@ public class LoggerController extends Controller {
         Form<Params> errorForm = form(Params.class).bindFromRequest();
         Params params = errorForm.get();
 
-        Logger.error("\n[Client {}] WTF 101: Client message at {}:\n" +
-                     "[Client {}]--------------------------\n" +
-                     "[Client {}] {}\n" +
-                     "[Client {}]--------------------------",
-                     params.level, params.time,
-                     params.level,
-                     params.level, params.errorMessage,
-                     params.level);
+        String address = request().remoteAddress();
+
+        if (params.level.equals("SHOUT")) {
+            Logger.error("\n[Client {} from {}] WTF 101 at {}:\n" +
+                           "[Client {} from {}]--------------------------\n" +
+                           "[Client {} from {}] {}\n" +
+                           "[Client {} from {}]--------------------------",
+                           params.level, address, params.time,
+                           params.level, address,
+                           params.level, address, params.message,
+                           params.level, address);
+        }
+        else {
+            Logger.info("[Client {} from {}] Message at {}: {}", params.level, address, params.time, params.message);
+        }
 
         return ok();
     }
