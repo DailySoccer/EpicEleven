@@ -38,7 +38,7 @@ public class LoggerController extends Controller {
                      params.level, params.errorMessage,
                      params.level);
 
-        return ok("Stacktrace logged");
+        return ok();
     }
 
 }
