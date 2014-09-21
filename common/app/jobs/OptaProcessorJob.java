@@ -103,7 +103,7 @@ public class OptaProcessorJob {
 
             Logger.info("OptaProcessorJob: {}, {}, {}, {}", feedType, name, GlobalDate.formatDate(processedDate), seasonCompetitionId);
 
-            HashSet<String> changedOptaMatchEventIds = processor.processOptaDBInput(feedType, seasonCompetitionId, sqlxml);
+            HashSet<String> changedOptaMatchEventIds = processor.processOptaDBInput(feedType, seasonCompetitionId, name, sqlxml);
             ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
         }
         catch (SQLException e) {
