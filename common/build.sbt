@@ -11,6 +11,7 @@ libraryDependencies ++= Seq(
   ,"org.jdom" % "jdom" % "2.0.2"
   ,"postgresql" % "postgresql" % "9.1-901-1.jdbc4"
   ,"commons-dbutils" % "commons-dbutils" % "1.6"           // http://commons.apache.org/proper/commons-dbutils/index.html
+  ,"com.stormpath.scala" % "stormpath-scala-core_2.10" % "0.1.0"
 )
 
 sources in (Compile,doc) := Seq.empty
