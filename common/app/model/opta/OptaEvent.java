@@ -41,6 +41,25 @@ public class OptaEvent {
     public ObjectId pointsTranslationId;
 
     public OptaEvent() {}
+
+    public OptaEvent(int typeId, int eventId, String playerId, int teamId, String gameId, String competitionId,
+                     String seasonId, Date timestamp, int points, ObjectId pointsTranslationId) {
+        this.typeId = typeId;
+        this.eventId = eventId;
+        this.optaPlayerId = playerId;
+        this.teamId = teamId;
+        this.gameId = gameId;
+        this.competitionId = competitionId;
+        this.seasonId = seasonId;
+
+        this.timestamp = timestamp;
+        this.qualifiers = new ArrayList<>();
+
+        this.points = points;
+        this.pointsTranslationId = pointsTranslationId;
+    }
+
+
     public OptaEvent(Element event, Element game) {
         this.gameId = game.getAttributeValue("id");
         this.homeTeamId = game.getAttributeValue("home_team_id");
