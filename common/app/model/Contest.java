@@ -1,10 +1,14 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.BulkWriteOperation;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
+import utils.JacksonProjection;
 import utils.ListUtils;
+import utils.View;
+import utils.ViewProjection;
 
 import java.util.*;
 
@@ -30,7 +34,7 @@ public class Contest implements JongoId {
 
     public String name;
 
-    @JsonView(JsonViews.Extended.class)
+    @JsonView(value={JsonViews.Extended.class, JsonViews.ActiveContests.class})
     public List<ContestEntry> contestEntries = new ArrayList<>();
 
     @JsonView(JsonViews.Public.class)
@@ -122,6 +126,10 @@ public class Contest implements JongoId {
 
     static public List<Contest> findAllActive(String filter) {
         return ListUtils.asList(Model.contests().find("{state: \"ACTIVE\"}").projection(String.format("{%s}", filter)).as(Contest.class));
+    }
+
+    static public List<Contest> findAllActive(Class<?> projectionClass) {
+        return ListUtils.asList(Model.contests().find("{state: \"ACTIVE\"}").projection(ViewProjection.get(projectionClass, Contest.class)).as(Contest.class));
     }
 
     static public List<Contest> findAllMyActive(ObjectId userId, String filter) {
