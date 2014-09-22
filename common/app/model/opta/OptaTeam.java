@@ -1,7 +1,8 @@
 package model.opta;
 
+import model.GlobalDate;
 import model.Model;
-import org.bson.types.ObjectId;
+import org.jdom2.Element;
 import utils.ListUtils;
 
 import java.util.ArrayList;
@@ -16,6 +17,20 @@ public class OptaTeam {
     public ArrayList<String> seasonCompetitionIds;  // formato: <optaSeasonId>/<optaCompetitionId>
     public Date updatedTime;
     public boolean dirty = true;
+
+    public OptaTeam() {}
+
+    public OptaTeam(Element team) {
+
+        optaTeamId = OptaProcessor.getStringId(team, "uID");
+
+        name = team.getChild("Name").getContent().get(0).getValue();
+        updatedTime = GlobalDate.getCurrentDate();
+
+        if (null != team.getChild("SYMID") && team.getChild("SYMID").getContentSize() > 0) {
+            shortName = team.getChild("SYMID").getContent().get(0).getValue();
+        }
+    }
 
     public static OptaTeam findOne(String optaTeamId) {
         return Model.optaTeams().findOne("{optaTeamId: #}", optaTeamId).as(OptaTeam.class);

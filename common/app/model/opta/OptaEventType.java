@@ -39,7 +39,7 @@ public enum OptaEventType {
     GOALKEEPER_SAVES_PENALTY(1458, "Goalkeeper saves a penalty shot"),
     CLEAN_SHEET             (2000, "Clean sheet: More than 60 min played without conceding any goal"),
     GOAL_CONCEDED           (2001, "Goal conceded while player is on the field"),
-    _INVALID_               (9999, "Clean sheet: More than 60 min played without conceding any goal");
+    _INVALID_               (9999, "Invalid event");
 
     public final int code;
     public final String description;
