@@ -32,9 +32,7 @@ public class OptaPlayer {
             teamName = teamObject.getAttributeValue("name");
         }
         else {
-            if (playerObject.getAttribute("uID") != null) {
-                optaPlayerId = OptaProcessor.getStringId(playerObject, "uID");
-            }
+            optaPlayerId = OptaProcessor.getStringId(playerObject, "uID");
 
             if (playerObject.getChild("Name") != null) {
                 name = playerObject.getChild("Name").getContent().get(0).getValue();
