@@ -43,7 +43,8 @@ public class OptaProcessor {
             Logger.error("WTF 6312, {}, {}, {}", feedType, name, parseEx.getMessage());
         }
         catch (Exception e) {
-            Logger.error("WTF 6313, {}, {}, {}", feedType, name, e);
+            e.printStackTrace();
+            //Logger.error("WTF 6313, {}, {}, {}", feedType, name, e);
         }
 
         return _dirtyMatchEventIds;
@@ -213,13 +214,7 @@ public class OptaProcessor {
 
             for (Element teamStat : teamStats) {
                 if (teamStat.getAttribute("Type").getValue().equals("goals_conceded")) {
-
-                    if (Integer.parseInt(teamStat.getContent().get(0).getValue()) == 0) {
-                        processCleanSheet(F9, gameId, teamData);
-                    }
-                    else {
-                        processGoalsAgainst(F9, gameId, teamData);
-                    }
+                    processGoalsConceded(F9, gameId, teamData, teamStat);
                 }
             }
         }
@@ -228,52 +223,69 @@ public class OptaProcessor {
         Model.optaMatchEventStats().update("{optaMatchEventId: #}", gameId).upsert().with(stats);
     }
 
-    private void processGoalsAgainst(Element F9, String gameId, Element teamData) {
+
+    private void processGoalsConceded(Element F9, String gameId, Element teamData, Element teamGoalsConceded) {
         int teamRef = Integer.parseInt(getStringId(teamData,"TeamRef"));
 
-        for (Element matchPlayer : teamData.getChild("PlayerLineUp").getChildren("MatchPlayer")) {
-            if (matchPlayer.getAttribute("Position").getValue().equals("Goalkeeper") ||
-                matchPlayer.getAttribute("Position").getValue().equals("Defender")) {
+        boolean cleanSheet =  (Integer.parseInt(teamGoalsConceded.getContent().get(0).getValue()) == 0);
 
-                for (Element stat : matchPlayer.getChildren("Stat")) {
-                    if (stat.getAttribute("Type").getValue().equals("goals_conceded") &&
-                        (Integer.parseInt(stat.getContent().get(0).getValue()) > 0)) {
-                        createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.GOAL_CONCEDED.code, 20001,
-                                    Integer.parseInt(stat.getContent().get(0).getValue()));
+        if (cleanSheet) {Logger.info("CleanSheet ----------------- ");}
+
+        for (Element matchPlayer : teamData.getChild("PlayerLineUp").getChildren("MatchPlayer")) {
+
+            boolean child = false;
+            if (cleanSheet) {
+                child = matchPlayer.getChild("Position").getValue().equals("Goalkeeper") ||
+                        matchPlayer.getChild("Position").getValue().equals("Defender");
+            }
+
+            boolean attribute = matchPlayer.getAttribute("Position").getValue().equals("Goalkeeper") ||
+                    matchPlayer.getAttribute("Position").getValue().equals("Defender");
+
+            if (attribute){Logger.info("attribute");}
+            if (child){Logger.info("child");}
+
+            if (attribute || child) {
+
+                for (Element playerStat : matchPlayer.getChildren("Stat")) {
+
+                    //Una vez que encontramos la métrica de goles concedidos, hacemos el break si no hay cleanSheet
+                    if (!cleanSheet && playerStat.getAttribute("Type").getValue().equals("goals_conceded")) {
+                        //Si al jugador le han metido más de un gol
+                        int playersGoalsConceded = Integer.parseInt(playerStat.getContent().get(0).getValue());
+                        if (playersGoalsConceded > 0) {
+                            createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.GOAL_CONCEDED.code, 20001,
+                                        playersGoalsConceded);
+
+                        }
+                        break;
+                    //Si hay cleanSheet, una vez que encontramos la métrica de minutos jugados hacemos el break
+                    } else if (cleanSheet && playerStat.getAttribute("Type").getValue().equals("mins_played")) {
+                        Logger.info("Cleansheet and >59");
+                        if (Integer.parseInt(playerStat.getContent().get(0).getValue()) > 59) {
+                            createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.CLEAN_SHEET.code, 20000, 1);
+                        }
+                        break;
                     }
                 }
             }
         }
     }
 
-    private void processCleanSheet(Element F9, String gameId, Element teamData) {
-        int teamRef = Integer.parseInt(getStringId(teamData,"TeamRef"));
 
-        for (Element matchPlayer : teamData.getChild("PlayerLineUp").getChildren("MatchPlayer")) {
-            if (matchPlayer.getChild("Position").getValue().equals("Goalkeeper") ||
-                matchPlayer.getChild("Position").getValue().equals("Defender")) {
 
-                for (Element stat : matchPlayer.getChildren("Stat")) {
-                    if (stat.getAttribute("Type").getValue().equals("mins_played") &&
-                        (Integer.parseInt(stat.getContent().get(0).getValue()) > 59)) {
-                        createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.CLEAN_SHEET.code, 20000, 1);
-                    }
-                }
-            }
-        }
-    }
 
     private void createEvent(Element F9, String gameId, Element matchPlayer, int teamId, int typeId, int eventId, int times) {
         String playerId = getStringId(matchPlayer, "PlayerRef");
         String competitionId = getStringId(F9.getChild("Competition"), "uID");
+
         Date timestamp = GlobalDate.parseDate(F9.getChild("MatchData").getChild("MatchInfo").getAttributeValue("TimeStamp"), null);
 
         Model.optaEvents().remove("{typeId: #, eventId: #, optaPlayerId: #, teamId: #, gameId: #, competitionId: #}",
                                    typeId, eventId, playerId, teamId, gameId, competitionId);
 
-        OptaEvent[] events = new OptaEvent[times];
 
-        for (int i = 0; i < times; i++) {
+        //for (int i = 0; i < times; i++) {
             OptaEvent myEvent = new OptaEvent();
             myEvent.typeId = typeId;
             myEvent.eventId = eventId;
@@ -284,12 +296,12 @@ public class OptaProcessor {
             //TODO: Extraer SeasonID de Competition->Stat->Type==season_id->content
             myEvent.timestamp = timestamp;
             myEvent.qualifiers = new ArrayList<>();
-            myEvent.points = getPointsTranslation(myEvent.typeId, myEvent.timestamp);
+            myEvent.points = getPointsTranslation(myEvent.typeId, myEvent.timestamp) * times;
             myEvent.pointsTranslationId = _pointsTranslationTableCache.get(myEvent.typeId);
 
-            events[i] = myEvent;
-        }
-        Model.optaEvents().insert((Object[]) events);
+
+        //}
+        Model.optaEvents().insert(myEvent);
     }
 
 
