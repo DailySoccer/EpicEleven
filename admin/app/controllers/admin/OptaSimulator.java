@@ -317,7 +317,7 @@ public class OptaSimulator implements Runnable {
         public Date    pauseDate;
         public Date    lastParsedDate;
         public int     nextDocToParseIndex;
-        public int     speedFactor = 3600;
+        public int     speedFactor = MAX_SPEED;
 
         public OptaSimulatorState() {}
     }

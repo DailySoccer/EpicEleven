@@ -67,7 +67,8 @@ public class OptaProcessorJob {
                                                         .as(OptaProcessorState.class);
 
         if (state != null && state.isProcessing) {
-            throw new RuntimeException("WTF 3885: Colision entre dos worker processes");
+            Logger.error("WTF 3885: Colision entre dos worker processes");
+            return;
         }
 
         if (state == null) {
@@ -103,7 +104,7 @@ public class OptaProcessorJob {
 
             Logger.info("OptaProcessorJob: {}, {}, {}, {}", feedType, name, GlobalDate.formatDate(processedDate), seasonCompetitionId);
 
-            HashSet<String> changedOptaMatchEventIds = processor.processOptaDBInput(feedType, seasonCompetitionId, sqlxml);
+            HashSet<String> changedOptaMatchEventIds = processor.processOptaDBInput(feedType, seasonCompetitionId, name, sqlxml);
             ModelEvents.onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
         }
         catch (SQLException e) {
