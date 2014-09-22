@@ -91,6 +91,7 @@ public class OptaProcessor {
 
         Element game = gamesObj.getChild("Game");
         List<Element> events = game.getChildren("Event");
+
         for (Element event : events) {
             processEvent(event, game);
         }
@@ -211,7 +212,7 @@ public class OptaProcessor {
         Model.optaMatchEvents().update("{optaMatchEventId: #}", optaMatchEvent.optaMatchEventId).upsert().with(optaMatchEvent);
     }
 
-    static public String getStringId(Element document, String key){
+    static public String getStringId(Element document, String key) {
 
         if (document.getAttribute(key) == null) {
             throw new RuntimeException("WTF 2906: " + key);
@@ -271,60 +272,10 @@ public class OptaProcessor {
             for (Element player : playersList) {
                 String playerId = getStringId(player, "uID");
 
-                OptaPlayer myPlayer = createPlayer(player, team);
+                OptaPlayer myPlayer = new OptaPlayer(player, team);
                 Model.optaPlayers().update("{optaPlayerId: #}", playerId).upsert().with(myPlayer);
             }
         }
-    }
-
-    private OptaPlayer createPlayer(Element playerObject, Element teamObject) {
-        OptaPlayer myPlayer = new OptaPlayer();
-
-        if (playerObject.getAttribute("firstname") != null) {
-            myPlayer.optaPlayerId = getStringId(playerObject, "id");
-            myPlayer.firstname = playerObject.getAttributeValue("firstname");
-            myPlayer.lastname = playerObject.getAttributeValue("lastname");
-            myPlayer.name = myPlayer.firstname + " " + myPlayer.lastname;
-            myPlayer.position = playerObject.getAttributeValue("position");
-            myPlayer.teamId = getStringId(teamObject, "id");
-            myPlayer.teamName = teamObject.getAttributeValue("name");
-        }
-        else {
-            if (playerObject.getAttribute("uID") != null) {
-                myPlayer.optaPlayerId = getStringId(playerObject, "uID");
-            }
-
-            if (playerObject.getChild("Name") != null) {
-                myPlayer.name = playerObject.getChild("Name").getContent().get(0).getValue();
-                myPlayer.optaPlayerId = getStringId(playerObject, "uID");
-                myPlayer.position = playerObject.getChild("Position").getContent().get(0).getValue();
-            }
-            else if (playerObject.getChild("PersonName") != null) {
-                if (playerObject.getChild("PersonName").getChild("Known") != null) {
-                    myPlayer.nickname = playerObject.getChild("PersonName").getChild("Known").getContent().get(0).getValue();
-                }
-                myPlayer.firstname = playerObject.getChild("PersonName").getChild("First").getContent().get(0).getValue();
-                myPlayer.lastname = playerObject.getChild("PersonName").getChild("Last").getContent().get(0).getValue();
-                myPlayer.name = myPlayer.firstname + " " + myPlayer.lastname;
-            }
-            else {
-                Logger.error("WTF 29211: No name for optaPlayerId " + myPlayer.optaPlayerId);
-            }
-
-            if (playerObject.getChild("Position") != null){
-                myPlayer.position = playerObject.getChild("Position").getContent().get(0).getValue();
-                if (myPlayer.position.equals("Substitute")) {
-                    Logger.info("WTF 23344: Sustituto! {}", myPlayer.name);
-                }
-            }
-
-            myPlayer.teamId = getStringId(teamObject, "uID");
-            myPlayer.teamName = teamObject.getChild("Name").getContent().get(0).getValue();
-        }
-
-        myPlayer.updatedTime = GlobalDate.getCurrentDate();
-
-        return myPlayer;
     }
 
     private void processFinishedMatch(Element F9) {
@@ -393,7 +344,6 @@ public class OptaProcessor {
                 }
             }
         }
-
     }
 
     private void createEvent(Element F9, String gameId, Element matchPlayer, int teamId, int typeId, int eventId, int times) {

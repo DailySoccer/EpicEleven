@@ -40,7 +40,7 @@ public class OptaEvent {
     public int points;
     public ObjectId pointsTranslationId;
 
-    public OptaEvent(){}
+    public OptaEvent() {}
     public OptaEvent(Element event, Element game) {
         this.gameId = game.getAttributeValue("id");
         this.homeTeamId = game.getAttributeValue("home_team_id");
