@@ -16,7 +16,7 @@ public class OptaProcessor {
 
     // Retorna los Ids de opta (gameIds, optaMachEventId) de los partidos que han cambiado
     public HashSet<String> processOptaDBInput(String feedType, String seasonCompetitionId, String name, String requestBody) {
-        _dirtyMatchEvents = new HashSet<>();
+        _dirtyMatchEventIds = new HashSet<>();
 
         try {
             if (isDocumentValidForProcessing(feedType, seasonCompetitionId)) {
@@ -46,7 +46,7 @@ public class OptaProcessor {
             Logger.error("WTF 6313, {}, {}, {}", feedType, name, e);
         }
 
-        return _dirtyMatchEvents;
+        return _dirtyMatchEventIds;
     }
 
     static private OptaCompetition ensureCompetition(Element f40, String seasonCompetitionId) {
@@ -93,7 +93,7 @@ public class OptaProcessor {
         resetPointsTranslationCache();
 
         Element game = gamesObj.getChild("Game");
-        _dirtyMatchEvents.add(game.getAttributeValue("id"));
+        _dirtyMatchEventIds.add(game.getAttributeValue("id"));
 
         List<Element> events = game.getChildren("Event");
 
@@ -195,7 +195,7 @@ public class OptaProcessor {
             OptaTeam myTeam = new OptaTeam(team);
             Model.optaTeams().update("{optaTeamId: #}", myTeam.optaTeamId).upsert()
                              .with("{$set: {optaTeamId:#, name:#, shortName:#, updatedTime:#, dirty:#}, $addToSet: {seasonCompetitionIds:#}}",
-                                    myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty, optaCompetition.seasonCompetitionId);
+                                     myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty, optaCompetition.seasonCompetitionId);
 
             for (Element player : playersList) {
                 OptaPlayer myPlayer = new OptaPlayer(player, team);
@@ -223,7 +223,7 @@ public class OptaProcessor {
     private void processFinishedMatch(Element F9) {
 
         String gameId = getStringId(F9, "uID");
-        _dirtyMatchEvents.add(gameId);
+        _dirtyMatchEventIds.add(gameId);
 
         List<Element> teamDatas = F9.getChild("MatchData").getChildren("TeamData");
 
@@ -265,7 +265,6 @@ public class OptaProcessor {
             }
         }
     }
-
 
     private void processCleanSheet(Element F9, String gameId, Element teamData) {
         List<Element> matchPlayers = teamData.getChild("PlayerLineUp").getChildren("MatchPlayer");
@@ -350,7 +349,7 @@ public class OptaProcessor {
         return _optaMatchDataCache.get(competitionId);
     }
 
-    private HashSet<String> _dirtyMatchEvents;
+    private HashSet<String> _dirtyMatchEventIds;
 
     private HashMap<Integer, Integer> _pointsTranslationCache;
     private HashMap<Integer, ObjectId> _pointsTranslationTableCache;
