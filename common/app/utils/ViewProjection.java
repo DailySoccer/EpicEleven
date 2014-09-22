@@ -14,33 +14,15 @@ public class ViewProjection {
     static public String get(Class<?> viewClass, Class<?> pojoClass) {
         String ret = getCached(viewClass, pojoClass);
         if (ret == null) {
-            List<String> fields = new ArrayList<>();
-            putFieldNames(fields, "", viewClass, pojoClass);
+            ret = asProjection(getFieldNames("", viewClass, pojoClass));
 
-            StringBuffer buffer = null;
-            for (String field : fields) {
-                if (field.equals("_id")) {
-                    continue;
-                }
-                if (buffer == null) {
-                    buffer = new StringBuffer();
-                    buffer.append("{");
-                } else {
-                    buffer.append(",");
-                }
-                buffer.append(String.format("%s:1", field));
-            }
-            if (buffer != null) {
-                buffer.append("}");
-            }
-
-            ret = buffer.toString();
             registerCache(viewClass, pojoClass, ret);
         }
         return ret;
     }
 
-    static private void putFieldNames(List<String> fieldNames, String path, Class<?> viewClass, Class<?> pojoClass) {
+    static private List<String> getFieldNames(String path, Class<?> viewClass, Class<?> pojoClass) {
+        List<String> fieldNames = new ArrayList<>();
         for(Field field: pojoClass.getFields()) {
             if (Modifier.isStatic(field.getModifiers()))
                 continue;
@@ -51,7 +33,7 @@ public class ViewProjection {
                     if (clazz.isAssignableFrom(viewClass)) {
                         Class<?> fieldType = getFieldType(field);
                         if (hasFieldWithAnnotation(viewClass, fieldType)) {
-                            putFieldNames(fieldNames, field.getName(), viewClass, fieldType);
+                            fieldNames.addAll(getFieldNames(field.getName(), viewClass, fieldType));
                         } else {
                             fieldNames.add(path.isEmpty() ? field.getName() : String.format("%s.%s", path, field.getName()));
                         }
@@ -64,9 +46,30 @@ public class ViewProjection {
                 fieldNames.add(path.isEmpty() ? field.getName() : String.format("%s.%s", path, field.getName()));
             }
         }
+        return fieldNames;
     }
 
-    static Class<?> getFieldType(Field field) {
+    static private String asProjection(List<String> fields) {
+        StringBuffer buffer = null;
+        for (String field : fields) {
+            if (field.equals("_id")) {
+                continue;
+            }
+            if (buffer == null) {
+                buffer = new StringBuffer();
+                buffer.append("{");
+            } else {
+                buffer.append(",");
+            }
+            buffer.append(String.format("%s:1", field));
+        }
+        if (buffer != null) {
+            buffer.append("}");
+        }
+        return buffer != null ? buffer.toString() : "";
+    }
+
+    static private Class<?> getFieldType(Field field) {
         Class<?> fieldType = field.getType();
         if (fieldType.equals(List.class) || fieldType.equals(ArrayList.class)) {
             ParameterizedType listType = (ParameterizedType) field.getGenericType();
