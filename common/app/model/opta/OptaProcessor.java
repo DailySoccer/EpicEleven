@@ -90,6 +90,8 @@ public class OptaProcessor {
     //
     private void processF24(Element gamesObj) {
 
+        // El cache de puntos es necesario regenarlo pq entre dos ficheros F24 puede cambiar la tabla (por ejemplo al
+        // correr el simulador respetando un snapshot)
         resetPointsTranslationCache();
 
         Element game = gamesObj.getChild("Game");
@@ -125,27 +127,6 @@ public class OptaProcessor {
 
         for (OptaEvent optaEvent : Model.optaEvents().find().as(OptaEvent.class)) {
             updateEvent(optaEvent);
-        }
-    }
-
-    private int getPointsTranslation(int typeId, Date timestamp){
-        if (_pointsTranslationCache.containsKey(typeId)) {
-            return _pointsTranslationCache.get(typeId);
-        }
-        Iterable<PointsTranslation> pointsTranslations = Model.pointsTranslation().
-                                                         find("{eventTypeId: #, timestamp: {$lte: #}}", typeId, timestamp).
-                                                         sort("{timestamp: -1}").as(PointsTranslation.class);
-
-        if (pointsTranslations.iterator().hasNext()){
-            PointsTranslation pointsTranslation = pointsTranslations.iterator().next();
-            _pointsTranslationCache.put(typeId, pointsTranslation.points);
-            _pointsTranslationTableCache.put(typeId, pointsTranslation.pointsTranslationId);
-            return pointsTranslation.points;
-        }
-        else {
-            _pointsTranslationCache.put(typeId, 0);
-            _pointsTranslationTableCache.put(typeId, null);
-            return 0;
         }
     }
 
@@ -248,14 +229,13 @@ public class OptaProcessor {
     }
 
     private void processGoalsAgainst(Element F9, String gameId, Element teamData) {
-        List<Element> matchPlayers = teamData.getChild("PlayerLineUp").getChildren("MatchPlayer");
         int teamRef = Integer.parseInt(getStringId(teamData,"TeamRef"));
 
-        for (Element matchPlayer : matchPlayers) {
+        for (Element matchPlayer : teamData.getChild("PlayerLineUp").getChildren("MatchPlayer")) {
             if (matchPlayer.getAttribute("Position").getValue().equals("Goalkeeper") ||
                 matchPlayer.getAttribute("Position").getValue().equals("Defender")) {
-                List<Element> stats = matchPlayer.getChildren("Stat");
-                for (Element stat : stats) {
+
+                for (Element stat : matchPlayer.getChildren("Stat")) {
                     if (stat.getAttribute("Type").getValue().equals("goals_conceded") &&
                         (Integer.parseInt(stat.getContent().get(0).getValue()) > 0)) {
                         createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.GOAL_CONCEDED.code, 20001,
@@ -267,14 +247,13 @@ public class OptaProcessor {
     }
 
     private void processCleanSheet(Element F9, String gameId, Element teamData) {
-        List<Element> matchPlayers = teamData.getChild("PlayerLineUp").getChildren("MatchPlayer");
         int teamRef = Integer.parseInt(getStringId(teamData,"TeamRef"));
 
-        for (Element matchPlayer : matchPlayers) {
+        for (Element matchPlayer : teamData.getChild("PlayerLineUp").getChildren("MatchPlayer")) {
             if (matchPlayer.getChild("Position").getValue().equals("Goalkeeper") ||
                 matchPlayer.getChild("Position").getValue().equals("Defender")) {
-                List<Element> stats = matchPlayer.getChildren("Stat");
-                for (Element stat : stats) {
+
+                for (Element stat : matchPlayer.getChildren("Stat")) {
                     if (stat.getAttribute("Type").getValue().equals("mins_played") &&
                         (Integer.parseInt(stat.getContent().get(0).getValue()) > 59)) {
                         createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.CLEAN_SHEET.code, 20000, 1);
@@ -327,6 +306,27 @@ public class OptaProcessor {
     private void resetPointsTranslationCache() {
         _pointsTranslationCache = new HashMap<Integer, Integer>();
         _pointsTranslationTableCache = new HashMap<Integer, ObjectId>();
+    }
+
+    private int getPointsTranslation(int typeId, Date timestamp){
+        if (_pointsTranslationCache.containsKey(typeId)) {
+            return _pointsTranslationCache.get(typeId);
+        }
+        Iterable<PointsTranslation> pointsTranslations = Model.pointsTranslation()
+                                                              .find("{eventTypeId: #, timestamp: {$lte: #}}", typeId, timestamp)
+                                                              .sort("{timestamp: -1}").as(PointsTranslation.class);
+
+        if (pointsTranslations.iterator().hasNext()){
+            PointsTranslation pointsTranslation = pointsTranslations.iterator().next();
+            _pointsTranslationCache.put(typeId, pointsTranslation.points);
+            _pointsTranslationTableCache.put(typeId, pointsTranslation.pointsTranslationId);
+            return pointsTranslation.points;
+        }
+        else {
+            _pointsTranslationCache.put(typeId, 0);
+            _pointsTranslationTableCache.put(typeId, null);
+            return 0;
+        }
     }
 
     private HashMap<Integer, Date> getOptaEventsCache(String gameId) {
