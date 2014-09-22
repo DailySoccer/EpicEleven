@@ -27,7 +27,7 @@ public class ContestController extends Controller {
     /*
      * Devuelve la lista de contests activos (aquellos a los que un usuario puede apuntarse)
      */
-    @Cached(key = "ActiveContest", duration = 1)
+    // @Cached(key = "ActiveContest", duration = 1)
     public static Result getActiveContests() {
         List<Contest> contests = Contest.findAllActive(Contest.FILTER_ACTIVE_CONTESTS);
         return new ReturnHelper(ImmutableMap.of("contests", contests)).toResult();
