@@ -67,7 +67,8 @@ public class OptaProcessorJob {
                                                         .as(OptaProcessorState.class);
 
         if (state != null && state.isProcessing) {
-            throw new RuntimeException("WTF 3885: Colision entre dos worker processes");
+            Logger.error("WTF 3885: Colision entre dos worker processes");
+            return;
         }
 
         if (state == null) {
