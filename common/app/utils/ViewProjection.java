@@ -24,26 +24,34 @@ public class ViewProjection {
     static private List<String> getFieldNames(String path, Class<?> viewClass, Class<?> pojoClass) {
         List<String> fieldNames = new ArrayList<>();
         for(Field field: pojoClass.getFields()) {
+            // No aceptamos campos estáticos
             if (Modifier.isStatic(field.getModifiers()))
                 continue;
 
+            boolean fieldValid = false;
+
+            // Si tiene la annotation JsonView...
             if (field.isAnnotationPresent(JsonView.class)) {
+                // ... buscar si la viewClass hereda de alguna de las clases incluidas en el JsonView
                 JsonView annotation = field.getAnnotation(JsonView.class);
                 for (Class<?> clazz: annotation.value()) {
                     if (clazz.isAssignableFrom(viewClass)) {
-                        Class<?> fieldType = getFieldType(field);
-                        if (hasFieldWithAnnotation(viewClass, fieldType)) {
-                            fieldNames.addAll(getFieldNames(field.getName(), viewClass, fieldType));
-                        } else {
-                            fieldNames.add(path.isEmpty() ? field.getName() : String.format("%s.%s", path, field.getName()));
-                        }
+                        fieldValid = true;
                         break;
                     }
                 }
-
             }
             else {
-                fieldNames.add(path.isEmpty() ? field.getName() : String.format("%s.%s", path, field.getName()));
+                fieldValid = true;
+            }
+
+            if (fieldValid) {
+                Class<?> fieldType = getFieldType(field);
+                if (hasFieldWithAnnotation(fieldType)) {
+                    fieldNames.addAll(getFieldNames(field.getName(), viewClass, fieldType));
+                } else {
+                    fieldNames.add(path.isEmpty() ? field.getName() : String.format("%s.%s", path, field.getName()));
+                }
             }
         }
         return fieldNames;
@@ -78,7 +86,7 @@ public class ViewProjection {
         return fieldType;
     }
 
-    static private boolean hasFieldWithAnnotation(Class<?> viewClass, Class<?> pojoClass) {
+    static private boolean hasFieldWithAnnotation(Class<?> pojoClass) {
         for(Field field: pojoClass.getFields()) {
             if (Modifier.isStatic(field.getModifiers()))
                 continue;

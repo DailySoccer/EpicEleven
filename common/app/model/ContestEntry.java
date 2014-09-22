@@ -14,9 +14,9 @@ import java.util.List;
 
 public class ContestEntry implements JongoId {
     @Id
-    @JsonView(value={JsonViews.Public.class, JsonViews.ActiveContests.class})
     public ObjectId contestEntryId;
 
+    @JsonView(JsonViews.Public.class)
     public ObjectId userId;             // Usuario que creo el equipo
 
     @JsonView(JsonViews.FullContest.class)

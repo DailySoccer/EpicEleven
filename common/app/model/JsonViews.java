@@ -6,5 +6,5 @@ public class JsonViews {
     static public class FullContest extends Extended {}
     static public class NotForClient {}
 
-    static public class ActiveContests extends Public {}
+    static public class ActiveContests {}
 }
