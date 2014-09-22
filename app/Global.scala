@@ -46,11 +46,13 @@ object Global extends GlobalSettings {
   override def onStop(app: Application) {
     Logger.info("Application shutdown...")
 
-    // Esto parara los metodos scheduleados
-    Akka.system.shutdown()
+    if (isWorker) {
+      // Esto parara los metodos scheduleados
+      Akka.system.shutdown()
 
-    // Hacemos un 'join' para asegurar que no matamos el modelo estando todavia procesando
-    Akka.system().awaitTermination()
+      // Hacemos un 'join' para asegurar que no matamos el modelo estando todavia procesando
+      Akka.system().awaitTermination()
+    }
 
     model.Model.shutdown()
   }
