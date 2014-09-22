@@ -14,30 +14,30 @@ public class OptaMatchEventStats {
     public HashMap<String, OptaPlayerStats> stats = new HashMap<>();
 
 
-    public OptaMatchEventStats() { }
+    public OptaMatchEventStats() {}
 
-    public OptaMatchEventStats(String optaMatchEventId) {
+    public OptaMatchEventStats(String optaMatchEventId, List<Element> teamDatas) {
         this.optaMatchEventId = optaMatchEventId;
+
+        for (Element teamData : teamDatas) {
+            
+            for (Element matchPlayer : teamData.getChild("PlayerLineUp").getChildren("MatchPlayer")) {
+
+                for (Element stat : matchPlayer.getChildren("Stat")) {
+                    if (stat.getAttribute("Type").getValue().equals("mins_played")) {
+
+                        OptaPlayerStats optaPlayerStats = new OptaPlayerStats();
+                        optaPlayerStats.playedMinutes = Integer.parseInt(stat.getContent().get(0).getValue());
+
+                        stats.put(OptaProcessor.getStringId(matchPlayer, "PlayerRef"), optaPlayerStats);
+                    }
+                }
+            }
+        }
     }
 
     static public OptaMatchEventStats findOne(String optaMatchEventId) {
         return Model.optaMatchEventStats().findOne("{optaMatchEventId: #}", optaMatchEventId).as(OptaMatchEventStats.class);
-    }
-
-    public void updateWithTeamData(Element teamData) {
-        List<Element> matchPlayers = teamData.getChild("PlayerLineUp").getChildren("MatchPlayer");
-
-        for (Element matchPlayer : matchPlayers) {
-           List<Element> elementStats = matchPlayer.getChildren("Stat");
-            for (Element stat : elementStats) {
-                if (stat.getAttribute("Type").getValue().equals("mins_played")) {
-                    String playerId = OptaProcessor.getStringId(matchPlayer, "PlayerRef");
-                    int playedMinutes = Integer.parseInt(stat.getContent().get(0).getValue());
-                    stats.put(playerId, new OptaPlayerStats(playedMinutes));
-                    // Logger.debug("{} - minutes: {}", playerId, playedMinutes);
-                }
-            }
-        }
     }
 
     public int getPlayedMinutes(String optaPlayerId) {
@@ -49,10 +49,6 @@ public class OptaMatchEventStats {
 class OptaPlayerStats {
     public int playedMinutes;
 
-    public OptaPlayerStats() { }
-
-    public OptaPlayerStats(int playedMinutes) {
-        this.playedMinutes = playedMinutes;
-    }
+    public OptaPlayerStats() {}
 }
 

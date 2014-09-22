@@ -31,7 +31,7 @@ public class OptaProcessor {
                 }
                 else
                 if (feedType.equals("F24")) {
-                    processEvents(requestBodyElement);
+                    processF24(requestBodyElement);
                 }
                 else
                 if (feedType.equals("F1")) {
@@ -85,43 +85,38 @@ public class OptaProcessor {
         return valid;
     }
 
-    private void processEvents(Element gamesObj) {
+    //
+    // Crea OptaEvents
+    //
+    private void processF24(Element gamesObj) {
 
         resetPointsTranslationCache();
 
         Element game = gamesObj.getChild("Game");
+        _dirtyMatchEvents.add(game.getAttributeValue("id"));
+
         List<Element> events = game.getChildren("Event");
 
         for (Element event : events) {
-            processEvent(event, game);
+
+            Date timestamp = GlobalDate.parseDate(event.getAttributeValue("last_modified"), null);
+
+            HashMap<Integer, Date> eventsCache = getOptaEventsCache(game.getAttributeValue("id"));
+            int eventId = Integer.parseInt(event.getAttributeValue("id"));
+
+            if (!eventsCache.containsKey(eventId) || timestamp.after(eventsCache.get(eventId))) {
+                OptaEvent optaEvent = new OptaEvent(event, game);
+                updateEvent(optaEvent);
+
+                eventsCache.put(eventId, timestamp);
+            }
         }
-    }
-
-    private void processEvent(Element event, Element game) {
-
-        Date timestamp = (event.getAttribute("last_modified") != null) ?
-                          GlobalDate.parseDate(event.getAttributeValue("last_modified"), null):
-                          GlobalDate.parseDate(event.getAttributeValue("timestamp"), null);
-
-        HashMap<Integer, Date> eventsCache = getOptaEventsCache(game.getAttributeValue("id"));
-        int eventId = Integer.parseInt(event.getAttributeValue("id"));
-
-        if (!eventsCache.containsKey(eventId) || timestamp.after(eventsCache.get(eventId))) {
-            updateOrInsertEvent(event, game);
-            eventsCache.put(eventId, timestamp);
-        }
-    }
-
-    private void updateOrInsertEvent(Element event, Element game) {
-        OptaEvent optaEvent = new OptaEvent(event, game);
-        updateEvent(optaEvent);
-
-        _dirtyMatchEvents.add(optaEvent.gameId);
     }
 
     private void updateEvent(OptaEvent optaEvent) {
         optaEvent.points = getPointsTranslation(optaEvent.typeId, optaEvent.timestamp);
         optaEvent.pointsTranslationId = _pointsTranslationTableCache.get(optaEvent.typeId);
+
         Model.optaEvents().update("{eventId: #, teamId: #, gameId: #}", optaEvent.eventId, optaEvent.teamId, optaEvent.gameId).upsert().with(optaEvent);
     }
 
@@ -154,74 +149,64 @@ public class OptaProcessor {
         }
     }
 
+    //
+    // Crea nuevos partidos OptaMatchEvent
+    //
     private void processF1(Element f1) {
 
         Element myF1 = f1.getChild("SoccerDocument");
-        List<Element> matches = myF1.getChildren("MatchData");
+        int competitionId = Integer.parseInt(myF1.getAttributeValue("competition_id"));
 
-        if (matches != null) {
-            int competitionId = (myF1.getAttribute("competition_id")!=null)? Integer.parseInt(myF1.getAttributeValue("competition_id")) : -1;
+        for (Element matchObject : myF1.getChildren("MatchData")) {
 
-            for (Element match : matches) {
-                processMatchData(match, competitionId, myF1);
+            HashMap<String, Date> optaMatchDatas = getOptaMatchDataCache(competitionId);
+
+            String matchId = matchObject.getAttributeValue("uID");
+            Date timestamp = GlobalDate.parseDate(matchObject.getAttributeValue("last_modified"), null);
+
+            if (!optaMatchDatas.containsKey(matchId) || timestamp.after(optaMatchDatas.get(matchId))) {
+
+                OptaMatchEvent optaMatchEvent = new OptaMatchEvent(myF1, matchObject, matchObject.getChild("MatchInfo"));
+                Model.optaMatchEvents().update("{optaMatchEventId: #}", optaMatchEvent.optaMatchEventId).upsert().with(optaMatchEvent);
+
+                optaMatchDatas.put(matchId, timestamp);
             }
         }
     }
 
-    private void processMatchData(Element matchObject, int competitionId, Element myF1) {
+    //
+    // Crea OptaTeams y OptaPlayers
+    //
+    private void processF40(Element f40, OptaCompetition optaCompetition) {
 
-        HashMap<String, Date> optaMatchDatas = getOptaMatchDataCache(competitionId);
-        String matchId = matchObject.getAttributeValue("uID");
-        Date timestamp = GlobalDate.parseDate(matchObject.getAttributeValue("last_modified"), null);
+        if (!optaCompetition.activated)
+            return;
 
-        if (!optaMatchDatas.containsKey(matchId) || timestamp.after(optaMatchDatas.get(matchId))) {
-            updateOrInsertMatchData(myF1, matchObject);
-            optaMatchDatas.put(matchId, timestamp);
-        }
-    }
+        if (null == _pointsTranslationCache)
+            resetPointsTranslationCache();
 
-    private void updateOrInsertMatchData(Element myF1, Element matchObject) {
-        Element matchInfo = matchObject.getChild("MatchInfo");
+        for (Element team : f40.getChild("SoccerDocument").getChildren("Team")) {
 
-        OptaMatchEvent optaMatchEvent = new OptaMatchEvent();
-        optaMatchEvent.optaMatchEventId = getStringId(matchObject, "uID");
+            List<Element> playersList = team.getChildren("Player");
 
-        if (matchObject.getAttribute("last_modified") != null) {
-            optaMatchEvent.lastModified = GlobalDate.parseDate(matchObject.getAttributeValue("last_modified"), null);
-        }
+            if (playersList == null) // Si es un equipo placeholder nos lo saltamos
+                continue;
 
-        optaMatchEvent.matchDate = GlobalDate.parseDate(matchInfo.getChild("Date").getContent().get(0).getValue(),
-                                                        matchInfo.getChild("TZ").getContent().get(0).getValue());
-        optaMatchEvent.competitionId = getStringId(myF1, "competition_id");
-        optaMatchEvent.seasonId = getStringId(myF1, "season_id");
+            OptaTeam myTeam = new OptaTeam(team);
+            Model.optaTeams().update("{optaTeamId: #}", myTeam.optaTeamId).upsert()
+                             .with("{$set: {optaTeamId:#, name:#, shortName:#, updatedTime:#, dirty:#}, $addToSet: {seasonCompetitionIds:#}}",
+                                    myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty, optaCompetition.seasonCompetitionId);
 
-        optaMatchEvent.seasonName = (myF1.getAttribute("season_name")!=null)? myF1.getAttributeValue("season_name"): "NO SEASON NAME";
-        optaMatchEvent.competitionName = (myF1.getAttribute("competition_name")!=null)? myF1.getAttributeValue("competition_name"): "NO COMPETITION NAME";
-
-        List<Element> teams = matchObject.getChildren("TeamData");
-        if (teams != null) {
-            for (Element team : teams) {
-                if (team.getAttributeValue("Side").equals("Home")) {
-                    optaMatchEvent.homeTeamId = getStringId(team, "TeamRef");
-                } else {
-                    optaMatchEvent.awayTeamId =  getStringId(team, "TeamRef");
-                }
+            for (Element player : playersList) {
+                OptaPlayer myPlayer = new OptaPlayer(player, team);
+                Model.optaPlayers().update("{optaPlayerId: #}", myPlayer.optaPlayerId).upsert().with(myPlayer);
             }
         }
-
-        Model.optaMatchEvents().update("{optaMatchEventId: #}", optaMatchEvent.optaMatchEventId).upsert().with(optaMatchEvent);
     }
 
-    static public String getStringId(Element document, String key) {
-
-        if (document.getAttribute(key) == null) {
-            throw new RuntimeException("WTF 2906: " + key);
-        }
-
-        String value = document.getAttributeValue(key);
-        return Character.isDigit(value.charAt(0))? value : value.substring(1);
-    }
-
+    //
+    // Crea exclusivamente eventos de fin de partido: CleanSheet, GoalsAgainst y OptaMatchEventStats
+    //
     private void processF9(Element f9) {
 
         if (null == _pointsTranslationCache)
@@ -235,53 +220,10 @@ public class OptaProcessor {
         }
     }
 
-    private void processF40(Element f40, OptaCompetition optaCompetition) {
-
-        if (!optaCompetition.activated)
-            return;
-
-        if (null == _pointsTranslationCache)
-            resetPointsTranslationCache();
-
-        Element myF40 = f40.getChild("SoccerDocument");
-
-        String competitionId = myF40.getAttribute("competition_id").getValue();
-        String seasonId = myF40.getAttribute("season_id").getValue();
-
-        for (Element team : myF40.getChildren("Team")) {
-
-            List<Element> playersList = team.getChildren("Player");
-
-            if (playersList == null) // Si es un equipo placeholder nos lo saltamos
-                continue;
-
-            OptaTeam myTeam = new OptaTeam();
-            myTeam.optaTeamId = getStringId(team, "uID");
-            myTeam.name = team.getChild("Name").getContent().get(0).getValue();
-            myTeam.updatedTime = GlobalDate.getCurrentDate();
-
-            if (null != team.getChild("SYMID") && team.getChild("SYMID").getContentSize() > 0) {
-                myTeam.shortName = team.getChild("SYMID").getContent().get(0).getValue();
-            }
-
-            Model.optaTeams().update("{optaTeamId: #}", myTeam.optaTeamId).upsert()
-                             .with("{$set: {optaTeamId:#, name:#, shortName:#, updatedTime:#, dirty:#}, $addToSet: {seasonCompetitionIds:#}}",
-                                     myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty,
-                                     OptaCompetition.createId(seasonId, competitionId));
-
-            for (Element player : playersList) {
-                String playerId = getStringId(player, "uID");
-
-                OptaPlayer myPlayer = new OptaPlayer(player, team);
-                Model.optaPlayers().update("{optaPlayerId: #}", playerId).upsert().with(myPlayer);
-            }
-        }
-    }
-
     private void processFinishedMatch(Element F9) {
-        String gameId = getStringId(F9, "uID");
 
-        OptaMatchEventStats stats = new OptaMatchEventStats(gameId);
+        String gameId = getStringId(F9, "uID");
+        _dirtyMatchEvents.add(gameId);
 
         List<Element> teamDatas = F9.getChild("MatchData").getChildren("TeamData");
 
@@ -299,13 +241,10 @@ public class OptaProcessor {
                     }
                 }
             }
-
-            stats.updateWithTeamData(teamData);
         }
 
+        OptaMatchEventStats stats = new OptaMatchEventStats(gameId, teamDatas);
         Model.optaMatchEventStats().update("{optaMatchEventId: #}", gameId).upsert().with(stats);
-
-        _dirtyMatchEvents.add(gameId);
     }
 
     private void processGoalsAgainst(Element F9, String gameId, Element teamData) {
@@ -375,6 +314,17 @@ public class OptaProcessor {
         Model.optaEvents().insert((Object[]) events);
     }
 
+
+    static public String getStringId(Element document, String key) {
+
+        if (document.getAttribute(key) == null) {
+            throw new RuntimeException("WTF 2906: " + key);
+        }
+
+        String value = document.getAttributeValue(key);
+        return Character.isDigit(value.charAt(0))? value : value.substring(1);
+    }
+
     private void resetPointsTranslationCache() {
         _pointsTranslationCache = new HashMap<Integer, Integer>();
         _pointsTranslationTableCache = new HashMap<Integer, ObjectId>();
@@ -407,5 +357,4 @@ public class OptaProcessor {
 
     private HashMap<String, HashMap<Integer, Date>> _optaEventsCache;
     private HashMap<Integer, HashMap<String, Date>> _optaMatchDataCache;
-
 }
