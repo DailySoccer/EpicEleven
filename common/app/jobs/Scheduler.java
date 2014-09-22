@@ -46,7 +46,7 @@ public class Scheduler {
 
     public static void invokeOnce(long initialDelay, TimeUnit timeUnit, final Method scheduleMethod, final Object... args) {
 
-        Logger.debug("invokeOnce: {}, delay: {} {}, interval: {} {}", scheduleMethod, initialDelay, timeUnit, timeUnit);
+        Logger.debug("invokeOnce: {}, delay: {} {}", scheduleMethod, initialDelay, timeUnit);
 
         // Cuando no hay delay preferimos usar invokacion directa, lo que nos garantiza que se ejecutan antes que el
         // resto de scheduled methods con delay = 0.
