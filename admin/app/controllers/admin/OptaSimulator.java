@@ -172,6 +172,23 @@ public class OptaSimulator implements Runnable {
 
             if (_nextDocDate != null) {
                 try {
+                    Duration interval = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(_nextDocDate));
+                    while (interval.isLongerThan(Duration.ZERO) && !_stopSignal) {
+                        Duration deltaTime = sleepUntil(interval, speedFactor);
+
+                        updateDate(new DateTime(GlobalDate.getCurrentDate()).plus(deltaTime).toDate());
+
+                        interval = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(_nextDocDate));
+                    }
+                    if (!_stopSignal) {
+                        // Tickeamos el OptaProcessorJob como si fueramos un proceso scheduleado
+                        OptaProcessorJob.processResultSet(_optaResultSet, _optaProcessor);
+
+                        _state.nextDocToParseIndex++;
+                        _nextDocDate = null;
+                    }
+
+                    /*
                     if (sleepUntil(_nextDocDate, speedFactor)) {
                         // Tickeamos el OptaProcessorJob como si fueramos un proceso scheduleado
                         OptaProcessorJob.processResultSet(_optaResultSet, _optaProcessor);
@@ -179,6 +196,7 @@ public class OptaSimulator implements Runnable {
                         _state.nextDocToParseIndex++;
                         _nextDocDate = null;
                     }
+                    */
                 }
                 catch (InterruptedException e) {
                     Logger.error("WTF 2311", e);
@@ -226,6 +244,34 @@ public class OptaSimulator implements Runnable {
 
     public int getSpeedFactor() {
         return _state.speedFactor;
+    }
+
+    private Duration interpolateTo(Duration interval, int speedFactor) {
+        Duration deltaTime = new Duration(SLEEPING_DURATION.getMillis() * speedFactor);
+        if (interval.compareTo(deltaTime) < 0){
+            deltaTime = interval;
+        }
+        return deltaTime;
+    }
+
+    private Duration sleepUntil(Duration interval, int speedFactor) throws InterruptedException {
+        Duration deltaTime = interval;
+        if (speedFactor != MAX_SPEED) {
+            deltaTime = interpolateTo(interval, speedFactor);
+
+            Duration sleeping = deltaTime.isLongerThan(SLEEPING_DURATION) ? SLEEPING_DURATION : deltaTime;
+            if (sleeping.getMillis() != 0) {
+                Thread.sleep(sleeping.getMillis());
+            }
+        }
+        return deltaTime;
+    }
+
+    private void sleep(Duration interval) throws InterruptedException {
+        Duration sleeping = interval.isLongerThan(SLEEPING_DURATION) ? SLEEPING_DURATION : interval;
+        if (sleeping.getMillis() != 0) {
+            Thread.sleep(sleeping.getMillis());
+        }
     }
 
     private boolean sleepUntil(Date nextStop, int speedFactor) throws InterruptedException {
