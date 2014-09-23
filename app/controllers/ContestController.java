@@ -13,9 +13,8 @@ import play.data.Form;
 import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utils.ListUtils;
-import utils.ReturnHelper;
-import utils.ReturnHelperWithAttach;
+import utils.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import static play.data.Form.form;
@@ -29,7 +28,7 @@ public class ContestController extends Controller {
      */
     // @Cached(key = "ActiveContest", duration = 1)
     public static Result getActiveContests() {
-        List<Contest> contests = Contest.findAllActive(Contest.FILTER_ACTIVE_CONTESTS);
+        List<Contest> contests = Contest.findAllActive(JsonViews.ActiveContests.class);
         return new ReturnHelper(ImmutableMap.of("contests", contests)).toResult();
     }
 
