@@ -1,6 +1,8 @@
 package utils;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
+import org.jongo.marshall.jackson.oid.Id;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -28,6 +30,7 @@ public class ViewProjection {
                 continue;
 
             boolean fieldValid = false;
+            String fieldName = field.getName();
 
             // Si tiene la annotation JsonView...
             if (field.isAnnotationPresent(JsonView.class)) {
@@ -41,15 +44,26 @@ public class ViewProjection {
                 }
             }
             else {
+                // Los campos con annotation "@Id" pueden cambiar el nombre del identificador
+                if (field.isAnnotationPresent(Id.class)) {
+                    /*
+                    Id id = field.getAnnotation(Id.class);
+                    JsonProperty jsonProperty = id.annotationType().getAnnotation(JsonProperty.class);
+                    if (jsonProperty != null) {
+                        fieldName = jsonProperty.value();
+                    }
+                    */
+                    fieldName = "_id";
+                }
                 fieldValid = true;
             }
 
             if (fieldValid) {
                 Class<?> fieldType = getFieldType(field);
                 if (hasFieldWithAnnotation(fieldType)) {
-                    fieldNames.addAll(getFieldNames(field.getName(), viewClass, fieldType));
+                    fieldNames.addAll(getFieldNames(fieldName, viewClass, fieldType));
                 } else {
-                    fieldNames.add(path.isEmpty() ? field.getName() : String.format("%s.%s", path, field.getName()));
+                    fieldNames.add(path.isEmpty() ? fieldName : String.format("%s.%s", path, fieldName));
                 }
             }
         }
