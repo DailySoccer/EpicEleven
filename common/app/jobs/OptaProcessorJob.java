@@ -44,9 +44,8 @@ public class OptaProcessorJob {
         }
 
         // La fecha coincide con la de hace X segundos. Asumimos que el worker process que la dejo asi esta muerto.
-        Logger.info("WTF 0263: Reparando un isProcessing == true que ocurrio durante la inicializacion");
         Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with("{$set: {isProcessing: false}}");
-        Logger.info("WTF 0263: Lo conseguimos, isProcessing == true reparado");
+        Logger.info("WTF 0263: isProcessing == true reparado");
 
         try {
             Scheduler.scheduleMethod(0, 1, TimeUnit.SECONDS, OptaProcessorJob.class.getMethod("checkAndProcessNextOptaXml"));
