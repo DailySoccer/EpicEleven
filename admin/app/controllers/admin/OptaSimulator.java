@@ -172,31 +172,16 @@ public class OptaSimulator implements Runnable {
 
             if (_nextDocDate != null) {
                 try {
-                    Duration interval = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(_nextDocDate));
-                    while (interval.isLongerThan(Duration.ZERO) && !_stopSignal) {
-                        Duration deltaTime = sleepUntil(interval, speedFactor);
+                    Duration deltaTime = sleepUntil(_nextDocDate, speedFactor);
+                    updateDate(new DateTime(GlobalDate.getCurrentDate()).plus(deltaTime).toDate());
 
-                        updateDate(new DateTime(GlobalDate.getCurrentDate()).plus(deltaTime).toDate());
-
-                        interval = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(_nextDocDate));
-                    }
-                    if (!_stopSignal) {
+                    if (GlobalDate.getCurrentDate().equals(_nextDocDate) && !_stopSignal) {
                         // Tickeamos el OptaProcessorJob como si fueramos un proceso scheduleado
                         OptaProcessorJob.processResultSet(_optaResultSet, _optaProcessor);
 
                         _state.nextDocToParseIndex++;
                         _nextDocDate = null;
                     }
-
-                    /*
-                    if (sleepUntil(_nextDocDate, speedFactor)) {
-                        // Tickeamos el OptaProcessorJob como si fueramos un proceso scheduleado
-                        OptaProcessorJob.processResultSet(_optaResultSet, _optaProcessor);
-
-                        _state.nextDocToParseIndex++;
-                        _nextDocDate = null;
-                    }
-                    */
                 }
                 catch (InterruptedException e) {
                     Logger.error("WTF 2311", e);
@@ -246,66 +231,25 @@ public class OptaSimulator implements Runnable {
         return _state.speedFactor;
     }
 
-    private Duration interpolateTo(Duration interval, int speedFactor) {
-        Duration deltaTime = new Duration(SLEEPING_DURATION.getMillis() * speedFactor);
-        if (interval.compareTo(deltaTime) < 0){
-            deltaTime = interval;
-        }
-        return deltaTime;
-    }
-
-    private Duration sleepUntil(Duration interval, int speedFactor) throws InterruptedException {
-        Duration deltaTime = interval;
-        if (speedFactor != MAX_SPEED) {
-            deltaTime = interpolateTo(interval, speedFactor);
-
-            Duration sleeping = deltaTime.isLongerThan(SLEEPING_DURATION) ? SLEEPING_DURATION : deltaTime;
-            if (sleeping.getMillis() != 0) {
-                Thread.sleep(sleeping.getMillis());
-            }
-        }
-        return deltaTime;
-    }
-
-    private void sleep(Duration interval) throws InterruptedException {
-        Duration sleeping = interval.isLongerThan(SLEEPING_DURATION) ? SLEEPING_DURATION : interval;
-        if (sleeping.getMillis() != 0) {
-            Thread.sleep(sleeping.getMillis());
-        }
-    }
-
-    private boolean sleepUntil(Date nextStop, int speedFactor) throws InterruptedException {
-
-        boolean reachedStop = false;
-
+    private Duration sleepUntil(Date nextStop, int speedFactor) throws InterruptedException {
+        Duration addedTime = new Duration(SLEEPING_DURATION.getMillis() * speedFactor);
+        Duration untilNextStop = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(nextStop));
         if (speedFactor == MAX_SPEED) {
-            updateDate(nextStop);
-            reachedStop = true;
+            addedTime = untilNextStop;
         }
         else {
-            Duration untilNextStop = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(nextStop));
             Duration sleeping = SLEEPING_DURATION;
-            Duration addedTime = new Duration(SLEEPING_DURATION.getMillis() * speedFactor);
-
             if (untilNextStop.compareTo(addedTime) < 0) {
                 sleeping = new Duration(untilNextStop.getMillis() / speedFactor);
                 addedTime = untilNextStop;
-                reachedStop = true;
             }
 
             if (sleeping.getMillis() != 0) {
                 Thread.sleep(sleeping.getMillis());
             }
-
-            if (!_stopSignal) {
-                Date nextDate = new DateTime(GlobalDate.getCurrentDate()).plus(addedTime).toDate();
-                updateDate(nextDate);
-            }
         }
-
-        return reachedStop && !_stopSignal;
+        return addedTime;
     }
-
 
     private void ensureConnection() {
 
