@@ -172,7 +172,10 @@ public class OptaSimulator implements Runnable {
 
             if (_nextDocDate != null) {
                 try {
-                    if (sleepUntil(_nextDocDate, speedFactor)) {
+                    Duration deltaTime = sleepUntil(_nextDocDate, speedFactor);
+                    updateDate(new DateTime(GlobalDate.getCurrentDate()).plus(deltaTime).toDate());
+
+                    if (GlobalDate.getCurrentDate().equals(_nextDocDate) && !_stopSignal) {
                         // Tickeamos el OptaProcessorJob como si fueramos un proceso scheduleado
                         OptaProcessorJob.processResultSet(_optaResultSet, _optaProcessor);
 
@@ -228,38 +231,25 @@ public class OptaSimulator implements Runnable {
         return _state.speedFactor;
     }
 
-    private boolean sleepUntil(Date nextStop, int speedFactor) throws InterruptedException {
-
-        boolean reachedStop = false;
-
+    private Duration sleepUntil(Date nextStop, int speedFactor) throws InterruptedException {
+        Duration addedTime = new Duration(SLEEPING_DURATION.getMillis() * speedFactor);
+        Duration untilNextStop = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(nextStop));
         if (speedFactor == MAX_SPEED) {
-            updateDate(nextStop);
-            reachedStop = true;
+            addedTime = untilNextStop;
         }
         else {
-            Duration untilNextStop = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(nextStop));
             Duration sleeping = SLEEPING_DURATION;
-            Duration addedTime = new Duration(SLEEPING_DURATION.getMillis() * speedFactor);
-
             if (untilNextStop.compareTo(addedTime) < 0) {
                 sleeping = new Duration(untilNextStop.getMillis() / speedFactor);
                 addedTime = untilNextStop;
-                reachedStop = true;
             }
 
             if (sleeping.getMillis() != 0) {
                 Thread.sleep(sleeping.getMillis());
             }
-
-            if (!_stopSignal) {
-                Date nextDate = new DateTime(GlobalDate.getCurrentDate()).plus(addedTime).toDate();
-                updateDate(nextDate);
-            }
         }
-
-        return reachedStop && !_stopSignal;
+        return addedTime;
     }
-
 
     private void ensureConnection() {
 
