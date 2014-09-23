@@ -106,5 +106,5 @@ public class ViewProjection {
         return _cache.get(key);
     }
 
-    static private ConcurrentMap<String, String> _cache = new ConcurrentHashMap<>();
+    static private ConcurrentMap<String, String> _cache = new ConcurrentHashMap<>(16, 0.9f, 1);
 }
