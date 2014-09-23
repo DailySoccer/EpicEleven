@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
 import model.*;
+import model.stormpath.StormPathClient;
 import play.Logger;
 import play.Play;
 import play.data.Form;
@@ -81,6 +82,10 @@ public class LoginController extends Controller {
 
 
     private static boolean createUser(SignupParams theParams) {
+
+        StormPathClient stormPathClient = new StormPathClient();
+        stormPathClient.register(theParams.nickName, theParams.email, theParams.password);
+
         boolean bRet = true;
 
         // Puede ocurrir que salte una excepcion por duplicidad. No seria un error de programacion puesto que, aunque
@@ -208,11 +213,14 @@ public class LoginController extends Controller {
         return new ReturnHelper(!changeParamsForm.hasErrors(), result).toResult();
     }
 
-    private static boolean isPasswordCorrect(User theUser, String password) {
-        return true;
+    private boolean isPasswordCorrect(User theUser, String password) {
+        //return true;
+        _stormPathClient.login(theUser, password);
     }
 
     private static boolean isSecurePassword(String password) {
         return true;
     }
+
+    private StormPathClient _stormPathClient = new StormPathClient();
 }
