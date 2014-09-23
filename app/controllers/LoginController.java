@@ -213,14 +213,15 @@ public class LoginController extends Controller {
         return new ReturnHelper(!changeParamsForm.hasErrors(), result).toResult();
     }
 
-    private boolean isPasswordCorrect(User theUser, String password) {
-        //return true;
-        _stormPathClient.login(theUser, password);
+    private static boolean isPasswordCorrect(User theUser, String password) {
+        //if (Play.isDev()) {
+        //    return true;
+        //}
+        return null != StormPathClient.instance().login(theUser.email, password);
     }
 
     private static boolean isSecurePassword(String password) {
         return true;
     }
 
-    private StormPathClient _stormPathClient = new StormPathClient();
 }

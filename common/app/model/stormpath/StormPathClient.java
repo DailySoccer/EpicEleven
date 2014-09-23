@@ -11,10 +11,8 @@ import com.stormpath.sdk.authc.AuthenticationResult;
 import com.stormpath.sdk.authc.UsernamePasswordRequest;
 import com.stormpath.sdk.client.Client;
 import com.stormpath.sdk.client.Clients;
-import com.stormpath.sdk.directory.CustomData;
 import com.stormpath.sdk.resource.ResourceException;
 import com.stormpath.sdk.tenant.Tenant;
-import org.bson.types.ObjectId;
 import play.Logger;
 
 
@@ -25,7 +23,7 @@ public class StormPathClient {
         ApplicationList applications = _tenant.getApplications();
 
         for (Application app : applications) {
-            if (app.getName().equals("DFS")) {
+            if (app.getName().equals("Example Application")) {
                 _myApp = app;
             }
         }
@@ -33,7 +31,7 @@ public class StormPathClient {
         if (_myApp == null) {
             _myApp = _client.instantiate(Application.class);
 
-            _myApp.setName("DFS"); //must be unique among your other apps
+            _myApp.setName("Example Application"); //must be unique among your other apps
             _myApp = _client.createApplication(
                     Applications.newCreateRequestFor(_myApp).createDirectory().build());
         }
@@ -65,11 +63,29 @@ public class StormPathClient {
         try {
             AuthenticationResult result = _myApp.authenticateAccount(request);
             return result.getAccount();
+
         } catch (ResourceException ex) {
-            Logger.error(ex.getStatus() + " " + ex.getMessage());
+            if (ex.getStatus() == 400 && ex.getCode() == 400 &&
+                ex.getMessage().equals("Invalid username or password.")) {
+                Logger.info("Invalid login for {}", usernameOrEmail);
+            }
+            else {
+                Logger.error(String.valueOf(ex.getStatus())); // Will output: 400
+                Logger.error(String.valueOf(ex.getCode())); // Will output: 400
+                Logger.error(ex.getMessage()); // Will output: "Invalid username or password."{
+                Logger.error(ex.getStatus() + " " + ex.getMessage());
+            }
+
         }
+        return null;
     }
 
+    public static StormPathClient instance() {
+        if (_instance == null) {
+            _instance = new StormPathClient();
+        }
+        return _instance;
+    }
 
     ApiKey _apiKey = ApiKeys.builder().setFileLocation("./apiKey.properties").build();
     Client _client = Clients.builder().setApiKey(_apiKey).build();
@@ -77,5 +93,6 @@ public class StormPathClient {
     Tenant _tenant = _client.getCurrentTenant();
     Application _myApp = null;
 
+    static StormPathClient _instance;
 
 }
