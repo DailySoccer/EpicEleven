@@ -2,13 +2,10 @@ package utils;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -101,13 +98,13 @@ public class ViewProjection {
 
     static private void registerCache(Class<?> viewClass, Class<?> pojoClass, String value) {
         String key = viewClass.getName().concat(pojoClass.getName());
-        cache.putIfAbsent(key, value);
+        _cache.putIfAbsent(key, value);
     }
 
     static private String getCached(Class<?> viewClass, Class<?> pojoClass) {
         String key = viewClass.getName().concat(pojoClass.getName());
-        return cache.get(key);
+        return _cache.get(key);
     }
 
-    static private ConcurrentMap<String, String> cache = new ConcurrentHashMap<>();
+    static private ConcurrentMap<String, String> _cache = new ConcurrentHashMap<>();
 }
