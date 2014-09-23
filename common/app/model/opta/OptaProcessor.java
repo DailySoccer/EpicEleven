@@ -103,8 +103,8 @@ public class OptaProcessor {
 
             Date timestamp = GlobalDate.parseDate(event.getAttributeValue("last_modified"), null);
 
-            HashMap<Integer, Date> eventsCache = getOptaEventsCache(game.getAttributeValue("id"));
-            int eventId = Integer.parseInt(event.getAttributeValue("id"));
+            HashMap<String, Date> eventsCache = getOptaEventsCache(game.getAttributeValue("id"));
+            String eventId = event.getAttributeValue("id");
 
             if (!eventsCache.containsKey(eventId) || timestamp.after(eventsCache.get(eventId))) {
                 OptaEvent optaEvent = new OptaEvent(event, game);
@@ -144,7 +144,7 @@ public class OptaProcessor {
     private void processF1(Element f1) {
 
         Element myF1 = f1.getChild("SoccerDocument");
-        int competitionId = Integer.parseInt(myF1.getAttributeValue("competition_id"));
+        String competitionId = myF1.getAttributeValue("competition_id");
 
         for (Element matchObject : myF1.getChildren("MatchData")) {
 
@@ -341,19 +341,19 @@ public class OptaProcessor {
         }
     }
 
-    private HashMap<Integer, Date> getOptaEventsCache(String gameId) {
+    private HashMap<String, Date> getOptaEventsCache(String gameId) {
         if (_optaEventsCache == null) {
-            _optaEventsCache = new HashMap<String, HashMap<Integer, Date>>();
+            _optaEventsCache = new HashMap<String, HashMap<String, Date>>();
         }
         if (!_optaEventsCache.containsKey(gameId)) {
-            _optaEventsCache.put(gameId, new HashMap<Integer, Date>());
+            _optaEventsCache.put(gameId, new HashMap<String, Date>());
         }
         return _optaEventsCache.get(gameId);
     }
 
-    private HashMap<String, Date> getOptaMatchDataCache(int competitionId) {
+    private HashMap<String, Date> getOptaMatchDataCache(String competitionId) {
         if (_optaMatchDataCache == null) {
-            _optaMatchDataCache = new HashMap<Integer, HashMap<String, Date>>();
+            _optaMatchDataCache = new HashMap<String, HashMap<String, Date>>();
         }
         if (!_optaMatchDataCache.containsKey(competitionId)) {
             _optaMatchDataCache.put(competitionId, new HashMap<String, Date>());
@@ -366,6 +366,6 @@ public class OptaProcessor {
     private HashMap<Integer, Integer> _pointsTranslationCache;
     private HashMap<Integer, ObjectId> _pointsTranslationTableCache;
 
-    private HashMap<String, HashMap<Integer, Date>> _optaEventsCache;
-    private HashMap<Integer, HashMap<String, Date>> _optaMatchDataCache;
+    private HashMap<String, HashMap<String, Date>> _optaEventsCache;
+    private HashMap<String, HashMap<String, Date>> _optaMatchDataCache;
 }
