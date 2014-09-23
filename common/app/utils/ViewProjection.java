@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class ViewProjection {
     static public String get(Class<?> viewClass, Class<?> pojoClass) {
@@ -99,13 +101,13 @@ public class ViewProjection {
 
     static private void registerCache(Class<?> viewClass, Class<?> pojoClass, String value) {
         String key = viewClass.getName().concat(pojoClass.getName());
-        cache.put(key, value);
+        cache.putIfAbsent(key, value);
     }
 
     static private String getCached(Class<?> viewClass, Class<?> pojoClass) {
         String key = viewClass.getName().concat(pojoClass.getName());
-        return cache.containsKey(key) ? cache.get(key) : null;
+        return cache.get(key);
     }
 
-    static private Map<String, String> cache = new HashMap<>();
+    static private ConcurrentMap<String, String> cache = new ConcurrentHashMap<>();
 }
