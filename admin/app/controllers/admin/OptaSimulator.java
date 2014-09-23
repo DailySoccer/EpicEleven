@@ -168,7 +168,11 @@ public class OptaSimulator implements Runnable {
         ensureConnection();
 
         try {
-            queryNextResultSet();
+            boolean bNewResultSet = queryNextResultSet();
+
+            if (bNewResultSet) {
+                advanceToNextDocumentInResultSet();
+            }
 
             if (_nextDocDate != null) {
                 try {
@@ -180,7 +184,8 @@ public class OptaSimulator implements Runnable {
                         OptaProcessorJob.processResultSet(_optaResultSet, _optaProcessor);
 
                         _state.nextDocToParseIndex++;
-                        _nextDocDate = null;
+
+                        advanceToNextDocumentInResultSet();
                     }
                 }
                 catch (InterruptedException e) {
@@ -202,7 +207,18 @@ public class OptaSimulator implements Runnable {
         return bFinished;
     }
 
-    private void queryNextResultSet() throws SQLException {
+    private void advanceToNextDocumentInResultSet() throws SQLException {
+        if (_optaResultSet.next()) {
+            _nextDocDate = _optaResultSet.getTimestamp("created_at");
+        }
+        else {
+            _nextDocDate = null;
+        }
+    }
+
+    private boolean queryNextResultSet() throws SQLException {
+        boolean bNewResultSet = false;
+
         if (_state.nextDocToParseIndex % RESULTS_PER_QUERY == 0 || _optaResultSet == null) {
             if (_stmt != null) {
                 _stmt.close();
@@ -214,12 +230,10 @@ public class OptaSimulator implements Runnable {
             _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml ORDER BY created_at LIMIT " +
                                                 RESULTS_PER_QUERY + " OFFSET " + _state.nextDocToParseIndex + ";");
 
-            _nextDocDate = null;
+            bNewResultSet = true;
         }
 
-        if (_nextDocDate == null && _optaResultSet.next()) {
-            _nextDocDate = _optaResultSet.getTimestamp("created_at");
-        }
+        return bNewResultSet;
     }
 
     public void setSpeedFactor(int speedFactor) {
@@ -232,23 +246,26 @@ public class OptaSimulator implements Runnable {
     }
 
     private Duration sleepUntil(Date nextStop, int speedFactor) throws InterruptedException {
-        Duration addedTime = new Duration(SLEEPING_DURATION.getMillis() * speedFactor);
-        Duration untilNextStop = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(nextStop));
+        Duration timeToAdd;
+        Duration timeUntilNextStop = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(nextStop));
+
         if (speedFactor == MAX_SPEED) {
-            addedTime = untilNextStop;
+            timeToAdd = timeUntilNextStop;
         }
         else {
-            Duration sleeping = SLEEPING_DURATION;
-            if (untilNextStop.compareTo(addedTime) < 0) {
-                sleeping = new Duration(untilNextStop.getMillis() / speedFactor);
-                addedTime = untilNextStop;
+            Duration timeToSleep = SLEEPING_DURATION;
+            timeToAdd = new Duration(SLEEPING_DURATION.getMillis() * speedFactor);
+
+            if (timeUntilNextStop.compareTo(timeToAdd) < 0) {
+                timeToSleep = new Duration(timeUntilNextStop.getMillis() / speedFactor);
+                timeToAdd = timeUntilNextStop;
             }
 
-            if (sleeping.getMillis() != 0) {
-                Thread.sleep(sleeping.getMillis());
+            if (timeToSleep.getMillis() != 0) {
+                Thread.sleep(timeToSleep.getMillis());
             }
         }
-        return addedTime;
+        return timeToAdd;
     }
 
     private void ensureConnection() {
