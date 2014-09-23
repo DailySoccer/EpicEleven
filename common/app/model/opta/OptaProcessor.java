@@ -43,8 +43,7 @@ public class OptaProcessor {
             Logger.error("WTF 6312, {}, {}, {}", feedType, name, parseEx.getMessage());
         }
         catch (Exception e) {
-            e.printStackTrace();
-            //Logger.error("WTF 6313, {}, {}, {}", feedType, name, e);
+            Logger.error("WTF 6313, {}, {}, {}", feedType, name, e);
         }
 
         return _dirtyMatchEventIds;
@@ -117,10 +116,21 @@ public class OptaProcessor {
     }
 
     private void updateEvent(OptaEvent optaEvent) {
-        optaEvent.points = getPointsTranslation(optaEvent.typeId, optaEvent.timestamp);
-        optaEvent.pointsTranslationId = _pointsTranslationTableCache.get(optaEvent.typeId);
+        // Borrar evento:
+        // - Si es un evento borrado por Opta
+        // - Si es un evento que teníamos, pero ha cambiado y ahora es un evento que no nos interesa
+        if (optaEvent.typeId == 43 || (optaEvent.typeId == OptaEventType._INVALID_.code && _optaEventsCache.containsKey(optaEvent.eventId))) {
+            Model.optaEvents().remove("{eventId: #, teamId: #, gameId: #}", optaEvent.eventId, optaEvent.teamId, optaEvent.gameId);
+            return;
+        }
+        else if (optaEvent.typeId != OptaEventType._INVALID_.code) {
 
-        Model.optaEvents().update("{eventId: #, teamId: #, gameId: #}", optaEvent.eventId, optaEvent.teamId, optaEvent.gameId).upsert().with(optaEvent);
+            optaEvent.points = getPointsTranslation(optaEvent.typeId, optaEvent.timestamp);
+            optaEvent.pointsTranslationId = _pointsTranslationTableCache.get(optaEvent.typeId);
+
+            Model.optaEvents().update("{eventId: #, teamId: #, gameId: #}", optaEvent.eventId, optaEvent.teamId, optaEvent.gameId).upsert().with(optaEvent);
+        }
+
     }
 
     public void recalculateAllEvents() {
@@ -272,19 +282,31 @@ public class OptaProcessor {
     private void createEvent(Element F9, String gameId, Element matchPlayer, int teamId, int typeId, int eventId, int times) {
         String playerId = getStringId(matchPlayer, "PlayerRef");
         String competitionId = getStringId(F9.getChild("Competition"), "uID");
+        String seasonId = getF9SeasonId(F9);
 
         Date timestamp = GlobalDate.parseDate(F9.getChild("MatchData").getChild("MatchInfo").getAttributeValue("TimeStamp"), null);
 
         int points = getPointsTranslation(typeId, timestamp) * times;
         ObjectId pointsTranslationId = _pointsTranslationTableCache.get(typeId);
 
-        //TODO: Extraer SeasonID de Competition->Stat->Type==season_id->content
-        String seasonId = null;
-
         OptaEvent myEvent = new OptaEvent(typeId, eventId, playerId, teamId, gameId, competitionId,
                                           seasonId, timestamp, points, pointsTranslationId);
 
         Model.optaEvents().insert(myEvent);
+    }
+
+
+    private String getF9SeasonId(Element F9) {
+        //Obtain SeasonId
+        String seasonId = null;
+
+        List<Element> competitionStats = F9.getChild("Competition").getChildren("Stat");
+        for (Element competitionStat : competitionStats) {
+            if (competitionStat.getAttribute("Type").getValue().equals("season_id")) {
+                seasonId = String.valueOf(competitionStat.getContent().get(0).getValue());
+            }
+        }
+        return seasonId;
     }
 
 
