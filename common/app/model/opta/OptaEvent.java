@@ -151,7 +151,7 @@ public class OptaEvent {
             this.optaPlayerId = optaPlayerOffsideId;
         }
         // Player Saves -> 1010
-        else if (this.typeId == OptaEventType.SAVE_GOALKEEPER.code && this.qualifiers.contains(93)) {
+        else if (this.typeId == OptaEventType.SAVE_GOALKEEPER.code && this.qualifiers.contains(94)) {
             this.typeId = OptaEventType.SAVE_PLAYER.code;
         }
     }
