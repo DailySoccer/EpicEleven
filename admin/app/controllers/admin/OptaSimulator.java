@@ -45,14 +45,14 @@ public class OptaSimulator implements Runnable {
             _state = new OptaSimulatorState();
 
             _state.useSnapshot = false;
-            _state.lastParsedDate = new DateTime(OptaXmlUtils.getFirstDate()).minusSeconds(5).toDate();
+            _state.simulationDate = new DateTime(OptaXmlUtils.getFirstDate()).minusSeconds(5).toDate();
             _state.nextDocToParseIndex = 0;
 
             saveState();
         }
         else {
             // Tenemos registrada una fecha antigua de pausa?
-            if (_state.pauseDate != null && !_state.lastParsedDate.before(_state.pauseDate)) {
+            if (_state.pauseDate != null && !_state.simulationDate.before(_state.pauseDate)) {
                 _state.pauseDate = null;
             }
 
@@ -65,7 +65,7 @@ public class OptaSimulator implements Runnable {
         // Siempre comenzamos pausados
         _paused = true;
 
-        updateDate(_state.lastParsedDate);
+        updateDate(_state.simulationDate);
     }
 
     public Date getNextStop() { return _state.pauseDate; }
@@ -126,7 +126,7 @@ public class OptaSimulator implements Runnable {
 
         while (!_stopSignal) {
 
-            if (_state.pauseDate != null && !_state.lastParsedDate.before(_state.pauseDate)) {
+            if (_state.pauseDate != null && !_state.simulationDate.before(_state.pauseDate)) {
                 _stopSignal = true;
                 _state.pauseDate = null;
             }
@@ -147,16 +147,16 @@ public class OptaSimulator implements Runnable {
         _paused = true;
         saveState();
 
-        Logger.info("Paused at: {}", GlobalDate.formatDate(_state.lastParsedDate));
+        Logger.info("Paused at: {}", GlobalDate.formatDate(_state.simulationDate));
     }
 
     private void updateDate(Date currentDate) {
-        _state.lastParsedDate = currentDate;
+        _state.simulationDate = currentDate;
 
-        GlobalDate.setFakeDate(_state.lastParsedDate);
+        GlobalDate.setFakeDate(_state.simulationDate);
 
         if (_snapshot != null) {
-            _snapshot.update(_state.lastParsedDate);
+            _snapshot.update(_state.simulationDate);
         }
 
         ModelEvents.runTasks();
@@ -322,7 +322,7 @@ public class OptaSimulator implements Runnable {
         public String  stateId = "--unique id--";
         public boolean useSnapshot;
         public Date    pauseDate;
-        public Date    lastParsedDate;
+        public Date    simulationDate;
         public int     nextDocToParseIndex;
         public int     speedFactor = MAX_SPEED;
 
