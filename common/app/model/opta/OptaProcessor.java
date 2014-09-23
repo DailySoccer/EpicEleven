@@ -297,7 +297,6 @@ public class OptaProcessor {
 
 
     private String getF9SeasonId(Element F9) {
-        //Obtain SeasonId
         String seasonId = null;
 
         List<Element> competitionStats = F9.getChild("Competition").getChildren("Stat");
