@@ -36,9 +36,9 @@ public class ContestController extends Controller {
     public static Result getMyContests() {
         User theUser = (User)ctx().args.get("User");
 
-        List<Contest> myActiveContests = Contest.findAllMyActive(theUser.userId, Contest.FILTER_MY_ACTIVE_CONTESTS);
-        List<Contest> myLiveContests = Contest.findAllMyLive(theUser.userId, Contest.FILTER_MY_LIVE_CONTESTS);
-        List<Contest> myHistoryContests = Contest.findAllMyHistory(theUser.userId, Contest.FILTER_MY_HISTORY_CONTESTS);
+        List<Contest> myActiveContests = Contest.findAllMyActive(theUser.userId, JsonViews.MyActiveContests.class);
+        List<Contest> myLiveContests = Contest.findAllMyLive(theUser.userId, JsonViews.MyLiveContests.class);
+        List<Contest> myHistoryContests = Contest.findAllMyHistory(theUser.userId, JsonViews.MyHistoryContests.class);
 
         List<MatchEvent> liveMatchEvents = MatchEvent.gatherFromContests(myLiveContests);
 
