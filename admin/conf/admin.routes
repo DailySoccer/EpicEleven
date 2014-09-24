@@ -113,7 +113,7 @@ GET         /test_import_everything                                    controlle
 GET         /test_current_date                                         controllers.admin.TestController.getCurrentDate()
 
 GET         /test_initial_setup                                        controllers.admin.TestController.initialSetup()
-GET         /create_contests                                           controllers.admin.TestController.createContests()
+GET         /create_contests/:mockIndex                                controllers.admin.TestController.createContests(mockIndex: Int)
 
 # Informar al webclient si el simulator esta activado (requiere Json)
 GET         /is_simulator_activated                                    controllers.admin.SimulatorController.isSimulatorActivated()

@@ -64,7 +64,7 @@ public class TestController extends Controller {
         return ok(SimulatorController.getCurrentDate());
     }
 
-    static public Result createContests(){
+    static public Result createContests(int mockIndex){
 
         TemplateContest templateContest = new TemplateContest("Prueba", 1, 10, 100000, 10, PrizeType.FIFTY_FIFTY,
                                                               new DateTime(2014, 6, 22, 10, 10).toDate(),
