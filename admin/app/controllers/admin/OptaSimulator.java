@@ -9,10 +9,7 @@ import org.joda.time.Duration;
 import play.Logger;
 import play.db.DB;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Date;
 
 public class OptaSimulator implements Runnable {
@@ -45,18 +42,27 @@ public class OptaSimulator implements Runnable {
             _state = new OptaSimulatorState();
 
             _state.useSnapshot = false;
-            _state.simulationDate = new DateTime(OptaXmlUtils.getFirstDate()).minusSeconds(5).toDate();
-            _state.nextDocToParseIndex = 0;
+            _state.simulationDate = OptaProcessorJob.getLastProcessedDate();
+
+            // Cuando todavia nadie ha procesado ningun documento, nos ponemos X segundos antes del primero q haya
+            if (_state.simulationDate == null) {
+                _state.simulationDate = new DateTime(OptaXmlUtils.getFirstDate()).minusSeconds(5).toDate();
+            }
 
             saveState();
         }
         else {
+
+            // Reseteamos la fecha de simulacion en caso de que el proceso haya avanzado por su cuenta
+            if (_state.simulationDate.before(OptaProcessorJob.getLastProcessedDate())) {
+                _state.simulationDate = OptaProcessorJob.getLastProcessedDate();
+            }
+
             // Tenemos registrada una fecha antigua de pausa?
             if (_state.pauseDate != null && !_state.simulationDate.before(_state.pauseDate)) {
                 _state.pauseDate = null;
             }
 
-            // Si estábamos usando un snapshot, habrá que inicializarlo
             if (_state.useSnapshot) {
                 _snapshot = Snapshot.instance();
             }
@@ -69,7 +75,6 @@ public class OptaSimulator implements Runnable {
     }
 
     public Date getNextStop() { return _state.pauseDate; }
-    public String getNextStepDescription() { return "" + _state.nextDocToParseIndex; }
     public boolean isPaused() { return (_paused || _stopSignal);  }
     public boolean isSnapshotEnabled() { return _state.useSnapshot; }
 
@@ -180,11 +185,11 @@ public class OptaSimulator implements Runnable {
                     updateDate(new DateTime(GlobalDate.getCurrentDate()).plus(deltaTime).toDate());
 
                     if (GlobalDate.getCurrentDate().equals(_nextDocDate) && !_stopSignal) {
+
                         // Tickeamos el OptaProcessorJob como si fueramos un proceso scheduleado
-                        OptaProcessorJob.processResultSet(_optaResultSet, _optaProcessor);
+                        OptaProcessorJob.processCurrentDocumentInResultSet(_optaResultSet, _optaProcessor);
 
-                        _state.nextDocToParseIndex++;
-
+                        // Y dejamos el puntero en el siguiente documento
                         advanceToNextDocumentInResultSet();
                     }
                 }
@@ -219,17 +224,22 @@ public class OptaSimulator implements Runnable {
     private boolean queryNextResultSet() throws SQLException {
         boolean bNewResultSet = false;
 
-        if (_state.nextDocToParseIndex % RESULTS_PER_QUERY == 0 || _optaResultSet == null) {
+        if (_optaResultSet == null || _optaResultSet.isAfterLast()) {
             if (_stmt != null) {
                 _stmt.close();
                 _stmt = null;
             }
 
-            _stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            Date lastProcessedDate = OptaProcessorJob.getLastProcessedDate();
 
-            _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml ORDER BY created_at LIMIT " +
-                                                RESULTS_PER_QUERY + " OFFSET " + _state.nextDocToParseIndex + ";");
+            if (lastProcessedDate == null) {
+                lastProcessedDate = new Date(0L);
+            }
 
+            Statement stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            _optaResultSet = stmt.executeQuery("SELECT * FROM optaxml WHERE created_at > '"
+                                                + new Timestamp(lastProcessedDate.getTime()) +
+                                                "' ORDER BY created_at LIMIT " + RESULTS_PER_QUERY + ";");
             bNewResultSet = true;
         }
 
@@ -323,7 +333,6 @@ public class OptaSimulator implements Runnable {
         public boolean useSnapshot;
         public Date    pauseDate;
         public Date    simulationDate;
-        public int     nextDocToParseIndex;
         public int     speedFactor = MAX_SPEED;
 
         public OptaSimulatorState() {}

@@ -5,6 +5,7 @@ import model.opta.OptaCompetition;
 import model.opta.OptaEvent;
 import model.opta.OptaProcessor;
 import model.opta.OptaXmlUtils;
+import org.joda.time.DateTime;
 import play.Logger;
 
 import java.sql.Connection;
@@ -17,26 +18,21 @@ import java.util.concurrent.TimeUnit;
 public class OptaProcessorJob {
 
     @SchedulePolicy(initialDelay = 0, timeUnit = TimeUnit.SECONDS, interval = 0)
-    public static void init() {
-        OptaProcessorState state = Model.optaProcessor().findOne("{stateId: #}", OptaProcessorState.UNIQUE_ID).as(OptaProcessorState.class);
+    public static void init() throws NoSuchMethodException {
+        OptaProcessorState state = OptaProcessorState.findOne();
 
-        try {
-            if (state != null && state.isProcessing) {
-                Logger.error("WTF 0263: Se ha detectado isProcessing == true durante la inicializacion. Esperamos X segundos para reparar!");
+        if (state != null && state.isProcessing) {
+            Logger.error("WTF 0263: Se ha detectado isProcessing == true durante la inicializacion. Esperamos X segundos para reparar!");
 
-                Scheduler.invokeOnce(20, TimeUnit.SECONDS, OptaProcessorJob.class.getMethod("initAfterDelay", Date.class), state.lastProcessedDate);
-            }
-            else {
-                Scheduler.scheduleMethod(0, 1, TimeUnit.SECONDS, OptaProcessorJob.class.getMethod("checkAndProcessNextOptaXml"));
-            }
+            Scheduler.invokeOnce(20, TimeUnit.SECONDS, OptaProcessorJob.class.getMethod("initAfterDelay", Date.class), state.lastProcessedDate);
         }
-        catch (NoSuchMethodException e) {
-            throw new RuntimeException("WTF 1102");
+        else {
+            Scheduler.scheduleMethod(0, 1, TimeUnit.SECONDS, OptaProcessorJob.class.getMethod("periodicCheckAndProcessNextOptaXml"));
         }
     }
 
-    public static void initAfterDelay(Date prevLastProcessedDate) {
-        OptaProcessorState state = Model.optaProcessor().findOne("{stateId: #}", OptaProcessorState.UNIQUE_ID).as(OptaProcessorState.class);
+    public static void initAfterDelay(Date prevLastProcessedDate) throws NoSuchMethodException {
+        OptaProcessorState state = OptaProcessorState.findOne();
 
         // Chequeamos que no hay dos worker process
         if (state == null || !state.isProcessing || !state.lastProcessedDate.equals(prevLastProcessedDate)) {
@@ -45,28 +41,41 @@ public class OptaProcessorJob {
 
         // La fecha coincide con la de hace X segundos. Asumimos que el worker process que la dejo asi esta muerto.
         Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with("{$set: {isProcessing: false}}");
-        Logger.info("WTF 0263: isProcessing == true reparado");
+        Logger.info("Respecto al WTF 0263, isProcessing == true reparado");
 
-        try {
-            Scheduler.scheduleMethod(0, 1, TimeUnit.SECONDS, OptaProcessorJob.class.getMethod("checkAndProcessNextOptaXml"));
+        Scheduler.scheduleMethod(0, 1, TimeUnit.SECONDS, OptaProcessorJob.class.getMethod("periodicCheckAndProcessNextOptaXml"));
+    }
+
+    public static void periodicCheckAndProcessNextOptaXml() {
+
+        try (Connection conn = play.db.DB.getConnection()) {
+
+            ResultSet resultSet = OptaXmlUtils.getNextXmlByDate(conn, getLastProcessedDate());
+
+            if (resultSet != null && resultSet.next()) {
+                processCurrentDocumentInResultSet(resultSet, new OptaProcessor());
+            }
         }
-        catch (NoSuchMethodException e) {
-            throw new RuntimeException("WTF 5112");
+        catch (Exception e) {
+            Logger.error("WTF 8816", e);
         }
     }
 
-    public static void checkAndProcessNextOptaXml() {
+    public static Date getLastProcessedDate() {
+        OptaProcessorState state = OptaProcessorState.findOne();
+        return state != null? state.lastProcessedDate : null;
+    }
 
-        // Evitamos que se produzcan actualizaciones simultaneas, por si en algun momento nos equivocamos y lanzamos
-        // este worker process varias veces.
+    public static void processCurrentDocumentInResultSet(ResultSet resultSet, OptaProcessor processor) {
+
+        // Evitamos que se produzcan actualizaciones simultaneas
         OptaProcessorState state = Model.optaProcessor().findAndModify("{stateId: #}", OptaProcessorState.UNIQUE_ID)
                                                         .upsert()
                                                         .with("{$set: {isProcessing: true}}")
                                                         .as(OptaProcessorState.class);
 
         if (state != null && state.isProcessing) {
-            Logger.error("WTF 3885: Colision entre dos worker processes");
-            return;
+            throw new RuntimeException("WTF 3885: Colision entre dos procesos");
         }
 
         if (state == null) {
@@ -74,42 +83,28 @@ public class OptaProcessorJob {
             state.lastProcessedDate = new Date(0L);
         }
 
-        try (Connection conn = play.db.DB.getConnection()) {
-
-            ResultSet resultSet = OptaXmlUtils.getNextXmlByDate(conn, state.lastProcessedDate);
-
-            if (resultSet != null && resultSet.next()) {
-                state.lastProcessedDate = processResultSet(resultSet, new OptaProcessor());
-            }
-        } catch (Exception e) {
-            Logger.error("WTF 8816", e);
-        }
-
-        Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with(state);
-    }
-
-    public static Date processResultSet(ResultSet resultSet, OptaProcessor processor) {
-
-        Date processedDate = null;
-
         try {
-            processedDate = resultSet.getTimestamp("created_at");
+            Date created_at = resultSet.getTimestamp("created_at");
+
+            if (new DateTime(created_at).isBefore(new DateTime(state.lastProcessedDate)))
+                throw new RuntimeException("WTF 9190");
 
             String sqlxml = resultSet.getString("xml");
             String name = resultSet.getString("name");
             String feedType = resultSet.getString("feed_type");
             String seasonCompetitionId = OptaCompetition.createId(resultSet.getString("season_id"), resultSet.getString("competition_id"));
 
-            Logger.info("OptaProcessorJob: {}, {}, {}, {}", feedType, name, GlobalDate.formatDate(processedDate), seasonCompetitionId);
+            Logger.info("OptaProcessorJob: {}, {}, {}, {}", feedType, name, GlobalDate.formatDate(created_at), seasonCompetitionId);
 
             HashSet<String> changedOptaMatchEventIds = processor.processOptaDBInput(feedType, seasonCompetitionId, name, sqlxml);
             onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
+
+            state.lastProcessedDate = created_at;
+            Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with(state);
         }
         catch (SQLException e) {
             Logger.error("WTF 7817", e);
         }
-
-        return processedDate;
     }
 
     private static void onOptaMatchEventIdsChanged(HashSet<String> changedOptaMatchEventIds) {
@@ -185,5 +180,9 @@ public class OptaProcessorJob {
         public String stateId = UNIQUE_ID;
         public Date lastProcessedDate;
         public boolean isProcessing;
+
+        static public OptaProcessorState findOne() {
+            return Model.optaProcessor().findOne("{stateId: #}", OptaProcessorState.UNIQUE_ID).as(OptaProcessorState.class);
+        }
     }
 }
