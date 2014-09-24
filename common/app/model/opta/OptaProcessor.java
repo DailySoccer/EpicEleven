@@ -252,7 +252,6 @@ public class OptaProcessor {
                     //Si hay cleanSheet, una vez que encontramos la métrica de minutos jugados hacemos el break
                     if (cleanSheet) {
                         if (playerStat.getAttribute("Type").getValue().equals("mins_played")) {
-                            Logger.info("Cleansheet and >59");
                             if (Integer.parseInt(playerStat.getContent().get(0).getValue()) > 59) {
                                 createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.CLEAN_SHEET.code, 20000, 1);
                             }

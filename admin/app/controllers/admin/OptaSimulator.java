@@ -4,15 +4,13 @@ import jobs.OptaProcessorJob;
 import model.*;
 import model.opta.OptaProcessor;
 import model.opta.OptaXmlUtils;
+import org.apache.commons.dbutils.DbUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import play.Logger;
 import play.db.DB;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Date;
 
 public class OptaSimulator implements Runnable {
@@ -41,22 +39,31 @@ public class OptaSimulator implements Runnable {
 
         _state = Model.simulator().findOne().as(OptaSimulatorState.class);
 
-        if (_state == null) {
+        if (_state == null || _state.isOldVersion()) {
             _state = new OptaSimulatorState();
 
             _state.useSnapshot = false;
-            _state.lastParsedDate = new DateTime(OptaXmlUtils.getFirstDate()).minusSeconds(5).toDate();
-            _state.nextDocToParseIndex = 0;
+            _state.simulationDate = OptaProcessorJob.getLastProcessedDate();
+
+            // Cuando todavia nadie ha procesado ningun documento, nos ponemos X segundos antes del primero q haya
+            if (_state.simulationDate.equals(new Date(0L))) {
+                _state.simulationDate = new DateTime(OptaXmlUtils.getFirstDate()).minusSeconds(5).toDate();
+            }
 
             saveState();
         }
         else {
+
+            // Reseteamos la fecha de simulacion en caso de que el proceso haya avanzado por su cuenta
+            if (_state.simulationDate.before(OptaProcessorJob.getLastProcessedDate())) {
+                _state.simulationDate = OptaProcessorJob.getLastProcessedDate();
+            }
+
             // Tenemos registrada una fecha antigua de pausa?
-            if (_state.pauseDate != null && !_state.lastParsedDate.before(_state.pauseDate)) {
+            if (_state.pauseDate != null && !_state.simulationDate.before(_state.pauseDate)) {
                 _state.pauseDate = null;
             }
 
-            // Si estábamos usando un snapshot, habrá que inicializarlo
             if (_state.useSnapshot) {
                 _snapshot = Snapshot.instance();
             }
@@ -65,11 +72,10 @@ public class OptaSimulator implements Runnable {
         // Siempre comenzamos pausados
         _paused = true;
 
-        updateDate(_state.lastParsedDate);
+        updateDate(_state.simulationDate);
     }
 
     public Date getNextStop() { return _state.pauseDate; }
-    public String getNextStepDescription() { return "" + _state.nextDocToParseIndex; }
     public boolean isPaused() { return (_paused || _stopSignal);  }
     public boolean isSnapshotEnabled() { return _state.useSnapshot; }
 
@@ -126,7 +132,7 @@ public class OptaSimulator implements Runnable {
 
         while (!_stopSignal) {
 
-            if (_state.pauseDate != null && !_state.lastParsedDate.before(_state.pauseDate)) {
+            if (_state.pauseDate != null && !_state.simulationDate.before(_state.pauseDate)) {
                 _stopSignal = true;
                 _state.pauseDate = null;
             }
@@ -147,16 +153,16 @@ public class OptaSimulator implements Runnable {
         _paused = true;
         saveState();
 
-        Logger.info("Paused at: {}", GlobalDate.formatDate(_state.lastParsedDate));
+        Logger.info("Paused at: {}", GlobalDate.formatDate(_state.simulationDate));
     }
 
     private void updateDate(Date currentDate) {
-        _state.lastParsedDate = currentDate;
+        _state.simulationDate = currentDate;
 
-        GlobalDate.setFakeDate(_state.lastParsedDate);
+        GlobalDate.setFakeDate(_state.simulationDate);
 
         if (_snapshot != null) {
-            _snapshot.update(_state.lastParsedDate);
+            _snapshot.update(_state.simulationDate);
         }
 
         ModelEvents.runTasks();
@@ -168,7 +174,11 @@ public class OptaSimulator implements Runnable {
         ensureConnection();
 
         try {
-            queryNextResultSet();
+            boolean bNewResultSet = queryNextResultSet();
+
+            if (bNewResultSet) {
+                advanceToNextDocumentInResultSet();
+            }
 
             if (_nextDocDate != null) {
                 try {
@@ -176,11 +186,12 @@ public class OptaSimulator implements Runnable {
                     updateDate(new DateTime(GlobalDate.getCurrentDate()).plus(deltaTime).toDate());
 
                     if (GlobalDate.getCurrentDate().equals(_nextDocDate) && !_stopSignal) {
-                        // Tickeamos el OptaProcessorJob como si fueramos un proceso scheduleado
-                        OptaProcessorJob.processResultSet(_optaResultSet, _optaProcessor);
 
-                        _state.nextDocToParseIndex++;
-                        _nextDocDate = null;
+                        // Tickeamos el OptaProcessorJob como si fueramos un proceso scheduleado
+                        OptaProcessorJob.processCurrentDocumentInResultSet(_optaResultSet, _optaProcessor);
+
+                        // Y dejamos el puntero en el siguiente documento
+                        advanceToNextDocumentInResultSet();
                     }
                 }
                 catch (InterruptedException e) {
@@ -202,24 +213,34 @@ public class OptaSimulator implements Runnable {
         return bFinished;
     }
 
-    private void queryNextResultSet() throws SQLException {
-        if (_state.nextDocToParseIndex % RESULTS_PER_QUERY == 0 || _optaResultSet == null) {
-            if (_stmt != null) {
-                _stmt.close();
-                _stmt = null;
-            }
-
-            _stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-
-            _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml ORDER BY created_at LIMIT " +
-                                                RESULTS_PER_QUERY + " OFFSET " + _state.nextDocToParseIndex + ";");
-
-            _nextDocDate = null;
-        }
-
-        if (_nextDocDate == null && _optaResultSet.next()) {
+    private void advanceToNextDocumentInResultSet() throws SQLException {
+        if (_optaResultSet.next()) {
             _nextDocDate = _optaResultSet.getTimestamp("created_at");
         }
+        else {
+            _nextDocDate = null;
+        }
+    }
+
+    private boolean queryNextResultSet() throws SQLException {
+        boolean bNewResultSet = false;
+
+        if (_optaResultSet == null || _optaResultSet.isAfterLast()) {
+
+            DbUtils.closeQuietly(null, _stmt, _optaResultSet);
+            _stmt = null;
+            _optaResultSet = null;
+
+            Date lastProcessedDate = OptaProcessorJob.getLastProcessedDate();
+
+            _stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml WHERE created_at > '"
+                                                + new Timestamp(lastProcessedDate.getTime()) +
+                                                "' ORDER BY created_at LIMIT " + RESULTS_PER_QUERY + ";");
+            bNewResultSet = true;
+        }
+
+        return bNewResultSet;
     }
 
     public void setSpeedFactor(int speedFactor) {
@@ -232,23 +253,26 @@ public class OptaSimulator implements Runnable {
     }
 
     private Duration sleepUntil(Date nextStop, int speedFactor) throws InterruptedException {
-        Duration addedTime = new Duration(SLEEPING_DURATION.getMillis() * speedFactor);
-        Duration untilNextStop = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(nextStop));
+        Duration timeToAdd;
+        Duration timeUntilNextStop = new Duration(new DateTime(GlobalDate.getCurrentDate()), new DateTime(nextStop));
+
         if (speedFactor == MAX_SPEED) {
-            addedTime = untilNextStop;
+            timeToAdd = timeUntilNextStop;
         }
         else {
-            Duration sleeping = SLEEPING_DURATION;
-            if (untilNextStop.compareTo(addedTime) < 0) {
-                sleeping = new Duration(untilNextStop.getMillis() / speedFactor);
-                addedTime = untilNextStop;
+            Duration timeToSleep = SLEEPING_DURATION;
+            timeToAdd = new Duration(SLEEPING_DURATION.getMillis() * speedFactor);
+
+            if (timeUntilNextStop.compareTo(timeToAdd) < 0) {
+                timeToSleep = new Duration(timeUntilNextStop.getMillis() / speedFactor);
+                timeToAdd = timeUntilNextStop;
             }
 
-            if (sleeping.getMillis() != 0) {
-                Thread.sleep(sleeping.getMillis());
+            if (timeToSleep.getMillis() != 0) {
+                Thread.sleep(timeToSleep.getMillis());
             }
         }
-        return addedTime;
+        return timeToAdd;
     }
 
     private void ensureConnection() {
@@ -261,22 +285,10 @@ public class OptaSimulator implements Runnable {
     }
 
     private void closeConnection() {
-        try {
-            if (_stmt != null) {
-                _stmt.close();
-
-                _stmt = null;
-                _optaResultSet = null;
-            }
-
-            if (_connection != null) {
-                _connection.close();
-                _connection = null;
-            }
-        }
-        catch (SQLException e) {
-            Logger.error("WTF 742", e);
-        }
+        DbUtils.closeQuietly(_connection, _stmt, _optaResultSet);
+        _connection = null;
+        _stmt = null;
+        _optaResultSet = null;
     }
 
     private void saveState() {
@@ -305,11 +317,14 @@ public class OptaSimulator implements Runnable {
         public String  stateId = "--unique id--";
         public boolean useSnapshot;
         public Date    pauseDate;
-        public Date    lastParsedDate;
-        public int     nextDocToParseIndex;
+        public Date    simulationDate;
         public int     speedFactor = MAX_SPEED;
 
         public OptaSimulatorState() {}
+
+        public boolean isOldVersion() {
+            return (simulationDate==null);
+        }
     }
 }
 

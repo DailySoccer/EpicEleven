@@ -1,12 +1,10 @@
 package model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.BulkWriteOperation;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import utils.ListUtils;
-import utils.View;
 import utils.ViewProjection;
 
 import java.util.*;

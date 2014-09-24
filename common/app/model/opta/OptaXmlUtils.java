@@ -1,6 +1,8 @@
 package model.opta;
 
 import play.Logger;
+import utils.DbSqlUtils;
+
 import java.sql.*;
 import java.util.Date;
 
@@ -41,58 +43,39 @@ public class OptaXmlUtils {
     }
 
     public static Date getFirstDate() {
-        Date dateFirst = new Date(0L);
-
-        try (Connection connection = play.db.DB.getConnection()) {
-            String selectString = "SELECT created_at FROM optaxml ORDER BY created_at ASC LIMIT 1;";
-
-            Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-            ResultSet resultSet = stmt.executeQuery(selectString);
-
-            if (resultSet != null && resultSet.next()) {
-                dateFirst = resultSet.getTimestamp("created_at");
-            }
-        }
-        catch (java.sql.SQLException e) {
-            Logger.error("WTF 82847", e);
-        }
-
-        return dateFirst;
+        return getCreatedAtFromQuery("SELECT created_at FROM optaxml ORDER BY created_at ASC LIMIT 1;");
     }
 
     public static Date getLastDate() {
-        Date dateLast = new Date(0L);
-
-        try (Connection connection = play.db.DB.getConnection()) {
-            String selectString = "SELECT created_at FROM optaxml ORDER BY created_at DESC LIMIT 1;";
-
-            Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-            ResultSet resultSet = stmt.executeQuery(selectString);
-
-            if (resultSet != null && resultSet.next()) {
-                dateLast = resultSet.getTimestamp("created_at");
-            }
-        }
-        catch (java.sql.SQLException e) {
-            Logger.error("WTF 82848", e);
-        }
-
-        return dateLast;
+        return getCreatedAtFromQuery("SELECT created_at FROM optaxml ORDER BY created_at DESC LIMIT 1;");
     }
 
-    public static ResultSet getNextXmlByDate(Connection connection, Date askedDate) throws SQLException {
+    private static Date getCreatedAtFromQuery(String query) {
+
+        return DbSqlUtils.ExecutyQuery(query, new DbSqlUtils.IResultSetReader<Date>() {
+
+            public Date handleResultSet(ResultSet resultSet) throws SQLException { return resultSet.getTimestamp("created_at"); }
+            public Date handleEmptyResultSet() { return new Date(0L); }
+            public Date handleSQLException()   { throw new RuntimeException("WTF 1521"); }
+        });
+    }
+
+    public static <T> T readNextXmlByDate(Date askedDate, DbSqlUtils.IResultSetReader<T> resultSetReader) {
         Timestamp last_date = new Timestamp(askedDate.getTime());
         String selectString = "SELECT * FROM optaxml WHERE created_at > '"+last_date+"' ORDER BY created_at LIMIT 1;";
 
-        Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-        return stmt.executeQuery(selectString);
+        return DbSqlUtils.ExecutyQuery(selectString, resultSetReader);
     }
 
-    public static ResultSet getRemainingXmlCount(Connection connection, Date askedDate) throws SQLException {
+    public static int getRemainingXmlCount(Date askedDate) {
         Timestamp last_date = new Timestamp(askedDate.getTime());
         String selectString = "SELECT count(*) as remaining FROM optaxml WHERE created_at > '"+last_date+"';";
 
-        Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-        return stmt.executeQuery(selectString);
+        return DbSqlUtils.ExecutyQuery(selectString, new DbSqlUtils.IResultSetReader<Integer>() {
+
+            public Integer handleResultSet(ResultSet resultSet) throws SQLException { return resultSet.getInt("remaining"); }
+            public Integer handleEmptyResultSet() { return 0; }
+            public Integer handleSQLException()   { throw new RuntimeException("WTF 1529"); }
+        });
     }
 }
