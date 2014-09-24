@@ -18,7 +18,8 @@ import java.util.List;
 public class OptaProcessor {
 
     // Retorna los Ids de opta (gameIds, optaMachEventId) de los partidos que han cambiado
-    public HashSet<String> processOptaDBInput(String feedType, String seasonCompetitionId, String name, String requestBody) {
+    public HashSet<String> processOptaDBInput(String feedType, String seasonCompetitionId, String name,
+                                              String requestBody, String competitionId, String seasonId, String gameId) {
         _dirtyMatchEventIds = new HashSet<>();
 
         try {
@@ -26,7 +27,7 @@ public class OptaProcessor {
                 Element requestBodyElement = new SAXBuilder().build(new StringReader(requestBody)).getRootElement();
 
                 if (feedType.equals("F9")) {
-                    processF9(requestBodyElement);
+                    processF9(requestBodyElement, competitionId, seasonId, gameId);
                 }
                 else
                 if (feedType.equals("F40")) {
@@ -200,7 +201,7 @@ public class OptaProcessor {
     //
     // Crea exclusivamente eventos de fin de partido: CleanSheet, GoalsAgainst y OptaMatchEventStats
     //
-    private void processF9(Element f9) {
+    private void processF9(Element f9, String competitionId, String seasonId, String gameId) {
 
         if (null == _pointsTranslationCache)
             resetPointsTranslationCache();
@@ -209,20 +210,18 @@ public class OptaProcessor {
         Element myF9 = f9.getChild("SoccerDocument");
 
         if (myF9.getAttribute("Type").getValue().equals("Result")) {
-            processFinishedMatch(myF9);
+            processFinishedMatch(myF9, competitionId, seasonId, gameId);
         }
     }
 
-    private void processFinishedMatch(Element F9) {
+    private void processFinishedMatch(Element F9, String competitionId, String seasonId, String gameId) {
 
-        String competitionId = getStringId(F9.getChild("Competition"), "uID");
-        String gameId = getStringId(F9, "uID");
         _dirtyMatchEventIds.add(gameId);
 
         List<Element> teamDatas = F9.getChild("MatchData").getChildren("TeamData");
 
-        Model.optaEvents().remove("{typeId: { $in: [#, #] }, gameId: #, competitionId: #}",
-                OptaEventType.CLEAN_SHEET.code, OptaEventType.GOAL_CONCEDED.code, gameId, competitionId);
+        Model.optaEvents().remove("{typeId: { $in: [#, #] }, gameId: #, competitionId: #, seasonId: #}",
+                OptaEventType.CLEAN_SHEET.code, OptaEventType.GOAL_CONCEDED.code, gameId, competitionId, seasonId);
 
         for (Element teamData : teamDatas) {
             List<Element> teamStats = teamData.getChildren("Stat");
@@ -234,7 +233,7 @@ public class OptaProcessor {
                     break;
                 }
             }
-            processGoalsConcededOrCleanSheet(F9, gameId, teamData, cleanSheet);
+            processGoalsConcededOrCleanSheet(F9, gameId, competitionId, seasonId, teamData, cleanSheet);
 
         }
 
@@ -243,7 +242,9 @@ public class OptaProcessor {
     }
 
 
-    private void processGoalsConcededOrCleanSheet(Element F9, String gameId, Element teamData, boolean cleanSheet) {
+    private void processGoalsConcededOrCleanSheet(Element F9, String gameId, String competitionId, String seasonId,
+                                                  Element teamData, boolean cleanSheet) {
+
         int teamRef = Integer.parseInt(getStringId(teamData,"TeamRef"));
 
         for (Element matchPlayer : teamData.getChild("PlayerLineUp").getChildren("MatchPlayer")) {
@@ -257,7 +258,8 @@ public class OptaProcessor {
                     if (cleanSheet) {
                         if (playerStat.getAttribute("Type").getValue().equals("mins_played")) {
                             if (Integer.parseInt(playerStat.getContent().get(0).getValue()) > 59) {
-                                createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.CLEAN_SHEET.code, 20000, 1);
+                                createEvent(F9, gameId, competitionId, seasonId, matchPlayer, teamRef,
+                                        OptaEventType.CLEAN_SHEET.code, 20000, 1);
                             }
                             break;
                         }
@@ -267,8 +269,8 @@ public class OptaProcessor {
                             //Si al jugador le han metido más de un gol
                             int playersGoalsConceded = Integer.parseInt(playerStat.getContent().get(0).getValue());
                             if (playersGoalsConceded > 0) {
-                                createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.GOAL_CONCEDED.code, 20001,
-                                        playersGoalsConceded);
+                                createEvent(F9, gameId, competitionId, seasonId, matchPlayer, teamRef,
+                                        OptaEventType.GOAL_CONCEDED.code, 20001, playersGoalsConceded);
                             }
                             break;
                         }
@@ -279,10 +281,10 @@ public class OptaProcessor {
     }
 
 
-    private void createEvent(Element F9, String gameId, Element matchPlayer, int teamId, int typeId, int eventId, int times) {
+    private void createEvent(Element F9, String gameId, String competitionId, String seasonId, Element matchPlayer,
+                             int teamId, int typeId, int eventId, int times) {
+
         String playerId = getStringId(matchPlayer, "PlayerRef");
-        String competitionId = getStringId(F9.getChild("Competition"), "uID");
-        String seasonId = getF9SeasonId(F9);
 
         Date timestamp = GlobalDate.parseDate(F9.getChild("MatchData").getChild("MatchInfo").getAttributeValue("TimeStamp"), null);
 
@@ -294,20 +296,6 @@ public class OptaProcessor {
 
         Model.optaEvents().insert(myEvent);
     }
-
-
-    private String getF9SeasonId(Element F9) {
-        String seasonId = null;
-
-        List<Element> competitionStats = F9.getChild("Competition").getChildren("Stat");
-        for (Element competitionStat : competitionStats) {
-            if (competitionStat.getAttribute("Type").getValue().equals("season_id")) {
-                seasonId = String.valueOf(competitionStat.getContent().get(0).getValue());
-            }
-        }
-        return seasonId;
-    }
-
 
     static public String getStringId(Element document, String key) {
 
