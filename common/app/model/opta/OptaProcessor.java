@@ -119,9 +119,8 @@ public class OptaProcessor {
         // Borrar evento:
         // - Si es un evento borrado por Opta
         // - Si es un evento que teníamos, pero ha cambiado y ahora es un evento que no nos interesa
-        if (optaEvent.typeId == 43 || (optaEvent.typeId == OptaEventType._INVALID_.code && _optaEventsCache.containsKey(optaEvent.eventId))) {
+        if (optaEvent.typeId == 43 || optaEvent.typeId == OptaEventType._INVALID_.code) {
             Model.optaEvents().remove("{eventId: #, teamId: #, gameId: #}", optaEvent.eventId, optaEvent.teamId, optaEvent.gameId);
-            return;
         }
         else if (optaEvent.typeId != OptaEventType._INVALID_.code) {
 
