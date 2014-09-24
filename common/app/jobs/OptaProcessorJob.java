@@ -9,10 +9,7 @@ import org.joda.time.DateTime;
 import play.Logger;
 import utils.DbSqlUtils;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
@@ -85,9 +82,9 @@ public class OptaProcessorJob {
         }
 
         try {
-            Date created_at = resultSet.getTimestamp("created_at");
+            Date created_at = new Date(resultSet.getTimestamp("created_at").getTime());
 
-            if (new DateTime(created_at).isBefore(new DateTime(state.lastProcessedDate)))
+            if (created_at.before(state.lastProcessedDate))
                 throw new RuntimeException("WTF 9190");
 
             String sqlxml = resultSet.getString("xml");

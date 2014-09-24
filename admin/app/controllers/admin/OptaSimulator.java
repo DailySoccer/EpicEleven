@@ -285,22 +285,7 @@ public class OptaSimulator implements Runnable {
     }
 
     private void closeConnection() {
-        try {
-            if (_stmt != null) {
-                _stmt.close();
-
-                _stmt = null;
-                _optaResultSet = null;
-            }
-
-            if (_connection != null) {
-                _connection.close();
-                _connection = null;
-            }
-        }
-        catch (SQLException e) {
-            Logger.error("WTF 742", e);
-        }
+        DbUtils.closeQuietly(_connection, _stmt, _optaResultSet);
     }
 
     private void saveState() {

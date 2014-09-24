@@ -51,12 +51,10 @@ public class OptaXmlUtils {
     }
 
     private static Date getCreatedAtFromQuery(String query) {
+
         return DbSqlUtils.ExecutyQuery(query, new DbSqlUtils.IResultSetReader<Date>() {
 
-            public Date handleResultSet(ResultSet resultSet) throws SQLException {
-                return resultSet.getTimestamp("created_at");
-            }
-
+            public Date handleResultSet(ResultSet resultSet) throws SQLException { return resultSet.getTimestamp("created_at"); }
             public Date handleEmptyResultSet() { return new Date(0L); }
             public Date handleSQLException()   { throw new RuntimeException("WTF 1521"); }
         });
@@ -74,10 +72,8 @@ public class OptaXmlUtils {
         String selectString = "SELECT count(*) as remaining FROM optaxml WHERE created_at > '"+last_date+"';";
 
         return DbSqlUtils.ExecutyQuery(selectString, new DbSqlUtils.IResultSetReader<Integer>() {
-            public Integer handleResultSet(ResultSet resultSet) throws SQLException {
-                return resultSet.getInt("remaining");
-            }
 
+            public Integer handleResultSet(ResultSet resultSet) throws SQLException { return resultSet.getInt("remaining"); }
             public Integer handleEmptyResultSet() { return 0; }
             public Integer handleSQLException()   { throw new RuntimeException("WTF 1529"); }
         });
