@@ -48,6 +48,31 @@ public class TemplateContest implements JongoId, Initializer {
 
     public TemplateContest() { }
 
+    public TemplateContest(String name, int minInstances, int maxEntries, int salaryCap,
+                            int entryFee, PrizeType prizeType, Date activationAt,
+                            List<String> templateMatchEvents) {
+
+        this.name = name;
+        this.minInstances = minInstances;
+        this.maxEntries = maxEntries;
+        this.salaryCap = salaryCap;
+        this.entryFee = entryFee;
+        this.prizeType = prizeType;
+        this.activationAt = activationAt;
+
+        Date startDate = null;
+        this.templateMatchEventIds = new ArrayList<>();
+        for (String templateMatchEventId : templateMatchEvents) {
+            TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId));
+            this.templateMatchEventIds.add(templateMatchEvent.templateMatchEventId);
+
+            if (startDate == null || templateMatchEvent.startDate.before(startDate)) {
+                startDate = templateMatchEvent.startDate;
+            }
+        }
+        this.startDate = startDate;
+    }
+
     public void Initialize() {
         state = ContestState.OFF;
     }
