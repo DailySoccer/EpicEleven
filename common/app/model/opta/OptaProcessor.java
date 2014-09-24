@@ -10,7 +10,10 @@ import org.jdom2.input.SAXBuilder;
 import play.Logger;
 
 import java.io.StringReader;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 public class OptaProcessor {
 
@@ -103,8 +106,8 @@ public class OptaProcessor {
 
             Date timestamp = GlobalDate.parseDate(event.getAttributeValue("last_modified"), null);
 
-            HashMap<Integer, Date> eventsCache = getOptaEventsCache(game.getAttributeValue("id"));
-            int eventId = Integer.parseInt(event.getAttributeValue("id"));
+            HashMap<String, Date> eventsCache = getOptaEventsCache(game.getAttributeValue("id"));
+            String eventId = event.getAttributeValue("id");
 
             if (!eventsCache.containsKey(eventId) || timestamp.after(eventsCache.get(eventId))) {
                 OptaEvent optaEvent = new OptaEvent(event, game);
@@ -124,7 +127,8 @@ public class OptaProcessor {
         }
         else {
             optaEvent.points = getPointsTranslation(optaEvent.typeId, optaEvent.timestamp);
-            optaEvent.pointsTranslationId = _pointsTranslationTableCache.get(optaEvent.typeId);
+            optaEvent.pointsTranslationId = _pointsTranslationCache.get(optaEvent.typeId).pointsTranslationId;
+
 
             Model.optaEvents().update("{eventId: #, teamId: #, gameId: #}", optaEvent.eventId, optaEvent.teamId, optaEvent.gameId).upsert().with(optaEvent);
         }
@@ -144,7 +148,7 @@ public class OptaProcessor {
     private void processF1(Element f1) {
 
         Element myF1 = f1.getChild("SoccerDocument");
-        int competitionId = Integer.parseInt(myF1.getAttributeValue("competition_id"));
+        String competitionId = myF1.getAttributeValue("competition_id");
 
         for (Element matchObject : myF1.getChildren("MatchData")) {
 
@@ -283,7 +287,7 @@ public class OptaProcessor {
         Date timestamp = GlobalDate.parseDate(F9.getChild("MatchData").getChild("MatchInfo").getAttributeValue("TimeStamp"), null);
 
         int points = getPointsTranslation(typeId, timestamp) * times;
-        ObjectId pointsTranslationId = _pointsTranslationTableCache.get(typeId);
+        ObjectId pointsTranslationId = _pointsTranslationCache.get(typeId).pointsTranslationId;
 
         OptaEvent myEvent = new OptaEvent(typeId, eventId, playerId, teamId, gameId, competitionId,
                                           seasonId, timestamp, points, pointsTranslationId);
@@ -316,13 +320,12 @@ public class OptaProcessor {
     }
 
     private void resetPointsTranslationCache() {
-        _pointsTranslationCache = new HashMap<Integer, Integer>();
-        _pointsTranslationTableCache = new HashMap<Integer, ObjectId>();
+        _pointsTranslationCache = new HashMap<Integer, PointsTranslation>();
     }
 
     private int getPointsTranslation(int typeId, Date timestamp){
         if (_pointsTranslationCache.containsKey(typeId)) {
-            return _pointsTranslationCache.get(typeId);
+            return _pointsTranslationCache.get(typeId)!=null? _pointsTranslationCache.get(typeId).points: 0;
         }
         Iterable<PointsTranslation> pointsTranslations = Model.pointsTranslation()
                                                               .find("{eventTypeId: #, timestamp: {$lte: #}}", typeId, timestamp)
@@ -330,30 +333,28 @@ public class OptaProcessor {
 
         if (pointsTranslations.iterator().hasNext()){
             PointsTranslation pointsTranslation = pointsTranslations.iterator().next();
-            _pointsTranslationCache.put(typeId, pointsTranslation.points);
-            _pointsTranslationTableCache.put(typeId, pointsTranslation.pointsTranslationId);
+            _pointsTranslationCache.put(typeId, pointsTranslation);
             return pointsTranslation.points;
         }
         else {
-            _pointsTranslationCache.put(typeId, 0);
-            _pointsTranslationTableCache.put(typeId, null);
+            _pointsTranslationCache.put(typeId, null);
             return 0;
         }
     }
 
-    private HashMap<Integer, Date> getOptaEventsCache(String gameId) {
+    private HashMap<String, Date> getOptaEventsCache(String gameId) {
         if (_optaEventsCache == null) {
-            _optaEventsCache = new HashMap<String, HashMap<Integer, Date>>();
+            _optaEventsCache = new HashMap<String, HashMap<String, Date>>();
         }
         if (!_optaEventsCache.containsKey(gameId)) {
-            _optaEventsCache.put(gameId, new HashMap<Integer, Date>());
+            _optaEventsCache.put(gameId, new HashMap<String, Date>());
         }
         return _optaEventsCache.get(gameId);
     }
 
-    private HashMap<String, Date> getOptaMatchDataCache(int competitionId) {
+    private HashMap<String, Date> getOptaMatchDataCache(String competitionId) {
         if (_optaMatchDataCache == null) {
-            _optaMatchDataCache = new HashMap<Integer, HashMap<String, Date>>();
+            _optaMatchDataCache = new HashMap<String, HashMap<String, Date>>();
         }
         if (!_optaMatchDataCache.containsKey(competitionId)) {
             _optaMatchDataCache.put(competitionId, new HashMap<String, Date>());
@@ -363,9 +364,8 @@ public class OptaProcessor {
 
     private HashSet<String> _dirtyMatchEventIds;
 
-    private HashMap<Integer, Integer> _pointsTranslationCache;
-    private HashMap<Integer, ObjectId> _pointsTranslationTableCache;
+    private HashMap<Integer, PointsTranslation> _pointsTranslationCache;
 
-    private HashMap<String, HashMap<Integer, Date>> _optaEventsCache;
-    private HashMap<Integer, HashMap<String, Date>> _optaMatchDataCache;
+    private HashMap<String, HashMap<String, Date>> _optaEventsCache;
+    private HashMap<String, HashMap<String, Date>> _optaMatchDataCache;
 }
