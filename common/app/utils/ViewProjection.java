@@ -59,11 +59,13 @@ public class ViewProjection {
             }
 
             if (fieldValid) {
+                String fieldNameFull = path.isEmpty() ? fieldName : String.format("%s.%s", path, fieldName);
+
                 Class<?> fieldType = getFieldType(field);
                 if (hasFieldWithAnnotation(fieldType)) {
-                    fieldNames.addAll(getFieldNames(fieldName, viewClass, fieldType));
+                    fieldNames.addAll(getFieldNames(fieldNameFull, viewClass, fieldType));
                 } else {
-                    fieldNames.add(path.isEmpty() ? fieldName : String.format("%s.%s", path, fieldName));
+                    fieldNames.add(fieldNameFull);
                 }
             }
         }
