@@ -1,6 +1,7 @@
 package model.opta;
 
 import play.Logger;
+import utils.DbSqlUtils;
 
 import java.sql.*;
 import java.util.Date;
@@ -42,42 +43,24 @@ public class OptaXmlUtils {
     }
 
     public static Date getFirstDate() {
-        Date dateFirst = new Date(0L);
-
-        try (Connection connection = play.db.DB.getConnection()) {
-            try (Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
-                try (ResultSet resultSet = stmt.executeQuery("SELECT created_at FROM optaxml ORDER BY created_at ASC LIMIT 1;")) {
-                    if (resultSet != null && resultSet.next()) {
-                        dateFirst = resultSet.getTimestamp("created_at");
-                    }
-                }
-            }
-        }
-        catch (java.sql.SQLException e) {
-            Logger.error("WTF 82847", e);
-        }
-
-        return dateFirst;
+        return getCreatedAt("SELECT created_at FROM optaxml ORDER BY created_at ASC LIMIT 1;");
     }
 
     public static Date getLastDate() {
-        Date dateLast = new Date(0L);
+        return getCreatedAt("SELECT created_at FROM optaxml ORDER BY created_at DESC LIMIT 1;");
+    }
 
-        try (Connection connection = play.db.DB.getConnection()) {
-            try (Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
-                try (ResultSet resultSet = stmt.executeQuery("SELECT created_at FROM optaxml ORDER BY created_at DESC LIMIT 1;")) {
+    private static Date getCreatedAt(String query) {
+        return DbSqlUtils.ExecutyQuery(query, new DbSqlUtils.IResultSetReader<Date>() {
 
-                    if (resultSet != null && resultSet.next()) {
-                        dateLast = resultSet.getTimestamp("created_at");
-                    }
-                }
+            public Date handleResultSet(ResultSet resultSet) throws SQLException {
+                return resultSet.next() ? resultSet.getTimestamp("created_at") : new Date(0L);
             }
-        }
-        catch (java.sql.SQLException e) {
-            Logger.error("WTF 82848", e);
-        }
 
-        return dateLast;
+            public Date handleSQLException() {
+                return new Date(0L);
+            }
+        });
     }
 
     public static ResultSet getNextXmlByDate(Statement stmt, Date askedDate) throws SQLException {
