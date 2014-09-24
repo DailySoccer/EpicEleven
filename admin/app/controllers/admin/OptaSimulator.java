@@ -46,7 +46,7 @@ public class OptaSimulator implements Runnable {
             _state.simulationDate = OptaProcessorJob.getLastProcessedDate();
 
             // Cuando todavia nadie ha procesado ningun documento, nos ponemos X segundos antes del primero q haya
-            if (_state.simulationDate == new Date(0L)) {
+            if (_state.simulationDate.equals(new Date(0L))) {
                 _state.simulationDate = new DateTime(OptaXmlUtils.getFirstDate()).minusSeconds(5).toDate();
             }
 
