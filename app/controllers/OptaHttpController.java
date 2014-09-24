@@ -5,12 +5,14 @@ import model.GlobalDate;
 import model.opta.OptaXmlUtils;
 import org.joda.time.DateTime;
 import play.Logger;
-import play.db.DB;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utils.DbSqlUtils;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -69,24 +71,24 @@ public class OptaHttpController extends Controller {
     }
 
     public static Result returnXML(long last_timestamp) {
-        Date askedDate = new Date(last_timestamp);
-        String retXML = "NULL";
+        final String nullXML = "NULL";
 
-        try (Connection connection = DB.getConnection()) {
-            try (Statement smt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
-                try (ResultSet nextOptaData = OptaXmlUtils.getNextXmlByDate(smt, askedDate)) {
-                    if (nextOptaData != null && nextOptaData.next()) {
-                        setResponseHeaders(nextOptaData);
-                        retXML = nextOptaData.getString("xml");
-                    }
+        return ok(OptaXmlUtils.readNextXmlByDate(new Date(last_timestamp), new DbSqlUtils.IResultSetReader<String>() {
+
+            public String handleResultSet(ResultSet resultSet) throws SQLException {
+
+                if (resultSet.next()) {
+                    setResponseHeaders(resultSet);
+                    return resultSet.getString("xml");
                 }
-            }
-        }
-        catch (java.sql.SQLException e) {
-            Logger.error("WTF 52683", e);
-        }
 
-        return ok(retXML);
+                return nullXML;
+            }
+
+            public String handleSQLException() {
+                return nullXML;
+            }
+        }));
     }
 
     public static Result dateLastXML() {
@@ -94,25 +96,7 @@ public class OptaHttpController extends Controller {
     }
 
     public static Result remainingXMLs(long last_timestamp) {
-        Date askedDate = new Date(last_timestamp);
-        String remainingXML = "0";
-
-        try (Connection conn = DB.getConnection()) {
-            try (Statement smt = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
-                try (ResultSet remainingOptaData = OptaXmlUtils.getRemainingXmlCount(smt, askedDate)) {
-
-                    if (remainingOptaData != null && remainingOptaData.next()) {
-                        remainingXML = String.valueOf(remainingOptaData.getInt("remaining"));
-                    }
-                }
-            }
-        }
-        catch (java.sql.SQLException e) {
-            Logger.error("WTF 25386", e);
-        }
-
-        return ok(remainingXML);
-
+        return ok(String.valueOf(OptaXmlUtils.getRemainingXmlCount(new Date(last_timestamp))));
     }
 
     private static void setResponseHeaders(ResultSet nextOptaData) throws SQLException {

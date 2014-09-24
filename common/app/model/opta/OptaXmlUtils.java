@@ -43,14 +43,14 @@ public class OptaXmlUtils {
     }
 
     public static Date getFirstDate() {
-        return getCreatedAt("SELECT created_at FROM optaxml ORDER BY created_at ASC LIMIT 1;");
+        return getCreatedAtFromQuery("SELECT created_at FROM optaxml ORDER BY created_at ASC LIMIT 1;");
     }
 
     public static Date getLastDate() {
-        return getCreatedAt("SELECT created_at FROM optaxml ORDER BY created_at DESC LIMIT 1;");
+        return getCreatedAtFromQuery("SELECT created_at FROM optaxml ORDER BY created_at DESC LIMIT 1;");
     }
 
-    private static Date getCreatedAt(String query) {
+    private static Date getCreatedAtFromQuery(String query) {
         return DbSqlUtils.ExecutyQuery(query, new DbSqlUtils.IResultSetReader<Date>() {
 
             public Date handleResultSet(ResultSet resultSet) throws SQLException {
@@ -63,15 +63,25 @@ public class OptaXmlUtils {
         });
     }
 
-    public static ResultSet getNextXmlByDate(Statement stmt, Date askedDate) throws SQLException {
+    public static <T> T readNextXmlByDate(Date askedDate, DbSqlUtils.IResultSetReader<T> resultSetReader) {
         Timestamp last_date = new Timestamp(askedDate.getTime());
         String selectString = "SELECT * FROM optaxml WHERE created_at > '"+last_date+"' ORDER BY created_at LIMIT 1;";
-        return stmt.executeQuery(selectString);
+
+        return DbSqlUtils.ExecutyQuery(selectString, resultSetReader);
     }
 
-    public static ResultSet getRemainingXmlCount(Statement stmt, Date askedDate) throws SQLException {
+    public static int getRemainingXmlCount(Date askedDate) {
         Timestamp last_date = new Timestamp(askedDate.getTime());
         String selectString = "SELECT count(*) as remaining FROM optaxml WHERE created_at > '"+last_date+"';";
-        return stmt.executeQuery(selectString);
+
+        return DbSqlUtils.ExecutyQuery(selectString, new DbSqlUtils.IResultSetReader<Integer>() {
+            public Integer handleResultSet(ResultSet resultSet) throws SQLException {
+                return resultSet.next()? resultSet.getInt("remaining") : 0;
+            }
+
+            public Integer handleSQLException() {
+                return 0;
+            }
+        });
     }
 }

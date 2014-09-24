@@ -228,6 +228,8 @@ public class OptaSimulator implements Runnable {
         if (_optaResultSet == null || _optaResultSet.isAfterLast()) {
 
             DbUtils.closeQuietly(null, _stmt, _optaResultSet);
+            _stmt = null;
+            _optaResultSet = null;
 
             Date lastProcessedDate = OptaProcessorJob.getLastProcessedDate();
 

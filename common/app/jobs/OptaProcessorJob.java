@@ -7,6 +7,7 @@ import model.opta.OptaProcessor;
 import model.opta.OptaXmlUtils;
 import org.joda.time.DateTime;
 import play.Logger;
+import utils.DbSqlUtils;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -49,18 +50,18 @@ public class OptaProcessorJob {
 
     public static void periodicCheckAndProcessNextOptaXml() {
 
-        try (Connection conn = play.db.DB.getConnection()) {
-            try (Statement stmt = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
-                try (ResultSet resultSet = OptaXmlUtils.getNextXmlByDate(stmt, getLastProcessedDate())) {
-                    if (resultSet != null && resultSet.next()) {
-                        processCurrentDocumentInResultSet(resultSet, new OptaProcessor());
-                    }
+        OptaXmlUtils.readNextXmlByDate(getLastProcessedDate(), new DbSqlUtils.IResultSetReader<Void>() {
+            public Void handleResultSet(ResultSet resultSet) throws SQLException {
+                if (resultSet.next()) {
+                    processCurrentDocumentInResultSet(resultSet, new OptaProcessor());
                 }
+                return null;
             }
-        }
-        catch (Exception e) {
-            Logger.error("WTF 8816", e);
-        }
+
+            public Void handleSQLException() {
+                return null;
+            }
+        });
     }
 
     public static Date getLastProcessedDate() {
