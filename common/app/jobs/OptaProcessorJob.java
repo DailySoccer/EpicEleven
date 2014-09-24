@@ -1,11 +1,7 @@
 package jobs;
 
 import model.*;
-import model.opta.OptaCompetition;
-import model.opta.OptaEvent;
-import model.opta.OptaProcessor;
-import model.opta.OptaXmlUtils;
-import org.joda.time.DateTime;
+import model.opta.*;
 import play.Logger;
 import utils.DbSqlUtils;
 
@@ -90,11 +86,15 @@ public class OptaProcessorJob {
             String sqlxml = resultSet.getString("xml");
             String name = resultSet.getString("name");
             String feedType = resultSet.getString("feed_type");
-            String seasonCompetitionId = OptaCompetition.createId(resultSet.getString("season_id"), resultSet.getString("competition_id"));
+            String competitionId = resultSet.getString("competition_id");
+            String seasonId = resultSet.getString("season_id");
+            String gameId = resultSet.getString("game_id");
+            String seasonCompetitionId = OptaCompetition.createId(seasonId, competitionId);
 
             Logger.info("OptaProcessorJob: {}, {}, {}, {}", feedType, name, GlobalDate.formatDate(created_at), seasonCompetitionId);
 
-            HashSet<String> changedOptaMatchEventIds = processor.processOptaDBInput(feedType, seasonCompetitionId, name, sqlxml);
+            HashSet<String> changedOptaMatchEventIds = processor.processOptaDBInput(feedType, seasonCompetitionId, name,
+                                                                                    sqlxml, competitionId, seasonId, gameId);
             onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
 
             state.lastProcessedDate = created_at;
