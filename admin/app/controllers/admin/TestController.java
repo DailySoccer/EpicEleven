@@ -65,13 +65,28 @@ public class TestController extends Controller {
     }
 
     static public Result createContests(int mockIndex){
+        TemplateContest templateContest;
 
-        TemplateContest templateContest = new TemplateContest("Prueba", 1, 10, 100000, 10, PrizeType.FIFTY_FIFTY,
-                                                              new DateTime(2014, 6, 22, 10, 10).toDate(),
-                                                              new ArrayList<String>(Arrays.asList("1", "2", "3", "5",
-                                                                                                  "8", "13", "21")));
+        switch(mockIndex) {
+            case 0:
+                Model.templateContests().insert(new TemplateContest(
+                        "jue., 12 jun.", 1, 200, 90000, 0, PrizeType.FREE,
+                        new DateTime(2014, 6, 12, 0, 0).toDate(),
+                        new ArrayList<String>(Arrays.asList("731769", "731774"))) //ESP-NLD, ENG-ITA
+                );
+/*
+                Model.templateContests().insert(new TemplateContest(
+                        "jue., 12 jun.", 1, 200, 90000, 0, PrizeType.FREE,
+                        new DateTime(2014, 6, 12, 0, 0).toDate(),
+                        new ArrayList<String>(Arrays.asList("731767", "731776", "731793", "731813"))) //ESP-NLD, ENG-ITA
+                );
+*/
+                break;
+            case 1:
+                break;
+            default:
+        }
 
-        Model.templateContests().insert(templateContest);
 
         return ok("OK");
     }
