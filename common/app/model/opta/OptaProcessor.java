@@ -110,9 +110,7 @@ public class OptaProcessor {
             String eventId = event.getAttributeValue("id");
 
             if (!eventsCache.containsKey(eventId) || timestamp.after(eventsCache.get(eventId))) {
-                OptaEvent optaEvent = new OptaEvent(event, game);
-                updateEvent(optaEvent);
-
+                updateEvent(new OptaEvent(event, game));
                 eventsCache.put(eventId, timestamp);
             }
         }
@@ -128,7 +126,6 @@ public class OptaProcessor {
         else {
             optaEvent.points = getPointsTranslation(optaEvent.typeId, optaEvent.timestamp);
             optaEvent.pointsTranslationId = _pointsTranslationCache.get(optaEvent.typeId).pointsTranslationId;
-
 
             Model.optaEvents().update("{eventId: #, teamId: #, gameId: #}", optaEvent.eventId, optaEvent.teamId, optaEvent.gameId).upsert().with(optaEvent);
         }
@@ -225,17 +222,15 @@ public class OptaProcessor {
                 OptaEventType.CLEAN_SHEET.code, OptaEventType.GOAL_CONCEDED.code, gameId, competitionId);
 
         for (Element teamData : teamDatas) {
-            List<Element> teamStats = teamData.getChildren("Stat");
-
             boolean cleanSheet = true;
-            for (Element teamStat : teamStats) {
+            for (Element teamStat : teamData.getChildren("Stat")) {
                 if (teamStat.getAttribute("Type").getValue().equals("goals_conceded")) {
                     cleanSheet = false;
                     break;
                 }
             }
-            processGoalsConcededOrCleanSheet(F9, gameId, teamData, cleanSheet);
 
+            processGoalsConcededOrCleanSheet(F9, gameId, teamData, cleanSheet);
         }
 
         OptaMatchEventStats stats = new OptaMatchEventStats(gameId, teamDatas);
@@ -267,8 +262,7 @@ public class OptaProcessor {
                             //Si al jugador le han metido más de un gol
                             int playersGoalsConceded = Integer.parseInt(playerStat.getContent().get(0).getValue());
                             if (playersGoalsConceded > 0) {
-                                createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.GOAL_CONCEDED.code, 20001,
-                                        playersGoalsConceded);
+                                createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.GOAL_CONCEDED.code, 20001, playersGoalsConceded);
                             }
                             break;
                         }
