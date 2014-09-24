@@ -5,6 +5,7 @@ import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoException;
+import com.stormpath.sdk.account.Account;
 import model.*;
 import model.stormpath.StormPathClient;
 import play.Logger;
@@ -113,10 +114,27 @@ public class LoginController extends Controller {
         if (!loginParamsForm.hasErrors()) {
             LoginParams loginParams = loginParamsForm.get();
 
-            // TODO: Necesitamos sanitizar el email
+
+            Account loggedAccount = (Play.isProd() || !loginParams.email.endsWith("@test.com"))?
+                                        StormPathClient.instance().login(loginParams.email, loginParams.password):
+                                        null;
+
+            boolean correctLogin = loggedAccount != null;
+
+            // TODO: Necesitamos sanitizar el email?
             User theUser = Model.users().findOne("{email:'#'}", loginParams.email).as(User.class);
 
             if (theUser == null || !isPasswordCorrect(theUser, loginParams.password)) {
+                if (loggedAccount != null) {
+                    Model.users().insert(new User("", "", loggedAccount.getUsername(),
+                            loggedAccount.getEmail(), ""));
+                }
+            } else if (Play.isDev()) {
+                correctLogin = true;
+            }
+
+
+            if (!correctLogin) {
                 loginParamsForm.reject("email", "email or password incorrect");
                 returnHelper.setKO(loginParamsForm.errorsAsJson());
             }
