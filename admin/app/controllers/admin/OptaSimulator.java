@@ -4,6 +4,7 @@ import jobs.OptaProcessorJob;
 import model.*;
 import model.opta.OptaProcessor;
 import model.opta.OptaXmlUtils;
+import org.apache.commons.dbutils.DbUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import play.Logger;
@@ -226,20 +227,11 @@ public class OptaSimulator implements Runnable {
 
         if (_optaResultSet == null || _optaResultSet.isAfterLast()) {
 
-            if (_optaResultSet != null) {
-                _optaResultSet.close();
-                _optaResultSet = null;
-            }
-
-            if (_stmt != null) {
-                _stmt.close();
-                _stmt = null;
-            }
+            DbUtils.closeQuietly(null, _stmt, _optaResultSet);
 
             Date lastProcessedDate = OptaProcessorJob.getLastProcessedDate();
 
             _stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-
             _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml WHERE created_at > '"
                                                 + new Timestamp(lastProcessedDate.getTime()) +
                                                 "' ORDER BY created_at LIMIT " + RESULTS_PER_QUERY + ";");
