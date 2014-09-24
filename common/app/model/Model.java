@@ -132,7 +132,6 @@ public class Model {
         }
     }
 
-
     static private void ensureDB(DB theMongoDB) {
         ensureUsersDB(theMongoDB);
         ensureOptaDB(theMongoDB);

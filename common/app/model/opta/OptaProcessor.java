@@ -124,8 +124,9 @@ public class OptaProcessor {
             Model.optaEvents().remove("{eventId: #, teamId: #, gameId: #}", optaEvent.eventId, optaEvent.teamId, optaEvent.gameId);
         }
         else {
-            optaEvent.points = getPointsTranslation(optaEvent.typeId, optaEvent.timestamp);
-            optaEvent.pointsTranslationId = _pointsTranslationCache.get(optaEvent.typeId).pointsTranslationId;
+            PointsTranslation pointsTranslation = getPointsTranslation(optaEvent.typeId, optaEvent.timestamp);
+            optaEvent.points = pointsTranslation.points;
+            optaEvent.pointsTranslationId = pointsTranslation.pointsTranslationId;
 
             Model.optaEvents().update("{eventId: #, teamId: #, gameId: #}", optaEvent.eventId, optaEvent.teamId, optaEvent.gameId).upsert().with(optaEvent);
         }
@@ -272,7 +273,6 @@ public class OptaProcessor {
         }
     }
 
-
     private void createEvent(Element F9, String gameId, Element matchPlayer, int teamId, int typeId, int eventId, int times) {
         String playerId = getStringId(matchPlayer, "PlayerRef");
         String competitionId = getStringId(F9.getChild("Competition"), "uID");
@@ -280,15 +280,15 @@ public class OptaProcessor {
 
         Date timestamp = GlobalDate.parseDate(F9.getChild("MatchData").getChild("MatchInfo").getAttributeValue("TimeStamp"), null);
 
-        int points = getPointsTranslation(typeId, timestamp) * times;
-        ObjectId pointsTranslationId = _pointsTranslationCache.get(typeId).pointsTranslationId;
+        PointsTranslation pointsTranslation = getPointsTranslation(typeId, timestamp);
+        int points =  pointsTranslation.points * times;
+        ObjectId pointsTranslationId = pointsTranslation.pointsTranslationId;
 
         OptaEvent myEvent = new OptaEvent(typeId, eventId, playerId, teamId, gameId, competitionId,
                                           seasonId, timestamp, points, pointsTranslationId);
 
         Model.optaEvents().insert(myEvent);
     }
-
 
     private String getF9SeasonId(Element F9) {
         String seasonId = null;
@@ -314,31 +314,34 @@ public class OptaProcessor {
     }
 
     private void resetPointsTranslationCache() {
-        _pointsTranslationCache = new HashMap<Integer, PointsTranslation>();
+        _pointsTranslationCache = new HashMap<>();
     }
 
-    private int getPointsTranslation(int typeId, Date timestamp){
-        if (_pointsTranslationCache.containsKey(typeId)) {
-            return _pointsTranslationCache.get(typeId)!=null? _pointsTranslationCache.get(typeId).points: 0;
-        }
-        Iterable<PointsTranslation> pointsTranslations = Model.pointsTranslation()
-                                                              .find("{eventTypeId: #, timestamp: {$lte: #}}", typeId, timestamp)
-                                                              .sort("{timestamp: -1}").as(PointsTranslation.class);
+    private PointsTranslation getPointsTranslation(int typeId, Date timestamp) {
 
-        if (pointsTranslations.iterator().hasNext()){
-            PointsTranslation pointsTranslation = pointsTranslations.iterator().next();
-            _pointsTranslationCache.put(typeId, pointsTranslation);
-            return pointsTranslation.points;
+        PointsTranslation ret = _pointsTranslationCache.get(typeId);
+
+        if (ret == null) {
+            Iterable<PointsTranslation> pointsTranslations = Model.pointsTranslation()
+                                                                  .find("{eventTypeId: #, timestamp: {$lte: #}}", typeId, timestamp)
+                                                                  .sort("{timestamp: -1}").as(PointsTranslation.class);
+
+            if (pointsTranslations.iterator().hasNext()) {
+                ret = pointsTranslations.iterator().next();
+            }
+            else {
+                // No tenemos traduccion de puntos para este evento. Devolvemos puntos=0, pointsTranslationId = null
+                ret = new PointsTranslation();
+            }
+            _pointsTranslationCache.put(typeId, ret);
         }
-        else {
-            _pointsTranslationCache.put(typeId, null);
-            return 0;
-        }
+
+        return ret;
     }
 
     private HashMap<String, Date> getOptaEventsCache(String gameId) {
         if (_optaEventsCache == null) {
-            _optaEventsCache = new HashMap<String, HashMap<String, Date>>();
+            _optaEventsCache = new HashMap<>();
         }
         if (!_optaEventsCache.containsKey(gameId)) {
             _optaEventsCache.put(gameId, new HashMap<String, Date>());
@@ -348,7 +351,7 @@ public class OptaProcessor {
 
     private HashMap<String, Date> getOptaMatchDataCache(String competitionId) {
         if (_optaMatchDataCache == null) {
-            _optaMatchDataCache = new HashMap<String, HashMap<String, Date>>();
+            _optaMatchDataCache = new HashMap<>();
         }
         if (!_optaMatchDataCache.containsKey(competitionId)) {
             _optaMatchDataCache.put(competitionId, new HashMap<String, Date>());
