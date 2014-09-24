@@ -54,12 +54,11 @@ public class OptaXmlUtils {
         return DbSqlUtils.ExecutyQuery(query, new DbSqlUtils.IResultSetReader<Date>() {
 
             public Date handleResultSet(ResultSet resultSet) throws SQLException {
-                return resultSet.next() ? resultSet.getTimestamp("created_at") : new Date(0L);
+                return resultSet.getTimestamp("created_at");
             }
 
-            public Date handleSQLException() {
-                return new Date(0L);
-            }
+            public Date handleEmptyResultSet() { return new Date(0L); }
+            public Date handleSQLException()   { throw new RuntimeException("WTF 1521"); }
         });
     }
 
@@ -76,12 +75,11 @@ public class OptaXmlUtils {
 
         return DbSqlUtils.ExecutyQuery(selectString, new DbSqlUtils.IResultSetReader<Integer>() {
             public Integer handleResultSet(ResultSet resultSet) throws SQLException {
-                return resultSet.next()? resultSet.getInt("remaining") : 0;
+                return resultSet.getInt("remaining");
             }
 
-            public Integer handleSQLException() {
-                return 0;
-            }
+            public Integer handleEmptyResultSet() { return 0; }
+            public Integer handleSQLException()   { throw new RuntimeException("WTF 1529"); }
         });
     }
 }

@@ -12,7 +12,12 @@ public class DbSqlUtils {
         try (Connection connection = play.db.DB.getConnection()) {
             try (Statement stmt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
                 try (ResultSet resultSet = stmt.executeQuery(query)) {
-                    return reader.handleResultSet(resultSet);
+                    if (resultSet.next()) {
+                        return reader.handleResultSet(resultSet);
+                    }
+                    else {
+                        return reader.handleEmptyResultSet();
+                    }
                 }
             }
         }
@@ -24,6 +29,7 @@ public class DbSqlUtils {
 
     public interface IResultSetReader<T> {
         T handleResultSet(ResultSet resultSet) throws SQLException;
+        T handleEmptyResultSet();
         T handleSQLException();
     }
 }

@@ -51,16 +51,14 @@ public class OptaProcessorJob {
     public static void periodicCheckAndProcessNextOptaXml() {
 
         OptaXmlUtils.readNextXmlByDate(getLastProcessedDate(), new DbSqlUtils.IResultSetReader<Void>() {
+
             public Void handleResultSet(ResultSet resultSet) throws SQLException {
-                if (resultSet.next()) {
-                    processCurrentDocumentInResultSet(resultSet, new OptaProcessor());
-                }
+                processCurrentDocumentInResultSet(resultSet, new OptaProcessor());
                 return null;
             }
 
-            public Void handleSQLException() {
-                return null;
-            }
+            public Void handleEmptyResultSet() { return null; }
+            public Void handleSQLException()   { throw new RuntimeException("WTF 1567"); }
         });
     }
 

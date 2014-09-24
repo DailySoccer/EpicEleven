@@ -71,23 +71,16 @@ public class OptaHttpController extends Controller {
     }
 
     public static Result returnXML(long last_timestamp) {
-        final String nullXML = "NULL";
 
         return ok(OptaXmlUtils.readNextXmlByDate(new Date(last_timestamp), new DbSqlUtils.IResultSetReader<String>() {
 
             public String handleResultSet(ResultSet resultSet) throws SQLException {
-
-                if (resultSet.next()) {
-                    setResponseHeaders(resultSet);
-                    return resultSet.getString("xml");
-                }
-
-                return nullXML;
+                setResponseHeaders(resultSet);
+                return resultSet.getString("xml");
             }
 
-            public String handleSQLException() {
-                return nullXML;
-            }
+            public String handleEmptyResultSet() { return "NULL"; }
+            public String handleSQLException()   { throw new RuntimeException("WTF 2056"); }
         }));
     }
 
