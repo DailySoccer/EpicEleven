@@ -122,14 +122,12 @@ public class OptaProcessor {
         if (optaEvent.typeId == 43 || optaEvent.typeId == OptaEventType._INVALID_.code) {
             Model.optaEvents().remove("{eventId: #, teamId: #, gameId: #}", optaEvent.eventId, optaEvent.teamId, optaEvent.gameId);
         }
-        else if (optaEvent.typeId != OptaEventType._INVALID_.code) {
-
+        else {
             optaEvent.points = getPointsTranslation(optaEvent.typeId, optaEvent.timestamp);
             optaEvent.pointsTranslationId = _pointsTranslationTableCache.get(optaEvent.typeId);
 
             Model.optaEvents().update("{eventId: #, teamId: #, gameId: #}", optaEvent.eventId, optaEvent.teamId, optaEvent.gameId).upsert().with(optaEvent);
         }
-
     }
 
     public void recalculateAllEvents() {
