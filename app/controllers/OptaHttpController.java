@@ -10,10 +10,7 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,12 +73,13 @@ public class OptaHttpController extends Controller {
         String retXML = "NULL";
 
         try (Connection connection = DB.getConnection()) {
-
-            ResultSet nextOptaData = OptaXmlUtils.getNextXmlByDate(connection, askedDate);
-
-            if (nextOptaData != null && nextOptaData.next()) {
-                setResponseHeaders(nextOptaData);
-                retXML = nextOptaData.getString("xml");
+            try (Statement smt = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+                try (ResultSet nextOptaData = OptaXmlUtils.getNextXmlByDate(smt, askedDate)) {
+                    if (nextOptaData != null && nextOptaData.next()) {
+                        setResponseHeaders(nextOptaData);
+                        retXML = nextOptaData.getString("xml");
+                    }
+                }
             }
         }
         catch (java.sql.SQLException e) {
@@ -99,12 +97,14 @@ public class OptaHttpController extends Controller {
         Date askedDate = new Date(last_timestamp);
         String remainingXML = "0";
 
-        try (Connection connection = DB.getConnection()) {
+        try (Connection conn = DB.getConnection()) {
+            try (Statement smt = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+                try (ResultSet remainingOptaData = OptaXmlUtils.getRemainingXmlCount(smt, askedDate)) {
 
-            ResultSet remainingOptaData = OptaXmlUtils.getRemainingXmlCount(connection, askedDate);
-
-            if (remainingOptaData != null && remainingOptaData.next()) {
-                remainingXML = String.valueOf(remainingOptaData.getInt("remaining"));
+                    if (remainingOptaData != null && remainingOptaData.next()) {
+                        remainingXML = String.valueOf(remainingOptaData.getInt("remaining"));
+                    }
+                }
             }
         }
         catch (java.sql.SQLException e) {

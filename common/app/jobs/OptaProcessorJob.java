@@ -11,6 +11,7 @@ import play.Logger;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
@@ -49,11 +50,12 @@ public class OptaProcessorJob {
     public static void periodicCheckAndProcessNextOptaXml() {
 
         try (Connection conn = play.db.DB.getConnection()) {
-
-            ResultSet resultSet = OptaXmlUtils.getNextXmlByDate(conn, getLastProcessedDate());
-
-            if (resultSet != null && resultSet.next()) {
-                processCurrentDocumentInResultSet(resultSet, new OptaProcessor());
+            try (Statement stmt = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
+                try (ResultSet resultSet = OptaXmlUtils.getNextXmlByDate(stmt, getLastProcessedDate())) {
+                    if (resultSet != null && resultSet.next()) {
+                        processCurrentDocumentInResultSet(resultSet, new OptaProcessor());
+                    }
+                }
             }
         }
         catch (Exception e) {
@@ -63,7 +65,7 @@ public class OptaProcessorJob {
 
     public static Date getLastProcessedDate() {
         OptaProcessorState state = OptaProcessorState.findOne();
-        return state != null? state.lastProcessedDate : null;
+        return state != null? state.lastProcessedDate : new Date(0L);
     }
 
     public static void processCurrentDocumentInResultSet(ResultSet resultSet, OptaProcessor processor) {

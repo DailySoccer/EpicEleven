@@ -45,7 +45,7 @@ public class OptaSimulator implements Runnable {
             _state.simulationDate = OptaProcessorJob.getLastProcessedDate();
 
             // Cuando todavia nadie ha procesado ningun documento, nos ponemos X segundos antes del primero q haya
-            if (_state.simulationDate == null) {
+            if (_state.simulationDate == new Date(0L)) {
                 _state.simulationDate = new DateTime(OptaXmlUtils.getFirstDate()).minusSeconds(5).toDate();
             }
 
@@ -225,6 +225,12 @@ public class OptaSimulator implements Runnable {
         boolean bNewResultSet = false;
 
         if (_optaResultSet == null || _optaResultSet.isAfterLast()) {
+
+            if (_optaResultSet != null) {
+                _optaResultSet.close();
+                _optaResultSet = null;
+            }
+
             if (_stmt != null) {
                 _stmt.close();
                 _stmt = null;
@@ -232,12 +238,9 @@ public class OptaSimulator implements Runnable {
 
             Date lastProcessedDate = OptaProcessorJob.getLastProcessedDate();
 
-            if (lastProcessedDate == null) {
-                lastProcessedDate = new Date(0L);
-            }
+            _stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
-            Statement stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-            _optaResultSet = stmt.executeQuery("SELECT * FROM optaxml WHERE created_at > '"
+            _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml WHERE created_at > '"
                                                 + new Timestamp(lastProcessedDate.getTime()) +
                                                 "' ORDER BY created_at LIMIT " + RESULTS_PER_QUERY + ";");
             bNewResultSet = true;
