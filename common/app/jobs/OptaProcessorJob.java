@@ -72,9 +72,11 @@ public class OptaProcessorJob {
                                                         .with("{$set: {isProcessing: true}}")
                                                         .as(OptaProcessorState.class);
 
+        /*
         if (state != null && state.isProcessing) {
             throw new RuntimeException("WTF 3885: Colision entre dos procesos");
         }
+        */
 
         if (state == null) {
             state = new OptaProcessorState();
