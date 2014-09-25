@@ -105,7 +105,7 @@ public class OptaProcessorJob {
             Logger.info("OptaProcessorJob: {}, {}, {}, {}", feedType, name, GlobalDate.formatDate(created_at), seasonCompetitionId);
 
             HashSet<String> changedOptaMatchEventIds = processor.processOptaDBInput(feedType, seasonCompetitionId, name,
-                    sqlxml, competitionId, seasonId, gameId, created_at);
+                    sqlxml, competitionId, seasonId, gameId);
             onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
 
             state.lastProcessedDate = created_at;

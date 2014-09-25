@@ -3,17 +3,18 @@ package model;
 import model.opta.OptaEventType;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
+import utils.ListUtils;
+
 import java.util.Date;
+import java.util.List;
 
 public class PointsTranslation implements JongoId, Initializer {
     @Id
     public ObjectId pointsTranslationId;
     public int eventTypeId;
     public int points;
-    public Date timestamp;
-    public long unixtimestamp;
-
     public Date createdAt;
+    public Date lastModified;
 
     public PointsTranslation() {
     }
@@ -29,6 +30,15 @@ public class PointsTranslation implements JongoId, Initializer {
         return Model.pointsTranslation().findOne("{_id: #}", pointsTranslationId).as(PointsTranslation.class);
     }
 
+    public static List<PointsTranslation> getAllCurrent() {
+        return ListUtils.asList(Model.pointsTranslation()
+                .aggregate("{$match: {createdAt: {$lte: #}}} ", GlobalDate.getCurrentDate())
+                .and("{$sort: {timestamp: -1}}")
+                .and("{ $group: {_id: '$eventTypeId', points: {$first: '$points'}, objectId: {$first: '$_id'}}}")
+                .and("{ $group: {_id: '$objectId', points: {$first: '$points'}, eventTypeId: {$first: '$_id'}}}")
+                .as(PointsTranslation.class));
+    }
+
     /**
      * Creacion de una entrada de Points Translation
      */
@@ -36,9 +46,8 @@ public class PointsTranslation implements JongoId, Initializer {
         PointsTranslation pointsTranslation = new PointsTranslation();
         pointsTranslation.eventTypeId = eventType;
         pointsTranslation.points = points;
-        pointsTranslation.timestamp = GlobalDate.getCurrentDate();
-        pointsTranslation.unixtimestamp = pointsTranslation.timestamp.getTime();
         pointsTranslation.createdAt = GlobalDate.getCurrentDate();
+        pointsTranslation.lastModified = pointsTranslation.createdAt;
         Model.pointsTranslation().insert(pointsTranslation);
         return true;
     }
@@ -47,7 +56,7 @@ public class PointsTranslation implements JongoId, Initializer {
      * Edicion de una entrada de Points Translation
      */
     public static boolean editPointForEvent(ObjectId pointsTranslationId, int points) {
-        Model.pointsTranslation().update(pointsTranslationId).with("{$set: {points: #}}", points);
+        Model.pointsTranslation().update(pointsTranslationId).with("{$set: {points: #, lastModified: #}}", points, GlobalDate.getCurrentDate());
         return true;
     }
 
@@ -96,10 +105,9 @@ public class PointsTranslation implements JongoId, Initializer {
             PointsTranslation pointsTranslation = Model.pointsTranslation().findOne("{eventTypeId: #}", myPointsTranslation.eventTypeId).as(PointsTranslation.class);
 
             if (pointsTranslation == null) {
-                myPointsTranslation.unixtimestamp = 0L;
-                myPointsTranslation.timestamp = new Date(myPointsTranslation.unixtimestamp);
+                myPointsTranslation.createdAt = new Date(0L);
                 myPointsTranslation.points = pointsTable[i][1];
-                myPointsTranslation.createdAt = GlobalDate.getCurrentDate();
+                myPointsTranslation.lastModified = GlobalDate.getCurrentDate();
                 Model.pointsTranslation().insert(myPointsTranslation);
             }
         }
