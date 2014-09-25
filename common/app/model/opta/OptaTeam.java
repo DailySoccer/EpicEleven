@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class OptaTeam {
+    static final String INVALID_TEAM = "-1";
+
     public String optaTeamId;
     public String name;
     public String shortName;

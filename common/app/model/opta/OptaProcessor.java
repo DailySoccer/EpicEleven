@@ -10,10 +10,7 @@ import org.jdom2.input.SAXBuilder;
 import play.Logger;
 
 import java.io.StringReader;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class OptaProcessor {
 
@@ -180,6 +177,8 @@ public class OptaProcessor {
         if (null == _pointsTranslationCache)
             resetPointsTranslationCache();
 
+        long startTime = System.currentTimeMillis();
+
         for (Element team : f40.getChild("SoccerDocument").getChildren("Team")) {
 
             List<Element> playersList = team.getChildren("Player");
@@ -192,11 +191,68 @@ public class OptaProcessor {
                              .with("{$set: {optaTeamId:#, name:#, shortName:#, updatedTime:#, dirty:#}, $addToSet: {seasonCompetitionIds:#}}",
                                      myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty, optaCompetition.seasonCompetitionId);
 
+            // PROCESAR LOS PLAYERS
+            HashMap<String, OptaPlayer> optaPlayers = OptaPlayer.asMap(OptaPlayer.findAllFromTeam(myTeam.optaTeamId));
+            List<OptaPlayer> playersToInsert = new ArrayList<>();
+            for (Element player : playersList) {
+                OptaPlayer myPlayer = new OptaPlayer(player, team);
+
+                // Está en el equipo?
+                if (optaPlayers.containsKey(myPlayer.optaPlayerId)) {
+                    // Datos nuevos?
+                    if (myPlayer.hasChanged(optaPlayers.get(myPlayer.optaPlayerId))) {
+                        // Actualizar
+                        Model.optaPlayers().update("{optaPlayerId: #}", myPlayer.optaPlayerId).upsert().with(myPlayer);
+                    }
+                    optaPlayers.remove(myPlayer.optaPlayerId);
+                }
+                else {
+                    // Lo marcamos para añadir
+                    playersToInsert.add(myPlayer);
+                }
+            }
+            // Insertamos la lista de players "nuevos"
+            if (!playersToInsert.isEmpty()) {
+                Model.optaPlayers().insert(playersToInsert.toArray());
+            }
+            // Marcamos como "sin equipo" a los players que no han sido enviados con el equipo (verificamos que no hayan cambiado de equipo)
+            if (!optaPlayers.isEmpty()) {
+                Model.optaPlayers().update("{optaPlayerId:{$in: #}, teamId:#}", optaPlayers.keySet(), myTeam.optaTeamId).with("{$set: {teamId: #, dirty: true}}", OptaTeam.INVALID_TEAM);
+            }
+        }
+
+        Logger.info("elapsed: {}", System.currentTimeMillis() - startTime);
+    }
+
+    private void processF40_old(Element f40, OptaCompetition optaCompetition) {
+
+        if (!optaCompetition.activated)
+            return;
+
+        if (null == _pointsTranslationCache)
+            resetPointsTranslationCache();
+
+        long startTime = System.currentTimeMillis();
+
+        for (Element team : f40.getChild("SoccerDocument").getChildren("Team")) {
+
+            List<Element> playersList = team.getChildren("Player");
+
+            if (playersList == null) // Si es un equipo placeholder nos lo saltamos
+                continue;
+
+            OptaTeam myTeam = new OptaTeam(team);
+            Model.optaTeams().update("{optaTeamId: #}", myTeam.optaTeamId).upsert()
+                    .with("{$set: {optaTeamId:#, name:#, shortName:#, updatedTime:#, dirty:#}, $addToSet: {seasonCompetitionIds:#}}",
+                            myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty, optaCompetition.seasonCompetitionId);
+
             for (Element player : playersList) {
                 OptaPlayer myPlayer = new OptaPlayer(player, team);
                 Model.optaPlayers().update("{optaPlayerId: #}", myPlayer.optaPlayerId).upsert().with(myPlayer);
             }
         }
+
+        Logger.info("elapsed: {}", System.currentTimeMillis() - startTime);
     }
 
     //
