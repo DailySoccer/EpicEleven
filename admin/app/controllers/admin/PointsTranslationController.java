@@ -43,7 +43,7 @@ public class PointsTranslationController extends Controller {
 
     public static Result resetToDefault(){
         Model.pointsTranslation().remove();
-        MockData.createPointsTranslation();
+        PointsTranslation.createDefault();
         return redirect(routes.PointsTranslationController.index());
     }
 

@@ -120,6 +120,8 @@ public class Model {
     static public void resetDB() {
         dropDB(_mongoDB);
         ensureDB(_mongoDB);
+
+        PointsTranslation.createDefault();
     }
 
     static private void dropDB(DB theMongoDB) {
