@@ -42,14 +42,14 @@ public class OptaProcessorJob {
         }
 
         // La fecha coincide con la de hace X segundos. Asumimos que el worker process que la dejo asi esta muerto.
-        resetIsProcessing();
+        resetState();
 
         Scheduler.scheduleMethod(0, 1, TimeUnit.SECONDS, OptaProcessorJob.class.getMethod("periodicCheckAndProcessNextOptaXml"));
     }
 
-    public static void resetIsProcessing() {
+    public static void resetState() {
         Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with("{$set: {isProcessing: false}}");
-        Logger.info("OptaProcessorJob.resetIsProcessing ejecutado");
+        Logger.info("OptaProcessorJob.resetState ejecutado");
     }
 
     public static void periodicCheckAndProcessNextOptaXml() {

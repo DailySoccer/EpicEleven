@@ -11,13 +11,10 @@ import org.jongo.MongoCollection;
 import org.jongo.marshall.jackson.JacksonMapper;
 import play.Logger;
 import play.Play;
-import utils.ListUtils;
 
 import java.sql.Connection;
 import java.sql.*;
-import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 
 public class Model {
@@ -81,7 +78,7 @@ public class Model {
         // Durante desarrollo a veces matamos el Scheduler justo cuando esta procesando. El OptaProcessorJob se autorepara
         // en ese caso, pero en las maquinas de desarrollo no lo lanzamos, asi que lo reseteamos aqui.
         if (Play.isDev()) {
-            OptaProcessorJob.resetIsProcessing();
+            OptaProcessorJob.resetState();
         }
     }
 
