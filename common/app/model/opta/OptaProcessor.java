@@ -189,7 +189,15 @@ public class OptaProcessor {
                              .with("{$set: {optaTeamId:#, name:#, shortName:#, updatedTime:#, dirty:#}, $addToSet: {seasonCompetitionIds:#}}",
                                      myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty, optaCompetition.seasonCompetitionId);
 
-            // PROCESAR LOS PLAYERS
+            // Obtenemos la lista de players que están actualmente en el equipo
+            // Recorremos la lista de players que Opta nos proporciona en el F40
+            // Diferenciamos entre los players que
+            // - sean nuevos (no estaban aún en nuestra equipo)
+            //      serán añadidos a nuestra base de datos (en el caso de no existir), o los actualizaremos para que registren el nuevo equipo
+            // - hayan modificado sus datos
+            //      actualizamos su información
+            // - no permanecen en el equipo (no aparecen en la lista de Opta)
+            //      los marcamos con un flag (INVALID_TEAM)
             HashMap<String, OptaPlayer> optaPlayers = OptaPlayer.asMap(OptaPlayer.findAllFromTeam(myTeam.optaTeamId));
             List<OptaPlayer> playersToInsert = new ArrayList<>();
             for (Element player : playersList) {
@@ -211,7 +219,9 @@ public class OptaProcessor {
             }
             // Insertamos la lista de players "nuevos"
             if (!playersToInsert.isEmpty()) {
-                Model.optaPlayers().insert(playersToInsert.toArray());
+                for (OptaPlayer playerToInsert: playersToInsert) {
+                    Model.optaPlayers().update("{optaPlayerId: #}", playerToInsert.optaPlayerId).upsert().with(playerToInsert);
+                }
             }
             // Marcamos como "sin equipo" a los players que no han sido enviados con el equipo (verificamos que no hayan cambiado de equipo)
             if (!optaPlayers.isEmpty()) {

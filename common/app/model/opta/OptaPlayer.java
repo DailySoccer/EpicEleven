@@ -74,7 +74,8 @@ public class OptaPlayer {
     public boolean hasChanged(OptaPlayer optaPlayer) {
         return  (name == null)      || !name.equals(optaPlayer.name)            ||
                 (position == null)  || !position.equals(optaPlayer.position)    ||
-                (teamId == null)    || !teamId.equals(optaPlayer.teamId);
+                (teamId == null)    || !teamId.equals(optaPlayer.teamId)        ||
+                (teamName == null)  || !teamName.equals(optaPlayer.teamName);
     }
 
     static public List<OptaPlayer> findAllFromTeam(String optaTeamId) {
