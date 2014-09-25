@@ -1,15 +1,18 @@
 package jobs;
 
-import model.*;
+import model.GlobalDate;
+import model.MatchEvent;
+import model.Model;
+import model.TemplateContest;
 import model.opta.OptaCompetition;
 import model.opta.OptaEvent;
 import model.opta.OptaProcessor;
 import model.opta.OptaXmlUtils;
-import org.joda.time.DateTime;
 import play.Logger;
 import utils.DbSqlUtils;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
@@ -39,10 +42,14 @@ public class OptaProcessorJob {
         }
 
         // La fecha coincide con la de hace X segundos. Asumimos que el worker process que la dejo asi esta muerto.
-        Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with("{$set: {isProcessing: false}}");
-        Logger.info("Respecto al WTF 0263, isProcessing == true reparado");
+        resetIsProcessing();
 
         Scheduler.scheduleMethod(0, 1, TimeUnit.SECONDS, OptaProcessorJob.class.getMethod("periodicCheckAndProcessNextOptaXml"));
+    }
+
+    public static void resetIsProcessing() {
+        Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with("{$set: {isProcessing: false}}");
+        Logger.info("OptaProcessorJob.resetIsProcessing ejecutado");
     }
 
     public static void periodicCheckAndProcessNextOptaXml() {
@@ -72,11 +79,9 @@ public class OptaProcessorJob {
                                                         .with("{$set: {isProcessing: true}}")
                                                         .as(OptaProcessorState.class);
 
-        /*
         if (state != null && state.isProcessing) {
             throw new RuntimeException("WTF 3885: Colision entre dos procesos");
         }
-        */
 
         if (state == null) {
             state = new OptaProcessorState();

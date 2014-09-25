@@ -173,6 +173,7 @@ public class OptaEvent {
         else if (this.typeId == OptaEventType.SAVE_GOALKEEPER.code && this.qualifiers.contains(94)) {
             this.typeId = OptaEventType.SAVE_PLAYER.code;
         }
+
         // Si no es un borrado, poner a INVALID si no está entre los que nos interesan
         if (this.typeId != 43) {
             this.typeId = OptaEventType.getEnum(this.typeId).code;
