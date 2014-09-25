@@ -98,7 +98,7 @@ public class ContestEntryForm {
             String key      = entry.getKey();
             String value    = entry.getValue();
 
-            if (Model.templateSoccerPlayers().findOne("{ optaPlayerId: # }", value).as(TemplateSoccerPlayer.class) == null) {
+            if (TemplateSoccerPlayer.findOneFromOptaId(value) == null) {
                 errors.add(new ValidationError(key, key + " invalid"));
             }
         }

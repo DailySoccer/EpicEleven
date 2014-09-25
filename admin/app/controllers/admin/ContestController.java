@@ -71,7 +71,6 @@ public class ContestController extends Controller {
     }
 
     public static Result show(String contestId) {
-        Contest contest = Model.contests().findOne("{ _id : # }", new ObjectId(contestId)).as(Contest.class);
-        return ok(views.html.contest.render(contest));
+        return ok(views.html.contest.render(Contest.findOne(contestId)));
     }
 }
