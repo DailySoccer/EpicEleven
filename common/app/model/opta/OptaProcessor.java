@@ -10,10 +10,7 @@ import org.jdom2.input.SAXBuilder;
 import play.Logger;
 
 import java.io.StringReader;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class OptaProcessor {
 
@@ -192,9 +189,43 @@ public class OptaProcessor {
                              .with("{$set: {optaTeamId:#, name:#, shortName:#, updatedTime:#, dirty:#}, $addToSet: {seasonCompetitionIds:#}}",
                                      myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty, optaCompetition.seasonCompetitionId);
 
+            // Obtenemos la lista de players que están actualmente en el equipo
+            // Recorremos la lista de players que Opta nos proporciona en el F40
+            // Diferenciamos entre los players que
+            // - sean nuevos (no estaban aún en nuestra equipo)
+            //      serán añadidos a nuestra base de datos (en el caso de no existir), o los actualizaremos para que registren el nuevo equipo
+            // - hayan modificado sus datos
+            //      actualizamos su información
+            // - no permanecen en el equipo (no aparecen en la lista de Opta)
+            //      los marcamos con un flag (INVALID_TEAM)
+            HashMap<String, OptaPlayer> optaPlayers = OptaPlayer.asMap(OptaPlayer.findAllFromTeam(myTeam.optaTeamId));
+            List<OptaPlayer> playersToInsert = new ArrayList<>();
             for (Element player : playersList) {
                 OptaPlayer myPlayer = new OptaPlayer(player, team);
-                Model.optaPlayers().update("{optaPlayerId: #}", myPlayer.optaPlayerId).upsert().with(myPlayer);
+
+                // Está en el equipo?
+                if (optaPlayers.containsKey(myPlayer.optaPlayerId)) {
+                    // Datos nuevos?
+                    if (myPlayer.hasChanged(optaPlayers.get(myPlayer.optaPlayerId))) {
+                        // Actualizar
+                        Model.optaPlayers().update("{optaPlayerId: #}", myPlayer.optaPlayerId).upsert().with(myPlayer);
+                    }
+                    optaPlayers.remove(myPlayer.optaPlayerId);
+                }
+                else {
+                    // Lo marcamos para añadir
+                    playersToInsert.add(myPlayer);
+                }
+            }
+            // Insertamos la lista de players "nuevos"
+            if (!playersToInsert.isEmpty()) {
+                for (OptaPlayer playerToInsert: playersToInsert) {
+                    Model.optaPlayers().update("{optaPlayerId: #}", playerToInsert.optaPlayerId).upsert().with(playerToInsert);
+                }
+            }
+            // Marcamos como "sin equipo" a los players que no han sido enviados con el equipo (verificamos que no hayan cambiado de equipo)
+            if (!optaPlayers.isEmpty()) {
+                Model.optaPlayers().update("{optaPlayerId:{$in: #}, teamId:#}", optaPlayers.keySet(), myTeam.optaTeamId).with("{$set: {teamId: #, dirty: true}}", OptaTeam.INVALID_TEAM);
             }
         }
     }

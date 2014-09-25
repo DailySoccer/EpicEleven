@@ -20,8 +20,16 @@
             "@p.competitionName",
             "@p.seasonId",
             "@p.seasonName",
-            "@optaTeamMap(p.homeTeamId).name (@p.homeTeamId)",
-            "@optaTeamMap(p.awayTeamId).name (@p.awayTeamId)",
+            @if(optaTeamMap.containsKey(p.homeTeamId)) {
+                "@optaTeamMap(p.homeTeamId).name (@p.homeTeamId)",
+            } else {
+                "@p.homeTeamId",
+            }
+            @if(optaTeamMap.containsKey(p.awayTeamId)) {
+                "@optaTeamMap(p.awayTeamId).name (@p.awayTeamId)",
+            } else {
+                "@p.awayTeamId",
+            }
             "@GlobalDate.formatDate(p.matchDate)"
         ] @if(index < match_list.size-1) { , }
     }
