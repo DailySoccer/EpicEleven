@@ -8,6 +8,7 @@
 
 
 <div>
+    <a href="@DashboardController.resetDB" class="btn btn-danger">Reset DB</a>
     @if(competitions_enabled.isEmpty) {
         <a href="@DashboardController.initialSetup" class="btn btn-danger disabled">Initial Setup</a>
     } else {

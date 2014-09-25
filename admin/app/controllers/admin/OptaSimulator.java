@@ -39,7 +39,7 @@ public class OptaSimulator implements Runnable {
 
         _state = Model.simulator().findOne().as(OptaSimulatorState.class);
 
-        if (_state == null || _state.isOldVersion()) {
+        if (_state == null) {
             _state = new OptaSimulatorState();
 
             _state.useSnapshot = false;
@@ -321,10 +321,6 @@ public class OptaSimulator implements Runnable {
         public int     speedFactor = MAX_SPEED;
 
         public OptaSimulatorState() {}
-
-        public boolean isOldVersion() {
-            return (simulationDate==null);
-        }
     }
 }
 

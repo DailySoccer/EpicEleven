@@ -29,6 +29,7 @@ public class DashboardController extends Controller {
     public static Result resetDB() {
         Model.resetDB();
         MockData.ensureMockDataUsers();
+        MockData.ensureCompetitions();
 
         FlashMessage.success("Reset DB: OK");
         return index();
