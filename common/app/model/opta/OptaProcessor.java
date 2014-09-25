@@ -18,8 +18,12 @@ import java.util.List;
 public class OptaProcessor {
 
     // Retorna los Ids de opta (gameIds, optaMachEventId) de los partidos que han cambiado
-    public HashSet<String> processOptaDBInput(String feedType, String seasonCompetitionId, String name, String requestBody) {
+    public HashSet<String> processOptaDBInput(String feedType, String seasonCompetitionId, String name,
+                                              String requestBody, String competitionId, String seasonId, String gameId) {
         _dirtyMatchEventIds = new HashSet<>();
+        _competitionId = competitionId;
+        _seasonId = seasonId;
+        _gameId = gameId;
 
         try {
             if (isDocumentValidForProcessing(feedType, seasonCompetitionId)) {
@@ -213,14 +217,13 @@ public class OptaProcessor {
 
     private void processFinishedMatch(Element F9) {
 
-        String competitionId = getStringId(F9.getChild("Competition"), "uID");
-        String gameId = getStringId(F9, "uID");
-        _dirtyMatchEventIds.add(gameId);
+        _dirtyMatchEventIds.add(_gameId);
 
         List<Element> teamDatas = F9.getChild("MatchData").getChildren("TeamData");
 
-        Model.optaEvents().remove("{typeId: { $in: [#, #] }, gameId: #, competitionId: #}",
-                OptaEventType.CLEAN_SHEET.code, OptaEventType.GOAL_CONCEDED.code, gameId, competitionId);
+        Model.optaEvents().remove("{typeId: { $in: [#, #] }, gameId: #, competitionId: #, seasonId: #}",
+                OptaEventType.CLEAN_SHEET.code, OptaEventType.GOAL_CONCEDED.code, _gameId, _competitionId, _seasonId);
+
 
         for (Element teamData : teamDatas) {
             boolean cleanSheet = true;
@@ -231,15 +234,17 @@ public class OptaProcessor {
                 }
             }
 
-            processGoalsConcededOrCleanSheet(F9, gameId, teamData, cleanSheet);
+            processGoalsConcededOrCleanSheet(F9, teamData, cleanSheet);
         }
 
-        OptaMatchEventStats stats = new OptaMatchEventStats(gameId, teamDatas);
-        Model.optaMatchEventStats().update("{optaMatchEventId: #}", gameId).upsert().with(stats);
+        OptaMatchEventStats stats = new OptaMatchEventStats(_gameId, teamDatas);
+        Model.optaMatchEventStats().update("{optaMatchEventId: #}", _gameId).upsert().with(stats);
     }
 
 
-    private void processGoalsConcededOrCleanSheet(Element F9, String gameId, Element teamData, boolean cleanSheet) {
+
+    private void processGoalsConcededOrCleanSheet(Element F9, Element teamData, boolean cleanSheet) {
+
         int teamRef = Integer.parseInt(getStringId(teamData,"TeamRef"));
 
         for (Element matchPlayer : teamData.getChild("PlayerLineUp").getChildren("MatchPlayer")) {
@@ -253,7 +258,9 @@ public class OptaProcessor {
                     if (cleanSheet) {
                         if (playerStat.getAttribute("Type").getValue().equals("mins_played")) {
                             if (Integer.parseInt(playerStat.getContent().get(0).getValue()) > 59) {
-                                createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.CLEAN_SHEET.code, 20000, 1);
+
+                                createEvent(F9, matchPlayer, teamRef,
+                                        OptaEventType.CLEAN_SHEET.code, 20000, 1);
                             }
                             break;
                         }
@@ -263,7 +270,9 @@ public class OptaProcessor {
                             //Si al jugador le han metido más de un gol
                             int playersGoalsConceded = Integer.parseInt(playerStat.getContent().get(0).getValue());
                             if (playersGoalsConceded > 0) {
-                                createEvent(F9, gameId, matchPlayer, teamRef, OptaEventType.GOAL_CONCEDED.code, 20001, playersGoalsConceded);
+
+                                createEvent(F9, matchPlayer, teamRef,
+                                        OptaEventType.GOAL_CONCEDED.code, 20001, playersGoalsConceded);
                             }
                             break;
                         }
@@ -273,33 +282,19 @@ public class OptaProcessor {
         }
     }
 
-    private void createEvent(Element F9, String gameId, Element matchPlayer, int teamId, int typeId, int eventId, int times) {
-        String playerId = getStringId(matchPlayer, "PlayerRef");
-        String competitionId = getStringId(F9.getChild("Competition"), "uID");
-        String seasonId = getF9SeasonId(F9);
+    private void createEvent(Element F9, Element matchPlayer, int teamId, int typeId, int eventId, int times) {
 
+        String playerId = getStringId(matchPlayer, "PlayerRef");
         Date timestamp = GlobalDate.parseDate(F9.getChild("MatchData").getChild("MatchInfo").getAttributeValue("TimeStamp"), null);
 
         PointsTranslation pointsTranslation = getPointsTranslation(typeId, timestamp);
         int points =  pointsTranslation.points * times;
         ObjectId pointsTranslationId = pointsTranslation.pointsTranslationId;
 
-        OptaEvent myEvent = new OptaEvent(typeId, eventId, playerId, teamId, gameId, competitionId,
-                                          seasonId, timestamp, points, pointsTranslationId);
+        OptaEvent myEvent = new OptaEvent(typeId, eventId, playerId, teamId, _gameId, _competitionId,
+                                          _seasonId, timestamp, points, pointsTranslationId);
 
         Model.optaEvents().insert(myEvent);
-    }
-
-    private String getF9SeasonId(Element F9) {
-        String seasonId = null;
-
-        List<Element> competitionStats = F9.getChild("Competition").getChildren("Stat");
-        for (Element competitionStat : competitionStats) {
-            if (competitionStat.getAttribute("Type").getValue().equals("season_id")) {
-                seasonId = String.valueOf(competitionStat.getContent().get(0).getValue());
-            }
-        }
-        return seasonId;
     }
 
 
@@ -365,4 +360,8 @@ public class OptaProcessor {
 
     private HashMap<String, HashMap<String, Date>> _optaEventsCache;
     private HashMap<String, HashMap<String, Date>> _optaMatchDataCache;
+
+    private String _gameId;
+    private String _seasonId;
+    private String _competitionId;
 }
