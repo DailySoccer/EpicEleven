@@ -16,11 +16,17 @@ public class OptaProcessor {
 
     // Retorna los Ids de opta (gameIds, optaMachEventId) de los partidos que han cambiado
     public HashSet<String> processOptaDBInput(String feedType, String seasonCompetitionId, String name,
-                                              String requestBody, String competitionId, String seasonId, String gameId) {
+                                              String requestBody, String competitionId, String seasonId,
+                                              String gameId, Date createdAt) {
         _dirtyMatchEventIds = new HashSet<>();
         _competitionId = competitionId;
         _seasonId = seasonId;
         _gameId = gameId;
+        _createdAt = createdAt;
+
+        // El cache de puntos es necesario regenarlo pq entre dos ficheros F24 puede cambiar la tabla (por ejemplo al
+        // correr el simulador respetando un snapshot)
+        resetPointsTranslationCache();
 
         try {
             if (isDocumentValidForProcessing(feedType, seasonCompetitionId)) {
@@ -93,10 +99,6 @@ public class OptaProcessor {
     // Crea OptaEvents
     //
     private void processF24(Element gamesObj) {
-
-        // El cache de puntos es necesario regenarlo pq entre dos ficheros F24 puede cambiar la tabla (por ejemplo al
-        // correr el simulador respetando un snapshot)
-        resetPointsTranslationCache();
 
         Element game = gamesObj.getChild("Game");
         _dirtyMatchEventIds.add(game.getAttributeValue("id"));
@@ -174,9 +176,6 @@ public class OptaProcessor {
         if (!optaCompetition.activated)
             return;
 
-        if (null == _pointsTranslationCache)
-            resetPointsTranslationCache();
-
         for (Element team : f40.getChild("SoccerDocument").getChildren("Team")) {
 
             List<Element> playersList = team.getChildren("Player");
@@ -235,8 +234,6 @@ public class OptaProcessor {
     //
     private void processF9(Element f9) {
 
-        if (null == _pointsTranslationCache)
-            resetPointsTranslationCache();
 
         // Obtener las estadísticas (minutos jugados por los futbolistas) y eventos (cleanSheet, goalsAgainst)
         Element myF9 = f9.getChild("SoccerDocument");
@@ -341,6 +338,18 @@ public class OptaProcessor {
 
     private void resetPointsTranslationCache() {
         _pointsTranslationCache = new HashMap<>();
+
+        Iterable<PointsTranslation> pointsTranslations = Model.pointsTranslation()
+                .aggregate("{$match: {timestamp: {$lte: #}}} ", _createdAt)
+                .and("{$sort: {timestamp: -1}}")
+                .and("{ $group: {_id: '$eventTypeId', points: {$first: '$points'}, objectId: {$first: '$_id'}}}")
+                .and("{ $group: {_id: '$objectId', points: {$first: '$points'}, eventTypeId: {$first: '$_id'}}}")
+                .as(PointsTranslation.class);
+        for (PointsTranslation pointTranslation : pointsTranslations) {
+            _pointsTranslationCache.put(pointTranslation.eventTypeId, pointTranslation);
+        }
+
+
     }
 
     private PointsTranslation getPointsTranslation(int typeId, Date timestamp) {
@@ -348,18 +357,9 @@ public class OptaProcessor {
         PointsTranslation ret = _pointsTranslationCache.get(typeId);
 
         if (ret == null) {
-            Iterable<PointsTranslation> pointsTranslations = Model.pointsTranslation()
-                                                                  .find("{eventTypeId: #, timestamp: {$lte: #}}", typeId, timestamp)
-                                                                  .sort("{timestamp: -1}").as(PointsTranslation.class);
-
-            if (pointsTranslations.iterator().hasNext()) {
-                ret = pointsTranslations.iterator().next();
-            }
-            else {
-                // No tenemos traduccion de puntos para este evento. Devolvemos puntos=0, pointsTranslationId = null
-                ret = new PointsTranslation();
-            }
-            _pointsTranslationCache.put(typeId, ret);
+            // No tenemos traduccion de puntos para este evento. Devolvemos puntos=0, pointsTranslationId = null
+            ret = new PointsTranslation();
+            _pointsTranslationCache.put(typeId, new PointsTranslation());
         }
 
         return ret;
@@ -395,4 +395,5 @@ public class OptaProcessor {
     private String _gameId;
     private String _seasonId;
     private String _competitionId;
+    private Date _createdAt;
 }
