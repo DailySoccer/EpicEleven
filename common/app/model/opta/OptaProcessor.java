@@ -31,7 +31,7 @@ public class OptaProcessor {
             if (isDocumentValidForProcessing(feedType)) {
                 Element requestBodyElement = new SAXBuilder().build(new StringReader(requestBody)).getRootElement();
 
-                if (feedType.equals("F9")) {
+                if (feedType.equals("F9") || feedType.equals("F8")) {
                     processF9(requestBodyElement);
                 }
                 else
@@ -82,7 +82,7 @@ public class OptaProcessor {
         boolean valid = false;
 
         // Solo procesamos documentos de competiciones activas
-        if (feedType.equals("F9") || feedType.equals("F24") || feedType.equals("F1")) {
+        if (feedType.equals("F9") || feedType.equals("F8") || feedType.equals("F24") || feedType.equals("F1")) {
             OptaCompetition optaCompetition = OptaCompetition.findOne(_seasonCompetitionId);
             valid = (optaCompetition != null) && optaCompetition.activated;
         }
