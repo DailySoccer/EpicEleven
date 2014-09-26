@@ -101,9 +101,13 @@ public class OptaSimulator implements Runnable {
     public void reset(boolean useSnapshot) {
         pause();
 
-        Model.resetDB();
-        MockData.ensureMockDataUsers();
-        MockData.ensureCompetitions();
+        // Cuando queremos recuperar un snapshot se tienen que encargar desde fuera de dejar la DB tal y como la quieran.
+        // Por ejemplo, vacia.
+        if (!useSnapshot) {
+            Model.resetDB();
+            MockData.ensureMockDataUsers();
+            MockData.ensureCompetitions();
+        }
 
         _instance = new OptaSimulator();
 
