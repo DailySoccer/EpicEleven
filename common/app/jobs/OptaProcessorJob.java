@@ -29,7 +29,7 @@ public class OptaProcessorJob {
             Scheduler.invokeOnce(20, TimeUnit.SECONDS, OptaProcessorJob.class.getMethod("initAfterDelay", Date.class), state.lastProcessedDate);
         }
         else {
-            Scheduler.scheduleMethod(0, 1, TimeUnit.SECONDS, OptaProcessorJob.class.getMethod("periodicCheckAndProcessNextOptaXml"));
+            Scheduler.scheduleMethod(0, 1, TimeUnit.SECONDS, OptaProcessorJob.class.getMethod("processNextXmlTask"));
         }
     }
 
@@ -44,7 +44,7 @@ public class OptaProcessorJob {
         // La fecha coincide con la de hace X segundos. Asumimos que el worker process que la dejo asi esta muerto.
         resetState();
 
-        Scheduler.scheduleMethod(0, 1, TimeUnit.SECONDS, OptaProcessorJob.class.getMethod("periodicCheckAndProcessNextOptaXml"));
+        Scheduler.scheduleMethod(0, 1, TimeUnit.SECONDS, OptaProcessorJob.class.getMethod("processNextXmlTask"));
     }
 
     public static void resetState() {
@@ -52,7 +52,7 @@ public class OptaProcessorJob {
         Logger.info("OptaProcessorJob.resetState ejecutado");
     }
 
-    public static void periodicCheckAndProcessNextOptaXml() {
+    public static void processNextXmlTask() {
 
         OptaXmlUtils.readNextXmlByDate(getLastProcessedDate(), new DbSqlUtils.IResultSetReader<Void>() {
 
