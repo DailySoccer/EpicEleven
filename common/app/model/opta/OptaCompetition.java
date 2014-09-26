@@ -1,9 +1,7 @@
 package model.opta;
 
-import model.GlobalDate;
-import model.Model;
+import model.*;
 import org.bson.types.ObjectId;
-import org.jongo.marshall.jackson.oid.Id;
 import utils.ListUtils;
 
 import java.util.ArrayList;
@@ -11,7 +9,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-public class OptaCompetition {
+public class OptaCompetition implements JongoId, Initializer {
+
+    public ObjectId _id;
     public boolean activated;
     public String seasonCompetitionId;
     public String competitionId;
@@ -30,6 +30,12 @@ public class OptaCompetition {
         this.seasonId = seasonId;
         this.createdAt = GlobalDate.getCurrentDate();
     }
+
+    public ObjectId getId() {
+        return _id;
+    }
+
+    public void Initialize() {}
 
     public static String createId(String seasonId, String competitionId) {
         return String.format("%s-%s", seasonId, competitionId);
@@ -66,4 +72,5 @@ public class OptaCompetition {
         }
         return map;
     }
+
 }
