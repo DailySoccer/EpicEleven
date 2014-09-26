@@ -101,7 +101,8 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
     public boolean hasChanged(OptaPlayer optaPlayer) {
         return !optaPlayerId.equals(optaPlayer.optaPlayerId) ||
                !name.equals(optaPlayer.name) ||
-               !fieldPos.equals(transformToFieldPosFromOptaPos(optaPlayer.position));
+               !fieldPos.equals(transformToFieldPosFromOptaPos(optaPlayer.position)) ||
+               !(TemplateSoccerTeam.findOne(templateTeamId, optaPlayer.teamId) != null);
     }
 
     /**

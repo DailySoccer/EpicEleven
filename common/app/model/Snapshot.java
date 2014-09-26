@@ -2,6 +2,7 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mongodb.*;
+import model.opta.OptaCompetition;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import play.Logger;
@@ -33,6 +34,7 @@ public class Snapshot {
         if (nextDate.after(updatedDate)) {
             // Logger.info("snapshot: update: start: {} - end: {}", updatedDate, nextDate);
 
+            update(nextDate, "optaCompetitions", OptaCompetition.class);
             update(nextDate, "pointsTranslation", PointsTranslation.class);
             update(nextDate, "templateContests", TemplateContest.class);
             update(nextDate, "templateMatchEvents", TemplateMatchEvent.class);
