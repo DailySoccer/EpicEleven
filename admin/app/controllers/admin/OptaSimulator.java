@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import jobs.InstantiateContestsJob;
 import jobs.OptaProcessorJob;
 import model.*;
 import model.opta.OptaProcessor;
@@ -164,7 +165,7 @@ public class OptaSimulator implements Runnable {
             _snapshot.update(_state.simulationDate);
         }
 
-        ModelEvents.runTasks();
+        InstantiateContestsJob.instantiateContestsTask();
     }
 
     public boolean nextStep(int speedFactor) {
