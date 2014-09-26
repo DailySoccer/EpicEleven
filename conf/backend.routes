@@ -26,10 +26,10 @@ GET         /get_contest/:contest                                   controllers.
 GET         /get_live_match_events/template_contest/:contest        controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)
 
 # Entrar en concurso
-POST        /add_contest_entry                                      controllers.ContestController.addContestEntry()
-POST        /edit_contest_entry                                     controllers.ContestController.editContestEntry()
+POST        /add_contest_entry                                      controllers.ContestEntryController.addContestEntry()
+POST        /edit_contest_entry                                     controllers.ContestEntryController.editContestEntry()
 # Cancelar la entrada a un concurso
-POST        /cancel_contest_entry                                   controllers.ContestController.cancelContestEntry()
+POST        /cancel_contest_entry                                   controllers.ContestEntryController.cancelContestEntry()
 
 # Sincronizacion de nuestras maquinas locales con los datos de Opta
 GET         /return_xml/:timestamp                                  controllers.OptaHttpController.returnXML(timestamp: Long)
