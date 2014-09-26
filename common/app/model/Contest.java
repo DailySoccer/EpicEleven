@@ -22,7 +22,7 @@ public class Contest implements JongoId {
 
     public String name;
 
-    @JsonView(value={JsonViews.Extended.class, JsonViews.AllContests.class})
+    @JsonView(value={JsonViews.Public.class, JsonViews.AllContests.class})
     public List<ContestEntry> contestEntries = new ArrayList<>();
 
     @JsonView(JsonViews.Public.class)
