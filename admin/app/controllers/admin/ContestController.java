@@ -3,15 +3,11 @@ package controllers.admin;
 import com.google.common.collect.ImmutableList;
 import model.Contest;
 import model.Model;
-import model.ModelEvents;
 import model.TemplateContest;
-import org.bson.types.ObjectId;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utils.ListUtils;
 import utils.PaginationData;
 
-import java.util.HashMap;
 import java.util.List;
 
 public class ContestController extends Controller {
