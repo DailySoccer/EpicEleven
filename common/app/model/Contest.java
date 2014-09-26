@@ -22,7 +22,7 @@ public class Contest implements JongoId {
 
     public String name;
 
-    @JsonView(value={JsonViews.Extended.class, JsonViews.AllContests.class})
+    @JsonView(value={JsonViews.Public.class, JsonViews.AllContests.class})
     public List<ContestEntry> contestEntries = new ArrayList<>();
 
     @JsonView(JsonViews.Public.class)
@@ -180,11 +180,7 @@ public class Contest implements JongoId {
 
     public Contest getSameContestWithFreeSlot() {
         String query = String.format("{templateContestId: #, 'contestEntries.%s': {$exists: false}}", maxEntries-1);
-        Contest contest = Model.contests().findOne(query, templateContestId).as(Contest.class);
-        if (contest == null) {
-            contest = TemplateContest.findOne(templateContestId).instantiateContest(false);
-        }
-        return contest;
+        return Model.contests().findOne(query, templateContestId).as(Contest.class);
     }
 
     class ContestEntryComparable implements Comparator<ContestEntry>{

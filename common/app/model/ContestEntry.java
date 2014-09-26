@@ -16,7 +16,7 @@ public class ContestEntry implements JongoId {
     @Id
     public ObjectId contestEntryId;
 
-    @JsonView(value={JsonViews.Public.class, JsonViews.MyLiveContests.class, JsonViews.MyHistoryContests.class})
+    @JsonView(value={JsonViews.Public.class, JsonViews.AllContests.class})
     public ObjectId userId;             // Usuario que creo el equipo
 
     @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class})
