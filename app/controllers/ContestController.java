@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableMap;
 import model.*;
 import org.bson.types.ObjectId;
 import play.Logger;
-import play.cache.Cached;
 import play.data.Form;
 import play.data.validation.Constraints;
 import play.mvc.Controller;
@@ -16,8 +15,10 @@ import play.mvc.Result;
 import utils.ListUtils;
 import utils.ReturnHelper;
 import utils.ReturnHelperWithAttach;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import static play.data.Form.form;
 
 
@@ -29,7 +30,7 @@ public class ContestController extends Controller {
      */
     // @Cached(key = "ActiveContest", duration = 1)
     public static Result getActiveContests() {
-        List<Contest> contests = Contest.findAllActive(Contest.FILTER_ACTIVE_CONTESTS);
+        List<Contest> contests = Contest.findAllActive(JsonViews.ActiveContests.class);
         return new ReturnHelper(ImmutableMap.of("contests", contests)).toResult();
     }
 
@@ -37,9 +38,9 @@ public class ContestController extends Controller {
     public static Result getMyContests() {
         User theUser = (User)ctx().args.get("User");
 
-        List<Contest> myActiveContests = Contest.findAllMyActive(theUser.userId, Contest.FILTER_MY_ACTIVE_CONTESTS);
-        List<Contest> myLiveContests = Contest.findAllMyLive(theUser.userId, Contest.FILTER_MY_LIVE_CONTESTS);
-        List<Contest> myHistoryContests = Contest.findAllMyHistory(theUser.userId, Contest.FILTER_MY_HISTORY_CONTESTS);
+        List<Contest> myActiveContests = Contest.findAllMyActive(theUser.userId, JsonViews.MyActiveContests.class);
+        List<Contest> myLiveContests = Contest.findAllMyLive(theUser.userId, JsonViews.MyLiveContests.class);
+        List<Contest> myHistoryContests = Contest.findAllMyHistory(theUser.userId, JsonViews.MyHistoryContests.class);
 
         List<MatchEvent> liveMatchEvents = MatchEvent.gatherFromContests(myLiveContests);
 

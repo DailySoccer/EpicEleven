@@ -108,7 +108,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
      * Importar un optaPlayer
      */
     static public boolean importSoccer(OptaPlayer optaPlayer) {
-        TemplateSoccerTeam templateTeam = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaPlayer.teamId).as(TemplateSoccerTeam.class);
+        TemplateSoccerTeam templateTeam = TemplateSoccerTeam.findOneFromOptaId(optaPlayer.teamId);
         if (templateTeam != null) {
             TemplateSoccerPlayer templateSoccer = new TemplateSoccerPlayer(optaPlayer, templateTeam.templateSoccerTeamId);
 
@@ -130,7 +130,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         boolean invalid = (optaPlayer.teamId == null) || optaPlayer.teamId.isEmpty();
 
         if (!invalid) {
-            TemplateSoccerTeam templateTeam = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaPlayer.teamId).as(TemplateSoccerTeam.class);
+            TemplateSoccerTeam templateTeam = TemplateSoccerTeam.findOneFromOptaId(optaPlayer.teamId);
             invalid = (templateTeam == null);
         }
 

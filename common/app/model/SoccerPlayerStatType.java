@@ -14,7 +14,7 @@ import java.util.List;
     Pases:   PASS
     Asistencias: ASSIST
     Regates: TAKE_ON
-    Recuperaciones: TACKLE + INTERCEPTION + TACKLE_EFFECTIVE
+    Recuperaciones: SAVE_PLAYER + TACKLE + INTERCEPTION + TACKLE_EFFECTIVE
     Perdidas de balón: DISPOSSESSED + ERROR
     Faltas recibidas: FOUL_RECEIVED
     Faltas cometidas: FOUL_COMMITTED
@@ -32,7 +32,7 @@ public enum SoccerPlayerStatType {
     PASES                   (2),    // PASS
     ASISTENCIAS             (3),    // ASSIST
     REGATES                 (4),    // TAKE_ON
-    RECUPERACIONES          (5),    // TACKLE + INTERCEPTION + TACKLE_EFFECTIVE
+    RECUPERACIONES          (5),    // SAVE_PLAYER + TACKLE + INTERCEPTION + TACKLE_EFFECTIVE
     PERDIDAS_BALON          (6),    // DISPOSSESSED + ERROR
     FALTAS_RECIBIDAS        (7),    // FOUL_RECEIVED
     FALTAS_COMETIDAS        (8),    // FOUL_COMMITTED
@@ -72,6 +72,7 @@ public enum SoccerPlayerStatType {
                     OptaEventType.TAKE_ON.code
             );
             case RECUPERACIONES: return ImmutableList.of(
+                    OptaEventType.SAVE_PLAYER.code,
                     OptaEventType.TACKLE.code,
                     OptaEventType.INTERCEPTION.code,
                     OptaEventType.TACKLE_EFFECTIVE.code

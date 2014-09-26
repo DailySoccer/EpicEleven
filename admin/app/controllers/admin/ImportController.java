@@ -124,8 +124,10 @@ public class ImportController extends Controller {
             }
             else {
                 OptaTeam optaTeam = OptaTeam.findOne(optaSoccer.teamId);
-                for (int i=0; i<optaTeam.seasonCompetitionIds.size() && !isTeamValid; i++) {
-                    isTeamValid = OptaCompetition.findOne(optaTeam.seasonCompetitionIds.get(i)).activated;
+                if (optaTeam != null) {
+                    for (int i = 0; i < optaTeam.seasonCompetitionIds.size() && !isTeamValid; i++) {
+                        isTeamValid = OptaCompetition.findOne(optaTeam.seasonCompetitionIds.get(i)).activated;
+                    }
                 }
                 teamIsValid.put(optaSoccer.teamId, isTeamValid);
             }

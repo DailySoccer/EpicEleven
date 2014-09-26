@@ -18,6 +18,8 @@ public enum OptaEventType {
     POST                    (14, "The ball hits the frame of the goal"),
     ATTEMPT_SAVED           (15, "Shot saved, event for the player who shot the ball"),
     YELLOW_CARD             (17, "Yellow card shown to player"),
+    PERIOD_ENDS             (30, "Period or Match ends"),
+    PERIOD_BEGINS           (32, "Period or Match begins"),
     PUNCH                   (41, "Ball is punched clear by Goalkeeper"),
     DISPOSSESSED            (50, "Player is successfully tacked and loses possession of the ball"),
     ERROR                   (51, "Mistake by player losing the ball"),

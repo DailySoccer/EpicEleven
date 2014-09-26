@@ -15,18 +15,20 @@ import java.util.List;
 public class ContestEntry implements JongoId {
     @Id
     public ObjectId contestEntryId;
+
+    @JsonView(value={JsonViews.Public.class, JsonViews.MyLiveContests.class, JsonViews.MyHistoryContests.class})
     public ObjectId userId;             // Usuario que creo el equipo
 
-    @JsonView(JsonViews.FullContest.class)
+    @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class})
     public List<ObjectId> soccerIds;    // Fantasy team
 
-    @JsonView(JsonViews.Extended.class)
+    @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
     public int position = -1;
 
-    @JsonView(JsonViews.Extended.class)
+    @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
     public int prize;
 
-    @JsonView(JsonViews.Extended.class)
+    @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
     public int fantasyPoints;
 
     @JsonView(JsonViews.NotForClient.class)

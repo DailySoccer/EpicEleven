@@ -67,8 +67,8 @@ public class TemplateMatchEvent implements JongoId, Initializer {
     }
 
     static public boolean importMatchEvent(OptaMatchEvent optaMatchEvent) {
-        TemplateSoccerTeam teamA = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.homeTeamId).as(TemplateSoccerTeam.class);
-        TemplateSoccerTeam teamB = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.awayTeamId).as(TemplateSoccerTeam.class);
+        TemplateSoccerTeam teamA = TemplateSoccerTeam.findOneFromOptaId(optaMatchEvent.homeTeamId);
+        TemplateSoccerTeam teamB = TemplateSoccerTeam.findOneFromOptaId(optaMatchEvent.awayTeamId);
 
         if (teamA != null && teamB != null) {
             create(optaMatchEvent, teamA, teamB, optaMatchEvent.matchDate);
@@ -106,8 +106,8 @@ public class TemplateMatchEvent implements JongoId, Initializer {
                           (optaMatchEvent.awayTeamId == null) || optaMatchEvent.awayTeamId.isEmpty();
 
         if (!invalid) {
-            TemplateSoccerTeam teamA = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.homeTeamId).as(TemplateSoccerTeam.class);
-            TemplateSoccerTeam teamB = Model.templateSoccerTeams().findOne("{optaTeamId: #}", optaMatchEvent.awayTeamId).as(TemplateSoccerTeam.class);
+            TemplateSoccerTeam teamA = TemplateSoccerTeam.findOneFromOptaId(optaMatchEvent.homeTeamId);
+            TemplateSoccerTeam teamB = TemplateSoccerTeam.findOneFromOptaId(optaMatchEvent.awayTeamId);
             invalid = (teamA == null) || (teamB == null);
         }
 

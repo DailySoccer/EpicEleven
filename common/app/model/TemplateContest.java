@@ -48,6 +48,31 @@ public class TemplateContest implements JongoId, Initializer {
 
     public TemplateContest() { }
 
+    public TemplateContest(String name, int minInstances, int maxEntries, int salaryCap,
+                            int entryFee, PrizeType prizeType, Date activationAt,
+                            List<String> templateMatchEvents) {
+
+        this.name = name;
+        this.minInstances = minInstances;
+        this.maxEntries = maxEntries;
+        this.salaryCap = salaryCap;
+        this.entryFee = entryFee;
+        this.prizeType = prizeType;
+        this.activationAt = activationAt;
+
+        Date startDate = null;
+        this.templateMatchEventIds = new ArrayList<ObjectId>();
+        for (String templateMatchEventId : templateMatchEvents) {
+            TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOneFromOptaId(templateMatchEventId);
+            this.templateMatchEventIds.add(templateMatchEvent.templateMatchEventId);
+
+            if (startDate == null || templateMatchEvent.startDate.before(startDate)) {
+                startDate = templateMatchEvent.startDate;
+            }
+        }
+        this.startDate = startDate;
+    }
+
     public void Initialize() {
         state = ContestState.OFF;
     }
@@ -101,6 +126,12 @@ public class TemplateContest implements JongoId, Initializer {
         return ListUtils.asList(Model.findObjectIds(Model.templateContests(), "_id", templateContestIds).as(TemplateContest.class));
     }
 
+    static public List<TemplateContest> findAllByActivationAt(Date activationAt) {
+        return ListUtils.asList(Model.templateContests()
+                                     .find("{state: \"OFF\", activationAt: {$lte: #}}", activationAt)
+                                     .as(TemplateContest.class));
+    }
+
     /**
      *  Eliminar un template contest y sus dependencias
      */
@@ -137,22 +168,27 @@ public class TemplateContest implements JongoId, Initializer {
     }
 
     public void instantiate() {
-        assert(isActive());
 
-        Logger.info("instantiate: {}: activationAt: {}", name, GlobalDate.formatDate(activationAt));
+        Logger.info("TemplateContest.instantiate: {}: activationAt: {}", name, GlobalDate.formatDate(activationAt));
 
         instantiateMatchEvents();
 
         // Cuantas instancias tenemos creadas?
         long instances = Model.contests().count("{templateContestId: #}", templateContestId);
 
-        for(long i=instances; i<minInstances; i++) {
+        for (long i=instances; i < minInstances; i++) {
             instantiateContest(true);
         }
 
         // Incluir los premios del torneo (ya no se podrá cambiar la forma de calcularlo)
         prizes = getPrizes(prizeType, maxEntries, getPrizePool());
         Model.templateContests().update(templateContestId).with("{$set: {prizes: #}}", prizes);
+
+        // Cuando hemos acabado de instanciar nuestras dependencias, nos ponemos en activo
+        Model.templateContests().update("{_id: #, state: \"OFF\"}", templateContestId).with("{$set: {state: \"ACTIVE\"}}");
+
+        // Ya estamos activos!
+        state = ContestState.ACTIVE;
     }
 
     private void instantiateMatchEvents() {

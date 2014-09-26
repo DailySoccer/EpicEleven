@@ -2,6 +2,7 @@ package model;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.mongodb.*;
+import jobs.OptaProcessorJob;
 import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.jongo.Jongo;
@@ -10,13 +11,10 @@ import org.jongo.MongoCollection;
 import org.jongo.marshall.jackson.JacksonMapper;
 import play.Logger;
 import play.Play;
-import utils.ListUtils;
 
 import java.sql.Connection;
 import java.sql.*;
-import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 
 public class Model {
@@ -76,6 +74,12 @@ public class Model {
         catch (Exception exc) {
             Logger.error("Error creating optaxml: ", exc);
         }
+
+        // Durante desarrollo a veces matamos el Scheduler justo cuando esta procesando. El OptaProcessorJob se autorepara
+        // en ese caso, pero en las maquinas de desarrollo no lo lanzamos, asi que lo reseteamos aqui.
+        if (Play.isDev()) {
+            OptaProcessorJob.resetState();
+        }
     }
 
     private static void ensurePostgresDB() throws SQLException {
@@ -120,6 +124,8 @@ public class Model {
     static public void resetDB() {
         dropDB(_mongoDB);
         ensureDB(_mongoDB);
+
+        PointsTranslation.createDefault();
     }
 
     static private void dropDB(DB theMongoDB) {
@@ -131,7 +137,6 @@ public class Model {
             }
         }
     }
-
 
     static private void ensureDB(DB theMongoDB) {
         ensureUsersDB(theMongoDB);

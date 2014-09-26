@@ -1,10 +1,15 @@
 package model.opta;
 
+import org.bson.types.ObjectId;
 import model.GlobalDate;
+import model.Model;
 import org.jdom2.Element;
 import play.Logger;
+import utils.ListUtils;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 public class OptaPlayer {
     public String optaPlayerId;
@@ -64,5 +69,24 @@ public class OptaPlayer {
         }
 
         updatedTime = GlobalDate.getCurrentDate();
+    }
+
+    public boolean hasChanged(OptaPlayer optaPlayer) {
+        return  (name == null)      || !name.equals(optaPlayer.name)            ||
+                (position == null)  || !position.equals(optaPlayer.position)    ||
+                (teamId == null)    || !teamId.equals(optaPlayer.teamId)        ||
+                (teamName == null)  || !teamName.equals(optaPlayer.teamName);
+    }
+
+    static public List<OptaPlayer> findAllFromTeam(String optaTeamId) {
+        return ListUtils.asList(Model.optaPlayers().find("{teamId: #}", optaTeamId).as(OptaPlayer.class));
+    }
+
+    static public HashMap<String, OptaPlayer> asMap(List<OptaPlayer> optaPlayers) {
+        HashMap<String, OptaPlayer> map = new HashMap<>();
+        for (OptaPlayer optaPlayer: optaPlayers) {
+            map.put(optaPlayer.optaPlayerId, optaPlayer);
+        }
+        return map;
     }
 }

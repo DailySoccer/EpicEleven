@@ -8,6 +8,7 @@ import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
+import utils.ViewProjection;
 
 import java.util.*;
 
@@ -30,8 +31,13 @@ public class MatchEvent {
 
     public ObjectId templateMatchEventId;
 
+    @JsonView(JsonViews.NotForClient.class)
     public String optaMatchEventId;
+
+    @JsonView(JsonViews.NotForClient.class)
     public String optaCompetitionId;
+
+    @JsonView(JsonViews.NotForClient.class)
     public String optaSeasonId;
 
     public SoccerTeam soccerTeamA;
@@ -41,13 +47,22 @@ public class MatchEvent {
     @JsonView(JsonViews.FullContest.class)
     public HashMap<String, LiveFantasyPoints> liveFantasyPoints = new HashMap<>();
 
+    @JsonView(JsonViews.Public.class)
     public PeriodType period = PeriodType.PRE_GAME;
+
+    @JsonView(JsonViews.Public.class)
     public int minutesPlayed;
 
+    @JsonView(JsonViews.Public.class)
     public Date startDate;
+
+    @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
+    @JsonView(JsonViews.NotForClient.class)
     public Date gameStartedDate;
+
+    @JsonView(JsonViews.NotForClient.class)
     public Date gameFinishedDate;
 
     public MatchEvent() { }
@@ -72,6 +87,12 @@ public class MatchEvent {
 
     public static List<MatchEvent> findAllFromTemplates(List<ObjectId> idList) {
         return ListUtils.asList(Model.findObjectIds(Model.matchEvents(), "templateMatchEventId", idList).as(MatchEvent.class));
+    }
+
+    public static List<MatchEvent> findAllFromTemplates(List<ObjectId> idList, Class<?> projectionClass) {
+        return ListUtils.asList(Model.findObjectIds(Model.matchEvents(), "templateMatchEventId", idList)
+                .projection(ViewProjection.get(projectionClass, MatchEvent.class))
+                .as(MatchEvent.class));
     }
 
     public static List<MatchEvent> findAll() {
@@ -281,5 +302,8 @@ public class MatchEvent {
 
 class LiveFantasyPoints {
     public int points;                                          // Puntos totales de un SoccerPlayer
+
+    @JsonView(JsonViews.FullContest.class)
     public HashMap<String, Integer> events = new HashMap<>();   // OptaEventType.name => fantasyPoints conseguidos gracias a el
 }
+

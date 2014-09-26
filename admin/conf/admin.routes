@@ -105,10 +105,15 @@ GET         /import_from_last                                          controlle
 GET         /refresher_in_progress                                     controllers.admin.RefresherController.inProgress()
 GET         /last_date                                                 controllers.admin.RefresherController.lastDate()
 
+# Test Driven Routes
+GET         /test_goto/:year/:month/:day/:hour/:minute                 controllers.admin.TestController.gotoDateTest(year: Int, month: Int, day: Int, hour: Int, minute: Int)
 GET         /test_start                                                controllers.admin.TestController.start()
-GET         /test_goto_date/:timestamp                                 controllers.admin.TestController.gotoDate(timestamp : Long)
+GET         /test_goto_timestamp/:timestamp                            controllers.admin.TestController.gotoDate(timestamp : Long)
 GET         /test_import_everything                                    controllers.admin.TestController.importEverything()
+GET         /test_current_date                                         controllers.admin.TestController.getCurrentDate()
+
 GET         /test_initial_setup                                        controllers.admin.TestController.initialSetup()
+GET         /create_contests/:mockIndex                                controllers.admin.TestController.createContests(mockIndex: Int)
 
 # Informar al webclient si el simulator esta activado (requiere Json)
 GET         /is_simulator_activated                                    controllers.admin.SimulatorController.isSimulatorActivated()

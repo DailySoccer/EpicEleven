@@ -1,9 +1,9 @@
-import play.libs.Akka
-import play.{Play, Logger}
+import play.Logger
 import play.api._
-import play.api.mvc.{Filter, Filters, EssentialAction}
-import play.filters.gzip.GzipFilter
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.api.mvc.{EssentialAction, Filter, Filters}
+import play.filters.gzip.GzipFilter
+import play.libs.Akka
 
 // http://www.playframework.com/documentation/2.2.x/ScalaGlobal
 object Global extends GlobalSettings {

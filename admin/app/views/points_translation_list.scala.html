@@ -28,7 +28,7 @@
             <td><a href="@PointsTranslationController.history(p.eventTypeId)">@OptaEventType.getEnum(p.eventTypeId).name()</td>
             <td>@OptaEventType.getEnum(p.eventTypeId).description</td>
             <td><a href="@PointsTranslationController.edit(p.pointsTranslationId.toString())">@p.points</td>
-            <td>@GlobalDate.formatDate(p.timestamp)</td>
+            <td>@GlobalDate.formatDate(p.createdAt)</td>
         </tr>
         }
         </tbody>

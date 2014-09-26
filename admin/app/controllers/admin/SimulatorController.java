@@ -87,7 +87,8 @@ public class SimulatorController extends Controller {
     }
 
     public static String getNextStepDescription() {
-        return isSimulatorCreated()? OptaSimulator.instance().getNextStepDescription() : "";
+        //return isSimulatorCreated()? OptaSimulator.instance().getNextStepDescription() : "";
+        return "TODO";
     }
 
     public static boolean isSnapshotEnabled() {

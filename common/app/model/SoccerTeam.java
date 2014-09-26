@@ -1,14 +1,22 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import org.bson.types.ObjectId;
 import java.util.ArrayList;
 import java.util.List;
 
 public class SoccerTeam {
     public ObjectId templateSoccerTeamId;
+
+    @JsonView(JsonViews.NotForClient.class)
     public String optaTeamId;
+
+    @JsonView(JsonViews.Public.class)
     public String name;
+
+    @JsonView(JsonViews.Public.class)
     public String shortName;
+
     public ArrayList<SoccerPlayer> soccerPlayers = new ArrayList<>();
 
     public int getFantasyPoints() {
