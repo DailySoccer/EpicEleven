@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import model.Model;
 import model.Snapshot;
 import play.Logger;
 import play.mvc.Controller;
@@ -15,11 +16,15 @@ public class SnapshotController extends Controller {
     }
 
     public static Result replayLast() {
+
+        Model.resetDB();
+
         if (!OptaSimulator.isCreated()) {
             OptaSimulator.init();
         }
 
         OptaSimulator.instance().reset(true);
+
         return redirect(routes.SnapshotController.index());
     }
 
