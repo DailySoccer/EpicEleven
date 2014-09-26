@@ -100,12 +100,10 @@ public class OptaProcessorJob {
             String seasonId = resultSet.getString("season_id");
             String competitionId = resultSet.getString("competition_id");
             String gameId = resultSet.getString("game_id");
-            String seasonCompetitionId = OptaCompetition.createId(resultSet.getString("season_id"), resultSet.getString("competition_id"));
 
-            Logger.info("OptaProcessorJob: {}, {}, {}, {}", feedType, name, GlobalDate.formatDate(created_at), seasonCompetitionId);
+            Logger.info("OptaProcessorJob: {}, {}, {}, {}/{}", feedType, name, GlobalDate.formatDate(created_at), seasonId, competitionId);
 
-            HashSet<String> changedOptaMatchEventIds = processor.processOptaDBInput(feedType, seasonCompetitionId, name,
-                    sqlxml, competitionId, seasonId, gameId);
+            HashSet<String> changedOptaMatchEventIds = processor.processOptaDBInput(feedType, name, competitionId, seasonId, gameId, sqlxml);
             onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
 
             state.lastProcessedDate = created_at;

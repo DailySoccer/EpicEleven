@@ -16,11 +16,8 @@ public class PointsTranslation implements JongoId, Initializer {
     public Date createdAt;
     public Date lastModified;
 
-    public PointsTranslation() {
-    }
-
-    public void Initialize() {
-    }
+    public PointsTranslation() {}
+    public void Initialize() {}
 
     public ObjectId getId() {
         return pointsTranslationId;
@@ -32,11 +29,11 @@ public class PointsTranslation implements JongoId, Initializer {
 
     public static List<PointsTranslation> getAllCurrent() {
         return ListUtils.asList(Model.pointsTranslation()
-                .aggregate("{$match: {createdAt: {$lte: #}}} ", GlobalDate.getCurrentDate())
-                .and("{$sort: {timestamp: -1}}")
-                .and("{ $group: {_id: '$eventTypeId', points: {$first: '$points'}, objectId: {$first: '$_id'}}}")
-                .and("{ $group: {_id: '$objectId', points: {$first: '$points'}, eventTypeId: {$first: '$_id'}}}")
-                .as(PointsTranslation.class));
+                        .aggregate("{$match: {createdAt: {$lte: #}}} ", GlobalDate.getCurrentDate())
+                        .and("{$sort: {timestamp: -1}}")
+                        .and("{ $group: {_id: '$eventTypeId', points: {$first: '$points'}, objectId: {$first: '$_id'}}}")
+                        .and("{ $group: {_id: '$objectId', points: {$first: '$points'}, eventTypeId: {$first: '$_id'}}}")
+                        .as(PointsTranslation.class));
     }
 
     /**

@@ -15,20 +15,20 @@ import java.util.*;
 public class OptaProcessor {
 
     // Retorna los Ids de opta (gameIds, optaMachEventId) de los partidos que han cambiado
-    public HashSet<String> processOptaDBInput(String feedType, String seasonCompetitionId, String name,
-                                              String requestBody, String competitionId, String seasonId,
-                                              String gameId) {
+    public HashSet<String> processOptaDBInput(String feedType, String name, String competitionId, String seasonId,
+                                              String gameId, String requestBody) {
         _dirtyMatchEventIds = new HashSet<>();
         _competitionId = competitionId;
         _seasonId = seasonId;
         _gameId = gameId;
+        _seasonCompetitionId = OptaCompetition.createId(_seasonId, _competitionId);
 
         // El cache de puntos es necesario regenarlo pq entre dos ficheros F24 puede cambiar la tabla (por ejemplo al
         // correr el simulador respetando un snapshot)
         resetPointsTranslationCache();
 
         try {
-            if (isDocumentValidForProcessing(feedType, seasonCompetitionId)) {
+            if (isDocumentValidForProcessing(feedType)) {
                 Element requestBodyElement = new SAXBuilder().build(new StringReader(requestBody)).getRootElement();
 
                 if (feedType.equals("F9")) {
@@ -36,7 +36,7 @@ public class OptaProcessor {
                 }
                 else
                 if (feedType.equals("F40")) {
-                    processF40(requestBodyElement, ensureCompetition(requestBodyElement, seasonCompetitionId));
+                    processF40(requestBodyElement, ensureCompetition(requestBodyElement));
                 }
                 else
                 if (feedType.equals("F24")) {
@@ -58,17 +58,17 @@ public class OptaProcessor {
         return _dirtyMatchEventIds;
     }
 
-    static private OptaCompetition ensureCompetition(Element f40, String seasonCompetitionId) {
+    private OptaCompetition ensureCompetition(Element f40) {
 
-        OptaCompetition ret = OptaCompetition.findOne(seasonCompetitionId);
+        OptaCompetition ret = OptaCompetition.findOne(_seasonCompetitionId);
 
         if (ret == null) {
             Element myF40 = f40.getChild("SoccerDocument");
 
-           ret = new OptaCompetition(myF40.getAttribute("competition_id").getValue(),
+           ret = new OptaCompetition(_competitionId,
                                      myF40.getAttribute("competition_code").getValue(),
                                      myF40.getAttribute("competition_name").getValue(),
-                                     myF40.getAttribute("season_id").getValue());
+                                     _seasonId);
             // Por convenio
             ret.activated = false;
 
@@ -78,12 +78,12 @@ public class OptaProcessor {
         return ret;
     }
 
-    static private boolean isDocumentValidForProcessing(String feedType, String seasonCompetitionId) {
+    private boolean isDocumentValidForProcessing(String feedType) {
         boolean valid = false;
 
         // Solo procesamos documentos de competiciones activas
         if (feedType.equals("F9") || feedType.equals("F24") || feedType.equals("F1")) {
-            OptaCompetition optaCompetition = OptaCompetition.findOne(seasonCompetitionId);
+            OptaCompetition optaCompetition = OptaCompetition.findOne(_seasonCompetitionId);
             valid = (optaCompetition != null) && optaCompetition.activated;
         }
         else
@@ -100,7 +100,7 @@ public class OptaProcessor {
     private void processF24(Element gamesObj) {
 
         Element game = gamesObj.getChild("Game");
-        _dirtyMatchEventIds.add(game.getAttributeValue("id"));
+        _dirtyMatchEventIds.add(_gameId);
 
         List<Element> events = game.getChildren("Event");
 
@@ -108,7 +108,7 @@ public class OptaProcessor {
 
             Date timestamp = GlobalDate.parseDate(event.getAttributeValue("last_modified"), null);
 
-            HashMap<String, Date> eventsCache = getOptaEventsCache(game.getAttributeValue("id"));
+            HashMap<String, Date> eventsCache = getOptaEventsCache(_gameId);
             String eventId = event.getAttributeValue("id");
 
             if (!eventsCache.containsKey(eventId) || timestamp.after(eventsCache.get(eventId))) {
@@ -148,11 +148,10 @@ public class OptaProcessor {
     private void processF1(Element f1) {
 
         Element myF1 = f1.getChild("SoccerDocument");
-        String competitionId = myF1.getAttributeValue("competition_id");
 
         for (Element matchObject : myF1.getChildren("MatchData")) {
 
-            HashMap<String, Date> optaMatchDatas = getOptaMatchDataCache(competitionId);
+            HashMap<String, Date> optaMatchDatas = getOptaMatchDataCache(_competitionId);
 
             String matchId = matchObject.getAttributeValue("uID");
             Date timestamp = GlobalDate.parseDate(matchObject.getAttributeValue("last_modified"), null);
@@ -198,6 +197,7 @@ public class OptaProcessor {
             //      los marcamos con un flag (INVALID_TEAM)
             HashMap<String, OptaPlayer> optaPlayers = OptaPlayer.asMap(OptaPlayer.findAllFromTeam(myTeam.optaTeamId));
             List<OptaPlayer> playersToInsert = new ArrayList<>();
+
             for (Element player : playersList) {
                 OptaPlayer myPlayer = new OptaPlayer(player, team);
 
@@ -215,9 +215,10 @@ public class OptaProcessor {
                     playersToInsert.add(myPlayer);
                 }
             }
+
             // Insertamos la lista de players "nuevos"
             if (!playersToInsert.isEmpty()) {
-                for (OptaPlayer playerToInsert: playersToInsert) {
+                for (OptaPlayer playerToInsert : playersToInsert) {
                     Model.optaPlayers().update("{optaPlayerId: #}", playerToInsert.optaPlayerId).upsert().with(playerToInsert);
                 }
             }
@@ -232,7 +233,6 @@ public class OptaProcessor {
     // Crea exclusivamente eventos de fin de partido: CleanSheet, GoalsAgainst y OptaMatchEventStats
     //
     private void processF9(Element f9) {
-
 
         // Obtener las estadísticas (minutos jugados por los futbolistas) y eventos (cleanSheet, goalsAgainst)
         Element myF9 = f9.getChild("SoccerDocument");
@@ -249,7 +249,8 @@ public class OptaProcessor {
         List<Element> teamDatas = F9.getChild("MatchData").getChildren("TeamData");
 
         Model.optaEvents().remove("{typeId: { $in: [#, #] }, gameId: #, competitionId: #, seasonId: #}",
-                OptaEventType.CLEAN_SHEET.code, OptaEventType.GOAL_CONCEDED.code, _gameId, _competitionId, _seasonId);
+                                  OptaEventType.CLEAN_SHEET.code, OptaEventType.GOAL_CONCEDED.code,
+                                  _gameId, _competitionId, _seasonId);
 
 
         for (Element teamData : teamDatas) {
@@ -268,8 +269,6 @@ public class OptaProcessor {
         Model.optaMatchEventStats().update("{optaMatchEventId: #}", _gameId).upsert().with(stats);
     }
 
-
-
     private void processGoalsConcededOrCleanSheet(Element F9, Element teamData, boolean cleanSheet) {
 
         int teamRef = Integer.parseInt(getStringId(teamData,"TeamRef"));
@@ -277,36 +276,41 @@ public class OptaProcessor {
         for (Element matchPlayer : teamData.getChild("PlayerLineUp").getChildren("MatchPlayer")) {
 
             if (matchPlayer.getAttribute("Position").getValue().equals("Goalkeeper") ||
-                    matchPlayer.getAttribute("Position").getValue().equals("Defender")) {
+                matchPlayer.getAttribute("Position").getValue().equals("Defender")) {
 
                 for (Element playerStat : matchPlayer.getChildren("Stat")) {
-
-                    //Si hay cleanSheet, una vez que encontramos la métrica de minutos jugados hacemos el break
-                    if (cleanSheet) {
-                        if (playerStat.getAttribute("Type").getValue().equals("mins_played")) {
-                            if (Integer.parseInt(playerStat.getContent().get(0).getValue()) > 59) {
-
-                                createEvent(F9, matchPlayer, teamRef,
-                                        OptaEventType.CLEAN_SHEET.code, 20000, 1);
-                            }
-                            break;
-                        }
-                    } else {
-                        //Una vez que encontramos la métrica de goles concedidos, hacemos el break si no hay cleanSheet
-                        if (playerStat.getAttribute("Type").getValue().equals("goals_conceded")) {
-                            //Si al jugador le han metido más de un gol
-                            int playersGoalsConceded = Integer.parseInt(playerStat.getContent().get(0).getValue());
-                            if (playersGoalsConceded > 0) {
-
-                                createEvent(F9, matchPlayer, teamRef,
-                                        OptaEventType.GOAL_CONCEDED.code, 20001, playersGoalsConceded);
-                            }
-                            break;
-                        }
+                    if (processGoalsConcededOrCleanSheetInner(F9, cleanSheet, teamRef, matchPlayer, playerStat)) {
+                        break;
                     }
                 }
             }
         }
+    }
+
+    private boolean processGoalsConcededOrCleanSheetInner(Element F9, boolean cleanSheet, int teamRef, Element matchPlayer, Element playerStat) {
+
+        boolean bRet = false;
+
+        if (cleanSheet) {
+            if (playerStat.getAttribute("Type").getValue().equals("mins_played")) {
+                if (Integer.parseInt(playerStat.getContent().get(0).getValue()) > 59) {
+                    createEvent(F9, matchPlayer, teamRef, OptaEventType.CLEAN_SHEET.code, 20000, 1);
+                }
+                bRet = true; // Si hay cleanSheet, una vez que encontramos la métrica de minutos jugados hacemos el break
+            }
+        }
+        else {
+            if (playerStat.getAttribute("Type").getValue().equals("goals_conceded")) {
+                //Si al jugador le han metido más de un gol
+                int playersGoalsConceded = Integer.parseInt(playerStat.getContent().get(0).getValue());
+                if (playersGoalsConceded > 0) {
+                    createEvent(F9, matchPlayer, teamRef, OptaEventType.GOAL_CONCEDED.code, 20001, playersGoalsConceded);
+                }
+                bRet = true; // Si no hay cleanSheet, una vez que encontramos la métrica de goles concedidos hacemos el break
+            }
+        }
+
+        return bRet;
     }
 
     private void createEvent(Element F9, Element matchPlayer, int teamId, int typeId, int eventId, int times) {
@@ -386,4 +390,5 @@ public class OptaProcessor {
     private String _gameId;
     private String _seasonId;
     private String _competitionId;
+    private String _seasonCompetitionId;
 }
