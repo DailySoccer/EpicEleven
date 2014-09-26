@@ -68,7 +68,13 @@ public class OptaProcessorJob {
 
     public static Date getLastProcessedDate() {
         OptaProcessorState state = OptaProcessorState.findOne();
-        return state != null? state.lastProcessedDate : new Date(0L);
+
+        if (state != null && state.lastProcessedDate != null) {
+            return state.lastProcessedDate;
+        }
+        else {
+            return new Date(0L);
+        }
     }
 
     public static void processCurrentDocumentInResultSet(ResultSet resultSet, OptaProcessor processor) {

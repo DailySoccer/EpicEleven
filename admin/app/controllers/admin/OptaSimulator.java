@@ -53,7 +53,6 @@ public class OptaSimulator implements Runnable {
             saveState();
         }
         else {
-
             // Reseteamos la fecha de simulacion en caso de que el proceso haya avanzado por su cuenta
             if (_state.simulationDate.before(OptaProcessorJob.getLastProcessedDate())) {
                 _state.simulationDate = OptaProcessorJob.getLastProcessedDate();
