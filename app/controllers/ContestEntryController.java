@@ -64,15 +64,23 @@ public class ContestEntryController extends Controller {
             // Obtener los soccerIds de los futbolistas : List<ObjectId>
             List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
 
+            List<String> errores = new ArrayList<>();
             if (aContest != null) {
                 // Verificar que el contest no esté lleno
                 if (aContest.contestEntries.size() >= aContest.maxEntries) {
                     // Buscar otro contest de características similares
                     aContest = aContest.getSameContestWithFreeSlot();
+                    if (aContest == null) {
+                        // Si no encontramos ningún Contest semejante, pedimos al webClient que lo intente otra vez
+                        //  dado que asumimos que simplemente es un problema "temporal"
+                        errores.add(ERROR_RETRY_OP);
+                    }
                 }
             }
 
-            List<String> errores = validateContestEntry(aContest, idsList);
+            if (errores.isEmpty()) {
+                errores = validateContestEntry(aContest, idsList);
+            }
             if (errores.isEmpty()) {
                 ContestEntry.create(theUser.userId, aContest.contestId, idsList);
 
