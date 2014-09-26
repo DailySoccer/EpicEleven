@@ -15,7 +15,7 @@ public class InstantiateContestsJob {
      * Condiciones:
      * - los template contests que esten apagados y cuya fecha de activacion sean validas
      */
-    @SchedulePolicy(initialDelay = 0, timeUnit = TimeUnit.SECONDS, interval = 5)
+    @SchedulePolicy(initialDelay = 0, timeUnit = TimeUnit.SECONDS, interval = 10)
     public static void instantiateContestsTask() {
 
         Logger.info("instantiateContestsTask: {}", GlobalDate.getCurrentDate());
