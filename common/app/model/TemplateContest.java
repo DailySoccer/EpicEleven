@@ -171,9 +171,6 @@ public class TemplateContest implements JongoId, Initializer {
 
         Logger.info("TemplateContest.instantiate: {}: activationAt: {}", name, GlobalDate.formatDate(activationAt));
 
-        // TODO: Evaluar si este cambio de estado tiene que estar al principio o al final de esta funcion.
-        state = ContestState.ACTIVE;
-
         instantiateMatchEvents();
 
         // Cuantas instancias tenemos creadas?
@@ -189,6 +186,9 @@ public class TemplateContest implements JongoId, Initializer {
 
         // Cuando hemos acabado de instanciar nuestras dependencias, nos ponemos en activo
         Model.templateContests().update("{_id: #, state: \"OFF\"}", templateContestId).with("{$set: {state: \"ACTIVE\"}}");
+
+        // Ya estamos activos!
+        state = ContestState.ACTIVE;
     }
 
     private void instantiateMatchEvents() {
