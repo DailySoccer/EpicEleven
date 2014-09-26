@@ -62,11 +62,19 @@
             <td>@p.optaTeamBId</td>
             <td>
                 <a href="@TemplateSoccerTeamController.show(p.templateSoccerTeamAId.toString())">
-                    @templateSoccerTeamMap(p.templateSoccerTeamAId).name
+                    @if(templateSoccerTeamMap.containsKey(p.templateSoccerTeamAId)) {
+                        @templateSoccerTeamMap(p.templateSoccerTeamAId).name
+                    } else {
+                        @p.templateSoccerTeamAId
+                    }
                 </a>
                 vs
                 <a href="@TemplateSoccerTeamController.show(p.templateSoccerTeamBId.toString())">
-                    @templateSoccerTeamMap(p.templateSoccerTeamBId).name
+                    @if(templateSoccerTeamMap.containsKey(p.templateSoccerTeamBId)) {
+                        @templateSoccerTeamMap(p.templateSoccerTeamBId).name
+                    } else {
+                        @p.templateSoccerTeamBId
+                    }
                 </a>
             </td>
             <td>@GlobalDate.formatDate(p.startDate)</td>
