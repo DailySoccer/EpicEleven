@@ -126,6 +126,12 @@ public class TemplateContest implements JongoId, Initializer {
         return ListUtils.asList(Model.findObjectIds(Model.templateContests(), "_id", templateContestIds).as(TemplateContest.class));
     }
 
+    static public List<TemplateContest> findAllByActivationAt(Date activationAt) {
+        return ListUtils.asList(Model.templateContests()
+                                     .find("{state: \"OFF\", activationAt: {$lte: #}}", activationAt)
+                                     .as(TemplateContest.class));
+    }
+
     /**
      *  Eliminar un template contest y sus dependencias
      */
@@ -162,22 +168,27 @@ public class TemplateContest implements JongoId, Initializer {
     }
 
     public void instantiate() {
-        assert(isActive());
 
-        Logger.info("instantiate: {}: activationAt: {}", name, GlobalDate.formatDate(activationAt));
+        Logger.info("TemplateContest.instantiate: {}: activationAt: {}", name, GlobalDate.formatDate(activationAt));
+
+        // TODO: Evaluar si este cambio de estado tiene que estar al principio o al final de esta funcion.
+        state = ContestState.ACTIVE;
 
         instantiateMatchEvents();
 
         // Cuantas instancias tenemos creadas?
         long instances = Model.contests().count("{templateContestId: #}", templateContestId);
 
-        for(long i=instances; i<minInstances; i++) {
+        for (long i=instances; i < minInstances; i++) {
             instantiateContest(true);
         }
 
         // Incluir los premios del torneo (ya no se podrá cambiar la forma de calcularlo)
         prizes = getPrizes(prizeType, maxEntries, getPrizePool());
         Model.templateContests().update(templateContestId).with("{$set: {prizes: #}}", prizes);
+
+        // Cuando hemos acabado de instanciar nuestras dependencias, nos ponemos en activo
+        Model.templateContests().update("{_id: #, state: \"OFF\"}", templateContestId).with("{$set: {state: \"ACTIVE\"}}");
     }
 
     private void instantiateMatchEvents() {
