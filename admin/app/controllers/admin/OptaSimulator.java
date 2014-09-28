@@ -78,21 +78,7 @@ public class OptaSimulator implements Runnable {
     public Date getNextStop() { return _state.pauseDate; }
     public boolean isPaused() { return (_paused || _stopSignal);  }
     public boolean isSnapshotEnabled() { return _state.useSnapshot; }
-    public String getNextStepDesc() {
-
-        String ret = "";
-
-        if (_optaResultSet != null) {
-            try {
-                ret = String.valueOf(_optaResultSet.getInt(1));
-            }
-            catch (SQLException e) {
-                Logger.error("WTF 9535", e);
-            }
-        }
-
-        return ret;
-    }
+    public String getNextStepDesc() { return _nextDocId == -1? "" : String.valueOf(_nextDocId); }
 
     public void start() {
         if (_optaThread == null) {
@@ -200,21 +186,25 @@ public class OptaSimulator implements Runnable {
             }
 
             if (_nextDocDate != null) {
+
+               Duration deltaTime = Duration.ZERO;
+
                 try {
-                    Duration deltaTime = sleepUntil(_nextDocDate, speedFactor);
-                    updateDate(new DateTime(GlobalDate.getCurrentDate()).plus(deltaTime).toDate());
-
-                    if (GlobalDate.getCurrentDate().equals(_nextDocDate) && !_stopSignal) {
-
-                        // Tickeamos el OptaProcessorJob como si fueramos un proceso scheduleado
-                        OptaProcessorJob.processCurrentDocumentInResultSet(_optaResultSet, _optaProcessor);
-
-                        // Y dejamos el puntero en el siguiente documento
-                        advanceToNextDocumentInResultSet();
-                    }
+                    deltaTime = sleepUntil(_nextDocDate, speedFactor);
                 }
                 catch (InterruptedException e) {
                     Logger.error("WTF 2311", e);
+                }
+
+                updateDate(new DateTime(GlobalDate.getCurrentDate()).plus(deltaTime).toDate());
+
+                if (GlobalDate.getCurrentDate().equals(_nextDocDate) && !_stopSignal) {
+
+                    // Tickeamos el OptaProcessorJob como si fueramos un proceso scheduleado
+                    OptaProcessorJob.processCurrentDocumentInResultSet(_optaResultSet, _optaProcessor);
+
+                    // Y dejamos el puntero en el siguiente documento
+                    advanceToNextDocumentInResultSet();
                 }
             }
             else {
@@ -235,9 +225,11 @@ public class OptaSimulator implements Runnable {
     private void advanceToNextDocumentInResultSet() throws SQLException {
         if (_optaResultSet.next()) {
             _nextDocDate = _optaResultSet.getTimestamp("created_at");
+            _nextDocId = _optaResultSet.getInt(1);
         }
         else {
             _nextDocDate = null;
+            _nextDocId = -1;
         }
     }
 
@@ -324,6 +316,7 @@ public class OptaSimulator implements Runnable {
     Statement _stmt;
 
     Date _nextDocDate;
+    int  _nextDocId = -1;
     static final Duration SLEEPING_DURATION = new Duration(1000);
 
     OptaProcessor _optaProcessor;
