@@ -78,6 +78,21 @@ public class OptaSimulator implements Runnable {
     public Date getNextStop() { return _state.pauseDate; }
     public boolean isPaused() { return (_paused || _stopSignal);  }
     public boolean isSnapshotEnabled() { return _state.useSnapshot; }
+    public String getNextStepDesc() {
+
+        String ret = "";
+
+        if (_optaResultSet != null) {
+            try {
+                ret = String.valueOf(_optaResultSet.getInt(1));
+            }
+            catch (SQLException e) {
+                Logger.error("WTF 9535", e);
+            }
+        }
+
+        return ret;
+    }
 
     public void start() {
         if (_optaThread == null) {
