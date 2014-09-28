@@ -50,7 +50,7 @@ public class SimulatorController extends Controller {
     public static Result isPaused() { return ok((String.valueOf(isSimulatorPaused())));  }
     public static Result nextStop() { return ok(getNextStop()); }
     public static Result nextStepDescription() {
-        return ok(getNextStepDescription());
+        return ok(getNextStepDesc());
     }
 
     public static class GotoSimParams {
@@ -86,9 +86,8 @@ public class SimulatorController extends Controller {
         return "";
     }
 
-    public static String getNextStepDescription() {
-        //return isSimulatorCreated()? OptaSimulator.instance().getNextStepDescription() : "";
-        return "TODO";
+    public static String getNextStepDesc() {
+        return isSimulatorCreated()? OptaSimulator.instance().getNextStepDesc() : "";
     }
 
     public static boolean isSnapshotEnabled() {
