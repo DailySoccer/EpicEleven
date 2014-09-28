@@ -187,16 +187,13 @@ public class OptaSimulator implements Runnable {
 
             if (_nextDocDate != null) {
 
-               Duration deltaTime = Duration.ZERO;
-
                 try {
-                    deltaTime = sleepUntil(_nextDocDate, speedFactor);
+                    Duration deltaTime = sleepUntil(_nextDocDate, speedFactor);
+                    updateDate(new DateTime(GlobalDate.getCurrentDate()).plus(deltaTime).toDate());
                 }
                 catch (InterruptedException e) {
                     Logger.error("WTF 2311", e);
                 }
-
-                updateDate(new DateTime(GlobalDate.getCurrentDate()).plus(deltaTime).toDate());
 
                 if (GlobalDate.getCurrentDate().equals(_nextDocDate) && !_stopSignal) {
 
