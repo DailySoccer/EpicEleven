@@ -72,7 +72,7 @@ public class OptaSimulator implements Runnable {
         // Siempre comenzamos pausados
         _paused = true;
 
-        advanceToNextDocument();
+        loadNextDocument();
         updateDate(_state.simulationDate);
     }
 
@@ -193,11 +193,11 @@ public class OptaSimulator implements Runnable {
                 OptaProcessorJob.processCurrentDocumentInResultSet(_optaResultSet, _optaProcessor);
 
                 // Y dejamos el puntero en el siguiente documento
-                advanceToNextDocument();
+                loadNextDocument();
             }
         }
         else {
-            advanceToNextDocument();    // Reintentamos, pueden haber entrado nuevos documentos
+            loadNextDocument();    // Reintentamos, pueden haber entrado nuevos documentos
         }
 
         saveState();
@@ -205,7 +205,7 @@ public class OptaSimulator implements Runnable {
         return _nextDocDate == null;    // No hay mas pasos de simulacion si no tenemos fecha siguiente
     }
 
-    private void advanceToNextDocument() {
+    private void loadNextDocument() {
 
         ensureConnection();
 
