@@ -13,6 +13,7 @@ GET         /get_soccer_player_info/:soccerPlayer                   controllers.
 POST        /login                                                  controllers.LoginController.login()
 POST        /signup                                                 controllers.LoginController.signup()
 GET         /get_user_profile                                       controllers.LoginController.getUserProfile()
+POST        /change_user_profile                                    controllers.LoginController.changeUserProfile()
 
 # Concursos globales activos (Lobby)
 GET         /get_active_contests                                    controllers.ContestController.getActiveContests()
