@@ -175,6 +175,11 @@ public class OptaSimulator implements Runnable {
 
     public boolean nextStep(int speedFactor) {
 
+        // Sera null solo si hemos llegado al final de todos los ficheros => vemos si ha entrado uno nuevo
+        if (_nextDocDate == null) {
+            loadNextDocument();
+        }
+
         // En nextStep siempre entramos con el puntero apuntando al siguiente doc (o hemos llegado al final)
         if (_nextDocDate != null) {
 
@@ -194,9 +199,6 @@ public class OptaSimulator implements Runnable {
                 // Y dejamos el puntero en el siguiente documento
                 loadNextDocument();
             }
-        }
-        else {
-            loadNextDocument();    // Reintentamos, pueden haber entrado nuevos documentos
         }
 
         saveState();
