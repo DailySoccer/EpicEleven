@@ -11,12 +11,12 @@ import java.util.HashMap;
 import java.util.List;
 
 public class OptaTeam {
-    static final String INVALID_TEAM = "-1";
+    public static final String INVALID_TEAM = "-1";
 
     public String optaTeamId;
     public String name;
     public String shortName;
-    public ArrayList<String> seasonCompetitionIds;  // formato: <optaSeasonId>/<optaCompetitionId>
+    public ArrayList<String> seasonCompetitionIds = new ArrayList<>();  // formato: <optaSeasonId>/<optaCompetitionId>
     public Date updatedTime;
     public boolean dirty = true;
 
@@ -48,5 +48,13 @@ public class OptaTeam {
             map.put(optaTeam.optaTeamId, optaTeam);
         }
         return map;
+    }
+
+    static public void createInvalidTeam() {
+        OptaTeam invalidTeam = new OptaTeam();
+        invalidTeam.optaTeamId = INVALID_TEAM;
+        invalidTeam.name = "-Unknown-";
+        invalidTeam.shortName = "XXX";
+        Model.optaTeams().insert(invalidTeam);
     }
 }

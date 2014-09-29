@@ -30,6 +30,7 @@ public class OptaSimulator implements Runnable {
 
     static public void shutdown() {
         _instance.pause();
+        _instance.closeConnection();
         _instance = null;
         GlobalDate.setFakeDate(null);
     }
@@ -72,7 +73,7 @@ public class OptaSimulator implements Runnable {
         // Siempre comenzamos pausados
         _paused = true;
 
-        advanceToNextDocument();
+        loadNextDocument();
         updateDate(_state.simulationDate);
     }
 
@@ -151,8 +152,6 @@ public class OptaSimulator implements Runnable {
             }
         }
 
-        closeConnection();
-
         // Salir del bucle implica que el thread muere y por lo tanto estamos pausados
         _optaThread = null;
         _stopSignal = false;
@@ -176,6 +175,11 @@ public class OptaSimulator implements Runnable {
 
     public boolean nextStep(int speedFactor) {
 
+        // Sera null solo si hemos llegado al final de todos los ficheros => vemos si ha entrado uno nuevo
+        if (_nextDocDate == null) {
+            loadNextDocument();
+        }
+
         // En nextStep siempre entramos con el puntero apuntando al siguiente doc (o hemos llegado al final)
         if (_nextDocDate != null) {
 
@@ -193,11 +197,8 @@ public class OptaSimulator implements Runnable {
                 OptaProcessorJob.processCurrentDocumentInResultSet(_optaResultSet, _optaProcessor);
 
                 // Y dejamos el puntero en el siguiente documento
-                advanceToNextDocument();
+                loadNextDocument();
             }
-        }
-        else {
-            advanceToNextDocument();    // Reintentamos, pueden haber entrado nuevos documentos
         }
 
         saveState();
@@ -205,7 +206,7 @@ public class OptaSimulator implements Runnable {
         return _nextDocDate == null;    // No hay mas pasos de simulacion si no tenemos fecha siguiente
     }
 
-    private void advanceToNextDocument() {
+    private void loadNextDocument() {
 
         ensureConnection();
 
