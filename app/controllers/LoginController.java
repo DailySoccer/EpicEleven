@@ -114,8 +114,9 @@ public class LoginController extends Controller {
         if (!loginParamsForm.hasErrors()) {
             LoginParams loginParams = loginParamsForm.get();
 
+            boolean isTest = loginParams.email.endsWith("@test.com");
 
-            Account loggedAccount = (Play.isProd() || !loginParams.email.endsWith("@test.com"))?
+            Account loggedAccount = (Play.isProd() || !isTest)?
                                         StormPathClient.instance().login(loginParams.email, loginParams.password):
                                         null;
 
@@ -129,7 +130,7 @@ public class LoginController extends Controller {
                     Model.users().insert(new User("", "", loggedAccount.getUsername(),
                             loggedAccount.getEmail(), ""));
                 }
-            } else if (Play.isDev()) {
+            } else if (Play.isDev() && isTest) {
                 correctLogin = true;
             }
 
