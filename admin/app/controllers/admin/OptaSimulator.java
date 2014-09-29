@@ -30,6 +30,7 @@ public class OptaSimulator implements Runnable {
 
     static public void shutdown() {
         _instance.pause();
+        _instance.closeConnection();
         _instance = null;
         GlobalDate.setFakeDate(null);
     }
@@ -150,8 +151,6 @@ public class OptaSimulator implements Runnable {
                 }
             }
         }
-
-        closeConnection();
 
         // Salir del bucle implica que el thread muere y por lo tanto estamos pausados
         _optaThread = null;
