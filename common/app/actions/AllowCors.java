@@ -1,9 +1,7 @@
 package actions;
 
-import play.libs.F;
 import play.mvc.Action;
 import play.mvc.Http;
-import play.mvc.SimpleResult;
 import play.mvc.With;
 
 import java.lang.annotation.ElementType;
@@ -22,7 +20,7 @@ public class AllowCors {
 
     public static class CorsAction extends Action<Origin> {
         @Override
-        public F.Promise<SimpleResult> call(Http.Context context) throws Throwable {
+        public play.libs.F.Promise<play.mvc.Result>  call(Http.Context context) throws Throwable {
             context.response().setHeader("Access-Control-Allow-Origin", "*");
             return delegate.call(context);
         }

@@ -5,7 +5,7 @@ import play.Logger;
 import play.libs.F;
 import play.mvc.Action;
 import play.mvc.Http;
-import play.mvc.SimpleResult;
+import play.mvc.Result;
 import play.mvc.With;
 import utils.SessionUtils;
 
@@ -20,15 +20,15 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UserAuthenticated {
     public class UserAuthenticatedAction extends Action<UserAuthenticated> {
-        public F.Promise<SimpleResult> call(Http.Context ctx) throws Throwable {
+        public play.libs.F.Promise<play.mvc.Result>  call(Http.Context ctx) throws Throwable {
 
             User theUser = SessionUtils.getUserFromRequest(ctx.request());
 
             if (theUser == null) {
                 Logger.info("UserAuthenticated failed: " + ctx);
-                return F.Promise.promise(new F.Function0<SimpleResult>() {
-                    @Override
-                    public SimpleResult apply() throws Throwable {
+
+                return F.Promise.promise(new F.Function0<Result>() {
+                    public Result apply() throws Throwable {
                         return badRequest();
                     }
                 });
