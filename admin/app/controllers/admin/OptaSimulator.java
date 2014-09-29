@@ -72,7 +72,6 @@ public class OptaSimulator implements Runnable {
         // Siempre comenzamos pausados
         _paused = true;
 
-        ensureConnection();
         advanceToNextDocument();
         updateDate(_state.simulationDate);
     }
@@ -176,9 +175,6 @@ public class OptaSimulator implements Runnable {
     }
 
     public boolean nextStep(int speedFactor) {
-        boolean bFinished = false;
-
-        ensureConnection();
 
         // En nextStep siempre entramos con el puntero apuntando al siguiente doc (o hemos llegado al final)
         if (_nextDocDate != null) {
@@ -201,17 +197,17 @@ public class OptaSimulator implements Runnable {
             }
         }
         else {
-            bFinished = true;
-            closeConnection();
-            Logger.info("Hemos llegado al final de la simulacion");
+            advanceToNextDocument();    // Reintentamos, pueden haber entrado nuevos documentos
         }
 
         saveState();
 
-        return bFinished;
+        return _nextDocDate == null;    // No hay mas pasos de simulacion si no tenemos fecha siguiente
     }
 
     private void advanceToNextDocument() {
+
+        ensureConnection();
 
         try {
             queryNextResultSet();
@@ -219,9 +215,22 @@ public class OptaSimulator implements Runnable {
             if (_optaResultSet.next()) {
                 _nextDocDate = _optaResultSet.getTimestamp("created_at");
                 _nextDocId = _optaResultSet.getInt(1);
-            } else {
-                _nextDocDate = null;
-                _nextDocId = -1;
+            }
+            else {
+
+                // Volvemos a intentar leer. Si no hay mas resultados, hemos llegado al final.
+                queryNextResultSet();
+
+                if (_optaResultSet.next()) {
+                    _nextDocDate = _optaResultSet.getTimestamp("created_at");
+                    _nextDocId = _optaResultSet.getInt(1);
+                }
+                else {
+                    closeConnection();
+                    _nextDocDate = null;
+                    _nextDocId = -1;
+                    Logger.info("Hemos llegado al ultimo documento XML");
+                }
             }
         }
         catch (SQLException e) {
@@ -229,8 +238,7 @@ public class OptaSimulator implements Runnable {
         }
     }
 
-    private boolean queryNextResultSet() throws SQLException {
-        boolean bNewResultSet = false;
+    private void queryNextResultSet() throws SQLException {
 
         if (_optaResultSet == null || _optaResultSet.isAfterLast()) {
 
@@ -244,10 +252,7 @@ public class OptaSimulator implements Runnable {
             _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml WHERE created_at > '"
                                                 + new Timestamp(lastProcessedDate.getTime()) +
                                                 "' ORDER BY created_at LIMIT " + RESULTS_PER_QUERY + ";");
-            bNewResultSet = true;
         }
-
-        return bNewResultSet;
     }
 
     public void setSpeedFactor(int speedFactor) {
