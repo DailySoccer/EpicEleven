@@ -131,18 +131,19 @@ public class ImportController extends Controller {
                 }
                 teamIsValid.put(optaSoccer.teamId, isTeamValid);
             }
-            if (isTeamValid) {
-                TemplateSoccerPlayer template = TemplateSoccerPlayer.findOneFromOptaId(optaSoccer.optaPlayerId);
-                if (template == null) {
+            TemplateSoccerPlayer template = TemplateSoccerPlayer.findOneFromOptaId(optaSoccer.optaPlayerId);
+            if (template == null) {
+                // No queremos añadir futbolistas de equipos inválidos
+                if (isTeamValid) {
                     if (TemplateSoccerPlayer.isInvalid(optaSoccer)) {
                         if (invalidates != null)
                             invalidates.add(optaSoccer);
                     } else if (news != null) {
                         news.add(optaSoccer);
                     }
-                } else if (changes != null && template.hasChanged(optaSoccer)) {
-                    changes.add(optaSoccer);
                 }
+            } else if (template != null && changes != null && template.hasChanged(optaSoccer)) {
+                changes.add(optaSoccer);
             }
         }
     }
