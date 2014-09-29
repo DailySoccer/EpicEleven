@@ -72,6 +72,8 @@ public class OptaSimulator implements Runnable {
         // Siempre comenzamos pausados
         _paused = true;
 
+        ensureConnection();
+        advanceToNextDocument();
         updateDate(_state.simulationDate);
     }
 
@@ -178,40 +180,30 @@ public class OptaSimulator implements Runnable {
 
         ensureConnection();
 
-        try {
-            boolean bNewResultSet = queryNextResultSet();
+        // En nextStep siempre entramos con el puntero apuntando al siguiente doc (o hemos llegado al final)
+        if (_nextDocDate != null) {
 
-            if (bNewResultSet) {
-                advanceToNextDocumentInResultSet();
+            try {
+                Duration deltaTime = sleepUntil(_nextDocDate, speedFactor);
+                updateDate(new DateTime(GlobalDate.getCurrentDate()).plus(deltaTime).toDate());
+            }
+            catch (InterruptedException e) {
+                Logger.error("WTF 2311", e);
             }
 
-            if (_nextDocDate != null) {
+            if (GlobalDate.getCurrentDate().equals(_nextDocDate) && !_stopSignal) {
 
-                try {
-                    Duration deltaTime = sleepUntil(_nextDocDate, speedFactor);
-                    updateDate(new DateTime(GlobalDate.getCurrentDate()).plus(deltaTime).toDate());
-                }
-                catch (InterruptedException e) {
-                    Logger.error("WTF 2311", e);
-                }
+                // Tickeamos el OptaProcessorJob como si fueramos un proceso scheduleado
+                OptaProcessorJob.processCurrentDocumentInResultSet(_optaResultSet, _optaProcessor);
 
-                if (GlobalDate.getCurrentDate().equals(_nextDocDate) && !_stopSignal) {
-
-                    // Tickeamos el OptaProcessorJob como si fueramos un proceso scheduleado
-                    OptaProcessorJob.processCurrentDocumentInResultSet(_optaResultSet, _optaProcessor);
-
-                    // Y dejamos el puntero en el siguiente documento
-                    advanceToNextDocumentInResultSet();
-                }
-            }
-            else {
-                bFinished = true;
-                closeConnection();
-                Logger.info("Hemos llegado al final de la simulacion");
+                // Y dejamos el puntero en el siguiente documento
+                advanceToNextDocument();
             }
         }
-        catch (SQLException e) {
-            Logger.error("WTF 1533", e);
+        else {
+            bFinished = true;
+            closeConnection();
+            Logger.info("Hemos llegado al final de la simulacion");
         }
 
         saveState();
@@ -219,14 +211,21 @@ public class OptaSimulator implements Runnable {
         return bFinished;
     }
 
-    private void advanceToNextDocumentInResultSet() throws SQLException {
-        if (_optaResultSet.next()) {
-            _nextDocDate = _optaResultSet.getTimestamp("created_at");
-            _nextDocId = _optaResultSet.getInt(1);
+    private void advanceToNextDocument() {
+
+        try {
+            queryNextResultSet();
+
+            if (_optaResultSet.next()) {
+                _nextDocDate = _optaResultSet.getTimestamp("created_at");
+                _nextDocId = _optaResultSet.getInt(1);
+            } else {
+                _nextDocDate = null;
+                _nextDocId = -1;
+            }
         }
-        else {
-            _nextDocDate = null;
-            _nextDocId = -1;
+        catch (SQLException e) {
+            Logger.error("WTF 1533", e);
         }
     }
 
