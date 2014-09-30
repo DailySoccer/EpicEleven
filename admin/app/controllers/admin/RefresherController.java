@@ -4,7 +4,8 @@ import model.GlobalDate;
 import model.opta.OptaXmlUtils;
 import play.Logger;
 import play.libs.F;
-import play.libs.WS;
+import play.libs.ws.WS;
+import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.StringUtils;
@@ -47,10 +48,10 @@ public class RefresherController extends Controller {
 
         Logger.info("Importing xml date: {}, in miliseconds {}", GlobalDate.formatDate(new Date(last_timestamp)), last_timestamp);
 
-        F.Promise<WS.Response> responsePromise = WS.url("http://dailysoccer.herokuapp.com/return_xml/" + last_timestamp).get();
-        WS.Response response = responsePromise.get(100000);
-
         long ret = -1L;
+
+        F.Promise<WSResponse> responsePromise = WS.url("http://dailysoccer.herokuapp.com/return_xml/" + last_timestamp).get();
+        WSResponse response = responsePromise.get(100000);
 
         if (response.getStatus() == 200) {
             String bodyText = response.getBody();
