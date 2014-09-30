@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import model.*;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import play.Logger;
 import play.data.Form;
 import play.mvc.Controller;
@@ -136,7 +137,7 @@ public class TemplateContestController extends Controller {
         templateContest.entryFee = params.entryFee;
         templateContest.prizeType = params.prizeType;
 
-        templateContest.activationAt = params.activationAt;
+        templateContest.activationAt = new DateTime(params.activationAt).withZoneRetainFields(DateTimeZone.UTC).toDate();
         templateContest.createdAt = new Date(params.createdAt);
 
         Date startDate = null;
