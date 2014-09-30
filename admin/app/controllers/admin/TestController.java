@@ -4,14 +4,11 @@ import model.Model;
 import model.PrizeType;
 import model.TemplateContest;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import play.mvc.Controller;
 import play.mvc.Result;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
+import java.util.*;
 
 public class TestController extends Controller {
 
@@ -30,11 +27,10 @@ public class TestController extends Controller {
         if (!OptaSimulator.isCreated())
             OptaSimulator.init();
 
-        GregorianCalendar myDate = new GregorianCalendar(year, month-1, day, hour, minute);
+        DateTimeZone.setDefault(DateTimeZone.UTC);
+        Date myDate = new DateTime(year, month, day, hour, minute).toDate();
 
-        myDate.setTimeZone(TimeZone.getTimeZone("UTC"));
-
-        OptaSimulator.instance().gotoDate(myDate.getTime());
+        OptaSimulator.instance().gotoDate(myDate);
 
         return ok("OK");
     }
@@ -66,6 +62,7 @@ public class TestController extends Controller {
 
     static public Result createContests(int mockIndex){
         TemplateContest templateContest;
+        DateTimeZone.setDefault(DateTimeZone.UTC);
 
         switch(mockIndex) {
             case 0:
