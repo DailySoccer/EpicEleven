@@ -31,12 +31,9 @@ publishArtifact in (Compile, packageDoc) := false
 // Definimos nuestros modulos y las dependencias entre ellos
 lazy val common = project.in(file("./common")).enablePlugins(PlayJava)
 
-//lazy val admin = project.in(file("./admin")).dependsOn(common).enablePlugins(PlayJava)
+lazy val admin = project.in(file("./admin")).dependsOn(common).enablePlugins(PlayJava)
 
-// Somos un proyecto Play (y como desde la version 2.3 funciona con auto-plugins, tenemos que enable-ar las features
-// que nos interesa modulo por modulo)
-//lazy val backend = project.in(file(".")).aggregate(common, admin).dependsOn(common, admin).enablePlugins(PlayJava)
-lazy val backend = project.in(file(".")).aggregate(common).dependsOn(common).enablePlugins(PlayJava)
+lazy val backend = project.in(file(".")).aggregate(common, admin).dependsOn(common, admin).enablePlugins(PlayJava)
 
 // javacOptions ++= Seq("-Xlint:deprecation")
 
