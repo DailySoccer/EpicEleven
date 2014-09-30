@@ -8,6 +8,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ReturnHelper;
 import utils.ReturnHelperWithAttach;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @AllowCors.Origin
@@ -19,7 +21,17 @@ public class ContestController extends Controller {
     // @Cached(key = "ActiveContest", duration = 1)
     public static Result getActiveContests() {
         List<Contest> contests = Contest.findAllActive(JsonViews.ActiveContests.class);
-        return new ReturnHelper(ImmutableMap.of("contests", contests)).toResult();
+
+        // Filtrar los contests que ya están completos
+        // TODO: ¿Cómo realizarlo con una query que compare el "número de entries" con "maxEntries"? ¿aggregation con $let?
+        List<Contest> contestsNotFull = new ArrayList<>(contests.size());
+        for (Contest contest: contests) {
+            if (!contest.isFull()) {
+                contestsNotFull.add(contest);
+            }
+        }
+
+        return new ReturnHelper(ImmutableMap.of("contests", contestsNotFull)).toResult();
     }
 
     @UserAuthenticated
