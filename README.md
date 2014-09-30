@@ -20,9 +20,9 @@ Installing the environment
     $ brew install mongo
 	$ brew install postgres
 
-- To run the server:
+- To run the server with debugging enabled:
 
-    $ backend> activator debug run
+    $ backend> ./debug.sh
 
 - Install Intellij Idea 13 and then follow this instructions:
 
