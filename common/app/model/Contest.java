@@ -178,9 +178,9 @@ public class Contest implements JongoId {
         user.updateStats();
     }
 
-    public Contest getSameContestWithFreeSlot() {
-        String query = String.format("{templateContestId: #, 'contestEntries.%s': {$exists: false}}", maxEntries-1);
-        return Model.contests().findOne(query, templateContestId).as(Contest.class);
+    public Contest getSameContestWithFreeSlot(ObjectId userId) {
+        String query = String.format("{templateContestId: #, 'contestEntries.%s': {$exists: false}, 'contestEntries.userId': {$ne:#}}", maxEntries-1);
+        return Model.contests().findOne(query, templateContestId, userId).as(Contest.class);
     }
 
     class ContestEntryComparable implements Comparator<ContestEntry>{

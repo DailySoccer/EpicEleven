@@ -69,7 +69,7 @@ public class ContestEntryController extends Controller {
                 // Verificar que el contest no esté lleno
                 if (aContest.contestEntries.size() >= aContest.maxEntries) {
                     // Buscar otro contest de características similares
-                    aContest = aContest.getSameContestWithFreeSlot();
+                    aContest = aContest.getSameContestWithFreeSlot(theUser.userId);
                     if (aContest == null) {
                         // Si no encontramos ningún Contest semejante, pedimos al webClient que lo intente otra vez
                         //  dado que asumimos que simplemente es un problema "temporal"
