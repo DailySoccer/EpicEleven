@@ -155,7 +155,7 @@ public class MatchEvent {
         saveStats(soccerTeamB);
     }
 
-    public void saveStats(SoccerTeam soccerTeam) {
+    private void saveStats(SoccerTeam soccerTeam) {
         for (SoccerPlayer soccerPlayer : soccerTeam.soccerPlayers) {
             TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(soccerPlayer.templateSoccerPlayerId);
 
@@ -304,10 +304,4 @@ public class MatchEvent {
     }
 }
 
-class LiveFantasyPoints {
-    public int points;                                          // Puntos totales de un SoccerPlayer
-
-    @JsonView(JsonViews.FullContest.class)
-    public HashMap<String, Integer> events = new HashMap<>();   // OptaEventType.name => fantasyPoints conseguidos gracias a el
-}
 

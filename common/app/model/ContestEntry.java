@@ -175,12 +175,12 @@ public class ContestEntry implements JongoId {
         return bRet;
     }
 
-    public int getFantasyPointsFromMatchEvents(List<MatchEvent> matchEvents) {
+    public int getFantasyPointsFromMatchEvents(List<TemplateMatchEvent> templateMatchEvents) {
         int fantasyPoints = 0;
         for (ObjectId templateSoccerPlayerId : soccerIds) {
-            for (MatchEvent matchEvent : matchEvents) {
-                if (matchEvent.containsSoccerPlayer(templateSoccerPlayerId)) {
-                    fantasyPoints += matchEvent.getFantasyPoints(templateSoccerPlayerId);
+            for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
+                if (templateMatchEvent.containsTemplateSoccerPlayer(templateSoccerPlayerId)) {
+                    fantasyPoints += templateMatchEvent.getSoccerPlayerFantasyPoints(templateSoccerPlayerId);
                     break;
                 }
             }

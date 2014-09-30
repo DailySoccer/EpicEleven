@@ -1,6 +1,7 @@
 package model;
 
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.WriteConcern;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
@@ -22,6 +23,9 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
     public FieldPos fieldPos;
     public int salary;
     public int fantasyPoints;
+
+    @JsonView(JsonViews.Public.class)
+    public int playedMatches;
 
     public ObjectId templateTeamId;
 
