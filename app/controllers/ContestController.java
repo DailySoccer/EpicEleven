@@ -42,13 +42,17 @@ public class ContestController extends Controller {
         List<Contest> myLiveContests = Contest.findAllMyLive(theUser.userId, JsonViews.MyLiveContests.class);
         List<Contest> myHistoryContests = Contest.findAllMyHistory(theUser.userId, JsonViews.MyHistoryContests.class);
 
-        List<MatchEvent> liveMatchEvents = MatchEvent.gatherFromContests(myLiveContests);
+        List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.gatherFromContests(myLiveContests);
+        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(liveMatchEvents);
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAllActiveFromTeams(teams);
 
         return new ReturnHelperWithAttach()
                 .attachObject("contests_0", myActiveContests, JsonViews.Public.class)
                 .attachObject("contests_1", myLiveContests, JsonViews.FullContest.class)
                 .attachObject("contests_2", myHistoryContests, JsonViews.Extended.class)
-                .attachObject("match_events_0", liveMatchEvents, JsonViews.FullContest.class)
+                .attachObject("match_events", liveMatchEvents, JsonViews.FullContest.class)
+                .attachObject("soccer_teams", teams, JsonViews.FullContest.class)
+                .attachObject("soccer_players", players, JsonViews.FullContest.class)
                 .toResult();
     }
 
@@ -71,11 +75,16 @@ public class ContestController extends Controller {
     private static ReturnHelper getContest(String contestId) {
         Contest contest = Contest.findOne(contestId);
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
-        List<MatchEvent> matchEvents = MatchEvent.findAllFromTemplates(contest.templateMatchEventIds);
+
+        List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
+        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAllActiveFromTeams(teams);
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                                                 "users_info", usersInfoInContest,
-                                                "match_events", matchEvents));
+                                                "match_events", matchEvents,
+                                                "soccer_teams", teams,
+                                                "soccer_players", players));
     }
 
     /**

@@ -99,6 +99,16 @@ public class TemplateMatchEvent implements JongoId, Initializer {
         return ListUtils.asList(Model.findObjectIds(Model.templateMatchEvents(), "_id", idList).as(TemplateMatchEvent.class));
     }
 
+    public static List<TemplateMatchEvent> gatherFromContests(List<Contest> contests) {
+        HashSet<ObjectId> matchEventsIds = new HashSet<>();
+
+        for (Contest contest : contests) {
+            matchEventsIds.addAll(contest.templateMatchEventIds);
+        }
+
+        return findAll(new ArrayList<>(matchEventsIds));
+    }
+
     public List<TemplateSoccerPlayer> getTemplateSoccerPlayers() {
         List<TemplateSoccerPlayer> templateSoccerPlayers = new ArrayList<>();
         templateSoccerPlayers.addAll(TemplateSoccerPlayer.findAllFromTemplateTeam(templateSoccerTeamAId));

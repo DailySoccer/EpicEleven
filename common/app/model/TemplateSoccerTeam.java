@@ -59,6 +59,15 @@ public class TemplateSoccerTeam implements JongoId, Initializer {
         return ListUtils.asList(Model.findObjectIds(Model.templateSoccerTeams(), "_id", templateSoccerTeamIds).as(TemplateSoccerTeam.class));
     }
 
+    static public List<TemplateSoccerTeam> findAllFromMatchEvents(List<TemplateMatchEvent> matchEvents) {
+        List<ObjectId> teamIds = new ArrayList<>();
+        for (TemplateMatchEvent matchEvent: matchEvents) {
+            teamIds.add(matchEvent.templateSoccerTeamAId);
+            teamIds.add(matchEvent.templateSoccerTeamBId);
+        }
+        return findAll(teamIds);
+    }
+
     static public HashMap<ObjectId, TemplateSoccerTeam> findAllAsMap(){
         HashMap<ObjectId, TemplateSoccerTeam> map = new HashMap<>();
         for (TemplateSoccerTeam templateSoccerTeam: findAll()) {
