@@ -171,6 +171,7 @@ public class LoginController extends Controller {
         ChangeParams params = null;
 
         if (!changeParamsForm.hasErrors()) {
+            params = changeParamsForm.get();
 
             if (!params.firstName.isEmpty()) {
                 theUser.firstName = params.firstName;
