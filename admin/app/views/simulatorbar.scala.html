@@ -11,7 +11,7 @@
                     <div style="margin-top: 5px;"><a>Current Date:<span style="font-weight:700; margin-left: 0.50em;" id="time">@SimulatorController.getCurrentDate()</span></a></div>
                     <div><a><span>Next Stop:</span><span style="font-weight:700;margin-left: 0.50em;position: absolute; right: 0px;" id="nextStop">@SimulatorController.getNextStop()</span></a></div>
                 </li>
-                <li><a>Next File Index:<span style="font-weight:700;margin-left: 0.20em;" id="nextStepDesc">@SimulatorController.getNextStepDescription()</span></a></li>
+                <li><a>Next File Id:<span style="font-weight:700;margin-left: 0.20em;" id="nextStepDesc">@SimulatorController.getNextStepDesc()</span></a></li>
                 @if(SimulatorController.isSnapshotEnabled()) {
                     <li><a>Snapshot:<strong> @SnapshotController.getSnapshotName()</strong></a></li>
                 }
@@ -182,12 +182,6 @@
         });
 
         $('#date-pause-ok').click(function(){
-            var localDate = new Date($("#date-pause").val());
-            var origDate = new Date($("#date-pause").val());
-
-            localDate.setHours(localDate.getHours() - (localDate.getTimezoneOffset()/60));
-            $("#date-pause").val(localDate.toISOString().substring(0,16));
-
             var form = $('#date-pause-form');
             $.ajax({
               type: form.attr('method'),
@@ -199,7 +193,6 @@
               // Optionally alert the user of an error here...
             });
 
-            $("#date-pause").val(origDate.toISOString().substring(0,16));
         });
 
 </script>

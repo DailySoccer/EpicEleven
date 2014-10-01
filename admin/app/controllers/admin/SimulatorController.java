@@ -3,6 +3,8 @@ package controllers.admin;
 import actions.AllowCors;
 import com.google.common.collect.ImmutableMap;
 import model.GlobalDate;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import play.data.Form;
 import play.data.format.Formats;
 import play.data.validation.Constraints;
@@ -50,7 +52,7 @@ public class SimulatorController extends Controller {
     public static Result isPaused() { return ok((String.valueOf(isSimulatorPaused())));  }
     public static Result nextStop() { return ok(getNextStop()); }
     public static Result nextStepDescription() {
-        return ok(getNextStepDescription());
+        return ok(getNextStepDesc());
     }
 
     public static class GotoSimParams {
@@ -64,7 +66,7 @@ public class SimulatorController extends Controller {
         Form<GotoSimParams> gotoForm = form(GotoSimParams.class).bindFromRequest();
 
         GotoSimParams params = gotoForm.get();
-        OptaSimulator.instance().gotoDate(params.date);
+        OptaSimulator.instance().gotoDate(new DateTime(params.date).withZoneRetainFields(DateTimeZone.UTC).toDate());
 
         return ok();
     }
@@ -86,9 +88,8 @@ public class SimulatorController extends Controller {
         return "";
     }
 
-    public static String getNextStepDescription() {
-        //return isSimulatorCreated()? OptaSimulator.instance().getNextStepDescription() : "";
-        return "TODO";
+    public static String getNextStepDesc() {
+        return isSimulatorCreated()? OptaSimulator.instance().getNextStepDesc() : "";
     }
 
     public static boolean isSnapshotEnabled() {

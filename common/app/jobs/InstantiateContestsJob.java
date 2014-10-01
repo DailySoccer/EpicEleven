@@ -18,7 +18,7 @@ public class InstantiateContestsJob {
     @SchedulePolicy(initialDelay = 0, timeUnit = TimeUnit.SECONDS, interval = 10)
     public static void instantiateContestsTask() {
 
-        Logger.info("instantiateContestsTask: {}", GlobalDate.getCurrentDate());
+        Logger.info("instantiateContestsTask: {}", GlobalDate.getCurrentDateString());
 
         List<TemplateContest> templateContestsOff = TemplateContest.findAllByActivationAt(GlobalDate.getCurrentDate());
 

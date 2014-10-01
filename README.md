@@ -11,38 +11,22 @@ Installing the environment
     - Java(TM) SE Runtime Environment (build 1.7.0_67-b01)
     - Java HotSpot(TM) 64-Bit Server VM (build 24.65-b04, mixed mode)
 
-- You need to install the Play framework. I recommend using homebrew:
+- You need to install the Play framework. Use homebrew:
 
-    $ brew install play
+    $ brew install typesafe-activator
 
-- You need to install mongodb:
+- You need to install the databases:
  
     $ brew install mongo
-
-- You need to install postgres too:
-
 	$ brew install postgres
 
-- To run the server:
+- To run the server with debugging enabled:
 
-    $ backend> play run
+    $ backend> ./debug.sh
 
-- Or, to debug it, you first enter the play console in debug mode
+- Install Intellij Idea 13 and then follow this instructions:
 
-    $ backend> play debug
-
-    And then, from inside the console, you start the server:
-
-    [backend] $ run
-
-    You can also debug and run in the same step:
-
-    [backend] $ play debug run
-    
-
-- Install Intellij Idea 13. Follow this instructions:
-
-    http://www.playframework.com/documentation/2.2.x/IDE
+    http://www.playframework.com/documentation/2.3.x/IDE
 
   To connect the IDE to the debugger, you need to "Edit configuration" and add a new remote configuration. Make it point
   to whatever the port "play debug" tells you (9999 in my case)
@@ -73,3 +57,6 @@ Heroku
   + heroku config:add --app dailysoccer-staging CONFIG_FILE=staging.conf
   + heroku config:add --app dailysoccer CONFIG_FILE=production.conf
   
+- If you ever need to force a rebuild, for instance when upgrading Play, have a look at the "Clean builds" section of:
+
+    https://devcenter.heroku.com/articles/scala-support

@@ -153,6 +153,67 @@ public class LoginController extends Controller {
         return returnHelper.toResult();
     }
 
+    public static class ChangeParams {
+
+        public String firstName;
+        public String lastName;
+        public String nickName;
+        @Email public String email;
+
+        public String password;
+    }
+
+    @UserAuthenticated
+    public static Result changeUserProfile() {
+        User theUser = (User)ctx().args.get("User");
+
+        Form<ChangeParams> changeParamsForm = form(ChangeParams.class).bindFromRequest();
+        ChangeParams params = null;
+
+        if (!changeParamsForm.hasErrors()) {
+            params = changeParamsForm.get();
+
+            if (!params.firstName.isEmpty()) {
+                theUser.firstName = params.firstName;
+            }
+            if (!params.lastName.isEmpty()) {
+                theUser.lastName = params.lastName;
+            }
+            if (!params.nickName.isEmpty()) {
+                User user = Model.users().findOne("{nickName:'#'}", params.nickName).as(User.class);
+                if (user != null && !user.userId.equals(theUser.userId)) {
+                    changeParamsForm.reject("nickName", "This nickName is already taken");
+                }
+                else {
+                    theUser.nickName = params.nickName;
+                }
+            }
+            if (!params.email.isEmpty()) {
+                User user = Model.users().findOne("{email:'#'}", params.email).as(User.class);
+                if (user != null && !user.email.equals(theUser.email)) {
+                    changeParamsForm.reject("email", "This email is already taken");
+                }
+                else {
+                    theUser.email = params.email;
+                }
+            }
+            if (!params.password.isEmpty()) {
+                theUser.password = params.password;
+            }
+
+            if (!changeParamsForm.hasErrors()) {
+                Model.users().update(theUser.userId).with(theUser);
+            }
+        }
+
+        JsonNode result = changeParamsForm.errorsAsJson();
+
+        if (!changeParamsForm.hasErrors()) {
+            result = new ObjectMapper().createObjectNode().put("result", "ok");
+        }
+
+        return new ReturnHelper(!changeParamsForm.hasErrors(), result).toResult();
+    }
 
     private static boolean isPasswordCorrect(User theUser, String password) {
         return true;

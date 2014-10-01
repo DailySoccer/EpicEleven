@@ -1,737 +1,1451 @@
 optaPlayerId,name,salary
-44989,Toni Kroos,14700
-78140,Stefan de Vrij,14600
-8533,Arjen Robben,14600
-38392,Mats Hummels,14500
-61262,Oscar,14400
-55634,Thomas Müller,14400
-58893,Marcos Rojo,14300
-51090,Thiago Silva,14300
-28525,Ezequiel Garay,14200
-19054,Lionel Messi,14200
-21095,Ron Vlaar,14200
-41270,David Luiz,14100
-15207,Philipp Lahm,14100
-61278,Neymar,14000
-20388,Manuel Neuer,14000
-37605,Mesut Özil,14000
-41316,Benedikt Höwedes,13900
-72162,Jasper Cillessen,13900
-15403,Wesley Sneijder,13900
-42899,Sergio Romero,13800
-32644,Javier Mascherano,13800
-15208,Bastian Schweinsteiger,13800
-20658,Pablo Zabaleta,13700
-40691,Jerome Boateng,13700
-12297,Robin van Persie,13700
-39563,Marcelo,13600
-85352,Bruno Martins Indi,13600
-41733,Georginio Wijnaldum,13600
-46497,Ángel Di María,13500
-40232,Gonzalo Higuaín,13500
-58877,Daley Blind,13500
-15312,Martín Demichelis,13400
-47654,Luiz Gustavo,13300
-27250,Fred,13300
-66842,André Schürrle,13300
-39816,Sami Khedira,13200
-4719,Dirk Kuyt,13000
-57145,Federico Fernández,13000
-39462,Lucas Biglia,13000
-5155,Miroslav Klose,13000
-69600,Mario Götze,12900
-100534,Paulinho,12800
-17127,Per Mertesacker,12800
-15780,Dani Alves,12600
-19975,Fernando Gago,12500
-53645,Hulk,12500
-15076,Nigel de Jong,12500
-60025,James Rodríguez,12200
-90152,Raphael Varane,12000
-39194,Jan Vertonghen,11900
-8924,Daniel van Buyten,11800
-28411,Keylor Navas,11800
-55661,Enzo Pérez,11700
-45154,Ezequiel Lavezzi,11600
-60772,Thibaut Courtois,11600
-52940,Daryl Janmaat,11600
-37572,Sergio Agüero,11500
-27789,Fernandinho,11500
-105021,Giancarlo Gonzalez,11500
-37084,Bryan Ruiz,11500
-37852,Mathieu Valbuena,11500
-17476,Vincent Kompany,11400
-27300,Cristian Zapata,11400
-37915,Hugo Lloris,11400
-74208,Paul Pogba,11400
-50369,Pablo Armero,11300
-61960,Celso Borges,11300
-37971,Blaise Matuidi,11300
-61366,Kevin De Bruyne,11200
-48844,David Ospina,11200
-28392,Christian Bolaños,11200
-12204,Mario Yepes,11100
-77760,Cristian Gamboa,11100
-14075,Patrice Evra,11100
-41189,Axel Witsel,11000
-99128,Oscar Duarte,11000
-34355,Júnior Díaz,11000
-102683,Yeltsin Tejeda,11000
-40784,Mamadou Sakho,11000
-54917,Dries Mertens,10900
-53392,Ramires,10900
-66733,Juan Guillermo Cuadrado,10800
-42824,Carlos Sánchez,10800
-19160,Johan Djourou,10800
-68312,Xherdan Shaqiri,10800
-55605,Toby Alderweireld,10700
-42786,Eden Hazard,10700
-33148,Claudio Bravo,10700
-27341,Yohan Cabaye,10700
-39476,Sokratis,10700
-62914,Teófilo Gutiérrez,10500
-34352,Michael Umaña,10500
-51507,Laurent Koscielny,10500
-19927,Karim Benzema,10500
-66806,Kostas Manolas,10400
-149828,Islam Slimani,10300
-42738,Juan Zuñiga,10300
-76650,Antoine Griezmann,10300
-13262,Vincent Enyeama,10300
-27334,Mathieu Debuchy,10200
-10866,Georgios Samaras,10200
-41184,Marouane Fellaini,10100
-47431,Willian,10100
-27375,Vasilis Torosidis,10100
-33376,Guillermo Ochoa,10100
-49656,Héctor Moreno,10100
-102578,Héctor Herrera,10100
-37265,Alexis Sánchez,10000
-32281,Diego Godín,10000
-66749,Romelu Lukaku,9900
-19928,Julio César,9900
-100649,Bernard,9900
-85654,Jordy Clasie,9900
-11973,Diego Benaglio,9900
-20226,Clint Dempsey,9900
-28549,Rais M'Bolhi,9800
-20153,Rodrigo Palacio,9800
-39461,Jô,9800
-99127,Joel Campbell,9800
-6994,Giorgos Karagounis,9800
-39204,Jonathan de Guzmán,9800
-52156,Admir Mehmedi,9800
-43693,Martín Cáceres,9800
-37368,Michael Bradley,9800
-45268,Moussa Sissoko,9700
-40868,José Holebas,9700
-53515,Oribe Peralta,9700
-69305,Ricardo Rodriguez,9700
-18573,Maicon,9600
-48852,Mauricio Isla,9600
-83531,Charles Aránguiz,9600
-27701,Abel Aguilar,9600
-45034,Ivan Perisic,9600
-59351,Egidio Arévalo Rios,9600
-15337,Tim Howard,9600
-39104,Mousa Dembélé,9500
-152760,Divock Origi,9500
-44346,Olivier Giroud,9500
-40720,Edinson Cavani,9500
-48353,Giannis Maniatis,9400
-21123,Valon Behrami,9400
-33668,Cristian Rodríguez,9400
-26901,Kevin Mirallas,9300
-37064,Andrés Guardado,9300
-85388,Emmanuel Emenike,9300
-151883,José María Giménez,9300
-50089,Geoff Cameron,9300
-17152,Jermaine Jones,9300
-105835,Eduardo Vargas,9200
-33223,Asamoah Gyan,9200
-6685,Rafael Márquez,9200
-84450,Granit Xhaka,9200
-39336,Luis Suarez,9200
-44336,Sofiane Feghouli,9100
-46696,Miralem Pjanic,9100
-80226,Serge Aurier,9100
-148179,Enner Valencia,9100
-156604,Mehrdad Pooladi,9100
-112991,Kenneth Omeruo,9100
-90714,Ahmed Musa,9100
-40772,Gökhan Inler,9100
-53943,José Basanta,9000
-42544,Edin Dzeko,9000
-49657,Keisuke Honda,9000
-73698,Miguel Layún,9000
-11225,Sergei Ignashevitch,9000
-118749,Marcelo Díaz,8900
-50947,Christian Noboa,8900
-33360,Francisco Javier Rodríguez,8900
-17861,Sergio Ramos,8900
-27335,Stephan Lichtsteiner,8900
-20301,Emir Spahic,8800
-14664,Yaya Touré,8800
-38462,Vedran Corluka,8800
-149879,Juwon Oshaniwa,8800
-38530,Nani,8800
-14937,Cristiano Ronaldo,8800
-42864,Fernando Muslera,8800
-126407,Nabil Bentaleb,8700
-175078,Abdelmoumene Djabou,8700
-58966,Alexander Domínguez,8700
-19419,Gary Cahill,8700
-45124,André Ayew,8700
-80146,Jordan Ayew,8700
-18102,Giorgio Chiellini,8700
-17172,Andrea Barzagli,8700
-49277,Leroy Fer,8700
-28495,John Obi Mikel,8700
-26900,Peter Odemwingie,8700
-76542,Ki Sung-Yueng,8700
-50117,Rafik Halliche,8600
-51310,Yacine Brahimi,8600
-100981,Francisco Silva,8600
-77064,Jackson Martinez,8600
-43274,Gervinho,8600
-34703,Ivan Rakitic,8600
-7645,Phil Jagielka,8600
-40755,Daniel Sturridge,8600
-50343,Lazaros Christodoulopoulos,8600
-81456,Andreas Samaris,8600
-40275,Giovani dos Santos,8600
-18686,Vassili Berezoutski,8600
-149786,Essaïd Belkalem,8500
-87447,Muhamed Besic,8500
-119772,José Juan Vázquez,8500
-51255,Dmitriy Kombarov,8500
-81048,Josip Drmic,8500
-83725,Felipe Gutierrez,8400
-1814,Steven Gerrard,8400
-101188,Lucas Digne,8400
-41071,Reza Ghoochanneijhad,8400
-48863,Álvaro González,8400
-15517,Kyle Beckerman,8400
-100887,Mathew Leckie,8300
-59380,Víctor Ibarbo,8300
-13017,Wayne Rooney,8300
-40002,Matteo Darmian,8300
-7313,Andrea Pirlo,8300
-106824,Memphis Depay,8300
-16738,Ricardo Costa,8300
-77865,Koo Ja-Cheol,8300
-12237,Andrés Iniesta,8300
-86813,Aissa Mandi,8200
-80480,Jason Davidson,8200
-37269,Gonzalo Jara,8200
-37399,Fredy Guarín,8200
-28111,Arthur Boka,8200
-17347,Darijo Srna,8200
-12631,Walter Ayoví,8200
-104953,Christian Atsu,8200
-28130,Dimitrios Salpingidis,8200
-35903,Yasuyuki Konno,8200
-39187,Jeremain Lens,8200
-57038,Alexander Kokorin,8200
-52356,Jordi Alba,8200
-3273,Tim Cahill,8100
-19523,Souleymane Bamba,8100
-57001,Wilfried Bony,8100
-49485,Kwadwo Asamoah,8100
-14503,Konstantinos Katsouranis,8100
-37197,Amir Hossein Sadeqi,8100
-119504,Hotaru Yamaguchi,8100
-43106,Paul Aguilar,8100
-116120,Ogenyi Onazi,8100
-13308,Maxi Rodríguez,8000
-34361,Roy Miller,8000
-37055,Luka Modric,8000
-13139,Ivica Olic,8000
-36803,Javad Nekounam,8000
-77390,Koke,8000
-60841,Haris Seferovic,8000
-12875,DaMarcus Beasley,8000
-111457,Sead Kolasinac,7900
-42493,Mario Balotelli,7900
-78412,Shinji Okazaki,7900
-39077,Paul Verhaegh,7900
-77875,Yun Suk-Young,7900
-28649,Madjid Bougherra,7800
-9809,Maxwell,7800
-73678,Benjamin Moukandjo,7800
-102383,Santiago Arias,7800
-52068,Serey Die,7800
-28301,Cheick Tioté,7800
-37352,Salomon Kalou,7800
-18427,Ashkan Dejagah,7800
-19624,João Moutinho,7800
-52941,Denis Glushakov,7800
-32284,Maxi Pereira,7800
-59115,Mile Jedinak,7700
-60914,Joel Matip,7700
-48853,Gary Medel,7700
-46197,Mario Mandzukic,7700
-37748,Bacary Sagna,7700
-49529,Ehsan Hajsafi,7700
-155084,Pejman Montazeri,7700
-19739,Eiji Kawashima,7700
-78409,Atsuto Uchida,7700
-52635,Eder,7700
-55407,Álvaro Pereira,7700
-49464,Christian Stuani,7700
-17337,Carl Medjani,7600
-154685,Alex Wilkinson,7600
-57254,Adrián Ramos,7600
-99123,Johnny Acosta,7600
-14516,Didier Zokora,7600
-66905,Jonathan Mensah,7600
-68791,John Boye,7600
-48332,Orestis Karnezis,7600
-99332,Jerry Bengtson,7600
-10625,Daniele De Rossi,7600
-80447,Maya Yoshida,7600
-10594,Joseph Yobo,7600
-49507,Efe Ambrose,7600
-18090,Igor Akinfeev,7600
-75773,Lee Chung-Yong,7600
-3508,Xabi Alonso,7600
-16050,Zvjezdan Misimovic,7500
-122779,Eugenio Mena,7500
-38454,Dejan Lovren,7500
-98780,Juan Carlos Paredes,7500
-14791,Sulley Ali Muntari,7500
-47434,Kostas Mitroglou,7500
-59794,Carlo Costly,7500
-111674,Alireza Haghighi,7500
-183059,Jalal Hosseini,7500
-69495,Oleg Shatov,7500
-85971,Son Heung-Min,7500
-60218,Omar González,7500
-14880,Hugo Campagnaro,7400
-18695,Vedad Ibisevic,7400
-42565,Arturo Vidal,7400
-126437,Juan Quintero,7400
-149491,Alexander Mejía,7400
-77755,Marcos Ureña,7400
-103955,Raheem Sterling,7400
-100927,Christoph Kramer,7400
-20319,Theofanis Gekas,7400
-4126,Gianluigi Buffon,7400
-19705,Yoshito Okubo,7400
-19620,Miguel Veloso,7400
-98762,Kim Young-Gwon,7400
-77992,Nicolás Lodeiro,7400
-61770,Alejandro Bedoya,7400
-40349,Asmir Begovic,7300
-70496,Toni Sunjic,7300
-42564,Eric Maxim Choupo-Moting,7300
-99129,José Cubero,7300
-77831,Mohammed Rabiu,7300
-39471,Panagiotis Kone,7300
-37036,Andranik Teymourian,7300
-14402,Fernando Torres,7300
-28434,Diego Lugano,7300
-34694,Djamel Mesbah,7200
-10995,Charles Itandje,7200
-56069,Eyong Enoh,7200
-83675,Carlos Valdés,7200
-88894,Ross Barkley,7200
-50105,Roger Espinoza,7200
-37121,Makoto Hasebe,7200
-111478,Joël Veltman,7200
-49013,Victor Moses,7200
-119468,Han Kook-Young,7200
-17804,Juanfran,7200
-119471,Fabian Schär,7200
-20578,Mehdi Lacen,7100
-66841,Mensur Mujdza,7100
-20695,Antonio Valencia,7100
-56979,Jordan Henderson,7100
-119572,Luis Garrido,7100
-44743,Beto,7100
-13229,Alexander Kerzhakov,7100
-18003,Raúl Albiol,7100
-20664,David Silva,7100
-78091,Gastón Ramírez,7100
-12273,Diego Forlán,7100
-60210,Graham Zusi,7100
-9047,Glen Johnson,7000
-34302,Noel Valladares,7000
-20113,Claudio Marchisio,7000
-83090,Shinji Kagawa,7000
-14941,Klaas-Jan Huntelaar,7000
-19524,Santiago Cazorla,7000
-37070,Fabian Johnson,7000
-51498,Mehdi Mostefa,6900
-77711,Tommy Oar,6900
-76359,Phil Jones,6900
-17733,Lukas Podolski,6900
-61170,Marco Verratti,6900
-109434,Terence Kongolo,6900
-61680,Maksim Kanunnikov,6900
-54104,Sergio Busquets,6900
-18507,Diego Costa,6900
-100941,John Anthony Brooks,6900
-69887,Izet Hajrovic,6800
-33190,Jorge Valdívia,6800
-49195,Jefferson Montero,6800
-42173,Felipe Caicedo,6800
-101121,Panagiotis Glykos,6800
-19921,Raul Meireles,6800
-170450,Kim Seung-Gyu,6800
-36968,Park Chu-Young,6800
-40539,Matthew Spiranovic,6700
-13867,Mark Bresciano,6700
-54908,Nacer Chadli,6700
-27671,Stéphane Mbia,6700
-55909,Chris Smalling,6700
-106760,Luke Shaw,6700
-49478,Fatau Dauda,6700
-78407,Yuto Nagatomo,6700
-48492,Andrey Eshchenko,6700
-60207,Matt Besler,6700
-15943,Thomas Vermaelen,6600
-69147,Ermin Bicakcic,6600
-49822,Hernanes,6600
-28146,Benoit Assou-Ekotto,6600
-50902,Carlos Carmona,6600
-34296,Wilson Palacios,6600
-45156,Antonio Candreva,6600
-17279,David Villa,6600
-41909,Steve Von Bergen,6600
-67140,Avdija Vrsajevic,6500
-67527,Nyom,6500
-9089,Ben Foster,6500
-2051,Frank Lampard,6500
-125945,Ramón Azeez,6500
-41328,César Azpilicueta,6500
-95742,Matt McKay,6400
-52775,Nicolas N'Koulou,6400
-111274,Carlos Bacca,6400
-7810,Stipe Pletikosa,6400
-28103,Danijel Pranjic,6400
-155072,Khosro Heydari,6400
-21155,Salvatore Sirigu,6400
-20322,Carlos Salcido,6400
-27256,Bruno Alves,6400
-41647,Chris Wondolowski,6400
-86444,Ricardo Álvarez,6300
-37192,Mark Milligan,6300
-52049,Senad Lulic,6300
-85665,Tino Susic,6300
-83465,Vincent Aboubakar,6300
-10875,Faryd Mondragón,6300
-12625,Jorge Guagua,6300
-98783,Frickson Erazo,6300
-50175,Danny Welbeck,6300
-78937,Ioannis Fetfatzidis,6300
-168085,Julian Green,6300
-26894,Dante,6200
-50038,Henrique,6200
-40560,Aurélien Chedjou,6200
-12056,Boubacar Barry,6200
-54102,Jack Wilshere,6200
-15157,James Milner,6200
-92985,Julian Draxler,6200
-83071,Osman Chávez,6200
-43020,Javier Hernández,6200
-39215,Michel Vorm,6200
-20480,Tim Krul,6200
-95201,Michel Babatunde,6200
-38685,Silvestre Varela,6200
-65323,Aron Jóhannsson,6200
-81735,Liassine Cadamuro,6100
-40711,Oliver Bozanic,6100
-59741,Max Gradel,6100
-46198,Sammir,6100
-99336,Brayan Beckeles,6100
-37198,Masoud Shojaei,6100
-107013,Mattia De Sciglio,6100
-28277,Leonardo Bonucci,6100
-96122,William Carvalho,6100
-77864,Hong Jeong-Ho,6100
-64431,Lee Keun-Ho,6100
-37510,Walter Gargano,6100
-104512,Soudani,6000
-83591,Michael Barrantes,6000
-63793,Randall Brenes,6000
-12450,Kolo Touré,6000
-68353,Sime Vrsaljko,6000
-158206,Yuya Osako,6000
-81610,Aleksei Kozlov,6000
-18689,Yuri Zhirkov,6000
-37793,Javi Martínez,6000
-43670,Juan Mata,6000
-28188,Haris Medunjanin,5900
-21091,Alexandre Song,5900
-8438,Samuel Eto'o,5900
-121319,Esteban Granados,5900
-12303,Didier Drogba,5900
-12745,Leighton Baines,5900
-18787,Rio Mavuba,5900
-37641,Gabriel Paletta,5900
-6240,Shola Ameobi,5900
-82975,Jung Sung-Ryong,5900
-8432,José Reina,5900
-62419,Nikica Jelavic,5800
-39155,Adam Lallana,5800
-60800,Emmanuel Badu,5800
-18547,Ignazio Abate,5800
-11527,Thiago Motta,5800
-53643,Marco Fabián,5800
-38533,Rui Patricio,5800
-17878,Francesc Fábregas,5800
-32269,Blerim Dzemaili,5800
-91651,Mateo Kovacic,5700
-147744,Carlos Gruezo,5700
-149959,Godfrey Oboabona,5700
-27764,Igor Denisov,5700
-4232,Iker Casillas,5700
-5816,Xavi,5700
-18679,Anthony Vanden Borre,5600
-83407,Michael Arroyo,5600
-81918,Emilio Izaguirre,5600
-34285,Maynor Figueroa,5600
-165210,Alireza Jahanbakhsh,5600
-18086,Yasuhito Endo,5600
-49579,Pedro,5600
-43575,Valentin Stocker,5600
-39847,Steven Defour,5500
-43692,Anel Hadzic,5500
-38419,Loïc Remy,5500
-49483,Harrison Afful,5500
-104475,Jorge Claros,5500
-7174,Antonio Cassano,5500
-157996,Masato Morishige,5500
-100867,Diego Reyes,5500
-39297,Rubén Amorim,5500
-77877,Kim Bo-Kyung,5500
-116694,Kim Shin-Wook,5500
-41574,Jozy Altidore,5500
-34949,Nicolas Lombaerts,5400
-154976,Adnan Januzaj,5400
-33298,Jean Beausejour,5400
-17176,Mauricio Pinilla,5400
-155552,Eder Balanta,5400
-49380,Constant Djakpa,5400
-94425,Marcelo Brozovic,5400
-157880,Yoichiro Kakitani,5400
-51437,Alan Dzagoev,5400
-59856,Abel Hernández,5400
-88746,Faouzi Ghoulam,5300
-131882,Ivan Franjic,5300
-95711,José Rojas,5300
-82184,Majeed Waris,5300
-99334,Juan Carlos García,5300
-34291,Víctor Bernárdez,5300
-77523,Marvin Chávez,5300
-51221,Marco Parolo,5300
-80784,Michael Uchebo,5300
-82664,Edin Visca,5200
-184719,Cedric Djeugoue,5200
-98456,Ante Rebic,5200
-101433,Renato Ibarra,5200
-49480,Daniel Opare,5200
-59046,Ciro Immobile,5200
-100866,Javier Aquino,5200
-26904,João Pereira,5200
-37752,Hassan Yebda,5100
-18771,Sejad Salihovic,5100
-47501,Didier Ya Konan,5100
-20360,Kevin-Prince Boateng,5100
-15338,Brad Davis,5100
-47659,Ryan McGowan,5000
-82752,Saphir Taïder,4900
-108991,Nabil Ghilas,4900
-103025,Riyad Mahrez,4900
-37880,Landry N'Guémo,4900
-12635,Édison Méndez,4900
-8442,Michael Essien,4900
-61962,Mario Martínez,4900
-163818,Rony Martínez,4900
-91977,Carlos Peña,4900
-102057,Raúl Jiménez,4900
-149963,Reuben Gabriel,4900
-106297,Uche Nwofor,4900
-18522,Pepe,4900
-16854,Philippe Senderos,4900
-47085,Michael Lang,4900
-39680,Gelson Fernandes,4900
-37507,Jorge Fucile,4900
-78108,Sebastián Coates,4900
-151119,DeAndre Yedlin,4900
-131971,Adam Taggart,4800
-64657,Ognjen Vranjes,4800
-17466,Pierre Webó,4800
-102555,Edgar Salli,4800
-58813,André Almeida,4800
-10929,Hélder Postiga,4800
-18018,Alessio Cerci,4700
-154983,Toshihiro Aoyama,4700
-131885,Ben Halloran,4600
-50361,Gabriel Achilier,4600
-82533,Andy Najar,4600
-75592,Lorenzo Insigne,4600
-38551,Vieirinha,4600
-170452,Lee Yong,4600
-149785,Cédric Si Mohamed,4500
-80215,Mohamed Zemmamouche,4500
-42948,Agustín Orión,4500
-21150,Mariano Andujar,4500
-54806,Augusto Fernández,4500
-131897,Matthew Ryan,4500
-83630,Mitchell Langerak,4500
-83448,Eugene Galekovic,4500
-82912,Bailey Wright,4500
-40141,James Troisi,4500
-59788,James Holland,4500
-44998,Dario Vidosic,4500
-106606,Massimo Luongo,4500
-66797,Simon Mignolet,4500
-40471,Sammy Bossut,4500
-42584,Laurent Ciman,4500
-70953,Asmir Avdukic,4500
-20716,Jasmin Fejzic,4500
-37118,Senijad Ibricic,4500
-40943,Jefferson,4500
-52457,Victor,4500
-184718,Loïc Feudjou,4500
-87539,Sammy Ndjock,4500
-66443,Dany Nounkeu,4500
-44324,Henri Bedimo,4500
-15154,Jean Makoun,4500
-126030,Fabrice,4500
-83425,Cristopher Toselli,4500
-33256,Johnny Herrera,4500
-61758,Miiko Albornoz,4500
-50904,José Fuenzalida,4500
-48854,Fabián Orellana,4500
-78515,Esteban Paredes,4500
-148247,Camilo Vargas,4500
-33433,Aldo Leão Ramírez,4500
-105080,Daniel Cambronero,4500
-105017,Patrick Pemberton,4500
-121332,Waylon Francis,4500
-99126,Heiner Mora,4500
-102679,Diego Calvo,4500
-114321,Sayouba Mandé,4500
-180315,Sylvain Gbohouo,4500
-104359,Jean-Daniel Akpa-Akpro,4500
-56366,Ousmane Viera,4500
-97443,Ismael Diomande,4500
-42484,Giovanni Sio,4500
-61982,Mathis Bolly,4500
-104514,Oliver Zelenika,4500
-60582,Danijel Subasic,4500
-46203,Gordon Schildenfeld,4500
-68394,Domagoj Vida,4500
-38472,Ognjen Vukojevic,4500
-102238,Ivan Mocinic,4500
-38470,Eduardo,4500
-50362,Máximo Banguera,4500
-107428,Adrian Bone,4500
-42798,Óscar Bagüí,4500
-33008,Segundo Castillo,4500
-32978,Luis Saritama,4500
-117448,Fidel Martínez,4500
-78545,Joao Rojas,4500
-98785,Jaime Ayoví,4500
-15749,Joe Hart,4500
-40383,Fraser Forster,4500
-81880,Alex Oxlade-Chamberlain,4500
-11037,Rickie Lambert,4500
-38314,Stéphane Ruffier,4500
-6700,Mickaël Landreau,4500
-57112,Eliaquim Mangala,4500
-28559,Franck Ribéry,4500
-55305,Clément Grenier,4500
-51934,Ron-Robert Zieler,4500
-5139,Roman Weidenfeller,4500
-52540,Kevin Großkreutz,4500
-111251,Matthias Ginter,4500
-118884,Erik Durm,4500
-50523,Marco Reus,4500
-83383,Stephen Adams,4500
-61988,Adam Larsen Kwarasey,4500
-66153,Samuel Inkoom,4500
-149687,Rashid Sumaila,4500
-88008,Afriyie Acquah,4500
-49773,Albert Adomah,4500
-55179,Mubarak Wakaso,4500
-88596,Stefanos Kapino,4500
-53056,Giorgios Tzavellas,4500
-39464,Vangelis Moras,4500
-18649,Loukas Vyntra,4500
-26848,Alexandros Tziolis,4500
-52857,Panagiotis Tachtsidis,4500
-34292,Donis Escober,4500
-184468,Luis López,4500
-153255,Juan Pablo Montes,4500
-55209,Óscar García,4500
-99335,Edder Delgado,4500
-34301,Jerry Palacios,4500
-180956,Rahman Ahmadi,4500
-69179,Daniel Davari,4500
-155079,Hashem Beikzadeh,4500
-82845,Steven Beitashour,4500
-184493,Hossein Mahini,4500
-184483,Ahmad Alenemeh,4500
-184497,Ghasem Haddadifar,4500
-179741,Bakhtiar Rahmani,4500
-184502,Reza Haghighi,4500
-179950,Kirim Ansarifard,4500
-87995,Mattia Perin,4500
-18372,Alberto Aquilani,4500
-78404,Shusaku Nishikawa,4500
-119498,Shuichi Gonda,4500
-110524,Gotoku Sakai,4500
-98773,Masahiko Inoha,4500
-109404,Hiroki Sakai,4500
-118300,Hiroshi Kiyotake,4500
-119507,Manabu Saito,4500
-20335,Jose de Jesús Corona,4500
-43013,Alfredo Talavera,4500
-100870,Miguel Ponce,4500
-72072,Isaác Brizuela,4500
-100987,Alan Pulido,4500
-12999,Austin Ejide,4500
-149956,Chigozie Agbim,4500
-163588,Kunle Odunlami,4500
-149958,Azubuike Egwuekwe,4500
-49272,Elderson,4500
-41251,Eduardo,4500
-46525,Fábio Coentrão,4500
-104276,Luís Neto,4500
-148515,Rafa,4500
-17743,Hugo Almeida,4500
-82283,Juri Lodygin,4500
-48348,Sergei Ryzhikov,4500
-52194,Georgy Schennikov,4500
-131408,Andrey Semenov,4500
-51247,Vladimir Granat,4500
-48822,Roman Shirokov,4500
-31886,Aleksandr Samedov,4500
-49230,Viktor Faizulin,4500
-49232,Aleksey Ionov,4500
-77859,Lee Bum-Young,4500
-86455,Kim Chang-Soo,4500
-82362,Kwak Tae-Hwi,4500
-119463,Hwang Seok-Ho,4500
-100997,Park Joo-Ho,4500
-86458,Ha Dae-Sung,4500
-119467,Park Jong-Woo,4500
-98769,Ji Dong-Won,4500
-51940,David de Gea,4500
-18221,Gerard Piqué,4500
-34683,Yann Sommer,4500
-45281,Roman Bürki,4500
-18529,Reto Ziegler,4500
-18094,Tranquillo Barnetta,4500
-68309,Mario Gavranovic,4500
-98718,Rodrigo Muñoz,4500
-61999,Martín Silva,4500
-13243,Diego Pérez,4500
-41705,Brad Guzan,4500
-15310,Nick Rimando,4500
-57500,Timothy Chandler,4500
-61898,Mix Diskerud,4500
+"71679","Rubén Martínez",5400
+"88888","Julián",4500
+"90728","Ximo Navarro",5400
+"57524","Mauro Dos Santos",4900
+"51577","Míchel Macedo",4500
+"87802","Ángel Trujillo",5500
+"56342","Sebastián Dubarbier",5000
+"19755","Mané",4500
+"167199","Thomas Partey",5400
+"125945","Ramón Azeez",4700
+"54224","Verza",6000
+"3755","Corona",4500
+"13557","Fernando Soriano",5500
+"92984","Wellington",5000
+"38499","Tommer Hemed",6100
+"56271","Quique González",4500
+"154769","Teerasil Dangda",4800
+"89554","Jonathan",4500
+"14725","Gorka Iraizoz",5600
+"89292","Iago Herrerín",4600
+"80153","Jon Aurtenetxe",4500
+"146941","Aymeric Laporte",7300
+"42995","Mikel San José",5200
+"17216","Andoni Iraola",5200
+"58637","Xabier Etxeita",4600
+"56680","Mikel Balenziaga",5300
+"90486","Erik Morán",4500
+"38394","Beñat",6400
+"56249","Ander Iturraspe",7000
+"59062","Óscar De Marcos",5800
+"84471","Ibai Gómez",7100
+"47665","Markel Susaeta",6100
+"76558","Mikel Rico",7200
+"12787","Carlos Gurpegi",5400
+"62132","Borja Viguera",4800
+"51580","Gaizka Toquero",4500
+"42676","Kike Sola",4600
+"76012","Iker Muniain",9400
+"14464","Aritz Aduriz",9000
+"92500","Guillermo",4600
+"16872","Moyá",6000
+"81352","Jan Oblak",5200
+"120026","Bono",0
+"27462","Jesús Gámez",4700
+"32281","Diego Godín",10000
+"27692","Guillherme Siqueira",6200
+"55605","Toby Alderweireld",10700
+"50937","Cristian Ansaldi",4900
+"151883","Giménez",9300
+"17804","Juanfran",7200
+"40615","Emiliano Insúa",5000
+"52496","Miranda",8800
+"28160","Mario Suárez",5300
+"15269","Tiago",6300
+"77390","Koke",9100
+"89335","Saúl Ñíguez",5100
+"18498","Raúl García",7600
+"39441","Arda Turan",8100
+"33668","Cristian Rodríguez",7400
+"17871","Gabi",7000
+"180009","Borja Martínez",4500
+"76650","Antoine Griezmann",9300
+"46197","Mario Mandzukic",9800
+"109269","Leo Baptistao",6800
+"176618","Héctor Hernández",4500
+"179926","Ivi",4500
+"77318","Marc-André ter Stegen",4800
+"33148","Claudio Bravo",7700
+"86148","Jordi Masip",4500
+"86153","Martín Montoya",4600
+"18221","Gerard Piqué",6400
+"32644","Javier Mascherano",8800
+"81138","Marc Bartra",5000
+"52356","Jordi Alba",8200
+"19773","Adriano",4700
+"15780","Dani Alves",5700
+"14095","Jeremy Mathieu",6500
+"131400","Franck Bagnack",0
+"185470","Diawandou Diagné",0
+"165377","Lucas Gafarot",4500
+"34703","Ivan Rakitic",10600
+"54104","Sergio Busquets",6900
+"5816","Xavi",5700
+"12237","Andrés Iniesta",9200
+"92819","Rafinha",6600
+"21091","Alexandre Song",5900
+"86157","Sergi Roberto",4600
+"106463","Sergi Samper",4500
+"134316","Alen Halilovic",4500
+"106465","David Babunski",4500
+"116878","Cámara",4500
+"49579","Pedro",6000
+"39336","Luis Suárez",9200
+"19054","Lionel Messi",14800
+"61278","Neymar",11100
+"94924","Gerard Deulofeu",6300
+"159533","Adama Traoré",4600
+"106464","Jean Marie Dongou",4500
+"108438","Sandro Ramírez",5200
+"170864","Munir El Haddadi",7000
+"38400","Sergio Álvarez",5400
+"106539","Rubén Blanco",4600
+"86152","Carles Planas",5200
+"86151","Sergi Gómez",4600
+"76508","Hugo Mallo",5000
+"61559","Andreu Fontás",5700
+"114128","Jonny",5000
+"55117","Gustavo Cabral",5400
+"55509","Pablo Hernández",5500
+"12512","Borja Oubiña",4500
+"83979","Álex López",5600
+"48854","Fabián Orellana",5500
+"96241","Lévy Madinda",4500
+"16099","Michael Krohn-Dehli",6100
+"54806","Augusto Fernández",4500
+"86349","Charles",5500
+"86173","Nolito",10200
+"42884","Joaquín Larrivey",7200
+"150360","Santi Mina",4800
+"88279","Juan Carlos",4600
+"17511","Mikel Saizar",4600
+"88949","Deivid",4600
+"94532","Pantic",5100
+"77996","Adrián Gunino",4700
+"80432","Íñigo López",5200
+"17410","Iago Bouzón",4600
+"87021","Luso",4500
+"11609","Raúl Bravo",4500
+"167743","Fede Cartabia",6300
+"60104","José Carlos",4600
+"83553","Fidel",5000
+"54436","Fausto Rossi",5200
+"77742","Patrick Ekeng Ekeng",4700
+"69865","López Silva",5700
+"69867","Carlos Caballero",4500
+"54295","López Garai",4700
+"21059","Abel",4700
+"110381","Mike Havenaar",5400
+"121126","Ryder Matos",4900
+"20085","Xisco",4800
+"20311","Germán Lux",5400
+"40559","Fabricio",4600
+"51864","Roberto Canella",4900
+"5842","Manuel Pablo",4500
+"49580","Laure",5000
+"103844","Luisinho",4900
+"60323","Diego Seoane",4500
+"5863","Alberto Lopo",4900
+"88621","Pablo Insúa",5200
+"90388","Isaac Cuenca",6100
+"20062","Álex Bergantiños",4600
+"119402","José Rodríguez",6300
+"42871","Juan Domínguez",5300
+"84372","Diogo Salomao",4500
+"71612","Cezary Wilk",4500
+"76680","Luis Fariña",5900
+"155851","Lucas Pérez",4900
+"83091","Borja Bastón",4500
+"17905","Javier Arizmendi",5000
+"17907","Toché",5000
+"88782","Juan Carlos",5600
+"55171","Jaime",4800
+"60842","Xabi Irureta",5400
+"165378","Irazusta",4500
+"90479","Borja Ekiza",4600
+"61814","Raúl Navas",5200
+"88210","Abraham",5500
+"60759","Eneko Bóveda",4900
+"90016","Gorka Kijera",4500
+"56439","Txema Añibarro",4500
+"71637","Javi Lara",4800
+"83978","Raúl Albentosa ",4900
+"140266","Ander Capa",4700
+"90326","Jon Errasti",5300
+"140264","Dani García",5100
+"102370","Dani Nieto",5600
+"56419","Ángel",5000
+"38415","Mikel Arruabarrena",5800
+"89785","David Mainz",4800
+"39391","Manu Herrera",4700
+"19805","Toño",4600
+"88570","Diego Rivas",0
+"46374","Przemyslaw Tyton",5300
+"122078","Enzo Roco",5200
+"99005","Damián Suárez",4700
+"49360","Lombán",5200
+"55341","Sergio Pelegrín",4700
+"40982","Cristian Sapunaru",4500
+"54149","Edu Albácar",5300
+"42854","Domingo Cisma",4500
+"164570","Mario Pasalic",4900
+"38572","Aarón",4500
+"119228","Rodrigues",5000
+"92724","Faycal Fajr",5000
+"40405","Adrián",4600
+"60012","Pedro Mosquera",4900
+"53380","Jonathas",5800
+"17690","Coro",4800
+"165907","Cristian Herrera",4600
+"182960","Pau",4500
+"149052","Germán",4500
+"39790","Kiko Casilla",6100
+"87026","Anaitz Arbilla",4600
+"52461","Felipe Mattioni",4600
+"90116","Raúl Rodríguez",4500
+"49656","Héctor Moreno",6500
+"78333","Javi López",5500
+"92493","Víctor Álvarez",5100
+"78336","Fuentes",4800
+"53843","Diego Colotto",5400
+"55354","Salva Sevilla",5100
+"49267","Víctor Sánchez",6600
+"90017","Manuel Lanzarote",4500
+"11129","David López",4500
+"88479","Álex",4500
+"58907","Abraham",4700
+"42173","Felipe Caicedo",6800
+"49464","Christian Stuani",7700
+"17679","Sergio García",8700
+"54170","Jona",5400
+"40836","Vicente Guaita",5800
+"89345","Álex Pérez",4500
+"14729","Alexis",4900
+"40272","Roberto Lago",4600
+"82787","Álvaro Arroyo",4600
+"17827","Rafa",4500
+"62991","Sergio Escudero",4600
+"17378","Juan Valera",4800
+"58876","Míchel",4600
+"149746","Fredy Hinestroza",5000
+"69888","Yoda",4700
+"20578","Mehdi Lacen",7100
+"26726","Ángel Lafita",5300
+"88484","Pablo Sarabia",5600
+"42839","Pedro León",5600
+"28291","Diego Castro",5000
+"46198","Sammir",6100
+"51860","Míchel",4900
+"14549","Juan Rodríguez",4700
+"89046","Álvaro Vázquez",6100
+"52355","Adrián Colunga",4500
+"49442","Oier",4600
+"51803","Roberto",5400
+"44322","Babin",5500
+"67527","Nyom",6500
+"54175","Diego Mainz",4500
+"32488","Pape Malickou Diakhaté",4600
+"96767","Dimitri Foulquier",4700
+"107117","Jeison Murillo",5300
+"55947","Abdoul Sissoko",4700
+"42868","Javi Márquez",5000
+"88480","Juan Carlos",4600
+"88481","Fran Rico",5800
+"54805","Diego Buonanotte",4500
+"37267","Manuel Iturra",5800
+"20056","Piti",5600
+"169018","Mohammed Fatau",4500
+"48670","Daniel Larsson",4600
+"86168","Rubén Rochina",6900
+"59059","Alfredo Ortuño",4700
+"58926","Youssef El-Arabi",6400
+"17517","Riki",4600
+"76611","Diego Mariño",5000
+"82673","Javi Jiménez",4500
+"11601","David Navarro",4900
+"50279","Héctor Rodas",4500
+"18649","Loukas Vyntra",4900
+"5825","Juanfran",4800
+"48439","Nikos Karabelas",4600
+"62409","Issam El Adoua",4600
+"42844","Pedro López",4800
+"105525","Iván López",4500
+"40380","Nabil El Zhar",4600
+"130026","Rubén García",5100
+"20663","Jaime Gavilán",4500
+"55387","Jordi Xumetra",4700
+"76557","Víctor Pérez",4600
+"18560","Andreas Ivanschitz",4700
+"16884","Mohamed Sissoko",4700
+"27672","Pape Diop",5700
+"48336","Simao",4700
+"175946","Víctor Camarasa",5000
+"165375","Morales",4800
+"54081","Aloys Nong",4500
+"26768","Casadesús",4700
+"28299","David Barral",5300
+"167783","Rafael Martins",5600
+"97631","Agustín Cousillas",4500
+"13268","Carlos Kameni",5100
+"33376","Guillermo Ochoa",7500
+"28111","Arthur Boka",8200
+"41215","Weligton",5100
+"78687","Flavio Ferreira",4600
+"39621","Vitorino Antunes",5100
+"55658","Marcos Angeleri",4600
+"48832","Roberto Rosales",4900
+"49097","Casado",4500
+"44849","Sergio Sánchez",4700
+"164079","Roberto Chen",4500
+"165573","Bobley Anderson",4500
+"193449","Samu Castillejo",4600
+"49735","Ignacio Camacho",5800
+"80795","Francisco Portillo",4600
+"169007","Sergi Darder",5300
+"193450","Juanpi",4500
+"55579","Pablo Pérez",4500
+"19917","Fernando Tissone",4500
+"91338","Recio",4600
+"11511","Duda",4700
+"82451","Luis Alberto",7200
+"155476","Ricardo Horta",6200
+"80287","Juanmi",5000
+"5053","Roque Santa Cruz",5700
+"89250","Ezequiel Rescaldani",4500
+"169008","Samuel",4500
+"11514","David Cobeño",4600
+"89639","Jorge Morcillo",4800
+"106671","Quini",5000
+"103860","Abdoulaye Ba",4900
+"16149","Antonio Amaya",4700
+"73684","Tito",5000
+"90394","Nacho",4600
+"37573","Zé Castro",5400
+"109177","Diego Aguirre",4500
+"105064","Jozabed",4500
+"100866","Javier Aquino",6400
+"89238","Álex Pozuelo",4800
+"59325","Gaël Kakuta",5700
+"8763","Derek Boateng",4800
+"78324","Raúl Baena",5300
+"95786","Lass",4900
+"10991","Roberto Trashorras",7200
+"132161","Adrián Embarba",4500
+"47400","Licá",4900
+"49410","Manucho",5200
+"19525","Jonathan Pereira",5600
+"106468","Álex Moreno",4500
+"46009","Alberto Bueno",7800
+"28411","Keylor Navas",5400
+"4232","Iker Casillas",5700
+"91406","Fernando Pacheco",4500
+"90152","Raphael Varane",6000
+"18522","Pepe",6300
+"17861","Sergio Ramos",8900
+"46525","Fábio Coentrão",5100
+"39563","Marcelo",8600
+"88483","Daniel Carvajal",6500
+"18759","Álvaro Arbeloa",4600
+"88477","Nacho",4600
+"39816","Sami Khedira",4900
+"44989","Toni Kroos",13600
+"60025","James Rodríguez",10200
+"3508","Xabi Alonso",10600
+"61256","Casemiro",4500
+"37055","Luka Modric",8800
+"46497","Ángel Di María",13500
+"80209","Isco",6800
+"84086","Asier Illarramendi",5000
+"165796","Álvaro Medrán",4500
+"107593","Lucas Vázquez",5000
+"192364","Marcos Llorente",4500
+"14937","Cristiano Ronaldo",14700
+"19927","Karim Benzema",10500
+"36903","Gareth Bale",11000
+"93127","Jesé",5400
+"106921","Gerónimo Rulli",4900
+"20112","Eñaut Zubikarai",5100
+"42670","Yuri",4600
+"42430","Carlos Martínez",4500
+"19831","Mikel González",4600
+"90318","Iñigo Martínez",6500
+"28456","Ion Ansotegi",4500
+"40789","Daniel Estrada",4500
+"55336","Alberto De la Bella",5400
+"98821","Zaldúa",5000
+"46998","Esteban Granero",5500
+"28644","Gorka Elustondo",4600
+"20150","Markel Bergara",4800
+"17512","Xabi Prieto",5900
+"90328","Rubén Pardo",4500
+"56448","Sergio Canales",7000
+"54371","David Zurutuza",5600
+"45825","Gonzalo Castro",4500
+"91980","Gaztañaga",4500
+"62980","Alfred Finnbogason",5700
+"20151","Imanol Agirretxe",7000
+"38401","Carlos Vela",10100
+"20694","Mariano Barbosa",4800
+"44743","Beto",7100
+"61517","Cicinho",4600
+"40792","Federico Fazio",4500
+"7088","Fernando Navarro",4900
+"92211","Diogo Figueiras",4600
+"46479","Daniel Carriço",5400
+"37788","Nico Pareja",5900
+"55268","Coke",5400
+"73494","Grzegorz Krychowiak",5900
+"89572","Denis Suárez",6700
+"79627","Aleix Vidal",7600
+"151978","Sebastián Cristóforo",4500
+"54513","Vicente Iborra",5700
+"16049","Piotr Trochowski",5000
+"105501","Jairo",4600
+"10343","Reyes",4700
+"28289","Manu del Moral",4900
+"40270","Iago Aspas",6100
+"111274","Carlos Bacca",10800
+"42779","Kevin Gameiro",6000
+"86399","Vitolo",6300
+"76510","Yoel",4800
+"46898","Diego Alves",5700
+"116732","Jaume",4500
+"57410","Nicolás Otamendi",6500
+"69140","Shkodran Mustafi",5900
+"116206","Rubén Vezo",5000
+"51948","Víctor Ruiz",5100
+"26904","João Pereira",5200
+"20399","Antonio Barragán",5000
+"132105","José Gayá",5600
+"120250","André Gomes",5900
+"119141","Rodrigo de Paul",5100
+"49309","Éver Banega",5800
+"86398","Jonathan Viera",5000
+"44336","Sofiane Feghouli",9100
+"21250","Javi Fuego",5300
+"37064","Andrés Guardado",9300
+"51952","Daniel Parejo",7300
+"168390","Roberto Ibáñez",4500
+"88554","Carles Gil",4800
+"80954","Rodrigo",8900
+"10929","Hélder Postiga",5400
+"51271","Pablo Piatti",6000
+"53048","Jonas",4500
+"86876","Paco Alcácer",8800
+"159741","Vinícius Araújo",4500
+"48772","Sergio Asenjo",5600
+"21046","Juan Carlos",4500
+"42534","Antonio Rukavina",5200
+"76610","Mario",5500
+"37413","Bojan Jokic",4500
+"57527","Mateo Musacchio",6700
+"55185","Chechu Dorado",4600
+"58792","Jaume Costa",5100
+"158074","Gabriel Paulista",5200
+"108987","Pablo Iñíguez",4500
+"88489","Denis Cheryshev",6400
+"76688","Jonathan dos Santos",5000
+"94747","Javier Espinosa",5100
+"73109","Hernán Pérez",4500
+"80956","Tomás Pina",5400
+"17278","Cani",7000
+"98961","Manu Trigueros",6600
+"39817","Bruno",8300
+"109243","Moi Gómez",5000
+"178063","Nahuel Leiva",4600
+"108093","Luciano Vietto",6300
+"38180","Ikechukwu Uche",7000
+"40275","Giovani dos Santos",8600
+"93721","Gerard Moreno",4700
+"63904","Borja",4800
+"91373","Víctor Rodríguez",4700
+"82755","Fran Vélez",4500
+"84464","Stanley Okoro",4500
+"109745","Kepa",4500
+"112540","Bustinza",4500
+"183462","Unai López",4900
+"159537","Ager Aketxe",4500
+"15943","Thomas Vermaelen",6000
+"100263","Nemanja Radoja",5500
+"166324","Ivan Cavaleiro",6100
+"108145","Carlos Clerc",4500
+"96084","Álvaro González",5000
+"90761","Cristian Alfonso",4500
+"37169","Paco Montañés",5600
+"120606","Jhon Córdoba",5700
+"80285","Alejandro Arribas",4900
+"61615","Lucas Orban",5300
+"102057","Raúl Jiménez",6400
+"28188","Haris Medunjanin",5900
+"51949","Lillo",4500
+"89215","Edgar",6200
+"95461","Thievy",5400
+"97488","Carlos Ramos",0
+"169205","David Costas",4500
+"179153","Daniel Pinillos",4600
+"106458","Eduard Campabadal",4500
+"102630","Rudy",0
+"17911","Jordi Codina",4500
+"94878","Stole Dimitrievski",4600
+"71692","Héctor Yuste",4600
+"61789","Jesús",5300
+"40406","Miguel Torres",4700
+"81735","Liassine Cadamuro",6100
+"80993","Aitor Fernández",4500
+"92368","Israel Puerto",4500
+"28386","José Ángel Crespo",5000
+"51728","Cristian Álvarez",5000
+"179919","Roberto",0
+"163817","Burgui",0
+"21186","Federico Piovaccari",4500
+"111133","Darwin Machís",4500
+"86814","Bruno Zuculini",4500
+"88238","José Ángel",4500
+"173876","Matías Ramírez",4500
+"105093","Luismi",4500
+"152206","Andrés Robles",4500
+"90510","Adri Cuevas",0
+"105115","Antonio Sillero",0
+"178343","Fran Serrano",0
+"88957","Juan Guerra",4500
+"195213","Iván Rodríguez",0
+"121145","João Cancelo",4500
+"195364","Joan Jordán",4500
+"195366","Iago López",0
+"195367","Marcos Remeseiro",4500
+"173514","Success",4600
+"37756","Benoît Trémoulinas",6000
+"195444","Juan Muñoz",4500
+"132143","Samu",0
+"55175","Álvaro",4500
+"167539","Vigaray",4500
+"181859","Ivi",4500
+"195506","Borja Fernández",0
+"19568","Ibrahim Afellay",8100
+"164501","Michael Anaba",4500
+"119403","Raúl de Tomás",4500
+"192367","Ander Bardaji",4500
+"100059","Alberto Moreno",4500
+"59790","Dídac Vilá",4500
+"77039","Toño",4500
+"61121","Douglas",5000
+"151885","Emiliano Velázquez",4500
+"178873","Adrián Marín",4700
+"26808","Kenneth Vermeer",0
+"72162","Jasper Cillessen",6200
+"166376","Peter Leeuwenburgh",0
+"106826","Ricardo van Rhijn",5100
+"111478","Joël Veltman",5200
+"50448","Niklas Moisander",5000
+"80398","Nicolai Boilesen",4500
+"97615","Mike van der Hoorn",4500
+"173954","Jaïro Riedewald",0
+"119213","Mitchell Dijks",0
+"167074","Kenny Tete",0
+"111729","Stefano Denswil",4500
+"59836","Nick Viergever",5700
+"165936","Riechedly Bazoer",5000
+"96109","Ruben Ligeon",4600
+"72178","Lerin Duarte",5600
+"109065","Davy Klaassen",7800
+"95194","Lucas Andersen",5700
+"58877","Daley Blind",6900
+"173281","Robert Muric",0
+"19891","Lasse Schöne",6100
+"77932","Thulani Serero",5000
+"123125","Viktor Fischer",6500
+"83758","Kolbeinn Sigthorsson",7900
+"178003","Ricardo Kishna",4500
+"103076","Arkadiusz Milik",6100
+"193488","Anwar El Ghazi",6800
+"61778","Tobias Sana",0
+"147612","Richairo Zivkovic",0
+"19589","Urko Pardo",4500
+"56701","Dionisis Chiotis",0
+"27305","Tasos Kissas",4500
+"53027","Anastasios Papazoglou",4500
+"82393","Aritz Borda",4500
+"39053","Kaká",4500
+"52648","João Guilherme",4700
+"19618","Mário Sérgio",4500
+"52785","Carlao",4500
+"112140","Nicholas Ioannou",4500
+"56700","Marios Antoniades",4500
+"15170","Konstantinos Charalambidis",6100
+"65485","Anthos Solomou",0
+"27519","Efstathios Aloneftis",5400
+"177487","Vasilios Papafotis",0
+"18511","Nuno Morais",5000
+"15129","Nektarious Alexandrou",6200
+"20571","Rafik Djebbour",5700
+"49265","Georgios Efrem",5300
+"39768","Vinicius",5600
+"39473","Gustavo Manduca",5000
+"136354","Kostakis Artymatas",4500
+"38742","Tiago Gomes",4900
+"65487","Aldo Adorno",0
+"12860","Selim Benachour",0
+"66992","Tomás De Vincenti",4500
+"40782","Cillian Sheridan",6000
+"170893","Alexandros Kostantinou",0
+"88022","Pieros Sotiriou",5100
+"59936","Wojciech Szczesny",6100
+"48844","David Ospina",5500
+"98980","Damián Martinez",0
+"27334","Mathieu Debuchy",6200
+"42427","Kieran Gibbs",5600
+"17127","Per Mertesacker",6700
+"51507","Laurent Koscielny",6500
+"38411","Nacho Monreal",5500
+"101184","Calum Chambers",5700
+"98745","Héctor Bellerín",4500
+"153127","Isaac Hayden",0
+"90801","Ignasi Miquel",0
+"8597","Tomas Rosicky",6500
+"8758","Mikel Arteta",6700
+"54102","Jack Wilshere",7800
+"37605","Mesut Özil",9800
+"81880","Alex Oxlade-Chamberlain",7500
+"41792","Aaron Ramsey",10500
+"19524","Santiago Cazorla",10200
+"18155","Mathieu Flamini",5400
+"28566","Vassiriki Abou Diaby",5500
+"133798","Serge Gnabry",4500
+"92372","Ryo Miyaichi",0
+"56864","Francis Coquelin",4500
+"158870","Gedion Zelalem",0
+"17733","Lukas Podolski",9100
+"44346","Olivier Giroud",4500
+"20467","Theo Walcott",9900
+"37265","Alexis Sánchez",10900
+"80711","Yaya Sanogo",6300
+"99127","Joel Campbell",5700
+"147675","Chuba Akpom",0
+"63600","Sergei Chernik",5000
+"64010","Germans Malins",4500
+"153934","Artem Soroko",4500
+"67835","Nemanja Tubic",4500
+"153584","Vitali Gayduchik",4500
+"48377","Anri Khagush",4600
+"48352","Egor Filipenko",4800
+"94467","Filip Mladenovic",5100
+"63623","Denis Polyakov",4900
+"193822","Igor Zhuravlev",0
+"48383","Dmitri Likhtarovich",4800
+"180039","Evgeni Yablonski",5300
+"157749","Aleksandr Karnitski",4700
+"56359","Aleksandr Volodko",4600
+"96047","Ilya Aleksievich",5000
+"48382","Sergei Krivets",0
+"193821","Vladislav Klimovich",0
+"50356","Aleksandr Pavlov",5200
+"63400","Edgar Olekhnovich",5100
+"48610","Dmitry Baga",5700
+"78780","Maksim Volodko",5400
+"82599","Mikhail Gordeychuk",5900
+"184266","Andriy Yakovlev",5800
+"100057","Nikolai Signevich",6200
+"63342","Dmitri Mozolevski",0
+"48059","Vitali Rodionov",6400
+"80201","Bernd Leno",5300
+"17116","David Yelldell",0
+"25590","Dario Kresic",4500
+"120136","Niklas Lomb",4500
+"69960","Philipp Wollscheid",0
+"20301","Emir Spahic",5100
+"20726","Roberto Hilbert",0
+"49012","Kyriakos Papadopoulos",5600
+"153542","Tin Jedvaj",4800
+"27795","Sebastian Boenisch",5000
+"164096","Wendell",4500
+"50022","Ömer Toprak",5200
+"80149","Giulio Donati",4600
+"50309","Stefan Reinartz",6000
+"10233","Simon Rolfes",6700
+"38117","Lars Bender",6500
+"111732","Hakan Calhanoglu",8100
+"165174","Levin Öztunali",5100
+"177591","Julian Brandt",5700
+"95743","Robbie Kruse",6100
+"19560","Gonzalo Castro",7400
+"95169","Vladlen Yurchenko",6000
+"180960","Maximilian Wagener",0
+"61583","Karim Bellarabi",6800
+"85971","Heung-Min Son",8600
+"81048","Josip Drmic",7400
+"16141","Stefan Kießling",9700
+"19928","Julio César",5300
+"49770","Artur Moraes",4600
+"105610","Bruno Varela",0
+"38719","Paulo Lopes",4500
+"76734","Lisandro López",0
+"66249","Steven Vitória",0
+"19980","Luisão",6000
+"32284","Maxi Pereira",5900
+"68260","Loris Benito",0
+"53142","Sidnei",5000
+"84633","Jardel",5100
+"162570","César",0
+"81456","Andreas Samaris",5300
+"43547","Lubomir Fejsa",0
+"39297","Rubén Amorim",0
+"56491","Nicolás Gaitán",7800
+"39313","Eliseu",5100
+"159422","Anderson Talisca",5200
+"58813","André Almeida",4500
+"55661","Enzo Pérez",5000
+"184667","Victor Nilsson Lindelöf",0
+"40649","Miralem Sulejmani",0
+"166711","Derley",5100
+"52550","Lima",6600
+"88568","Ola John",5700
+"57114","Nélson Oliveira",4800
+"56492","Eduardo Salvio",7000
+"80590","Pizzi",5300
+"57211","Franco Jara",0
+"117228","Victor Andrade",0
+"84374","Bebé",5500
+"5139","Roman Weidenfeller",6400
+"83630","Mitchell Langerak",4500
+"71730","Zlatan Alomerovic",0
+"41452","Neven Subotic",6700
+"38392","Mats Hummels",7100
+"149483","Marian Sarr",0
+"39476","Sokratis",6300
+"42566","Lukasz Piszczek",6600
+"111251","Matthias Ginter",6000
+"52516","Marcel Schmelzer",6100
+"192302","Khaled Narey",0
+"143802","Jannik Bandowski",0
+"118884","Erik Durm",4500
+"5353","Sebastian Kehl",5500
+"38118","Sven Bender",6500
+"118876","Jonas Hofmann",0
+"59859","Ilkay Gündogan",8400
+"57249","Henrikh Mkhitaryan",9500
+"50523","Marco Reus",11000
+"106993","Milos Jojic",7100
+"37092","Jakub Blaszczykowski",9000
+"54694","Pierre-Emerick Aubameyang",9900
+"20368","Nuri Sahin",8300
+"52540","Kevin Großkreutz",7200
+"17136","Oliver Kirch",6200
+"178453","Mitsuru Maruoka",0
+"59046","Ciro Immobile",11200
+"57254","Adrián Ramos",8300
+"98769","Dong-Won Ji",0
+"11334","Petr Cech",7400
+"60772","Thibaut Courtois",7000
+"1827","Mark Schwarzer",0
+"68250","Matej Delac",0
+"108132","Jamal Blackman",0
+"120449","Todd Kane",0
+"41135","Branislav Ivanovic",7300
+"18595","Filipe Luis",5000
+"103192","Kurt Zouma",4500
+"126184","Nathan Aké",0
+"19419","Gary Cahill",6200
+"1718","John Terry",6600
+"41328","César Azpilicueta",6100
+"135363","Andreas Christensen",0
+"71963","Uli Dávila",0
+"17878","Cesc Fàbregas",10300
+"53392","Ramires",7000
+"61262","Oscar",9800
+"42786","Eden Hazard",12000
+"28495","John Obi Mikel",6100
+"66842","André Schürrle",9500
+"82660","Marco Van Ginkel",0
+"118748","Mohamed Salah",6800
+"62398","Nemanja Matic",7300
+"47431","Willian",9000
+"89085","Nathaniel Chalobah",0
+"154566","Dominic Solanke",0
+"14402","Fernando Torres",7000
+"12303","Didier Drogba",8200
+"18507","Diego Costa",10500
+"106617","Patrick Bamford",0
+"92255","Vyacheslav Isupov",0
+"69368","Sergey Chepchugov",4500
+"18090","Igor Akinfeev",5600
+"65854","Mario Fernandes",4500
+"11225","Sergei Ignashevitch",5100
+"18685","Alexei Berezoutski",5200
+"51091","Kirill Nababkin",4500
+"18686","Vassili Berezoutski",5100
+"52194","Georgy Schennikov",4600
+"173457","Nikita Chernov",0
+"51855","Pontus Wernbloom",6200
+"42600","Zoran Tosic",6500
+"51437","Alan Dzagoev",8700
+"155096","Dmitri Efremov",4700
+"41423","Aleksandrs Cauna",5600
+"52044","Rasmus Elm",6000
+"74291","Georgi Milanov",6100
+"120700","Ravil Netfullin",0
+"40484","Bebras Natcho",6300
+"82782","Kirill Panchenko",6700
+"90714","Ahmed Musa",7800
+"116387","Vitinho",6100
+"140195","Konstantin Bazelyuk",5400
+"52117","Seydou Doumbia",8200
+"51945","Tomás Vaclik",4800
+"39715","Germano Vailati",4500
+"183611","Pascal Albrecht",0
+"14476","Philipp Degen",4600
+"97341","Arlind Ajeti",0
+"7441","Walter Samuel",5000
+"21006","Ivan Ivanov",4500
+"119471","Fabian Schär",5800
+"28340","Marek Suchy",4800
+"49828","Behrang Safari",5200
+"165436","Naser Aliji",0
+"173775","Michael Goncalves",0
+"84447","Taulant Xhaka",4600
+"165435","Fabian Ritter",0
+"179773","Simon Dunki",0
+"119593","Luca Zuffi",4500
+"52068","Serey Die",4600
+"34696","Matías Delgado",5400
+"41921","Shkelzen Gashi",6800
+"43573","Fabian Frei",6300
+"118749","Marcelo Díaz",6100
+"180307","Ahmed Hamoudi",0
+"124039","Veljko Simic",0
+"153256","Mohamed Elneny",5400
+"42217","Davide Callà",4500
+"182404","Robin Kamber",0
+"14488","Marco Streller",6600
+"157880","Yoichiro Kakitani",5100
+"167197","Derlis González",5300
+"42484","Giovanni Sio",5000
+"181007","Breel Embolo",5700
+"181008","Albian Ajeti",0
+"20388","Manuel Neuer",8200
+"5058","Tom Starke",4500
+"8432","José Reina",5500
+"26894","Dante",6700
+"28552","Medhi Benatia",6500
+"21227","Rafinha",4900
+"40691","Jerome Boateng",7100
+"105046","Juan Bernat",5000
+"15207","Philipp Lahm",7500
+"50188","David Alaba",7000
+"50656","Holger Badstuber",5800
+"61558","Thiago Alcántara",7500
+"28559","Franck Ribéry",13200
+"37793","Javi Martínez",8000
+"8533","Arjen Robben",13500
+"68312","Xherdan Shaqiri",9200
+"172703","Lucas-Julian Scholl",0
+"172705","Gianluca Gaudino",5600
+"69600","Mario Götze",10400
+"49977","Sebastian Rode",6400
+"109203","Mitchell Weiser",5100
+"55634","Thomas Müller",12500
+"15208","Bastian Schweinsteiger",9900
+"132015","Pierre-Emile Höjbjerg",0
+"168085","Julian Green",0
+"56764","Robert Lewandowski",12200
+"5285","Claudio Pizarro",8300
+"119092","Patrick Weihrauch",0
+"27254","Helton",0
+"61249","Fabiano",5600
+"47396","Ricardo Nunes",4500
+"51792","Andrés Fernández",4900
+"100180","Danilo",5300
+"85352","Bruno Martins Indi",5800
+"56107","Maicon",5400
+"42874","Marcano",4600
+"100867","Diego Reyes",0
+"59140","José Ángel",0
+"53693","Alex Sandro",6100
+"49480","Daniel Opare",0
+"51310","Yacine Brahimi",6700
+"126437","Juan Quintero",4900
+"86169","Cristian Tello",7800
+"52287","Evandro Goebel",4500
+"102578","Héctor Herrera",8300
+"61841","Carlos Eduardo",0
+"111931","Ricardo Pereira",0
+"115860","Óliver",7300
+"171317","Ruben Neves",5100
+"14938","Ricardo Quaresma",7400
+"77064","Jackson Martínez",11000
+"39498","Adrián",8000
+"79928","Sami",0
+"93539","Kelvin",0
+"83465","Vincent Aboubakar",6800
+"28082","Ralf Fährmann",5100
+"18195","Christian Wetklo",4500
+"49915","Fabian Giefer",4500
+"145175","Timon Wellenreuther",4500
+"182157","Marvin Friedrich",0
+"57736","Jan Kirchhoff",5800
+"41316","Benedikt Höwedes",6300
+"51503","Felipe Santana",5600
+"111457","Sead Kolasinac",5300
+"19064","Dennis Aogo",4500
+"78409","Atsuto Uchida",4600
+"37402","Christian Fuchs",4500
+"159522","Kaan Ayhan",4500
+"60914","Joel Matip",5700
+"186631","Pascal Itter",5400
+"141020","Max Meyer",7100
+"119090","Leon Goretzka",6500
+"20360","Kevin-Prince Boateng",8300
+"92985","Julian Draxler",9500
+"73028","Christian Clemens",6800
+"80044","Marco Höger",6000
+"42564","Eric Choupo-Moting",7000
+"18659","Jefferson Farfán",9100
+"38239","Sidney Sam",8200
+"182156","Leroy Sane",5500
+"18094","Tranquillo Barnetta",6300
+"52231","Roman Neustädter",6100
+"178882","Marcel Sobottka",0
+"47362","Chinedu Obasi",5200
+"14941","Klaas-Jan Huntelaar",10400
+"179114","Donis Avdijaj",4500
+"42864","Fernando Muslera",5800
+"180371","Ismail Cipe",0
+"54814","Sinan Bolat",0
+"98401","Eray Iscan",4500
+"17559","Aykut Ercetin",0
+"46513","Ufuk Ceylan",0
+"17540","Gökhan Zan",4600
+"152590","Alex Telles",4500
+"46528","Hakan Balta",4700
+"40560","Aurélien Chedjou",4900
+"56013","Semih Kaya",5100
+"19701","Emmanuel Eboué",0
+"118888","Koray Günter",0
+"178005","Emre Can Coskun",0
+"128651","Salih Dursun",0
+"171424","Birhan Vatansever",0
+"83540","Endogan Adili",0
+"110877","Berk Yildiz",0
+"19801","Felipe Melo",5600
+"17112","Hamit Altintop",6200
+"39434","Aydin Yilmaz",5100
+"46531","Selcuk Inan",6900
+"15403","Wesley Sneijder",9000
+"153680","Bruma",6300
+"59784","Yasin Öztekin",4500
+"59053","Furkan Ozcal",4500
+"18291","Olcan Adin",4500
+"178004","Ibrahim Coskun",0
+"49231","Yekta Kurtulus",5400
+"46530","Yigit Gökoglan",0
+"179225","Oguzhan Kayar",0
+"45802","Engin Baytar",0
+"80629","Emre Colak",5500
+"44604","Nordin Amrabat",5000
+"14578","Sabri Sarioglu",0
+"71568","Veysel Sari",5100
+"73744","Umut Gundogan",0
+"159583","Lucas Ontivero",0
+"149038","Sinan Gümüs",0
+"45776","Sercan Yildirim",0
+"40962","Umut Bulut",8200
+"39931","Burak Yilmaz",9400
+"179342","Berk Ismael Unsal",0
+"4126","Gianluigi Buffon",7400
+"18409","Marco Storari",4500
+"39637","Rubinho",4500
+"193509","Emil Audero",0
+"18529","Reto Ziegler",4500
+"19581","Paolo De Ceglie",5000
+"90719","Frederik Sorensen",0
+"18102","Giorgio Chiellini",7000
+"43693","Martín Cáceres",5800
+"40669","Angelo Ogbonna",5700
+"17172","Andrea Barzagli",6600
+"19713","Marco Motta",0
+"28277","Leonardo Bonucci",6500
+"27335","Stephan Lichtsteiner",6300
+"14075","Patrice Evra",6100
+"40141","James Troisi",0
+"72738","Rômulo",7000
+"74208","Paul Pogba",8400
+"10626","Simone Pepe",6700
+"20113","Claudio Marchisio",10400
+"129508","Kingsley Coman",0
+"14723","Simone Padoin",6200
+"7313","Andrea Pirlo",9600
+"49485","Kwadwo Asamoah",8000
+"42565","Arturo Vidal",10300
+"193508","Mattia Vitale",0
+"61566","Roberto Pereyra",7300
+"60017","Luca Marrone",5500
+"49921","Cristian Pasquato",0
+"88482","Álvaro Morata",5000
+"20312","Carlos Tévez",12100
+"40283","Sebastian Giovinco",9200
+"19760","Fernando Llorente",11000
+"193511","Sergio Buenacasa",0
+"9631","Bradley Jones",4500
+"66797","Simon Mignolet",6300
+"95463","Danny Ward",0
+"9047","Glen Johnson",5100
+"26725","José Enrique",4600
+"12450","Kolo Touré",4700
+"21094","Daniel Agger",0
+"38454","Dejan Lovren",5900
+"78108","Sebastián Coates",0
+"40784","Mamadou Sakho",5700
+"109528","Javier Manquillo",6000
+"26793","Martin Skrtel",6200
+"91979","Jon Flanagan",4600
+"109009","Ryan McLaughlin",0
+"83427","Jack Robinson",0
+"1814","Steven Gerrard",8900
+"84583","Philippe Coutinho",9300
+"77305","Oussama Assaidi",0
+"56979","Jordan Henderson",7700
+"39155","Adam Lallana",8600
+"43191","Lucas Leiva",6500
+"112338","Emre Can",6100
+"40555","Joe Allen",6700
+"103953","Suso",5700
+"103955","Raheem Sterling",9500
+"11037","Rickie Lambert",7900
+"40755","Daniel Sturridge",10900
+"77454","Fabio Borini",7400
+"103912","Jordon Ibe",0
+"42493","Mario Balotelli",10000
+"99323","Lazar Markovic",0
+"50686","Vladislav Stoyanov",4600
+"50660","Ivan Cvorovic",4500
+"98652","Tero Mantylä",0
+"56632","Alexandre Barthe",4900
+"44885","Alex Aleksandrov",4600
+"47313","Brayan Angulo",4500
+"194482","Preslav Petrov",0
+"50635","Yordan Minev",4700
+"27349","Cosmin Moti",5000
+"70217","Georgi Terziev",4800
+"74300","Vitinha",0
+"61572","Junior Caiçara",4500
+"71733","Mihail Aleksandrov",4600
+"75766","Fábio Espinho",5000
+"76241","Anicet",4700
+"40269","Dani Abalo",5000
+"50721","Svetoslav Dyakov",5700
+"194481","Aleksandar Vasilev",0
+"27394","Hristo Zlatinski",5100
+"103483","Marcelinho",6200
+"169913","Wanderson",0
+"67484","Roman Bezjak",6700
+"164657","Sebastian Hernandez",0
+"103482","Juninho Quixadá",5900
+"53632","Choco",0
+"95214","Virgil Misidjan",4700
+"112954","Hamza Younes",5300
+"194548","Sixten Mohlin",0
+"111782","Robin Olsen",5100
+"52027","Zlatan Azinovic",4500
+"37144","Matias Concha",4500
+"66284","Anton Tinnerholm",4600
+"105562","Filip Helander",5100
+"94660","Johan Hammar",4500
+"52608","Ricardinho",5000
+"102420","Erik Johansson",5000
+"152150","Pa Konate",4500
+"101084","Alexander Blomqvist",0
+"189744","Piotr Johansson",4900
+"189743","Victor Wernersson",0
+"49829","Markus Halsti",5700
+"59038","Enoch Kofi Adu",4500
+"52148","Guillermo Molins",0
+"95879","Simon Thern",5400
+"100588","Simon Kroon",4500
+"152149","Pawel Cibicki",5600
+"96115","Amin Nazari",4500
+"66579","Emil Forsberg",6200
+"66553","Magnus Eriksson",4500
+"26806","Markus Rosenberg",6700
+"160791","Petar Petrovic",0
+"106272","Isaac Thelin",5900
+"52159","Agon Mehmeti",5300
+"163776","Erdal Rakip",4500
+"15749","Joe Hart",6500
+"20310","Willy Caballero",5300
+"1101","Richard Wright",0
+"20492","Micah Richards",6500
+"37748","Bacary Sagna",5800
+"17476","Vincent Kompany",7200
+"20658","Pablo Zabaleta",7000
+"42593","Aleksandar Kolarov",6300
+"57112","Eliaquim Mangala",6100
+"17336","Gaël Clichy",6200
+"15312","Martín Demichelis",5400
+"84702","Matija Nastasic",0
+"80235","Dedryck Boyata",4500
+"52538","Fernando",8200
+"15157","James Milner",7500
+"28554","Samir Nasri",9100
+"19688","Scott Sinclair",0
+"17740","Jesús Navas",8900
+"2051","Frank Lampard",8500
+"20664","David Silva",10500
+"27789","Fernandinho",9300
+"14664","Yaya Touré",11200
+"42892","Álvaro Negredo",8000
+"42544","Edin Dzeko",11000
+"37572","Sergio Agüero",13500
+"50442","Stevan Jovetic",11400
+"82970","John Guidetti",0
+"60582","Danijel Subasic",5400
+"10318","Maarten Stekelenburg",4500
+"192291","Seydou Sy",0
+"107925","Marc-Aurele Caillard",0
+"160058","Wallace",4500
+"116596","Jerome Phojo",0
+"116643","Fabinho",4900
+"89068","Layvin Kurzawa",4600
+"109657","Borja López",4500
+"80582","Aymen Abdennour",4600
+"10917","Ricardo Carvalho",5900
+"83233","Nicolas Isimat-Mirin",0
+"49272","Elderson",4500
+"15930","Andrea Raggi",4600
+"178478","Abdou Diallo",0
+"192292","Almamy Touré",0
+"106878","Aadil Assana",0
+"54930","Nabil Dirar",6700
+"19624","João Moutinho",9800
+"121117","Lucas Ocampos",7100
+"169102","Tiemoué Bakayoko",5200
+"165809","Bernardo Silva",4500
+"119718","Yannick Ferreira-Carrasco",6300
+"88754","Geoffrey Kondogbia",8100
+"12488","Jérémy Toulalan",8800
+"192278","Dylan Bahamboula",0
+"192293","Abdou Aziz Thiam",0
+"48847","Falcao",9500
+"8595","Dimitar Berbatov",9100
+"97041","Valère Germain",7800
+"56345","Lacina Traoré",7100
+"148225","Anthony Martial",5600
+"81420","Alijaz Cotman",4500
+"67459","Marko Pridigar",0
+"41394","Jasmin Handanovic",4800
+"50400","Marko Suler",4500
+"57184","Ales Mejac",4500
+"153809","Damjan Vuklisevic",0
+"105541","Dejan Trajkovski",4600
+"67512","Aleksandar Rajcevic",4800
+"153808","Ziga Zivko",0
+"101832","Arghus",4700
+"67385","Zeljko Filipovic",5600
+"94202","Welle N'Diaye",5100
+"104995","Sintayehu Sallalich",4900
+"67378","Agim Ibraimi",4800
+"67409","Goran Cvijanovic",0
+"165450","Amir Dervisevic",5000
+"56854","Dare Vrsic",6200
+"120071","Dino Hotic",0
+"164610","Ranko Moravac",4900
+"67514","Mitja Viler",4500
+"67575","Timotej Dodlek",0
+"153814","Petar Stojanovic",6200
+"153812","Sven Dodlek",0
+"67470","Ales Mertelj",6000
+"67455","Marcos Tavares",6800
+"153816","Luka Zahovic",5100
+"40367","Jean Philippe Mendy",6300
+"151531","Rok Sirk",5000
+"77185","Nusmir Fajic",6400
+"101967","Damjan Bohar",5100
+"192439","Lefteris Houtesiotis",0
+"40694","Roberto",4500
+"69013","Balázs Megyeri",4500
+"85355","Anastasios Avlonitis",4500
+"48353","Giannis Maniatis",5100
+"49266","Alberto Botía",5000
+"40868","José Holebas",4500
+"48437","Avraam Papadopoulos",0
+"6678","Eric Abidal",5100
+"53020","Dimitrios Siovas",4500
+"105717","Arthur Masuaku",6200
+"183008","Praxitelis Vouros",0
+"53864","Leandro Salino",4500
+"42748","Gaëtan Bong",0
+"80506","Abdisalam Ibrahim",0
+"174530","Antonis Papasavas",0
+"60343","Sambou Yatabaré",0
+"47609","Pelé",0
+"88294","Konstantinos Fortounis",0
+"52748","Delvin Ndinga",5200
+"81025","Pajtim Kasami",6900
+"91055","Dimitrios Kolovos",0
+"92293","Omar Elabdellaoui",4600
+"101155","Andreas Bouchalakis",4900
+"20121","David Fuster",5300
+"181917","Manolis Saliakas",0
+"49730","Mathieu Dossevi",0
+"165977","Boban Lazic",0
+"82642","Panagiotis Vlachodimos",0
+"10144","Javier Saviola",4500
+"40908","Alejandro Domínguez",4700
+"127575","Dimitrios Diamantakos",6200
+"167404","Jorge Benítez",5800
+"174702","Nikolaos Vergos",0
+"47672","Gevorg Ghazaryan",0
+"119190","Michael Olaitan",0
+"13353","Nicolas Douchez",4500
+"129487","Mike Maignan",0
+"21155","Salvatore Sirigu",7100
+"51090","Thiago Silva",8500
+"116406","Marquinhos",6300
+"6252","Zoumana Camara",4500
+"9809","Maxwell",6800
+"80226","Serge Aurier",5700
+"101188","Lucas Digne",5300
+"40798","Gregory Van der Wiel",6400
+"41270","David Luiz",8300
+"129479","Presnel Kimpembe",0
+"129494","Franck-Yves Bambock",0
+"27341","Yohan Cabaye",9100
+"95715","Lucas Moura",7200
+"11527","Thiago Motta",6900
+"37971","Blaise Matuidi",7100
+"38438","Clément Chantôme",4800
+"61170","Marco Verratti",7500
+"120743","Adrien Rabiot",0
+"54782","Javier Pastore",10200
+"40720","Edinson Cavani",12500
+"9808","Zlatan Ibrahimovic",13800
+"93496","Jean-Christophe Bahebeck",5200
+"45154","Ezequiel Lavezzi",10600
+"129497","Hervin Ongenda",0
+"17419","Gianluca Curci",0
+"4038","Bogdan Lobont",0
+"7446","Morgan De Sanctis",5100
+"85288","Lukasz Skorupski",4500
+"126439","Tomas Svedkauskas",0
+"3785","Ashley Cole",6100
+"61021","Leandro Castán",5200
+"126551","Alessio Romagnoli",0
+"18573","Maicon",5900
+"50761","Davide Astori",5300
+"27375","Vasilis Torosidis",5700
+"14783","Federico Balzaretti",0
+"66806","Kostas Manolas",4600
+"18277","Urby Emanuelson",0
+"38833","Radja Nainggolan",7200
+"49887","Kevin Strootman",7900
+"46696","Miralem Pjanic",12000
+"10625","Daniele De Rossi",11200
+"9954","Seydou Keita",8600
+"97617","Alessandro Florenzi",9000
+"91080","Leandro Paredes",4500
+"91149","Salih Ucan",5100
+"93538","Juan Iturbe",7000
+"56945","Adem Ljajic",9700
+"4177","Francesco Totti",12500
+"60071","Mattia Destro",8900
+"43274","Gervinho",10900
+"14731","Marco Borriello",7500
+"168598","Antonio Sanabria",4500
+"27251","Silvio Proto",4500
+"54738","Thomas Kaminski",0
+"106121","Nicaise Mulopo Kudimbana",4500
+"120108","Davy Roef",5000
+"56663","Fabrice N'Sakala",5100
+"11458","Olivier Deschacht",4600
+"76623","Bram Nuytinck",4800
+"149736","Chancel Mbemba Mangulu",6500
+"151586","Michael Heylen",0
+"189777","Matthys Herve",0
+"18679","Anthony Vanden Borre",4700
+"82533","Andy Najar",4800
+"66975","Luka Milivojevic",4600
+"106837","Dennis Praet",5200
+"39847","Steven Defour",7300
+"41703","Sacha Kljestan",6900
+"93335","Fede Vico",4500
+"166989","Youri Tielemans",4700
+"151589","Leander Dendoncker",5800
+"189776","Samuel Bastien",0
+"189778","Wigor Alan Do Nascimento",4500
+"66244","Samuel Armenteros",0
+"51781","Matías Suárez",5700
+"59798","Cyriac",4900
+"167760","Oswal Alvarez",4500
+"153460","Frank Acheampong",4800
+"185727","Aaron Leya Iseka",0
+"172951","Andy Kawaya",0
+"88720","Nathan Kabasele",0
+"128389","Aleksandar Mitrovic",7300
+"11264","Rustam Khudzhamov",0
+"135322","Bogdan Sarnavskiy",0
+"37201","Andriy Pyatov",6800
+"48495","Anton Kanibolotskiy",4500
+"170941","Mykyta Kriukov",4500
+"68137","Aleksandr Volovik",0
+"39824","Olexandr Kucher",4800
+"6912","Viacheslav Shevchuk",5000
+"93414","Ivan Ordets",4500
+"37203","Dmytro Chygrynskiy",4500
+"87497","Ismaily",4500
+"68042","Sergey Krivtsov",4500
+"76349","Yaroslav Rakitskiy",4600
+"53695","Márcio Azevedo",4900
+"119674","Eduard Sobol",0
+"84219","Vitaliy Vitsenets",0
+"41306","Olexiy Polyanskiy",0
+"68046","Taras Stepanenko",6800
+"101582","Fred",6700
+"100649","Bernard",11000
+"52664","Marlos",7100
+"65866","Fernando",6200
+"57195","Douglas Costa",9600
+"52304","Alex Teixeira",8900
+"17347","Darijo Srna",5300
+"157373","Sergiy Bolbat",0
+"45120","Ilsinho",8200
+"170908","Leonid Akulinin",0
+"100828","Wellington Nem",9900
+"47429","Luiz Adriano",8300
+"47430","Olexandr Gladkiy",5800
+"52870","Taison",7800
+"166411","Valeriy Gryshyn",0
+"61226","Dentinho",5500
+"38533","Rui Patricio",5200
+"52646","Marcelo Boeck",4500
+"148495","Ramy Rabia",4500
+"52292","Mauricio",6400
+"52294","Jefferson",6600
+"87499","Paulo Oliveira",5300
+"146360","Mahamadou-Naby Sarr",6800
+"116132","Jonathan Silva",4500
+"58822","Cédric Soares",4500
+"84719","Geraldes",0
+"28124","Shikabala",0
+"60006","André Martins",6400
+"19362","Diego Capel",6700
+"96122","William Carvalho",8700
+"109788","João Mário",4900
+"84629","Héldon",0
+"46483","Adrien Silva",7900
+"102456","Oriol Rosell",6900
+"116213","Ryan Gauld",5500
+"94465","Simeon Slavchev",5400
+"102384","Ricardo Esgaio",5800
+"38530","Nani",9600
+"149828","Islam Slimani",8100
+"57252","Fredy Montero",7600
+"100412","André Carrillo",6500
+"109448","Junya Tanaka",4500
+"130773","Carlos Mané",5100
+"82283","Juri Lodygin",5500
+"18044","Vyacheslav Malafeev",4700
+"167526","Maksim Rudakov",0
+"132089","Egor Baburin",0
+"193460","Alexander Vasyutin",0
+"18048","Alexander Anyukov",6500
+"19821","Domenico Criscito",5500
+"34949","Nicolas Lombaerts",6500
+"104276","Luís Neto",6500
+"49181","Tomas Hubocan",0
+"51111","Igor Smolnikov",5500
+"28525","Ezequiel Garay",8500
+"81495","Milan Rodic",4500
+"6903","Anatoliy Tymoshchuk",5500
+"40913","Aleksandr Ryazantsev",4700
+"13227","Andrey Arshavin",9000
+"69495","Oleg Shatov",7000
+"49230","Viktor Faizulin",8500
+"19534","Javi García",7200
+"41189","Axel Witsel",10300
+"133021","Ivan Solovyev",4500
+"53645","Hulk",10100
+"13229","Alexander Kerzhakov",9300
+"57134","Salomón Rondón",7900
+"19627","Danny",10300
+"100064","Luka Djordjevic",0
+"195544","Robin Lafarge",0
+"195545","Pedro Astray",0
+"54496","Saúl",4600
+"57136","Timothée Kolodziejczak",5000
+"88966","Jairo Rivero",4500
+"66443","Dany Nounkeu",4500
+"94248","Sergio Rico",5000
+"27671","Stéphane Mbia",7000
+"18018","Alessio Cerci",6000
+"83090","Shinji Kagawa",9500
+"38419","Loïc Remy",8600
+"27691","Roman Eremenko",6500
+"183320","Sinan Kurt",0
+"32269","Blerim Dzemaili",6000
+"15061","Goran Pandev",9300
+"141563","Federico Mattiello",0
+"61704","Jimmy Durmaz",6400
+"47434","Kostas Mitroglou",7800
+"153854","Michele Somma",0
+"124102","Pavel Mogilevets",8900
+"86989","José Cañas",4500
+"107617","Luís Martins",4500
+"43020","Javier Hernández",5500
+"100692","Naldo",4500
+"108991","Nabil Ghilas",5500
+"49952","Babá",5000
+"47645","Juanfran",4500
+"97445","Eddy",4500
+"116354","Filipe Augusto",5500
+"64661","Dejan Lekic",4500
+"13405","Diederik Boer",4500
+"51664","Niki Zimling",5000
+"50175","Danny Welbeck",8600
+"109511","Bryan Cristante",5100
+"120188","Otávio",0
+"88952","José Campaña",0
+"176357","Mory Diaw",0
+"44488","Mapou Yanga-Mbiwa",4500
+"86132","Maxime Colin",4900
+"34691","Ibrahima Conte",6900
+"121520","Hadi Sacko",4900
+"39453","Modibo Diakité",4500
+"181407","Sulayman Marreh",0
+"164692","Hendrik Bonmann",0
+"126190","Mitchell Beeney",0
+"135365","Jeremie Boga",0
+"126186","Lewis Baker",0
+"52845","Konstantinos Giannoulis",4500
+"69635","Tarik Camdal",4500
+"67448","Matic Crnic",5000
+"119410","Luís Ribeiro",0
+"196974","Gaspar",0
+"196989","Alperen Uysal",0
+"112381","Georgi Argilashki",0
+"196959","Gabriele Marchegiani",0
+"161921","Elio Capradossi",0
+"155895","Arturo Calabresi",0
+"175204","David Soria",4500
+"111253","Joseph-Claude Gyau",0
+"197030","Aboubakar Kamara",0
+"78313","Dudu Biton",6400
+"102912","Mustafa Amini",0
+"197195","Emil Gospodinov",0
+"87403","Milan Borjan",4600
+"185082","Kristiyan Kitov",0
+"197333","Santamaría",4500
+"197365","Eric Bailly",4500
+"178874","Juan Soriano",0
+"195543","Edu Payá",5000
+"168233","Sergio Aguza",0
+"192750","Queensy Menig",0
+"4098","John Arne Riise",4500
+"146426","Semi Ajayi",0
+"180162","Lukas Boeder",0
+"161950","Aleksandr Golovin",0
+"198099","Giacomo Volpe",0
+"134384","Jordan Williams",0
+"141281","Jordan Rossiter",0
+"130039","Sinan Bytyqi",0
+"114323","Jose Pozo",0
+"153867","Daniele Verde",0
+"161938","Dzhamaldin Khodzhanyiazov",0

@@ -8,6 +8,7 @@ import com.mongodb.WriteResult;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
+import utils.BatchWriteOperation;
 import utils.ListUtils;
 
 import java.util.ArrayList;
@@ -246,7 +247,7 @@ public class TemplateContest implements JongoId, Initializer {
         List<MatchEvent> matchEvents = getMatchEvents();
 
         // Actualizamos los rankings de cada contest
-        BulkWriteOperation bulkOperation = Model.contests().getDBCollection().initializeOrderedBulkOperation();
+        BatchWriteOperation bulkOperation = new BatchWriteOperation(Model.contests().getDBCollection().initializeOrderedBulkOperation());
          for (Contest contest : contests) {
             contest.updateRanking(bulkOperation, this, matchEvents);
         }

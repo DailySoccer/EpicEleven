@@ -126,6 +126,11 @@ public class Model {
         ensureDB(_mongoDB);
 
         PointsTranslation.createDefault();
+        TemplateSoccerTeam.createInvalidTeam();
+    }
+
+    static public void dropDB() {
+        dropDB(_mongoDB);
     }
 
     static private void dropDB(DB theMongoDB) {

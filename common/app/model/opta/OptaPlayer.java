@@ -1,6 +1,5 @@
 package model.opta;
 
-import org.bson.types.ObjectId;
 import model.GlobalDate;
 import model.Model;
 import org.jdom2.Element;
@@ -14,12 +13,9 @@ import java.util.List;
 public class OptaPlayer {
     public String optaPlayerId;
     public String name;
-    public String firstname;
-    public String lastname;
     public String nickname;
     public String position;
     public String teamId;
-    public String teamName;
     public Date updatedTime;
     public boolean dirty = true;
 
@@ -29,12 +25,9 @@ public class OptaPlayer {
 
         if (playerObject.getAttribute("firstname") != null) {
             optaPlayerId = OptaProcessor.getStringId(playerObject, "id");
-            firstname = playerObject.getAttributeValue("firstname");
-            lastname = playerObject.getAttributeValue("lastname");
-            name = firstname + " " + lastname;
+            name = playerObject.getAttributeValue("firstname") + " " + playerObject.getAttributeValue("lastname");
             position = playerObject.getAttributeValue("position");
             teamId = OptaProcessor.getStringId(teamObject, "id");
-            teamName = teamObject.getAttributeValue("name");
         }
         else {
             optaPlayerId = OptaProcessor.getStringId(playerObject, "uID");
@@ -48,9 +41,8 @@ public class OptaPlayer {
                 if (playerObject.getChild("PersonName").getChild("Known") != null) {
                     nickname = playerObject.getChild("PersonName").getChild("Known").getContent().get(0).getValue();
                 }
-                firstname = playerObject.getChild("PersonName").getChild("First").getContent().get(0).getValue();
-                lastname = playerObject.getChild("PersonName").getChild("Last").getContent().get(0).getValue();
-                name = firstname + " " + lastname;
+                name = playerObject.getChild("PersonName").getChild("First").getContent().get(0).getValue() + " "
+                        + playerObject.getChild("PersonName").getChild("Last").getContent().get(0).getValue();
             }
             else {
                 Logger.error("WTF 29211: No name for optaPlayerId " + optaPlayerId);
@@ -65,17 +57,26 @@ public class OptaPlayer {
             }
 
             teamId = OptaProcessor.getStringId(teamObject, "uID");
-            teamName = teamObject.getChild("Name").getContent().get(0).getValue();
         }
 
         updatedTime = GlobalDate.getCurrentDate();
     }
 
+    public String getTeamName() {
+
+        if (this.teamId != null && !this.teamId.equals(OptaTeam.INVALID_TEAM)) {
+            OptaTeam optaTeam = OptaTeam.findOne(this.teamId);
+            if (optaTeam != null) {
+                return optaTeam.name;
+            }
+        }
+        return "UNKNOWN";
+    }
+
     public boolean hasChanged(OptaPlayer optaPlayer) {
         return  (name == null)      || !name.equals(optaPlayer.name)            ||
                 (position == null)  || !position.equals(optaPlayer.position)    ||
-                (teamId == null)    || !teamId.equals(optaPlayer.teamId)        ||
-                (teamName == null)  || !teamName.equals(optaPlayer.teamName);
+                (teamId == null)    || !teamId.equals(optaPlayer.teamId);
     }
 
     static public List<OptaPlayer> findAllFromTeam(String optaTeamId) {

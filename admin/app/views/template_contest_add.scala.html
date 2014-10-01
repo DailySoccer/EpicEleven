@@ -1,7 +1,6 @@
 @(templateContestForm: Form[controllers.admin.TemplateContestForm], matchEventsOptions: HashMap[String, String])
 
 @import helper._
-@import helper.twitterBootstrap._
 @import model._
 @import utils.EnumUtils
 @import controllers.admin.routes._
@@ -129,12 +128,6 @@
             )
             </form>
         </div>
-        <!--
-        @inputDate(
-            templateContestForm("startDate"),
-            '_label -> "Start Date"
-        )
-        -->
 
         <div class="col-md-5">
         @if(matchEventsOptions.isEmpty) {

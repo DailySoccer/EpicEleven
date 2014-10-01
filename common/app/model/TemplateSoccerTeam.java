@@ -89,4 +89,15 @@ public class TemplateSoccerTeam implements JongoId, Initializer {
     static public boolean isInvalid(OptaTeam optaTeam) {
         return (optaTeam.name == null || optaTeam.name.isEmpty() || optaTeam.shortName == null || optaTeam.shortName.isEmpty());
     }
+
+    static public void createInvalidTeam() {
+        OptaTeam.createInvalidTeam();
+
+        TemplateSoccerTeam invalidTeam = new TemplateSoccerTeam();
+        invalidTeam.optaTeamId = OptaTeam.INVALID_TEAM;
+        invalidTeam.name = "-Unknown-";
+        invalidTeam.shortName = "XXX";
+        invalidTeam.createdAt = GlobalDate.getCurrentDate();
+        Model.templateSoccerTeams().insert(invalidTeam);
+    }
 }
