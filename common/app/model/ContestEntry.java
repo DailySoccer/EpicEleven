@@ -5,6 +5,7 @@ import com.mongodb.*;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
+import utils.BatchWriteOperation;
 import utils.ListUtils;
 
 import java.util.ArrayList;
@@ -54,7 +55,7 @@ public class ContestEntry implements JongoId {
                     position, fantasyPoints, prize);
     }
 
-    public void updateRanking(BulkWriteOperation bulkOperation) {
+    public void updateRanking(BatchWriteOperation bulkOperation) {
         // Logger.info("ContestEntry: {} | UserId: {} | Position: {} | FantasyPoints: {}", contestEntryId, userId, position, fantasyPoints);
 
         DBObject query = new BasicDBObject("contestEntries._id", getId());

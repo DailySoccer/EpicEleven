@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.BulkWriteOperation;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
+import utils.BatchWriteOperation;
 import utils.ListUtils;
 import utils.ViewProjection;
 
@@ -141,7 +142,11 @@ public class Contest implements JongoId {
                 .as(Contest.class));
     }
 
-    public void updateRanking(BulkWriteOperation bulkOperation, TemplateContest templateContest, List<MatchEvent> matchEvents) {
+    public void updateRanking(BatchWriteOperation bulkOperation, TemplateContest templateContest, List<MatchEvent> matchEvents) {
+        if (contestEntries.isEmpty()) {
+            return;
+        }
+
         // Actualizamos los fantasy points
         for (ContestEntry contestEntry : contestEntries) {
             contestEntry.fantasyPoints = contestEntry.getFantasyPointsFromMatchEvents(matchEvents);
@@ -159,6 +164,10 @@ public class Contest implements JongoId {
     }
 
     public void givePrizes() {
+        if (contestEntries.isEmpty()) {
+            return;
+        }
+
         ContestEntry winner = null;
 
         for (ContestEntry contestEntry : contestEntries) {
