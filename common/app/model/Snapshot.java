@@ -63,7 +63,7 @@ public class Snapshot {
                                      append("fromdb", "snapshot").
                                      append("todb",   "dailySoccerDB");
 
-        Model.resetDB();
+        Model.dropDB();
         CommandResult a = _mongoDBAdmin.command(copyOp);
         if (a.getErrorMessage() != null) {
             Logger.error(a.getErrorMessage());

@@ -129,6 +129,10 @@ public class Model {
         TemplateSoccerTeam.createInvalidTeam();
     }
 
+    static public void dropDB() {
+        dropDB(_mongoDB);
+    }
+
     static private void dropDB(DB theMongoDB) {
 
         for (String collection : theMongoDB.getCollectionNames()) {
