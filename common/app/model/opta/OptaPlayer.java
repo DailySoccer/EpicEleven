@@ -63,7 +63,14 @@ public class OptaPlayer {
     }
 
     public String getTeamName() {
-        return OptaTeam.findOne(this.teamId).name;
+
+        if (this.teamId != null && !this.teamId.equals(OptaTeam.INVALID_TEAM)) {
+            OptaTeam optaTeam = OptaTeam.findOne(this.teamId);
+            if (optaTeam != null) {
+                return optaTeam.name;
+            }
+        }
+        return "UNKNOWN";
     }
 
     public boolean hasChanged(OptaPlayer optaPlayer) {
