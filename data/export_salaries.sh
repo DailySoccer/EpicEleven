@@ -1,3 +1,3 @@
 #!/bin/sh
 mypwd=$PWD
-mongoexport -d dailySoccerDB -c templateSoccerPlayersMetadata  --csv -f optaPlayerId,name,salary -o $mypwd/$1
+mongoexport -d dailySoccerDB -c templateSoccerPlayers  --csv -f optaPlayerId,name,salary -o $mypwd/$1
