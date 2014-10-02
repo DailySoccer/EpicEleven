@@ -78,18 +78,17 @@ public class OptaSimulator implements Runnable {
         // Siempre comenzamos pausados
         _paused = true;
 
-        loadNextDocument();
         updateDate(_state.simulationDate);
     }
 
-    private void loadNextDocument() {
+    private void ensureNextDocument() {
         Timeout timeout = new Timeout(scala.concurrent.duration.Duration.create(5, TimeUnit.SECONDS));
         ActorSelection actorRef = Akka.system().actorSelection("/user/OptaProcessorActor");
 
-        Future<Object> response = Patterns.ask(actorRef, "SimulatorLoadNextDocument", timeout);
+        Future<Object> response = Patterns.ask(actorRef, "SimulatorEnsureNextDocument", timeout);
 
         try {
-            OptaProcessorActor.NextDocMsg nextDocMsg = (OptaProcessorActor.NextDocMsg )Await.result(response, timeout.duration());
+            OptaProcessorActor.NextDocMsg nextDocMsg = (OptaProcessorActor.NextDocMsg)Await.result(response, timeout.duration());
 
             _nextDocDate = nextDocMsg.date;
             _nextDocId = nextDocMsg.id;
@@ -100,7 +99,7 @@ public class OptaSimulator implements Runnable {
     }
 
     private void processNextDocument() {
-        // Sin bloquear... dejamos que vaya procesando mientras nosotros seguimos en nuestro bucle
+        // Sin bloquear... dejamos que vaya procesando mientras nosotros seguimos en nuestro bucle (bloquearemos en ensureNextDocument en realidad)
         Akka.system().actorSelection("/user/OptaProcessorActor").tell("SimulatorProcessNextDocument", ActorRef.noSender());
     }
 
@@ -202,10 +201,9 @@ public class OptaSimulator implements Runnable {
 
     public boolean nextStep(int speedFactor) {
 
-        // Sera null solo si hemos llegado al final de todos los ficheros => vemos si ha entrado uno nuevo
-        if (_nextDocDate == null) {
-            loadNextDocument();
-        }
+        // Si el actor esta procesando ticks, esto asegura que aqui tenemos la ultima fecha del siguiente doc. Ademas
+        // chequea si han llegado nuevos docs desde la ultima vez que llegamos al ultimo.
+        ensureNextDocument();
 
         // En nextStep siempre entramos con el puntero apuntando al siguiente doc (o hemos llegado al final)
         if (_nextDocDate != null) {
@@ -220,7 +218,7 @@ public class OptaSimulator implements Runnable {
 
             if (GlobalDate.getCurrentDate().equals(_nextDocDate) && !_stopSignal) {
                 processNextDocument();
-                loadNextDocument();
+                ensureNextDocument();
             }
         }
 

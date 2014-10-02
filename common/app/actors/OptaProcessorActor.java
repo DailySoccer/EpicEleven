@@ -13,6 +13,7 @@ import org.apache.commons.dbutils.DbUtils;
 import play.Logger;
 import play.db.DB;
 import scala.concurrent.duration.Duration;
+
 import java.sql.*;
 import java.util.Date;
 import java.util.HashSet;
@@ -44,7 +45,7 @@ public class OptaProcessorActor extends UntypedActor {
                 processNextDocument();
                 break;
 
-            case "SimulatorLoadNextDocument":
+            case "SimulatorEnsureNextDocument":
                 ensureNextDocument();
 
                 // Mandamos de vuelta la info del siguiente doc que procesaremos al llamar a Tick o SimulatorProcessNextDocument
@@ -82,7 +83,7 @@ public class OptaProcessorActor extends UntypedActor {
 
             if (_optaResultSet.next()) {
                 _nextDocMsg = new NextDocMsg(_optaResultSet.getTimestamp("created_at"),
-                                               _optaResultSet.getInt(1));
+                                             _optaResultSet.getInt(1));
             }
             else {
                 // TODO: _DocumentsPerQuery == 1
@@ -92,7 +93,7 @@ public class OptaProcessorActor extends UntypedActor {
 
                 if (_optaResultSet.next()) {
                     _nextDocMsg = new NextDocMsg(_optaResultSet.getTimestamp("created_at"),
-                                                   _optaResultSet.getInt(1));
+                                                 _optaResultSet.getInt(1));
                 }
                 else {
                     closeConnection();
