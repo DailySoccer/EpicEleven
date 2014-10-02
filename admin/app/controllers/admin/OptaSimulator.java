@@ -268,8 +268,6 @@ public class OptaSimulator implements Runnable {
     volatile boolean _paused;
     volatile boolean _stopSignal;
 
-    final int RESULTS_PER_QUERY = 500;
-
     Date _nextDocDate;
     int  _nextDocId = -1;
     static final Duration SLEEPING_DURATION = new Duration(1000);
