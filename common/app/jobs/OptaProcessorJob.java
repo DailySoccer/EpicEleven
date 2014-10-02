@@ -4,7 +4,6 @@ import model.GlobalDate;
 import model.MatchEvent;
 import model.Model;
 import model.TemplateContest;
-import model.opta.OptaCompetition;
 import model.opta.OptaEvent;
 import model.opta.OptaProcessor;
 import model.opta.OptaXmlUtils;
@@ -120,6 +119,13 @@ public class OptaProcessorJob {
         }
     }
 
+    static public void setProcessedDate(Date date) {
+        OptaProcessorState state = OptaProcessorState.findOne();
+        state.lastProcessedDate = date;
+        Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with(state);
+    }
+
+
     private static void onOptaMatchEventIdsChanged(HashSet<String> changedOptaMatchEventIds) {
 
         for (String optaGameId : changedOptaMatchEventIds) {
@@ -190,6 +196,7 @@ public class OptaProcessorJob {
 
         matchEvent.saveStats();
     }
+
 
     static private class OptaProcessorState {
         static final String UNIQUE_ID = "--OptaProcessorState--";

@@ -61,6 +61,15 @@ public class SimulatorController extends Controller {
         public Date date;
     }
 
+    public static Result replayDate() {
+        Form<GotoSimParams> gotoForm = form(GotoSimParams.class).bindFromRequest();
+        GotoSimParams params = gotoForm.get();
+
+        OptaSimulator.instance().replayDate(new DateTime(params.date).withZoneRetainFields(DateTimeZone.UTC).toDate());
+
+        return ok();
+    }
+
     public static Result gotoDate() {
 
         Form<GotoSimParams> gotoForm = form(GotoSimParams.class).bindFromRequest();
@@ -70,6 +79,7 @@ public class SimulatorController extends Controller {
 
         return ok();
     }
+
 
     public static String getCurrentDate() {
         return GlobalDate.getCurrentDateString();
