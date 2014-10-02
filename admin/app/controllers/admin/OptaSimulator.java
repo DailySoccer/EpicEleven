@@ -1,8 +1,11 @@
 package controllers.admin;
 
-import jobs.InstantiateContestsJob;
+import akka.actor.ActorRef;
 import jobs.OptaProcessorJob;
-import model.*;
+import model.GlobalDate;
+import model.MockData;
+import model.Model;
+import model.Snapshot;
 import model.opta.OptaProcessor;
 import model.opta.OptaXmlUtils;
 import org.apache.commons.dbutils.DbUtils;
@@ -10,6 +13,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import play.Logger;
 import play.db.DB;
+import play.libs.Akka;
 
 import java.sql.*;
 import java.util.Date;
@@ -170,7 +174,7 @@ public class OptaSimulator implements Runnable {
             _snapshot.update(_state.simulationDate);
         }
 
-        InstantiateContestsJob.instantiateContestsTask();
+        Akka.system().actorSelection("/user/InstantiateConstestsActor").tell("SimulatorTick", ActorRef.noSender());
     }
 
     public boolean nextStep(int speedFactor) {
