@@ -64,7 +64,7 @@ public class OptaProcessorActor extends UntypedActor {
 
     private static void resetState() {
         Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with("{$set: {isProcessing: false}}");
-        Logger.info("OptaProcessorJob.resetState ejecutado");
+        Logger.info("OptaProcessorActor.resetState ejecutado");
     }
 
 
@@ -129,6 +129,9 @@ public class OptaProcessorActor extends UntypedActor {
             // Punto de recuperacion 2. Al saltar una excepcion, no ponemos _nextDocMsg a null y por lo tanto reintentaremos
             Logger.error("WTF 7817", e);
         }
+        finally {
+            resetState();
+        }
     }
 
     static private void processCurrentDocumentInResultSet(ResultSet resultSet, OptaProcessor processor) throws SQLException {
@@ -166,7 +169,6 @@ public class OptaProcessorActor extends UntypedActor {
         onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
 
         state.lastProcessedDate = created_at;
-        Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with(state);
     }
 
     static private void onOptaMatchEventIdsChanged(HashSet<String> changedOptaMatchEventIds) {
