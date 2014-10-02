@@ -146,7 +146,7 @@ public class OptaProcessorJob {
                     matchEvent.updateState();
 
                     // Si HA TERMINADO, lo marcamos y lanzamos las acciones de matchEventIsFinished
-                    if (!matchEvent.isGameFinished() && OptaEvent.isGameFinished(matchEvent.optaMatchEventId)) {
+                    if (matchEvent.isPostGame() && !matchEvent.isGameFinished() && OptaEvent.isGameFinished(matchEvent.optaMatchEventId)) {
                         matchEvent.setGameFinished();
                         actionWhenMatchEventIsFinished(matchEvent);
                     }
