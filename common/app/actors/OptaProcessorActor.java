@@ -29,11 +29,15 @@ public class OptaProcessorActor extends UntypedActor {
 
         switch ((String)msg) {
             case "Start":
+                // Es posible que se parara justo cuando estaba en isProcessing == true
+                resetState();
+
+                // Hacemos un primer Tick
             case "Tick":
                 // Reciclamos memoria (podriamos probar a dejar el cache y reciclar cada cierto tiempo...)
                 _optaProcessor = new OptaProcessor();
 
-                ensureNextDocument();
+                ensureNextDocument(REGULAR_DOCUMENTS_PER_QUERY);
                 processNextDocument();
 
                 // Reeschudeleamos una llamada a nosotros mismos para el siguiente Tick
@@ -46,7 +50,7 @@ public class OptaProcessorActor extends UntypedActor {
                 break;
 
             case "SimulatorEnsureNextDocument":
-                ensureNextDocument();
+                ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
 
                 // Mandamos de vuelta la info del siguiente doc que procesaremos al llamar a Tick o SimulatorProcessNextDocument
                 sender().tell(_nextDocMsg, getSelf());
@@ -57,6 +61,12 @@ public class OptaProcessorActor extends UntypedActor {
                 break;
         }
     }
+
+    private static void resetState() {
+        Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with("{$set: {isProcessing: false}}");
+        Logger.info("OptaProcessorJob.resetState ejecutado");
+    }
+
 
     public static Date getLastProcessedDate() {
         OptaProcessorState state = OptaProcessorState.findOne();
@@ -69,7 +79,7 @@ public class OptaProcessorActor extends UntypedActor {
         }
     }
 
-    private void ensureNextDocument() {
+    private void ensureNextDocument(int documentsPerQuery) {
 
         // Somos una ensure, si el siguiente documento ya esta cargado simplemente retornamos. _nextDocMsg se pone
         // a null en processNextDocument, a la espera de que se ordene asegurar el siguiente
@@ -79,7 +89,7 @@ public class OptaProcessorActor extends UntypedActor {
         ensureConnection();
 
         try {
-            queryNextResultSet();
+            queryNextResultSet(documentsPerQuery);
 
             if (_optaResultSet.next()) {
                 _nextDocMsg = new NextDocMsg(_optaResultSet.getTimestamp("created_at"),
@@ -89,7 +99,7 @@ public class OptaProcessorActor extends UntypedActor {
                 // TODO: _DocumentsPerQuery == 1
 
                 // Volvemos a intentar leer. Si no hay mas resultados, ahora si, hemos llegado al final.
-                queryNextResultSet();
+                queryNextResultSet(documentsPerQuery);
 
                 if (_optaResultSet.next()) {
                     _nextDocMsg = new NextDocMsg(_optaResultSet.getTimestamp("created_at"),
@@ -105,7 +115,6 @@ public class OptaProcessorActor extends UntypedActor {
         }
         catch (Exception e) {
             // Punto de recuperacion 1. Al saltar una excepcion no habremos cambiado _nextDocMsg y por lo tanto reintentaremos
-            // TODO: Let it die?
             Logger.error("WTF 1533", e);
         }
     }
@@ -226,7 +235,7 @@ public class OptaProcessorActor extends UntypedActor {
         matchEvent.saveStats();
     }
 
-    private void queryNextResultSet() throws SQLException {
+    private void queryNextResultSet(int documentsPerQuery) throws SQLException {
 
         if (_optaResultSet == null || _optaResultSet.isAfterLast()) {
 
@@ -239,7 +248,7 @@ public class OptaProcessorActor extends UntypedActor {
             _stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml WHERE created_at > '"
                                                 + new Timestamp(lastProcessedDate.getTime()) +
-                                                "' ORDER BY created_at LIMIT " + "1" + ";");
+                                                "' ORDER BY created_at LIMIT " + documentsPerQuery + ";");
         }
     }
 
@@ -258,6 +267,8 @@ public class OptaProcessorActor extends UntypedActor {
         _optaResultSet = null;
     }
 
+    final int SIMULATOR_DOCUMENTS_PER_QUERY = 1000;
+    final int REGULAR_DOCUMENTS_PER_QUERY = 1;
 
     Connection _connection;
     ResultSet _optaResultSet;
