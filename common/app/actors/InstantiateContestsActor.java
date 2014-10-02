@@ -19,7 +19,8 @@ public class InstantiateContestsActor extends UntypedActor {
             case "Start":
             case "Tick":
                 onTick();
-                reschedule();
+                getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
+                                                               "Tick", getContext().dispatcher(), null);
                 break;
 
             // En el caso del SimulatorTick no tenemos que reeschedulear el mensaje porque es el Simulator el que se
@@ -32,11 +33,6 @@ public class InstantiateContestsActor extends UntypedActor {
                 unhandled(msg);
                 break;
         }
-    }
-
-    private void reschedule() {
-        getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS),
-                                                       getSelf(), "Tick", getContext().dispatcher(), null);
     }
 
     private void onTick() {
