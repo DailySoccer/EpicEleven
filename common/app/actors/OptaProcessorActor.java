@@ -30,7 +30,7 @@ public class OptaProcessorActor extends UntypedActor {
         switch ((String)msg) {
             case "Start":
                 // Es posible que se parara justo cuando estaba en isProcessing == true
-                resetState();
+                resetIsProcessing();
 
                 // Hacemos un primer Tick
             case "Tick":
@@ -62,9 +62,8 @@ public class OptaProcessorActor extends UntypedActor {
         }
     }
 
-    private static void resetState() {
+    private static void resetIsProcessing() {
         Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with("{$set: {isProcessing: false}}");
-        Logger.info("OptaProcessorActor.resetState ejecutado");
     }
 
 
@@ -130,7 +129,7 @@ public class OptaProcessorActor extends UntypedActor {
             Logger.error("WTF 7817", e);
         }
         finally {
-            resetState();
+            resetIsProcessing();
         }
     }
 
