@@ -8,6 +8,7 @@ import com.mongodb.WriteResult;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
+import play.Play;
 import utils.BatchWriteOperation;
 import utils.ListUtils;
 
@@ -178,7 +179,7 @@ public class TemplateContest implements JongoId, Initializer {
         long instances = Model.contests().count("{templateContestId: #}", templateContestId);
 
         for (long i=instances; i < minInstances; i++) {
-            instantiateContest(true);
+            instantiateContest(/*addMockDataUsers*/ !Play.isProd());
         }
 
         // Incluir los premios del torneo (ya no se podrá cambiar la forma de calcularlo)
