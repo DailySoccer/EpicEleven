@@ -265,6 +265,7 @@ public class OptaProcessor {
             processGoalsConcededOrCleanSheet(F9, teamData, cleanSheet);
         }
 
+        createEvent(F9, null, 0, OptaEventType.GAME_END.code, 9998, 1);
         OptaMatchEventStats stats = new OptaMatchEventStats(_gameId, teamDatas);
         Model.optaMatchEventStats().update("{optaMatchEventId: #}", _gameId).upsert().with(stats);
     }
@@ -315,7 +316,7 @@ public class OptaProcessor {
 
     private void createEvent(Element F9, Element matchPlayer, int teamId, int typeId, int eventId, int times) {
 
-        String playerId = getStringId(matchPlayer, "PlayerRef");
+        String playerId = matchPlayer!=null? getStringId(matchPlayer, "PlayerRef"): null;
         Date timestamp = GlobalDate.parseDate(F9.getChild("MatchData").getChild("MatchInfo").getAttributeValue("TimeStamp"), null);
 
         PointsTranslation pointsTranslation = getPointsTranslation(typeId, timestamp);
