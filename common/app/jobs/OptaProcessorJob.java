@@ -177,7 +177,11 @@ public class OptaProcessorJob {
             // Si el contest ha terminado (true si todos sus partidos han terminado)
             if (templateContest.isFinished()) {
                 Model.templateContests().update("{_id: #, state: \"LIVE\"}", templateContest.templateContestId).with("{$set: {state: \"HISTORY\"}}");
-                Model.contests().update("{templateContestId: #, state: \"LIVE\"}", templateContest.templateContestId).with("{$set: {state: \"HISTORY\"}}");
+
+                Model.contests()
+                        .update("{templateContestId: #, state: \"LIVE\"}", templateContest.templateContestId)
+                        .multi()
+                        .with("{$set: {state: \"HISTORY\"}}");
 
                 // Aqui es el único sitio donde se darán los premios
                 templateContest.givePrizes();
