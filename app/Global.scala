@@ -36,7 +36,7 @@ object Global extends GlobalSettings {
     Logger.info("Application has started")
 
     model.Model.init()
-    actors.DailySoccerActors.init(isWorker);
+    actors.DailySoccerActors.init(false);
   }
 
   override def onStop(app: Application) {

@@ -13,7 +13,6 @@ import org.apache.commons.dbutils.DbUtils;
 import play.Logger;
 import play.db.DB;
 import scala.concurrent.duration.Duration;
-
 import java.sql.*;
 import java.util.Date;
 import java.util.HashSet;
@@ -47,6 +46,9 @@ public class OptaProcessorActor extends UntypedActor {
 
             case "SimulatorLoadNextDocument":
                 ensureNextDocument();
+
+                // Mandamos de vuelta la info del siguiente doc que procesaremos al llamar a Tick o SimulatorProcessNextDocument
+                sender().tell(_nextDocMsg, getSelf());
                 break;
 
             default:
@@ -68,9 +70,9 @@ public class OptaProcessorActor extends UntypedActor {
 
     private void ensureNextDocument() {
 
-        // Somos una ensure, si el siguiente documento ya esta cargado, simplemente retornamos. _nextDocInfo se pone
+        // Somos una ensure, si el siguiente documento ya esta cargado simplemente retornamos. _nextDocMsg se pone
         // a null en processNextDocument, a la espera de que se ordene asegurar el siguiente
-        if (_nextDocInfo != null)
+        if (_nextDocMsg != null)
             return;
 
         ensureConnection();
@@ -79,30 +81,29 @@ public class OptaProcessorActor extends UntypedActor {
             queryNextResultSet();
 
             if (_optaResultSet.next()) {
-                _nextDocInfo = new NextDocInfo(_optaResultSet.getTimestamp("created_at"),
+                _nextDocMsg = new NextDocMsg(_optaResultSet.getTimestamp("created_at"),
                                                _optaResultSet.getInt(1));
             }
             else {
-
                 // TODO: _DocumentsPerQuery == 1
 
                 // Volvemos a intentar leer. Si no hay mas resultados, ahora si, hemos llegado al final.
                 queryNextResultSet();
 
                 if (_optaResultSet.next()) {
-                    _nextDocInfo = new NextDocInfo(_optaResultSet.getTimestamp("created_at"),
+                    _nextDocMsg = new NextDocMsg(_optaResultSet.getTimestamp("created_at"),
                                                    _optaResultSet.getInt(1));
                 }
                 else {
                     closeConnection();
                     Logger.info("Hemos llegado al ultimo documento XML");
 
-                    _nextDocInfo = new NextDocInfo(null, -1);
+                    _nextDocMsg = new NextDocMsg(null, -1);
                 }
             }
         }
         catch (Exception e) {
-            // Punto de recuperacion 1. Al saltar una excepcion no habremos cambiado _nextDocInfo y por lo tanto reintentaremos
+            // Punto de recuperacion 1. Al saltar una excepcion no habremos cambiado _nextDocMsg y por lo tanto reintentaremos
             // TODO: Let it die?
             Logger.error("WTF 1533", e);
         }
@@ -111,10 +112,10 @@ public class OptaProcessorActor extends UntypedActor {
     private void processNextDocument() {
         try {
             processCurrentDocumentInResultSet(_optaResultSet, _optaProcessor);
-            _nextDocInfo = null;
+            _nextDocMsg = null;
         }
         catch (Exception e) {
-            // Punto de recuperacion 2. Al saltar una excepcion, no ponemos _nextDocInfo a null y por lo tanto reintentaremos
+            // Punto de recuperacion 2. Al saltar una excepcion, no ponemos _nextDocMsg a null y por lo tanto reintentaremos
             Logger.error("WTF 7817", e);
         }
     }
@@ -207,8 +208,8 @@ public class OptaProcessorActor extends UntypedActor {
 
     private static void actionWhenMatchEventIsFinished(MatchEvent matchEvent) {
         // Buscamos los template contests que incluyan ese partido y que esten en "LIVE"
-        Iterable<TemplateContest> templateContests = Model.templateContests().find("{templateMatchEventIds: {$in:[#]}, state: \"LIVE\"}",
-                matchEvent.templateMatchEventId).as(TemplateContest.class);
+        Iterable<TemplateContest> templateContests = Model.templateContests()
+                .find("{templateMatchEventIds: {$in:[#]}, state: \"LIVE\"}", matchEvent.templateMatchEventId).as(TemplateContest.class);
 
         for (TemplateContest templateContest : templateContests) {
             // Si el contest ha terminado (true si todos sus partidos han terminado)
@@ -262,7 +263,7 @@ public class OptaProcessorActor extends UntypedActor {
     Statement _stmt;
     OptaProcessor _optaProcessor;
 
-    NextDocInfo _nextDocInfo;
+    NextDocMsg _nextDocMsg;
 
 
     static private class OptaProcessorState {
@@ -277,11 +278,10 @@ public class OptaProcessorActor extends UntypedActor {
         }
     }
 
+    public class NextDocMsg {
+        final public Date date;
+        final public int id;
 
-    public class NextDocInfo {
-        final Date date;
-        final int id;
-
-        public NextDocInfo(Date d, int i) { date = d; id = i; }
+        public NextDocMsg(Date d, int i) { date = d; id = i; }
     }
 }

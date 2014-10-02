@@ -19,10 +19,12 @@ public class DailySoccerActors {
     //
     static public void init(boolean bIsWorker) {
 
-        final ActorRef insActor = Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateConstestsActor");
+        final ActorRef instantiateConstestsActorActor = Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateConstestsActor");
+        final ActorRef optaProcessorActor = Akka.system().actorOf(Props.create(OptaProcessorActor.class), "OptaProcessorActor");
 
         if (bIsWorker) {
-            insActor.tell("Start", ActorRef.noSender());
+            instantiateConstestsActorActor.tell("Start", ActorRef.noSender());
+            optaProcessorActor.tell("Start", ActorRef.noSender());
         }
     }
 
@@ -32,10 +34,5 @@ public class DailySoccerActors {
 
         // Hacemos un 'join' para asegurar que no matamos el modelo estando todavia procesando
         Akka.system().awaitTermination();
-    }
-
-
-    private DailySoccerActors() {
-
     }
 }
