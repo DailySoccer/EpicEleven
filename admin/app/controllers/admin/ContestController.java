@@ -34,10 +34,9 @@ public class ContestController extends Controller {
                     case 1: return String.valueOf(contest.contestEntries.size());
                     case 2: return String.valueOf(contest.maxEntries);
                     case 3: return contest.templateContestId.toString();
-                    case 4: TemplateContest templateContest = TemplateContest.findOne(contest.templateContestId);
-                            if(templateContest.isHistory()) {
+                    case 4: if(contest.isHistory()) {
                                 return "Finished";
-                            } else if(templateContest.isLive()) {
+                            } else if(contest.isLive()) {
                                 return "Live";
                             } else {
                                 return "Waiting";

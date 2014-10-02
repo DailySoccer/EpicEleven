@@ -136,16 +136,6 @@ public class TemplateMatchEvent implements JongoId, Initializer {
     public boolean isGameStarted()  { return gameStartedDate != null;  }
     public boolean isGameFinished() { return gameFinishedDate != null; }
 
-    public boolean isStarted()  {
-        MatchEvent matchEvent = MatchEvent.findOneFromTemplate(templateMatchEventId);
-        return (matchEvent != null) && matchEvent.isGameStarted();
-    }
-
-    public boolean isFinished() {
-        MatchEvent matchEvent = MatchEvent.findOneFromTemplate(templateMatchEventId);
-        return (matchEvent != null) && matchEvent.isGameFinished();
-    }
-
     public int getFantasyPointsForTeam(ObjectId templateSoccerTeamId) {
         int points = 0;
         for (TemplateSoccerPlayer soccerPlayer : TemplateSoccerPlayer.findAllFromTemplateTeam(templateSoccerTeamId)) {

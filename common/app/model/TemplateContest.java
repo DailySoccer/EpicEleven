@@ -221,7 +221,7 @@ public class TemplateContest implements JongoId, Initializer {
 
         // El Contest ha comenzado si cualquiera de sus partidos ha comenzado
         for(TemplateMatchEvent templateMatchEvent : TemplateMatchEvent.findAll(templateMatchEventIds)) {
-            if (templateMatchEvent.isStarted()) {
+            if (templateMatchEvent.isGameStarted()) {
                 started = true;
                 break;
             }
@@ -239,7 +239,7 @@ public class TemplateContest implements JongoId, Initializer {
 
         // El Contest ha terminado si TODOS sus partidos han terminado
         for (TemplateMatchEvent templateMatchEvent : TemplateMatchEvent.findAll(templateMatchEventIds)) {
-            if (!templateMatchEvent.isFinished()) {
+            if (!templateMatchEvent.isGameFinished()) {
                 finished = false;
                 break;
             }
