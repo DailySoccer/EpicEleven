@@ -130,6 +130,29 @@ public class OptaSimulator implements Runnable {
         start();
     }
 
+    public void replayDate(Date date) {
+
+        Model.optaEvents().remove("{timestamp: {$gte: #}}", date);
+
+        Model.matchEvents().update("{startDate: {$gte: #}}", date).multi().with("{$unset: {gameStartedDate: \"\", gameFinishedDate: \"\"}}");
+        Model.contests().update("{startDate: {$gte: #}}", date).multi().with("{$set: {state: \"ACTIVE\"}}");
+
+        Model.templateContests().update("{startDate: {$gte: #}}", date).multi().with("{$set: {state: \"ACTIVE\"}}");
+
+
+
+        MatchEvent.resetFantasyPointsFrom(date);
+
+        OptaProcessorJob.setProcessedDate(date);
+
+        _state.simulationDate = new DateTime(date).minusSeconds(2).toDate();
+        saveState();
+
+        _instance = new OptaSimulator();
+        _instance.start();
+
+    }
+
     @Override
     public void run() {
         _stopSignal = false;

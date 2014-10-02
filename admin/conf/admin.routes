@@ -80,6 +80,7 @@ GET         /reset_simulator                                           controlle
 GET         /nextstep_simulator                                        controllers.admin.SimulatorController.nextStep()
 GET         /pause_simulator                                           controllers.admin.SimulatorController.pause()
 POST        /goto_date_simulator                                       controllers.admin.SimulatorController.gotoDate()
+POST        /replay_date_simulator                                     controllers.admin.SimulatorController.replayDate()
 GET         /next_step_desc_simulator                                  controllers.admin.SimulatorController.nextStepDescription()
 GET         /next_stop_simulator                                       controllers.admin.SimulatorController.nextStop()
 GET         /is_created_simulator                                      controllers.admin.SimulatorController.isCreated()

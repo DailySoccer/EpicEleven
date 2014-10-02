@@ -44,6 +44,7 @@
                 <input type="datetime-local" value="2014-06-14T00:00" id="date-pause" name="date" class="form-control" style="display:inline-block">
             }
             <button id="date-pause-ok" name="date-pause-ok" type="button" class="btn btn-sim btn-primary fforward" style="position:relative;">Go to Date</button>
+            <button id="date-replay-ok" name="date-replay-ok" type="button" class="btn btn-sim btn-primary fforward" style="position:relative;">Replay from Date</button>
             <select id="sim-speed" onchange="changeSpeed()" class="form-control" style="width: inherit; display: inline-block;">
                 <option value="-1">Max Speed</option>
                 <option value="3600">1 hour per second</option>
@@ -194,5 +195,21 @@
             });
 
         });
+
+        $('#date-replay-ok').click(function(){
+            var form = $('#date-pause-form');
+
+            $.ajax({
+              type: form.attr('method'),
+              url: '/admin/replay_date_simulator',
+              data: form.serialize()
+            }).done(function() {
+              // Optionally alert the user of success here...
+            }).fail(function() {
+              // Optionally alert the user of an error here...
+            });
+
+        });
+
 
 </script>

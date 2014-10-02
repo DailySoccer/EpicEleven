@@ -3,10 +3,8 @@ package model;
 import com.fasterxml.jackson.annotation.JsonView;
 import model.opta.OptaEvent;
 import model.opta.OptaEventType;
-import model.opta.OptaMatchEvent;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
-import play.Logger;
 import utils.ListUtils;
 import utils.ViewProjection;
 
@@ -216,6 +214,20 @@ public class MatchEvent {
         updateMatchEventTime(OptaEvent.findLast(optaMatchEventId));
     }
 
+
+    static public void resetFantasyPointsFrom(Date date) {
+        List<MatchEvent> matchEventList = ListUtils.asList(Model.matchEvents().find("{startDate: {$gte: #}}", date).as(MatchEvent.class));
+
+        for (MatchEvent matchEvent: matchEventList) {
+            HashMap<String, LiveFantasyPoints> prevLiveFantasyPoints = matchEvent.liveFantasyPoints;
+            for (String key: prevLiveFantasyPoints.keySet()) {
+                matchEvent.liveFantasyPoints.put(key, new LiveFantasyPoints());
+            }
+            Model.matchEvents().update(matchEvent.matchEventId).with(matchEvent);
+        }
+    }
+
+
     private void updateMatchEventTime(OptaEvent optaEvent) {
         if (period == null) {
             period = PeriodType.PRE_GAME;
@@ -302,6 +314,7 @@ public class MatchEvent {
                 .multi()
                 .with(setPattern, fantasyPoints);
     }
+
 }
 
 class LiveFantasyPoints {
