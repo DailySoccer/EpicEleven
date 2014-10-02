@@ -91,24 +91,13 @@ public class OptaProcessorActor extends UntypedActor {
         try {
             queryNextResultSet(documentsPerQuery);
 
-            if (_optaResultSet.next()) {
-                _nextDocMsg = new NextDocMsg(_optaResultSet.getTimestamp("created_at"),
-                                             _optaResultSet.getInt(1));
-            }
-            else {
-                // TODO: _DocumentsPerQuery == 1
-
+            if (!readNextDocument()) {
                 // Volvemos a intentar leer. Si no hay mas resultados, ahora si, hemos llegado al final.
                 queryNextResultSet(documentsPerQuery);
 
-                if (_optaResultSet.next()) {
-                    _nextDocMsg = new NextDocMsg(_optaResultSet.getTimestamp("created_at"),
-                                                 _optaResultSet.getInt(1));
-                }
-                else {
-                    closeConnection();
+                if (!readNextDocument()) {
                     Logger.info("Hemos llegado al ultimo documento XML");
-
+                    closeConnection();
                     _nextDocMsg = new NextDocMsg(null, -1);
                 }
             }
@@ -117,6 +106,18 @@ public class OptaProcessorActor extends UntypedActor {
             // Punto de recuperacion 1. Al saltar una excepcion no habremos cambiado _nextDocMsg y por lo tanto reintentaremos
             Logger.error("WTF 1533", e);
         }
+    }
+
+    private boolean readNextDocument() throws SQLException {
+        boolean bRet = false;
+
+        if (_optaResultSet.next()) {
+            _nextDocMsg = new NextDocMsg(_optaResultSet.getTimestamp("created_at"),
+                                         _optaResultSet.getInt(1));
+            bRet = true;
+        }
+
+        return bRet;
     }
 
     private void processNextDocument() {
