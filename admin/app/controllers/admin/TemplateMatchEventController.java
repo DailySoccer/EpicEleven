@@ -37,8 +37,8 @@ public class TemplateMatchEventController extends Controller {
             map.put(soccerPlayer.optaPlayerId.concat("-team"), templateSoccerTeamA.name);
         }
 
-        TemplateSoccerTeam templateSoccerTeamB = TemplateSoccerTeam.findOne(matchEvent.templateSoccerTeamAId);
-        for (TemplateSoccerPlayer soccerPlayer : TemplateSoccerPlayer.findAllFromTemplateTeam(templateSoccerTeamA.templateSoccerTeamId)) {
+        TemplateSoccerTeam templateSoccerTeamB = TemplateSoccerTeam.findOne(matchEvent.templateSoccerTeamBId);
+        for (TemplateSoccerPlayer soccerPlayer : TemplateSoccerPlayer.findAllFromTemplateTeam(templateSoccerTeamB.templateSoccerTeamId)) {
             map.put(soccerPlayer.optaPlayerId, soccerPlayer.name);
             map.put(soccerPlayer.optaPlayerId + "-team", templateSoccerTeamB.name);
         }
