@@ -2,10 +2,7 @@ package controllers;
 
 import actions.AllowCors;
 import com.google.common.collect.ImmutableMap;
-import model.GlobalDate;
-import model.SoccerPlayerStats;
-import model.TemplateSoccerPlayer;
-import model.TemplateSoccerTeam;
+import model.*;
 import org.bson.types.ObjectId;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -51,6 +48,6 @@ public class MainController extends Controller {
         return new ReturnHelper(ImmutableMap.of(
                 "soccerTeams", templateSoccerTeams,
                 "soccerPlayer", templateSoccerPlayer)
-        ).toResult();
+        ).toResult(JsonViews.Extended.class);
     }
 }

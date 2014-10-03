@@ -51,7 +51,7 @@
             <td>@p.name</td>
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
-            <td>@p.playedMatches</td>
+            <td>@p.getPlayedMatches()</td>
             <td>@p.fantasyPoints</td>
         @if(match_event.isGameStarted()) {
             <td><a href="@TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">
@@ -93,7 +93,7 @@
             <td>@p.name</td>
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
-            <td>@p.playedMatches</td>
+            <td>@p.getPlayedMatches()</td>
             <td>@p.fantasyPoints</td>
         @if(match_event.isGameStarted()) {
             <td><a href="@TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">
