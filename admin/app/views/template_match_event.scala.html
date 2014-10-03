@@ -45,7 +45,7 @@
         </tr>
         </thead>
         <tbody>
-        @for(p <- model.TemplateSoccerPlayer.findAllActiveFromTemplateTeam(match_event.templateSoccerTeamAId)) {
+        @for(p <- model.TemplateSoccerPlayer.findAllFromTemplateTeam(match_event.templateSoccerTeamAId)) {
         <tr>
             <!--td>@p.templateSoccerPlayerId</td-->
             <td>@p.name</td>
@@ -87,7 +87,7 @@
         </tr>
         </thead>
         <tbody>
-        @for(p <- model.TemplateSoccerPlayer.findAllActiveFromTemplateTeam(match_event.templateSoccerTeamBId)) {
+        @for(p <- model.TemplateSoccerPlayer.findAllFromTemplateTeam(match_event.templateSoccerTeamBId)) {
         <tr>
             <!--td>@p.templateSoccerPlayerId</td-->
             <td>@p.name</td>
