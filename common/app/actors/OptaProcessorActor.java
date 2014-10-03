@@ -152,7 +152,7 @@ public class OptaProcessorActor extends UntypedActor {
 
         Date created_at = new Date(resultSet.getTimestamp("created_at").getTime());
 
-        if (created_at.before(state.lastProcessedDate))
+        if (state.lastProcessedDate != null && created_at.before(state.lastProcessedDate))
             throw new RuntimeException("WTF 9190");
 
         String sqlxml = resultSet.getString("xml");
