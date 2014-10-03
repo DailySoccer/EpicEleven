@@ -49,7 +49,7 @@ public class Contest implements JongoId {
     public List<ObjectId> templateMatchEventIds = new ArrayList<>();
 
     @JsonView(JsonViews.Extended.class)
-    public List<InstanceSoccerPlayer> instanceSoccerPlayers;
+    public List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
 
     public Contest() {}
 

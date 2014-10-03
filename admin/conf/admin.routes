@@ -39,10 +39,6 @@ GET         /contests                                                  controlle
 GET         /contests/ajax                                             controllers.admin.ContestController.indexAjax()
 GET         /contest/:contestId                                        controllers.admin.ContestController.show(contestId : String)
 
-GET         /match_events                                              controllers.admin.MatchEventController.index()
-GET         /match_event/:templateMatchEventId                         controllers.admin.MatchEventController.show(templateMatchEventId : String)
-GET         /match_event/optaEvents/:matchEventId                      controllers.admin.MatchEventController.showOptaEvents(matchEventId : String)
-
 GET         /template_contests                                         controllers.admin.TemplateContestController.index()
 GET         /template_contests/ajax                                    controllers.admin.TemplateContestController.indexAjax()
 GET         /template_contest/create_all                               controllers.admin.TemplateContestController.createAll()

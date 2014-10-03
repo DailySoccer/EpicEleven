@@ -34,7 +34,9 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
 
     public List<SoccerPlayerStats> stats = new ArrayList<>();
 
-    public TemplateSoccerPlayer() { }
+    public TemplateSoccerPlayer() {
+        playedMatches = stats.size();
+    }
 
     public TemplateSoccerPlayer(OptaPlayer optaPlayer, ObjectId aTemplateTeamId) {
         optaPlayerId = optaPlayer.optaPlayerId;
