@@ -173,7 +173,6 @@ public class TemplateContest implements JongoId, Initializer {
         Logger.info("TemplateContest.instantiate: {}: activationAt: {}", name, GlobalDate.formatDate(activationAt));
 
         registerSoccerPlayers();
-        instantiateMatchEvents();
 
         // Cuantas instancias tenemos creadas?
         long instances = Model.contests().count("{templateContestId: #}", templateContestId);
@@ -202,14 +201,6 @@ public class TemplateContest implements JongoId, Initializer {
             for (TemplateSoccerPlayer templateSoccerPlayer: templateSoccerPlayers) {
                 instanceSoccerPlayers.add(new InstanceSoccerPlayer(templateSoccerPlayer));
             }
-        }
-    }
-
-    private void instantiateMatchEvents() {
-        List<TemplateMatchEvent> templateMatchEvents = getTemplateMatchEvents();
-
-        for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
-            templateMatchEvent.instanciate();
         }
     }
 

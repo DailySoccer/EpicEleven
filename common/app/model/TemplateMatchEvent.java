@@ -149,7 +149,7 @@ public class TemplateMatchEvent implements JongoId, Initializer {
     }
 
     public int getSoccerPlayerFantasyPoints(ObjectId soccerPlayerId) {
-        return liveFantasyPoints.get(soccerPlayerId.toString()).points;
+        return containsTemplateSoccerPlayer(soccerPlayerId) ? liveFantasyPoints.get(soccerPlayerId.toString()).points : 0;
     }
 
     public void saveStats() {
@@ -264,21 +264,20 @@ public class TemplateMatchEvent implements JongoId, Initializer {
         }
         // if (points > 0) Logger.info("--> {}: {} = {}", soccerPlayer.optaPlayerId, soccerPlayer.name, points);
 
-        // Actualizar sus puntos en cada MatchEvent en el que participe
-        setLiveFantasyPointsOfSoccerPlayer(optaMatchEventId, templateSoccerPlayer.templateSoccerPlayerId.toString(), fantasyPoints);
+        if (!fantasyPoints.events.isEmpty() || liveFantasyPoints.containsKey(templateSoccerPlayer.templateSoccerPlayerId)) {
+            setLiveFantasyPointsOfSoccerPlayer(optaMatchEventId, templateSoccerPlayer.templateSoccerPlayerId.toString(), fantasyPoints);
+        }
     }
 
     static private void setLiveFantasyPointsOfSoccerPlayer(String optaMatchId, String soccerPlayerId, LiveFantasyPoints fantasyPoints) {
         //Logger.info("setLiveFantasyPoints: {} = {} fantasy points", soccerPlayerId, points);
 
-        String searchPattern = String.format("{optaMatchEventId: #, 'liveFantasyPoints.%s': {$exists: 1}}", soccerPlayerId);
         String setPattern = String.format("{$set: {'liveFantasyPoints.%s': #}}", soccerPlayerId);
         Model.templateMatchEvents()
-                .update(searchPattern, optaMatchId)
+                .update("{optaMatchEventId: #}", optaMatchId)
                 .multi()
                 .with(setPattern, fantasyPoints);
     }
-
 
     static public boolean importMatchEvent(OptaMatchEvent optaMatchEvent) {
         TemplateSoccerTeam teamA = TemplateSoccerTeam.findOneFromOptaId(optaMatchEvent.homeTeamId);
@@ -294,12 +293,6 @@ public class TemplateMatchEvent implements JongoId, Initializer {
             return false;
         }
         return true;
-    }
-
-    public void instanciate() {
-        insertLivePlayers(TemplateSoccerPlayer.findAllActiveFromTemplateTeam(templateSoccerTeamAId));
-        insertLivePlayers(TemplateSoccerPlayer.findAllActiveFromTemplateTeam(templateSoccerTeamBId));
-        Model.templateMatchEvents().update(templateMatchEventId).with("{$set: {liveFantasyPoints: #}}", liveFantasyPoints);
     }
 
     private void insertLivePlayers(List<TemplateSoccerPlayer> soccerPlayers) {
