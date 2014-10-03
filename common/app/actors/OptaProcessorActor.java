@@ -127,8 +127,8 @@ public class OptaProcessorActor extends UntypedActor {
         catch (Exception e) {
             // Punto de recuperacion 2. Al saltar una excepcion, no ponemos _nextDocMsg a null y por lo tanto reintentaremos
             Logger.error("WTF 7817", e);
-        }
-        finally {
+
+            // Aseguramos que podemos reintentar
             resetIsProcessing();
         }
     }
@@ -168,6 +168,7 @@ public class OptaProcessorActor extends UntypedActor {
         onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
 
         state.lastProcessedDate = created_at;
+        Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with(state);
     }
 
     static private void onOptaMatchEventIdsChanged(HashSet<String> changedOptaMatchEventIds) {
