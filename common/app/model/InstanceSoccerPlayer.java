@@ -6,7 +6,7 @@ import org.bson.types.ObjectId;
 public class InstanceSoccerPlayer {
     public ObjectId templateSoccerPlayerId;
 
-    public ObjectId templateTeamId;
+    public ObjectId templateSoccerTeamId;
 
     public FieldPos fieldPos;
 
@@ -16,7 +16,7 @@ public class InstanceSoccerPlayer {
 
     public InstanceSoccerPlayer(TemplateSoccerPlayer template) {
         templateSoccerPlayerId = template.templateSoccerPlayerId;
-        templateTeamId = template.templateTeamId;
+        templateSoccerTeamId = template.templateTeamId;
         fieldPos = template.fieldPos;
         salary = template.salary;
     }
