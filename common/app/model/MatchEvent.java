@@ -73,6 +73,10 @@ public class MatchEvent {
         return templateMatchEventId;
     }
 
+    public boolean isPostGame() {
+        return period.equals(PeriodType.POST_GAME);
+    }
+
     static public MatchEvent findOne(ObjectId matchEventId) {
         return Model.matchEvents().findOne("{_id : #}", matchEventId).as(MatchEvent.class);
     }

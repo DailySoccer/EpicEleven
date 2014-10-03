@@ -1,14 +1,11 @@
 package model;
 
 import model.opta.OptaCompetition;
-import model.opta.OptaEventType;
 import org.bson.types.ObjectId;
 import utils.ListUtils;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-
 
 public final class MockData {
 
@@ -73,7 +70,7 @@ public final class MockData {
         }
 
         // Todos los usuarios excepto el "Test"
-        List<User> users = ListUtils.asList(Model.users().find("{nickName: {$ne: 'Test'}}").as(User.class));
+        List<User> users = ListUtils.asList(Model.users().find("{email: {$regex: #}, nickName: {$ne: 'Test'}}", "@test.com").as(User.class));
         for (int i=0; i<size && i<users.size(); i++) {
             User user = users.get(i);
 

@@ -146,7 +146,7 @@ public class OptaProcessorJob {
                     matchEvent.updateState();
 
                     // Si HA TERMINADO, lo marcamos y lanzamos las acciones de matchEventIsFinished
-                    if (!matchEvent.isGameFinished() && OptaEvent.isGameFinished(matchEvent.optaMatchEventId)) {
+                    if (matchEvent.isPostGame() && !matchEvent.isGameFinished() && OptaEvent.isGameFinished(matchEvent.optaMatchEventId)) {
                         matchEvent.setGameFinished();
                         actionWhenMatchEventIsFinished(matchEvent);
                     }
@@ -177,7 +177,11 @@ public class OptaProcessorJob {
             // Si el contest ha terminado (true si todos sus partidos han terminado)
             if (templateContest.isFinished()) {
                 Model.templateContests().update("{_id: #, state: \"LIVE\"}", templateContest.templateContestId).with("{$set: {state: \"HISTORY\"}}");
-                Model.contests().update("{templateContestId: #, state: \"LIVE\"}", templateContest.templateContestId).with("{$set: {state: \"HISTORY\"}}");
+
+                Model.contests()
+                        .update("{templateContestId: #, state: \"LIVE\"}", templateContest.templateContestId)
+                        .multi()
+                        .with("{$set: {state: \"HISTORY\"}}");
 
                 // Aqui es el único sitio donde se darán los premios
                 templateContest.givePrizes();
