@@ -2,7 +2,6 @@ package model;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.mongodb.*;
-import jobs.OptaProcessorJob;
 import org.bson.types.ObjectId;
 import org.jongo.Find;
 import org.jongo.Jongo;
@@ -13,7 +12,8 @@ import play.Logger;
 import play.Play;
 
 import java.sql.Connection;
-import java.sql.*;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 
@@ -73,12 +73,6 @@ public class Model {
         }
         catch (Exception exc) {
             Logger.error("Error creating optaxml: ", exc);
-        }
-
-        // Durante desarrollo a veces matamos el Scheduler justo cuando esta procesando. El OptaProcessorJob se autorepara
-        // en ese caso, pero en las maquinas de desarrollo no lo lanzamos, asi que lo reseteamos aqui.
-        if (Play.isDev()) {
-            OptaProcessorJob.resetState();
         }
     }
 

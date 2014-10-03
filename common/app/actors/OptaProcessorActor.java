@@ -1,8 +1,6 @@
 package actors;
 
-
 import akka.actor.UntypedActor;
-import jobs.OptaProcessorJob;
 import model.GlobalDate;
 import model.MatchEvent;
 import model.Model;
@@ -246,7 +244,7 @@ public class OptaProcessorActor extends UntypedActor {
             _stmt = null;
             _optaResultSet = null;
 
-            Date lastProcessedDate = OptaProcessorJob.getLastProcessedDate();
+            Date lastProcessedDate = getLastProcessedDate();
 
             _stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml WHERE created_at > '"

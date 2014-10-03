@@ -5,7 +5,6 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
-import jobs.OptaProcessorJob;
 import model.GlobalDate;
 import model.MockData;
 import model.Model;
@@ -46,11 +45,13 @@ public class OptaSimulator implements Runnable {
 
         _state = Model.simulator().findOne().as(OptaSimulatorState.class);
 
+        Date lastProcessedDate = OptaProcessorActor.getLastProcessedDate();
+
         if (_state == null) {
             _state = new OptaSimulatorState();
 
             _state.useSnapshot = false;
-            _state.simulationDate = OptaProcessorJob.getLastProcessedDate();
+            _state.simulationDate = lastProcessedDate;
 
             // Cuando todavia nadie ha procesado ningun documento, nos ponemos X segundos antes del primero q haya
             if (_state.simulationDate.equals(new Date(0L))) {
@@ -61,8 +62,8 @@ public class OptaSimulator implements Runnable {
         }
         else {
             // Reseteamos la fecha de simulacion en caso de que el proceso haya avanzado por su cuenta
-            if (_state.simulationDate.before(OptaProcessorJob.getLastProcessedDate())) {
-                _state.simulationDate = OptaProcessorJob.getLastProcessedDate();
+            if (_state.simulationDate.before(lastProcessedDate)) {
+                _state.simulationDate = lastProcessedDate;
             }
 
             // Tenemos registrada una fecha antigua de pausa?
