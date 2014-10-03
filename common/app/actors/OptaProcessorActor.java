@@ -270,7 +270,7 @@ public class OptaProcessorActor extends UntypedActor {
         _optaResultSet = null;
     }
 
-    final int SIMULATOR_DOCUMENTS_PER_QUERY = 1000;
+    final int SIMULATOR_DOCUMENTS_PER_QUERY = 500;
     final int REGULAR_DOCUMENTS_PER_QUERY = 1;
 
     Connection _connection;
