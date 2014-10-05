@@ -25,9 +25,6 @@ public class OptaProcessorActor extends UntypedActor {
 
         // Es posible que se parara justo cuando estaba en isProcessing == true
         resetIsProcessing();
-
-        // El comportamiento por defecto de postRestart es llamarnos durante un restart
-        _optaProcessor = new OptaProcessor();
     }
 
     // postRestart y preStart se llaman en el nuevo actor (despues de la reinicializacion, claro).
@@ -36,6 +33,12 @@ public class OptaProcessorActor extends UntypedActor {
         Logger.debug("OptaProcessorActor postRestart, reason:", reason);
 
         super.postRestart(reason);
+    }
+
+    @Override public void postStop() {
+        Logger.debug("OptaProcessorActor postStop");
+
+        closeConnection();
     }
 
     public void onReceive(Object msg) {
@@ -54,14 +57,27 @@ public class OptaProcessorActor extends UntypedActor {
                                                                "Tick", getContext().dispatcher(), null);
                 break;
 
-            case "SimulatorProcessNextDocument":
-                processNextDocument();
-                break;
+            case "SimulatorStart":
+                // Puede ser el N-esimo Start, reseteamos nuestro acceso a la DB
+                closeConnection();
 
-            case "SimulatorEnsureNextDocument":
+                // Para el simulador usamos 1 optaprocesor que nunca reciclamos
+                _optaProcessor = new OptaProcessor();
+
+                // Ensuramos el siguiente, somos asi de amables
                 ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
 
-                // Mandamos de vuelta la info del siguiente doc que procesaremos al llamar a Tick o SimulatorProcessNextDocument
+                // Mandamos de vuelta la info del siguiente doc que procesaremos al llamar a SimulatorTick
+                sender().tell(_nextDocMsg, getSelf());
+                break;
+
+            case "SimulatorTick":
+                // El tick del simulador tiene la logica cambiada respecto al normal: Primero procesa, luego asegura
+                // el siguiente. Lo hacemos asi pq el simulador necesita saber en to.do momento la fecha del siguiente
+                // documento, para poder avanzar el tiempo hacia el.
+                processNextDocument();
+                ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
+
                 sender().tell(_nextDocMsg, getSelf());
                 break;
 
@@ -106,7 +122,6 @@ public class OptaProcessorActor extends UntypedActor {
                 if (!readNextDocument()) {
                     Logger.info("Hemos llegado al ultimo documento XML");
                     closeConnection();
-                    _nextDocMsg = new NextDocMsg(null, -1);
                 }
             }
         }
@@ -119,15 +134,16 @@ public class OptaProcessorActor extends UntypedActor {
     }
 
     private boolean readNextDocument() throws SQLException {
-        boolean bRet = false;
+
+        // Cuando vamos a leer el siguiente documento, el anterior no puede estar sin procesar.
+        if (_nextDocMsg != null)
+            throw new RuntimeException("WTF 5820");
 
         if (_optaResultSet.next()) {
-            _nextDocMsg = new NextDocMsg(_optaResultSet.getTimestamp("created_at"),
-                                         _optaResultSet.getInt(1));
-            bRet = true;
+            _nextDocMsg = new NextDocMsg(new Date(_optaResultSet.getTimestamp("created_at").getTime()), _optaResultSet.getInt(1));
         }
 
-        return bRet;
+        return _nextDocMsg != null;
     }
 
     private void processNextDocument() {
@@ -284,6 +300,8 @@ public class OptaProcessorActor extends UntypedActor {
         _connection = null;
         _stmt = null;
         _optaResultSet = null;
+
+        _nextDocMsg = null;
     }
 
     final int SIMULATOR_DOCUMENTS_PER_QUERY = 500;

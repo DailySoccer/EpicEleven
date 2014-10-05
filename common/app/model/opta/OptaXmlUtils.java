@@ -54,7 +54,7 @@ public class OptaXmlUtils {
 
         return DbSqlUtils.ExecutyQuery(query, new DbSqlUtils.IResultSetReader<Date>() {
 
-            public Date handleResultSet(ResultSet resultSet) throws SQLException { return resultSet.getTimestamp("created_at"); }
+            public Date handleResultSet(ResultSet resultSet) throws SQLException { return new Date(resultSet.getTimestamp("created_at").getTime()); }
             public Date handleEmptyResultSet() { return new Date(0L); }
             public Date handleSQLException()   { throw new RuntimeException("WTF 1521"); }
         });
