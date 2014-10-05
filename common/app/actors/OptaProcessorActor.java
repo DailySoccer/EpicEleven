@@ -1,5 +1,6 @@
 package actors;
 
+import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import model.GlobalDate;
 import model.MatchEvent;
@@ -19,18 +20,28 @@ import java.util.concurrent.TimeUnit;
 
 public class OptaProcessorActor extends UntypedActor {
 
-    public OptaProcessorActor() {
+    @Override public void preStart() {
+        Logger.debug("OptaProcessorActor preStart");
+
+        // Es posible que se parara justo cuando estaba en isProcessing == true
+        resetIsProcessing();
+
+        // El comportamiento por defecto de postRestart es llamarnos durante un restart
         _optaProcessor = new OptaProcessor();
+    }
+
+    // postRestart y preStart se llaman en el nuevo actor (despues de la reinicializacion, claro).
+    // preRestart y postStop en el viejo moribundo.
+    @Override public void postRestart(Throwable reason) throws Exception {
+        Logger.debug("OptaProcessorActor postRestart, reason:", reason);
+
+        super.postRestart(reason);
     }
 
     public void onReceive(Object msg) {
 
         switch ((String)msg) {
-            case "Start":
-                // Es posible que se parara justo cuando estaba en isProcessing == true
-                resetIsProcessing();
 
-                // Hacemos un primer Tick
             case "Tick":
                 // Reciclamos memoria (podriamos probar a dejar el cache y reciclar cada cierto tiempo...)
                 _optaProcessor = new OptaProcessor();
@@ -100,7 +111,9 @@ public class OptaProcessorActor extends UntypedActor {
             }
         }
         catch (Exception e) {
-            // Punto de recuperacion 1. Al saltar una excepcion no habremos cambiado _nextDocMsg y por lo tanto reintentaremos
+            // Punto de recuperacion 1. Al saltar una excepcion no habremos cambiado _nextDocMsg == null y por lo tanto reintentaremos.
+            // Nota: Prodriamos dejarlo fallar y que se produjera un restart del actor. Para ello, lo primero sera cambiar
+            //       la estrategia de inicializacion, puesto que en un restart nadie esta poniendo en accion el Tick.
             Logger.error("WTF 1533", e);
         }
     }
@@ -118,6 +131,11 @@ public class OptaProcessorActor extends UntypedActor {
     }
 
     private void processNextDocument() {
+
+        // Es posible que ensureNextDocument haya fallado
+        if (_nextDocMsg == null)
+            return;
+
         try {
             processCurrentDocumentInResultSet(_optaResultSet, _optaProcessor);
             _nextDocMsg = null;

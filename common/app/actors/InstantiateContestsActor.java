@@ -16,7 +16,6 @@ public class InstantiateContestsActor extends UntypedActor {
 
         switch ((String)msg) {
 
-            case "Start":
             case "Tick":
                 onTick();
                 getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
