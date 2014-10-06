@@ -19,11 +19,11 @@ public class DailySoccerActors {
     //
     static public void init(boolean bIsWorker) {
 
-        final ActorRef instantiateConstestsActorActor = Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateConstestsActor");
+        final ActorRef instantiateConstestsActor = Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateConstestsActor");
         final ActorRef optaProcessorActor = Akka.system().actorOf(Props.create(OptaProcessorActor.class), "OptaProcessorActor");
 
         if (bIsWorker) {
-            instantiateConstestsActorActor.tell("Tick", ActorRef.noSender());
+            instantiateConstestsActor.tell("Tick", ActorRef.noSender());
             optaProcessorActor.tell("Tick", ActorRef.noSender());
         }
     }
