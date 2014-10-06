@@ -1,6 +1,7 @@
 package actors;
 
 import akka.actor.UntypedActor;
+import akka.japi.Procedure;
 import model.GlobalDate;
 import model.MatchEvent;
 import model.Model;
@@ -42,23 +43,39 @@ public class OptaProcessorActor extends UntypedActor {
         closeConnection();
     }
 
-    public void onReceive(Object msg) {
+    public void onReceive(Object message) {
 
-        switch ((String)msg) {
+        if (message.equals("Tick")) {
+            // Reciclamos memoria (podriamos probar a dejar el cache y reciclar cada cierto tiempo...)
+            _optaProcessor = new OptaProcessor();
 
-            case "Tick":
-                // Reciclamos memoria (podriamos probar a dejar el cache y reciclar cada cierto tiempo...)
-                _optaProcessor = new OptaProcessor();
+            ensureNextDocument(REGULAR_DOCUMENTS_PER_QUERY);
+            processNextDocument();
 
-                ensureNextDocument(REGULAR_DOCUMENTS_PER_QUERY);
-                processNextDocument();
+            // Reeschudeleamos una llamada a nosotros mismos para el siguiente Tick
+            getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
+                                                           "Tick", getContext().dispatcher(), null);
+        }
+        else if (message.equals("SimulatorStart")) {
+            // Nos transformamos en un procesador de ticks de simulacion. El tick del simulador tiene la logica cambiada
+            // respecto al normal: Primero procesa, luego asegura el siguiente. Lo hacemos asi pq el simulador necesita
+            // saber en to.do momento la fecha del siguiente documento, para poder avanzar el tiempo hacia el.
+            getContext().become(_simulator, false);
 
-                // Reeschudeleamos una llamada a nosotros mismos para el siguiente Tick
-                getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
-                                                               "Tick", getContext().dispatcher(), null);
-                break;
+            // Y nos volvemos a mandar el mensaje para hacer el reset
+            getSelf().tell("SimulatorStart", getSender());
+        }
+        else {
+            unhandled(message);
+        }
+    }
 
-            case "SimulatorStart":
+    // Nuestro onReceive cuando somos un servicio para el simulador
+    Procedure<Object> _simulator = new Procedure<Object>() {
+
+        @Override public void apply(Object message) {
+
+            if (message.equals("SimulatorStart")) {
                 // Puede ser el N-esimo Start, reseteamos nuestro acceso a la DB
                 closeConnection();
 
@@ -70,23 +87,18 @@ public class OptaProcessorActor extends UntypedActor {
 
                 // Mandamos de vuelta la info del siguiente doc que procesaremos al llamar a SimulatorTick
                 sender().tell(_nextDocMsg, getSelf());
-                break;
-
-            case "SimulatorTick":
-                // El tick del simulador tiene la logica cambiada respecto al normal: Primero procesa, luego asegura
-                // el siguiente. Lo hacemos asi pq el simulador necesita saber en to.do momento la fecha del siguiente
-                // documento, para poder avanzar el tiempo hacia el.
+            }
+            else if (message.equals("SimulatorTick")) {
                 processNextDocument();
                 ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
 
                 sender().tell(_nextDocMsg, getSelf());
-                break;
-
-            default:
-                unhandled(msg);
-                break;
+            }
+            else {
+                unhandled(message);
+            }
         }
-    }
+    };
 
     private static void resetIsProcessing() {
         Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with("{$set: {isProcessing: false}}");
@@ -198,13 +210,13 @@ public class OptaProcessorActor extends UntypedActor {
         Logger.info("OptaProcessorActor: {}, {}, {}, {}/{}", feedType, name, GlobalDate.formatDate(created_at), seasonId, competitionId);
 
         HashSet<String> changedOptaMatchEventIds = processor.processOptaDBInput(feedType, name, competitionId, seasonId, gameId, sqlxml);
-        onOptaMatchEventIdsChanged(changedOptaMatchEventIds);
+        onOptaMatchEventsChanged(changedOptaMatchEventIds);
 
         state.lastProcessedDate = created_at;
         Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with(state);
     }
 
-    static private void onOptaMatchEventIdsChanged(HashSet<String> changedOptaMatchEventIds) {
+    static private void onOptaMatchEventsChanged(HashSet<String> changedOptaMatchEventIds) {
 
         for (String optaGameId : changedOptaMatchEventIds) {
 
