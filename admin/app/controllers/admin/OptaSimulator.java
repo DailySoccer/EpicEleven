@@ -140,7 +140,11 @@ public class OptaSimulator implements Runnable {
                 _state.pauseDate = null;
             }
             else {
-                _stopSignal = nextStep(_state.speedFactor);
+                boolean isFinished = nextStep(_state.speedFactor);
+
+                if (isFinished) {
+                    _stopSignal = true;
+                }
             }
         }
 
