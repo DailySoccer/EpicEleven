@@ -3,7 +3,6 @@ import play.api._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.mvc.{EssentialAction, Filter, Filters}
 import play.filters.gzip.GzipFilter
-import play.libs.Akka
 
 // http://www.playframework.com/documentation/2.2.x/ScalaGlobal
 object Global extends GlobalSettings {
@@ -37,23 +36,13 @@ object Global extends GlobalSettings {
     Logger.info("Application has started")
 
     model.Model.init()
-
-    if (isWorker) {
-      jobs.Scheduler.scheduleMethods("jobs")
-    }
+    actors.DailySoccerActors.init(isWorker);
   }
 
   override def onStop(app: Application) {
     Logger.info("Application shutdown...")
 
-    if (isWorker) {
-      // Esto parara los metodos scheduleados
-      Akka.system.shutdown()
-
-      // Hacemos un 'join' para asegurar que no matamos el modelo estando todavia procesando
-      Akka.system().awaitTermination()
-    }
-
+    actors.DailySoccerActors.shutdown();
     model.Model.shutdown()
   }
 }

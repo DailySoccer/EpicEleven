@@ -1,2 +1,2 @@
-play compile stage
+activator compile stage
 foreman start

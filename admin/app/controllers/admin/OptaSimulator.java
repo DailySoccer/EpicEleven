@@ -1,18 +1,22 @@
 package controllers.admin;
 
-import jobs.InstantiateContestsJob;
-import jobs.OptaProcessorJob;
-import model.*;
-import model.opta.OptaProcessor;
+import actors.OptaProcessorActor;
+import akka.actor.ActorRef;
+import akka.actor.ActorSelection;
+import akka.pattern.Patterns;
+import akka.util.Timeout;
+import model.GlobalDate;
+import model.MockData;
+import model.Model;
 import model.opta.OptaXmlUtils;
-import org.apache.commons.dbutils.DbUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import play.Logger;
-import play.db.DB;
-
-import java.sql.*;
+import play.libs.Akka;
+import scala.concurrent.Await;
+import scala.concurrent.Future;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public class OptaSimulator implements Runnable {
 
@@ -30,57 +34,65 @@ public class OptaSimulator implements Runnable {
 
     static public void shutdown() {
         _instance.pause();
-        _instance.closeConnection();
         _instance = null;
         GlobalDate.setFakeDate(null);
+
+        Akka.system().actorSelection("/user/OptaProcessorActor").tell("SimulatorShutdown", ActorRef.noSender());
     }
 
     private OptaSimulator() {
         _stopSignal = false;
-        _optaProcessor = new OptaProcessor();
 
         _state = Model.simulator().findOne().as(OptaSimulatorState.class);
+
+        Date lastProcessedDate = OptaProcessorActor.getLastProcessedDate();
 
         if (_state == null) {
             _state = new OptaSimulatorState();
 
-            _state.useSnapshot = false;
-            _state.simulationDate = OptaProcessorJob.getLastProcessedDate();
+            _state.simulationDate = lastProcessedDate;
 
-            // Cuando todavia nadie ha procesado ningun documento, nos ponemos X segundos antes del primero q haya
+            // Cuando todavia nadie ha procesado ningun documento, nos ponemos en el primero que haya
             if (_state.simulationDate.equals(new Date(0L))) {
-                _state.simulationDate = new DateTime(OptaXmlUtils.getFirstDate()).minusSeconds(5).toDate();
+                _state.simulationDate = OptaXmlUtils.getFirstDate();
             }
-
-            saveState();
         }
         else {
             // Reseteamos la fecha de simulacion en caso de que el proceso haya avanzado por su cuenta
-            if (_state.simulationDate.before(OptaProcessorJob.getLastProcessedDate())) {
-                _state.simulationDate = OptaProcessorJob.getLastProcessedDate();
+            if (_state.simulationDate.before(lastProcessedDate)) {
+                _state.simulationDate = lastProcessedDate;
             }
 
             // Tenemos registrada una fecha antigua de pausa?
             if (_state.pauseDate != null && !_state.simulationDate.before(_state.pauseDate)) {
                 _state.pauseDate = null;
             }
-
-            if (_state.useSnapshot) {
-                _snapshot = Snapshot.instance();
-            }
         }
 
         // Siempre comenzamos pausados
         _paused = true;
-
-        loadNextDocument();
         updateDate(_state.simulationDate);
+
+        sendToOptaProcessor("SimulatorStart");
+    }
+
+    private void sendToOptaProcessor(String msg) {
+        Timeout timeout = new Timeout(scala.concurrent.duration.Duration.create(10, TimeUnit.SECONDS));
+        ActorSelection actorRef = Akka.system().actorSelection("/user/OptaProcessorActor");
+
+        Future<Object> response = Patterns.ask(actorRef, msg, timeout);
+
+        try {
+            _nextDocMsg = (OptaProcessorActor.NextDocMsg)Await.result(response, timeout.duration());
+        }
+        catch(Exception e) {
+            Logger.error("WTF 5620 sendToOptaProcessor Timeout");
+        }
     }
 
     public Date getNextStop() { return _state.pauseDate; }
     public boolean isPaused() { return (_paused || _stopSignal);  }
-    public boolean isSnapshotEnabled() { return _state.useSnapshot; }
-    public String getNextStepDesc() { return _nextDocId == -1? "" : String.valueOf(_nextDocId); }
+    public String getNextStepDesc() { return String.valueOf(_nextDocMsg.id); }
 
     public void start() {
         if (_optaThread == null) {
@@ -101,28 +113,14 @@ public class OptaSimulator implements Runnable {
         }
     }
 
-    public void reset(boolean useSnapshot) {
+    public void reset() {
         pause();
 
-        // Cuando queremos recuperar un snapshot se tienen que encargar desde fuera de dejar la DB tal y como la quieran.
-        // Por ejemplo, vacia.
-        if (!useSnapshot) {
-            Model.resetDB();
-            MockData.ensureMockDataUsers();
-            MockData.ensureCompetitions();
-        }
+        Model.resetDB();
+        MockData.ensureMockDataUsers();
+        MockData.ensureCompetitions();
 
         _instance = new OptaSimulator();
-
-        if (useSnapshot) {
-            _instance.useSnapshot();
-        }
-    }
-
-    private void useSnapshot() {
-        _snapshot = Snapshot.instance();
-        _state.useSnapshot = true;
-        saveState();
     }
 
     public void gotoDate(Date date) {
@@ -144,9 +142,9 @@ public class OptaSimulator implements Runnable {
                 _state.pauseDate = null;
             }
             else {
-                boolean bFinished = nextStep(_state.speedFactor);
+                boolean isFinished = nextStep(_state.speedFactor);
 
-                if (bFinished) {
+                if (isFinished) {
                     _stopSignal = true;
                 }
             }
@@ -166,94 +164,28 @@ public class OptaSimulator implements Runnable {
 
         GlobalDate.setFakeDate(_state.simulationDate);
 
-        if (_snapshot != null) {
-            _snapshot.update(_state.simulationDate);
-        }
-
-        InstantiateContestsJob.instantiateContestsTask();
+        saveState();
     }
 
     public boolean nextStep(int speedFactor) {
 
-        // Sera null solo si hemos llegado al final de todos los ficheros => vemos si ha entrado uno nuevo
-        if (_nextDocDate == null) {
-            loadNextDocument();
+        if (_nextDocMsg.isNull() || GlobalDate.getCurrentDate().equals(_nextDocMsg.date)) {
+            sendToOptaProcessor("SimulatorTick");
         }
 
-        // En nextStep siempre entramos con el puntero apuntando al siguiente doc (o hemos llegado al final)
-        if (_nextDocDate != null) {
-
+        if (_nextDocMsg.isNotNull()) {
             try {
-                Duration deltaTime = sleepUntil(_nextDocDate, speedFactor);
+                Duration deltaTime = sleepUntil(_nextDocMsg.date, speedFactor);
                 updateDate(new DateTime(GlobalDate.getCurrentDate()).plus(deltaTime).toDate());
+
+                Akka.system().actorSelection("/user/InstantiateConstestsActor").tell("SimulatorTick", ActorRef.noSender());
             }
             catch (InterruptedException e) {
                 Logger.error("WTF 2311", e);
             }
-
-            if (GlobalDate.getCurrentDate().equals(_nextDocDate) && !_stopSignal) {
-
-                // Tickeamos el OptaProcessorJob como si fueramos un proceso scheduleado
-                OptaProcessorJob.processCurrentDocumentInResultSet(_optaResultSet, _optaProcessor);
-
-                // Y dejamos el puntero en el siguiente documento
-                loadNextDocument();
-            }
         }
 
-        saveState();
-
-        return _nextDocDate == null;    // No hay mas pasos de simulacion si no tenemos fecha siguiente
-    }
-
-    private void loadNextDocument() {
-
-        ensureConnection();
-
-        try {
-            queryNextResultSet();
-
-            if (_optaResultSet.next()) {
-                _nextDocDate = _optaResultSet.getTimestamp("created_at");
-                _nextDocId = _optaResultSet.getInt(1);
-            }
-            else {
-
-                // Volvemos a intentar leer. Si no hay mas resultados, hemos llegado al final.
-                queryNextResultSet();
-
-                if (_optaResultSet.next()) {
-                    _nextDocDate = _optaResultSet.getTimestamp("created_at");
-                    _nextDocId = _optaResultSet.getInt(1);
-                }
-                else {
-                    closeConnection();
-                    _nextDocDate = null;
-                    _nextDocId = -1;
-                    Logger.info("Hemos llegado al ultimo documento XML");
-                }
-            }
-        }
-        catch (SQLException e) {
-            Logger.error("WTF 1533", e);
-        }
-    }
-
-    private void queryNextResultSet() throws SQLException {
-
-        if (_optaResultSet == null || _optaResultSet.isAfterLast()) {
-
-            DbUtils.closeQuietly(null, _stmt, _optaResultSet);
-            _stmt = null;
-            _optaResultSet = null;
-
-            Date lastProcessedDate = OptaProcessorJob.getLastProcessedDate();
-
-            _stmt = _connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-            _optaResultSet = _stmt.executeQuery("SELECT * FROM optaxml WHERE created_at > '"
-                                                + new Timestamp(lastProcessedDate.getTime()) +
-                                                "' ORDER BY created_at LIMIT " + RESULTS_PER_QUERY + ";");
-        }
+        return _nextDocMsg.isNull();
     }
 
     public void setSpeedFactor(int speedFactor) {
@@ -288,48 +220,24 @@ public class OptaSimulator implements Runnable {
         return timeToAdd;
     }
 
-    private void ensureConnection() {
-
-        if (_connection != null) {
-            return;
-        }
-
-        _connection = DB.getConnection();
-    }
-
-    private void closeConnection() {
-        DbUtils.closeQuietly(_connection, _stmt, _optaResultSet);
-        _connection = null;
-        _stmt = null;
-        _optaResultSet = null;
-    }
 
     private void saveState() {
         Model.simulator().update("{stateId: #}", _state.stateId).upsert().with(_state);
     }
 
+    static final Duration SLEEPING_DURATION = new Duration(1000);
+
     Thread _optaThread;
     volatile boolean _paused;
     volatile boolean _stopSignal;
 
-    final int RESULTS_PER_QUERY = 500;
-    Connection _connection;
-    ResultSet _optaResultSet;
-    Statement _stmt;
-
-    Date _nextDocDate;
-    int  _nextDocId = -1;
-    static final Duration SLEEPING_DURATION = new Duration(1000);
-
-    OptaProcessor _optaProcessor;
-    Snapshot _snapshot;
+    OptaProcessorActor.NextDocMsg _nextDocMsg;
     OptaSimulatorState _state;
 
     static OptaSimulator _instance;
 
     static private class OptaSimulatorState {
         public String  stateId = "--unique id--";
-        public boolean useSnapshot;
         public Date    pauseDate;
         public Date    simulationDate;
         public int     speedFactor = MAX_SPEED;
