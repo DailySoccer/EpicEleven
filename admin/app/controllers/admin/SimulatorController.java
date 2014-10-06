@@ -28,22 +28,30 @@ public class SimulatorController extends Controller {
         return ok();
     }
     public static Result start() {
-        OptaSimulator.instance().start();
+        if (OptaSimulator.isCreated()) {
+            OptaSimulator.instance().start();
+        }
         return ok();
     }
 
     public static Result pause() {
-        OptaSimulator.instance().pause();
+        if (OptaSimulator.isCreated()) {
+            OptaSimulator.instance().pause();
+        }
         return ok();
     }
 
     public static Result nextStep() {
-        OptaSimulator.instance().nextStep(OptaSimulator.MAX_SPEED);
+        if (OptaSimulator.isCreated()) {
+            OptaSimulator.instance().nextStep(OptaSimulator.MAX_SPEED);
+        }
         return ok();
     }
 
     public static Result reset() {
-        OptaSimulator.instance().reset();
+        if (OptaSimulator.isCreated()) {
+            OptaSimulator.instance().reset();
+        }
         return ok();
     }
 
