@@ -82,7 +82,7 @@ public class OptaSimulator implements Runnable {
     }
 
     private void sendToOptaProcessor(String msg) {
-        Timeout timeout = new Timeout(scala.concurrent.duration.Duration.create(120, TimeUnit.SECONDS));
+        Timeout timeout = new Timeout(scala.concurrent.duration.Duration.create(3, TimeUnit.SECONDS));
         ActorSelection actorRef = Akka.system().actorSelection("/user/OptaProcessorActor");
 
         Future<Object> response = Patterns.ask(actorRef, msg, timeout);
@@ -91,14 +91,14 @@ public class OptaSimulator implements Runnable {
             _nextDocMsg = (OptaProcessorActor.NextDocMsg)Await.result(response, timeout.duration());
         }
         catch(Exception e) {
-            Logger.error("WTF 5620");
+            Logger.error("WTF 5620 sendToOptaProcessor Timeout");
         }
     }
 
     public Date getNextStop() { return _state.pauseDate; }
     public boolean isPaused() { return (_paused || _stopSignal);  }
     public boolean isSnapshotEnabled() { return _state.useSnapshot; }
-    public String getNextStepDesc() { return _nextDocMsg == null? "" : String.valueOf(_nextDocMsg.id); }
+    public String getNextStepDesc() { return String.valueOf(_nextDocMsg.id); }
 
     public void start() {
         if (_optaThread == null) {
@@ -195,11 +195,11 @@ public class OptaSimulator implements Runnable {
 
     public boolean nextStep(int speedFactor) {
 
-        if (_nextDocMsg == null || GlobalDate.getCurrentDate().equals(_nextDocMsg.date)) {
+        if (_nextDocMsg.isNull() || GlobalDate.getCurrentDate().equals(_nextDocMsg.date)) {
             sendToOptaProcessor("SimulatorTick");
         }
 
-        if (_nextDocMsg != null) {
+        if (_nextDocMsg.isNotNull()) {
             try {
                 Duration deltaTime = sleepUntil(_nextDocMsg.date, speedFactor);
                 updateDate(new DateTime(GlobalDate.getCurrentDate()).plus(deltaTime).toDate());
@@ -209,7 +209,7 @@ public class OptaSimulator implements Runnable {
             }
         }
 
-        return _nextDocMsg == null;
+        return _nextDocMsg.isNull();
     }
 
     public void setSpeedFactor(int speedFactor) {

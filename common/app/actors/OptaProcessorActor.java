@@ -1,6 +1,5 @@
 package actors;
 
-import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import model.GlobalDate;
 import model.MatchEvent;
@@ -25,6 +24,8 @@ public class OptaProcessorActor extends UntypedActor {
 
         // Es posible que se parara justo cuando estaba en isProcessing == true
         resetIsProcessing();
+
+        _nextDocMsg = NextDocMsg.Null();
     }
 
     // postRestart y preStart se llaman en el nuevo actor (despues de la reinicializacion, claro).
@@ -107,7 +108,7 @@ public class OptaProcessorActor extends UntypedActor {
 
         // Somos una ensure, si el siguiente documento ya esta cargado simplemente retornamos. _nextDocMsg se pone
         // a null en processNextDocument, a la espera de que se ordene asegurar el siguiente
-        if (_nextDocMsg != null)
+        if (_nextDocMsg.isNotNull())
             return;
 
         ensureConnection();
@@ -136,25 +137,25 @@ public class OptaProcessorActor extends UntypedActor {
     private boolean readNextDocument() throws SQLException {
 
         // Cuando vamos a leer el siguiente documento, el anterior no puede estar sin procesar.
-        if (_nextDocMsg != null)
+        if (_nextDocMsg.isNotNull())
             throw new RuntimeException("WTF 5820");
 
         if (_optaResultSet.next()) {
             _nextDocMsg = new NextDocMsg(new Date(_optaResultSet.getTimestamp("created_at").getTime()), _optaResultSet.getInt(1));
         }
 
-        return _nextDocMsg != null;
+        return _nextDocMsg.isNotNull();
     }
 
     private void processNextDocument() {
 
         // Es posible que ensureNextDocument haya fallado
-        if (_nextDocMsg == null)
+        if (_nextDocMsg.isNull())
             return;
 
         try {
             processCurrentDocumentInResultSet(_optaResultSet, _optaProcessor);
-            _nextDocMsg = null;
+            _nextDocMsg = NextDocMsg.Null();
         }
         catch (Exception e) {
             // Punto de recuperacion 2. Al saltar una excepcion, no ponemos _nextDocMsg a null y por lo tanto reintentaremos
@@ -301,7 +302,7 @@ public class OptaProcessorActor extends UntypedActor {
         _stmt = null;
         _optaResultSet = null;
 
-        _nextDocMsg = null;
+        _nextDocMsg = NextDocMsg.Null();
     }
 
     final int SIMULATOR_DOCUMENTS_PER_QUERY = 500;
@@ -327,10 +328,16 @@ public class OptaProcessorActor extends UntypedActor {
         }
     }
 
-    public class NextDocMsg {
+    static public class NextDocMsg {
         final public Date date;
         final public int id;
 
         public NextDocMsg(Date d, int i) { date = d; id = i; }
+
+        // Como no podemos mandar un mensaje null, lo marcamos asi
+        public boolean isNull() { return date == null; }
+        public boolean isNotNull() { return date != null; }
+
+        static NextDocMsg Null() { return new NextDocMsg(null, -1); }
     }
 }
