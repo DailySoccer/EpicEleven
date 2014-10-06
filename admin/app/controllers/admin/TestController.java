@@ -16,10 +16,9 @@ public class TestController extends Controller {
         if (!OptaSimulator.isCreated())
             OptaSimulator.init();
 
-        OptaSimulator.instance().reset(false);
+        OptaSimulator.instance().reset();
         return ok("OK");
     }
-
 
 
     static public Result gotoDateTest(int year, int month, int day, int hour, int minute) {

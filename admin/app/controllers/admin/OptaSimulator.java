@@ -8,7 +8,6 @@ import akka.util.Timeout;
 import model.GlobalDate;
 import model.MockData;
 import model.Model;
-import model.Snapshot;
 import model.opta.OptaXmlUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -16,7 +15,6 @@ import play.Logger;
 import play.libs.Akka;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
-
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
@@ -50,7 +48,6 @@ public class OptaSimulator implements Runnable {
         if (_state == null) {
             _state = new OptaSimulatorState();
 
-            _state.useSnapshot = false;
             _state.simulationDate = lastProcessedDate;
 
             // Cuando todavia nadie ha procesado ningun documento, nos ponemos en el primero que haya
@@ -67,10 +64,6 @@ public class OptaSimulator implements Runnable {
             // Tenemos registrada una fecha antigua de pausa?
             if (_state.pauseDate != null && !_state.simulationDate.before(_state.pauseDate)) {
                 _state.pauseDate = null;
-            }
-
-            if (_state.useSnapshot) {
-                _snapshot = Snapshot.instance();
             }
         }
 
@@ -97,7 +90,6 @@ public class OptaSimulator implements Runnable {
 
     public Date getNextStop() { return _state.pauseDate; }
     public boolean isPaused() { return (_paused || _stopSignal);  }
-    public boolean isSnapshotEnabled() { return _state.useSnapshot; }
     public String getNextStepDesc() { return String.valueOf(_nextDocMsg.id); }
 
     public void start() {
@@ -119,28 +111,14 @@ public class OptaSimulator implements Runnable {
         }
     }
 
-    public void reset(boolean useSnapshot) {
+    public void reset() {
         pause();
 
-        // Cuando queremos recuperar un snapshot se tienen que encargar desde fuera de dejar la DB tal y como la quieran.
-        // Por ejemplo, vacia.
-        if (!useSnapshot) {
-            Model.resetDB();
-            MockData.ensureMockDataUsers();
-            MockData.ensureCompetitions();
-        }
+        Model.resetDB();
+        MockData.ensureMockDataUsers();
+        MockData.ensureCompetitions();
 
         _instance = new OptaSimulator();
-
-        if (useSnapshot) {
-            _instance.useSnapshot();
-        }
-    }
-
-    private void useSnapshot() {
-        _snapshot = Snapshot.instance();
-        _state.useSnapshot = true;
-        saveState();
     }
 
     public void gotoDate(Date date) {
@@ -162,11 +140,7 @@ public class OptaSimulator implements Runnable {
                 _state.pauseDate = null;
             }
             else {
-                boolean bFinished = nextStep(_state.speedFactor);
-
-                if (bFinished) {
-                    _stopSignal = true;
-                }
+                _stopSignal = nextStep(_state.speedFactor);
             }
         }
 
@@ -183,10 +157,6 @@ public class OptaSimulator implements Runnable {
         _state.simulationDate = currentDate;
 
         GlobalDate.setFakeDate(_state.simulationDate);
-
-        if (_snapshot != null) {
-            _snapshot.update(_state.simulationDate);
-        }
 
         saveState();
     }
@@ -249,21 +219,19 @@ public class OptaSimulator implements Runnable {
         Model.simulator().update("{stateId: #}", _state.stateId).upsert().with(_state);
     }
 
+    static final Duration SLEEPING_DURATION = new Duration(1000);
+
     Thread _optaThread;
     volatile boolean _paused;
     volatile boolean _stopSignal;
 
     OptaProcessorActor.NextDocMsg _nextDocMsg;
-    static final Duration SLEEPING_DURATION = new Duration(1000);
 
-    Snapshot _snapshot;
     OptaSimulatorState _state;
-
     static OptaSimulator _instance;
 
     static private class OptaSimulatorState {
         public String  stateId = "--unique id--";
-        public boolean useSnapshot;
         public Date    pauseDate;
         public Date    simulationDate;
         public int     speedFactor = MAX_SPEED;

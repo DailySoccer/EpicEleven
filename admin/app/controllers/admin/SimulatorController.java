@@ -43,7 +43,7 @@ public class SimulatorController extends Controller {
     }
 
     public static Result reset() {
-        OptaSimulator.instance().reset(false);
+        OptaSimulator.instance().reset();
         return ok();
     }
 
@@ -93,7 +93,7 @@ public class SimulatorController extends Controller {
     }
 
     public static boolean isSnapshotEnabled() {
-        return isSimulatorCreated() && OptaSimulator.instance().isSnapshotEnabled();
+        return false;
     }
 
     public static boolean isSimulatorPaused() {
