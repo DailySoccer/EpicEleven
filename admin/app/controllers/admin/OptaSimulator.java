@@ -75,7 +75,7 @@ public class OptaSimulator implements Runnable {
     }
 
     private void sendToOptaProcessor(String msg) {
-        Timeout timeout = new Timeout(scala.concurrent.duration.Duration.create(3, TimeUnit.SECONDS));
+        Timeout timeout = new Timeout(scala.concurrent.duration.Duration.create(10, TimeUnit.SECONDS));
         ActorSelection actorRef = Akka.system().actorSelection("/user/OptaProcessorActor");
 
         Future<Object> response = Patterns.ask(actorRef, msg, timeout);
