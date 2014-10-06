@@ -31,7 +31,7 @@ public class StormPathClient {
         if (_myApp == null) {
             _myApp = _client.instantiate(Application.class);
 
-            _myApp.setName("Example Application"); //must be unique among your other apps
+            _myApp.setName("DFS"); //must be unique among your other apps
             _myApp = _client.createApplication(
                     Applications.newCreateRequestFor(_myApp).createDirectory().build());
         }
