@@ -36,6 +36,8 @@ public class OptaSimulator implements Runnable {
         _instance.pause();
         _instance = null;
         GlobalDate.setFakeDate(null);
+
+        Akka.system().actorSelection("/user/OptaProcessorActor").tell("SimulatorShutdown", ActorRef.noSender());
     }
 
     private OptaSimulator() {
@@ -230,8 +232,8 @@ public class OptaSimulator implements Runnable {
     volatile boolean _stopSignal;
 
     OptaProcessorActor.NextDocMsg _nextDocMsg;
-
     OptaSimulatorState _state;
+
     static OptaSimulator _instance;
 
     static private class OptaSimulatorState {

@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 public class OptaProcessorActor extends UntypedActor {
 
-    @Override public void preStart() {
+    public OptaProcessorActor() {
         Logger.debug("OptaProcessorActor preStart");
 
         // Es posible que se parara justo cuando estaba en isProcessing == true
@@ -33,7 +33,6 @@ public class OptaProcessorActor extends UntypedActor {
     // preRestart y postStop en el viejo moribundo.
     @Override public void postRestart(Throwable reason) throws Exception {
         Logger.debug("OptaProcessorActor postRestart, reason:", reason);
-
         super.postRestart(reason);
     }
 
@@ -93,6 +92,13 @@ public class OptaProcessorActor extends UntypedActor {
                 ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
 
                 sender().tell(_nextDocMsg, getSelf());
+            }
+            else if (message.equals("SimulatorShutdown")) {
+                getContext().unbecome();
+            }
+            else if (message.equals("Tick")) {
+                getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
+                                                                               "Tick", getContext().dispatcher(), null);
             }
             else {
                 unhandled(message);
