@@ -14,10 +14,6 @@ public class SnapshotController extends Controller {
         return ok(views.html.snapshot.render());
     }
 
-    public static Result replayLast() {
-        return redirect(routes.SnapshotController.index());
-    }
-
     public static Result continueFromSnapshot() {
         if (OptaSimulator.isCreated()) {
             OptaSimulator.shutdown();
