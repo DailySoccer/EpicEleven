@@ -189,8 +189,6 @@ public class OptaSimulator implements Runnable {
         }
 
         saveState();
-
-        Akka.system().actorSelection("/user/InstantiateConstestsActor").tell("SimulatorTick", ActorRef.noSender());
     }
 
     public boolean nextStep(int speedFactor) {
@@ -203,6 +201,8 @@ public class OptaSimulator implements Runnable {
             try {
                 Duration deltaTime = sleepUntil(_nextDocMsg.date, speedFactor);
                 updateDate(new DateTime(GlobalDate.getCurrentDate()).plus(deltaTime).toDate());
+
+                Akka.system().actorSelection("/user/InstantiateConstestsActor").tell("SimulatorTick", ActorRef.noSender());
             }
             catch (InterruptedException e) {
                 Logger.error("WTF 2311", e);
