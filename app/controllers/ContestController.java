@@ -51,8 +51,8 @@ public class ContestController extends Controller {
                 .attachObject("contests_1", myLiveContests, JsonViews.FullContest.class)
                 .attachObject("contests_2", myHistoryContests, JsonViews.Extended.class)
                 .attachObject("match_events", liveMatchEvents, JsonViews.FullContest.class)
-                .attachObject("soccer_teams", teams, JsonViews.FullContest.class)
-                .attachObject("soccer_players", players, JsonViews.FullContest.class)
+                .attachObject("soccer_teams", teams, JsonViews.Public.class)
+                .attachObject("soccer_players", players, JsonViews.Public.class)
                 .toResult();
     }
 
