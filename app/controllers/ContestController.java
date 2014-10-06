@@ -3,14 +3,18 @@ package controllers;
 import actions.AllowCors;
 import actions.UserAuthenticated;
 import com.google.common.collect.ImmutableMap;
+import org.bson.types.ObjectId;
 import model.*;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utils.ListUtils;
 import utils.ReturnHelper;
 import utils.ReturnHelperWithAttach;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @AllowCors.Origin
 public class ContestController extends Controller {
@@ -44,7 +48,15 @@ public class ContestController extends Controller {
 
         List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.gatherFromContests(myLiveContests);
         List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(liveMatchEvents);
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAllActiveFromTeams(teams);
+
+        // Buscar todos los players que han sido incrustados en los contests
+        Set<ObjectId> playersInContests = new HashSet<>();
+        for (Contest liveContest: myLiveContests) {
+            for (InstanceSoccerPlayer instance: liveContest.instanceSoccerPlayers) {
+                playersInContests.add(instance.templateSoccerPlayerId);
+            }
+        }
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests.iterator()));
 
         return new ReturnHelperWithAttach()
                 .attachObject("contests_0", myActiveContests, JsonViews.Public.class)
@@ -78,7 +90,13 @@ public class ContestController extends Controller {
 
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
         List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAllActiveFromTeams(teams);
+
+        // Buscar todos los players que han sido incrustados en los contests
+        Set<ObjectId> playersInContests = new HashSet<>();
+        for (InstanceSoccerPlayer instance: contest.instanceSoccerPlayers) {
+            playersInContests.add(instance.templateSoccerPlayerId);
+        }
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests.iterator()));
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                                                 "users_info", usersInfoInContest,
