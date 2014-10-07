@@ -55,8 +55,8 @@ public class MainController extends Controller {
 
         return new ReturnHelper(ImmutableMap.of(
                 "match_event",  templateMatchEvent,
-                "soccerTeams", templateSoccerTeams,
-                "soccerPlayer", templateSoccerPlayer)
+                "soccer_teams", templateSoccerTeams,
+                "soccer_player", templateSoccerPlayer)
         ).toResult(JsonViews.Extended.class);
     }
 }
