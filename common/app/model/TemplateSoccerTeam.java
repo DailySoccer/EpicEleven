@@ -1,6 +1,7 @@
 package model;
 
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.WriteConcern;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
@@ -13,11 +14,13 @@ public class TemplateSoccerTeam implements JongoId, Initializer {
     @Id
     public ObjectId templateSoccerTeamId;
 
+    @JsonView(JsonViews.NotForClient.class)
     public String optaTeamId;
 
     public String name;
     public String shortName;
 
+    @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
     public TemplateSoccerTeam() { }
@@ -57,6 +60,15 @@ public class TemplateSoccerTeam implements JongoId, Initializer {
 
     static public List<TemplateSoccerTeam> findAll(List<ObjectId> templateSoccerTeamIds) {
         return ListUtils.asList(Model.findObjectIds(Model.templateSoccerTeams(), "_id", templateSoccerTeamIds).as(TemplateSoccerTeam.class));
+    }
+
+    static public List<TemplateSoccerTeam> findAllFromMatchEvents(List<TemplateMatchEvent> matchEvents) {
+        List<ObjectId> teamIds = new ArrayList<>();
+        for (TemplateMatchEvent matchEvent: matchEvents) {
+            teamIds.add(matchEvent.templateSoccerTeamAId);
+            teamIds.add(matchEvent.templateSoccerTeamBId);
+        }
+        return findAll(teamIds);
     }
 
     static public HashMap<ObjectId, TemplateSoccerTeam> findAllAsMap(){

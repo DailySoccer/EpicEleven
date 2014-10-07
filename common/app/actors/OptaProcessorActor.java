@@ -3,7 +3,6 @@ package actors;
 import akka.actor.UntypedActor;
 import akka.japi.Procedure;
 import model.GlobalDate;
-import model.MatchEvent;
 import model.Model;
 import model.TemplateContest;
 import model.opta.OptaEvent;

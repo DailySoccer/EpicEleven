@@ -18,7 +18,7 @@ public class Contest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
-    @JsonView(value={JsonViews.Extended.class, JsonViews.AllContests.class})
+    @JsonView(value={JsonViews.Public.class, JsonViews.AllContests.class})
     public ContestState state = ContestState.OFF;
 
     public String name;
@@ -48,6 +48,9 @@ public class Contest implements JongoId {
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyLiveContests.class})
     public List<ObjectId> templateMatchEventIds = new ArrayList<>();
 
+    @JsonView(value={JsonViews.Extended.class, JsonViews.AllContests.class})
+    public List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
+
     public Contest() {}
 
     public Contest(TemplateContest template) {
@@ -61,6 +64,7 @@ public class Contest implements JongoId {
         prizes = template.prizes;
         startDate = template.startDate;
         templateMatchEventIds = template.templateMatchEventIds;
+        instanceSoccerPlayers = template.instanceSoccerPlayers;
         createdAt = GlobalDate.getCurrentDate();
     }
 
@@ -73,8 +77,8 @@ public class Contest implements JongoId {
 
     public boolean isFull() { return getNumEntries() >= maxEntries; }
 
-    public List<MatchEvent> getMatchEvents() {
-        return MatchEvent.findAllFromTemplates(templateMatchEventIds);
+    public List<TemplateMatchEvent> getTemplateMatchEvents() {
+        return TemplateMatchEvent.findAll(templateMatchEventIds);
     }
 
     public ContestEntry findContestEntry(ObjectId contestEntryId) {
@@ -142,14 +146,14 @@ public class Contest implements JongoId {
                 .as(Contest.class));
     }
 
-    public void updateRanking(BatchWriteOperation bulkOperation, TemplateContest templateContest, List<MatchEvent> matchEvents) {
+    public void updateRanking(BatchWriteOperation bulkOperation, TemplateContest templateContest, List<TemplateMatchEvent> templateMatchEvents) {
         if (contestEntries.isEmpty()) {
             return;
         }
 
         // Actualizamos los fantasy points
         for (ContestEntry contestEntry : contestEntries) {
-            contestEntry.fantasyPoints = contestEntry.getFantasyPointsFromMatchEvents(matchEvents);
+            contestEntry.fantasyPoints = contestEntry.getFantasyPointsFromMatchEvents(templateMatchEvents);
         }
         // Los ordenamos según los fantasy points
         Collections.sort (contestEntries, new ContestEntryComparable());

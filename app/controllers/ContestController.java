@@ -3,14 +3,18 @@ package controllers;
 import actions.AllowCors;
 import actions.UserAuthenticated;
 import com.google.common.collect.ImmutableMap;
+import org.bson.types.ObjectId;
 import model.*;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utils.ListUtils;
 import utils.ReturnHelper;
 import utils.ReturnHelperWithAttach;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @AllowCors.Origin
 public class ContestController extends Controller {
@@ -42,13 +46,25 @@ public class ContestController extends Controller {
         List<Contest> myLiveContests = Contest.findAllMyLive(theUser.userId, JsonViews.MyLiveContests.class);
         List<Contest> myHistoryContests = Contest.findAllMyHistory(theUser.userId, JsonViews.MyHistoryContests.class);
 
-        List<MatchEvent> liveMatchEvents = MatchEvent.gatherFromContests(myLiveContests);
+        List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.gatherFromContests(myLiveContests);
+        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(liveMatchEvents);
+
+        // Buscar todos los players que han sido incrustados en los contests
+        Set<ObjectId> playersInContests = new HashSet<>();
+        for (Contest liveContest: myLiveContests) {
+            for (InstanceSoccerPlayer instance: liveContest.instanceSoccerPlayers) {
+                playersInContests.add(instance.templateSoccerPlayerId);
+            }
+        }
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests.iterator()));
 
         return new ReturnHelperWithAttach()
                 .attachObject("contests_0", myActiveContests, JsonViews.Public.class)
                 .attachObject("contests_1", myLiveContests, JsonViews.FullContest.class)
                 .attachObject("contests_2", myHistoryContests, JsonViews.Extended.class)
-                .attachObject("match_events_0", liveMatchEvents, JsonViews.FullContest.class)
+                .attachObject("match_events", liveMatchEvents, JsonViews.FullContest.class)
+                .attachObject("soccer_teams", teams, JsonViews.Public.class)
+                .attachObject("soccer_players", players, JsonViews.Public.class)
                 .toResult();
     }
 
@@ -71,11 +87,22 @@ public class ContestController extends Controller {
     private static ReturnHelper getContest(String contestId) {
         Contest contest = Contest.findOne(contestId);
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
-        List<MatchEvent> matchEvents = MatchEvent.findAllFromTemplates(contest.templateMatchEventIds);
+
+        List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
+        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
+
+        // Buscar todos los players que han sido incrustados en los contests
+        Set<ObjectId> playersInContests = new HashSet<>();
+        for (InstanceSoccerPlayer instance: contest.instanceSoccerPlayers) {
+            playersInContests.add(instance.templateSoccerPlayerId);
+        }
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests.iterator()));
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                                                 "users_info", usersInfoInContest,
-                                                "match_events", matchEvents));
+                                                "match_events", matchEvents,
+                                                "soccer_teams", teams,
+                                                "soccer_players", players));
     }
 
     /**
@@ -98,7 +125,7 @@ public class ContestController extends Controller {
         }
 
         // Consultar por los partidos del TemplateContest (queremos su version "live")
-        List<MatchEvent> liveMatchEventList = MatchEvent.findAllFromTemplates(templateContest.templateMatchEventIds);
+        List<TemplateMatchEvent> liveMatchEventList = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
 
         return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
     }

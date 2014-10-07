@@ -1,6 +1,7 @@
 package model;
 
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.WriteConcern;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
@@ -16,6 +17,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
     @Id
     public ObjectId templateSoccerPlayerId;
 
+    @JsonView(JsonViews.NotForClient.class)
     public String optaPlayerId;
 
     public String name;
@@ -25,12 +27,22 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
 
     public ObjectId templateTeamId;
 
+    @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
+
+    @JsonView(JsonViews.NotForClient.class)
     public boolean activated;
 
+    @JsonView(JsonViews.Extended.class)
     public List<SoccerPlayerStats> stats = new ArrayList<>();
 
-    public TemplateSoccerPlayer() { }
+    @JsonView(JsonViews.Public.class)
+    public int getPlayedMatches() {
+        return stats.size();
+    }
+
+    public TemplateSoccerPlayer() {
+    }
 
     public TemplateSoccerPlayer(OptaPlayer optaPlayer, ObjectId aTemplateTeamId) {
         optaPlayerId = optaPlayer.optaPlayerId;
@@ -83,6 +95,15 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
     static public List<TemplateSoccerPlayer> findAllActiveFromTemplateTeam(ObjectId templateSoccerTeamId) {
         return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: #, activated: # }", templateSoccerTeamId, true).as(TemplateSoccerPlayer.class));
     }
+
+    static public List<TemplateSoccerPlayer> findAllActiveFromTeams(List<TemplateSoccerTeam> templateSoccerTeams) {
+        List<ObjectId> teamIds = new ArrayList<>();
+        for (TemplateSoccerTeam team: templateSoccerTeams) {
+            teamIds.add(team.templateSoccerTeamId);
+        }
+        return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: {$in: #}, activated: # }", teamIds, true).as(TemplateSoccerPlayer.class));
+    }
+
 
     public void addStats(SoccerPlayerStats soccerPlayerStats) {
         stats.add(soccerPlayerStats);

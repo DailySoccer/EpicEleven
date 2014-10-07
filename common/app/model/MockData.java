@@ -50,23 +50,26 @@ public final class MockData {
             contest.contestId = new ObjectId();
         }
 
-        List<SoccerPlayer> goalKeepers = new ArrayList<>();
-        List<SoccerPlayer> defenses = new ArrayList<>();
-        List<SoccerPlayer> middles = new ArrayList<>();
-        List<SoccerPlayer> forwards = new ArrayList<>();
+        List<TemplateSoccerPlayer> goalKeepers = new ArrayList<>();
+        List<TemplateSoccerPlayer> defenses = new ArrayList<>();
+        List<TemplateSoccerPlayer> middles = new ArrayList<>();
+        List<TemplateSoccerPlayer> forwards = new ArrayList<>();
 
-        for (MatchEvent matchEvent : TemplateContest.findOne(contest.templateContestId).getMatchEvents()) {
-            goalKeepers.addAll(filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamA, FieldPos.GOALKEEPER));
-            goalKeepers.addAll(filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamB, FieldPos.GOALKEEPER));
+        for (TemplateMatchEvent templateMatchEvent : TemplateContest.findOne(contest.templateContestId).getTemplateMatchEvents()) {
+            List<TemplateSoccerPlayer> soccerPlayersA = TemplateSoccerPlayer.findAllActiveFromTemplateTeam(templateMatchEvent.templateSoccerTeamAId);
+            List<TemplateSoccerPlayer> soccerPlayersB = TemplateSoccerPlayer.findAllActiveFromTemplateTeam(templateMatchEvent.templateSoccerTeamBId);
 
-            defenses.addAll(filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamA, FieldPos.DEFENSE));
-            defenses.addAll(filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamB, FieldPos.DEFENSE));
+            goalKeepers.addAll(filterSoccerPlayersFromFieldPos(soccerPlayersA, FieldPos.GOALKEEPER));
+            goalKeepers.addAll(filterSoccerPlayersFromFieldPos(soccerPlayersB, FieldPos.GOALKEEPER));
 
-            middles.addAll(filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamA, FieldPos.MIDDLE));
-            middles.addAll(filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamB, FieldPos.MIDDLE));
+            defenses.addAll(filterSoccerPlayersFromFieldPos(soccerPlayersA, FieldPos.DEFENSE));
+            defenses.addAll(filterSoccerPlayersFromFieldPos(soccerPlayersB, FieldPos.DEFENSE));
 
-            forwards.addAll(filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamA, FieldPos.FORWARD));
-            forwards.addAll(filterSoccerPlayersFromFieldPos(matchEvent.soccerTeamB, FieldPos.FORWARD));
+            middles.addAll(filterSoccerPlayersFromFieldPos(soccerPlayersA, FieldPos.MIDDLE));
+            middles.addAll(filterSoccerPlayersFromFieldPos(soccerPlayersB, FieldPos.MIDDLE));
+
+            forwards.addAll(filterSoccerPlayersFromFieldPos(soccerPlayersA, FieldPos.FORWARD));
+            forwards.addAll(filterSoccerPlayersFromFieldPos(soccerPlayersB, FieldPos.FORWARD));
         }
 
         // Todos los usuarios excepto el "Test"
@@ -76,16 +79,16 @@ public final class MockData {
 
             List<ObjectId> soccerIds = new ArrayList<>();
 
-            for (SoccerPlayer soccer : ListUtils.randomElements(goalKeepers, 1))
+            for (TemplateSoccerPlayer soccer : ListUtils.randomElements(goalKeepers, 1))
                 soccerIds.add(soccer.templateSoccerPlayerId);
 
-            for (SoccerPlayer soccer : ListUtils.randomElements(defenses, 4))
+            for (TemplateSoccerPlayer soccer : ListUtils.randomElements(defenses, 4))
                 soccerIds.add(soccer.templateSoccerPlayerId);
 
-            for (SoccerPlayer soccer : ListUtils.randomElements(middles, 4))
+            for (TemplateSoccerPlayer soccer : ListUtils.randomElements(middles, 4))
                 soccerIds.add(soccer.templateSoccerPlayerId);
 
-            for (SoccerPlayer soccer : ListUtils.randomElements(forwards, 2))
+            for (TemplateSoccerPlayer soccer : ListUtils.randomElements(forwards, 2))
                 soccerIds.add(soccer.templateSoccerPlayerId);
 
             contest.contestEntries.add(new ContestEntry(user.userId, soccerIds));
@@ -93,10 +96,10 @@ public final class MockData {
 
     }
 
-    private static List<SoccerPlayer> filterSoccerPlayersFromFieldPos(SoccerTeam team, FieldPos fieldPos) {
-        List<SoccerPlayer> soccers = new ArrayList<>();
+    private static List<TemplateSoccerPlayer> filterSoccerPlayersFromFieldPos(List<TemplateSoccerPlayer> soccerPlayers, FieldPos fieldPos) {
+        List<TemplateSoccerPlayer> soccers = new ArrayList<>();
 
-        for (SoccerPlayer soccer : team.soccerPlayers) {
+        for (TemplateSoccerPlayer soccer : soccerPlayers) {
             if (soccer.fieldPos.equals(fieldPos)) {
                 soccers.add(soccer);
             }
