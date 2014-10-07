@@ -20,13 +20,13 @@ password = sys.argv[3]
 if origin == destination:
     sys.exit()
 
-# Name of the MongoDB database in production
-prod_app_name = 'app23671191' if origin not in OPTS_DICT else None
-
 OPTS_DICT = {'local': '-h localhost:27017 -d dailySoccerDB',
              'production': '-h lamppost.7.mongolayer.com:10078 -d app23671191 -u "admin" -p "{}"'.format(password),
              'staging': '-h lamppost.7.mongolayer.com:10011 -d app26235550 -u "admin" -p "{}"'.format(password)
             }
+
+# Name of the MongoDB database in production
+prod_app_name = 'app23671191' if origin not in OPTS_DICT else None
 
 if destination in OPTS_DICT:
     #Creamos un directorio temporal
