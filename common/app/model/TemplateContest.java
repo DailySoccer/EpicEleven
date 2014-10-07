@@ -129,7 +129,7 @@ public class TemplateContest implements JongoId, Initializer {
 
     static public List<TemplateContest> findAllByActivationAt(Date activationAt) {
         return ListUtils.asList(Model.templateContests()
-                                     .find("{state: \"OFF\", activationAt: {$lte: #}}", activationAt)
+                                     .find("{state: \"OFF\", activationAt: {$lte: #}, startDate: {$gte: #}}", activationAt, GlobalDate.getCurrentDate())
                                      .as(TemplateContest.class));
     }
 
