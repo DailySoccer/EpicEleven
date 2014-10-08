@@ -67,8 +67,11 @@ git commit -am "Including build in deploy branch"
 # Push a heroku
 git push "$destination" deploy:master --force
 
-#Hacemos una petición a heroku para que vaya levantándose con el código nuevo
-curl "http://dailysoccer-staging.herokuapp.com" > /dev/null 2>&1
+if [[ "$destination" == "staging" ]]
+then
+    #Hacemos una petición a heroku para que vaya levantándose con el código nuevo
+    curl "http://dailysoccer-staging.herokuapp.com" > /dev/null 2>&1
+fi
 
 # Vuelta adonde estabamos
 git checkout $branch_name
@@ -83,5 +86,8 @@ fi
 # Restauramos el symlink borrado
 git checkout public
 
-# Lanzamos los tests funcionales
-curl "https://drone.io/hook?id=github.com/DailySoccer/backend_test&token=sjy4CJrxbBizapoLvUtl" > /dev/null 2>&1 &
+if [[ "$destination" == "staging" ]]
+then
+    # Lanzamos los tests funcionales
+    curl "https://drone.io/hook?id=github.com/DailySoccer/backend_test&token=sjy4CJrxbBizapoLvUtl" > /dev/null 2>&1 &
+fi
