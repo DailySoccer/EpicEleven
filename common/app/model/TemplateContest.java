@@ -1,7 +1,6 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.mongodb.BulkWriteOperation;
 import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
@@ -41,6 +40,9 @@ public class TemplateContest implements JongoId, Initializer {
 
     @JsonView(JsonViews.Extended.class)
     public List<ObjectId> templateMatchEventIds;
+
+    @JsonView(JsonViews.Extended.class)
+    public List<InstanceSoccerPlayer> instanceSoccerPlayers;
 
     @JsonView(JsonViews.NotForClient.class)
     public Date activationAt;
@@ -93,10 +95,6 @@ public class TemplateContest implements JongoId, Initializer {
         return TemplateMatchEvent.findAll(templateMatchEventIds);
     }
 
-    public List<MatchEvent> getMatchEvents() {
-        return MatchEvent.findAllFromTemplates(templateMatchEventIds);
-    }
-
     static public TemplateContest findOne(ObjectId templateContestId) {
         return Model.templateContests().findOne("{_id : #}", templateContestId).as(TemplateContest.class);
     }
@@ -130,7 +128,7 @@ public class TemplateContest implements JongoId, Initializer {
 
     static public List<TemplateContest> findAllByActivationAt(Date activationAt) {
         return ListUtils.asList(Model.templateContests()
-                                     .find("{state: \"OFF\", activationAt: {$lte: #}}", activationAt)
+                                     .find("{state: \"OFF\", activationAt: {$lte: #}, startDate: {$gte: #}}", activationAt, GlobalDate.getCurrentDate())
                                      .as(TemplateContest.class));
     }
 
@@ -173,7 +171,7 @@ public class TemplateContest implements JongoId, Initializer {
 
         Logger.info("TemplateContest.instantiate: {}: activationAt: {}", name, GlobalDate.formatDate(activationAt));
 
-        instantiateMatchEvents();
+        registerSoccerPlayers();
 
         // Cuantas instancias tenemos creadas?
         long instances = Model.contests().count("{templateContestId: #}", templateContestId);
@@ -187,19 +185,20 @@ public class TemplateContest implements JongoId, Initializer {
         Model.templateContests().update(templateContestId).with("{$set: {prizes: #}}", prizes);
 
         // Cuando hemos acabado de instanciar nuestras dependencias, nos ponemos en activo
-        Model.templateContests().update("{_id: #, state: \"OFF\"}", templateContestId).with("{$set: {state: \"ACTIVE\"}}");
+        Model.templateContests().update("{_id: #, state: \"OFF\"}", templateContestId).with("{$set: {state: \"ACTIVE\", instanceSoccerPlayers:#}}", instanceSoccerPlayers);
 
         // Ya estamos activos!
         state = ContestState.ACTIVE;
     }
 
-    private void instantiateMatchEvents() {
-        List<TemplateMatchEvent> templateMatchEvents = getTemplateMatchEvents();
+    private void registerSoccerPlayers() {
+        instanceSoccerPlayers = new ArrayList<>();
 
-        for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
-            MatchEvent matchEvent = MatchEvent.findOneFromTemplate(templateMatchEvent.getId());
-            if (matchEvent == null) {
-                MatchEvent.createFromTemplate(templateMatchEvent);
+        List<TemplateMatchEvent> templateMatchEvents = getTemplateMatchEvents();
+        for (TemplateMatchEvent templateMatchEvent: templateMatchEvents) {
+            List<TemplateSoccerPlayer> templateSoccerPlayers = templateMatchEvent.getTemplateSoccerPlayersActives();
+            for (TemplateSoccerPlayer templateSoccerPlayer: templateSoccerPlayers) {
+                instanceSoccerPlayers.add(new InstanceSoccerPlayer(templateSoccerPlayer));
             }
         }
     }
@@ -212,7 +211,7 @@ public class TemplateContest implements JongoId, Initializer {
 
         // El Contest ha comenzado si cualquiera de sus partidos ha comenzado
         for(TemplateMatchEvent templateMatchEvent : TemplateMatchEvent.findAll(templateMatchEventIds)) {
-            if (templateMatchEvent.isStarted()) {
+            if (templateMatchEvent.isGameStarted()) {
                 started = true;
                 break;
             }
@@ -230,7 +229,7 @@ public class TemplateContest implements JongoId, Initializer {
 
         // El Contest ha terminado si TODOS sus partidos han terminado
         for (TemplateMatchEvent templateMatchEvent : TemplateMatchEvent.findAll(templateMatchEventIds)) {
-            if (!templateMatchEvent.isFinished()) {
+            if (!templateMatchEvent.isGameFinished()) {
                 finished = false;
                 break;
             }
@@ -245,12 +244,12 @@ public class TemplateContest implements JongoId, Initializer {
 
     public void givePrizes() {
         List<Contest> contests = Contest.findAllFromTemplateContest(templateContestId);
-        List<MatchEvent> matchEvents = getMatchEvents();
+        List<TemplateMatchEvent> templateMatchEvents = getTemplateMatchEvents();
 
         // Actualizamos los rankings de cada contest
         BatchWriteOperation bulkOperation = new BatchWriteOperation(Model.contests().getDBCollection().initializeOrderedBulkOperation());
          for (Contest contest : contests) {
-            contest.updateRanking(bulkOperation, this, matchEvents);
+            contest.updateRanking(bulkOperation, this, templateMatchEvents);
         }
         bulkOperation.execute();
 

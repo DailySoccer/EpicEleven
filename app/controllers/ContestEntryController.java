@@ -213,10 +213,10 @@ public class ContestEntryController extends Controller {
                 errores.add(ERROR_CONTEST_NOT_ACTIVE);
             }
 
-            List<MatchEvent> matchEvents = contest.getMatchEvents();
+            List<TemplateMatchEvent> matchEvents = contest.getTemplateMatchEvents();
 
             // Buscar los soccerPlayers dentro de los partidos del contest
-            List<SoccerPlayer> soccerPlayers = getSoccerPlayersFromMatchEvents(objectIds, matchEvents);
+            List<InstanceSoccerPlayer> soccerPlayers = getSoccerPlayersFromContest(objectIds, contest);
 
             // Verificar que TODOS los futbolistas seleccionados participen en los partidos del contest
             if (objectIds.size() != soccerPlayers.size()) {
@@ -239,12 +239,12 @@ public class ContestEntryController extends Controller {
         return errores;
     }
 
-    private static List<SoccerPlayer> getSoccerPlayersFromMatchEvents(List<ObjectId> ids, List<MatchEvent> matchEvents) {
-        List<SoccerPlayer> soccerPlayers = new ArrayList<>();
+    private static List<InstanceSoccerPlayer> getSoccerPlayersFromContest(List<ObjectId> ids, Contest contest) {
+        List<InstanceSoccerPlayer> soccerPlayers = new ArrayList<>();
         for (ObjectId soccerPlayerId : ids) {
-            for (MatchEvent matchEvent : matchEvents) {
-                if (matchEvent.containsSoccerPlayer(soccerPlayerId)) {
-                    soccerPlayers.add(matchEvent.findSoccerPlayer(soccerPlayerId));
+            for (InstanceSoccerPlayer instancePlayer : contest.instanceSoccerPlayers) {
+                if (soccerPlayerId.equals(instancePlayer.templateSoccerPlayerId)) {
+                    soccerPlayers.add(instancePlayer);
                     break;
                 }
             }
@@ -252,24 +252,24 @@ public class ContestEntryController extends Controller {
         return soccerPlayers;
     }
 
-    private static int getSalaryCap(List<SoccerPlayer> soccerPlayers) {
+    private static int getSalaryCap(List<InstanceSoccerPlayer> soccerPlayers) {
         int salaryCapTeam = 0;
-        for (SoccerPlayer soccer : soccerPlayers) {
+        for (InstanceSoccerPlayer soccer : soccerPlayers) {
             salaryCapTeam += soccer.salary;
         }
         return salaryCapTeam;
     }
 
-    private static boolean isFormationValid(List<SoccerPlayer> soccerPlayers) {
+    private static boolean isFormationValid(List<InstanceSoccerPlayer> soccerPlayers) {
         return  (countFieldPos(FieldPos.GOALKEEPER, soccerPlayers) == 1) &&
                 (countFieldPos(FieldPos.DEFENSE, soccerPlayers) == 4) &&
                 (countFieldPos(FieldPos.MIDDLE, soccerPlayers) == 4) &&
                 (countFieldPos(FieldPos.FORWARD, soccerPlayers) == 2);
     }
 
-    private static int countFieldPos(FieldPos fieldPos, List<SoccerPlayer> soccerPlayers) {
+    private static int countFieldPos(FieldPos fieldPos, List<InstanceSoccerPlayer> soccerPlayers) {
         int count = 0;
-        for (SoccerPlayer soccerPlayer : soccerPlayers) {
+        for (InstanceSoccerPlayer soccerPlayer : soccerPlayers) {
             if (soccerPlayer.fieldPos.equals(fieldPos)) {
                 count++;
             }

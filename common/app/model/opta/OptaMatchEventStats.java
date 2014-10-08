@@ -2,9 +2,7 @@ package model.opta;
 
 import model.Model;
 import org.jdom2.Element;
-import play.Logger;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 

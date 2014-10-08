@@ -1,7 +1,10 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.mongodb.*;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.MongoException;
+import com.mongodb.WriteResult;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
@@ -9,7 +12,6 @@ import utils.BatchWriteOperation;
 import utils.ListUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -175,12 +177,12 @@ public class ContestEntry implements JongoId {
         return bRet;
     }
 
-    public int getFantasyPointsFromMatchEvents(List<MatchEvent> matchEvents) {
+    public int getFantasyPointsFromMatchEvents(List<TemplateMatchEvent> templateMatchEvents) {
         int fantasyPoints = 0;
         for (ObjectId templateSoccerPlayerId : soccerIds) {
-            for (MatchEvent matchEvent : matchEvents) {
-                if (matchEvent.containsSoccerPlayer(templateSoccerPlayerId)) {
-                    fantasyPoints += matchEvent.getFantasyPoints(templateSoccerPlayerId);
+            for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
+                if (templateMatchEvent.containsTemplateSoccerPlayer(templateSoccerPlayerId)) {
+                    fantasyPoints += templateMatchEvent.getSoccerPlayerFantasyPoints(templateSoccerPlayerId);
                     break;
                 }
             }

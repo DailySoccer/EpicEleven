@@ -8,7 +8,9 @@ import org.joda.time.DateTimeZone;
 import play.mvc.Controller;
 import play.mvc.Result;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 
 public class TestController extends Controller {
 
@@ -16,10 +18,9 @@ public class TestController extends Controller {
         if (!OptaSimulator.isCreated())
             OptaSimulator.init();
 
-        OptaSimulator.instance().reset(false);
+        OptaSimulator.instance().reset();
         return ok("OK");
     }
-
 
 
     static public Result gotoDateTest(int year, int month, int day, int hour, int minute) {

@@ -1,11 +1,11 @@
 package model;
 
-import com.google.common.collect.ImmutableList;
-import model.opta.*;
+import model.opta.OptaMatchEventStats;
 import org.bson.types.ObjectId;
-import play.Logger;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 public class SoccerPlayerStats {
 

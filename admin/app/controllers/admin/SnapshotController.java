@@ -1,7 +1,5 @@
 package controllers.admin;
 
-import model.MockData;
-import model.Model;
 import model.Snapshot;
 import play.Logger;
 import play.mvc.Controller;
@@ -14,21 +12,6 @@ public class SnapshotController extends Controller {
 
     public static Result index() {
         return ok(views.html.snapshot.render());
-    }
-
-    public static Result replayLast() {
-
-        Model.resetDB();
-        MockData.ensureMockDataUsers();
-        MockData.ensureCompetitions();
-
-        if (!OptaSimulator.isCreated()) {
-            OptaSimulator.init();
-        }
-
-        OptaSimulator.instance().reset(true);
-
-        return redirect(routes.SnapshotController.index());
     }
 
     public static Result continueFromSnapshot() {

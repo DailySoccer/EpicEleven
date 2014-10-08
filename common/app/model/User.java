@@ -2,7 +2,6 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import org.bson.types.ObjectId;
-import org.jongo.Find;
 import org.jongo.marshall.jackson.oid.Id;
 import utils.ListUtils;
 

@@ -48,8 +48,8 @@ public class Scheduler {
 
         Logger.debug("invokeOnce: {}, delay: {} {}", scheduleMethod, initialDelay, timeUnit);
 
-        // Cuando no hay delay preferimos usar invokacion directa, lo que nos garantiza que se ejecutan antes que el
-        // resto de scheduled methods con delay = 0.
+        // Cuando no hay initialDelay usamos invokacion directa, lo que nos garantiza que se ejecutan antes que el
+        // resto de scheduled methods con interval != 0 & initialDelay == 0.
         if (initialDelay == 0) {
             invoke(scheduleMethod, null, args);
         }

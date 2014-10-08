@@ -5,11 +5,8 @@ import model.GlobalDate;
 import model.MockData;
 import model.Model;
 import model.opta.*;
-import org.bson.types.ObjectId;
-import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
-
 import utils.ListUtils;
 import utils.PaginationData;
 
