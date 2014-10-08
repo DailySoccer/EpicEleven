@@ -94,5 +94,5 @@ git checkout public
 if [[ "$destination" == "staging" ]]
 then
     # Lanzamos los tests funcionales
-    curl "https://drone.io/hook?id=github.com/DailySoccer/backend_test&token=sjy4CJrxbBizapoLvUtl" > /dev/null 2>&1 &
+    curl "https://drone.io/hook?id=github.com/DailySoccer/webtest&token=ncTodtcZ2iTgEIxBRuHR" > /dev/null 2>&1 &
 fi
