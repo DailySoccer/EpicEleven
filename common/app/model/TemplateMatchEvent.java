@@ -100,7 +100,7 @@ public class TemplateMatchEvent implements JongoId, Initializer {
     }
 
     public static TemplateMatchEvent findNextMatchEvent(ObjectId templateSoccerTeamId) {
-        return Model.templateMatchEvents().findOne("{$query: {$or: [{templateSoccerTeamAId: #}, {templateSoccerTeamBId: #}]}, $orderby: {startDate: 1}}",
+        return Model.templateMatchEvents().findOne("{$query: {$or: [{templateSoccerTeamAId: #}, {templateSoccerTeamBId: #}], {gameStartedDate: {$exists: 0}}}, $orderby: {startDate: 1}}",
                 templateSoccerTeamId, templateSoccerTeamId).as(TemplateMatchEvent.class);
     }
 
@@ -166,29 +166,16 @@ public class TemplateMatchEvent implements JongoId, Initializer {
         for (TemplateSoccerPlayer soccerPlayer : soccersPlayers) {
             TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(soccerPlayer.templateSoccerPlayerId);
 
-            // Eliminamos las estadísticas del partido que hubieramos registrado anteriormente
-            for (SoccerPlayerStats stats : templateSoccerPlayer.stats) {
-                if (stats.optaMatchEventId.equals(optaMatchEventId)) {
-                    templateSoccerPlayer.stats.remove(stats);
-                    // Logger.debug("------> OptaMatchEventId({}): Fecha({}): stats modificadas !!!", optaMatchEventId, GlobalDate.getCurrentDate().toString());
-                    break;
-                }
-            }
-
-            // Generamos las nuevas estadísticas del partido para este futbolista
+            // Generamos las estadísticas del partido para este futbolista
             ObjectId opponentTeamId = templateSoccerTeamId.equals(templateSoccerTeamAId) ? templateSoccerTeamBId : templateSoccerTeamAId;
             SoccerPlayerStats soccerPlayerStats = new SoccerPlayerStats(startDate, soccerPlayer.optaPlayerId, optaMatchEventId, opponentTeamId, getSoccerPlayerFantasyPoints(soccerPlayer.templateSoccerPlayerId));
 
-            // El futbolista ha jugado en el partido?
-            if (soccerPlayerStats.playedMinutes > 0 || !soccerPlayerStats.statsCount.isEmpty()) {
+            templateSoccerPlayer.updateStats(soccerPlayerStats);
 
-                templateSoccerPlayer.addStats(soccerPlayerStats);
-
-                /*
-                Logger.debug("saveStats: {}({}) - minutes = {} - points = {} - events({})",
-                        soccerPlayer.name, soccerPlayer.optaPlayerId, soccerPlayerStats.playedMinutes, getSoccerPlayerFantasyPoints(soccerPlayer.templateSoccerPlayerId), soccerPlayerStats.events);
-                */
-            }
+            /*
+            Logger.debug("saveStats: {}({}) - minutes = {} - points = {} - events({})",
+                    soccerPlayer.name, soccerPlayer.optaPlayerId, soccerPlayerStats.playedMinutes, getSoccerPlayerFantasyPoints(soccerPlayer.templateSoccerPlayerId), soccerPlayerStats.events);
+            */
         }
     }
 
