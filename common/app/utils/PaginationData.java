@@ -115,7 +115,7 @@ public class PaginationData {
                     valid = (fieldValue != null) && fieldValue.contains(filter);
                 }
                 if (valid) {
-                    if ((iTotalDisplayRecords > (page * pageSize)) && (dataList.size() < pageSize)) {
+                    if ((iTotalDisplayRecords >= (page * pageSize)) && (dataList.size() < pageSize)) {
                         dataList.add(values);
                     }
                     iTotalDisplayRecords++;
