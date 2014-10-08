@@ -113,7 +113,9 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         if (index == -1) {
             // Añadimos una nueva estadística si el futbolista ha jugado en el partido
             updateStats = (soccerPlayerStats.playedMinutes > 0 || !soccerPlayerStats.statsCount.isEmpty());
-            stats.add(soccerPlayerStats);
+            if (updateStats) {
+                stats.add(soccerPlayerStats);
+            }
         }
         else {
             // Actualizar las estadísticas
@@ -121,16 +123,28 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         }
 
         if (updateStats) {
-            // Calculamos la media de los fantasyPoints
-            int fantasyPointsMedia = 0;
-            for (SoccerPlayerStats stat : stats) {
-                fantasyPointsMedia += stat.fantasyPoints;
-            }
-            fantasyPointsMedia /= stats.size();
+            fantasyPoints = calculateFantasyPointsFromStats();
 
-            Model.templateSoccerPlayers().update("{optaPlayerId: #}", soccerPlayerStats.optaPlayerId)
-                    .with("{$set: {fantasyPoints: #, stats: #}}", fantasyPointsMedia, stats);
+            if (index == -1) {
+                Model.templateSoccerPlayers()
+                        .update("{optaPlayerId: #}", soccerPlayerStats.optaPlayerId)
+                        .with("{$set: {fantasyPoints: #}, $push: {stats: #}}", fantasyPoints, soccerPlayerStats);
+            }
+            else {
+                Model.templateSoccerPlayers()
+                        .update("{optaPlayerId: #, \"stats.optaMatchEventId\":#}", soccerPlayerStats.optaPlayerId, soccerPlayerStats.optaMatchEventId)
+                        .with("{$set: {fantasyPoints: #, \"stats.$\": #}}", fantasyPoints, soccerPlayerStats);
+            }
         }
+    }
+
+    private int calculateFantasyPointsFromStats() {
+        int fantasyPointsMedia = 0;
+        for (SoccerPlayerStats stat : stats) {
+            fantasyPointsMedia += stat.fantasyPoints;
+        }
+        fantasyPointsMedia /= stats.size();
+        return fantasyPointsMedia;
     }
 
     private int searchIndexForMatchEvent(String optaMatchEventId) {
