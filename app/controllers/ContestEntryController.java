@@ -82,9 +82,10 @@ public class ContestEntryController extends Controller {
                 errores = validateContestEntry(aContest, idsList);
             }
             if (errores.isEmpty()) {
-                ContestEntry.create(theUser.userId, aContest.contestId, idsList);
-
                 contestId = aContest.contestId.toString();
+                if (!ContestEntry.create(theUser.userId, aContest.contestId, idsList)) {
+                    errores.add(ERROR_RETRY_OP);
+                }
             } else {
                 // TODO: ¿Queremos informar de los distintos errores?
                 for (String error : errores) {
@@ -131,7 +132,9 @@ public class ContestEntryController extends Controller {
 
                 List<String> errores = validateContestEntry(aContest, idsList);
                 if (errores.isEmpty()) {
-                    ContestEntry.update(theUser.userId, aContest.contestId, contestEntry.contestEntryId, idsList);
+                    if (!ContestEntry.update(theUser.userId, aContest.contestId, contestEntry.contestEntryId, idsList)) {
+                        errores.add(ERROR_RETRY_OP);
+                    }
                 } else {
                     // TODO: ¿Queremos informar de los distintos errores?
                     for (String error : errores) {
@@ -185,7 +188,9 @@ public class ContestEntryController extends Controller {
                 }
 
                 if (!contestEntryForm.hasErrors()) {
-                    ContestEntry.remove(theUser.userId, contest.contestId, contestEntry.contestEntryId);
+                    if (!ContestEntry.remove(theUser.userId, contest.contestId, contestEntry.contestEntryId)) {
+                        contestEntryForm.reject(ERROR_RETRY_OP);
+                    }
                 }
             }
             else {
