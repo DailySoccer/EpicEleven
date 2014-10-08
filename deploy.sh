@@ -1,10 +1,23 @@
 #!/bin/sh
 
+if [[ "$2" != "" ]]
+    then
+    # Mode debug o release para el webclient
+    mode=$2
+    destination=$1
+elif [[ "$1" == "debug" || "$1" == "release" ]]
+    then
+    mode=$1
+    destination="staging"
+else
+    mode="release"
+    destination="staging"
+fi
+
+
 branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
 branch_name="(unnamed branch)"     # detached HEAD
 branch_name=${branch_name##refs/heads/}
-
-destination=$1
 
 
 remotes_allowed_message="The only allowed Heroku remotes are: staging/production."
@@ -29,11 +42,11 @@ if [ $# -eq 0 ]
                 destination="staging"
         fi
     else
-        if [[ "$1" != "staging" && "$1" != "production" ]]
+        if [[ "$destination" != "staging" && "$destination" != "production" ]]
             then
                 echo $remotes_allowed_message
                 exit 1
-        elif [[ "$1" != "staging" && "$1" != "production" && "$branch_name" != "master" ]]
+        elif [[ "$destination" != "staging" && "$destination" != "production" && "$branch_name" != "master" ]]
             then
                 git checkout master
         fi
@@ -44,7 +57,7 @@ git checkout -B deploy
 # Tenemos que borrar el symlink y hacer una copia dura de toda la build
 rm public
 cd ../webclient
-./build_rsync.sh
+./build_rsync.sh $mode
 cd ../backend
 
 # Añadimos nuevos archivos (la build) y commitimos
