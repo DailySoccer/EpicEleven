@@ -18,7 +18,7 @@ public class InstantiateContestsActor extends UntypedActor {
 
             case "Tick":
                 onTick();
-                getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
+                getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.MINUTES), getSelf(),
                                                                "Tick", getContext().dispatcher(), null);
                 break;
 
