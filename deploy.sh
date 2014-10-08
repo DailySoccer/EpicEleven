@@ -52,6 +52,11 @@ if [ $# -eq 0 ]
         fi
 fi
 
+echo "deploying to :"
+echo "$destination"
+echo "mode:"
+echo "$mode"
+
 git checkout -B deploy
 
 # Tenemos que borrar el symlink y hacer una copia dura de toda la build
