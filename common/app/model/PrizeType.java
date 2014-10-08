@@ -1,9 +1,6 @@
 package model;
 
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 public enum PrizeType {
     FREE(0),
     WINNER_TAKES_ALL(1),

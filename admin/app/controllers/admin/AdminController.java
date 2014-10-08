@@ -1,13 +1,13 @@
 package controllers.admin;
 
-import model.*;
+import model.Contest;
+import model.TemplateContest;
 import org.bson.types.ObjectId;
-
-import java.util.*;
-
 import play.mvc.Controller;
 import play.mvc.Result;
-import utils.ListUtils;
+
+import java.util.HashMap;
+import java.util.List;
 
 public class AdminController extends Controller {
 

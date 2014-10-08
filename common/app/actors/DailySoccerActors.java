@@ -1,6 +1,7 @@
 package actors;
 
-import akka.actor.*;
+import akka.actor.ActorRef;
+import akka.actor.Props;
 import play.libs.Akka;
 
 public class DailySoccerActors {

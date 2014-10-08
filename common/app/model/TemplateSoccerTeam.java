@@ -3,12 +3,15 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.WriteConcern;
+import model.opta.OptaTeam;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
-import model.opta.*;
 import utils.ListUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 public class TemplateSoccerTeam implements JongoId, Initializer {
     @Id

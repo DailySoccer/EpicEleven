@@ -2,10 +2,8 @@ package utils;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import model.ContestEntry;
 import org.jongo.Find;
 import org.jongo.MongoCollection;
-import play.Logger;
 import play.libs.Json;
 import play.mvc.Result;
 import play.mvc.Results;

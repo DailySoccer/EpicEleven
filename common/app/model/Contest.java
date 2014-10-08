@@ -1,7 +1,6 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.mongodb.BulkWriteOperation;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import utils.BatchWriteOperation;

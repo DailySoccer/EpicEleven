@@ -1,6 +1,9 @@
 package controllers.admin;
 
-import model.*;
+import model.Model;
+import model.TemplateMatchEvent;
+import model.TemplateSoccerPlayer;
+import model.TemplateSoccerTeam;
 import model.opta.OptaEvent;
 import org.bson.types.ObjectId;
 import play.mvc.Controller;

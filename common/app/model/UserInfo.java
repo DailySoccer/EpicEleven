@@ -1,10 +1,8 @@
 package model;
 
 import org.bson.types.ObjectId;
-import org.jongo.marshall.jackson.oid.Id;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class UserInfo {

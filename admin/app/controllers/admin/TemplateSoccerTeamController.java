@@ -1,14 +1,9 @@
 package controllers.admin;
 
-import model.Model;
-import model.TemplateSoccerPlayer;
 import model.TemplateSoccerTeam;
 import org.bson.types.ObjectId;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utils.ListUtils;
-
-import java.util.List;
 
 public class TemplateSoccerTeamController extends Controller {
     public static Result index() {

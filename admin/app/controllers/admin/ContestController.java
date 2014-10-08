@@ -3,7 +3,6 @@ package controllers.admin;
 import com.google.common.collect.ImmutableList;
 import model.Contest;
 import model.Model;
-import model.TemplateContest;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.PaginationData;

@@ -1,6 +1,5 @@
 package controllers.admin;
 
-import model.MockData;
 import model.Model;
 import model.PointsTranslation;
 import org.bson.types.ObjectId;

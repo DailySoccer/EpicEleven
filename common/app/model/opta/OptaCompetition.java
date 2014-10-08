@@ -1,6 +1,9 @@
 package model.opta;
 
-import model.*;
+import model.GlobalDate;
+import model.Initializer;
+import model.JongoId;
+import model.Model;
 import org.bson.types.ObjectId;
 import utils.ListUtils;
 

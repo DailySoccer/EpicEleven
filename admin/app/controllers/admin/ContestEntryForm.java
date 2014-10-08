@@ -1,13 +1,15 @@
 package controllers.admin;
 
-import model.*;
+import model.Contest;
+import model.TemplateSoccerPlayer;
+import model.User;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
 
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ContestEntryForm {
     @Constraints.Required

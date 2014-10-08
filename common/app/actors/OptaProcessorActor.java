@@ -4,8 +4,6 @@ import akka.actor.UntypedActor;
 import akka.japi.Procedure;
 import model.GlobalDate;
 import model.Model;
-import model.TemplateContest;
-import model.opta.OptaEvent;
 import model.opta.OptaProcessor;
 import org.apache.commons.dbutils.DbUtils;
 import play.Logger;

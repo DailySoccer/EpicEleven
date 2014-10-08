@@ -1,7 +1,10 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.mongodb.*;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import com.mongodb.MongoException;
+import com.mongodb.WriteResult;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
@@ -9,7 +12,6 @@ import utils.BatchWriteOperation;
 import utils.ListUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 

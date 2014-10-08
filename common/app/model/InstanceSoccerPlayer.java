@@ -1,6 +1,5 @@
 package model;
 
-import com.fasterxml.jackson.annotation.JsonView;
 import org.bson.types.ObjectId;
 
 public class InstanceSoccerPlayer {

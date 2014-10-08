@@ -1,6 +1,6 @@
 package controllers.admin;
 
-import model.*;
+import model.PointsTranslation;
 import model.opta.OptaEventType;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;

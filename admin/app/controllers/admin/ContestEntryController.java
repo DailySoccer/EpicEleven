@@ -1,14 +1,8 @@
 package controllers.admin;
 
-import model.*;
-import org.bson.types.ObjectId;
-import play.data.Form;
+import model.ContestEntry;
 import play.mvc.Controller;
 import play.mvc.Result;
-
-import java.util.List;
-
-import static play.data.Form.form;
 
 public class ContestEntryController extends Controller {
     public static Result index() {
