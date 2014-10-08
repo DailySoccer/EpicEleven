@@ -18,6 +18,7 @@ Installing the environment
 - You need to install the databases:
  
     $ brew install mongo
+    
     $ brew install postgres
 
 - To run the server with debugging enabled:
