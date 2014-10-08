@@ -1,5 +1,7 @@
 #!/bin/sh
 
+remotes_allowed_message="The only allowed Heroku remotes are: staging/production."
+
 if [[ "$2" != "" ]]
     then
     # Mode debug o release para el webclient
@@ -9,20 +11,19 @@ elif [[ "$1" == "debug" || "$1" == "release" ]]
     then
     mode=$1
     destination="staging"
+elif [[ "$1" == "production" || "$1" == "staging" ]]
+    then
+    mode="debug"
+    destination=$1
 else
-    mode="release"
+    mode="debug"
     destination="staging"
 fi
-
 
 branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
 branch_name="(unnamed branch)"     # detached HEAD
 branch_name=${branch_name##refs/heads/}
 
-
-remotes_allowed_message="The only allowed Heroku remotes are: staging/production."
-
-# Cambiamos a la rama de deploy, asegurandonos de que esta creada/reseateada
 
 if [[ $(git diff --shortstat ) != "" || $(git diff --shortstat --cached) != "" ]]
     then
@@ -38,25 +39,23 @@ if [ $# -eq 0 ]
         if [[ "$branch_name" == "master" ]]
             then
                 destination="production"
-        else 
-                destination="staging"
         fi
     else
         if [[ "$destination" != "staging" && "$destination" != "production" ]]
             then
                 echo $remotes_allowed_message
                 exit 1
-        elif [[ "$destination" != "staging" && "$destination" != "production" && "$branch_name" != "master" ]]
+            fi
+        if [[ "$destination" == "production" && "$branch_name" != "master" ]]
             then
                 git checkout master
         fi
 fi
 
-echo "deploying to :"
-echo "$destination"
-echo "mode:"
-echo "$mode"
+echo "deploying to : $destination"
+echo "mode: $mode"
 
+# Cambiamos a la rama de deploy, asegurandonos de que esta creada/reseateada
 git checkout -B deploy
 
 # Tenemos que borrar el symlink y hacer una copia dura de toda la build
