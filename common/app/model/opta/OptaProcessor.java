@@ -8,6 +8,7 @@ import org.jdom2.Element;
 import org.jdom2.input.JDOMParseException;
 import org.jdom2.input.SAXBuilder;
 import play.Logger;
+import utils.ImportUtils;
 
 import java.io.StringReader;
 import java.util.*;
@@ -46,6 +47,8 @@ public class OptaProcessor {
                 if (feedType.equals("F1")) {
                     processF1(requestBodyElement);
                 }
+
+                ImportUtils.importAll();
             }
         }
         catch (JDOMParseException parseEx) {
