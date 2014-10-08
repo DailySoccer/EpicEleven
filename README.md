@@ -22,7 +22,7 @@ Installing the environment
 
 - To run the server with debugging enabled:
 
-    $ backend> ./debug.sh
+    $ backend> ./_debug.sh
 
 - Install Intellij Idea 13 and then follow this instructions:
 
