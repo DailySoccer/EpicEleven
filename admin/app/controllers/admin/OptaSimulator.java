@@ -185,6 +185,9 @@ public class OptaSimulator implements Runnable {
                 Logger.error("WTF 2311", e);
             }
         }
+        else {
+            Logger.info("Hemos llegado al ultimo documento XML");
+        }
 
         return _nextDocMsg.isNull();
     }

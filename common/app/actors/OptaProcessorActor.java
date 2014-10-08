@@ -136,7 +136,6 @@ public class OptaProcessorActor extends UntypedActor {
                 queryNextResultSet(documentsPerQuery);
 
                 if (!readNextDocument()) {
-                    Logger.info("Hemos llegado al ultimo documento XML");
                     closeConnection();
                 }
             }
