@@ -1,4 +1,4 @@
-@(templateContestForm: Form[controllers.admin.TemplateContestForm], matchEventsOptions: HashMap[String, String])
+@(templateContestForm: Form[controllers.admin.TemplateContestForm], matchEventsOptions: HashMap[String, String], isActive: Boolean)
 
 @import helper._
 @import model._
@@ -9,8 +9,8 @@
     @controllers.admin.FlashMessage.danger("Template MatchEvent Form has errors")
 }
 
-@myInputText(field: Field, _label: String = "", _size: Int = 10) = {
-<div class="form-group @if(field.hasErrors) {has-error}" title="En el nombre se pueden usar las variables: %MaxEntries, %SalaryCap, %PrizeType, %EntryFee, %StartDate">
+@myInputText(field: Field, _label: String = "", _size: Int = 10, _hidden: Boolean = false) = {
+<div class="form-group @if(field.hasErrors) {has-error}" title="En el nombre se pueden usar las variables: %MaxEntries, %SalaryCap, %PrizeType, %EntryFee, %StartDate" @if(_hidden){ hidden }>
     @if(_label.nonEmpty) { <label class="control-label col-sm-3" for="@field.id">@_label</label> }
     <div class="col-sm-7">
         <input type="text" name="@field.id" id="@field.id" value="@field.value" size="@_size" class="form-control">
@@ -21,8 +21,8 @@
 </div>
 }
 
-@mySelect(field: Field, label: String = "CHANGEME", options: Seq[(String, String)], isMultiple: Boolean = false, size: Int = 1, isHorizontal: Boolean = true, help: String = "") = {
-<div class="form-group @if(field.hasErrors) {has-error}">
+@mySelect(field: Field, label: String = "CHANGEME", options: Seq[(String, String)], isMultiple: Boolean = false, size: Int = 1, isHorizontal: Boolean = true, help: String = "", _hidden: Boolean = false) = {
+<div class="form-group @if(field.hasErrors) {has-error}" @if(_hidden){ hidden }>
     <label @if(isHorizontal){ class="col-sm-3 control-label"} for="@field.id">@label</label>
     <div @if(isHorizontal){ class="col-sm-7"}>
         @defining( if( isMultiple ) "%s[]".format(field.name) else field.name ) { selectName =>
@@ -53,8 +53,8 @@
 </div>
 }
 
-@myInputDate(field: Field, _label: String = "", _size: Int = 10) = {
-<div class="form-group @if(field.hasErrors) {has-error}">
+@myInputDate(field: Field, _label: String = "", _size: Int = 10, _hidden: Boolean = false) = {
+<div class="form-group @if(field.hasErrors) {has-error}" @if(_hidden){ hidden }>
     <label class="col-sm-3 control-label" for="@field.id">@_label</label>
     <div class="col-sm-7">
         <input type="date" id="@field.id" name="@field.name" class="form-control" value="@field.value">
@@ -80,6 +80,7 @@
 
     <input type="hidden" name="id" value='@templateContestForm("id").value' >
     <input type="hidden" name="createdAt" value='@templateContestForm("createdAt").value' >
+    <input type="hidden" name="state" value='@templateContestForm("state").value' >
 
     <div class="col-md-12">
 
@@ -100,32 +101,42 @@
             @myInputText(
                 templateContestForm("maxEntries"),
                 "Max Entries",
-                10
+                10,
+                isActive
             )
 
             @myInputText(
                 templateContestForm("salaryCap"),
                 "Salary Cap",
-                10
+                10,
+                isActive
             )
 
             @myInputText(
                 templateContestForm("entryFee"),
                 "Entry Fee",
-                10
+                10,
+                isActive
             )
 
             @mySelect(
                 templateContestForm("prizeType"),
                 "Prize Type",
                 options(EnumUtils.toMap(classOf[PrizeType])),
-                false
+                false,
+                1,
+                true,
+                "",
+                isActive
             )
 
             @myInputDate(
                 templateContestForm("activationAt"),
-                "Activation At"
+                "Activation At",
+                10,
+                isActive
             )
+
             </form>
         </div>
 
@@ -139,7 +150,9 @@
                 options(matchEventsOptions),
                 true,
                 25,
-                false
+                false,
+                "",
+                isActive
             )
         }
         </div>
