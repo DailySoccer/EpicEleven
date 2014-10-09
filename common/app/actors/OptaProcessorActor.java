@@ -211,8 +211,9 @@ public class OptaProcessorActor extends UntypedActor {
 
         Logger.info("OptaProcessorActor: {}, {}, {}, {}/{}", feedType, name, GlobalDate.formatDate(created_at), seasonId, competitionId);
 
-        HashSet<String> changedOptaMatchEventIds = processor.processOptaDBInput(feedType, name, competitionId, seasonId, gameId, sqlxml);
-        OptaMatchEventChangeProcessor.onOptaMatchEventsChanged(changedOptaMatchEventIds);
+        processor.processOptaDBInput(feedType, name, competitionId, seasonId, gameId, sqlxml);
+        new OptaImportProcessor(processor).process();
+        new OptaMatchEventChangeProcessor(processor).process();
 
         state.lastProcessedDate = created_at;
         Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with(state);

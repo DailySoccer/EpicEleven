@@ -88,6 +88,10 @@ public class TemplateSoccerTeam implements JongoId, Initializer {
                !shortName.equals(optaTeam.shortName);
     }
 
+    public void updateDocument() {
+        Model.templateSoccerTeams().withWriteConcern(WriteConcern.SAFE).update("{optaTeamId: #}", optaTeamId).upsert().with(this);
+    }
+
     /**
      * Importar un optaTeam
      * @param optaTeam
@@ -95,13 +99,11 @@ public class TemplateSoccerTeam implements JongoId, Initializer {
      */
     static public boolean importTeam(OptaTeam optaTeam) {
         TemplateSoccerTeam templateTeam = new TemplateSoccerTeam(optaTeam);
-        Model.templateSoccerTeams().withWriteConcern(WriteConcern.SAFE).update("{optaTeamId: #}", templateTeam.optaTeamId).upsert().with(templateTeam);
-
-        Model.optaTeams().update("{id: #}", optaTeam.optaTeamId).with("{$set: {dirty: false}}");
+        templateTeam.updateDocument();
         return true;
     }
 
-    static public boolean isInvalid(OptaTeam optaTeam) {
+    static public boolean isInvalidFromImport(OptaTeam optaTeam) {
         return (optaTeam.name == null || optaTeam.name.isEmpty() || optaTeam.shortName == null || optaTeam.shortName.isEmpty());
     }
 

@@ -185,7 +185,7 @@ public class ImportController extends Controller {
         catch (InterruptedException e) {
             Logger.error("WTF 1135", e);
         }
-        return redirect(routes.SnapshotController.index());
+        return redirect(routes.DashboardController.index());
     }
 
     public static Result importSalaries() {
@@ -202,7 +202,7 @@ public class ImportController extends Controller {
         catch (InterruptedException e) {
             Logger.error("WTF 1136", e);
         }
-        return redirect(routes.SnapshotController.index());
+        return redirect(routes.DashboardController.index());
     }
 
 

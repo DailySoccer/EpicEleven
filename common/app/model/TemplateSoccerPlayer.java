@@ -166,6 +166,10 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
                !(TemplateSoccerTeam.findOne(templateTeamId, optaPlayer.teamId) != null);
     }
 
+    public void updateDocument() {
+        Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).update("{optaPlayerId: #}", optaPlayerId).upsert().with(this);
+    }
+
     /**
      * Importar un optaPlayer
      */
@@ -177,9 +181,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
             TemplateSoccerPlayerMetadata templateSoccerPlayerMetadata = TemplateSoccerPlayerMetadata.findOne(optaPlayer.optaPlayerId);
             templateSoccer.salary = templateSoccerPlayerMetadata!=null? templateSoccerPlayerMetadata.salary: 7979;
 
-            Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).update("{optaPlayerId: #}", templateSoccer.optaPlayerId).upsert().with(templateSoccer);
-
-            Model.optaPlayers().update("{id: #}", optaPlayer.optaPlayerId).with("{$set: {dirty: false}}");
+            templateSoccer.updateDocument();
         }
         else {
             Logger.error("importSoccer ({}): invalid teamID({})", optaPlayer.optaPlayerId, optaPlayer.teamId);
@@ -188,7 +190,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         return true;
     }
 
-    static public boolean isInvalid(OptaPlayer optaPlayer) {
+    static public boolean isInvalidFromImport(OptaPlayer optaPlayer) {
         boolean invalid = (optaPlayer.teamId == null) || optaPlayer.teamId.isEmpty();
 
         if (!invalid) {

@@ -81,7 +81,7 @@ public class ImportUtils {
         for(OptaTeam optaTeam : teamsDirty) {
             TemplateSoccerTeam template = TemplateSoccerTeam.findOneFromOptaId(optaTeam.optaTeamId);
             if (template == null) {
-                if (TemplateSoccerTeam.isInvalid(optaTeam)) {
+                if (TemplateSoccerTeam.isInvalidFromImport(optaTeam)) {
                     if (invalidates != null)
                         invalidates.add(optaTeam);
                 }
@@ -120,7 +120,7 @@ public class ImportUtils {
             if (template == null) {
                 // No queremos añadir futbolistas de equipos inválidos
                 if (isTeamValid) {
-                    if (TemplateSoccerPlayer.isInvalid(optaSoccer)) {
+                    if (TemplateSoccerPlayer.isInvalidFromImport(optaSoccer)) {
                         if (invalidates != null)
                             invalidates.add(optaSoccer);
                     } else if (news != null) {
@@ -139,7 +139,7 @@ public class ImportUtils {
         for(OptaMatchEvent optaMatch : matchesDirty) {
             TemplateMatchEvent template = TemplateMatchEvent.findOneFromOptaId(optaMatch.optaMatchEventId);
             if (template == null) {
-                if (TemplateMatchEvent.isInvalid(optaMatch)) {
+                if (TemplateMatchEvent.isInvalidFromImport(optaMatch)) {
                     if (invalidates != null)
                         invalidates.add(optaMatch);
                 }
