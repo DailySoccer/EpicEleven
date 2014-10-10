@@ -4,6 +4,7 @@ import akka.actor.UntypedActor;
 import akka.japi.Procedure;
 import model.GlobalDate;
 import model.Model;
+import model.opta.OptaImporter;
 import model.opta.OptaProcessor;
 import org.apache.commons.dbutils.DbUtils;
 import play.Logger;
@@ -12,7 +13,6 @@ import scala.concurrent.duration.Duration;
 
 import java.sql.*;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 public class OptaProcessorActor extends UntypedActor {
@@ -212,7 +212,7 @@ public class OptaProcessorActor extends UntypedActor {
         Logger.info("OptaProcessorActor: {}, {}, {}, {}/{}", feedType, name, GlobalDate.formatDate(created_at), seasonId, competitionId);
 
         processor.processOptaDBInput(feedType, name, competitionId, seasonId, gameId, sqlxml);
-        new OptaImportProcessor(processor).process();
+        new OptaImporter(processor).process();
         new OptaMatchEventChangeProcessor(processor).process();
 
         state.lastProcessedDate = created_at;

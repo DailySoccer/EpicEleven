@@ -331,10 +331,3 @@ public class TemplateMatchEvent implements JongoId, Initializer {
         return invalid;
     }
 }
-
-class LiveFantasyPoints {
-    public int points;                                          // Puntos totales de un SoccerPlayer
-
-    @JsonView(JsonViews.FullContest.class)
-    public HashMap<String, Integer> events = new HashMap<>();   // OptaEventType.name => fantasyPoints conseguidos gracias a el
-}

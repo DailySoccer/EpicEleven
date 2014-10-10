@@ -8,7 +8,6 @@ import org.jdom2.Element;
 import org.jdom2.input.JDOMParseException;
 import org.jdom2.input.SAXBuilder;
 import play.Logger;
-import utils.ImportUtils;
 
 import java.io.StringReader;
 import java.util.*;

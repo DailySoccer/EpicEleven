@@ -1,20 +1,14 @@
 package controllers.admin;
 
-import model.*;
-import model.opta.OptaCompetition;
-import model.opta.OptaMatchEvent;
-import model.opta.OptaPlayer;
-import model.opta.OptaTeam;
+import model.opta.*;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utils.ImportUtils;
+import model.opta.OptaImportUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 public class ImportController extends Controller {
@@ -27,7 +21,7 @@ public class ImportController extends Controller {
         List<OptaTeam> teamsNew = new ArrayList<>();
         List<OptaTeam> teamsChanged = new ArrayList<>();
         List<OptaTeam> teamsInvalidated = new ArrayList<>();
-        ImportUtils.evaluateDirtyTeams(competitionsActivated, teamsNew, teamsChanged, teamsInvalidated);
+        OptaImportUtils.evaluateDirtyTeams(competitionsActivated, teamsNew, teamsChanged, teamsInvalidated);
         return ok(views.html.import_teams.render(teamsNew, teamsChanged, teamsInvalidated, "*", OptaCompetition.asMap(OptaCompetition.findAllActive())));
     }
 
@@ -38,28 +32,28 @@ public class ImportController extends Controller {
         List<OptaTeam> teamsNew = new ArrayList<>();
         List<OptaTeam> teamsChanged = new ArrayList<>();
         List<OptaTeam> teamsInvalidated = new ArrayList<>();
-        ImportUtils.evaluateDirtyTeams(competitionsSelected, teamsNew, teamsChanged, teamsInvalidated);
+        OptaImportUtils.evaluateDirtyTeams(competitionsSelected, teamsNew, teamsChanged, teamsInvalidated);
         return ok(views.html.import_teams.render(teamsNew, teamsChanged, teamsInvalidated, competitionId, OptaCompetition.asMap(OptaCompetition.findAllActive())));
     }
 
     public static Result importAllTeams() {
         List<OptaTeam> teamsNew = new ArrayList<>();
         List<OptaTeam> teamsChanged = new ArrayList<>();
-        ImportUtils.evaluateDirtyTeams(teamsNew, teamsChanged, null);
+        OptaImportUtils.evaluateDirtyTeams(teamsNew, teamsChanged, null);
 
-        int news = ImportUtils.importTeams(teamsNew);
+        int news = OptaImportUtils.importTeams(teamsNew);
         FlashMessage.success(String.format("Imported %d teams New", news));
 
-        int changes = ImportUtils.importTeams(teamsChanged);
+        int changes = OptaImportUtils.importTeams(teamsChanged);
         FlashMessage.success( String.format("Imported %d teams Changed", changes) );
         return redirect(routes.ImportController.showImportTeams());
     }
 
     public static Result importAllNewTeams() {
         List<OptaTeam> teamsNew = new ArrayList<>();
-        ImportUtils.evaluateDirtyTeams(teamsNew, null, null);
+        OptaImportUtils.evaluateDirtyTeams(teamsNew, null, null);
 
-        int news = ImportUtils.importTeams(teamsNew);
+        int news = OptaImportUtils.importTeams(teamsNew);
         FlashMessage.success( String.format("Imported %d teams New", news) );
         return redirect(routes.ImportController.showImportTeams());
     }
@@ -69,18 +63,18 @@ public class ImportController extends Controller {
         competitionsSelected.add(competitionId);
 
         List<OptaTeam> teamsNew = new ArrayList<>();
-        ImportUtils.evaluateDirtyTeams(competitionsSelected, teamsNew, null, null);
+        OptaImportUtils.evaluateDirtyTeams(competitionsSelected, teamsNew, null, null);
 
-        int news = ImportUtils.importTeams(teamsNew);
+        int news = OptaImportUtils.importTeams(teamsNew);
         FlashMessage.success( String.format("Imported %d teams New", news) );
         return redirect(routes.ImportController.showImportTeams());
     }
 
     public static Result importAllChangedTeams() {
         List<OptaTeam> teamsChanged = new ArrayList<>();
-        ImportUtils.evaluateDirtyTeams(null, teamsChanged, null);
+        OptaImportUtils.evaluateDirtyTeams(null, teamsChanged, null);
 
-        int changes = ImportUtils.importTeams(teamsChanged);
+        int changes = OptaImportUtils.importTeams(teamsChanged);
         FlashMessage.success( String.format("Imported %d teams Changed", changes) );
         return redirect(routes.ImportController.showImportTeams());
     }
@@ -93,37 +87,37 @@ public class ImportController extends Controller {
         List<OptaPlayer> playersNew = new ArrayList<>();
         List<OptaPlayer> playersChanged = new ArrayList<>();
         List<OptaPlayer> playersInvalidated = new ArrayList<>();
-        ImportUtils.evaluateDirtySoccers(playersNew, playersChanged, playersInvalidated);
+        OptaImportUtils.evaluateDirtySoccers(playersNew, playersChanged, playersInvalidated);
         return ok(views.html.import_soccers.render(playersNew, playersChanged, playersInvalidated));
     }
 
     public static Result importAllSoccers() {
         List<OptaPlayer> playersNew = new ArrayList<>();
         List<OptaPlayer> playersChanged = new ArrayList<>();
-        ImportUtils.evaluateDirtySoccers(playersNew, playersChanged, null);
+        OptaImportUtils.evaluateDirtySoccers(playersNew, playersChanged, null);
 
-        int news = ImportUtils.importPlayers(playersNew);
+        int news = OptaImportUtils.importPlayers(playersNew);
         FlashMessage.success( String.format("Imported %d soccers New", news) );
 
-        int changes = ImportUtils.importPlayers(playersChanged);
+        int changes = OptaImportUtils.importPlayers(playersChanged);
         FlashMessage.success( String.format("Imported %d soccers Changed", changes) );
         return redirect(routes.ImportController.showImportSoccers());
     }
 
     public static Result importAllNewSoccers() {
         List<OptaPlayer> playersNew = new ArrayList<>();
-        ImportUtils.evaluateDirtySoccers(playersNew, null, null);
+        OptaImportUtils.evaluateDirtySoccers(playersNew, null, null);
 
-        int news = ImportUtils.importPlayers(playersNew);
+        int news = OptaImportUtils.importPlayers(playersNew);
         FlashMessage.success( String.format("Imported %d soccers New", news) );
         return redirect(routes.ImportController.showImportSoccers());
     }
 
     public static Result importAllChangedSoccers() {
         List<OptaPlayer> playersChanged = new ArrayList<>();
-        ImportUtils.evaluateDirtySoccers(null, playersChanged, null);
+        OptaImportUtils.evaluateDirtySoccers(null, playersChanged, null);
 
-        int changes = ImportUtils.importPlayers(playersChanged);
+        int changes = OptaImportUtils.importPlayers(playersChanged);
         FlashMessage.success( String.format("Imported %d soccers Changed", changes) );
         return redirect(routes.ImportController.showImportSoccers());
     }
@@ -136,37 +130,37 @@ public class ImportController extends Controller {
         List<OptaMatchEvent> matchesNew = new ArrayList<>();
         List<OptaMatchEvent> matchesChanged = new ArrayList<>();
         List<OptaMatchEvent> matchesInvalidated = new ArrayList<>();
-        ImportUtils.evaluateDirtyMatchEvents(matchesNew, matchesChanged, matchesInvalidated);
+        OptaImportUtils.evaluateDirtyMatchEvents(matchesNew, matchesChanged, matchesInvalidated);
         return ok(views.html.import_match_events.render(matchesNew, matchesChanged, matchesInvalidated, OptaTeam.findAllAsMap()));
     }
 
     public static Result importAllMatchEvents() {
         List<OptaMatchEvent> matchesNew = new ArrayList<>();
         List<OptaMatchEvent> matchesChanged = new ArrayList<>();
-        ImportUtils.evaluateDirtyMatchEvents(matchesNew, matchesChanged, null);
+        OptaImportUtils.evaluateDirtyMatchEvents(matchesNew, matchesChanged, null);
 
-        int news = ImportUtils.importMatchEvents(matchesNew);
+        int news = OptaImportUtils.importMatchEvents(matchesNew);
         FlashMessage.success( String.format("Imported %d match events New", news) );
 
-        int changes = ImportUtils.importMatchEvents(matchesChanged);
+        int changes = OptaImportUtils.importMatchEvents(matchesChanged);
         FlashMessage.success( String.format("Imported %d match events Changed", changes) );
         return redirect(routes.ImportController.showImportMatchEvents());
     }
 
     public static Result importAllNewMatchEvents() {
         List<OptaMatchEvent> matchesNew = new ArrayList<>();
-        ImportUtils.evaluateDirtyMatchEvents(matchesNew, null, null);
+        OptaImportUtils.evaluateDirtyMatchEvents(matchesNew, null, null);
 
-        int news = ImportUtils.importMatchEvents(matchesNew);
+        int news = OptaImportUtils.importMatchEvents(matchesNew);
         FlashMessage.success( String.format("Imported %d match events New", news) );
         return redirect(routes.ImportController.showImportMatchEvents());
     }
 
     public static Result importAllChangedMatchEvents() {
         List<OptaMatchEvent> matchesChanged = new ArrayList<>();
-        ImportUtils.evaluateDirtyMatchEvents(null, matchesChanged, null);
+        OptaImportUtils.evaluateDirtyMatchEvents(null, matchesChanged, null);
 
-        int changes = ImportUtils.importMatchEvents(matchesChanged);
+        int changes = OptaImportUtils.importMatchEvents(matchesChanged);
         FlashMessage.success( String.format("Imported %d match events Changed", changes) );
         return redirect(routes.ImportController.showImportMatchEvents());
     }

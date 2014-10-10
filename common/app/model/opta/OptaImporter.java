@@ -1,12 +1,12 @@
-package actors;
+package model.opta;
 
 import model.*;
 import model.opta.*;
 
 import java.util.*;
 
-public class OptaImportProcessor {
-    public OptaImportProcessor(OptaProcessor processor) {
+public class OptaImporter {
+    public OptaImporter(OptaProcessor processor) {
         _optaTeamIds = processor.getDirtyTeamIds();
         _optaPlayerIds = processor.getDirtyPlayerIds();
         _optaMatchEventIds = processor.getDirtyMatchEventIds();
