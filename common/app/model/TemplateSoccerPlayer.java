@@ -104,19 +104,59 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: {$in: #}, activated: # }", teamIds, true).as(TemplateSoccerPlayer.class));
     }
 
+    public void updateStats(SoccerPlayerStats soccerPlayerStats) {
+        boolean updateStats = true;
 
-    public void addStats(SoccerPlayerStats soccerPlayerStats) {
-        stats.add(soccerPlayerStats);
+        // Buscar si ya tenemos estadísticas de ese mismo partido
+        int index = searchIndexForMatchEvent(soccerPlayerStats.optaMatchEventId);
+        // Son estadísticas nuevas?
+        if (index == -1) {
+            // Añadimos una nueva estadística si el futbolista ha jugado en el partido
+            updateStats = (soccerPlayerStats.playedMinutes > 0 || !soccerPlayerStats.statsCount.isEmpty());
+            if (updateStats) {
+                stats.add(soccerPlayerStats);
+            }
+        }
+        else {
+            // Actualizar las estadísticas
+            stats.set(index, soccerPlayerStats);
+        }
 
-        // Calculamos la media de los fantasyPoints
+        if (updateStats) {
+            fantasyPoints = calculateFantasyPointsFromStats();
+
+            if (index == -1) {
+                Model.templateSoccerPlayers()
+                        .update("{optaPlayerId: #}", soccerPlayerStats.optaPlayerId)
+                        .with("{$set: {fantasyPoints: #}, $push: {stats: #}}", fantasyPoints, soccerPlayerStats);
+            }
+            else {
+                Model.templateSoccerPlayers()
+                        .update("{optaPlayerId: #, \"stats.optaMatchEventId\":#}", soccerPlayerStats.optaPlayerId, soccerPlayerStats.optaMatchEventId)
+                        .with("{$set: {fantasyPoints: #, \"stats.$\": #}}", fantasyPoints, soccerPlayerStats);
+            }
+        }
+    }
+
+    private int calculateFantasyPointsFromStats() {
         int fantasyPointsMedia = 0;
         for (SoccerPlayerStats stat : stats) {
             fantasyPointsMedia += stat.fantasyPoints;
         }
         fantasyPointsMedia /= stats.size();
+        return fantasyPointsMedia;
+    }
 
-        Model.templateSoccerPlayers().update("{optaPlayerId: #}", soccerPlayerStats.optaPlayerId)
-                .with("{$set: {fantasyPoints: #, stats: #}}", fantasyPointsMedia, stats);
+    private int searchIndexForMatchEvent(String optaMatchEventId) {
+        int index = -1;
+        for (int i=0; i<stats.size(); i++) {
+            SoccerPlayerStats stat = stats.get(i);
+            if (stat.optaMatchEventId.equals(optaMatchEventId)) {
+                index = i;
+                break;
+            }
+        }
+        return index;
     }
 
     public boolean hasChanged(OptaPlayer optaPlayer) {
@@ -124,6 +164,10 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
                !name.equals(optaPlayer.name) ||
                !fieldPos.equals(transformToFieldPosFromOptaPos(optaPlayer.position)) ||
                !(TemplateSoccerTeam.findOne(templateTeamId, optaPlayer.teamId) != null);
+    }
+
+    public void updateDocument() {
+        Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).update("{optaPlayerId: #}", optaPlayerId).upsert().with(this);
     }
 
     /**
@@ -137,9 +181,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
             TemplateSoccerPlayerMetadata templateSoccerPlayerMetadata = TemplateSoccerPlayerMetadata.findOne(optaPlayer.optaPlayerId);
             templateSoccer.salary = templateSoccerPlayerMetadata!=null? templateSoccerPlayerMetadata.salary: 7979;
 
-            Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).update("{optaPlayerId: #}", templateSoccer.optaPlayerId).upsert().with(templateSoccer);
-
-            Model.optaPlayers().update("{id: #}", optaPlayer.optaPlayerId).with("{$set: {dirty: false}}");
+            templateSoccer.updateDocument();
         }
         else {
             Logger.error("importSoccer ({}): invalid teamID({})", optaPlayer.optaPlayerId, optaPlayer.teamId);
@@ -148,7 +190,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         return true;
     }
 
-    static public boolean isInvalid(OptaPlayer optaPlayer) {
+    static public boolean isInvalidFromImport(OptaPlayer optaPlayer) {
         boolean invalid = (optaPlayer.teamId == null) || optaPlayer.teamId.isEmpty();
 
         if (!invalid) {

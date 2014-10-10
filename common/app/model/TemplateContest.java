@@ -207,17 +207,12 @@ public class TemplateContest implements JongoId, Initializer {
      *  Estado del partido
      */
     public boolean isStarted() {
-        boolean started = false;
-
-        // El Contest ha comenzado si cualquiera de sus partidos ha comenzado
-        for(TemplateMatchEvent templateMatchEvent : TemplateMatchEvent.findAll(templateMatchEventIds)) {
-            if (templateMatchEvent.isGameStarted()) {
-                started = true;
-                break;
-            }
-        }
-
-        return started;
+        // El TemplateContest ha comenzado si cualquiera de sus partidos ha comenzado
+        TemplateMatchEvent matchEventStarted = Model.templateMatchEvents()
+                .findOne("{_id: {$in: #}, gameStartedDate: {$exists: 1}}", templateMatchEventIds)
+                .projection("{_id: 1}")
+                .as(TemplateMatchEvent.class);
+        return (matchEventStarted != null);
     }
 
     public static boolean isStarted(String templateContestId) {
@@ -225,17 +220,10 @@ public class TemplateContest implements JongoId, Initializer {
     }
 
     public boolean isFinished() {
-        boolean finished = true;
-
-        // El Contest ha terminado si TODOS sus partidos han terminado
-        for (TemplateMatchEvent templateMatchEvent : TemplateMatchEvent.findAll(templateMatchEventIds)) {
-            if (!templateMatchEvent.isGameFinished()) {
-                finished = false;
-                break;
-            }
-        }
-
-        return finished;
+        // El TemplateContest ha terminado si todos sus partidos han terminado
+        long numMatchEventsFinished = Model.templateMatchEvents()
+                .count("{_id: {$in: #}, gameFinishedDate: {$exists: 1}}", templateMatchEventIds);
+        return (numMatchEventsFinished == templateMatchEventIds.size());
     }
 
     public static boolean isFinished(String templateContestId) {

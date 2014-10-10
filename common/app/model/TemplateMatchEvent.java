@@ -1,6 +1,7 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.mongodb.WriteConcern;
 import model.opta.OptaEvent;
 import model.opta.OptaEventType;
 import model.opta.OptaMatchEvent;
@@ -100,7 +101,7 @@ public class TemplateMatchEvent implements JongoId, Initializer {
     }
 
     public static TemplateMatchEvent findNextMatchEvent(ObjectId templateSoccerTeamId) {
-        return Model.templateMatchEvents().findOne("{$query: {$or: [{templateSoccerTeamAId: #}, {templateSoccerTeamBId: #}]}, $orderby: {startDate: 1}}",
+        return Model.templateMatchEvents().findOne("{$query: {$or: [{templateSoccerTeamAId: #}, {templateSoccerTeamBId: #}], {gameStartedDate: {$exists: 0}}}, $orderby: {startDate: 1}}",
                 templateSoccerTeamId, templateSoccerTeamId).as(TemplateMatchEvent.class);
     }
 
@@ -166,29 +167,16 @@ public class TemplateMatchEvent implements JongoId, Initializer {
         for (TemplateSoccerPlayer soccerPlayer : soccersPlayers) {
             TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(soccerPlayer.templateSoccerPlayerId);
 
-            // Eliminamos las estadísticas del partido que hubieramos registrado anteriormente
-            for (SoccerPlayerStats stats : templateSoccerPlayer.stats) {
-                if (stats.optaMatchEventId.equals(optaMatchEventId)) {
-                    templateSoccerPlayer.stats.remove(stats);
-                    // Logger.debug("------> OptaMatchEventId({}): Fecha({}): stats modificadas !!!", optaMatchEventId, GlobalDate.getCurrentDate().toString());
-                    break;
-                }
-            }
-
-            // Generamos las nuevas estadísticas del partido para este futbolista
+            // Generamos las estadísticas del partido para este futbolista
             ObjectId opponentTeamId = templateSoccerTeamId.equals(templateSoccerTeamAId) ? templateSoccerTeamBId : templateSoccerTeamAId;
             SoccerPlayerStats soccerPlayerStats = new SoccerPlayerStats(startDate, soccerPlayer.optaPlayerId, optaMatchEventId, opponentTeamId, getSoccerPlayerFantasyPoints(soccerPlayer.templateSoccerPlayerId));
 
-            // El futbolista ha jugado en el partido?
-            if (soccerPlayerStats.playedMinutes > 0 || !soccerPlayerStats.statsCount.isEmpty()) {
+            templateSoccerPlayer.updateStats(soccerPlayerStats);
 
-                templateSoccerPlayer.addStats(soccerPlayerStats);
-
-                /*
-                Logger.debug("saveStats: {}({}) - minutes = {} - points = {} - events({})",
-                        soccerPlayer.name, soccerPlayer.optaPlayerId, soccerPlayerStats.playedMinutes, getSoccerPlayerFantasyPoints(soccerPlayer.templateSoccerPlayerId), soccerPlayerStats.events);
-                */
-            }
+            /*
+            Logger.debug("saveStats: {}({}) - minutes = {} - points = {} - events({})",
+                    soccerPlayer.name, soccerPlayer.optaPlayerId, soccerPlayerStats.playedMinutes, getSoccerPlayerFantasyPoints(soccerPlayer.templateSoccerPlayerId), soccerPlayerStats.events);
+            */
         }
     }
 
@@ -283,15 +271,39 @@ public class TemplateMatchEvent implements JongoId, Initializer {
                 .multi()
                 .with(setPattern, fantasyPoints);
     }
+    
+    public static TemplateMatchEvent createFromOpta(OptaMatchEvent optaMatchEvent) {
+        TemplateMatchEvent templateMatchEvent = null;
 
-    static public boolean importMatchEvent(OptaMatchEvent optaMatchEvent) {
         TemplateSoccerTeam teamA = TemplateSoccerTeam.findOneFromOptaId(optaMatchEvent.homeTeamId);
         TemplateSoccerTeam teamB = TemplateSoccerTeam.findOneFromOptaId(optaMatchEvent.awayTeamId);
 
         if (teamA != null && teamB != null) {
-            create(optaMatchEvent, teamA, teamB, optaMatchEvent.matchDate);
+            Logger.info("Template MatchEvent: {} vs {} ({})", teamA.name, teamB.name, GlobalDate.formatDate(optaMatchEvent.matchDate));
 
-            Model.optaMatchEvents().update("{id: #}", optaMatchEvent.optaMatchEventId).with("{$set: {dirty: false}}");
+            templateMatchEvent = new TemplateMatchEvent();
+            templateMatchEvent.startDate = optaMatchEvent.matchDate;
+            templateMatchEvent.optaMatchEventId = optaMatchEvent.optaMatchEventId;
+            templateMatchEvent.optaCompetitionId = optaMatchEvent.competitionId;
+            templateMatchEvent.optaSeasonId = optaMatchEvent.seasonId;
+            templateMatchEvent.templateSoccerTeamAId = teamA.templateSoccerTeamId;
+            templateMatchEvent.optaTeamAId = teamA.optaTeamId;
+            templateMatchEvent.templateSoccerTeamBId = teamB.templateSoccerTeamId;
+            templateMatchEvent.optaTeamBId = teamB.optaTeamId;
+            templateMatchEvent.createdAt = GlobalDate.getCurrentDate();
+        }
+
+        return templateMatchEvent;
+    }
+
+    public void updateDocument() {
+        Model.templateMatchEvents().withWriteConcern(WriteConcern.SAFE).update("{optaMatchEventId: #}", optaMatchEventId).upsert().with(this);
+    }
+
+    static public boolean importMatchEvent(OptaMatchEvent optaMatchEvent) {
+        TemplateMatchEvent templateMatchEvent = createFromOpta(optaMatchEvent);
+        if (templateMatchEvent != null) {
+            templateMatchEvent.updateDocument();
         }
         else {
             Logger.error("Ignorando OptaMatchEvent: {} ({})", optaMatchEvent.optaMatchEventId, GlobalDate.formatDate(optaMatchEvent.matchDate));
@@ -306,26 +318,7 @@ public class TemplateMatchEvent implements JongoId, Initializer {
         }
     }
 
-    static private TemplateMatchEvent create(OptaMatchEvent optaMatchEvent, TemplateSoccerTeam teamA, TemplateSoccerTeam teamB, Date startDate) {
-        Logger.info("Template MatchEvent: {} vs {} ({})", teamA.name, teamB.name, GlobalDate.formatDate(startDate));
-
-        TemplateMatchEvent templateMatchEvent = new TemplateMatchEvent();
-        templateMatchEvent.startDate = startDate;
-        templateMatchEvent.optaMatchEventId = optaMatchEvent.optaMatchEventId;
-        templateMatchEvent.optaCompetitionId = optaMatchEvent.competitionId;
-        templateMatchEvent.optaSeasonId = optaMatchEvent.seasonId;
-        templateMatchEvent.templateSoccerTeamAId = teamA.templateSoccerTeamId;
-        templateMatchEvent.optaTeamAId = teamA.optaTeamId;
-        templateMatchEvent.templateSoccerTeamBId = teamB.templateSoccerTeamId;
-        templateMatchEvent.optaTeamBId = teamB.optaTeamId;
-        templateMatchEvent.createdAt = GlobalDate.getCurrentDate();
-
-        Model.templateMatchEvents().update("{optaMatchEventId: #}", optaMatchEvent.optaMatchEventId).upsert().with(templateMatchEvent);
-
-        return templateMatchEvent;
-    }
-
-    static public boolean isInvalid(OptaMatchEvent optaMatchEvent) {
+    static public boolean isInvalidFromImport(OptaMatchEvent optaMatchEvent) {
         boolean invalid = (optaMatchEvent.homeTeamId == null) || optaMatchEvent.homeTeamId.isEmpty() ||
                           (optaMatchEvent.awayTeamId == null) || optaMatchEvent.awayTeamId.isEmpty();
 
@@ -337,11 +330,4 @@ public class TemplateMatchEvent implements JongoId, Initializer {
 
         return invalid;
     }
-}
-
-class LiveFantasyPoints {
-    public int points;                                          // Puntos totales de un SoccerPlayer
-
-    @JsonView(JsonViews.FullContest.class)
-    public HashMap<String, Integer> events = new HashMap<>();   // OptaEventType.name => fantasyPoints conseguidos gracias a el
 }

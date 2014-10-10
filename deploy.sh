@@ -1,15 +1,29 @@
 #!/bin/sh
 
+remotes_allowed_message="The only allowed Heroku remotes are: staging/production."
+
+if [[ "$2" != "" ]]
+    then
+    # Mode debug o release para el webclient
+    mode=$2
+    destination=$1
+elif [[ "$1" == "debug" || "$1" == "release" ]]
+    then
+    mode=$1
+    destination="staging"
+elif [[ "$1" == "production" || "$1" == "staging" ]]
+    then
+    mode="debug"
+    destination=$1
+else
+    mode="debug"
+    destination="staging"
+fi
+
 branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
 branch_name="(unnamed branch)"     # detached HEAD
 branch_name=${branch_name##refs/heads/}
 
-destination=$1
-
-
-remotes_allowed_message="The only allowed Heroku remotes are: staging/production."
-
-# Cambiamos a la rama de deploy, asegurandonos de que esta creada/reseateada
 
 if [[ $(git diff --shortstat ) != "" || $(git diff --shortstat --cached) != "" ]]
     then
@@ -25,26 +39,29 @@ if [ $# -eq 0 ]
         if [[ "$branch_name" == "master" ]]
             then
                 destination="production"
-        else 
-                destination="staging"
         fi
     else
-        if [[ "$1" != "staging" && "$1" != "production" ]]
+        if [[ "$destination" != "staging" && "$destination" != "production" ]]
             then
                 echo $remotes_allowed_message
                 exit 1
-        elif [[ "$1" != "staging" && "$1" != "production" && "$branch_name" != "master" ]]
+            fi
+        if [[ "$destination" == "production" && "$branch_name" != "master" ]]
             then
                 git checkout master
         fi
 fi
 
+echo "deploying to : $destination"
+echo "mode: $mode"
+
+# Cambiamos a la rama de deploy, asegurandonos de que esta creada/reseateada
 git checkout -B deploy
 
 # Tenemos que borrar el symlink y hacer una copia dura de toda la build
 rm public
 cd ../webclient
-./build_rsync.sh
+./build_rsync.sh $mode
 cd ../backend
 
 # Añadimos nuevos archivos (la build) y commitimos
@@ -54,8 +71,11 @@ git commit -am "Including build in deploy branch"
 # Push a heroku
 git push "$destination" deploy:master --force
 
-#Hacemos una petición a heroku para que vaya levantándose con el código nuevo
-curl "http://dailysoccer-staging.herokuapp.com" > /dev/null 2>&1
+if [[ "$destination" == "staging" ]]
+then
+    #Hacemos una petición a heroku para que vaya levantándose con el código nuevo
+    curl "http://dailysoccer-staging.herokuapp.com" > /dev/null 2>&1
+fi
 
 # Vuelta adonde estabamos
 git checkout $branch_name
@@ -70,5 +90,8 @@ fi
 # Restauramos el symlink borrado
 git checkout public
 
-# Lanzamos los tests funcionales
-curl "https://drone.io/hook?id=github.com/DailySoccer/backend_test&token=sjy4CJrxbBizapoLvUtl" > /dev/null 2>&1 &
+if [[ "$destination" == "staging" ]]
+then
+    # Lanzamos los tests funcionales
+    curl "https://drone.io/hook?id=github.com/DailySoccer/webtest&token=ncTodtcZ2iTgEIxBRuHR" > /dev/null 2>&1 &
+fi

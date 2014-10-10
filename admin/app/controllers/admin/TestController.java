@@ -78,7 +78,7 @@ public class TestController extends Controller {
                 );
 
                 Model.templateContests().insert(new TemplateContest(
-                        "jue., 12 jun.++", 1, 4, 80000, 0, PrizeType.FREE,
+                        "jue., 12 jun.++", 1, 100, 80000, 0, PrizeType.FREE,
                         new DateTime(2014, 6, 12, 0, 0, DateTimeZone.UTC).toDate(),
                         new ArrayList<String>(Arrays.asList("731767", "731768", "731769"))) // BRA-HRV MEX-CMR ESP-NLD
                 );

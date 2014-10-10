@@ -4,14 +4,17 @@ import model.Model;
 import model.TemplateContest;
 import model.TemplateMatchEvent;
 import model.opta.OptaEvent;
+import model.opta.OptaProcessor;
 
 import java.util.HashSet;
 
 public class OptaMatchEventChangeProcessor {
+    public OptaMatchEventChangeProcessor(OptaProcessor processor) {
+        _changedOptaMatchEventIds = processor.getDirtyMatchEventIds();
+    }
 
-    static public void onOptaMatchEventsChanged(HashSet<String> changedOptaMatchEventIds) {
-
-        for (String optaGameId : changedOptaMatchEventIds) {
+    public void process() {
+        for (String optaGameId : _changedOptaMatchEventIds) {
 
             // Buscamos todos los template Match Events asociados con ese partido de Opta
             for (TemplateMatchEvent templateMatchEvent : Model.templateMatchEvents().find("{optaMatchEventId: #}", optaGameId).as(TemplateMatchEvent.class)) {
@@ -44,7 +47,7 @@ public class OptaMatchEventChangeProcessor {
         }
     }
 
-    private static void actionWhenMatchEventIsStarted(TemplateMatchEvent matchEvent) {
+    private void actionWhenMatchEventIsStarted(TemplateMatchEvent matchEvent) {
         // Los template contests (que incluyan este match event y que esten "activos") tienen que ser marcados como "live"
         Model.templateContests()
                 .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}", matchEvent.templateMatchEventId)
@@ -57,7 +60,7 @@ public class OptaMatchEventChangeProcessor {
                 .with("{$set: {state: \"LIVE\"}}");
     }
 
-    private static void actionWhenMatchEventIsFinished(TemplateMatchEvent matchEvent) {
+    private void actionWhenMatchEventIsFinished(TemplateMatchEvent matchEvent) {
         // Buscamos los template contests que incluyan ese partido y que esten en "LIVE"
         Iterable<TemplateContest> templateContests = Model.templateContests()
                 .find("{templateMatchEventIds: {$in:[#]}, state: \"LIVE\"}", matchEvent.templateMatchEventId).as(TemplateContest.class);
@@ -79,4 +82,6 @@ public class OptaMatchEventChangeProcessor {
 
         matchEvent.saveStats();
     }
+
+    private HashSet<String> _changedOptaMatchEventIds;
 }

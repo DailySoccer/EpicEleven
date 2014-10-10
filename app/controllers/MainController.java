@@ -9,10 +9,7 @@ import play.mvc.Result;
 import utils.ListUtils;
 import utils.ReturnHelper;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @AllowCors.Origin
 public class MainController extends Controller {
@@ -47,16 +44,20 @@ public class MainController extends Controller {
 
         // Incluimos el próximo partido que jugará el futbolista (y sus equipos)
         TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findNextMatchEvent(templateSoccerPlayer.templateTeamId);
-        templateSoccerTeamIds.add(templateMatchEvent.templateSoccerTeamAId);
-        templateSoccerTeamIds.add(templateMatchEvent.templateSoccerTeamBId);
+        if (templateMatchEvent != null) {
+            templateSoccerTeamIds.add(templateMatchEvent.templateSoccerTeamAId);
+            templateSoccerTeamIds.add(templateMatchEvent.templateSoccerTeamBId);
+        }
 
         List<TemplateSoccerTeam> templateSoccerTeams = !templateSoccerTeamIds.isEmpty() ? TemplateSoccerTeam.findAll(ListUtils.asList(templateSoccerTeamIds.iterator()))
                 : new ArrayList<TemplateSoccerTeam>();
 
-        return new ReturnHelper(ImmutableMap.of(
-                "match_event",  templateMatchEvent,
-                "soccer_teams", templateSoccerTeams,
-                "soccer_player", templateSoccerPlayer)
-        ).toResult(JsonViews.Extended.class);
+        Map<String, Object> data = new HashMap<>();
+        data.put("soccer_teams", templateSoccerTeams);
+        data.put("soccer_player", templateSoccerPlayer);
+        if (templateMatchEvent != null) {
+            data.put("match_event", templateMatchEvent);
+        }
+        return new ReturnHelper(data).toResult(JsonViews.Extended.class);
     }
 }

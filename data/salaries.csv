@@ -1,15 +1,15 @@
 optaPlayerId,name,salary
 "71679","Rubén Martínez",5400
 "88888","Julián",4500
-"90728","Ximo Navarro",5400
-"57524","Mauro Dos Santos",4900
+"90728","Ximo Navarro",6700
+"57524","Mauro Dos Santos",5300
 "51577","Míchel Macedo",4500
 "87802","Ángel Trujillo",5500
-"56342","Sebastián Dubarbier",5000
+"56342","Sebastián Dubarbier",5700
 "19755","Mané",4500
 "167199","Thomas Partey",5400
 "125945","Ramón Azeez",4700
-"54224","Verza",6000
+"54224","Verza",7100
 "3755","Corona",4500
 "13557","Fernando Soriano",5500
 "92984","Wellington",5000
@@ -24,39 +24,39 @@ optaPlayerId,name,salary
 "42995","Mikel San José",5200
 "17216","Andoni Iraola",5200
 "58637","Xabier Etxeita",4600
-"56680","Mikel Balenziaga",5300
+"56680","Mikel Balenziaga",6200
 "90486","Erik Morán",4500
 "38394","Beñat",6400
-"56249","Ander Iturraspe",7000
+"56249","Ander Iturraspe",7600
 "59062","Óscar De Marcos",5800
 "84471","Ibai Gómez",7100
 "47665","Markel Susaeta",6100
-"76558","Mikel Rico",7200
-"12787","Carlos Gurpegi",5400
+"76558","Mikel Rico",6900
+"12787","Carlos Gurpegi",6800
 "62132","Borja Viguera",4800
 "51580","Gaizka Toquero",4500
 "42676","Kike Sola",4600
-"76012","Iker Muniain",9400
+"76012","Iker Muniain",8800
 "14464","Aritz Aduriz",9000
 "92500","Guillermo",4600
-"16872","Moyá",6000
+"16872","Moyá",6200
 "81352","Jan Oblak",5200
 "120026","Bono",0
 "27462","Jesús Gámez",4700
-"32281","Diego Godín",10000
+"32281","Diego Godín",8800
 "27692","Guillherme Siqueira",6200
 "55605","Toby Alderweireld",10700
 "50937","Cristian Ansaldi",4900
 "151883","Giménez",9300
 "17804","Juanfran",7200
 "40615","Emiliano Insúa",5000
-"52496","Miranda",8800
+"52496","Miranda",8100
 "28160","Mario Suárez",5300
-"15269","Tiago",6300
-"77390","Koke",9100
+"15269","Tiago",6900
+"77390","Koke",8700
 "89335","Saúl Ñíguez",5100
 "18498","Raúl García",7600
-"39441","Arda Turan",8100
+"39441","Arda Turan",8200
 "33668","Cristian Rodríguez",7400
 "17871","Gabi",7000
 "180009","Borja Martínez",4500
@@ -71,18 +71,18 @@ optaPlayerId,name,salary
 "86153","Martín Montoya",4600
 "18221","Gerard Piqué",6400
 "32644","Javier Mascherano",8800
-"81138","Marc Bartra",5000
-"52356","Jordi Alba",8200
+"81138","Marc Bartra",6400
+"52356","Jordi Alba",10100
 "19773","Adriano",4700
-"15780","Dani Alves",5700
-"14095","Jeremy Mathieu",6500
+"15780","Dani Alves",8800
+"14095","Jeremy Mathieu",8700
 "131400","Franck Bagnack",0
 "185470","Diawandou Diagné",0
 "165377","Lucas Gafarot",4500
 "34703","Ivan Rakitic",10600
-"54104","Sergio Busquets",6900
-"5816","Xavi",5700
-"12237","Andrés Iniesta",9200
+"54104","Sergio Busquets",8800
+"5816","Xavi",6600
+"12237","Andrés Iniesta",10200
 "92819","Rafinha",6600
 "21091","Alexandre Song",5900
 "86157","Sergi Roberto",4600
@@ -93,7 +93,7 @@ optaPlayerId,name,salary
 "49579","Pedro",6000
 "39336","Luis Suárez",9200
 "19054","Lionel Messi",14800
-"61278","Neymar",11100
+"61278","Neymar",11400
 "94924","Gerard Deulofeu",6300
 "159533","Adama Traoré",4600
 "106464","Jean Marie Dongou",4500
@@ -104,18 +104,18 @@ optaPlayerId,name,salary
 "86152","Carles Planas",5200
 "86151","Sergi Gómez",4600
 "76508","Hugo Mallo",5000
-"61559","Andreu Fontás",5700
+"61559","Andreu Fontás",6800
 "114128","Jonny",5000
-"55117","Gustavo Cabral",5400
+"55117","Gustavo Cabral",6800
 "55509","Pablo Hernández",5500
 "12512","Borja Oubiña",4500
 "83979","Álex López",5600
-"48854","Fabián Orellana",5500
+"48854","Fabián Orellana",7000
 "96241","Lévy Madinda",4500
-"16099","Michael Krohn-Dehli",6100
+"16099","Michael Krohn-Dehli",7000
 "54806","Augusto Fernández",4500
 "86349","Charles",5500
-"86173","Nolito",10200
+"86173","Nolito",8400
 "42884","Joaquín Larrivey",7200
 "150360","Santi Mina",4800
 "88279","Juan Carlos",4600
@@ -123,11 +123,11 @@ optaPlayerId,name,salary
 "88949","Deivid",4600
 "94532","Pantic",5100
 "77996","Adrián Gunino",4700
-"80432","Íñigo López",5200
+"80432","Íñigo López",5900
 "17410","Iago Bouzón",4600
 "87021","Luso",4500
 "11609","Raúl Bravo",4500
-"167743","Fede Cartabia",6300
+"167743","Fede Cartabia",7600
 "60104","José Carlos",4600
 "83553","Fidel",5000
 "54436","Fausto Rossi",5200
@@ -144,12 +144,12 @@ optaPlayerId,name,salary
 "51864","Roberto Canella",4900
 "5842","Manuel Pablo",4500
 "49580","Laure",5000
-"103844","Luisinho",4900
+"103844","Luisinho",5800
 "60323","Diego Seoane",4500
 "5863","Alberto Lopo",4900
 "88621","Pablo Insúa",5200
-"90388","Isaac Cuenca",6100
-"20062","Álex Bergantiños",4600
+"90388","Isaac Cuenca",7300
+"20062","Álex Bergantiños",5300
 "119402","José Rodríguez",6300
 "42871","Juan Domínguez",5300
 "84372","Diogo Salomao",4500
@@ -173,7 +173,7 @@ optaPlayerId,name,salary
 "83978","Raúl Albentosa ",4900
 "140266","Ander Capa",4700
 "90326","Jon Errasti",5300
-"140264","Dani García",5100
+"140264","Dani García",6100
 "102370","Dani Nieto",5600
 "56419","Ángel",5000
 "38415","Mikel Arruabarrena",5800
@@ -182,20 +182,20 @@ optaPlayerId,name,salary
 "19805","Toño",4600
 "88570","Diego Rivas",0
 "46374","Przemyslaw Tyton",5300
-"122078","Enzo Roco",5200
+"122078","Enzo Roco",6400
 "99005","Damián Suárez",4700
 "49360","Lombán",5200
 "55341","Sergio Pelegrín",4700
 "40982","Cristian Sapunaru",4500
-"54149","Edu Albácar",5300
+"54149","Edu Albácar",5700
 "42854","Domingo Cisma",4500
 "164570","Mario Pasalic",4900
 "38572","Aarón",4500
 "119228","Rodrigues",5000
 "92724","Faycal Fajr",5000
 "40405","Adrián",4600
-"60012","Pedro Mosquera",4900
-"53380","Jonathas",5800
+"60012","Pedro Mosquera",6300
+"53380","Jonathas",6700
 "17690","Coro",4800
 "165907","Cristian Herrera",4600
 "182960","Pau",4500
@@ -225,14 +225,14 @@ optaPlayerId,name,salary
 "40272","Roberto Lago",4600
 "82787","Álvaro Arroyo",4600
 "17827","Rafa",4500
-"62991","Sergio Escudero",4600
+"62991","Sergio Escudero",5900
 "17378","Juan Valera",4800
-"58876","Míchel",4600
+"58876","Míchel",5500
 "149746","Fredy Hinestroza",5000
 "69888","Yoda",4700
 "20578","Mehdi Lacen",7100
 "26726","Ángel Lafita",5300
-"88484","Pablo Sarabia",5600
+"88484","Pablo Sarabia",6300
 "42839","Pedro León",5600
 "28291","Diego Castro",5000
 "46198","Sammir",6100
@@ -242,16 +242,16 @@ optaPlayerId,name,salary
 "52355","Adrián Colunga",4500
 "49442","Oier",4600
 "51803","Roberto",5400
-"44322","Babin",5500
-"67527","Nyom",6500
-"54175","Diego Mainz",4500
+"44322","Babin",6400
+"67527","Nyom",6700
+"54175","Diego Mainz",5000
 "32488","Pape Malickou Diakhaté",4600
-"96767","Dimitri Foulquier",4700
-"107117","Jeison Murillo",5300
+"96767","Dimitri Foulquier",5400
+"107117","Jeison Murillo",6000
 "55947","Abdoul Sissoko",4700
 "42868","Javi Márquez",5000
 "88480","Juan Carlos",4600
-"88481","Fran Rico",5800
+"88481","Fran Rico",6400
 "54805","Diego Buonanotte",4500
 "37267","Manuel Iturra",5800
 "20056","Piti",5600
@@ -281,7 +281,7 @@ optaPlayerId,name,salary
 "27672","Pape Diop",5700
 "48336","Simao",4700
 "175946","Víctor Camarasa",5000
-"165375","Morales",4800
+"165375","Morales",5200
 "54081","Aloys Nong",4500
 "26768","Casadesús",4700
 "28299","David Barral",5300
@@ -290,17 +290,17 @@ optaPlayerId,name,salary
 "13268","Carlos Kameni",5100
 "33376","Guillermo Ochoa",7500
 "28111","Arthur Boka",8200
-"41215","Weligton",5100
+"41215","Weligton",5900
 "78687","Flavio Ferreira",4600
 "39621","Vitorino Antunes",5100
 "55658","Marcos Angeleri",4600
-"48832","Roberto Rosales",4900
+"48832","Roberto Rosales",5400
 "49097","Casado",4500
-"44849","Sergio Sánchez",4700
+"44849","Sergio Sánchez",6700
 "164079","Roberto Chen",4500
 "165573","Bobley Anderson",4500
 "193449","Samu Castillejo",4600
-"49735","Ignacio Camacho",5800
+"49735","Ignacio Camacho",6400
 "80795","Francisco Portillo",4600
 "169007","Sergi Darder",5300
 "193450","Juanpi",4500
@@ -308,7 +308,7 @@ optaPlayerId,name,salary
 "19917","Fernando Tissone",4500
 "91338","Recio",4600
 "11511","Duda",4700
-"82451","Luis Alberto",7200
+"82451","Luis Alberto",6800
 "155476","Ricardo Horta",6200
 "80287","Juanmi",5000
 "5053","Roque Santa Cruz",5700
@@ -319,18 +319,18 @@ optaPlayerId,name,salary
 "106671","Quini",5000
 "103860","Abdoulaye Ba",4900
 "16149","Antonio Amaya",4700
-"73684","Tito",5000
+"73684","Tito",5600
 "90394","Nacho",4600
-"37573","Zé Castro",5400
+"37573","Zé Castro",5900
 "109177","Diego Aguirre",4500
 "105064","Jozabed",4500
 "100866","Javier Aquino",6400
 "89238","Álex Pozuelo",4800
-"59325","Gaël Kakuta",5700
+"59325","Gaël Kakuta",6600
 "8763","Derek Boateng",4800
-"78324","Raúl Baena",5300
+"78324","Raúl Baena",5900
 "95786","Lass",4900
-"10991","Roberto Trashorras",7200
+"10991","Roberto Trashorras",7300
 "132161","Adrián Embarba",4500
 "47400","Licá",4900
 "49410","Manucho",5200
@@ -342,50 +342,50 @@ optaPlayerId,name,salary
 "91406","Fernando Pacheco",4500
 "90152","Raphael Varane",6000
 "18522","Pepe",6300
-"17861","Sergio Ramos",8900
+"17861","Sergio Ramos",10000
 "46525","Fábio Coentrão",5100
 "39563","Marcelo",8600
 "88483","Daniel Carvajal",6500
 "18759","Álvaro Arbeloa",4600
 "88477","Nacho",4600
 "39816","Sami Khedira",4900
-"44989","Toni Kroos",13600
-"60025","James Rodríguez",10200
+"44989","Toni Kroos",10800
+"60025","James Rodríguez",9400
 "3508","Xabi Alonso",10600
-"61256","Casemiro",4500
-"37055","Luka Modric",8800
+"61256","Casemiro",5600
+"37055","Luka Modric",8300
 "46497","Ángel Di María",13500
-"80209","Isco",6800
+"80209","Isco",7400
 "84086","Asier Illarramendi",5000
 "165796","Álvaro Medrán",4500
-"107593","Lucas Vázquez",5000
+"107593","Lucas Vázquez",6100
 "192364","Marcos Llorente",4500
 "14937","Cristiano Ronaldo",14700
-"19927","Karim Benzema",10500
-"36903","Gareth Bale",11000
+"19927","Karim Benzema",8500
+"36903","Gareth Bale",10100
 "93127","Jesé",5400
 "106921","Gerónimo Rulli",4900
 "20112","Eñaut Zubikarai",5100
 "42670","Yuri",4600
 "42430","Carlos Martínez",4500
 "19831","Mikel González",4600
-"90318","Iñigo Martínez",6500
+"90318","Iñigo Martínez",7900
 "28456","Ion Ansotegi",4500
 "40789","Daniel Estrada",4500
-"55336","Alberto De la Bella",5400
+"55336","Alberto De la Bella",6300
 "98821","Zaldúa",5000
 "46998","Esteban Granero",5500
 "28644","Gorka Elustondo",4600
 "20150","Markel Bergara",4800
-"17512","Xabi Prieto",5900
+"17512","Xabi Prieto",6300
 "90328","Rubén Pardo",4500
 "56448","Sergio Canales",7000
-"54371","David Zurutuza",5600
-"45825","Gonzalo Castro",4500
+"54371","David Zurutuza",6500
+"45825","Gonzalo Castro",5300
 "91980","Gaztañaga",4500
 "62980","Alfred Finnbogason",5700
 "20151","Imanol Agirretxe",7000
-"38401","Carlos Vela",10100
+"38401","Carlos Vela",8200
 "20694","Mariano Barbosa",4800
 "44743","Beto",7100
 "61517","Cicinho",4600
@@ -393,9 +393,9 @@ optaPlayerId,name,salary
 "7088","Fernando Navarro",4900
 "92211","Diogo Figueiras",4600
 "46479","Daniel Carriço",5400
-"37788","Nico Pareja",5900
+"37788","Nico Pareja",6500
 "55268","Coke",5400
-"73494","Grzegorz Krychowiak",5900
+"73494","Grzegorz Krychowiak",6600
 "89572","Denis Suárez",6700
 "79627","Aleix Vidal",7600
 "151978","Sebastián Cristóforo",4500
@@ -405,44 +405,44 @@ optaPlayerId,name,salary
 "10343","Reyes",4700
 "28289","Manu del Moral",4900
 "40270","Iago Aspas",6100
-"111274","Carlos Bacca",10800
+"111274","Carlos Bacca",8100
 "42779","Kevin Gameiro",6000
 "86399","Vitolo",6300
 "76510","Yoel",4800
 "46898","Diego Alves",5700
 "116732","Jaume",4500
-"57410","Nicolás Otamendi",6500
+"57410","Nicolás Otamendi",8900
 "69140","Shkodran Mustafi",5900
 "116206","Rubén Vezo",5000
 "51948","Víctor Ruiz",5100
 "26904","João Pereira",5200
-"20399","Antonio Barragán",5000
-"132105","José Gayá",5600
+"20399","Antonio Barragán",6200
+"132105","José Gayá",6200
 "120250","André Gomes",5900
 "119141","Rodrigo de Paul",5100
 "49309","Éver Banega",5800
 "86398","Jonathan Viera",5000
 "44336","Sofiane Feghouli",9100
-"21250","Javi Fuego",5300
+"21250","Javi Fuego",6700
 "37064","Andrés Guardado",9300
-"51952","Daniel Parejo",7300
+"51952","Daniel Parejo",7700
 "168390","Roberto Ibáñez",4500
 "88554","Carles Gil",4800
-"80954","Rodrigo",8900
+"80954","Rodrigo",7800
 "10929","Hélder Postiga",5400
-"51271","Pablo Piatti",6000
+"51271","Pablo Piatti",6800
 "53048","Jonas",4500
-"86876","Paco Alcácer",8800
+"86876","Paco Alcácer",7200
 "159741","Vinícius Araújo",4500
-"48772","Sergio Asenjo",5600
+"48772","Sergio Asenjo",6000
 "21046","Juan Carlos",4500
 "42534","Antonio Rukavina",5200
-"76610","Mario",5500
+"76610","Mario",8000
 "37413","Bojan Jokic",4500
-"57527","Mateo Musacchio",6700
+"57527","Mateo Musacchio",8100
 "55185","Chechu Dorado",4600
 "58792","Jaume Costa",5100
-"158074","Gabriel Paulista",5200
+"158074","Gabriel Paulista",6200
 "108987","Pablo Iñíguez",4500
 "88489","Denis Cheryshev",6400
 "76688","Jonathan dos Santos",5000
@@ -477,9 +477,9 @@ optaPlayerId,name,salary
 "80285","Alejandro Arribas",4900
 "61615","Lucas Orban",5300
 "102057","Raúl Jiménez",6400
-"28188","Haris Medunjanin",5900
+"28188","Haris Medunjanin",7000
 "51949","Lillo",4500
-"89215","Edgar",6200
+"89215","Edgar",6600
 "95461","Thievy",5400
 "97488","Carlos Ramos",0
 "169205","David Costas",4500
@@ -494,7 +494,7 @@ optaPlayerId,name,salary
 "81735","Liassine Cadamuro",6100
 "80993","Aitor Fernández",4500
 "92368","Israel Puerto",4500
-"28386","José Ángel Crespo",5000
+"28386","José Ángel Crespo",5800
 "51728","Cristian Álvarez",5000
 "179919","Roberto",0
 "163817","Burgui",0
@@ -526,7 +526,7 @@ optaPlayerId,name,salary
 "164501","Michael Anaba",4500
 "119403","Raúl de Tomás",4500
 "192367","Ander Bardaji",4500
-"100059","Alberto Moreno",4500
+"100059","Alberto Moreno",6800
 "59790","Dídac Vilá",4500
 "77039","Toño",4500
 "61121","Douglas",5000
@@ -569,7 +569,7 @@ optaPlayerId,name,salary
 "39053","Kaká",4500
 "52648","João Guilherme",4700
 "19618","Mário Sérgio",4500
-"52785","Carlao",4500
+"52785","Carlao",6500
 "112140","Nicholas Ioannou",4500
 "56700","Marios Antoniades",4500
 "15170","Konstantinos Charalambidis",6100
@@ -607,8 +607,8 @@ optaPlayerId,name,salary
 "54102","Jack Wilshere",7800
 "37605","Mesut Özil",9800
 "81880","Alex Oxlade-Chamberlain",7500
-"41792","Aaron Ramsey",10500
-"19524","Santiago Cazorla",10200
+"41792","Aaron Ramsey",9500
+"19524","Santiago Cazorla",9400
 "18155","Mathieu Flamini",5400
 "28566","Vassiriki Abou Diaby",5500
 "133798","Serge Gnabry",4500
@@ -674,14 +674,14 @@ optaPlayerId,name,salary
 "61583","Karim Bellarabi",6800
 "85971","Heung-Min Son",8600
 "81048","Josip Drmic",7400
-"16141","Stefan Kießling",9700
+"16141","Stefan Kießling",9100
 "19928","Julio César",5300
 "49770","Artur Moraes",4600
 "105610","Bruno Varela",0
 "38719","Paulo Lopes",4500
 "76734","Lisandro López",0
 "66249","Steven Vitória",0
-"19980","Luisão",6000
+"19980","Luisão",6400
 "32284","Maxi Pereira",5900
 "68260","Loris Benito",0
 "53142","Sidnei",5000
@@ -709,7 +709,7 @@ optaPlayerId,name,salary
 "5139","Roman Weidenfeller",6400
 "83630","Mitchell Langerak",4500
 "71730","Zlatan Alomerovic",0
-"41452","Neven Subotic",6700
+"41452","Neven Subotic",7800
 "38392","Mats Hummels",7100
 "149483","Marian Sarr",0
 "39476","Sokratis",6300
@@ -720,7 +720,7 @@ optaPlayerId,name,salary
 "143802","Jannik Bandowski",0
 "118884","Erik Durm",4500
 "5353","Sebastian Kehl",5500
-"38118","Sven Bender",6500
+"38118","Sven Bender",7300
 "118876","Jonas Hofmann",0
 "59859","Ilkay Gündogan",8400
 "57249","Henrikh Mkhitaryan",9500
@@ -732,7 +732,7 @@ optaPlayerId,name,salary
 "52540","Kevin Großkreutz",7200
 "17136","Oliver Kirch",6200
 "178453","Mitsuru Maruoka",0
-"59046","Ciro Immobile",11200
+"59046","Ciro Immobile",9900
 "57254","Adrián Ramos",8300
 "98769","Dong-Won Ji",0
 "11334","Petr Cech",7400
@@ -753,7 +753,7 @@ optaPlayerId,name,salary
 "17878","Cesc Fàbregas",10300
 "53392","Ramires",7000
 "61262","Oscar",9800
-"42786","Eden Hazard",12000
+"42786","Eden Hazard",9800
 "28495","John Obi Mikel",6100
 "66842","André Schürrle",9500
 "82660","Marco Van Ginkel",0
@@ -829,9 +829,9 @@ optaPlayerId,name,salary
 "28552","Medhi Benatia",6500
 "21227","Rafinha",4900
 "40691","Jerome Boateng",7100
-"105046","Juan Bernat",5000
+"105046","Juan Bernat",6800
 "15207","Philipp Lahm",7500
-"50188","David Alaba",7000
+"50188","David Alaba",7900
 "50656","Holger Badstuber",5800
 "61558","Thiago Alcántara",7500
 "28559","Franck Ribéry",13200
@@ -854,15 +854,15 @@ optaPlayerId,name,salary
 "61249","Fabiano",5600
 "47396","Ricardo Nunes",4500
 "51792","Andrés Fernández",4900
-"100180","Danilo",5300
-"85352","Bruno Martins Indi",5800
-"56107","Maicon",5400
+"100180","Danilo",8200
+"85352","Bruno Martins Indi",7600
+"56107","Maicon",7500
 "42874","Marcano",4600
 "100867","Diego Reyes",0
 "59140","José Ángel",0
-"53693","Alex Sandro",6100
+"53693","Alex Sandro",7400
 "49480","Daniel Opare",0
-"51310","Yacine Brahimi",6700
+"51310","Yacine Brahimi",9700
 "126437","Juan Quintero",4900
 "86169","Cristian Tello",7800
 "52287","Evandro Goebel",4500
@@ -872,7 +872,7 @@ optaPlayerId,name,salary
 "115860","Óliver",7300
 "171317","Ruben Neves",5100
 "14938","Ricardo Quaresma",7400
-"77064","Jackson Martínez",11000
+"77064","Jackson Martínez",9600
 "39498","Adrián",8000
 "79928","Sami",0
 "93539","Kelvin",0
@@ -886,10 +886,10 @@ optaPlayerId,name,salary
 "41316","Benedikt Höwedes",6300
 "51503","Felipe Santana",5600
 "111457","Sead Kolasinac",5300
-"19064","Dennis Aogo",4500
+"19064","Dennis Aogo",5900
 "78409","Atsuto Uchida",4600
-"37402","Christian Fuchs",4500
-"159522","Kaan Ayhan",4500
+"37402","Christian Fuchs",5800
+"159522","Kaan Ayhan",6100
 "60914","Joel Matip",5700
 "186631","Pascal Itter",5400
 "141020","Max Meyer",7100
@@ -903,7 +903,7 @@ optaPlayerId,name,salary
 "38239","Sidney Sam",8200
 "182156","Leroy Sane",5500
 "18094","Tranquillo Barnetta",6300
-"52231","Roman Neustädter",6100
+"52231","Roman Neustädter",9100
 "178882","Marcel Sobottka",0
 "47362","Chinedu Obasi",5200
 "14941","Klaas-Jan Huntelaar",10400
@@ -917,8 +917,8 @@ optaPlayerId,name,salary
 "17540","Gökhan Zan",4600
 "152590","Alex Telles",4500
 "46528","Hakan Balta",4700
-"40560","Aurélien Chedjou",4900
-"56013","Semih Kaya",5100
+"40560","Aurélien Chedjou",7100
+"56013","Semih Kaya",6200
 "19701","Emmanuel Eboué",0
 "118888","Koray Günter",0
 "178005","Emre Can Coskun",0
@@ -930,7 +930,7 @@ optaPlayerId,name,salary
 "17112","Hamit Altintop",6200
 "39434","Aydin Yilmaz",5100
 "46531","Selcuk Inan",6900
-"15403","Wesley Sneijder",9000
+"15403","Wesley Sneijder",9400
 "153680","Bruma",6300
 "59784","Yasin Öztekin",4500
 "59053","Furkan Ozcal",4500
@@ -943,7 +943,7 @@ optaPlayerId,name,salary
 "80629","Emre Colak",5500
 "44604","Nordin Amrabat",5000
 "14578","Sabri Sarioglu",0
-"71568","Veysel Sari",5100
+"71568","Veysel Sari",6700
 "73744","Umut Gundogan",0
 "159583","Lucas Ontivero",0
 "149038","Sinan Gümüs",0
@@ -968,7 +968,7 @@ optaPlayerId,name,salary
 "14075","Patrice Evra",6100
 "40141","James Troisi",0
 "72738","Rômulo",7000
-"74208","Paul Pogba",8400
+"74208","Paul Pogba",6900
 "10626","Simone Pepe",6700
 "20113","Claudio Marchisio",10400
 "129508","Kingsley Coman",0
@@ -981,7 +981,7 @@ optaPlayerId,name,salary
 "60017","Luca Marrone",5500
 "49921","Cristian Pasquato",0
 "88482","Álvaro Morata",5000
-"20312","Carlos Tévez",12100
+"20312","Carlos Tévez",11500
 "40283","Sebastian Giovinco",9200
 "19760","Fernando Llorente",11000
 "193511","Sergio Buenacasa",0
@@ -1107,10 +1107,10 @@ optaPlayerId,name,salary
 "89068","Layvin Kurzawa",4600
 "109657","Borja López",4500
 "80582","Aymen Abdennour",4600
-"10917","Ricardo Carvalho",5900
+"10917","Ricardo Carvalho",6300
 "83233","Nicolas Isimat-Mirin",0
 "49272","Elderson",4500
-"15930","Andrea Raggi",4600
+"15930","Andrea Raggi",6000
 "178478","Abdou Diallo",0
 "192292","Almamy Touré",0
 "106878","Aadil Assana",0
@@ -1132,7 +1132,7 @@ optaPlayerId,name,salary
 "81420","Alijaz Cotman",4500
 "67459","Marko Pridigar",0
 "41394","Jasmin Handanovic",4800
-"50400","Marko Suler",4500
+"50400","Marko Suler",5300
 "57184","Ales Mejac",4500
 "153809","Damjan Vuklisevic",0
 "105541","Dejan Trajkovski",4600
@@ -1169,7 +1169,7 @@ optaPlayerId,name,salary
 "48437","Avraam Papadopoulos",0
 "6678","Eric Abidal",5100
 "53020","Dimitrios Siovas",4500
-"105717","Arthur Masuaku",6200
+"105717","Arthur Masuaku",6900
 "183008","Praxitelis Vouros",0
 "53864","Leandro Salino",4500
 "42748","Gaëtan Bong",0
@@ -1210,13 +1210,13 @@ optaPlayerId,name,salary
 "129494","Franck-Yves Bambock",0
 "27341","Yohan Cabaye",9100
 "95715","Lucas Moura",7200
-"11527","Thiago Motta",6900
+"11527","Thiago Motta",8400
 "37971","Blaise Matuidi",7100
 "38438","Clément Chantôme",4800
 "61170","Marco Verratti",7500
 "120743","Adrien Rabiot",0
 "54782","Javier Pastore",10200
-"40720","Edinson Cavani",12500
+"40720","Edinson Cavani",10600
 "9808","Zlatan Ibrahimovic",13800
 "93496","Jean-Christophe Bahebeck",5200
 "45154","Ezequiel Lavezzi",10600
@@ -1229,25 +1229,25 @@ optaPlayerId,name,salary
 "3785","Ashley Cole",6100
 "61021","Leandro Castán",5200
 "126551","Alessio Romagnoli",0
-"18573","Maicon",5900
+"18573","Maicon",6900
 "50761","Davide Astori",5300
 "27375","Vasilis Torosidis",5700
 "14783","Federico Balzaretti",0
 "66806","Kostas Manolas",4600
 "18277","Urby Emanuelson",0
-"38833","Radja Nainggolan",7200
+"38833","Radja Nainggolan",8800
 "49887","Kevin Strootman",7900
-"46696","Miralem Pjanic",12000
+"46696","Miralem Pjanic",11000
 "10625","Daniele De Rossi",11200
 "9954","Seydou Keita",8600
-"97617","Alessandro Florenzi",9000
+"97617","Alessandro Florenzi",7600
 "91080","Leandro Paredes",4500
 "91149","Salih Ucan",5100
 "93538","Juan Iturbe",7000
 "56945","Adem Ljajic",9700
 "4177","Francesco Totti",12500
 "60071","Mattia Destro",8900
-"43274","Gervinho",10900
+"43274","Gervinho",9800
 "14731","Marco Borriello",7500
 "168598","Antonio Sanabria",4500
 "27251","Silvio Proto",4500
@@ -1255,13 +1255,13 @@ optaPlayerId,name,salary
 "106121","Nicaise Mulopo Kudimbana",4500
 "120108","Davy Roef",5000
 "56663","Fabrice N'Sakala",5100
-"11458","Olivier Deschacht",4600
+"11458","Olivier Deschacht",5700
 "76623","Bram Nuytinck",4800
 "149736","Chancel Mbemba Mangulu",6500
 "151586","Michael Heylen",0
 "189777","Matthys Herve",0
 "18679","Anthony Vanden Borre",4700
-"82533","Andy Najar",4800
+"82533","Andy Najar",6700
 "66975","Luka Milivojevic",4600
 "106837","Dennis Praet",5200
 "39847","Steven Defour",7300
@@ -1304,7 +1304,7 @@ optaPlayerId,name,salary
 "65866","Fernando",6200
 "57195","Douglas Costa",9600
 "52304","Alex Teixeira",8900
-"17347","Darijo Srna",5300
+"17347","Darijo Srna",6000
 "157373","Sergiy Bolbat",0
 "45120","Ilsinho",8200
 "170908","Leonid Akulinin",0
@@ -1347,7 +1347,7 @@ optaPlayerId,name,salary
 "132089","Egor Baburin",0
 "193460","Alexander Vasyutin",0
 "18048","Alexander Anyukov",6500
-"19821","Domenico Criscito",5500
+"19821","Domenico Criscito",7100
 "34949","Nicolas Lombaerts",6500
 "104276","Luís Neto",6500
 "49181","Tomas Hubocan",0
@@ -1369,12 +1369,12 @@ optaPlayerId,name,salary
 "100064","Luka Djordjevic",0
 "195544","Robin Lafarge",0
 "195545","Pedro Astray",0
-"54496","Saúl",4600
+"54496","Saúl",6100
 "57136","Timothée Kolodziejczak",5000
 "88966","Jairo Rivero",4500
 "66443","Dany Nounkeu",4500
 "94248","Sergio Rico",5000
-"27671","Stéphane Mbia",7000
+"27671","Stéphane Mbia",7100
 "18018","Alessio Cerci",6000
 "83090","Shinji Kagawa",9500
 "38419","Loïc Remy",8600

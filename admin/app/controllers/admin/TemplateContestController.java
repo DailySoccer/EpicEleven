@@ -168,7 +168,7 @@ public class TemplateContestController extends Controller {
         DateTime dateTime = null;
         List<TemplateMatchEvent> matchEvents = new ArrayList<>();   // Partidos que juntaremos en el mismo contests
         for (TemplateMatchEvent match: matchEventResults) {
-            DateTime matchDateTime = new DateTime(match.startDate);
+            DateTime matchDateTime = new DateTime(match.startDate, DateTimeZone.UTC);
             if (dateTime == null) {
                 dateTime = matchDateTime;
             }
