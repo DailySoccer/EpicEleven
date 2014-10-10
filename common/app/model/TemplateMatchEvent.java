@@ -244,14 +244,15 @@ public class TemplateMatchEvent implements JongoId, Initializer {
         // Sumarlos
         for (OptaEvent point : optaEventResults) {
             if (point.points != 0) {
-                int prevPoints = 0;
                 OptaEventType optaEventType = OptaEventType.getEnum(point.typeId);
+                LiveEventInfo eventInfo = new LiveEventInfo(point.points);
 
+                // Si ya tenemos almacenado ese evento, lo añadiremos
                 if (fantasyPoints.events.containsKey(optaEventType.name())) {
-                    prevPoints = fantasyPoints.events.get(optaEventType.name());
+                    eventInfo.add(fantasyPoints.events.get(optaEventType.name()));
                 }
 
-                fantasyPoints.events.put(optaEventType.name(), prevPoints + point.points);
+                fantasyPoints.events.put(optaEventType.name(), eventInfo);
                 fantasyPoints.points += point.points;
             }
         }
