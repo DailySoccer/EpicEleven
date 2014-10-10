@@ -281,9 +281,10 @@ public class OptaProcessor {
             processGoalsConcededOrCleanSheet(F9, teamData, cleanSheet);
         }
 
-        createEvent(F9, null, 0, OptaEventType.GAME_END.code, 9998, 1);
         OptaMatchEventStats stats = new OptaMatchEventStats(_gameId, teamDatas);
         Model.optaMatchEventStats().update("{optaMatchEventId: #}", _gameId).upsert().with(stats);
+
+        createEvent(F9, null, 0, OptaEventType.GAME_END.code, 9998, 1);
     }
 
     private void processGoalsConcededOrCleanSheet(Element F9, Element teamData, boolean cleanSheet) {
