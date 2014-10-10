@@ -1,6 +1,7 @@
 package controllers.admin;
 
 import com.google.common.collect.ImmutableList;
+import com.mongodb.WriteConcern;
 import model.*;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
@@ -157,9 +158,15 @@ public class TemplateContestController extends Controller {
         }
         else {
             Model.templateContests().update("{_id: #}", templateContest.templateContestId).with(templateContest);
+            updateActiveContestsFromTemplate(templateContest);
         }
 
         return redirect(routes.TemplateContestController.index());
+    }
+
+    private static void updateActiveContestsFromTemplate(TemplateContest templateContest) {
+        // Only name can change in Active contests
+        Model.contests().withWriteConcern(WriteConcern.SAFE).update("{templateContestId: #}", templateContest.getId()).multi().with("{$set: {name: #}}", templateContest.name);
     }
 
     public static Result createAll() {
