@@ -43,10 +43,3 @@ public class OptaMatchEventStats {
         return (playerStats != null) ? playerStats.playedMinutes : 0;
     }
 }
-
-class OptaPlayerStats {
-    public int playedMinutes;
-
-    public OptaPlayerStats() {}
-}
-

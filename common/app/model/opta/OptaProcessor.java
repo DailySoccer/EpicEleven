@@ -14,9 +14,23 @@ import java.util.*;
 
 public class OptaProcessor {
 
+    public HashSet<String> getDirtyTeamIds() {
+        return _dirtyTeamIds;
+    }
+
+    public HashSet<String> getDirtyPlayerIds() {
+        return _dirtyPlayerIds;
+    }
+
+    public HashSet<String> getDirtyMatchEventIds() {
+        return _dirtyMatchEventIds;
+    }
+
     // Retorna los Ids de opta (gameIds, optaMachEventId) de los partidos que han cambiado
-    public HashSet<String> processOptaDBInput(String feedType, String name, String competitionId, String seasonId,
+    public void processOptaDBInput(String feedType, String name, String competitionId, String seasonId,
                                               String gameId, String requestBody) {
+        _dirtyTeamIds = new HashSet<>();
+        _dirtyPlayerIds = new HashSet<>();
         _dirtyMatchEventIds = new HashSet<>();
         _competitionId = competitionId;
         _seasonId = seasonId;
@@ -54,8 +68,6 @@ public class OptaProcessor {
         catch (Exception e) {
             Logger.error("WTF 6313, {}, {}, {}", feedType, name, e);
         }
-
-        return _dirtyMatchEventIds;
     }
 
     private OptaCompetition ensureCompetition(Element f40) {
@@ -160,6 +172,7 @@ public class OptaProcessor {
 
                 OptaMatchEvent optaMatchEvent = new OptaMatchEvent(myF1, matchObject, matchObject.getChild("MatchInfo"));
                 Model.optaMatchEvents().update("{optaMatchEventId: #}", optaMatchEvent.optaMatchEventId).upsert().with(optaMatchEvent);
+                _dirtyMatchEventIds.add(optaMatchEvent.optaMatchEventId);
 
                 optaMatchDatas.put(matchId, timestamp);
             }
@@ -185,6 +198,7 @@ public class OptaProcessor {
             Model.optaTeams().update("{optaTeamId: #}", myTeam.optaTeamId).upsert()
                              .with("{$set: {optaTeamId:#, name:#, shortName:#, updatedTime:#, dirty:#}, $addToSet: {seasonCompetitionIds:#}}",
                                      myTeam.optaTeamId, myTeam.name, myTeam.shortName, myTeam.updatedTime, myTeam.dirty, optaCompetition.seasonCompetitionId);
+            _dirtyTeamIds.add(myTeam.optaTeamId);
 
             // Obtenemos la lista de players que están actualmente en el equipo
             // Recorremos la lista de players que Opta nos proporciona en el F40
@@ -207,12 +221,14 @@ public class OptaProcessor {
                     if (myPlayer.hasChanged(optaPlayers.get(myPlayer.optaPlayerId))) {
                         // Actualizar
                         Model.optaPlayers().update("{optaPlayerId: #}", myPlayer.optaPlayerId).upsert().with(myPlayer);
+                        _dirtyPlayerIds.add(myPlayer.optaPlayerId);
                     }
                     optaPlayers.remove(myPlayer.optaPlayerId);
                 }
                 else {
                     // Lo marcamos para añadir
                     playersToInsert.add(myPlayer);
+                    _dirtyPlayerIds.add(myPlayer.optaPlayerId);
                 }
             }
 
@@ -383,6 +399,8 @@ public class OptaProcessor {
         return _optaMatchDataCache.get(competitionId);
     }
 
+    private HashSet<String> _dirtyTeamIds;
+    private HashSet<String> _dirtyPlayerIds;
     private HashSet<String> _dirtyMatchEventIds;
 
     private HashMap<Integer, PointsTranslation> _pointsTranslationCache;
