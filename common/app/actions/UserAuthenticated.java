@@ -25,7 +25,7 @@ public @interface UserAuthenticated {
             User theUser = SessionUtils.getUserFromRequest(ctx.request());
 
             if (theUser == null) {
-                Logger.info("UserAuthenticated failed: " + ctx);
+                Logger.info("UserAuthenticated fallo: " + ctx.request().uri());
 
                 return F.Promise.promise(new F.Function0<Result>() {
                     public Result apply() throws Throwable {

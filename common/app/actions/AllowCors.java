@@ -21,8 +21,25 @@ public class AllowCors {
     public static class CorsAction extends Action<Origin> {
         @Override
         public play.libs.F.Promise<play.mvc.Result>  call(Http.Context context) throws Throwable {
-            context.response().setHeader("Access-Control-Allow-Origin", "*");
+
+            String[] origin = context.request().headers().get("Origin");
+
+            // Cuando estamos en el mismo dominio (localhost:9000 o dailysoccer-staging), no recibimos origin.
+            // La header "Access-Control-Allow-Credentials" no nos hace falta ponerla a true pq no usamos cookies.
+            if (origin != null && origin[0] != null && isWhiteListed(origin[0])) {
+                context.response().setHeader("Access-Control-Allow-Origin", origin[0]);
+            }
+
             return delegate.call(context);
         }
+    }
+
+    private static boolean isWhiteListed(String origin) {
+        /*
+        if (host[0].contains("localhost") || host[0].contains("127.0.0.1") ||
+            host[0].equals("epiceleven.com")) {
+        }
+        */
+        return true;
     }
 }

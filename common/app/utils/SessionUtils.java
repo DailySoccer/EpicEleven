@@ -11,8 +11,9 @@ public class SessionUtils {
     public static User getUserFromRequest(Http.Request request) {
         String sessionToken = getSessionTokenFromRequest(request);
 
-        if (sessionToken == null)
+        if (sessionToken == null) {
             return null;
+        }
 
         // En desarrollo, el sessionToken hace referencia al email
         if (Play.isDev()) {
@@ -21,22 +22,31 @@ public class SessionUtils {
 
         Session theSession = Model.sessions().findOne("{sessionToken:'#'}", sessionToken).as(Session.class);
 
-        if (theSession == null)
+        if (theSession == null) {
             return null;
-
-        return Model.users().findOne(theSession.userId).as(User.class);
+        }
+        else {
+            return Model.users().findOne(theSession.userId).as(User.class);
+        }
     }
 
     private static String getSessionTokenFromRequest(Http.Request request) {
-        // TODO: Security problem when this gets logged by any server. Move it to the HTTP Basic Auth header
-        String sessionToken = request.getQueryString("sessionToken");
 
-        // During development we try to read the sessionToken from a cookie to make it easier
+        // Usamos una custom header para no usar cookies y evitar CSRFs
+        String sessionToken = null;
+        String[] sessionTokenValues = request.headers().get("X-SESSION-TOKEN");
+
+        if (sessionTokenValues != null && sessionTokenValues.length == 1) {
+            sessionToken = sessionTokenValues[0];
+        }
+
+        // Durante el desarrollo, intentamos leer la cookie para que sea mas facil debugear
         if (sessionToken == null && Play.isDev()) {
             Http.Cookie theCookie = request.cookie("sessionToken");
 
-            if (theCookie != null)
+            if (theCookie != null) {
                 sessionToken = theCookie.value();
+            }
         }
 
         return sessionToken;
