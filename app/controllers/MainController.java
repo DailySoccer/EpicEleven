@@ -4,6 +4,7 @@ import actions.AllowCors;
 import com.google.common.collect.ImmutableMap;
 import model.*;
 import org.bson.types.ObjectId;
+import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
@@ -16,6 +17,26 @@ public class MainController extends Controller {
 
     public static Result ping() {
     	return ok("Pong");
+    }
+
+    // Toda nuestra API va con preflight. No hemos tenido mas remedio, porque se nos planteaba el siguiente problema:
+    // Para evitar el preflight, solo puedes mandar las "simple-headers'. Nuestro sessionToken entonces lo mandamos
+    // en el POST dentro del www-form-urlencoded, ok, pero en el GET dentro de la queryString => malo para la seguridad.
+    //
+    // Podriamos hacer que toda el API fuera entonces por POST y meter el sessionToken UrlEnconded, pero no nos parece
+    // elegante. Hasta que se demuestre lo contrario, usamos el preflight con max-age agresivo.
+    //
+    public static Result preFlight(String path) {
+
+        Logger.info("Hit en options: " + path);
+
+        response().setHeader("Access-Control-Allow-Methods", "GET, POST");
+        response().setHeader("Access-Control-Allow-Headers", "accept, origin, Content-type, x-json, x-prototype-version, x-requested-with, X-SESSION-TOKEN");
+
+        // Al poner esto, el preflight se hace 1 vez y no se vuelve a hacer hasta que pase el tiempo.
+        response().setHeader("Access-Control-Max-Age", String.valueOf(3600*24*365));
+
+        return ok();
     }
 
     /*

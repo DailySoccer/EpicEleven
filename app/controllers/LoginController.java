@@ -101,13 +101,14 @@ public class LoginController extends Controller {
     // TODO: Todo esto es totalmente incorrecto, es un borrador. Hay que hacer cosas como caducidad de sesiones,
     // confirmacion de la cuenta a traves de email, etc. Hay un monton de notas en Asana.
     public static Result login() {
-        Form<LoginParams> loginParamsForm = form(LoginParams.class).bindFromRequest();
+
+        Form<LoginParams> loginParamsForm = Form.form(LoginParams.class).bindFromRequest();
         ReturnHelper returnHelper = new ReturnHelper();
 
         if (!loginParamsForm.hasErrors()) {
             LoginParams loginParams = loginParamsForm.get();
 
-            // TODO: Necesitamos sanitizar el email?
+            // TODO: Necesitamos sanitizar el email
             User theUser = Model.users().findOne("{email:'#'}", loginParams.email).as(User.class);
 
             if (theUser == null || !isPasswordCorrect(theUser, loginParams.password)) {
@@ -116,7 +117,7 @@ public class LoginController extends Controller {
             }
             else {
                 if (Play.isDev()) {
-                    Logger.info("Estamos en desarrollo: El email sera el sessionToken");
+                    Logger.info("Estamos en desarrollo: El email {} sera el sessionToken y pondremos una cookie", theUser.email);
 
                     // Durante el desarrollo en local usamos cookies y el email como sessionToken para que sea mas facil debugear
                     // por ejemplo usando Postman
@@ -125,6 +126,9 @@ public class LoginController extends Controller {
                     returnHelper.setOK(new Session(theUser.email, theUser.userId, GlobalDate.getCurrentDate()));
                 }
                 else {
+                    // En produccion NO mandamos cookie. Esto evita CSRFs. Esperamos que el cliente nos mande el sessionToken
+                    // cada vez como parametro en una custom header.
+                    // TODO: Pensar la opcion: encriptar los datos necesarios para no tener que tener tabla de sesiones.
                     String sessionToken = Crypto.generateSignedToken();
                     Session newSession = new Session(sessionToken, theUser.userId, GlobalDate.getCurrentDate());
                     Model.sessions().insert(newSession);
