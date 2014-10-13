@@ -88,6 +88,13 @@ public class TemplateSoccerTeam implements JongoId, Initializer {
                !shortName.equals(optaTeam.shortName);
     }
 
+    public void changeDocument(OptaTeam optaTeam) {
+        optaTeamId = optaTeam.optaTeamId;
+        name = optaTeam.name;
+        shortName = optaTeam.shortName;
+        updateDocument();
+    }
+
     public void updateDocument() {
         Model.templateSoccerTeams().withWriteConcern(WriteConcern.SAFE).update("{optaTeamId: #}", optaTeamId).upsert().with(this);
     }

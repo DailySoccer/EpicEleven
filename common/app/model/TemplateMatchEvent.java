@@ -297,6 +297,14 @@ public class TemplateMatchEvent implements JongoId, Initializer {
         return templateMatchEvent;
     }
 
+    public void changeDocument(OptaMatchEvent optaMatchEvent) {
+        startDate = optaMatchEvent.matchDate;
+        optaMatchEventId = optaMatchEvent.optaMatchEventId;
+        optaCompetitionId = optaMatchEvent.competitionId;
+        optaSeasonId = optaMatchEvent.seasonId;
+        updateDocument();
+    }
+
     public void updateDocument() {
         Model.templateMatchEvents().withWriteConcern(WriteConcern.SAFE).update("{optaMatchEventId: #}", optaMatchEventId).upsert().with(this);
     }
