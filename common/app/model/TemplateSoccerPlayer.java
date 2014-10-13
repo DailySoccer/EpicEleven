@@ -166,6 +166,13 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
                !(TemplateSoccerTeam.findOne(templateTeamId, optaPlayer.teamId) != null);
     }
 
+    public void changeDocument(OptaPlayer optaPlayer) {
+        optaPlayerId = optaPlayer.optaPlayerId;
+        name = optaPlayer.name;
+        fieldPos = transformToFieldPosFromOptaPos(optaPlayer.position);
+        updateDocument();
+    }
+
     public void updateDocument() {
         Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).update("{optaPlayerId: #}", optaPlayerId).upsert().with(this);
     }

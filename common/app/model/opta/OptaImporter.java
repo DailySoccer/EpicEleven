@@ -38,7 +38,7 @@ public class OptaImporter {
                 }
             }
             else if (template.hasChanged(optaTeam)) {
-                template.updateDocument();
+                template.changeDocument(optaTeam);
             }
         }
         Model.optaTeams().update("{optaTeamId: {$not: {$in: #}}}", invalids).multi().with("{$set: {dirty: false}}");
@@ -77,7 +77,7 @@ public class OptaImporter {
                         templatePlayer.updateDocument();
                     }
                 } else if (templatePlayer.hasChanged(optaPlayer)) {
-                    templatePlayer.updateDocument();
+                    templatePlayer.changeDocument(optaPlayer);
                 }
             }
         }
@@ -103,7 +103,7 @@ public class OptaImporter {
                 }
             }
             else if (template.hasChanged(optaMatch)) {
-                template.updateDocument();
+                template.changeDocument(optaMatch);
             }
         }
         Model.optaMatchEvents().update("{optaMatchEventId: {$not: {$in: #}}}", invalids).multi().with("{$set: {dirty: false}}");
