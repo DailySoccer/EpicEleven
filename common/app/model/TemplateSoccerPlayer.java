@@ -170,7 +170,15 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         optaPlayerId = optaPlayer.optaPlayerId;
         name = optaPlayer.name;
         fieldPos = transformToFieldPosFromOptaPos(optaPlayer.position);
-        updateDocument();
+
+        TemplateSoccerTeam templateSoccerTeam = TemplateSoccerTeam.findOneFromOptaId(optaPlayer.teamId);
+        if (templateSoccerTeam != null) {
+            templateTeamId = templateSoccerTeam.templateSoccerTeamId;
+            updateDocument();
+        }
+        else {
+            Logger.error("WTF 8791: TeamID({}) inválido", optaPlayer.teamId);
+        }
     }
 
     public void updateDocument() {
