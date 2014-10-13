@@ -99,6 +99,9 @@ public class ContestEntryController extends Controller {
         if (!contestEntryForm.hasErrors()) {
             result = new ObjectMapper().createObjectNode().put("result", "ok").put("contestId", contestId);
         }
+        else {
+            Logger.error("WTF 7239: addContestEntry: {}", contestEntryForm.errorsAsJson());
+        }
         return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
     }
 
@@ -152,6 +155,9 @@ public class ContestEntryController extends Controller {
         if (!contestEntryForm.hasErrors()) {
             result = new ObjectMapper().createObjectNode().put("result", "ok");
         }
+        else {
+            Logger.error("WTF 7240: editContestEntry: {}", contestEntryForm.errorsAsJson());
+        }
         return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
     }
 
@@ -202,6 +208,9 @@ public class ContestEntryController extends Controller {
 
         if (!contestEntryForm.hasErrors()) {
             result = new ObjectMapper().createObjectNode().put("result", "ok");
+        }
+        else {
+            Logger.error("WTF 7241: cancelContestEntry: {}", contestEntryForm.errorsAsJson());
         }
         return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
     }
