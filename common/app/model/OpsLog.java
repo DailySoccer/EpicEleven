@@ -8,6 +8,12 @@ import java.util.Date;
 
 public class OpsLog {
     public static String TYPE_IMPORT = "IMPORT";
+    public static String SUBTYPE_TEAM = "TEAM";
+    public static String SUBTYPE_PLAYER = "PLAYER";
+    public static String SUBTYPE_MATCHEVENT = "MATCHEVENT";
+    public static String OP_NEW = "NEW";
+    public static String OP_CHANGE = "CHANGE";
+    public static String OP_INVALIDATE = "INVALIDATE";
 
     public String type;
     public String subType;
@@ -24,15 +30,15 @@ public class OpsLog {
     }
 
     public static void importOpta(String op, OptaTeam optaTeam) {
-        add(TYPE_IMPORT, "TEAM", op, optaTeam);
+        add(TYPE_IMPORT, SUBTYPE_TEAM, op, optaTeam);
     }
 
     public static void importOpta(String op, OptaPlayer optaPlayer) {
-        add(TYPE_IMPORT, "PLAYER", op, optaPlayer);
+        add(TYPE_IMPORT, SUBTYPE_PLAYER, op, optaPlayer);
     }
 
     public static void importOpta(String op, OptaMatchEvent optaMatchEvent) {
-        add(TYPE_IMPORT, "MATCHEVENT", op, optaMatchEvent);
+        add(TYPE_IMPORT, SUBTYPE_MATCHEVENT, op, optaMatchEvent);
     }
 
     public static void add(String theType, String theSubtype, String theOp, Object aObject) {
