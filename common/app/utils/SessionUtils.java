@@ -7,6 +7,9 @@ import play.Logger;
 import play.Play;
 import play.mvc.Http;
 
+import java.util.Map;
+import java.util.Set;
+
 public class SessionUtils {
 
     public static User getUserFromRequest(Http.Request request) {
@@ -37,6 +40,14 @@ public class SessionUtils {
         // Usamos una custom header para no usar cookies y evitar CSRFs
         String sessionToken = null;
         String[] sessionTokenValues = request.headers().get("X-SESSION-TOKEN");
+
+
+        for (Map.Entry<String, String[]> entry : request.headers().entrySet()) {
+
+            for (String str : entry.getValue()) {
+                Logger.info("Veamos: {} {}", entry.getKey(), str);
+            }
+        }
 
         if (sessionTokenValues != null && sessionTokenValues.length == 1) {
             sessionToken = sessionTokenValues[0];
