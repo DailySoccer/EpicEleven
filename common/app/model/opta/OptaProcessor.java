@@ -240,6 +240,9 @@ public class OptaProcessor {
             }
             // Marcamos como "sin equipo" a los players que no han sido enviados con el equipo (verificamos que no hayan cambiado de equipo)
             if (!optaPlayers.isEmpty()) {
+                for (OptaPlayer optaPlayer: optaPlayers.values()) {
+                    _dirtyPlayerIds.add(optaPlayer.optaPlayerId);
+                }
                 Model.optaPlayers().update("{optaPlayerId:{$in: #}, teamId:#}", optaPlayers.keySet(), myTeam.optaTeamId).with("{$set: {teamId: #, dirty: true}}", OptaTeam.INVALID_TEAM);
             }
         }
