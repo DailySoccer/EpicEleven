@@ -1,6 +1,7 @@
 package controllers.admin;
 
 import com.google.common.collect.ImmutableList;
+import com.mongodb.WriteConcern;
 import model.*;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
@@ -72,7 +73,7 @@ public class TemplateContestController extends Controller {
                     case 1: return String.format("<a href=\"%s\" style=\"white-space: nowrap\">%s</a>",
                                 routes.TemplateContestController.show(templateContest.templateContestId.toString()),
                                 fieldValue);
-                    case 10: return templateContest.isOff()
+                    case 10: return (templateContest.isOff() || templateContest.isActive())
                                 ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">Edit</button></a>",
                                         routes.TemplateContestController.edit(templateContest.templateContestId.toString()))
                                 : "";
@@ -98,7 +99,7 @@ public class TemplateContestController extends Controller {
         TemplateContestForm params = new TemplateContestForm();
 
         Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
-        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.createdAt)));
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.createdAt), false));
     }
 
     public static Result edit(String templateContestId) {
@@ -106,7 +107,7 @@ public class TemplateContestController extends Controller {
         TemplateContestForm params = new TemplateContestForm(templateContest);
 
         Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
-        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.createdAt)));
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.createdAt), templateContest.isActive()));
     }
 
     public static Result destroy(String templateContestId) {
@@ -119,7 +120,7 @@ public class TemplateContestController extends Controller {
         Form<TemplateContestForm> templateContestForm = form(TemplateContestForm.class).bindFromRequest();
         if (templateContestForm.hasErrors()) {
             String createdAt = templateContestForm.field("createdAt").valueOr("0");
-            return badRequest(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(Long.parseLong(createdAt))));
+            return badRequest(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(Long.parseLong(createdAt)), false));
         }
 
         TemplateContestForm params = templateContestForm.get();
@@ -157,9 +158,15 @@ public class TemplateContestController extends Controller {
         }
         else {
             Model.templateContests().update("{_id: #}", templateContest.templateContestId).with(templateContest);
+            updateActiveContestsFromTemplate(templateContest);
         }
 
         return redirect(routes.TemplateContestController.index());
+    }
+
+    private static void updateActiveContestsFromTemplate(TemplateContest templateContest) {
+        // Only name can change in Active contests
+        Model.contests().withWriteConcern(WriteConcern.SAFE).update("{templateContestId: #}", templateContest.getId()).multi().with("{$set: {name: #}}", templateContest.name);
     }
 
     public static Result createAll() {
