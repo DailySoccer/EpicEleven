@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 remotes_allowed_message="The only allowed Heroku remotes are: staging/production."
 
@@ -13,16 +14,22 @@ elif [[ "$1" == "debug" || "$1" == "release" ]]
     destination="staging"
 elif [[ "$1" == "production" || "$1" == "staging" ]]
     then
-    mode="debug"
+    mode="release"
     destination=$1
 else
-    mode="debug"
+    mode="release"
     destination="staging"
 fi
 
 branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
 branch_name="(unnamed branch)"     # detached HEAD
 branch_name=${branch_name##refs/heads/}
+
+if [[ "$branch_name" == "deploy" ]]
+    then
+        echo "ERROR, estado inválido para deploy"
+        exit 1
+fi
 
 
 if [[ $(git diff --shortstat ) != "" || $(git diff --shortstat --cached) != "" ]]
@@ -48,11 +55,18 @@ if [ $# -eq 0 ]
             fi
         if [[ "$destination" == "production" && "$branch_name" != "master" ]]
             then
-                git checkout master
+                if [[ "$branch_name" == "develop" ]]
+                then
+                    git checkout master
+                    git merge develop
+                else
+                    echo "No se puede hacer deploy a producción desde esta rama"
+                fi
+
         fi
 fi
 
-echo "deploying to : $destination"
+echo "deploying to: $destination"
 echo "mode: $mode"
 
 # Cambiamos a la rama de deploy, asegurandonos de que esta creada/reseateada
@@ -61,6 +75,11 @@ git checkout -B deploy
 # Tenemos que borrar el symlink y hacer una copia dura de toda la build
 rm public
 cd ../webclient
+if [[ $destination == "production" ]]
+then
+    git checkout master
+    git merge develop
+fi
 ./build_rsync.sh $mode
 cd ../backend
 
