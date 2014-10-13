@@ -20,24 +20,47 @@ public class AllowCors {
 
     public static class CorsAction extends Action<Origin> {
         @Override
-        public play.libs.F.Promise<play.mvc.Result>  call(Http.Context context) throws Throwable {
+        public play.libs.F.Promise<play.mvc.Result> call(Http.Context context) throws Throwable {
 
-            String[] origin = context.request().headers().get("Origin");
+            String origin = getOrigin(context.request());
 
             // Cuando estamos en el mismo dominio (localhost:9000 o dailysoccer-staging), no recibimos origin.
             // La header "Access-Control-Allow-Credentials" no nos hace falta ponerla a true pq no usamos cookies.
-            if (origin != null && origin[0] != null && isWhiteListed(origin[0])) {
-                context.response().setHeader("Access-Control-Allow-Origin", origin[0]);
+            if (origin != null && isWhiteListed(origin)) {
+                context.response().setHeader("Access-Control-Allow-Origin", origin);
             }
 
             return delegate.call(context);
         }
     }
 
+    public static void preFlight(Http.Request request, Http.Response response) {
+
+        String origin = getOrigin(request);
+
+        if (origin != null && isWhiteListed(origin)) {
+
+            response.setHeader("Access-Control-Allow-Origin", origin);
+            response.setHeader("Access-Control-Allow-Methods", "GET, POST");
+
+            // Aceptamos nuestro X-SESSION-TOKEN como custom header
+            response.setHeader("Access-Control-Allow-Headers", "accept, origin, Content-type, x-json, x-prototype-version, x-requested-with, X-SESSION-TOKEN");
+
+            // Al poner esto, el preflight se hace 1 vez y no se vuelve a hacer hasta que pase el tiempo.
+            response.setHeader("Access-Control-Max-Age", String.valueOf(3600 * 24 * 365));
+        }
+    }
+
+    private static String getOrigin(Http.Request request) {
+        String[] origin = request.headers().get("Origin");
+
+        return origin != null && origin[0] != null? origin[0] : null;
+    }
+
     private static boolean isWhiteListed(String origin) {
         /*
-        if (host[0].contains("localhost") || host[0].contains("127.0.0.1") ||
-            host[0].equals("epiceleven.com")) {
+        if (origin.contains("localhost") || origin.contains("127.0.0.1") ||
+            origin.equals("epiceleven.com")) {
         }
         */
         return true;
