@@ -19,6 +19,8 @@ import java.util.List;
 
 public class Model {
 
+    static public MongoCollection opsLog() { return _jongo.getCollection("opsLog"); }
+
     static public MongoCollection sessions() { return _jongo.getCollection("sessions"); }
     static public MongoCollection users() { return _jongo.getCollection("users"); }
 
