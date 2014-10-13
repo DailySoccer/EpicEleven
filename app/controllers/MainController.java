@@ -27,11 +27,7 @@ public class MainController extends Controller {
     // elegante. Hasta que se demuestre lo contrario, usamos el preflight con max-age agresivo.
     //
     public static Result preFlight(String path) {
-
-        Logger.info("Hit en options: " + path);
-
         AllowCors.preFlight(request(), response());
-
         return ok();
     }
 
