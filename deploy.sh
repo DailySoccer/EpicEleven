@@ -58,7 +58,7 @@ if [ $# -eq 0 ]
                 if [[ "$branch_name" == "develop" ]]
                 then
                     git checkout master
-                    git merge develop
+                    git merge develop --commit -m "Merge branch 'develop'"
                 else
                     echo "No se puede hacer deploy a producción desde esta rama"
                 fi
