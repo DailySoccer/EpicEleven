@@ -3,6 +3,7 @@ package utils;
 import model.Model;
 import model.Session;
 import model.User;
+import play.Logger;
 import play.Play;
 import play.mvc.Http;
 
@@ -12,6 +13,7 @@ public class SessionUtils {
         String sessionToken = getSessionTokenFromRequest(request);
 
         if (sessionToken == null) {
+            Logger.debug("SessionUtils.getUserFromRequest: No hay session token");
             return null;
         }
 
