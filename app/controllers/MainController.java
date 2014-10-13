@@ -30,11 +30,7 @@ public class MainController extends Controller {
 
         Logger.info("Hit en options: " + path);
 
-        response().setHeader("Access-Control-Allow-Methods", "GET, POST");
-        response().setHeader("Access-Control-Allow-Headers", "accept, origin, Content-type, x-json, x-prototype-version, x-requested-with, X-SESSION-TOKEN");
-
-        // Al poner esto, el preflight se hace 1 vez y no se vuelve a hacer hasta que pase el tiempo.
-        response().setHeader("Access-Control-Max-Age", String.valueOf(3600*24*365));
+        AllowCors.preFlight(request(), response());
 
         return ok();
     }
