@@ -39,15 +39,7 @@ public class SessionUtils {
 
         // Usamos una custom header para no usar cookies y evitar CSRFs
         String sessionToken = null;
-        String[] sessionTokenValues = request.headers().get("X-SESSION-TOKEN");
-
-
-        for (Map.Entry<String, String[]> entry : request.headers().entrySet()) {
-
-            for (String str : entry.getValue()) {
-                Logger.info("Veamos: {} {}", entry.getKey(), str);
-            }
-        }
+        String[] sessionTokenValues = request.headers().get("X-Session-Token");
 
         if (sessionTokenValues != null && sessionTokenValues.length == 1) {
             sessionToken = sessionTokenValues[0];
@@ -63,5 +55,15 @@ public class SessionUtils {
         }
 
         return sessionToken;
+    }
+
+    public static void logHeaders(Http.Request request) {
+
+        for (Map.Entry<String, String[]> entry : request.headers().entrySet()) {
+
+            for (String str : entry.getValue()) {
+                Logger.debug("Headers: {} {}", entry.getKey(), str);
+            }
+        }
     }
 }
