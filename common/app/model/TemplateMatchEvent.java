@@ -299,7 +299,7 @@ public class TemplateMatchEvent implements JongoId, Initializer {
 
     public void changeDocument(OptaMatchEvent optaMatchEvent) {
         startDate = optaMatchEvent.matchDate;
-        optaMatchEventId = optaMatchEvent.optaMatchEventId;
+        // optaMatchEventId = optaMatchEvent.optaMatchEventId;
         optaCompetitionId = optaMatchEvent.competitionId;
         optaSeasonId = optaMatchEvent.seasonId;
         updateDocument();
