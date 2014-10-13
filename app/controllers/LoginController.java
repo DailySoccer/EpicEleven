@@ -143,16 +143,7 @@ public class LoginController extends Controller {
 
     @UserAuthenticated
     public static Result getUserProfile() {
-        ReturnHelper returnHelper = new ReturnHelper();
-        User theUser = (User)ctx().args.get("User");
-
-        if (theUser == null) {
-            returnHelper.setKO(new ClientError("User not found", "Check your sessionToken"));
-        } else {
-            returnHelper.setOK(theUser);
-        }
-
-        return returnHelper.toResult();
+        return new ReturnHelper((User)ctx().args.get("User")).toResult();
     }
 
     public static class ChangeParams {
