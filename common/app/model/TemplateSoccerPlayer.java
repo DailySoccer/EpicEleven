@@ -167,7 +167,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
     }
 
     public void changeDocument(OptaPlayer optaPlayer) {
-        optaPlayerId = optaPlayer.optaPlayerId;
+        // optaPlayerId = optaPlayer.optaPlayerId;
         name = optaPlayer.name;
         fieldPos = transformToFieldPosFromOptaPos(optaPlayer.position);
 

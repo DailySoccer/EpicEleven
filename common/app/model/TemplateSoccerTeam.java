@@ -89,7 +89,7 @@ public class TemplateSoccerTeam implements JongoId, Initializer {
     }
 
     public void changeDocument(OptaTeam optaTeam) {
-        optaTeamId = optaTeam.optaTeamId;
+        // optaTeamId = optaTeam.optaTeamId;
         name = optaTeam.name;
         shortName = optaTeam.shortName;
         updateDocument();
