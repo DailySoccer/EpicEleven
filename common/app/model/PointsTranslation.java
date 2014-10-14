@@ -1,5 +1,6 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import model.opta.OptaEventType;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
@@ -11,10 +12,21 @@ import java.util.List;
 public class PointsTranslation implements JongoId, Initializer {
     @Id
     public ObjectId pointsTranslationId;
+
+    @JsonView(JsonViews.NotForClient.class)
     public int eventTypeId;
+
     public int points;
+
+    @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
+    @JsonView(JsonViews.NotForClient.class)
     public Date lastModified;
+
+    @JsonView(JsonViews.Public.class)
+    public String getEventName() {
+        return OptaEventType.getEnum(eventTypeId).toString();
+    }
 
     public PointsTranslation() {}
     public void Initialize() {}

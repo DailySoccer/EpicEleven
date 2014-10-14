@@ -4,7 +4,6 @@ import actions.AllowCors;
 import com.google.common.collect.ImmutableMap;
 import model.*;
 import org.bson.types.ObjectId;
-import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
@@ -36,6 +35,11 @@ public class MainController extends Controller {
      */
     public static Result getCurrentDate() {
         return new ReturnHelper(ImmutableMap.of("currentDate", GlobalDate.getCurrentDate())).toResult();
+    }
+
+
+    public static Result getScoringRules() {
+        return new ReturnHelper(ImmutableMap.of("scoring_rules", PointsTranslation.getAllCurrent())).toResult();
     }
 
     /*
