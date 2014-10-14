@@ -1,6 +1,7 @@
 package model;
 
 import com.google.common.collect.ImmutableMap;
+import model.opta.OptaCompetition;
 import model.opta.OptaMatchEvent;
 import model.opta.OptaPlayer;
 import model.opta.OptaTeam;
@@ -12,6 +13,7 @@ public class OpsLog {
     public static String TYPE_PLAYER = "PLAYER";
     public static String TYPE_MATCHEVENT = "MATCHEVENT";
     public static String TYPE_POINTS_TRANSLATION = "POINTS_TRANSLATION";
+    public static String TYPE_COMPETITION = "COMPETITION";
     public static String OP_NEW = "NEW";
     public static String OP_CHANGE = "CHANGE";
     public static String OP_DELETE = "DELETE";
@@ -85,6 +87,9 @@ public class OpsLog {
         }
         else if (aObject.getClass().equals(PointsTranslation.class)) {
             aType = TYPE_POINTS_TRANSLATION;
+        }
+        else if (aObject.getClass().equals(OptaCompetition.class)) {
+            aType = TYPE_COMPETITION;
         }
         return aType;
     }
