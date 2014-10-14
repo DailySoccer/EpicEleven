@@ -14,6 +14,7 @@ public class OpsLog {
     public static String TYPE_MATCHEVENT = "MATCHEVENT";
     public static String TYPE_POINTS_TRANSLATION = "POINTS_TRANSLATION";
     public static String TYPE_COMPETITION = "COMPETITION";
+    public static String TYPE_TEMPLATE_CONTEST = "TEMPLATE_CONTEST";
     public static String OP_NEW = "NEW";
     public static String OP_CHANGE = "CHANGE";
     public static String OP_DELETE = "DELETE";
@@ -34,39 +35,39 @@ public class OpsLog {
         this.object = object;
     }
 
-    public static <T> void opNew(T aObject) {
+    public static void opNew(Object aObject) {
         opNew(null, aObject);
     }
 
-    public static <T> void opChange(T aObject) {
+    public static void opChange(Object aObject) {
         opChange(null, aObject);
     }
 
-    public static <T> void opInvalidate(T aObject) {
+    public static void opInvalidate(Object aObject) {
         opInvalidate(null, aObject);
     }
 
-    public static <T> void opDelete(T aObject) {
+    public static void opDelete(Object aObject) {
         opDelete(null, aObject);
     }
 
-    public static <T> void opNew(String subType, T aObject) {
+    public static void opNew(String subType, Object aObject) {
         add(getType(aObject), subType, OpsLog.OP_NEW, aObject);
     }
 
-    public static <T> void opChange(String subType, T aObject) {
+    public static void opChange(String subType, Object aObject) {
         add(getType(aObject), subType, OpsLog.OP_CHANGE, aObject);
     }
 
-    public static <T> void opInvalidate(String subType, T aObject) {
+    public static void opInvalidate(String subType, Object aObject) {
         add(getType(aObject), subType, OpsLog.OP_INVALIDATE, aObject);
     }
 
-    public static <T> void opDelete(String subType, T aObject) {
+    public static void opDelete(String subType, Object aObject) {
         add(getType(aObject), subType, OpsLog.OP_DELETE, aObject);
     }
 
-    public static <T> void opChange(String type, String subType, T aObject) {
+    public static void opChange(String type, String subType, Object aObject) {
         add(type, subType, OpsLog.OP_CHANGE, aObject);
     }
 
@@ -74,7 +75,7 @@ public class OpsLog {
         Model.opsLog().insert(new OpsLog(theType, theSubtype, theOp, aObject));
     }
 
-    private static <T> String getType(T aObject) {
+    private static String getType(Object aObject) {
         String aType = null;
         if (aObject.getClass().equals(OptaTeam.class)) {
             aType = TYPE_TEAM;
@@ -90,6 +91,9 @@ public class OpsLog {
         }
         else if (aObject.getClass().equals(OptaCompetition.class)) {
             aType = TYPE_COMPETITION;
+        }
+        else if (aObject.getClass().equals(TemplateContest.class)) {
+            aType = TYPE_TEMPLATE_CONTEST;
         }
         return aType;
     }

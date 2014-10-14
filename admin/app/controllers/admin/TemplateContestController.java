@@ -155,10 +155,12 @@ public class TemplateContestController extends Controller {
 
         if (isNew) {
             Model.templateContests().insert(templateContest);
+            OpsLog.opNew(templateContest);
         }
         else {
             Model.templateContests().update("{_id: #}", templateContest.templateContestId).with(templateContest);
             updateActiveContestsFromTemplate(templateContest);
+            OpsLog.opChange(templateContest);
         }
 
         return redirect(routes.TemplateContestController.index());
