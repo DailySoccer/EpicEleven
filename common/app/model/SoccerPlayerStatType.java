@@ -80,7 +80,8 @@ public enum SoccerPlayerStatType {
             case PERDIDAS_BALON: return ImmutableList.of(
                     OptaEventType.DISPOSSESSED.code,
                     OptaEventType.PASS_UNSUCCESSFUL.code,
-                    OptaEventType.ERROR.code
+                    OptaEventType.ERROR.code,
+                    OptaEventType.DECISIVE_ERROR.code
             );
             case FALTAS_RECIBIDAS: return ImmutableList.of(
                     OptaEventType.FOUL_RECEIVED.code
