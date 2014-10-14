@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TemplateSoccerPlayerController extends Controller {
+    public static String OP_TYPE_FIELD = "FIELD";
+
     public static Result index() {
         return ok(views.html.template_soccer_player_list.render(false));
     }
@@ -81,7 +83,7 @@ public class TemplateSoccerPlayerController extends Controller {
 
     public static Result changeSalary(String templateSoccerPlayerId, Integer salary) {
         Model.templateSoccerPlayers().update(new ObjectId(templateSoccerPlayerId)).with("{$set: {salary: #}}", salary);
-        OpsLog.add("SALARY", OpsLog.SUBTYPE_PLAYER, OpsLog.OP_CHANGE, ImmutableMap.of(
+        OpsLog.opChange(OP_TYPE_FIELD, OpsLog.SUBTYPE_PLAYER, ImmutableMap.of(
                 "templateSoccerPlayerId", templateSoccerPlayerId,
                 "salary", salary));
         return ok("OK");
@@ -89,7 +91,7 @@ public class TemplateSoccerPlayerController extends Controller {
 
     public static Result changeState(String templateSoccerPlayerId, String activated) {
         Model.templateSoccerPlayers().update(new ObjectId(templateSoccerPlayerId)).with("{$set: {activated: #}}", activated.equals("true"));
-        OpsLog.add("ACTIVATED", OpsLog.SUBTYPE_PLAYER, OpsLog.OP_CHANGE, ImmutableMap.of(
+        OpsLog.opChange(OP_TYPE_FIELD, OpsLog.SUBTYPE_PLAYER, ImmutableMap.of(
                 "templateSoccerPlayerId", templateSoccerPlayerId,
                 "activated", activated));
         return ok("OK");

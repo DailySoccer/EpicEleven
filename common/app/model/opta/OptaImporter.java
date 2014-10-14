@@ -5,6 +5,8 @@ import model.*;
 import java.util.*;
 
 public class OptaImporter {
+    public static String OP_TYPE_IMPORT = "IMPORT";
+
     public OptaImporter(OptaProcessor processor) {
         _optaTeamIds = processor.getDirtyTeamIds();
         _optaPlayerIds = processor.getDirtyPlayerIds();
@@ -30,17 +32,17 @@ public class OptaImporter {
             if (template == null) {
                 if (TemplateSoccerTeam.isInvalidFromImport(optaTeam)) {
                     invalids.add(optaTeam.optaTeamId);
-                    OpsLog.importOpta(OpsLog.OP_INVALIDATE, optaTeam);
+                    OpsLog.opInvalidate(OP_TYPE_IMPORT, optaTeam);
                 }
                 else {
                     template = new TemplateSoccerTeam(optaTeam);
                     template.updateDocument();
-                    OpsLog.importOpta(OpsLog.OP_NEW, optaTeam);
+                    OpsLog.opNew(OP_TYPE_IMPORT, optaTeam);
                 }
             }
             else if (template.hasChanged(optaTeam)) {
                 template.changeDocument(optaTeam);
-                OpsLog.importOpta(OpsLog.OP_CHANGE, optaTeam);
+                OpsLog.opChange(OP_TYPE_IMPORT, optaTeam);
             }
         }
         Model.optaTeams().update("{optaTeamId: {$not: {$in: #}}}", invalids).multi().with("{$set: {dirty: false}}");
@@ -69,7 +71,7 @@ public class OptaImporter {
                 if (templatePlayer == null) {
                     if (TemplateSoccerPlayer.isInvalidFromImport(optaPlayer)) {
                         invalids.add(optaPlayer.optaPlayerId);
-                        OpsLog.importOpta(OpsLog.OP_INVALIDATE, optaPlayer);
+                        OpsLog.opInvalidate(OP_TYPE_IMPORT, optaPlayer);
                     }
                     else {
                         templatePlayer = new TemplateSoccerPlayer(optaPlayer, templateTeam.templateSoccerTeamId);
@@ -78,11 +80,11 @@ public class OptaImporter {
                         templatePlayer.salary = templateSoccerPlayerMetadata != null ? templateSoccerPlayerMetadata.salary : 7979;
 
                         templatePlayer.updateDocument();
-                        OpsLog.importOpta(OpsLog.OP_NEW, optaPlayer);
+                        OpsLog.opNew(OP_TYPE_IMPORT, optaPlayer);
                     }
                 } else if (templatePlayer.hasChanged(optaPlayer)) {
                     templatePlayer.changeDocument(optaPlayer);
-                    OpsLog.importOpta(OpsLog.OP_CHANGE, optaPlayer);
+                    OpsLog.opChange(OP_TYPE_IMPORT, optaPlayer);
                 }
             }
         }
@@ -101,17 +103,17 @@ public class OptaImporter {
             if (template == null) {
                 if (TemplateMatchEvent.isInvalidFromImport(optaMatch)) {
                     invalids.add(optaMatch.optaMatchEventId);
-                    OpsLog.importOpta(OpsLog.OP_INVALIDATE, optaMatch);
+                    OpsLog.opInvalidate(OP_TYPE_IMPORT, optaMatch);
                 }
                 else {
                     template = TemplateMatchEvent.createFromOpta(optaMatch);
                     template.updateDocument();
-                    OpsLog.importOpta(OpsLog.OP_NEW, optaMatch);
+                    OpsLog.opNew(OP_TYPE_IMPORT, optaMatch);
                 }
             }
             else if (template.hasChanged(optaMatch)) {
                 template.changeDocument(optaMatch);
-                OpsLog.importOpta(OpsLog.OP_CHANGE, optaMatch);
+                OpsLog.opChange(OP_TYPE_IMPORT, optaMatch);
             }
         }
         Model.optaMatchEvents().update("{optaMatchEventId: {$not: {$in: #}}}", invalids).multi().with("{$set: {dirty: false}}");
