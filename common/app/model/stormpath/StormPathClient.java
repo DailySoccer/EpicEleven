@@ -55,6 +55,46 @@ public class StormPathClient {
         _myApp.createAccount(account);
     }
 
+
+    public Account askForPasswordReset(String email) {
+        try {
+            return _myApp.sendPasswordResetEmail(email);
+        }
+        catch (ResourceException ex) {
+            Logger.error(String.valueOf(ex.getStatus()));
+            Logger.error(String.valueOf(ex.getCode()));
+            Logger.error(ex.getMessage());
+            Logger.error(ex.getStatus() + " " + ex.getMessage());
+        }
+        return null;
+    }
+
+    public Account verifyPasswordResetToken(String token) {
+        try {
+            return _myApp.verifyPasswordResetToken(token);
+        }
+        catch (ResourceException ex) {
+            Logger.error(String.valueOf(ex.getStatus()));
+            Logger.error(String.valueOf(ex.getCode()));
+            Logger.error(ex.getMessage());
+            Logger.error(ex.getStatus() + " " + ex.getMessage());
+        }
+        return null;
+    }
+
+    public Account resetPasswordWithToken(String password, String token) {
+        try {
+            return _myApp.resetPassword(token, password);
+        }
+        catch (ResourceException ex) {
+            Logger.error(String.valueOf(ex.getStatus()));
+            Logger.error(String.valueOf(ex.getCode()));
+            Logger.error(ex.getMessage());
+            Logger.error(ex.getStatus() + " " + ex.getMessage());
+        }
+        return null;
+    }
+
     public Account login(String usernameOrEmail, String rawPassword){
         //Create an authentication request using the credentials
         AuthenticationRequest request = new UsernamePasswordRequest(usernameOrEmail, rawPassword);
@@ -64,7 +104,8 @@ public class StormPathClient {
             AuthenticationResult result = _myApp.authenticateAccount(request);
             return result.getAccount();
 
-        } catch (ResourceException ex) {
+        }
+        catch (ResourceException ex) {
             if (ex.getStatus() == 400 && ex.getCode() == 400 &&
                 ex.getMessage().equals("Invalid username or password.")) {
                 Logger.info("Invalid login for {}", usernameOrEmail);
@@ -79,6 +120,7 @@ public class StormPathClient {
         }
         return null;
     }
+
 
     public static StormPathClient instance() {
         if (_instance == null) {

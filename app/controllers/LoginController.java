@@ -46,6 +46,84 @@ public class LoginController extends Controller {
         @Required public String password;
     }
 
+    public static class AskForPasswordResetParams {
+        @Required public String email;
+    }
+
+    public static class VerifyPasswordResetTokenParams {
+        @Required public String token;
+    }
+
+    public static class PasswordResetParams {
+        @Required public String password;
+        @Required public String token;
+    }
+
+    public static Result askForPasswordReset() {
+
+        Form<AskForPasswordResetParams> askForPasswordResetParamsForm = form(AskForPasswordResetParams.class).bindFromRequest();
+        AskForPasswordResetParams params = null;
+
+        ReturnHelper returnHelper = new ReturnHelper();
+
+        if (!askForPasswordResetParamsForm.hasErrors()) {
+            params = askForPasswordResetParamsForm.get();
+
+            Account account = StormPathClient.instance().askForPasswordReset(params.email);
+
+            if (account != null) {
+                returnHelper.setOK("Password reset sent");
+            }
+            else {
+                returnHelper.setKO("Something went wrong");
+            }
+        }
+        return returnHelper.toResult();
+    }
+
+
+    public static Result verifyPasswordResetToken() {
+        Form<VerifyPasswordResetTokenParams> verifyPasswordResetTokenParamsForm = form(VerifyPasswordResetTokenParams.class).bindFromRequest();
+        VerifyPasswordResetTokenParams params = null;
+
+        ReturnHelper returnHelper = new ReturnHelper();
+
+        if (!verifyPasswordResetTokenParamsForm.hasErrors()) {
+            params = verifyPasswordResetTokenParamsForm.get();
+
+            Account account = StormPathClient.instance().verifyPasswordResetToken(params.token);
+
+            if (account != null) {
+                returnHelper.setOK("Password reset token valid");
+            } else {
+                returnHelper.setKO("Password reset token invalid");
+            }
+        }
+        return returnHelper.toResult();
+    }
+
+
+    public static Result resetPasswordWithToken() {
+
+        Form<PasswordResetParams> passwordResetParamsForm = form(PasswordResetParams.class).bindFromRequest();
+        PasswordResetParams params = null;
+
+        ReturnHelper returnHelper = new ReturnHelper();
+
+        if (!passwordResetParamsForm.hasErrors()) {
+            params = passwordResetParamsForm.get();
+
+            Account account = StormPathClient.instance().resetPasswordWithToken(params.token, params.password);
+
+            if (account != null) {
+                returnHelper.setOK("Password resetted successfully");
+            } else {
+                returnHelper.setKO("Something went wrong");
+            }
+        }
+        return returnHelper.toResult();
+    }
+
 
     public static Result signup() {
         Form<SignupParams> signupForm = form(SignupParams.class).bindFromRequest();
@@ -122,7 +200,7 @@ public class LoginController extends Controller {
 
             boolean correctLogin = loggedAccount != null;
 
-            // TODO: Necesitamos sanitizar el email?
+            // TODO: Necesitamos sanitizar el email
             User theUser = Model.users().findOne("{email:'#'}", loginParams.email).as(User.class);
 
             if (theUser == null || !isPasswordCorrect(theUser, loginParams.password)) {
