@@ -83,7 +83,8 @@ public class PointsTranslation implements JongoId, Initializer {
                 {OptaEventType.PUNCH.code, 5},                         // despeje puños
                 {OptaEventType.PASS_UNSUCCESSFUL.code, -2},            // perdida de balon, pase perdido
                 {OptaEventType.DISPOSSESSED.code, -5},                 // perdida de balon
-                {OptaEventType.ERROR.code, -20},                       // perdida de balon
+                {OptaEventType.ERROR.code, -5},                       // perdida de balon
+                {OptaEventType.DECISIVE_ERROR.code, -20},                       // perdida de balon
                 {OptaEventType.CAUGHT_OFFSIDE.code, -5},               // fuera de juego
                 {OptaEventType.FOUL_COMMITTED.code, -5},               // falta infligida
                 {OptaEventType.RED_CARD.code, -50},                    // tarjeta roja

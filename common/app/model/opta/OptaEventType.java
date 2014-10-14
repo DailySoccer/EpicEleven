@@ -23,6 +23,7 @@ public enum OptaEventType {
     PUNCH                   (41, "Ball is punched clear by Goalkeeper"),
     DISPOSSESSED            (50, "Player is successfully tacked and loses possession of the ball"),
     ERROR                   (51, "Mistake by player losing the ball"),
+    DECISIVE_ERROR          (1051, "Mistake by player ending in a conceded goal"),
     //CAUGHT_OFFSIDE          (72, "Player who is offside"),
     SAVE_PLAYER             (1010, "Player blockes a shot."),
     ASSIST                  (1210, "The pass was an assist for a shot"),

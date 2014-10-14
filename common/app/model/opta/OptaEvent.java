@@ -173,6 +173,15 @@ public class OptaEvent {
         else if (this.typeId == OptaEventType.SAVE_GOALKEEPER.code && this.qualifiers.contains(94)) {
             this.typeId = OptaEventType.SAVE_PLAYER.code;
         }
+        // Player Saves -> 1051
+        else if (this.typeId == OptaEventType.ERROR.code) {
+            if (this.qualifiers.contains(170)) {
+                this.typeId = OptaEventType.DECISIVE_ERROR.code;
+            }
+            else if (!this.qualifiers.contains(169)) {
+                this.typeId = OptaEventType._INVALID_.code;
+            }
+        }
 
         // Si no es un borrado, poner a INVALID si no está entre los que nos interesan
         if (this.typeId != 43) {
