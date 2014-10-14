@@ -1,6 +1,7 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.google.common.collect.ImmutableMap;
 import model.opta.OptaEventType;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
@@ -58,6 +59,8 @@ public class PointsTranslation implements JongoId, Initializer {
         pointsTranslation.createdAt = GlobalDate.getCurrentDate();
         pointsTranslation.lastModified = pointsTranslation.createdAt;
         Model.pointsTranslation().insert(pointsTranslation);
+
+        OpsLog.opNew(pointsTranslation);
         return true;
     }
 
@@ -66,6 +69,10 @@ public class PointsTranslation implements JongoId, Initializer {
      */
     public static boolean editPointForEvent(ObjectId pointsTranslationId, int points) {
         Model.pointsTranslation().update(pointsTranslationId).with("{$set: {points: #, lastModified: #}}", points, GlobalDate.getCurrentDate());
+
+        OpsLog.opChange(OpsLog.TYPE_POINTS_TRANSLATION, ImmutableMap.of(
+                "pointsTranslationId", pointsTranslationId,
+                "points", points));
         return true;
     }
 
