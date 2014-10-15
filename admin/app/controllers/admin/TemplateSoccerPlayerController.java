@@ -82,7 +82,7 @@ public class TemplateSoccerPlayerController extends Controller {
     public static Result changeSalary(String templateSoccerPlayerId, Integer salary) {
         Model.templateSoccerPlayers().update(new ObjectId(templateSoccerPlayerId)).with("{$set: {salary: #}}", salary);
 
-        OpsLog.opChange(OpsLog.TYPE_PLAYER, "SALARY", ImmutableMap.of(
+        OpsLog.onChange("SALARY", OpsLog.ActingOn.PLAYER, ImmutableMap.of(
                 "templateSoccerPlayerId", templateSoccerPlayerId,
                 "salary", salary));
         return ok("OK");
@@ -91,7 +91,7 @@ public class TemplateSoccerPlayerController extends Controller {
     public static Result changeState(String templateSoccerPlayerId, String activated) {
         Model.templateSoccerPlayers().update(new ObjectId(templateSoccerPlayerId)).with("{$set: {activated: #}}", activated.equals("true"));
 
-        OpsLog.opChange(OpsLog.TYPE_PLAYER, "ACTIVATED", ImmutableMap.of(
+        OpsLog.onChange("ACTIVATED", OpsLog.ActingOn.PLAYER, ImmutableMap.of(
                 "templateSoccerPlayerId", templateSoccerPlayerId,
                 "activated", activated));
         return ok("OK");

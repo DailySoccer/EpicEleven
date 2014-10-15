@@ -1,6 +1,5 @@
 package model.opta;
 
-import com.google.common.collect.ImmutableMap;
 import model.GlobalDate;
 import model.Model;
 import model.OpsLog;
@@ -87,7 +86,7 @@ public class OptaProcessor {
             ret.activated = false;
 
             Model.optaCompetitions().insert(ret);
-            OpsLog.opNew(ret);
+            OpsLog.onNew(ret);
         }
 
         return ret;

@@ -60,7 +60,7 @@ public class PointsTranslation implements JongoId, Initializer {
         pointsTranslation.lastModified = pointsTranslation.createdAt;
         Model.pointsTranslation().insert(pointsTranslation);
 
-        OpsLog.opNew(pointsTranslation);
+        OpsLog.onNew(pointsTranslation);
         return true;
     }
 
@@ -70,7 +70,7 @@ public class PointsTranslation implements JongoId, Initializer {
     public static boolean editPointForEvent(ObjectId pointsTranslationId, int points) {
         Model.pointsTranslation().update(pointsTranslationId).with("{$set: {points: #, lastModified: #}}", points, GlobalDate.getCurrentDate());
 
-        OpsLog.opChange(OpsLog.TYPE_POINTS_TRANSLATION, ImmutableMap.of(
+        OpsLog.onChange(OpsLog.ActingOn.POINTS_TRANSLATION, ImmutableMap.of(
                 "pointsTranslationId", pointsTranslationId,
                 "points", points));
         return true;

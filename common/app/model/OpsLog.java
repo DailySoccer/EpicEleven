@@ -1,6 +1,5 @@
 package model;
 
-import com.google.common.collect.ImmutableMap;
 import model.opta.OptaCompetition;
 import model.opta.OptaMatchEvent;
 import model.opta.OptaPlayer;
@@ -9,91 +8,116 @@ import model.opta.OptaTeam;
 import java.util.Date;
 
 public class OpsLog {
-    public static String TYPE_TEAM = "TEAM";
-    public static String TYPE_PLAYER = "PLAYER";
-    public static String TYPE_MATCHEVENT = "MATCHEVENT";
-    public static String TYPE_POINTS_TRANSLATION = "POINTS_TRANSLATION";
-    public static String TYPE_COMPETITION = "COMPETITION";
-    public static String TYPE_TEMPLATE_CONTEST = "TEMPLATE_CONTEST";
-    public static String OP_NEW = "NEW";
-    public static String OP_CHANGE = "CHANGE";
-    public static String OP_DELETE = "DELETE";
-    public static String OP_INVALIDATE = "INVALIDATE";
+    public static enum Op {
+        NEW,
+        CHANGE,
+        DELETE,
+        INVALIDATE
+    }
 
-    public String type;         // En qué documento se realiza la Op
-    public String subType;      // Opcional: Puede utilizarse para proporcionar información extra (contexto, ...)
-    public String op;           // Operación (creación, modificación, eliminación, inválido...)
+    public static enum ActingOn {
+        UNKNOWN,
+        TEAM,
+        PLAYER,
+        MATCHEVENT,
+        POINTS_TRANSLATION,
+        COMPETITION,
+        TEMPLATE_CONTEST
+    }
+
+    public Op op;               // Operación (creación, modificación, eliminación, inválido...)
+    public String opSubType;    // Opcional: Puede utilizarse para proporcionar información extra (contexto, ...)
+    public ActingOn actingOn;   // En qué documento se realiza la Op
     public Object object;       // Estructura con la información que se usó para la Op
 
     public Date createdAt;
 
-    private OpsLog(String type, String subType, String op, Object object) {
-        this.type = type;
-        this.subType = subType;
+    private OpsLog(Op op, String opSubType, ActingOn actingOn, Object object) {
         this.op = op;
-        this.createdAt = GlobalDate.getCurrentDate();
+        this.opSubType = opSubType;
+        this.actingOn = actingOn;
         this.object = object;
+        this.createdAt = GlobalDate.getCurrentDate();
     }
 
-    public static void opNew(Object aObject) {
-        opNew(null, aObject);
+    // ---------------------------
+    // OBJECT
+    // ---------------------------
+    public static void onNew(Object aObject) {
+        add(Op.NEW, null, getActingOn(aObject), aObject);
     }
 
-    public static void opChange(Object aObject) {
-        opChange(null, aObject);
+    public static void onChange(Object aObject) {
+        add(Op.CHANGE, null, getActingOn(aObject), aObject);
     }
 
-    public static void opInvalidate(Object aObject) {
-        opInvalidate(null, aObject);
+    public static void onDelete(Object aObject) {
+        add(Op.DELETE, null, getActingOn(aObject), aObject);
     }
 
-    public static void opDelete(Object aObject) {
-        opDelete(null, aObject);
+    public static void onInvalidate(Object aObject) {
+        add(Op.INVALIDATE, null, getActingOn(aObject), aObject);
     }
 
-    public static void opNew(String subType, Object aObject) {
-        add(getType(aObject), subType, OpsLog.OP_NEW, aObject);
+    // ---------------------------
+    // OP_SUBTYPE + OBJECT
+    // ---------------------------
+    public static void onNew(String opSubType, Object aObject) {
+        add(Op.NEW, opSubType, getActingOn(aObject), aObject);
     }
 
-    public static void opChange(String subType, Object aObject) {
-        add(getType(aObject), subType, OpsLog.OP_CHANGE, aObject);
+    public static void onChange(String opSubType, Object aObject) {
+        add(Op.CHANGE, opSubType, getActingOn(aObject), aObject);
     }
 
-    public static void opInvalidate(String subType, Object aObject) {
-        add(getType(aObject), subType, OpsLog.OP_INVALIDATE, aObject);
+    public static void onDelete(String opSubType, Object aObject) {
+        add(Op.DELETE, opSubType, getActingOn(aObject), aObject);
     }
 
-    public static void opDelete(String subType, Object aObject) {
-        add(getType(aObject), subType, OpsLog.OP_DELETE, aObject);
+    public static void onInvalidate(String opSubType, Object aObject) {
+        add(Op.INVALIDATE, opSubType, getActingOn(aObject), aObject);
     }
 
-    public static void opChange(String type, String subType, Object aObject) {
-        add(type, subType, OpsLog.OP_CHANGE, aObject);
+    // ---------------------------
+    // OP_SUBTYPE + OBJECT
+    // ---------------------------
+    public static void onChange(ActingOn actingOn, Object aObject) {
+        add(Op.CHANGE, null, actingOn, aObject);
     }
 
-    public static void add(String theType, String theSubtype, String theOp, Object aObject) {
-        Model.opsLog().insert(new OpsLog(theType, theSubtype, theOp, aObject));
+    // ---------------------------
+    // OP_SUBTYPE + ACTING_ON + OBJECT
+    // ---------------------------
+    public static void onChange(String opSubType, ActingOn actingOn, Object aObject) {
+        add(Op.CHANGE, opSubType, actingOn, aObject);
     }
 
-    private static String getType(Object aObject) {
-        String aType = null;
+    // ---------------------------
+    // GENERIC
+    // ---------------------------
+    private static void add(Op theOp, String theOpSubtype, ActingOn actingOn, Object aObject) {
+        Model.opsLog().insert(new OpsLog(theOp, theOpSubtype, actingOn, aObject));
+    }
+
+    private static ActingOn getActingOn(Object aObject) {
+        ActingOn aType = ActingOn.UNKNOWN;
         if (aObject.getClass().equals(OptaTeam.class)) {
-            aType = TYPE_TEAM;
+            aType = ActingOn.TEAM;
         }
         else if (aObject.getClass().equals(OptaPlayer.class)) {
-            aType = TYPE_PLAYER;
+            aType = ActingOn.PLAYER;
         }
         else if (aObject.getClass().equals(OptaMatchEvent.class)) {
-            aType = TYPE_MATCHEVENT;
+            aType = ActingOn.MATCHEVENT;
         }
         else if (aObject.getClass().equals(PointsTranslation.class)) {
-            aType = TYPE_POINTS_TRANSLATION;
+            aType = ActingOn.POINTS_TRANSLATION;
         }
         else if (aObject.getClass().equals(OptaCompetition.class)) {
-            aType = TYPE_COMPETITION;
+            aType = ActingOn.COMPETITION;
         }
         else if (aObject.getClass().equals(TemplateContest.class)) {
-            aType = TYPE_TEMPLATE_CONTEST;
+            aType = ActingOn.TEMPLATE_CONTEST;
         }
         return aType;
     }

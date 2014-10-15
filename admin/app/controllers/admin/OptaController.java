@@ -23,7 +23,7 @@ public class OptaController extends Controller {
     public static Result changeCompetitionState(String seasonCompetitionId, String state) {
         Model.optaCompetitions().update("{seasonCompetitionId: #}", seasonCompetitionId).with("{$set: {activated: #}}", state.toLowerCase().equals("true"));
 
-        OpsLog.opChange(OpsLog.TYPE_COMPETITION, ImmutableMap.of(
+        OpsLog.onChange(OpsLog.ActingOn.COMPETITION, ImmutableMap.of(
                 "seasonCompetitionId", seasonCompetitionId,
                 "activated", state));
         return ok("OK");
