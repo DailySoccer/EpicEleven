@@ -46,20 +46,17 @@ public class OptaProcessor {
             if (isDocumentValidForProcessing(feedType)) {
                 Element requestBodyElement = new SAXBuilder().build(new StringReader(requestBody)).getRootElement();
 
-                switch (feedType) {
-                    case "F9":
-                    case "F8":
-                        processF9(requestBodyElement);
-                        break;
-                    case "F40":
-                        processF40(requestBodyElement, ensureCompetition(requestBodyElement));
-                        break;
-                    case "F24":
-                        processF24(requestBodyElement);
-                        break;
-                    case "F1":
-                        processF1(requestBodyElement);
-                        break;
+                if (feedType.equals("F9") || feedType.equals("F8")) {
+                    processF9(requestBodyElement);
+                }
+                else if (feedType.equals("F40")) {
+                    processF40(requestBodyElement, ensureCompetition(requestBodyElement));
+                }
+                else if (feedType.equals("F24")) {
+                    processF24(requestBodyElement);
+                }
+                else if (feedType.equals("F1")) {
+                    processF1(requestBodyElement);
                 }
             }
         }

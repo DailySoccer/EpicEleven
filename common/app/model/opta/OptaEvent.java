@@ -138,23 +138,18 @@ public class OptaEvent {
                 // Diferencias en goles:
                 try {
                     OptaPlayer scorer = Model.optaPlayers().findOne("{optaPlayerId: #}", this.optaPlayerId).as(OptaPlayer.class);
-                    switch (scorer.position) {
-                        case "Goalkeeper":
-                            // Gol del portero
-                            this.typeId = OptaEventType.GOAL_SCORED_BY_GOALKEEPER.code;
-                            break;
-                        case "Defender":
-                            // Gol del defensa
-                            this.typeId = OptaEventType.GOAL_SCORED_BY_DEFENDER.code;
-                            break;
-                        case "Midfielder":
-                            // Gol del medio
-                            this.typeId = OptaEventType.GOAL_SCORED_BY_MIDFIELDER.code;
-                            break;
-                        case "Forward":
-                            // Gol del delantero
-                            this.typeId = OptaEventType.GOAL_SCORED_BY_FORWARD.code;
-                            break;
+                    if (scorer.position.equals("Goalkeeper")) {
+                        // Gol del portero
+                        this.typeId = OptaEventType.GOAL_SCORED_BY_GOALKEEPER.code;
+                    } else if (scorer.position.equals("Defender")) {
+                        // Gol del defensa
+                        this.typeId = OptaEventType.GOAL_SCORED_BY_DEFENDER.code;
+                    } else if (scorer.position.equals("Midfielder")) {
+                        // Gol del medio
+                        this.typeId = OptaEventType.GOAL_SCORED_BY_MIDFIELDER.code;
+                    } else if (scorer.position.equals("Forward")) {
+                        // Gol del delantero
+                        this.typeId = OptaEventType.GOAL_SCORED_BY_FORWARD.code;
                     }
                 } catch (NullPointerException e) {
                     Logger.info("Player not found: " + this.optaPlayerId);

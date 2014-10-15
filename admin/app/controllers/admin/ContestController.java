@@ -51,13 +51,12 @@ public class ContestController extends Controller {
                                 routes.TemplateContestController.show(fieldValue).url(),
                                 fieldValue);
                     case 4:
-                        switch (fieldValue) {
-                            case "Finished":
-                                return "<button class=\"btn btn-danger\">Finished</button>";
-                            case "Live":
-                                return "<button class=\"btn btn-success\">Live</button>";
-                            default:
-                                return "<button class=\"btn btn-warning\">Waiting</button>";
+                        if(fieldValue.equals("Finished")) {
+                            return "<button class=\"btn btn-danger\">Finished</button>";
+                        } else if(fieldValue.equals("Live")) {
+                            return "<button class=\"btn btn-success\">Live</button>";
+                        } else {
+                            return "<button class=\"btn btn-warning\">Waiting</button>";
                         }
                 }
                 return fieldValue;
