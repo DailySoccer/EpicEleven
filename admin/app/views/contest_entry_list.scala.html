@@ -23,7 +23,6 @@
                 "data": [
                     @for((p, index) <- contest_entries.zipWithIndex) {
                         [
-                            "p.contestEntryId",
                             "@p.userId",
                             @for((id, index2) <- p.soccerIds.zipWithIndex) {
                                 "@id" @if(index2 < p.soccerIds.size-1) { , }
