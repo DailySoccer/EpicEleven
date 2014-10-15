@@ -1,9 +1,11 @@
 package controllers.admin;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import model.GlobalDate;
 import model.MockData;
 import model.Model;
+import model.OpsLog;
 import model.opta.*;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -20,6 +22,10 @@ public class OptaController extends Controller {
 
     public static Result changeCompetitionState(String seasonCompetitionId, String state) {
         Model.optaCompetitions().update("{seasonCompetitionId: #}", seasonCompetitionId).with("{$set: {activated: #}}", state.toLowerCase().equals("true"));
+
+        OpsLog.onChange(OpsLog.ActingOn.COMPETITION, ImmutableMap.of(
+                "seasonCompetitionId", seasonCompetitionId,
+                "activated", state));
         return ok("OK");
     }
 

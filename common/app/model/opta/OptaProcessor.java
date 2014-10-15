@@ -2,6 +2,7 @@ package model.opta;
 
 import model.GlobalDate;
 import model.Model;
+import model.OpsLog;
 import model.PointsTranslation;
 import org.bson.types.ObjectId;
 import org.jdom2.Element;
@@ -85,6 +86,7 @@ public class OptaProcessor {
             ret.activated = false;
 
             Model.optaCompetitions().insert(ret);
+            OpsLog.onNew(ret);
         }
 
         return ret;
