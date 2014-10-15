@@ -4,9 +4,13 @@ import actions.AllowCors;
 import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import com.mongodb.MongoException;
 import com.stormpath.sdk.account.Account;
-import model.*;
+import model.GlobalDate;
+import model.Model;
+import model.Session;
+import model.User;
 import model.stormpath.StormPathClient;
 import play.Logger;
 import play.Play;
@@ -72,10 +76,10 @@ public class LoginController extends Controller {
             Account account = StormPathClient.instance().askForPasswordReset(params.email);
 
             if (account != null) {
-                returnHelper.setOK("Password reset sent");
+                returnHelper.setOK(ImmutableMap.of("success", "Password reset sent"));
             }
             else {
-                returnHelper.setKO("Something went wrong");
+                returnHelper.setKO(ImmutableMap.of("error", "Something went wrong"));
             }
         }
         return returnHelper.toResult();
@@ -94,9 +98,9 @@ public class LoginController extends Controller {
             Account account = StormPathClient.instance().verifyPasswordResetToken(params.token);
 
             if (account != null) {
-                returnHelper.setOK("Password reset token valid");
+                returnHelper.setOK(ImmutableMap.of("success", "Password reset token valid"));
             } else {
-                returnHelper.setKO("Password reset token invalid");
+                returnHelper.setKO(ImmutableMap.of("error", "Password reset token invalid"));
             }
         }
         return returnHelper.toResult();
@@ -116,9 +120,9 @@ public class LoginController extends Controller {
             Account account = StormPathClient.instance().resetPasswordWithToken(params.token, params.password);
 
             if (account != null) {
-                returnHelper.setOK("Password resetted successfully");
+                returnHelper.setOK(ImmutableMap.of("success", "Password resetted successfully"));
             } else {
-                returnHelper.setKO("Something went wrong");
+                returnHelper.setKO(ImmutableMap.of("error", "Something went wrong"));
             }
         }
         return returnHelper.toResult();

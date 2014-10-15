@@ -23,7 +23,7 @@ public class StormPathClient {
         ApplicationList applications = _tenant.getApplications();
 
         for (Application app : applications) {
-            if (app.getName().equals("Example Application")) {
+            if (app.getName().equals("DFS")) {
                 _myApp = app;
             }
         }
