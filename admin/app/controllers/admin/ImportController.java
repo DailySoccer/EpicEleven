@@ -4,7 +4,6 @@ import model.opta.*;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
-import model.opta.OptaImportUtils;
 
 import java.io.File;
 import java.io.IOException;

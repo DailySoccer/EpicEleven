@@ -31,7 +31,7 @@ public class ListUtils {
      * @return La lista de elementos (extraidos del iterator)
      */
     public static <T> List<T> asList(Iterator<T> iter) {
-        List<T> list = new ArrayList<T>();
+        List<T> list = new ArrayList<>();
         if (iter != null) {
             while (iter.hasNext())
                 list.add(iter.next());
@@ -57,9 +57,9 @@ public class ListUtils {
         JsonNode jsonNode = Json.parse(jsonData);
         assert (jsonNode.isArray());
 
-        Iterator<JsonNode> iter = jsonNode.iterator();
-        while (iter.hasNext())
-            idsList.add(new ObjectId(iter.next().asText()));
+        for (JsonNode aJsonNode : jsonNode) {
+            idsList.add(new ObjectId(aJsonNode.asText()));
+        }
 
         return idsList;
     }
@@ -75,9 +75,9 @@ public class ListUtils {
         JsonNode jsonNode = Json.parse(jsonData);
         assert (jsonNode.isArray());
 
-        Iterator<JsonNode> iter = jsonNode.iterator();
-        while (iter.hasNext())
-            list.add(iter.next().asText());
+        for (JsonNode aJsonNode : jsonNode) {
+            list.add(aJsonNode.asText());
+        }
 
         return list;
     }

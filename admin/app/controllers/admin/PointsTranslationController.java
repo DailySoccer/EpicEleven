@@ -18,9 +18,9 @@ import static play.data.Form.form;
 public class PointsTranslationController extends Controller {
     public static Result index() {
         List<Integer> differentTypes = Model.pointsTranslation().distinct("eventTypeId").as(Integer.class);
-        List<PointsTranslation> pointsTranslationList = new ArrayList<PointsTranslation>();
+        List<PointsTranslation> pointsTranslationList = new ArrayList<>();
         for (Integer differentType: differentTypes){
-            pointsTranslationList.add((PointsTranslation)Model.pointsTranslation().
+            pointsTranslationList.add(Model.pointsTranslation().
                     find("{eventTypeId: #}", differentType).sort("{timestamp: -1}").limit(1).
                     as(PointsTranslation.class).iterator().next());
         }

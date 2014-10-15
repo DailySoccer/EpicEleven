@@ -38,7 +38,7 @@ public class ReturnHelperWithAttach extends ReturnHelper {
             prepare();
 
             // Json Data :> "name" : value
-            stringBuffer.append("\"" + name + "\":");
+            stringBuffer.append("\"").append(name).append("\":");
             stringBuffer.append(value);
         }
 

@@ -60,10 +60,7 @@ public class PaginationData {
         }
 
         // Obtener los campos "en bruto" que queremos visualizar en la tabla
-        Iterator<T> it = find.as(clazz).iterator();
-        while (it.hasNext()) {
-            T data = it.next();
-
+        for (T data : find.as(clazz)) {
             Map<String, Object> values = new HashMap<>();
             values.put("object", data);
 
@@ -91,8 +88,8 @@ public class PaginationData {
         if (filter.isEmpty()) {
             if (sortedByBDD) {
                 // Todos los registros son válidos
-                for (int i = 0; i < dataRow.size(); i++) {
-                    dataList.add(dataRow.get(i));
+                for (Map<String, Object> aDataRow : dataRow) {
+                    dataList.add(aDataRow);
                 }
             } else {
                 // Los registros válidos son los correspondientes a la página solicitada
@@ -106,11 +103,9 @@ public class PaginationData {
             iTotalDisplayRecords = 0;
 
             // Los registros serán válidos si incluyen el valor del filtro
-            for (int i = 0; i < dataRow.size(); i++) {
-                Map<String, Object> values = dataRow.get(i);
-
+            for (Map<String, Object> values : dataRow) {
                 boolean valid = false;
-                for (int fieldIndex=0; fieldIndex<fieldNames.size() && !valid; fieldIndex++) {
+                for (int fieldIndex = 0; fieldIndex < fieldNames.size() && !valid; fieldIndex++) {
                     String fieldValue = String.valueOf(values.get(String.valueOf(fieldIndex)));
                     valid = (fieldValue != null) && fieldValue.contains(filter);
                 }

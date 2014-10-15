@@ -258,7 +258,7 @@ public class TemplateMatchEvent implements JongoId, Initializer {
         }
         // if (points > 0) Logger.info("--> {}: {} = {}", soccerPlayer.optaPlayerId, soccerPlayer.name, points);
 
-        if (!fantasyPoints.events.isEmpty() || liveFantasyPoints.containsKey(templateSoccerPlayer.templateSoccerPlayerId)) {
+        if (!fantasyPoints.events.isEmpty() || liveFantasyPoints.containsKey(templateSoccerPlayer.templateSoccerPlayerId.toString())) {
             setLiveFantasyPointsOfSoccerPlayer(optaMatchEventId, templateSoccerPlayer.templateSoccerPlayerId.toString(), fantasyPoints);
         }
     }
