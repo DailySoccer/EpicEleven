@@ -198,12 +198,15 @@ public class LoginController extends Controller {
 
             boolean isTest = loginParams.email.endsWith("@test.com");
 
-            Account loggedAccount = (Play.isProd() || !isTest)?
+            // Si no es Test, entramos a través de Stormpath
+            Account loggedAccount = (!isTest)?
                                         StormPathClient.instance().login(loginParams.email, loginParams.password):
                                         null;
 
-            boolean correctLogin = loggedAccount != null;
+            // En todas partes tenemos usuarios Stormpath y usuarios Test.
+            boolean correctLogin = (loggedAccount != null) || isTest;
 
+            // Buscamos el usuario en Mongo
             // TODO: Necesitamos sanitizar el email
             User theUser = Model.users().findOne("{email:'#'}", loginParams.email).as(User.class);
 
@@ -216,11 +219,12 @@ public class LoginController extends Controller {
                 correctLogin = true;
             }
 
-
+            //Si no entra correctamente
             if (!correctLogin) {
                 loginParamsForm.reject("email", "email or password incorrect");
                 returnHelper.setKO(loginParamsForm.errorsAsJson());
             }
+            // Si entramos correctamente
             else {
                 if (Play.isDev()) {
                     Logger.info("Estamos en desarrollo: El email {} sera el sessionToken y pondremos una cookie", theUser.email);
