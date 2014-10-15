@@ -1,6 +1,7 @@
 @(match_event: model.TemplateMatchEvent, templateSoccerTeamMap: HashMap[org.bson.types.ObjectId, model.TemplateSoccerTeam])
 
 @import controllers.admin.routes._
+@import model._
 
 @scripts = {
     <script type="text/javascript">
@@ -30,7 +31,7 @@
 
 <a href="@TemplateMatchEventController.showOptaEvents(match_event.templateMatchEventId.toString())"><button class="btn btn-success">Opta Events</button></a>
 
-<h2 class="sub-header">Start Date: @match_event.startDate</h2>
+<h2 class="sub-header">Start Date: @GlobalDate.formatDate(match_event.startDate)</h2>
 <div class="table-responsive">
     <table id="table_id" class="table table-striped">
         <caption class="bg-info">
