@@ -3,7 +3,7 @@ package utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import model.JsonViews;
 import play.Logger;
-import play.mvc.Content;
+import play.twirl.api.Content;
 import play.mvc.Result;
 import play.mvc.Results;
 
@@ -38,7 +38,7 @@ public class ReturnHelperWithAttach extends ReturnHelper {
             prepare();
 
             // Json Data :> "name" : value
-            stringBuffer.append("\"" + name + "\":");
+            stringBuffer.append("\"").append(name).append("\":");
             stringBuffer.append(value);
         }
 

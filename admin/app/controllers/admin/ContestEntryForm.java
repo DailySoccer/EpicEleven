@@ -31,7 +31,7 @@ public class ContestEntryForm {
     public String forward1, forward2;
 
     public Map<String, String> getTeamMap() {
-        HashMap<String, String> teamMap = new HashMap<String, String>(){{
+        return new HashMap<String, String>(){{
             put("goalkeeper", goalkeeper);
             put("defense1", defense1);
             put("defense2", defense2);
@@ -44,7 +44,6 @@ public class ContestEntryForm {
             put("forward1", forward1);
             put("forward2", forward2);
         }};
-        return teamMap;
     }
 
     public List<String> getTeam() {
@@ -106,7 +105,7 @@ public class ContestEntryForm {
         }
 
         // Validar que no esten repetidos
-        HashMap<String, String>  teamSet = new HashMap<String, String>();
+        HashMap<String, String>  teamSet = new HashMap<>();
         for (Map.Entry<String, String> entry : teamMap.entrySet()) {
             String key      = entry.getKey();
             String value    = entry.getValue();

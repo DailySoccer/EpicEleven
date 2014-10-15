@@ -143,7 +143,7 @@ public class LoginController extends Controller {
 
     @UserAuthenticated
     public static Result getUserProfile() {
-        return new ReturnHelper((User)ctx().args.get("User")).toResult();
+        return new ReturnHelper(ctx().args.get("User")).toResult();
     }
 
     public static class ChangeParams {
@@ -161,7 +161,7 @@ public class LoginController extends Controller {
         User theUser = (User)ctx().args.get("User");
 
         Form<ChangeParams> changeParamsForm = form(ChangeParams.class).bindFromRequest();
-        ChangeParams params = null;
+        ChangeParams params;
 
         if (!changeParamsForm.hasErrors()) {
             params = changeParamsForm.get();

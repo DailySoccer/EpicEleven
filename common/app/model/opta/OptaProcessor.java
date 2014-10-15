@@ -49,16 +49,13 @@ public class OptaProcessor {
                 if (feedType.equals("F9") || feedType.equals("F8")) {
                     processF9(requestBodyElement);
                 }
-                else
-                if (feedType.equals("F40")) {
+                else if (feedType.equals("F40")) {
                     processF40(requestBodyElement, ensureCompetition(requestBodyElement));
                 }
-                else
-                if (feedType.equals("F24")) {
+                else if (feedType.equals("F24")) {
                     processF24(requestBodyElement);
                 }
-                else
-                if (feedType.equals("F1")) {
+                else if (feedType.equals("F1")) {
                     processF1(requestBodyElement);
                 }
             }

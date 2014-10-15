@@ -114,16 +114,16 @@ public class PointsTranslation implements JongoId, Initializer {
                 {OptaEventType.GOAL_CONCEDED.code, -10},               // Gol al defensa
         };
 
-        for (int i = 0; i < pointsTable.length; i++) {
+        for (int[] aPointsTable : pointsTable) {
             PointsTranslation myPointsTranslation = new PointsTranslation();
 
-            myPointsTranslation.eventTypeId = pointsTable[i][0];
+            myPointsTranslation.eventTypeId = aPointsTable[0];
 
             PointsTranslation pointsTranslation = Model.pointsTranslation().findOne("{eventTypeId: #}", myPointsTranslation.eventTypeId).as(PointsTranslation.class);
 
             if (pointsTranslation == null) {
                 myPointsTranslation.createdAt = new Date(0L);
-                myPointsTranslation.points = pointsTable[i][1];
+                myPointsTranslation.points = aPointsTable[1];
                 myPointsTranslation.lastModified = GlobalDate.getCurrentDate();
                 Model.pointsTranslation().insert(myPointsTranslation);
             }

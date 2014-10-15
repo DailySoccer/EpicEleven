@@ -65,7 +65,7 @@ public class TemplateContest implements JongoId, Initializer {
         this.activationAt = activationAt;
 
         Date startDate = null;
-        this.templateMatchEventIds = new ArrayList<ObjectId>();
+        this.templateMatchEventIds = new ArrayList<>();
         for (String templateMatchEventId : templateMatchEvents) {
             TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOneFromOptaId(templateMatchEventId);
             this.templateMatchEventIds.add(templateMatchEvent.templateMatchEventId);
@@ -278,7 +278,7 @@ public class TemplateContest implements JongoId, Initializer {
 
             // Averiguar los puntos totales a repartir para saber cuánto vale el punto: n * (n+1) / 2  (suma el valor de "n" numeros)
             int totalPoints = third * (third + 1) / 2;
-            int prizeByPoint = (int) (prizePool / totalPoints);
+            int prizeByPoint = prizePool / totalPoints;
 
             // A cada posición le damos el premio (sus puntos se corresponden con su posición "invertida": p.ej. para repartir a 6 usuarios: el 1º tiene 6 puntos, el 2º tiene 5 puntos, etc)
             int totalPrize = prizePool;
@@ -295,7 +295,7 @@ public class TemplateContest implements JongoId, Initializer {
         else if (prizeType.equals(PrizeType.FIFTY_FIFTY)) {
             int mid = maxEntries / 2;
             for (int i = 0; i < mid; i++) {
-                prizes.add((int) (prizePool / mid));
+                prizes.add(prizePool / mid);
             }
         }
 

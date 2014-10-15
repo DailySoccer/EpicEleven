@@ -63,7 +63,7 @@ public enum OptaEventType {
     }
 
     public static Map<String, String> options() {
-        LinkedHashMap<String, String> vals = new LinkedHashMap<String, String>();
+        LinkedHashMap<String, String> vals = new LinkedHashMap<>();
         for (OptaEventType eType : OptaEventType.values()) {
             if (!eType.equals(OptaEventType._INVALID_)){
                 vals.put(eType.name(), eType.name().concat(": ".concat(eType.description)));

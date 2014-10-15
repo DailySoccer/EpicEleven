@@ -82,6 +82,7 @@ public class ContestEntryController extends Controller {
                 errores = validateContestEntry(aContest, idsList);
             }
             if (errores.isEmpty()) {
+                assert aContest != null;
                 contestId = aContest.contestId.toString();
                 if (!ContestEntry.create(theUser.userId, aContest.contestId, idsList)) {
                     errores.add(ERROR_RETRY_OP);
@@ -226,8 +227,6 @@ public class ContestEntryController extends Controller {
             if (!contest.isActive()) {
                 errores.add(ERROR_CONTEST_NOT_ACTIVE);
             }
-
-            List<TemplateMatchEvent> matchEvents = contest.getTemplateMatchEvents();
 
             // Buscar los soccerPlayers dentro de los partidos del contest
             List<InstanceSoccerPlayer> soccerPlayers = getSoccerPlayersFromContest(objectIds, contest);
