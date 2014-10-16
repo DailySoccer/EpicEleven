@@ -58,6 +58,7 @@ if [ $# -eq 0 ]
                 if [[ "$branch_name" == "develop" ]]
                 then
                     git checkout master
+                    git pull
                     git merge develop --commit -m "Merge branch 'develop'"
                 else
                     echo "No se puede hacer deploy a producción desde esta rama"
@@ -81,6 +82,7 @@ client_branch_name=${branch_name##refs/heads/}
 if [[ $destination == "production" ]]
 then
     git checkout master
+    git pull
     git merge develop --commit -m "Merge branch 'develop'"
 fi
 ./build_rsync.sh $mode
