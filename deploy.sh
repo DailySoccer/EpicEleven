@@ -59,7 +59,8 @@ if [ $# -eq 0 ]
                 then
                     git checkout master
                     git pull
-                    git merge develop --commit -m "Merge branch 'develop'"
+                    git merge develop --commit -m "Merge branch 'develop'" --no-ff
+                    git push
                 else
                     echo "No se puede hacer deploy a producción desde esta rama"
                 fi
@@ -83,7 +84,8 @@ if [[ $destination == "production" ]]
 then
     git checkout master
     git pull
-    git merge develop --commit -m "Merge branch 'develop'"
+    git merge develop --commit -m "Merge branch 'develop'" --no-ff
+    git push
 fi
 ./build_rsync.sh $mode
 cd ../backend
