@@ -79,7 +79,7 @@ rm public
 cd ../webclient
 client_branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
 client_branch_name="(unnamed branch)"     # detached HEAD
-client_branch_name=${branch_name##refs/heads/}
+client_branch_name=${client_branch_name##refs/heads/}
 if [[ $destination == "production" ]]
 then
     git checkout master
@@ -103,12 +103,12 @@ then
     curl "http://dailysoccer-staging.herokuapp.com" > /dev/null 2>&1
 fi
 
-# Vuelta adonde estabamos
+# Vuelta adonde estabamos en el repositorio backend
 git checkout $branch_name
 
 git branch -D deploy
 
-# Volvemos a dejar el cliente en la rama que estaba
+# Volvemos a dejar tambien al webclient en la rama que estaba
 cd ../webclient
 git checkout $client_branch_name
 cd ../backend
