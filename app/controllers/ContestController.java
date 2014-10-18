@@ -68,18 +68,12 @@ public class ContestController extends Controller {
                 .toResult();
     }
 
-    /**
-     * Obtener toda la información necesaria para mostrar un Contest
-     */
     @UserAuthenticated
     public static Result getFullContest(String contestId) {
         // User theUser = (User)ctx().args.get("User");
         return getContest(contestId).toResult(JsonViews.FullContest.class);
     }
 
-    /**
-     * Obtener la información sobre un Contest
-     */
     public static Result getPublicContest(String contestId) {
         return getContest(contestId).toResult(JsonViews.Extended.class);
     }
