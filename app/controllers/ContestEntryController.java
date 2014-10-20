@@ -31,6 +31,7 @@ public class ContestEntryController extends Controller {
     private static final String ERROR_FORMATION_INVALID = "ERROR_FORMATION_INVALID";
     private static final String ERROR_CONTEST_ENTRY_INVALID = "ERROR_CONTEST_ENTRY_INVALID";
     private static final String ERROR_OP_UNAUTHORIZED = "ERROR_OP_UNAUTHORIZED";
+    private static final String ERROR_USER_ALREADY_INCLUDED = "ERROR_USER_ALREADY_INCLUDED";
     private static final String ERROR_RETRY_OP = "ERROR_RETRY_OP";
 
     public static class AddContestEntryParams {
@@ -66,8 +67,11 @@ public class ContestEntryController extends Controller {
 
             List<String> errores = new ArrayList<>();
             if (aContest != null) {
+                if (aContest.containsContestEntryWithUser(theUser.userId)) {
+                    errores.add(ERROR_USER_ALREADY_INCLUDED);
+                }
                 // Verificar que el contest no esté lleno
-                if (aContest.contestEntries.size() >= aContest.maxEntries) {
+                else if (aContest.contestEntries.size() >= aContest.maxEntries) {
                     // Buscar otro contest de características similares
                     aContest = aContest.getSameContestWithFreeSlot(theUser.userId);
                     if (aContest == null) {

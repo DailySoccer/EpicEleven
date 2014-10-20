@@ -118,9 +118,9 @@ public class ContestEntry implements JongoId {
                 ContestEntry aContestEntry = new ContestEntry(userId, soccersIds);
                 contest.contestEntries.add(aContestEntry);
 
-                // Comprobamos que el contest siga ACTIVE y que existan Huecos Libres
-                String query = String.format("{_id: #, state: \"ACTIVE\", contestEntries.%s: {$exists: false}}", contest.maxEntries-1);
-                WriteResult result = Model.contests().update(query, contestId)
+                // Comprobamos que el contest siga ACTIVE, que el usuario no esté ya inscrito y que existan Huecos Libres
+                String query = String.format("{_id: #, state: \"ACTIVE\", contestEntries.userId: {$ne: #}, contestEntries.%s: {$exists: false}}", contest.maxEntries-1);
+                WriteResult result = Model.contests().update(query, contestId, userId)
                         .with("{$addToSet: {contestEntries: #}}", aContestEntry);
 
                 // Comprobamos el número de documentos afectados (error == 0)
