@@ -33,7 +33,6 @@ public class LoginController extends Controller {
 
         public String firstName;
 
-
         public String lastName;
 
         @Required @MinLength(value = 4)
@@ -249,11 +248,14 @@ public class LoginController extends Controller {
         public String nickName;
         @Email public String email;
 
-        public String password;
+        public String password; //TODO: Cambiar la password no deberia ir en otro form aparte?
     }
 
     @UserAuthenticated
     public static Result changeUserProfile() {
+
+        //TODO: ESTO NO ESTÁ SINCRONIZADO CON STORMPATH
+
         User theUser = (User)ctx().args.get("User");
 
         Form<ChangeParams> changeParamsForm = form(ChangeParams.class).bindFromRequest();
@@ -285,9 +287,6 @@ public class LoginController extends Controller {
                 else {
                     theUser.email = params.email;
                 }
-            }
-            if (!params.password.isEmpty()) {
-                theUser.password = params.password;
             }
 
             if (!changeParamsForm.hasErrors()) {

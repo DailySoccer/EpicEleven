@@ -21,9 +21,6 @@ public class User {
     public int wins;
 
     @JsonView(JsonViews.NotForClient.class)
-	public String password;
-
-    @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
     public User() {
@@ -34,7 +31,6 @@ public class User {
 		this.lastName = lastName;
         this.nickName = nickName;
 		this.email = email;
-		this.password = password;
         createdAt = GlobalDate.getCurrentDate();
 	}
 
