@@ -19,6 +19,11 @@ import java.util.List;
 import static play.data.Form.form;
 
 public class TemplateContestController extends Controller {
+
+    // Test purposes
+    public static int templateCount = 0;
+    public static final String[] contestNameSuffixes = {"1", "a", "b", "a", "2", "n", "asfex", "dfggh", "piu", "lorem", "7", "8", "9"};
+
     public static Result index() {
         return ok(views.html.template_contest_list.render());
     }
@@ -172,6 +177,7 @@ public class TemplateContestController extends Controller {
     }
 
     public static Result createAll() {
+        templateCount = 0;
         Iterable<TemplateMatchEvent> matchEventResults = Model.templateMatchEvents().find().sort("{startDate: 1}").as(TemplateMatchEvent.class);
 
         DateTime dateTime = null;
@@ -250,7 +256,9 @@ public class TemplateContestController extends Controller {
 
         TemplateContest templateContest = new TemplateContest();
 
-        templateContest.name = "%StartDate";
+        templateCount = (templateCount + 1) % contestNameSuffixes.length;
+
+        templateContest.name = "%StartDate - " + contestNameSuffixes[templateCount];
         templateContest.minInstances = 3;
         templateContest.maxEntries = maxEntries;
         templateContest.prizeType = prizeType;

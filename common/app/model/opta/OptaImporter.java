@@ -97,7 +97,7 @@ public class OptaImporter {
         }
 
         List<String> invalids = new ArrayList<>();
-        Iterable<OptaMatchEvent> matchesDirty = Model.optaMatchEvents().find("{optaMatchEventId: {$in: #}, matchDate: {$gte: #}}", _optaMatchEventIds, GlobalDate.getCurrentDate()).as(OptaMatchEvent.class);
+        Iterable<OptaMatchEvent> matchesDirty = Model.optaMatchEvents().find("{optaMatchEventId: {$in: #}}", _optaMatchEventIds).as(OptaMatchEvent.class);
         for(OptaMatchEvent optaMatch : matchesDirty) {
             TemplateMatchEvent template = TemplateMatchEvent.findOneFromOptaId(optaMatch.optaMatchEventId);
             if (template == null) {

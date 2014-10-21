@@ -145,6 +145,17 @@ public class Contest implements JongoId {
                 .as(Contest.class));
     }
 
+    public boolean containsContestEntryWithUser(ObjectId userId) {
+        boolean contains = false;
+        for (ContestEntry contestEntry: contestEntries) {
+            if (contestEntry.userId.equals(userId)) {
+                contains = true;
+                break;
+            }
+        }
+        return contains;
+    }
+
     public void updateRanking(BatchWriteOperation bulkOperation, TemplateContest templateContest, List<TemplateMatchEvent> templateMatchEvents) {
         if (contestEntries.isEmpty()) {
             return;

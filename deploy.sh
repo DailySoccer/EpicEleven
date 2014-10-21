@@ -77,6 +77,15 @@ git checkout -B deploy
 # Tenemos que borrar el symlink y hacer una copia dura de toda la build
 rm public
 cd ../webclient
+
+if [[ $(git diff --shortstat ) != "" || $(git diff --shortstat --cached) != "" ]]
+    then
+        client_stash="done"
+        git stash
+    else
+        client_stash=""
+fi
+
 client_branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
 client_branch_name="(unnamed branch)"     # detached HEAD
 client_branch_name=${client_branch_name##refs/heads/}
@@ -87,7 +96,13 @@ then
     git merge develop --commit -m "Merge branch 'develop'" --no-ff
     git push
 fi
+
 ./build_rsync.sh $mode
+
+if [[ "$client_stash" != "" ]]
+    then
+        git stash pop
+fi
 cd ../backend
 
 # Añadimos nuevos archivos (la build) y commitimos

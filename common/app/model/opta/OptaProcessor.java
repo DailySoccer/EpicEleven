@@ -167,12 +167,11 @@ public class OptaProcessor {
             String matchId = matchObject.getAttributeValue("uID");
             Date timestamp = GlobalDate.parseDate(matchObject.getAttributeValue("last_modified"), null);
 
+            OptaMatchEvent optaMatchEvent = new OptaMatchEvent(myF1, matchObject, matchObject.getChild("MatchInfo"));
+            _dirtyMatchEventIds.add(optaMatchEvent.optaMatchEventId);
+
             if (!optaMatchDatas.containsKey(matchId) || timestamp.after(optaMatchDatas.get(matchId))) {
-
-                OptaMatchEvent optaMatchEvent = new OptaMatchEvent(myF1, matchObject, matchObject.getChild("MatchInfo"));
                 Model.optaMatchEvents().update("{optaMatchEventId: #}", optaMatchEvent.optaMatchEventId).upsert().with(optaMatchEvent);
-                _dirtyMatchEventIds.add(optaMatchEvent.optaMatchEventId);
-
                 optaMatchDatas.put(matchId, timestamp);
             }
         }
