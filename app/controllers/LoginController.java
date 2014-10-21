@@ -73,13 +73,13 @@ public class LoginController extends Controller {
         if (!askForPasswordResetParamsForm.hasErrors()) {
             params = askForPasswordResetParamsForm.get();
 
-            Account account = StormPathClient.instance().askForPasswordReset(params.email);
+            String askForPasswordResetErrors = StormPathClient.instance().askForPasswordReset(params.email);
 
-            if (account != null) {
+            if (askForPasswordResetErrors == null) {
                 returnHelper.setOK(ImmutableMap.of("success", "Password reset sent"));
             }
             else {
-                returnHelper.setKO(ImmutableMap.of("error", "Something went wrong"));
+                returnHelper.setKO(ImmutableMap.of("error", askForPasswordResetErrors));
             }
         }
         return returnHelper.toResult();
@@ -95,12 +95,12 @@ public class LoginController extends Controller {
         if (!verifyPasswordResetTokenParamsForm.hasErrors()) {
             params = verifyPasswordResetTokenParamsForm.get();
 
-            Account account = StormPathClient.instance().verifyPasswordResetToken(params.token);
+            String verifyPasswordResetTokenErrors = StormPathClient.instance().verifyPasswordResetToken(params.token);
 
-            if (account != null) {
+            if (verifyPasswordResetTokenErrors == null) {
                 returnHelper.setOK(ImmutableMap.of("success", "Password reset token valid"));
             } else {
-                returnHelper.setKO(ImmutableMap.of("error", "Password reset token invalid"));
+                returnHelper.setKO(ImmutableMap.of("error", verifyPasswordResetTokenErrors));
             }
         }
         return returnHelper.toResult();
@@ -117,12 +117,12 @@ public class LoginController extends Controller {
         if (!passwordResetParamsForm.hasErrors()) {
             params = passwordResetParamsForm.get();
 
-            Account account = StormPathClient.instance().resetPasswordWithToken(params.token, params.password);
+            String resetPasswordWithTokenErrors = StormPathClient.instance().resetPasswordWithToken(params.token, params.password);
 
-            if (account != null) {
+            if (resetPasswordWithTokenErrors == null) {
                 returnHelper.setOK(ImmutableMap.of("success", "Password resetted successfully"));
             } else {
-                returnHelper.setKO(ImmutableMap.of("error", "Something went wrong"));
+                returnHelper.setKO(ImmutableMap.of("error", resetPasswordWithTokenErrors));
             }
         }
         return returnHelper.toResult();
@@ -131,45 +131,31 @@ public class LoginController extends Controller {
 
     public static Result signup() {
         Form<SignupParams> signupForm = form(SignupParams.class).bindFromRequest();
-        SignupParams params = null;
-
-        if (!signupForm.hasErrors()) {
-            params = signupForm.get();
-            User dup = Model.users().findOne("{ $or: [ {email:'#'}, {nickName:'#'} ] }", params.email, params.nickName).as(User.class);
-
-            if (dup != null) {
-                if (dup.email.equals(params.email))
-                    signupForm.reject("email", "This email is already taken");
-
-                if (dup.nickName.equals(params.nickName))
-                    signupForm.reject("nickName", "This nickName is already taken");
-            }
-
-        }
-
-        if (!signupForm.hasErrors()) {
-            if (!createUser(params))
-                signupForm.reject("error", "General error: Try again please");
-        }
 
         JsonNode result = signupForm.errorsAsJson();
 
         if (!signupForm.hasErrors()) {
+            SignupParams params = signupForm.get();
+
             result = new ObjectMapper().createObjectNode().put("result", "ok");
+
+            String createUserErrors = createUser(params);
+
+            if (createUserErrors != null)
+                signupForm.reject("error", createUserErrors);
+
         }
 
         return new ReturnHelper(!signupForm.hasErrors(), result).toResult();
     }
 
 
-    private static boolean createUser(SignupParams theParams) {
+    private static String createUser(SignupParams theParams) {
 
         StormPathClient stormPathClient = new StormPathClient();
-        Account stormpathAccount = stormPathClient.register(theParams.nickName, theParams.email, theParams.password);
+        String registerError = stormPathClient.register(theParams.nickName, theParams.email, theParams.password);
 
-        boolean bRet = stormpathAccount != null;
-
-        if (bRet) {
+        if (registerError == null) {
             // Puede ocurrir que salte una excepcion por duplicidad. No seria un error de programacion puesto que, aunque
             // comprobamos si el email o nickname estan duplicados antes de llamar aqui, es posible que se creen en
             // paralelo. Por esto, la vamos a controlar explicitamente
@@ -178,12 +164,11 @@ public class LoginController extends Controller {
                         theParams.email, theParams.password));
             } catch (MongoException exc) {
                 Logger.error("createUser: ", exc);
-                bRet = false;
+                registerError = exc.toString();
             }
 
         }
-
-        return bRet;
+        return registerError;
     }
 
 
@@ -201,8 +186,8 @@ public class LoginController extends Controller {
 
             // Si no es Test, entramos a través de Stormpath
             Account loggedAccount = (!isTest)?
-                                        StormPathClient.instance().login(loginParams.email, loginParams.password):
-                                        null;
+                                    StormPathClient.instance().login(loginParams.email, loginParams.password):
+                                    null;
 
             // En todas partes tenemos usuarios Stormpath y usuarios Test.
             boolean correctLogin = (loggedAccount != null) || isTest;

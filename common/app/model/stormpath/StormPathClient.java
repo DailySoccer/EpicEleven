@@ -45,7 +45,7 @@ public class StormPathClient {
         }
     }
 
-    public Account register(String givenName, String email, String password) { //, ObjectId userId) {
+    public String register(String givenName, String email, String password) { //, ObjectId userId) {
         Account account = _client.instantiate(Account.class);
 
         account.setGivenName(givenName);
@@ -59,53 +59,61 @@ public class StormPathClient {
 
         //Aquí es donde realmente se crea el usuario (se envía a StormPath)
         try {
-            return _myApp.createAccount(account);
+            _myApp.createAccount(account);
         }
         catch (ResourceException ex) {
             Logger.error(String.valueOf(ex.getStatus()));
             Logger.error(String.valueOf(ex.getCode()));
             Logger.error(ex.getMessage());
             Logger.error(ex.getStatus() + " " + ex.getMessage());
+
+            return ex.getMessage();
         }
         return null;
     }
 
 
-    public Account askForPasswordReset(String email) {
+    public String askForPasswordReset(String email) {
         try {
-            return _myApp.sendPasswordResetEmail(email);
+            _myApp.sendPasswordResetEmail(email);
         }
         catch (ResourceException ex) {
             Logger.error(String.valueOf(ex.getStatus()));
             Logger.error(String.valueOf(ex.getCode()));
             Logger.error(ex.getMessage());
             Logger.error(ex.getStatus() + " " + ex.getMessage());
+
+            return ex.getMessage();
         }
         return null;
     }
 
-    public Account verifyPasswordResetToken(String token) {
+    public String verifyPasswordResetToken(String token) {
         try {
-            return _myApp.verifyPasswordResetToken(token);
+            _myApp.verifyPasswordResetToken(token);
         }
         catch (ResourceException ex) {
             Logger.error(String.valueOf(ex.getStatus()));
             Logger.error(String.valueOf(ex.getCode()));
             Logger.error(ex.getMessage());
             Logger.error(ex.getStatus() + " " + ex.getMessage());
+
+            return ex.getMessage();
         }
         return null;
     }
 
-    public Account resetPasswordWithToken(String password, String token) {
+    public String resetPasswordWithToken(String password, String token) {
         try {
-            return _myApp.resetPassword(token, password);
+            _myApp.resetPassword(token, password);
         }
         catch (ResourceException ex) {
             Logger.error(String.valueOf(ex.getStatus()));
             Logger.error(String.valueOf(ex.getCode()));
             Logger.error(ex.getMessage());
             Logger.error(ex.getStatus() + " " + ex.getMessage());
+
+            return ex.getMessage();
         }
         return null;
     }
@@ -116,9 +124,8 @@ public class StormPathClient {
 
         //Now let's authenticate the account with the application:
         try {
-            AuthenticationResult result = _myApp.authenticateAccount(request);
-            return result.getAccount();
-
+            AuthenticationResult authenticationResult = _myApp.authenticateAccount(request);
+            return authenticationResult.getAccount();
         }
         catch (ResourceException ex) {
             if (ex.getStatus() == 400 && ex.getCode() == 400 &&
