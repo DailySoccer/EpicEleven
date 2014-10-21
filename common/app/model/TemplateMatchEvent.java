@@ -101,7 +101,12 @@ public class TemplateMatchEvent implements JongoId, Initializer {
     }
 
     public static TemplateMatchEvent findNextMatchEvent(ObjectId templateSoccerTeamId) {
-        return Model.templateMatchEvents().findOne("{$query: {$or: [{templateSoccerTeamAId: #}, {templateSoccerTeamBId: #}], {gameStartedDate: {$exists: 0}}}, $orderby: {startDate: 1}}",
+        return Model.templateMatchEvents().findOne("{$query: " +
+                        "{$and: [" +
+                            "{$or: [{templateSoccerTeamAId: #}, {templateSoccerTeamBId: #}]}," +
+                            "{gameStartedDate: {$exists: 0}}" +
+                        "]}," +
+                        "$orderby: {startDate: 1}}",
                 templateSoccerTeamId, templateSoccerTeamId).as(TemplateMatchEvent.class);
     }
 
