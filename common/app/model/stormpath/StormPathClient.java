@@ -18,12 +18,20 @@ import play.Logger;
 
 public class StormPathClient {
 
+    private static final String APPLICATION_NAME = "EpicEleven";
+
     public StormPathClient() {
+
+        ApiKey apiKey = ApiKeys.builder().setFileLocation("./apiKey.properties").build();
+
+        _client = Clients.builder().setApiKey(apiKey).build();
+
+        Tenant _tenant = _client.getCurrentTenant();
 
         ApplicationList applications = _tenant.getApplications();
 
         for (Application app : applications) {
-            if (app.getName().equals("DFS")) {
+            if (app.getName().equals(APPLICATION_NAME)) {
                 _myApp = app;
             }
         }
@@ -31,17 +39,15 @@ public class StormPathClient {
         if (_myApp == null) {
             _myApp = _client.instantiate(Application.class);
 
-            _myApp.setName("DFS"); //must be unique among your other apps
+            _myApp.setName(APPLICATION_NAME); //must be unique among your other apps
             _myApp = _client.createApplication(
                     Applications.newCreateRequestFor(_myApp).createDirectory().build());
         }
     }
 
-    public void register(String givenName, String email, String password) { //, ObjectId userId) {
-        //Create the account object
+    public Account register(String givenName, String email, String password) { //, ObjectId userId) {
         Account account = _client.instantiate(Account.class);
 
-        //Set the account properties
         account.setGivenName(givenName);
         account.setSurname("Stormtrooper");
         account.setUsername(givenName); //optional, defaults to email if unset
@@ -51,8 +57,17 @@ public class StormPathClient {
         //CustomData customData = account.getCustomData();
         //customData.put("userId", userId.toString());
 
-        //Create the account using the existing Application object
-        _myApp.createAccount(account);
+        //Aquí es donde realmente se crea el usuario (se envía a StormPath)
+        try {
+            return _myApp.createAccount(account);
+        }
+        catch (ResourceException ex) {
+            Logger.error(String.valueOf(ex.getStatus()));
+            Logger.error(String.valueOf(ex.getCode()));
+            Logger.error(ex.getMessage());
+            Logger.error(ex.getStatus() + " " + ex.getMessage());
+        }
+        return null;
     }
 
 
@@ -129,10 +144,8 @@ public class StormPathClient {
         return _instance;
     }
 
-    ApiKey _apiKey = ApiKeys.builder().setFileLocation("./apiKey.properties").build();
-    Client _client = Clients.builder().setApiKey(_apiKey).build();
+    Client _client;
 
-    Tenant _tenant = _client.getCurrentTenant();
     Application _myApp = null;
 
     static StormPathClient _instance;

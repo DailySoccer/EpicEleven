@@ -145,8 +145,6 @@ public class LoginController extends Controller {
                     signupForm.reject("nickName", "This nickName is already taken");
             }
 
-            if (!isSecurePassword(params.password))
-                signupForm.reject("password", "Password is not secure");
         }
 
         if (!signupForm.hasErrors()) {
@@ -167,19 +165,22 @@ public class LoginController extends Controller {
     private static boolean createUser(SignupParams theParams) {
 
         StormPathClient stormPathClient = new StormPathClient();
-        stormPathClient.register(theParams.nickName, theParams.email, theParams.password);
+        Account stormpathAccount = stormPathClient.register(theParams.nickName, theParams.email, theParams.password);
 
-        boolean bRet = true;
+        boolean bRet = stormpathAccount != null;
 
-        // Puede ocurrir que salte una excepcion por duplicidad. No seria un error de programacion puesto que, aunque
-        // comprobamos si el email o nickname estan duplicados antes de llamar aqui, es posible que se creen en
-        // paralelo. Por esto, la vamos a controlar explicitamente
-        try {
-            Model.users().insert(new User(theParams.firstName, theParams.lastName, theParams.nickName,
-                                          theParams.email, theParams.password));
-        } catch (MongoException exc) {
-            Logger.error("createUser: ", exc);
-            bRet = false;
+        if (bRet) {
+            // Puede ocurrir que salte una excepcion por duplicidad. No seria un error de programacion puesto que, aunque
+            // comprobamos si el email o nickname estan duplicados antes de llamar aqui, es posible que se creen en
+            // paralelo. Por esto, la vamos a controlar explicitamente
+            try {
+                Model.users().insert(new User(theParams.firstName, theParams.lastName, theParams.nickName,
+                        theParams.email, theParams.password));
+            } catch (MongoException exc) {
+                Logger.error("createUser: ", exc);
+                bRet = false;
+            }
+
         }
 
         return bRet;
@@ -210,13 +211,13 @@ public class LoginController extends Controller {
             // TODO: Necesitamos sanitizar el email
             User theUser = Model.users().findOne("{email:'#'}", loginParams.email).as(User.class);
 
-            if (theUser == null || !isPasswordCorrect(theUser, loginParams.password)) {
-                if (loggedAccount != null) {
-                    Model.users().insert(new User("", "", loggedAccount.getUsername(),
-                            loggedAccount.getEmail(), ""));
-                }
-            } else if (Play.isDev() && isTest) {
-                correctLogin = true;
+            // Si el usuario tiene cuenta en StormPath, pero no existe en nuestra BD,
+            // lo creamos en nuestra BD:
+            if (theUser == null && loggedAccount != null) {
+                Logger.debug("Creamos el usuario porque no esta en nuestra DB y sí en Stormpath: {}", loggedAccount.getEmail());
+                Model.users().insert(new User(loggedAccount.getGivenName(), loggedAccount.getSurname(),
+                                              loggedAccount.getUsername(), loggedAccount.getEmail(), ""));
+
             }
 
             //Si no entra correctamente
@@ -318,15 +319,5 @@ public class LoginController extends Controller {
         return new ReturnHelper(!changeParamsForm.hasErrors(), result).toResult();
     }
 
-    private static boolean isPasswordCorrect(User theUser, String password) {
-        //if (Play.isDev()) {
-        //    return true;
-        //}
-        return null != StormPathClient.instance().login(theUser.email, password);
-    }
-
-    private static boolean isSecurePassword(String password) {
-        return true;
-    }
 
 }
