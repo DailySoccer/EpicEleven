@@ -25,6 +25,7 @@ GET            /get_public_contest/:contest                            controlle
 
 # Concursos asociados a usuario
 GET            /get_my_contests                                        controllers.ContestController.getMyContests()
+GET            /get_my_contest/:contest                                controllers.ContestController.getMyContest(contest)
 GET            /get_full_contest/:contest                              controllers.ContestController.getFullContest(contest)
 
 # Live contests asociados a usuario

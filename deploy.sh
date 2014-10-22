@@ -97,7 +97,7 @@ then
     git push
 fi
 
-./build_rsync.sh $mode
+./build_for_deploy.sh $mode
 
 if [[ "$client_stash" != "" ]]
     then

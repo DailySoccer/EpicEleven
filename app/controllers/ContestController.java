@@ -71,15 +71,29 @@ public class ContestController extends Controller {
     @UserAuthenticated
     public static Result getFullContest(String contestId) {
         // User theUser = (User)ctx().args.get("User");
-        return getContest(contestId).toResult(JsonViews.FullContest.class);
+        return attachInfoToContest(Contest.findOne(contestId)).toResult(JsonViews.FullContest.class);
+    }
+
+    @UserAuthenticated
+    public static Result getMyContest(String contestId) {
+        User theUser = (User)ctx().args.get("User");
+        Contest contest = Contest.findOne(contestId);
+
+        // Quitamos todos fantasyTeam de los contestEntries que no sean del User
+        for (ContestEntry contestEntry: contest.contestEntries) {
+            if (!contestEntry.userId.equals(theUser.userId)) {
+                contestEntry.soccerIds.clear();
+            }
+        }
+
+        return attachInfoToContest(contest).toResult(JsonViews.FullContest.class);
     }
 
     public static Result getPublicContest(String contestId) {
-        return getContest(contestId).toResult(JsonViews.Extended.class);
+        return attachInfoToContest(Contest.findOne(contestId)).toResult(JsonViews.Extended.class);
     }
 
-    private static ReturnHelper getContest(String contestId) {
-        Contest contest = Contest.findOne(contestId);
+    private static ReturnHelper attachInfoToContest(Contest contest) {
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
 
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
