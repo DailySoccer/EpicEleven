@@ -23,6 +23,9 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ReturnHelper;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static play.data.Form.form;
 
 @AllowCors.Origin
@@ -135,21 +138,24 @@ public class LoginController extends Controller {
 
         if (!signupForm.hasErrors()) {
             SignupParams params = signupForm.get();
+            Map<String, String> createUserErrors = createUser(params);
 
-            result = new ObjectMapper().createObjectNode().put("result", "ok");
-
-            String createUserErrors = createUser(params);
-
-            if (createUserErrors != null)
-                signupForm.reject("error", createUserErrors);
-
+            if (createUserErrors != null && !createUserErrors.isEmpty()) {
+                for (String key : createUserErrors.keySet()) {
+                    signupForm.reject(key, createUserErrors.get(key));
+                }
+                result = signupForm.errorsAsJson();
+            }
+            else {
+                result = new ObjectMapper().createObjectNode().put("result", "ok");
+            }
         }
 
         return new ReturnHelper(!signupForm.hasErrors(), result).toResult();
     }
 
 
-    private static String createUser(SignupParams theParams) {
+    private static Map<String, String> createUser(SignupParams theParams) {
 
         StormPathClient stormPathClient = new StormPathClient();
         String registerError = stormPathClient.register(theParams.nickName, theParams.email, theParams.password);
@@ -163,11 +169,41 @@ public class LoginController extends Controller {
                                               theParams.email, theParams.password));
             } catch (MongoException exc) {
                 Logger.error("createUser: ", exc);
-                registerError = "Hubo un problema en la creación de tu usuario";
+                HashMap mongoError = new HashMap<String, String>();
+                mongoError.put("email", "Hubo un problema en la creación de tu usuario");
+                return mongoError;
             }
 
         }
-        return registerError;
+        return translateError(registerError);
+    }
+
+    private static Map<String, String> translateError(String error) {
+        HashMap returnError = new HashMap<String, String>();
+        if (error.contains("Account with that email already exists.  Please choose another email.")) {
+            returnError.put("email", "Ya existe una cuenta con ese email. Indica otro email.");
+        }
+        else
+        if (error.contains("Account with that username already exists.  Please choose another username.")) {
+            returnError.put("nickName", "Ya existe una cuenta con ese nombre de usuario. Escoge otro.");
+        }
+        else
+        if (error.contains("Account password minimum length not satisfied.")) {
+            returnError.put("password", "La contraseña es demasiado corta.");
+        }
+        else
+        if (error.contains("Password requires a lowercase character!")) {
+            returnError.put("password", "La contraseña debe contener al menos una letra minúscula");
+        }
+        else
+        if (error.contains("Password requires an uppercase character!")) {
+            returnError.put("password", "La contraseña debe contener al menos una letra mayúscula");
+        }
+        else
+        if (error.contains("Password requires a numeric character!")) {
+            returnError.put("password", "La contraseña debe contener al menos un número");
+        }
+        return returnError;
     }
 
 
