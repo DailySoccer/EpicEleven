@@ -6,6 +6,7 @@ import model.opta.OptaEvent;
 import model.opta.OptaEventType;
 import model.opta.OptaMatchEvent;
 import org.bson.types.ObjectId;
+import org.joda.time.DateTime;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
@@ -98,6 +99,17 @@ public class TemplateMatchEvent implements JongoId, Initializer {
 
     public static List<TemplateMatchEvent> findAll(List<ObjectId> idList) {
         return ListUtils.asList(Model.findObjectIds(Model.templateMatchEvents(), "_id", idList).as(TemplateMatchEvent.class));
+    }
+
+    public static List<TemplateMatchEvent> findAllPlaying(List<ObjectId> idList) {
+        // Un partido se está jugando, si...
+        // 1) existe el campo gameStartedDate
+        // 2) No existe el campo gameFinishedDate O No ha pasado mucho tiempo desde que terminó (30 minutos)
+        //      Se deja el margen "extra", porque gameFinishedDate se crea con la última actualización de Opta (que puede incluir nuevos datos de live)
+        Date dateMinusOneHour = new DateTime(GlobalDate.getCurrentDate()).minusMinutes(30).toDate();
+        return ListUtils.asList(Model.templateMatchEvents().find(String.format(
+                "{$and: [{%s: {$in: #}}, {gameStartedDate: {$exists: 1}}, {$or: [{gameFinishedDate: {$exists: 0}}, {gameFinishedDate: {$gt: #}}]}]}", "_id"
+        ), idList, dateMinusOneHour).as(TemplateMatchEvent.class));
     }
 
     public static TemplateMatchEvent findNextMatchEvent(ObjectId templateSoccerTeamId) {
