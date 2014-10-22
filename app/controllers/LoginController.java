@@ -160,7 +160,7 @@ public class LoginController extends Controller {
             // paralelo. Por esto, la vamos a controlar explicitamente
             try {
                 Model.users().insert(new User(theParams.firstName, theParams.lastName, theParams.nickName,
-                        theParams.email, theParams.password));
+                                              theParams.email, theParams.password));
             } catch (MongoException exc) {
                 Logger.error("createUser: ", exc);
                 registerError = exc.toString();
@@ -184,33 +184,25 @@ public class LoginController extends Controller {
             boolean isTest = loginParams.email.endsWith("@test.com");
 
             // Si no es Test, entramos a través de Stormpath
-            Account loggedAccount = (!isTest)?
-                                    StormPathClient.instance().login(loginParams.email, loginParams.password):
-                                    null;
+            Account account = isTest? null : StormPathClient.instance().login(loginParams.email, loginParams.password);
 
-            // En todas partes tenemos usuarios Stormpath y usuarios Test.
-            boolean correctLogin = (loggedAccount != null) || isTest;
-
-            // Buscamos el usuario en Mongo
-            // TODO: Necesitamos sanitizar el email
-            User theUser = Model.users().findOne("{email:'#'}", loginParams.email).as(User.class);
-
-            // Si el usuario tiene cuenta en StormPath, pero no existe en nuestra BD,
-            // lo creamos en nuestra BD:
-            if (theUser == null && loggedAccount != null) {
-                Logger.debug("Creamos el usuario porque no esta en nuestra DB y sí en Stormpath: {}", loggedAccount.getEmail());
-                Model.users().insert(new User(loggedAccount.getGivenName(), loggedAccount.getSurname(),
-                                              loggedAccount.getUsername(), loggedAccount.getEmail(), ""));
-
-            }
-
-            //Si no entra correctamente
-            if (!correctLogin) {
+            // Si no entra correctamente
+            if (account == null && !isTest) {
                 loginParamsForm.reject("email", "email or password incorrect");
                 returnHelper.setKO(loginParamsForm.errorsAsJson());
             }
             // Si entramos correctamente
             else {
+                // Buscamos el usuario en Mongo
+                User theUser = Model.users().findOne("{email:'#'}", loginParams.email).as(User.class);
+
+                // Si el usuario tiene cuenta en StormPath, pero no existe en nuestra BD, lo creamos en nuestra BD
+                if (theUser == null && account != null) {
+                    Logger.debug("Creamos el usuario porque no esta en nuestra DB y sí en Stormpath: {}", account.getEmail());
+                    Model.users().insert(new User(account.getGivenName(), account.getSurname(),
+                                                  account.getUsername(), account.getEmail(), ""));
+                }
+
                 if (Play.isDev()) {
                     Logger.info("Estamos en desarrollo: El email {} sera el sessionToken y pondremos una cookie", theUser.email);
 
@@ -223,7 +215,6 @@ public class LoginController extends Controller {
                 else {
                     // En produccion NO mandamos cookie. Esto evita CSRFs. Esperamos que el cliente nos mande el sessionToken
                     // cada vez como parametro en una custom header.
-                    // TODO: Pensar la opcion: encriptar los datos necesarios para no tener que tener tabla de sesiones.
                     String sessionToken = Crypto.generateSignedToken();
                     Session newSession = new Session(sessionToken, theUser.userId, GlobalDate.getCurrentDate());
                     Model.sessions().insert(newSession);
