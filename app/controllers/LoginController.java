@@ -206,6 +206,12 @@ public class LoginController extends Controller {
         if (error.contains("Password requires a numeric character!")) {
             returnError.put("password", "La contraseña debe contener al menos un número");
         }
+
+        //TODO: Incluir:
+        /*
+         Cannot invoke the action, eventually got an error: com.stormpath.sdk.resource.ResourceException: HTTP 409, Stormpath 409 (mailto:support@stormpath.com): Another resource with that information already exists. This is likely due to a constraint violation. Please update to retrieve the latest version of the information and try again if necessary.
+         */
+
         else {
             Logger.error("Error no traducido: \n {}", error);
         }
@@ -291,6 +297,7 @@ public class LoginController extends Controller {
 
         Form<ChangeParams> changeParamsForm = form(ChangeParams.class).bindFromRequest();
         ChangeParams params;
+        JsonNode result = new ObjectMapper().createObjectNode().put("result", "ok");
 
         boolean somethingChanged = false;
 
@@ -306,57 +313,51 @@ public class LoginController extends Controller {
                 theUser.lastName = params.lastName;
                 somethingChanged = true;
             }
-            if (!params.nickName.isEmpty()) {
-                User user = Model.users().findOne("{nickName:'#'}", params.nickName).as(User.class);
-                if (user != null && !user.userId.equals(theUser.userId)) {
-                    changeParamsForm.reject("nickName", "This nickName is already taken");
-                }
-                else {
-                    theUser.nickName = params.nickName;
-                    somethingChanged = true;
-                }
-            }
+
             if (!params.email.isEmpty()) {
-                User user = Model.users().findOne("{email:'#'}", params.email).as(User.class);
-                if (user != null && !user.email.equals(theUser.email)) {
-                    changeParamsForm.reject("email", "This email is already taken");
-                }
-                else {
-                    theUser.email = params.email;
-                    somethingChanged = true;
-                }
+                theUser.email = params.email;
+                somethingChanged = true;
             }
 
-            if (!changeParamsForm.hasErrors()) {
-                StormPathClient stormPathClient = new StormPathClient();
-                String updatePasswordErrors = null;
-                String changeUserProfileErrors = null;
+            Map<String, String> allErrors = changeStormpathProfile(theUser, params, somethingChanged, originalEmail);
 
-                if (!originalEmail.endsWith("test.com")) {
-                    if (somethingChanged) {
-                        changeUserProfileErrors = stormPathClient.changeUserProfile(originalEmail, theUser.firstName, theUser.lastName,
-                                theUser.email);
-                    }
-
-                    if (params.password.length() > 0) {
-                        updatePasswordErrors = stormPathClient.updatePassword(originalEmail, params.password);
-                    }
-                }
-
-
-                if (changeUserProfileErrors == null && updatePasswordErrors == null) {
-                    Model.users().update(theUser.userId).with(theUser);
-                }
+            if (allErrors.isEmpty()) {
+                Model.users().update(theUser.userId).with(theUser);
             }
+            else {
+                for (String key : allErrors.keySet()) {
+                    changeParamsForm.reject(key, allErrors.get(key));
+                }
+                result = changeParamsForm.errorsAsJson();
+            }
+
         }
-
-        JsonNode result = changeParamsForm.errorsAsJson();
-
-        if (!changeParamsForm.hasErrors()) {
-            result = new ObjectMapper().createObjectNode().put("result", "ok");
+        else {
+            result = changeParamsForm.errorsAsJson();
         }
 
         return new ReturnHelper(!changeParamsForm.hasErrors(), result).toResult();
+    }
+
+
+    private static Map<String, String> changeStormpathProfile(User theUser, ChangeParams params, boolean somethingChanged, String originalEmail) {
+        StormPathClient stormPathClient = new StormPathClient();
+
+        Map<String, String> allErrors = new HashMap<String,String>();
+
+        if (!originalEmail.endsWith("test.com")) {
+            if (somethingChanged) {
+                Map changeUserProfileErrors =  translateError(stormPathClient.changeUserProfile(originalEmail, theUser.firstName, theUser.lastName,
+                        theUser.email));
+                allErrors.putAll(changeUserProfileErrors);
+            }
+
+            if (params.password.length() > 0) {
+                Map updatePasswordErrors =  translateError(stormPathClient.updatePassword(originalEmail, params.password));
+                allErrors.putAll(updatePasswordErrors);
+            }
+        }
+        return allErrors;
     }
 
 
