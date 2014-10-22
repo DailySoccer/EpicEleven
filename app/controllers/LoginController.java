@@ -4,8 +4,14 @@ import actions.AllowCors;
 import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import com.mongodb.MongoException;
-import model.*;
+import com.stormpath.sdk.account.Account;
+import model.GlobalDate;
+import model.Model;
+import model.Session;
+import model.User;
+import model.stormpath.StormPathClient;
 import play.Logger;
 import play.Play;
 import play.data.Form;
@@ -27,7 +33,6 @@ public class LoginController extends Controller {
 
         public String firstName;
 
-
         public String lastName;
 
         @Required @MinLength(value = 4)
@@ -44,57 +49,125 @@ public class LoginController extends Controller {
         @Required public String password;
     }
 
+    public static class AskForPasswordResetParams {
+        @Required public String email;
+    }
+
+    public static class VerifyPasswordResetTokenParams {
+        @Required public String token;
+    }
+
+    public static class PasswordResetParams {
+        @Required public String password;
+        @Required public String token;
+    }
+
+    public static Result askForPasswordReset() {
+
+        Form<AskForPasswordResetParams> askForPasswordResetParamsForm = form(AskForPasswordResetParams.class).bindFromRequest();
+        AskForPasswordResetParams params = null;
+
+        ReturnHelper returnHelper = new ReturnHelper();
+
+        if (!askForPasswordResetParamsForm.hasErrors()) {
+            params = askForPasswordResetParamsForm.get();
+
+            String askForPasswordResetErrors = StormPathClient.instance().askForPasswordReset(params.email);
+
+            if (askForPasswordResetErrors == null) {
+                returnHelper.setOK(ImmutableMap.of("success", "Password reset sent"));
+            }
+            else {
+                returnHelper.setKO(ImmutableMap.of("error", askForPasswordResetErrors));
+            }
+        }
+        return returnHelper.toResult();
+    }
+
+
+    public static Result verifyPasswordResetToken() {
+        Form<VerifyPasswordResetTokenParams> verifyPasswordResetTokenParamsForm = form(VerifyPasswordResetTokenParams.class).bindFromRequest();
+        VerifyPasswordResetTokenParams params = null;
+
+        ReturnHelper returnHelper = new ReturnHelper();
+
+        if (!verifyPasswordResetTokenParamsForm.hasErrors()) {
+            params = verifyPasswordResetTokenParamsForm.get();
+
+            String verifyPasswordResetTokenErrors = StormPathClient.instance().verifyPasswordResetToken(params.token);
+
+            if (verifyPasswordResetTokenErrors == null) {
+                returnHelper.setOK(ImmutableMap.of("success", "Password reset token valid"));
+            } else {
+                returnHelper.setKO(ImmutableMap.of("error", verifyPasswordResetTokenErrors));
+            }
+        }
+        return returnHelper.toResult();
+    }
+
+
+    public static Result resetPasswordWithToken() {
+
+        Form<PasswordResetParams> passwordResetParamsForm = form(PasswordResetParams.class).bindFromRequest();
+        PasswordResetParams params = null;
+
+        ReturnHelper returnHelper = new ReturnHelper();
+
+        if (!passwordResetParamsForm.hasErrors()) {
+            params = passwordResetParamsForm.get();
+
+            String resetPasswordWithTokenErrors = StormPathClient.instance().resetPasswordWithToken(params.token, params.password);
+
+            if (resetPasswordWithTokenErrors == null) {
+                returnHelper.setOK(ImmutableMap.of("success", "Password resetted successfully"));
+            } else {
+                returnHelper.setKO(ImmutableMap.of("error", resetPasswordWithTokenErrors));
+            }
+        }
+        return returnHelper.toResult();
+    }
+
 
     public static Result signup() {
         Form<SignupParams> signupForm = form(SignupParams.class).bindFromRequest();
-        SignupParams params = null;
-
-        if (!signupForm.hasErrors()) {
-            params = signupForm.get();
-            User dup = Model.users().findOne("{ $or: [ {email:'#'}, {nickName:'#'} ] }", params.email, params.nickName).as(User.class);
-
-            if (dup != null) {
-                if (dup.email.equals(params.email))
-                    signupForm.reject("email", "This email is already taken");
-
-                if (dup.nickName.equals(params.nickName))
-                    signupForm.reject("nickName", "This nickName is already taken");
-            }
-
-            if (!isSecurePassword(params.password))
-                signupForm.reject("password", "Password is not secure");
-        }
-
-        if (!signupForm.hasErrors()) {
-            if (!createUser(params))
-                signupForm.reject("error", "General error: Try again please");
-        }
 
         JsonNode result = signupForm.errorsAsJson();
 
         if (!signupForm.hasErrors()) {
+            SignupParams params = signupForm.get();
+
             result = new ObjectMapper().createObjectNode().put("result", "ok");
+
+            String createUserErrors = createUser(params);
+
+            if (createUserErrors != null)
+                signupForm.reject("error", createUserErrors);
+
         }
 
         return new ReturnHelper(!signupForm.hasErrors(), result).toResult();
     }
 
 
-    private static boolean createUser(SignupParams theParams) {
-        boolean bRet = true;
+    private static String createUser(SignupParams theParams) {
 
-        // Puede ocurrir que salte una excepcion por duplicidad. No seria un error de programacion puesto que, aunque
-        // comprobamos si el email o nickname estan duplicados antes de llamar aqui, es posible que se creen en
-        // paralelo. Por esto, la vamos a controlar explicitamente
-        try {
-            Model.users().insert(new User(theParams.firstName, theParams.lastName, theParams.nickName,
-                                          theParams.email, theParams.password));
-        } catch (MongoException exc) {
-            Logger.error("createUser: ", exc);
-            bRet = false;
+        StormPathClient stormPathClient = new StormPathClient();
+        String registerError = stormPathClient.register(theParams.nickName, theParams.email, theParams.password);
+
+        if (registerError == null) {
+            // Puede ocurrir que salte una excepcion por duplicidad. No seria un error de programacion puesto que, aunque
+            // comprobamos si el email o nickname estan duplicados antes de llamar aqui, es posible que se creen en
+            // paralelo. Por esto, la vamos a controlar explicitamente
+            try {
+                Model.users().insert(new User(theParams.firstName, theParams.lastName, theParams.nickName,
+                                              theParams.email, theParams.password));
+            } catch (MongoException exc) {
+                Logger.error("createUser: ", exc);
+                registerError = "Hubo un problema en la creación de tu usuario";
+            }
+
         }
-
-        return bRet;
+        return registerError;
     }
 
 
@@ -108,14 +181,28 @@ public class LoginController extends Controller {
         if (!loginParamsForm.hasErrors()) {
             LoginParams loginParams = loginParamsForm.get();
 
-            // TODO: Necesitamos sanitizar el email
-            User theUser = Model.users().findOne("{email:'#'}", loginParams.email).as(User.class);
+            boolean isTest = loginParams.email.endsWith("@test.com");
 
-            if (theUser == null || !isPasswordCorrect(theUser, loginParams.password)) {
+            // Si no es Test, entramos a través de Stormpath
+            Account account = isTest? null : StormPathClient.instance().login(loginParams.email, loginParams.password);
+
+            // Si no entra correctamente
+            if (account == null && !isTest) {
                 loginParamsForm.reject("email", "email or password incorrect");
                 returnHelper.setKO(loginParamsForm.errorsAsJson());
             }
+            // Si entramos correctamente
             else {
+                // Buscamos el usuario en Mongo
+                User theUser = Model.users().findOne("{email:'#'}", loginParams.email).as(User.class);
+
+                // Si el usuario tiene cuenta en StormPath, pero no existe en nuestra BD, lo creamos en nuestra BD
+                if (theUser == null && account != null) {
+                    Logger.debug("Creamos el usuario porque no esta en nuestra DB y sí en Stormpath: {}", account.getEmail());
+                    Model.users().insert(new User(account.getGivenName(), account.getSurname(),
+                                                  account.getUsername(), account.getEmail(), ""));
+                }
+
                 if (Play.isDev()) {
                     Logger.info("Estamos en desarrollo: El email {} sera el sessionToken y pondremos una cookie", theUser.email);
 
@@ -128,7 +215,6 @@ public class LoginController extends Controller {
                 else {
                     // En produccion NO mandamos cookie. Esto evita CSRFs. Esperamos que el cliente nos mande el sessionToken
                     // cada vez como parametro en una custom header.
-                    // TODO: Pensar la opcion: encriptar los datos necesarios para no tener que tener tabla de sesiones.
                     String sessionToken = Crypto.generateSignedToken();
                     Session newSession = new Session(sessionToken, theUser.userId, GlobalDate.getCurrentDate());
                     Model.sessions().insert(newSession);
@@ -158,19 +244,25 @@ public class LoginController extends Controller {
 
     @UserAuthenticated
     public static Result changeUserProfile() {
+
         User theUser = (User)ctx().args.get("User");
 
         Form<ChangeParams> changeParamsForm = form(ChangeParams.class).bindFromRequest();
         ChangeParams params;
 
+        boolean somethingChanged = false;
+
         if (!changeParamsForm.hasErrors()) {
             params = changeParamsForm.get();
+            String originalEmail = theUser.email;
 
             if (!params.firstName.isEmpty()) {
                 theUser.firstName = params.firstName;
+                somethingChanged = true;
             }
             if (!params.lastName.isEmpty()) {
                 theUser.lastName = params.lastName;
+                somethingChanged = true;
             }
             if (!params.nickName.isEmpty()) {
                 User user = Model.users().findOne("{nickName:'#'}", params.nickName).as(User.class);
@@ -179,6 +271,7 @@ public class LoginController extends Controller {
                 }
                 else {
                     theUser.nickName = params.nickName;
+                    somethingChanged = true;
                 }
             }
             if (!params.email.isEmpty()) {
@@ -188,14 +281,30 @@ public class LoginController extends Controller {
                 }
                 else {
                     theUser.email = params.email;
+                    somethingChanged = true;
                 }
-            }
-            if (!params.password.isEmpty()) {
-                theUser.password = params.password;
             }
 
             if (!changeParamsForm.hasErrors()) {
-                Model.users().update(theUser.userId).with(theUser);
+                StormPathClient stormPathClient = new StormPathClient();
+                String updatePasswordErrors = null;
+                String changeUserProfileErrors = null;
+
+                if (!originalEmail.endsWith("test.com")) {
+                    if (somethingChanged) {
+                        changeUserProfileErrors = stormPathClient.changeUserProfile(originalEmail, theUser.firstName, theUser.lastName,
+                                theUser.email);
+                    }
+
+                    if (params.password.length() > 0) {
+                        updatePasswordErrors = stormPathClient.updatePassword(originalEmail, params.password);
+                    }
+                }
+
+
+                if (changeUserProfileErrors == null && updatePasswordErrors == null) {
+                    Model.users().update(theUser.userId).with(theUser);
+                }
             }
         }
 
@@ -208,11 +317,5 @@ public class LoginController extends Controller {
         return new ReturnHelper(!changeParamsForm.hasErrors(), result).toResult();
     }
 
-    private static boolean isPasswordCorrect(User theUser, String password) {
-        return true;
-    }
 
-    private static boolean isSecurePassword(String password) {
-        return true;
-    }
 }
