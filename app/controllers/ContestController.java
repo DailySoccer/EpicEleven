@@ -24,18 +24,8 @@ public class ContestController extends Controller {
      */
     // @Cached(key = "ActiveContest", duration = 1)
     public static Result getActiveContests() {
-        List<Contest> contests = Contest.findAllActive(JsonViews.ActiveContests.class);
-
-        // Filtrar los contests que ya están completos
-        // TODO: ¿Cómo realizarlo con una query que compare el "número de entries" con "maxEntries"? ¿aggregation con $let?
-        List<Contest> contestsNotFull = new ArrayList<>(contests.size());
-        for (Contest contest: contests) {
-            if (!contest.isFull()) {
-                contestsNotFull.add(contest);
-            }
-        }
-
-        return new ReturnHelper(ImmutableMap.of("contests", contestsNotFull)).toResult();
+        List<Contest> contests = Contest.findAllActiveNotFull(JsonViews.ActiveContests.class);
+        return new ReturnHelper(ImmutableMap.of("contests", contests)).toResult();
     }
 
     @UserAuthenticated
