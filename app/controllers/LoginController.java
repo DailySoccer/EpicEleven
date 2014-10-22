@@ -180,6 +180,9 @@ public class LoginController extends Controller {
 
     private static Map<String, String> translateError(String error) {
         HashMap returnError = new HashMap<String, String>();
+        if (error == null) {
+            return returnError;
+        }
         if (error.contains("Account with that email already exists.  Please choose another email.")) {
             returnError.put("email", "Ya existe una cuenta con ese email. Indica otro email.");
         }
@@ -202,6 +205,9 @@ public class LoginController extends Controller {
         else
         if (error.contains("Password requires a numeric character!")) {
             returnError.put("password", "La contraseña debe contener al menos un número");
+        }
+        else {
+            Logger.error("Error no traducido: \n {}", error);
         }
         return returnError;
     }
