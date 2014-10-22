@@ -163,7 +163,7 @@ public class LoginController extends Controller {
                                               theParams.email, theParams.password));
             } catch (MongoException exc) {
                 Logger.error("createUser: ", exc);
-                registerError = exc.toString();
+                registerError = "Hubo un problema en la creación de tu usuario";
             }
 
         }
@@ -239,27 +239,30 @@ public class LoginController extends Controller {
         public String nickName;
         @Email public String email;
 
-        public String password; //TODO: Cambiar la password no deberia ir en otro form aparte?
+        public String password;
     }
 
     @UserAuthenticated
     public static Result changeUserProfile() {
-
-        //TODO: ESTO NO ESTÁ SINCRONIZADO CON STORMPATH
 
         User theUser = (User)ctx().args.get("User");
 
         Form<ChangeParams> changeParamsForm = form(ChangeParams.class).bindFromRequest();
         ChangeParams params;
 
+        boolean somethingChanged = false;
+
         if (!changeParamsForm.hasErrors()) {
             params = changeParamsForm.get();
+            String originalEmail = theUser.email;
 
             if (!params.firstName.isEmpty()) {
                 theUser.firstName = params.firstName;
+                somethingChanged = true;
             }
             if (!params.lastName.isEmpty()) {
                 theUser.lastName = params.lastName;
+                somethingChanged = true;
             }
             if (!params.nickName.isEmpty()) {
                 User user = Model.users().findOne("{nickName:'#'}", params.nickName).as(User.class);
@@ -268,6 +271,7 @@ public class LoginController extends Controller {
                 }
                 else {
                     theUser.nickName = params.nickName;
+                    somethingChanged = true;
                 }
             }
             if (!params.email.isEmpty()) {
@@ -277,11 +281,30 @@ public class LoginController extends Controller {
                 }
                 else {
                     theUser.email = params.email;
+                    somethingChanged = true;
                 }
             }
 
             if (!changeParamsForm.hasErrors()) {
-                Model.users().update(theUser.userId).with(theUser);
+                StormPathClient stormPathClient = new StormPathClient();
+                String updatePasswordErrors = null;
+                String changeUserProfileErrors = null;
+
+                if (!originalEmail.endsWith("test.com")) {
+                    if (somethingChanged) {
+                        changeUserProfileErrors = stormPathClient.changeUserProfile(originalEmail, theUser.firstName, theUser.lastName,
+                                theUser.email);
+                    }
+
+                    if (params.password.length() > 0) {
+                        updatePasswordErrors = stormPathClient.updatePassword(originalEmail, params.password);
+                    }
+                }
+
+
+                if (changeUserProfileErrors == null && updatePasswordErrors == null) {
+                    Model.users().update(theUser.userId).with(theUser);
+                }
             }
         }
 

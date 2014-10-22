@@ -1,6 +1,7 @@
 package model.stormpath;
 
 import com.stormpath.sdk.account.Account;
+import com.stormpath.sdk.account.AccountList;
 import com.stormpath.sdk.api.ApiKey;
 import com.stormpath.sdk.api.ApiKeys;
 import com.stormpath.sdk.application.Application;
@@ -14,6 +15,9 @@ import com.stormpath.sdk.client.Clients;
 import com.stormpath.sdk.resource.ResourceException;
 import com.stormpath.sdk.tenant.Tenant;
 import play.Logger;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class StormPathClient {
@@ -143,6 +147,48 @@ public class StormPathClient {
         return null;
     }
 
+    public String changeUserProfile(String userEmail, String firstName, String lastName, String email) {
+        Map<String, Object> queryParams = new HashMap<String, Object>();
+        queryParams.put("email", userEmail);
+        AccountList accounts = _myApp.getAccounts(queryParams);
+
+        Account usersAccount = null;
+        for (Account account: accounts) {
+            usersAccount = account;
+        }
+
+        if (usersAccount != null) {
+            usersAccount.setGivenName(firstName);
+            usersAccount.setSurname(lastName);
+            usersAccount.setEmail(email);
+            usersAccount.save();
+        }
+        else {
+            return "Users profile changes failed";
+        }
+        return null;
+    }
+
+    public String updatePassword(String userEmail, String password) {
+        Map<String, Object> queryParams = new HashMap<String, Object>();
+        queryParams.put("email", userEmail);
+        AccountList accounts = _myApp.getAccounts(queryParams);
+
+        Account usersAccount = null;
+        for (Account account: accounts) {
+            usersAccount = account;
+        }
+
+        if (usersAccount != null) {
+            usersAccount.setPassword(password);
+            usersAccount.save();
+        }
+        else {
+            return "Password change failed";
+        }
+        return null;
+    }
+
 
     public static StormPathClient instance() {
         if (_instance == null) {
@@ -156,5 +202,6 @@ public class StormPathClient {
     Application _myApp = null;
 
     static StormPathClient _instance;
+
 
 }
