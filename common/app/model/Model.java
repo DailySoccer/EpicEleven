@@ -11,6 +11,9 @@ import org.jongo.marshall.jackson.JacksonMapper;
 import play.Logger;
 import play.Play;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -45,8 +48,18 @@ public class Model {
     static public MongoCollection simulator() { return _jongo.getCollection("simulator"); }
 
     static public void init() {
+        ensureMongo(Play.application().configuration().getString("mongodb.uri"));
+        _mongoAppConn = "local";
 
-        String mongodbUri = Play.application().configuration().getString("mongodb.uri");
+        try {
+            ensurePostgresDB();
+        }
+        catch (Exception exc) {
+            Logger.error("Error creating optaxml: ", exc);
+        }
+    }
+
+    private static void ensureMongo(String mongodbUri) {
         MongoClientURI mongoClientURI = new MongoClientURI(mongodbUri);
 
         Logger.info("The MongoDB is {}/{}", mongoClientURI.getHosts(), mongoClientURI.getDatabase());
@@ -68,13 +81,6 @@ public class Model {
         catch (Exception exc) {
             Logger.error("Error initializating MongoDB {}/{}: {}", mongoClientURI.getHosts(),
                                                                    mongoClientURI.getDatabase(), exc.toString());
-        }
-
-        try {
-            ensurePostgresDB();
-        }
-        catch (Exception exc) {
-            Logger.error("Error creating optaxml: ", exc);
         }
     }
 
@@ -110,6 +116,48 @@ public class Model {
                              "END$$;");
             }
         }
+    }
+
+
+    static public void switchMongoUriToApp(String app) {
+        _mongoAppConn = app;
+        try {
+            ensureMongo(getMongoUriForApp(app));
+        }
+        // If we cannot go to a different app, rollback to localhost
+        catch (RuntimeException e) {
+            ensureMongo(getMongoUriForApp("local"));
+            _mongoAppConn = "local";
+        }
+    }
+
+    static public String get_mongoAppConn(){
+        return _mongoAppConn;
+    }
+
+    static private String getMongoUriForApp(String app) throws RuntimeException{
+        if (app.equals("local")) {
+            return Play.application().configuration().getString("mongodb.uri");
+        }
+        try {
+            String line = LogInputStream(Runtime.getRuntime().exec("heroku config:get MONGOHQ_URL -a "+app));
+            return line;
+            //return LogInputStream(Runtime.getRuntime().exec("heroku config:get MONGOHQ_URL -a "+app));
+        } catch (IOException e) {
+            Logger.error("WTF 8266");
+            throw new RuntimeException("Sin permisos, o sin heroku instalado");
+        }
+
+    }
+
+    static String LogInputStream(Process p) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        String line = "";
+        while ((line = reader.readLine())!= null) {
+            Logger.info(line);
+            return line;
+        }
+        return line;
     }
 
     static public void shutdown() {
@@ -238,6 +286,8 @@ public class Model {
         return collection.find(String.format("{%s: {$in: #}}", fieldId), objectIds);
     }
 
+
+    static private String _mongoAppConn;
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/
     static private MongoClient _mongoClient;

@@ -26,6 +26,9 @@ GET         /points_translations/:eventType                            controlle
 
 GET         /lobby                                                     controllers.admin.AdminController.lobby()
 
+GET         /setmongo/:app                                             controllers.admin.AdminController.setMongoApp(app : String)
+GET         /getmongo                                                  controllers.admin.AdminController.getMongoApp()
+
 GET         /users                                                     controllers.admin.UserController.index()
 
 GET         /soccer_player_stats/:playerId                             controllers.admin.TemplateSoccerPlayerController.showStats(playerId : String)

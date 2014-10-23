@@ -2,12 +2,47 @@
 
 @import controllers.admin.routes._
 
-@main("DailySoccer - Admin") {
+@scripts = {
+<script type="text/javascript" charset="utf-8">
+
+$(document).ready(function() {
+    getMongo();
+
+});
+
+function setMongo() {
+        var new_mongo = $('#mongo-conn').val();
+        var another_temp = $.ajax({
+                        url: "/admin/setmongo/"+new_mongo,
+                        success: function (result) {
+                            location.reload();
+                        }
+                    });
+}
+
+function getMongo() {
+    var temp = $.ajax({
+                    url: "/admin/getmongo",
+                    success: function (result) {
+                        $('#mongo-conn option[value="'+result+'"]').prop('selected', true);
+                    }
+                });
+}
+</script>
+}
+
+@main("DailySoccer - Admin", scripts) {
 
 <h1 class="page-header">Dashboard</h1>
 
 
 <div>
+    <select id="mongo-conn" onchange="setMongo()" class="form-control" style="width: inherit; display: inline-block;">
+        <option value="local">Local</option>
+        <option value="dailysoccer-staging">Staging</option>
+        <option value="dailysoccer">Epic Eleven</option>
+    </select>
+
     <a href="@DashboardController.resetDB" class="btn btn-danger">Reset DB</a>
     @if(competitions_enabled.isEmpty) {
         <a href="@DashboardController.initialSetup" class="btn btn-danger disabled">Initial Setup</a>
@@ -45,4 +80,6 @@
     </a>
 
 </div>
+
+
 }
