@@ -245,8 +245,9 @@ public class LoginController extends Controller {
                 // Si el usuario tiene cuenta en StormPath, pero no existe en nuestra BD, lo creamos en nuestra BD
                 if (theUser == null && account != null) {
                     Logger.debug("Creamos el usuario porque no esta en nuestra DB y sí en Stormpath: {}", account.getEmail());
-                    Model.users().insert(new User(account.getGivenName(), account.getSurname(),
-                                                  account.getUsername(), account.getEmail()));
+                    theUser = new User(account.getGivenName(), account.getSurname(),
+                                       account.getUsername(), account.getEmail());
+                    Model.users().insert(theUser);
                 }
 
                 if (Play.isDev()) {
@@ -261,11 +262,15 @@ public class LoginController extends Controller {
                 else {
                     // En produccion NO mandamos cookie. Esto evita CSRFs. Esperamos que el cliente nos mande el sessionToken
                     // cada vez como parametro en una custom header.
-                    String sessionToken = Crypto.generateSignedToken();
-                    Session newSession = new Session(sessionToken, theUser.userId, GlobalDate.getCurrentDate());
-                    Model.sessions().insert(newSession);
+                    Session session = Model.sessions().findOne("{userId: #}", theUser.userId).as(Session.class);
 
-                    returnHelper.setOK(newSession);
+                    if (session == null) {
+                        String sessionToken = Crypto.generateSignedToken();
+                        session = new Session(sessionToken, theUser.userId, GlobalDate.getCurrentDate());
+                        Model.sessions().insert(session);
+                    }
+
+                    returnHelper.setOK(session);
                 }
             }
         }
