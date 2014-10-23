@@ -219,8 +219,6 @@ public class LoginController extends Controller {
     }
 
 
-    // TODO: Todo esto es totalmente incorrecto, es un borrador. Hay que hacer cosas como caducidad de sesiones,
-    // confirmacion de la cuenta a traves de email, etc. Hay un monton de notas en Asana.
     public static Result login() {
 
         Form<LoginParams> loginParamsForm = Form.form(LoginParams.class).bindFromRequest();
