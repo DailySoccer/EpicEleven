@@ -166,7 +166,7 @@ public class LoginController extends Controller {
             // paralelo. Por esto, la vamos a controlar explicitamente
             try {
                 Model.users().insert(new User(theParams.firstName, theParams.lastName, theParams.nickName,
-                                              theParams.email, theParams.password));
+                                              theParams.email));
             } catch (MongoException exc) {
                 Logger.error("createUser: ", exc);
                 HashMap mongoError = new HashMap<String, String>();
@@ -246,7 +246,7 @@ public class LoginController extends Controller {
                 if (theUser == null && account != null) {
                     Logger.debug("Creamos el usuario porque no esta en nuestra DB y sí en Stormpath: {}", account.getEmail());
                     Model.users().insert(new User(account.getGivenName(), account.getSurname(),
-                                                  account.getUsername(), account.getEmail(), ""));
+                                                  account.getUsername(), account.getEmail()));
                 }
 
                 if (Play.isDev()) {

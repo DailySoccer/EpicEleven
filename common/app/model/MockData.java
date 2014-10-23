@@ -28,7 +28,7 @@ public final class MockData {
     }
 
     static private void createUser(String firstName, String lastName, String nickName, String email, String password) {
-        Model.users().insert(new User(firstName, lastName, nickName, email, password));
+        Model.users().insert(new User(firstName, lastName, nickName, email));
     }
 
     public static void ensureCompetitions() {
