@@ -123,7 +123,7 @@ public class ContestController extends Controller {
         }
 
         // Consultar por los partidos del TemplateContest (queremos su version "live")
-        List<TemplateMatchEvent> liveMatchEventList = TemplateMatchEvent.findAll(templateContest.templateMatchEventIds);
+        List<TemplateMatchEvent> liveMatchEventList = TemplateMatchEvent.findAllPlaying(templateContest.templateMatchEventIds);
 
         return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
     }
