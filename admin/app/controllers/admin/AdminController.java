@@ -28,13 +28,13 @@ public class AdminController extends Controller {
         return ok(views.html.lobby.render(contestList, templateContestMap));
     }
 
-    public static Result setMongoApp(String app) {
-        Model.switchMongoUriToApp(app);
+    public static Result setMongoAppEnv(String app) {
+        Model.ensureMongo(app);
         return ok("");
     }
 
-    public static Result getMongoApp() {
-        return ok(Model.get_mongoAppConn());
+    public static Result getMongoAppEnv() {
+        return ok(Model.getMongoAppEnv());
     }
 
 

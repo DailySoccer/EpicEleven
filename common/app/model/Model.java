@@ -48,8 +48,8 @@ public class Model {
     static public MongoCollection simulator() { return _jongo.getCollection("simulator"); }
 
     static public void init() {
-        ensureMongo(Play.application().configuration().getString("mongodb.uri"));
-        _mongoAppConn = "local";
+
+        ensureMongo("localhost");
 
         try {
             ensurePostgresDB();
@@ -59,7 +59,8 @@ public class Model {
         }
     }
 
-    private static void ensureMongo(String mongodbUri) {
+    static public void ensureMongo(String appEnv) {
+        String mongodbUri = getMongoUriForApp(appEnv);
         MongoClientURI mongoClientURI = new MongoClientURI(mongodbUri);
 
         Logger.info("The MongoDB is {}/{}", mongoClientURI.getHosts(), mongoClientURI.getDatabase());
@@ -77,6 +78,9 @@ public class Model {
 
             // Let's make sure our DB has the neccesary collections and indexes
             ensureDB(_mongoDB);
+
+            // Ahora ya estamos en el environment solicitado
+            _mongoAppEnv = appEnv;
         }
         catch (Exception exc) {
             Logger.error("Error initializating MongoDB {}/{}: {}", mongoClientURI.getHosts(),
@@ -118,45 +122,33 @@ public class Model {
         }
     }
 
-
-    static public void switchMongoUriToApp(String app) {
-        _mongoAppConn = app;
-        try {
-            ensureMongo(getMongoUriForApp(app));
-        }
-        // If we cannot go to a different app, rollback to localhost
-        catch (RuntimeException e) {
-            ensureMongo(getMongoUriForApp("local"));
-            _mongoAppConn = "local";
-        }
+    static public String getMongoAppEnv(){
+        return _mongoAppEnv;
     }
 
-    static public String get_mongoAppConn(){
-        return _mongoAppConn;
-    }
+    static private String getMongoUriForApp(String appEnv) {
+        String ret = Play.application().configuration().getString("mongodb.uri");
 
-    static private String getMongoUriForApp(String app) throws RuntimeException{
-        if (app.equals("local")) {
-            return Play.application().configuration().getString("mongodb.uri");
-        }
-        try {
-            String line = LogInputStream(Runtime.getRuntime().exec("heroku config:get MONGOHQ_URL -a "+app));
-            return line;
-            //return LogInputStream(Runtime.getRuntime().exec("heroku config:get MONGOHQ_URL -a "+app));
-        } catch (IOException e) {
-            Logger.error("WTF 8266");
-            throw new RuntimeException("Sin permisos, o sin heroku instalado");
+        if (!appEnv.equals("localhost")) {
+            try {
+                ret = readLineFromInputStream(Runtime.getRuntime().exec("heroku config:get MONGOHQ_URL -a " + appEnv));
+            }
+            catch (IOException e) {
+                Logger.error("WTF 8266 Sin permisos, o sin heroku instalado. Falling back to local.");
+            }
         }
 
+        return ret;
     }
 
-    static String LogInputStream(Process p) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-        String line = "";
-        while ((line = reader.readLine())!= null) {
+    static private String readLineFromInputStream(Process p) throws IOException {
+        String line;
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
+            line = reader.readLine();
             Logger.info(line);
-            return line;
         }
+
         return line;
     }
 
@@ -287,7 +279,7 @@ public class Model {
     }
 
 
-    static private String _mongoAppConn;
+    static private String _mongoAppEnv;
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/
     static private MongoClient _mongoClient;
