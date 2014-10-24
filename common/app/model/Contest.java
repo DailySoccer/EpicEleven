@@ -126,6 +126,13 @@ public class Contest implements JongoId {
                 .as(Contest.class));
     }
 
+    static public List<Contest> findAllActiveNotFull(Class<?> projectionClass) {
+        return ListUtils.asList(Model.contests()
+                .find("{$and: [{state: \"ACTIVE\"}, {$where: \"this.contestEntries.length < this.maxEntries\"}]}")
+                .projection(ViewProjection.get(projectionClass, Contest.class))
+                .as(Contest.class));
+    }
+
     static public List<Contest> findAllMyActive(ObjectId userId, Class<?> projectionClass) {
         return findAllMyContests(userId, "{state: \"ACTIVE\", \"contestEntries.userId\": #}", projectionClass);
     }

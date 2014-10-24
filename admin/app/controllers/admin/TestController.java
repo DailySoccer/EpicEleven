@@ -68,7 +68,7 @@ public class TestController extends Controller {
                 Model.templateContests().insert(new TemplateContest(
                         "jue., 12 jun.!!", 1, 200, 60000, 0, PrizeType.FREE,
                         new DateTime(2014, 6, 12, 0, 0, DateTimeZone.UTC).toDate(),
-                        new ArrayList<String>(Arrays.asList("731769", "731774"))) //ESP-NLD, ENG-ITA
+                        new ArrayList<String>(Arrays.asList("731782", "731768"))) //RUS-SOUTHKOREA MEX-CMR
                 );
 
                 Model.templateContests().insert(new TemplateContest(
