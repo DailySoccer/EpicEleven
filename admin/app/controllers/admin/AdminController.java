@@ -1,6 +1,7 @@
 package controllers.admin;
 
 import model.Contest;
+import model.Model;
 import model.TemplateContest;
 import org.bson.types.ObjectId;
 import play.mvc.Controller;
@@ -26,5 +27,15 @@ public class AdminController extends Controller {
 
         return ok(views.html.lobby.render(contestList, templateContestMap));
     }
+
+    public static Result setMongoAppEnv(String app) {
+        Model.ensureMongo(app);
+        return ok("");
+    }
+
+    public static Result getMongoAppEnv() {
+        return ok(Model.getMongoAppEnv());
+    }
+
 
 }
