@@ -169,7 +169,7 @@ public class LoginController extends Controller {
                                               theParams.email));
             } catch (MongoException exc) {
                 Logger.error("createUser: ", exc);
-                HashMap mongoError = new HashMap<String, String>();
+                HashMap<String, String> mongoError = new HashMap<String, String>();
                 mongoError.put("email", "Hubo un problema en la creación de tu usuario");
                 return mongoError;
             }
@@ -179,7 +179,7 @@ public class LoginController extends Controller {
     }
 
     private static Map<String, String> translateError(String error) {
-        HashMap returnError = new HashMap<String, String>();
+        HashMap<String, String> returnError = new HashMap<String, String>();
         if (error == null) {
             return returnError;
         }
@@ -232,46 +232,47 @@ public class LoginController extends Controller {
             // Si no es Test, entramos a través de Stormpath
             Account account = isTest? null : StormPathClient.instance().login(loginParams.email, loginParams.password);
 
-            // Si no entra correctamente
-            if (account == null && !isTest) {
-                loginParamsForm.reject("email", "email or password incorrect");
-                returnHelper.setKO(loginParamsForm.errorsAsJson());
-            }
-            // Si entramos correctamente
-            else {
-                // Buscamos el usuario en Mongo
-                User theUser = Model.users().findOne("{email:'#'}", loginParams.email).as(User.class);
+            // Buscamos el usuario en Mongo
+            User theUser = Model.users().findOne("{email:'#'}", loginParams.email).as(User.class);
 
+            if (theUser == null) {
                 // Si el usuario tiene cuenta en StormPath, pero no existe en nuestra BD, lo creamos en nuestra BD
-                if (theUser == null && account != null) {
+                if(account != null) {
                     Logger.debug("Creamos el usuario porque no esta en nuestra DB y sí en Stormpath: {}", account.getEmail());
                     theUser = new User(account.getGivenName(), account.getSurname(),
-                                       account.getUsername(), account.getEmail());
+                            account.getUsername(), account.getEmail());
                     Model.users().insert(theUser);
                 }
-
-                if (Play.isDev()) {
-                    Logger.info("Estamos en desarrollo: El email {} sera el sessionToken y pondremos una cookie", theUser.email);
-
-                    // Durante el desarrollo en local usamos cookies y el email como sessionToken para que sea mas facil debugear
-                    // por ejemplo usando Postman
-                    response().setCookie("sessionToken", theUser.email);
-
-                    returnHelper.setOK(new Session(theUser.email, theUser.userId, GlobalDate.getCurrentDate()));
-                }
+                // Si el usuario no tiene cuenta en Stormpath ni lo encontramos en nuestra BD -> Reject
                 else {
-                    // En produccion NO mandamos cookie. Esto evita CSRFs. Esperamos que el cliente nos mande el sessionToken
-                    // cada vez como parametro en una custom header.
-                    Session session = Model.sessions().findOne("{userId: #}", theUser.userId).as(Session.class);
+                    loginParamsForm.reject("email", "email or password incorrect");
+                    returnHelper.setKO(loginParamsForm.errorsAsJson());
 
-                    if (session == null) {
-                        String sessionToken = Crypto.generateSignedToken();
-                        session = new Session(sessionToken, theUser.userId, GlobalDate.getCurrentDate());
-                        Model.sessions().insert(session);
-                    }
-
-                    returnHelper.setOK(session);
+                    return returnHelper.toResult();
                 }
+            }
+
+            if (Play.isDev()) {
+                Logger.info("Estamos en desarrollo: El email {} sera el sessionToken y pondremos una cookie", theUser.email);
+
+                // Durante el desarrollo en local usamos cookies y el email como sessionToken para que sea mas facil debugear
+                // por ejemplo usando Postman
+                response().setCookie("sessionToken", theUser.email);
+
+                returnHelper.setOK(new Session(theUser.email, theUser.userId, GlobalDate.getCurrentDate()));
+            }
+            else {
+                // En produccion NO mandamos cookie. Esto evita CSRFs. Esperamos que el cliente nos mande el sessionToken
+                // cada vez como parametro en una custom header.
+                Session session = Model.sessions().findOne("{userId: #}", theUser.userId).as(Session.class);
+
+                if (session == null) {
+                    String sessionToken = Crypto.generateSignedToken();
+                    session = new Session(sessionToken, theUser.userId, GlobalDate.getCurrentDate());
+                    Model.sessions().insert(session);
+                }
+
+                returnHelper.setOK(session);
             }
         }
 
