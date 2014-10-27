@@ -74,6 +74,12 @@ echo "mode: $mode"
 # Cambiamos a la rama de deploy, asegurandonos de que esta creada/reseateada
 git checkout -B deploy
 
+# Si el deploy es a produccion, borramos la carpeta admin
+if [[ "$destination" == "production" ]] then
+    echo "Removing admin/ folder"
+    rm -rf admin
+fi
+
 # Tenemos que borrar el symlink y hacer una copia dura de toda la build
 rm public
 cd ../webclient
