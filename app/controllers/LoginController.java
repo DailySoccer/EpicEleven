@@ -237,46 +237,51 @@ public class LoginController extends Controller {
 
             if (theUser == null) {
                 // Si el usuario tiene cuenta en StormPath, pero no existe en nuestra BD, lo creamos en nuestra BD
-                if(account != null) {
+                if (account != null) {
                     Logger.debug("Creamos el usuario porque no esta en nuestra DB y sí en Stormpath: {}", account.getEmail());
-                    theUser = new User(account.getGivenName(), account.getSurname(),
-                            account.getUsername(), account.getEmail());
+
+                    theUser = new User(account.getGivenName(), account.getSurname(), account.getUsername(), account.getEmail());
                     Model.users().insert(theUser);
                 }
                 // Si el usuario no tiene cuenta en Stormpath ni lo encontramos en nuestra BD -> Reject
                 else {
                     loginParamsForm.reject("email", "email or password incorrect");
                     returnHelper.setKO(loginParamsForm.errorsAsJson());
-
-                    return returnHelper.toResult();
                 }
             }
 
-            if (Play.isDev()) {
-                Logger.info("Estamos en desarrollo: El email {} sera el sessionToken y pondremos una cookie", theUser.email);
-
-                // Durante el desarrollo en local usamos cookies y el email como sessionToken para que sea mas facil debugear
-                // por ejemplo usando Postman
-                response().setCookie("sessionToken", theUser.email);
-
-                returnHelper.setOK(new Session(theUser.email, theUser.userId, GlobalDate.getCurrentDate()));
-            }
-            else {
-                // En produccion NO mandamos cookie. Esto evita CSRFs. Esperamos que el cliente nos mande el sessionToken
-                // cada vez como parametro en una custom header.
-                Session session = Model.sessions().findOne("{userId: #}", theUser.userId).as(Session.class);
-
-                if (session == null) {
-                    String sessionToken = Crypto.generateSignedToken();
-                    session = new Session(sessionToken, theUser.userId, GlobalDate.getCurrentDate());
-                    Model.sessions().insert(session);
-                }
-
-                returnHelper.setOK(session);
+            if (theUser != null) {
+                setSession(returnHelper, theUser);
             }
         }
 
         return returnHelper.toResult();
+    }
+
+    private static void setSession(ReturnHelper returnHelper, User theUser) {
+
+        if (Play.isDev()) {
+            Logger.info("Estamos en desarrollo: El email {} sera el sessionToken y pondremos una cookie", theUser.email);
+
+            // Durante el desarrollo en local usamos cookies y el email como sessionToken para que sea mas facil debugear
+            // por ejemplo usando Postman
+            response().setCookie("sessionToken", theUser.email);
+
+            returnHelper.setOK(new Session(theUser.email, theUser.userId, GlobalDate.getCurrentDate()));
+        }
+        else {
+            // En produccion NO mandamos cookie. Esto evita CSRFs. Esperamos que el cliente nos mande el sessionToken
+            // cada vez como parametro en una custom header.
+            Session session = Model.sessions().findOne("{userId: #}", theUser.userId).as(Session.class);
+
+            if (session == null) {
+                String sessionToken = Crypto.generateSignedToken();
+                session = new Session(sessionToken, theUser.userId, GlobalDate.getCurrentDate());
+                Model.sessions().insert(session);
+            }
+
+            returnHelper.setOK(session);
+        }
     }
 
     @UserAuthenticated
@@ -345,20 +350,19 @@ public class LoginController extends Controller {
 
 
     private static Map<String, String> changeStormpathProfile(User theUser, ChangeParams params, boolean somethingChanged, String originalEmail) {
-        StormPathClient stormPathClient = new StormPathClient();
 
-        Map<String, String> allErrors = new HashMap<String,String>();
+        StormPathClient stormPathClient = new StormPathClient();
+        Map<String, String> allErrors = new HashMap<>();
 
         if (!originalEmail.endsWith("test.com")) {
             if (somethingChanged) {
-                Map changeUserProfileErrors =  translateError(stormPathClient.changeUserProfile(originalEmail, theUser.firstName, theUser.lastName,
-                        theUser.email));
-                allErrors.putAll(changeUserProfileErrors);
+                String profErrors = stormPathClient.changeUserProfile(originalEmail, theUser.firstName, theUser.lastName, theUser.email);
+                allErrors.putAll(translateError(profErrors));
             }
 
             if (params.password.length() > 0) {
-                Map updatePasswordErrors =  translateError(stormPathClient.updatePassword(originalEmail, params.password));
-                allErrors.putAll(updatePasswordErrors);
+                String upErrors = stormPathClient.updatePassword(originalEmail, params.password);
+                allErrors.putAll(translateError(upErrors));
             }
         }
         return allErrors;
