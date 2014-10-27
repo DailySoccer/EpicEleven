@@ -30,10 +30,18 @@ public class GlobalDate {
 
         DateTime dateTime;
 
-        // Si la propia cadena contiene BST o GMT, es una de las que nos manda Opta en X-Meta-Last-Updated
-        if (dateStr.contains("BST") || dateStr.contains("GMT")) {
-            dateTime = DateTime.parse(dateStr.replace("BST ", "").replace("GMT ", ""),
-                                      DateTimeFormat.forPattern("E MMM dd HH:mm:ss yyyy").withZone(_LONDON_TIME_ZONE));
+        // Si la propia cadena contiene BST, GMT o UTC, es una de las que nos manda Opta en X-Meta-Last-Updated.
+        // Con el cambio horario han empezado a mandar fechas con UTC en el X-Meta-Last-Updated: "Sun Oct 26 22:12:58 UTC 2014"
+        if (dateStr.contains("BST") || dateStr.contains("GMT") || dateStr.contains("UTC")) {
+
+            if (!dateStr.contains("BST")) {
+                // Tenemos que eliminar BST pq la interpreta como Bangladesh
+                dateTime = DateTime.parse(dateStr.replace("BST ", ""),
+                                          DateTimeFormat.forPattern("E MMM dd HH:mm:ss yyyy").withZone(_LONDON_TIME_ZONE));
+            }
+            else {
+                dateTime = DateTime.parse(dateStr, DateTimeFormat.forPattern("E MMM dd HH:mm:ss z yyyy"));
+            }
         }
         else {
             if (timezone == null) {
