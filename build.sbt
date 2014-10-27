@@ -28,13 +28,6 @@ sources in (Compile,doc) := Seq.empty
 
 publishArtifact in (Compile, packageDoc) := false
 
-// Definimos nuestros modulos y las dependencias entre ellos
-lazy val common = project.in(file("./common")).enablePlugins(PlayJava)
-
-lazy val admin = project.in(file("./admin")).dependsOn(common).enablePlugins(PlayJava)
-
-lazy val backend = project.in(file(".")).aggregate(common, admin).dependsOn(common, admin).enablePlugins(PlayJava)
-
 // javacOptions ++= Seq("-Xlint:deprecation")
 
 // Hacemos el hook de las rutas hijas (por ejemplo, admin/) dentro del fichero de routas ('backend.routes'), como
