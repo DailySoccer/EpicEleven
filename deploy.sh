@@ -75,7 +75,7 @@ echo "mode: $mode"
 git checkout -B deploy
 
 # Si el deploy es a produccion, borramos la carpeta admin
-if [[ "$destination" == "production" ]]
+if [[ "$destination" == "production" ]] then
     echo "Removing admin/ folder"
     rm -rf admin
 fi
