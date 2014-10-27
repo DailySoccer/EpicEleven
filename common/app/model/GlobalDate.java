@@ -35,12 +35,11 @@ public class GlobalDate {
         if (dateStr.contains("BST") || dateStr.contains("GMT") || dateStr.contains("UTC")) {
 
             if (!dateStr.contains("BST")) {
-                // Tenemos que eliminar BST pq la interpreta como Bangladesh
-                dateTime = DateTime.parse(dateStr.replace("BST ", ""),
-                                          DateTimeFormat.forPattern("E MMM dd HH:mm:ss yyyy").withZone(_LONDON_TIME_ZONE));
+                dateTime = DateTime.parse(dateStr, DateTimeFormat.forPattern("E MMM dd HH:mm:ss z yyyy"));
             }
             else {
-                dateTime = DateTime.parse(dateStr, DateTimeFormat.forPattern("E MMM dd HH:mm:ss z yyyy"));
+                // Tenemos que eliminar BST pq la interpreta como Bangladesh
+                dateTime = DateTime.parse(dateStr.replace("BST ", ""), DateTimeFormat.forPattern("E MMM dd HH:mm:ss yyyy").withZone(_LONDON_TIME_ZONE));
             }
         }
         else {
