@@ -53,6 +53,10 @@ public class LoginController extends Controller {
         @Required public String password;
     }
 
+    public static class FBLoginParams {
+        @Required public String accessToken;
+    }
+
     public static class AskForPasswordResetParams {
         @Required public String email;
     }
@@ -271,6 +275,40 @@ public class LoginController extends Controller {
             }
         }
 
+        return returnHelper.toResult();
+    }
+
+
+    public static Result facebookLogin() {
+
+        Form<FBLoginParams> loginParamsForm = Form.form(FBLoginParams.class).bindFromRequest();
+        ReturnHelper returnHelper = new ReturnHelper();
+
+        if (!loginParamsForm.hasErrors()) {
+            FBLoginParams loginParams = loginParamsForm.get();
+
+            Account account = StormPathClient.instance().facebookLogin(loginParams.accessToken);
+            User theUser = null;
+            if (account != null) {
+                theUser = Model.users().findOne("{email:'#'}", account.getEmail()).as(User.class);
+
+                if (theUser == null) {
+                    Logger.debug("Creamos el usuario porque no esta en nuestra DB y sí en Stormpath: {}", account.getEmail());
+
+                    theUser = new User(account.getGivenName(), account.getSurname(), account.getUsername(), account.getEmail());
+                    Model.users().insert(theUser);
+                }
+            }
+            else {
+                loginParamsForm.reject("email", "token incorrect");
+                returnHelper.setKO(loginParamsForm.errorsAsJson());
+            }
+
+            if (theUser != null) {
+                setSession(returnHelper, theUser);
+            }
+
+        }
         return returnHelper.toResult();
     }
 

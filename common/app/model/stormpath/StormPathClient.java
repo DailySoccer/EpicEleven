@@ -13,6 +13,9 @@ import com.stormpath.sdk.authc.UsernamePasswordRequest;
 import com.stormpath.sdk.client.Client;
 import com.stormpath.sdk.client.Clients;
 import com.stormpath.sdk.directory.CustomData;
+import com.stormpath.sdk.provider.ProviderAccountRequest;
+import com.stormpath.sdk.provider.ProviderAccountResult;
+import com.stormpath.sdk.provider.Providers;
 import com.stormpath.sdk.resource.ResourceException;
 import com.stormpath.sdk.tenant.Tenant;
 import play.Logger;
@@ -159,6 +162,24 @@ public class StormPathClient {
             return new F.Tuple<>(null, ex.getMessage());
         }
         return new F.Tuple<>(account, null);
+    }
+
+    public Account facebookLogin(String accessToken){
+        try {
+            ProviderAccountRequest request = Providers.FACEBOOK.account()
+                    .setAccessToken(accessToken)
+                    .build();
+
+            ProviderAccountResult result = _myApp.getAccount(request);
+            return result.getAccount();
+        }
+        catch (ResourceException ex) {
+            Logger.error(String.valueOf(ex.getStatus()));
+            Logger.error(String.valueOf(ex.getCode()));
+            Logger.error(ex.getMessage());
+            Logger.error(ex.getStatus() + " " + ex.getMessage());
+        }
+        return null;
     }
 
     public Account login(String usernameOrEmail, String rawPassword){
