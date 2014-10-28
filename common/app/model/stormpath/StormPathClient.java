@@ -107,7 +107,7 @@ public class StormPathClient {
         return null;
     }
 
-    public String resetPasswordWithToken(String password, String token) {
+    public String resetPasswordWithToken(String token, String password) {
         try {
             _myApp.resetPassword(token, password);
         }
