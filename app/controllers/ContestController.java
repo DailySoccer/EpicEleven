@@ -74,11 +74,11 @@ public class ContestController extends Controller {
         List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
 
         // Buscar todos los players que han sido incrustados en los contestEntries
-        Set<ObjectId> playersInContests = new HashSet<>();
+        Set<ObjectId> playersInContestEntries = new HashSet<>();
         for (ContestEntry contestEntry: contest.contestEntries) {
-            playersInContests.addAll(contestEntry.soccerIds);
+            playersInContestEntries.addAll(contestEntry.soccerIds);
         }
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests.iterator()));
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContestEntries.iterator()));
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                 "users_info", usersInfoInContest,
