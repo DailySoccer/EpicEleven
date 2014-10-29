@@ -107,19 +107,18 @@ public class StormPathClient {
         return null;
     }
 
-    public String resetPasswordWithToken(String token, String password) {
+    public Account resetPasswordWithToken(String token, String password) {
+        Account account = null;
         try {
-            _myApp.resetPassword(token, password);
+            account = _myApp.resetPassword(token, password);
         }
         catch (ResourceException ex) {
             Logger.error(String.valueOf(ex.getStatus()));
             Logger.error(String.valueOf(ex.getCode()));
             Logger.error(ex.getMessage());
             Logger.error(ex.getStatus() + " " + ex.getMessage());
-
-            return ex.getMessage();
         }
-        return null;
+        return account;
     }
 
     public Account login(String usernameOrEmail, String rawPassword){

@@ -119,12 +119,25 @@ public class LoginController extends Controller {
         if (!passwordResetParamsForm.hasErrors()) {
             params = passwordResetParamsForm.get();
 
-            String resetPasswordWithTokenErrors = StormPathClient.instance().resetPasswordWithToken(params.token, params.password);
+            Account account = StormPathClient.instance().resetPasswordWithToken(params.token, params.password);
 
-            if (resetPasswordWithTokenErrors == null) {
-                returnHelper.setOK(ImmutableMap.of("success", "Password resetted successfully"));
-            } else {
-                returnHelper.setKO(ImmutableMap.of("error", resetPasswordWithTokenErrors));
+            User theUser = null;
+            if (account != null) {
+                theUser = Model.users().findOne("{email:'#'}", account.getEmail()).as(User.class);
+
+                if (theUser == null) {
+                    Logger.debug("Creamos el usuario porque no esta en nuestra DB y sí en Stormpath: {}", account.getEmail());
+
+                    theUser = new User(account.getGivenName(), account.getSurname(), account.getGivenName(), account.getEmail());
+                    Model.users().insert(theUser);
+                }
+            }
+
+            if (theUser != null) {
+                setSession(returnHelper, theUser);
+            }
+            else {
+                returnHelper.setKO(ImmutableMap.of("error", "El token ha expirado o no es válido."));
             }
         }
         return returnHelper.toResult();
