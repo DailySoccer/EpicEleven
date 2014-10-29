@@ -216,37 +216,63 @@ public class TemplateContestController extends Controller {
     }
 
     public static void createMock(List<TemplateMatchEvent> templateMatchEvents) {
-        createMock(templateMatchEvents, 0, 3, PrizeType.FREE);
-        createMock(templateMatchEvents, 0, 5, PrizeType.FREE);
-        createMock(templateMatchEvents, 0, 10, PrizeType.FREE);
-        createMock(templateMatchEvents, 0, 25, PrizeType.FREE);
+        createMock(templateMatchEvents, 0, 3, PrizeType.FREE, 70000);
+        //createMock(templateMatchEvents, 0, 5, PrizeType.FREE);
+        //createMock(templateMatchEvents, 0, 10, PrizeType.FREE);
+        createMock(templateMatchEvents, 0, 25, PrizeType.FREE, 65000);
 
 
         for (int i = 1; i<=6; i++) {
+
+            switch (i) {
+                case 1:
+                    createMock(templateMatchEvents, i, 2, PrizeType.WINNER_TAKES_ALL, 60000);
+                    createMock(templateMatchEvents, i, 10, PrizeType.TOP_3_GET_PRIZES, 65000);
+                    break;
+                case 2:
+                    createMock(templateMatchEvents, i, 25, PrizeType.WINNER_TAKES_ALL, 65000);
+                    break;
+                case 3:
+                    createMock(templateMatchEvents, i, 5, PrizeType.TOP_THIRD_GET_PRIZES, 70000);
+                    createMock(templateMatchEvents, i, 3, PrizeType.FIFTY_FIFTY, 60000);
+                    break;
+                case 4:
+                    createMock(templateMatchEvents, i, 3, PrizeType.FIFTY_FIFTY, 65000);
+                    createMock(templateMatchEvents, i, 10, PrizeType.TOP_3_GET_PRIZES, 70000);
+                    break;
+                case 5:
+                    createMock(templateMatchEvents, i, 10, PrizeType.TOP_3_GET_PRIZES, 60000);
+                    createMock(templateMatchEvents, i, 25, PrizeType.WINNER_TAKES_ALL, 65000);
+                    break;
+                case 6:
+                    createMock(templateMatchEvents, i, 25, PrizeType.WINNER_TAKES_ALL, 70000);
+                    break;
+            }
+            /*
             createMock(templateMatchEvents, i, 2, PrizeType.WINNER_TAKES_ALL);
-            createMock(templateMatchEvents, i, 3, PrizeType.WINNER_TAKES_ALL);
-            createMock(templateMatchEvents, i, 5, PrizeType.WINNER_TAKES_ALL);
-            createMock(templateMatchEvents, i, 10, PrizeType.WINNER_TAKES_ALL);
+            //createMock(templateMatchEvents, i, 3, PrizeType.WINNER_TAKES_ALL);
+            //createMock(templateMatchEvents, i, 5, PrizeType.WINNER_TAKES_ALL);
+            //createMock(templateMatchEvents, i, 10, PrizeType.WINNER_TAKES_ALL);
             createMock(templateMatchEvents, i, 25, PrizeType.WINNER_TAKES_ALL);
 
-            createMock(templateMatchEvents, i, 3, PrizeType.TOP_3_GET_PRIZES);
-            createMock(templateMatchEvents, i, 5, PrizeType.TOP_3_GET_PRIZES);
+            //createMock(templateMatchEvents, i, 3, PrizeType.TOP_3_GET_PRIZES);
+            //createMock(templateMatchEvents, i, 5, PrizeType.TOP_3_GET_PRIZES);
             createMock(templateMatchEvents, i, 10, PrizeType.TOP_3_GET_PRIZES);
-            createMock(templateMatchEvents, i, 25, PrizeType.TOP_3_GET_PRIZES);
+            //createMock(templateMatchEvents, i, 25, PrizeType.TOP_3_GET_PRIZES);
 
-            createMock(templateMatchEvents, i, 3, PrizeType.TOP_THIRD_GET_PRIZES);
+            //createMock(templateMatchEvents, i, 3, PrizeType.TOP_THIRD_GET_PRIZES);
             createMock(templateMatchEvents, i, 5, PrizeType.TOP_THIRD_GET_PRIZES);
-            createMock(templateMatchEvents, i, 10, PrizeType.TOP_THIRD_GET_PRIZES);
-            createMock(templateMatchEvents, i, 25, PrizeType.TOP_THIRD_GET_PRIZES);
+            //createMock(templateMatchEvents, i, 10, PrizeType.TOP_THIRD_GET_PRIZES);
+            //createMock(templateMatchEvents, i, 25, PrizeType.TOP_THIRD_GET_PRIZES);
 
             createMock(templateMatchEvents, i, 3, PrizeType.FIFTY_FIFTY);
-            createMock(templateMatchEvents, i, 5, PrizeType.FIFTY_FIFTY);
-            createMock(templateMatchEvents, i, 10, PrizeType.FIFTY_FIFTY);
-            createMock(templateMatchEvents, i, 25, PrizeType.FIFTY_FIFTY);
+            //createMock(templateMatchEvents, i, 5, PrizeType.FIFTY_FIFTY);
+            //createMock(templateMatchEvents, i, 10, PrizeType.FIFTY_FIFTY);
+            //createMock(templateMatchEvents, i, 25, PrizeType.FIFTY_FIFTY);*/
         }
     }
 
-    public static void createMock(List<TemplateMatchEvent> templateMatchEvents, int entryFee, int maxEntries, PrizeType prizeType) {
+    public static void createMock(List<TemplateMatchEvent> templateMatchEvents, int entryFee, int maxEntries, PrizeType prizeType, int salaryCap) {
         if (templateMatchEvents.size() == 0) {
             Logger.error("create: templateMatchEvents is empty");
             return;
@@ -263,7 +289,7 @@ public class TemplateContestController extends Controller {
         templateContest.maxEntries = maxEntries;
         templateContest.prizeType = prizeType;
         templateContest.entryFee = entryFee;
-        templateContest.salaryCap = 90000;
+        templateContest.salaryCap = salaryCap;
         templateContest.startDate = startDate;
         templateContest.templateMatchEventIds = new ArrayList<>();
 

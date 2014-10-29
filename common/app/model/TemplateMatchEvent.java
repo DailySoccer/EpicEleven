@@ -280,7 +280,7 @@ public class TemplateMatchEvent implements JongoId, Initializer {
         }
     }
 
-    static private void setLiveFantasyPointsOfSoccerPlayer(String optaMatchId, String soccerPlayerId, LiveFantasyPoints fantasyPoints) {
+    private void setLiveFantasyPointsOfSoccerPlayer(String optaMatchId, String soccerPlayerId, LiveFantasyPoints fantasyPoints) {
         //Logger.info("setLiveFantasyPoints: {} = {} fantasy points", soccerPlayerId, points);
 
         String setPattern = String.format("{$set: {'liveFantasyPoints.%s': #}}", soccerPlayerId);
@@ -288,6 +288,8 @@ public class TemplateMatchEvent implements JongoId, Initializer {
                 .update("{optaMatchEventId: #}", optaMatchId)
                 .multi()
                 .with(setPattern, fantasyPoints);
+
+        liveFantasyPoints.put(soccerPlayerId.toString(), fantasyPoints);
     }
     
     public static TemplateMatchEvent createFromOpta(OptaMatchEvent optaMatchEvent) {
