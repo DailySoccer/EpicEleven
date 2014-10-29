@@ -140,7 +140,7 @@ public class LoginController extends Controller {
                 setSession(returnHelper, theUser);
             }
             else {
-                returnHelper.setKO(ImmutableMap.of("error", error));
+                returnHelper.setKO(translateError(error));
             }
         }
         return returnHelper.toResult();
