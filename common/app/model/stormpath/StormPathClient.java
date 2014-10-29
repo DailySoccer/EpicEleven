@@ -15,6 +15,7 @@ import com.stormpath.sdk.client.Clients;
 import com.stormpath.sdk.resource.ResourceException;
 import com.stormpath.sdk.tenant.Tenant;
 import play.Logger;
+import play.libs.F;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -107,8 +108,8 @@ public class StormPathClient {
         return null;
     }
 
-    public Account resetPasswordWithToken(String token, String password) {
-        Account account = null;
+    public F.Tuple<Account, String> resetPasswordWithToken(String token, String password) {
+        Account account;
         try {
             account = _myApp.resetPassword(token, password);
         }
@@ -117,8 +118,10 @@ public class StormPathClient {
             Logger.error(String.valueOf(ex.getCode()));
             Logger.error(ex.getMessage());
             Logger.error(ex.getStatus() + " " + ex.getMessage());
+
+            return new F.Tuple<>(null, ex.getMessage());
         }
-        return account;
+        return new F.Tuple<>(account, null);
     }
 
     public Account login(String usernameOrEmail, String rawPassword){
@@ -147,7 +150,7 @@ public class StormPathClient {
     }
 
     public String changeUserProfile(String userEmail, String firstName, String lastName, String email) {
-        Map<String, Object> queryParams = new HashMap<String, Object>();
+        Map<String, Object> queryParams = new HashMap<>();
         queryParams.put("email", userEmail);
         AccountList accounts = _myApp.getAccounts(queryParams);
 
@@ -169,7 +172,7 @@ public class StormPathClient {
     }
 
     public String updatePassword(String userEmail, String password) {
-        Map<String, Object> queryParams = new HashMap<String, Object>();
+        Map<String, Object> queryParams = new HashMap<>();
         queryParams.put("email", userEmail);
         AccountList accounts = _myApp.getAccounts(queryParams);
 

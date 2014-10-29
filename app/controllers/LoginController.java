@@ -19,6 +19,7 @@ import play.data.validation.Constraints.Email;
 import play.data.validation.Constraints.MinLength;
 import play.data.validation.Constraints.Required;
 import play.libs.Crypto;
+import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ReturnHelper;
@@ -68,7 +69,7 @@ public class LoginController extends Controller {
     public static Result askForPasswordReset() {
 
         Form<AskForPasswordResetParams> askForPasswordResetParamsForm = form(AskForPasswordResetParams.class).bindFromRequest();
-        AskForPasswordResetParams params = null;
+        AskForPasswordResetParams params;
 
         ReturnHelper returnHelper = new ReturnHelper();
 
@@ -90,7 +91,7 @@ public class LoginController extends Controller {
 
     public static Result verifyPasswordResetToken() {
         Form<VerifyPasswordResetTokenParams> verifyPasswordResetTokenParamsForm = form(VerifyPasswordResetTokenParams.class).bindFromRequest();
-        VerifyPasswordResetTokenParams params = null;
+        VerifyPasswordResetTokenParams params;
 
         ReturnHelper returnHelper = new ReturnHelper();
 
@@ -112,16 +113,18 @@ public class LoginController extends Controller {
     public static Result resetPasswordWithToken() {
 
         Form<PasswordResetParams> passwordResetParamsForm = form(PasswordResetParams.class).bindFromRequest();
-        PasswordResetParams params = null;
+        PasswordResetParams params;
 
         ReturnHelper returnHelper = new ReturnHelper();
 
         if (!passwordResetParamsForm.hasErrors()) {
             params = passwordResetParamsForm.get();
 
-            Account account = StormPathClient.instance().resetPasswordWithToken(params.token, params.password);
+            F.Tuple<Account, String> accountError = StormPathClient.instance().resetPasswordWithToken(params.token, params.password);
 
             User theUser = null;
+            Account account = accountError._1;
+            String error = accountError._2;
             if (account != null) {
                 theUser = Model.users().findOne("{email:'#'}", account.getEmail()).as(User.class);
 
@@ -137,7 +140,7 @@ public class LoginController extends Controller {
                 setSession(returnHelper, theUser);
             }
             else {
-                returnHelper.setKO(ImmutableMap.of("error", "El token ha expirado o no es válido."));
+                returnHelper.setKO(ImmutableMap.of("error", error));
             }
         }
         return returnHelper.toResult();
@@ -182,7 +185,7 @@ public class LoginController extends Controller {
                                               theParams.email));
             } catch (MongoException exc) {
                 Logger.error("createUser: ", exc);
-                HashMap<String, String> mongoError = new HashMap<String, String>();
+                HashMap<String, String> mongoError = new HashMap<>();
                 mongoError.put("email", "Hubo un problema en la creación de tu usuario");
                 return mongoError;
             }
@@ -192,7 +195,7 @@ public class LoginController extends Controller {
     }
 
     private static Map<String, String> translateError(String error) {
-        HashMap<String, String> returnError = new HashMap<String, String>();
+        HashMap<String, String> returnError = new HashMap<>();
         if (error == null) {
             return returnError;
         }
