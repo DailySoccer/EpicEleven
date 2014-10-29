@@ -5,6 +5,7 @@ import actions.UserAuthenticated;
 import com.google.common.collect.ImmutableMap;
 import model.*;
 import org.bson.types.ObjectId;
+import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
@@ -65,6 +66,29 @@ public class ContestController extends Controller {
     }
 
     @UserAuthenticated
+    public static Result getViewContest(String contestId) {
+        Contest contest = Contest.findOne(contestId);
+
+        List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
+        List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
+        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
+
+        // Buscar todos los players que han sido incrustados en los contestEntries
+        Set<ObjectId> playersInContests = new HashSet<>();
+        for (ContestEntry contestEntry: contest.contestEntries) {
+            playersInContests.addAll(contestEntry.soccerIds);
+        }
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests.iterator()));
+
+        return new ReturnHelper(ImmutableMap.of("contest", contest,
+                "users_info", usersInfoInContest,
+                "match_events", matchEvents,
+                "soccer_teams", teams,
+                "soccer_players", players))
+                .toResult(JsonViews.FullContest.class);
+    }
+
+    @UserAuthenticated
     public static Result getMyContest(String contestId) {
         User theUser = (User)ctx().args.get("User");
         Contest contest = Contest.findOne(contestId);
@@ -85,7 +109,6 @@ public class ContestController extends Controller {
 
     private static ReturnHelper attachInfoToContest(Contest contest) {
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
-
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
         List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
 
