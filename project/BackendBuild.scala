@@ -13,19 +13,12 @@ object BackendBuild extends Build {
 
     println("Removing admin.Routes from conf/backend.routes")
 
-    var outLines : List[String] = List()
-    val file = Source.fromFile("conf/backend.routes")
+    val fileName = "conf/backend.routes";
+    val outLines = Source.fromFile(fileName).getLines().filter(line => {!line.contains("admin.Routes")}).toList
+    val out = new PrintWriter(fileName)
 
-    file.getLines().foreach { line =>
-      if (!line.contains("admin.Routes")) {
-        outLines ::= line
-      }
-    }
-    file.close()
-
-    val out = new PrintWriter("conf/backend.routes")
     try {
-      outLines.reverse.foreach(line => out.println(line))
+      outLines.foreach(line => {out.println(line)})
     }
     finally {
       out.close()
