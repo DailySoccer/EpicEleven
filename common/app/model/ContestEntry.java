@@ -76,14 +76,15 @@ public class ContestEntry implements JongoId {
     }
 
     static public ContestEntry findOne(ObjectId contestEntryId) {
-        Contest contest = Contest.findOneFromContestEntry(contestEntryId);
-
         ContestEntry contestEntry = null;
 
-        for (ContestEntry entry : contest.contestEntries) {
-            if (entry.contestEntryId.equals(contestEntryId)) {
-                contestEntry = entry;
-                break;
+        Contest contest = Contest.findOneFromContestEntry(contestEntryId);
+        if (contest != null) {
+            for (ContestEntry entry : contest.contestEntries) {
+                if (entry.contestEntryId.equals(contestEntryId)) {
+                    contestEntry = entry;
+                    break;
+                }
             }
         }
 
@@ -163,12 +164,17 @@ public class ContestEntry implements JongoId {
         boolean bRet = false;
 
         try {
-            WriteResult result = Model.contests()
-                    .update("{_id: #, state: \"ACTIVE\", contestEntries._id: #, contestEntries.userId: #}", contestId, contestEntryId, userId)
-                    .with("{$pull: {contestEntries: {_id: #}}}", contestEntryId);
+            Contest contest = Model.contests()
+                    .findAndModify("{_id: #, state: \"ACTIVE\", contestEntries._id: #, contestEntries.userId: #}", contestId, contestEntryId, userId)
+                    .with("{$pull: {contestEntries: {_id: #}}}", contestEntryId)
+                    .as(Contest.class);
 
-            // Comprobamos el número de documentos afectados (error == 0)
-            bRet = (result.getN() > 0);
+            if (contest != null) {
+                // Registrar el contestEntry eliminado
+                ContestEntry cancelledContestEntry = contest.findContestEntry(contestEntryId);
+                Model.cancelledContestEntries().insert(cancelledContestEntry);
+                bRet = true;
+            }
         }
         catch (MongoException exc) {
             Logger.error("WTF 7801: ", exc);
