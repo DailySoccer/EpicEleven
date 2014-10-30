@@ -60,12 +60,6 @@ public class ContestController extends Controller {
     }
 
     @UserAuthenticated
-    public static Result getFullContest(String contestId) {
-        // User theUser = (User)ctx().args.get("User");
-        return attachInfoToContest(Contest.findOne(contestId)).toResult(JsonViews.FullContest.class);
-    }
-
-    @UserAuthenticated
     public static Result getViewContest(String contestId) {
         Contest contest = Contest.findOne(contestId);
 
@@ -101,6 +95,43 @@ public class ContestController extends Controller {
         }
 
         return attachInfoToContest(contest).toResult(JsonViews.FullContest.class);
+    }
+
+    @UserAuthenticated
+    public static Result getMyContestEntry(String contestId) {
+        User theUser = (User)ctx().args.get("User");
+        Contest contest = Contest.findOne(contestId);
+
+        Set<ObjectId> playersInContestEntry = new HashSet<>();
+
+        // Registramos los players seleccionados por el User y Quitamos todos fantasyTeam de los contestEntries que no sean del User
+        for (ContestEntry contestEntry: contest.contestEntries) {
+            if (contestEntry.userId.equals(theUser.userId)) {
+                playersInContestEntry.addAll(contestEntry.soccerIds);
+            }
+            else {
+                contestEntry.soccerIds.clear();
+            }
+        }
+
+        List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
+        List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
+        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
+
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContestEntry.iterator()));
+
+        return new ReturnHelper(ImmutableMap.of("contest", contest,
+                "users_info", usersInfoInContest,
+                "match_events", matchEvents,
+                "soccer_teams", teams,
+                "soccer_players", players))
+                .toResult(JsonViews.FullContest.class);
+    }
+
+    @UserAuthenticated
+    public static Result getFullContest(String contestId) {
+        // User theUser = (User)ctx().args.get("User");
+        return attachInfoToContest(Contest.findOne(contestId)).toResult(JsonViews.FullContest.class);
     }
 
     public static Result getPublicContest(String contestId) {
