@@ -163,12 +163,20 @@ public class ContestEntry implements JongoId {
         boolean bRet = false;
 
         try {
+            // Guardamos el contestEntry que va a ser eliminado
+            ContestEntry contestEntry = findOne(contestEntryId);
+
             WriteResult result = Model.contests()
                     .update("{_id: #, state: \"ACTIVE\", contestEntries._id: #, contestEntries.userId: #}", contestId, contestEntryId, userId)
                     .with("{$pull: {contestEntries: {_id: #}}}", contestEntryId);
 
             // Comprobamos el número de documentos afectados (error == 0)
             bRet = (result.getN() > 0);
+
+            if (bRet) {
+                // Registrar el contestEntry eliminado
+                Model.cancelledContestEntries().insert(contestEntry);
+            }
         }
         catch (MongoException exc) {
             Logger.error("WTF 7801: ", exc);
