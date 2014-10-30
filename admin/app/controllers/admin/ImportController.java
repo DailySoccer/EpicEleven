@@ -1,17 +1,27 @@
 package controllers.admin;
 
+
+import com.google.gdata.client.spreadsheet.SpreadsheetService;
+import com.google.gdata.data.spreadsheet.SpreadsheetEntry;
+import com.google.gdata.data.spreadsheet.SpreadsheetFeed;
+import com.google.gdata.util.ServiceException;
 import model.opta.*;
 import org.apache.oltu.oauth2.client.request.OAuthClientRequest;
 import org.apache.oltu.oauth2.common.OAuthProviderType;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
+import org.apache.oltu.oauth2.common.message.types.GrantType;
 import play.Logger;
+import play.libs.F;
+import play.libs.ws.WS;
+import play.libs.ws.WSResponse;
 import play.mvc.Controller;
 import play.mvc.Result;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.*;
 
 public class ImportController extends Controller {
     /**
@@ -206,15 +216,79 @@ public class ImportController extends Controller {
             OAuthClientRequest request = OAuthClientRequest
                     .authorizationProvider(OAuthProviderType.GOOGLE)
                     .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
-                    .setRedirectURI("http://localhost:9000/updatesalaries")
+                    .setRedirectURI("http://localhost:9000/admin/updatesalaries")
                     .setResponseType("code")
-                    .setScope("https://www.googleapis.com/auth/plus.login")
+                    .setScope("https://spreadsheets.google.com/feeds")
                     .buildQueryMessage();
             return redirect(request.getLocationUri());
         } catch (OAuthSystemException e) {
             Logger.error("WTF 5036", e);
             return forbidden();
         }
+    }
+
+    public static Result googleOAuth2() {
+        String code = request().getQueryString("code");
+
+        try {
+            OAuthClientRequest request = OAuthClientRequest
+                    .tokenProvider(OAuthProviderType.GOOGLE)
+                    .setCode(code)
+                    .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
+                    .setClientSecret("cDI00MZJyCmp4r655ZAgy8hG")
+                    .setRedirectURI("http://localhost:9000/admin/updatesalaries2")
+                    .setGrantType(GrantType.AUTHORIZATION_CODE)
+                    .buildBodyMessage();
+
+
+            Logger.info(request.getLocationUri().toString());
+            F.Promise<WSResponse> responsePromise = WS.url(request.getLocationUri()).post(request.getBody());
+            WSResponse response = responsePromise.get(10000);
+            Logger.info(response.getBody());
+
+
+        } catch (OAuthSystemException e) {
+            Logger.error("WTF 5036", e);
+            return forbidden();
+        }
+
+        return ok("Whatever");
+    }
+
+    public static Result updateSalaries() {
+        SpreadsheetService service = new SpreadsheetService("MySpreadsheetIntegration");
+        service.setProtocolVersion(SpreadsheetService.Versions.V3);
+
+        service.setAuthSubToken(request().getQueryString("token"));
+
+        // TODO: Authorize the service object for a specific user (see other sections)
+
+        // Define the URL to request.  This should never change.
+
+        try {
+            // Define the URL to request.  This should never change.
+            URL SPREADSHEET_FEED_URL = new URL("https://spreadsheets.google.com/feeds/spreadsheets/private/full");
+
+            // Make a request to the API and get all spreadsheets.
+            SpreadsheetFeed feed = service.getFeed(SPREADSHEET_FEED_URL, SpreadsheetFeed.class);
+            List<SpreadsheetEntry> spreadsheets = feed.getEntries();
+
+            // Iterate through all of the spreadsheets returned
+            for (SpreadsheetEntry spreadsheet : spreadsheets) {
+                // Print the title of this spreadsheet to the screen
+                Logger.info(spreadsheet.getTitle().getPlainText());
+            }
+
+
+        } catch (MalformedURLException e) {
+            Logger.error("WTF 5096", e);
+        } catch (ServiceException e) {
+            Logger.error("WTF 5196", e);
+        } catch (IOException e) {
+            Logger.error("WTF 5296", e);
+        }
+        return ok("Whatever");
+
     }
 
 }

@@ -115,5 +115,7 @@ GET         /create_contests/:mockIndex                                controlle
 GET         /is_simulator_activated                                    controllers.admin.SimulatorController.isSimulatorActivated()
 
 # WIP
-GET         /updatesalaries                                            controllers.admin.DashboardController.index()
+POST        /updatesalaries2                                           controllers.admin.ImportController.updateSalaries()
 GET         /googleoauth                                               controllers.admin.ImportController.googleOAuth()
+GET         /updatesalaries                                            controllers.admin.ImportController.googleOAuth2()
+
