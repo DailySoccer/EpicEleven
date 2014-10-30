@@ -1,6 +1,9 @@
 package controllers.admin;
 
 import model.opta.*;
+import org.apache.oltu.oauth2.client.request.OAuthClientRequest;
+import org.apache.oltu.oauth2.common.OAuthProviderType;
+import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -198,5 +201,20 @@ public class ImportController extends Controller {
         return redirect(routes.DashboardController.index());
     }
 
+    public static Result googleOAuth() {
+        try {
+            OAuthClientRequest request = OAuthClientRequest
+                    .authorizationProvider(OAuthProviderType.GOOGLE)
+                    .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
+                    .setRedirectURI("http://localhost:9000/updatesalaries")
+                    .setResponseType("code")
+                    .setScope("https://www.googleapis.com/auth/plus.login")
+                    .buildQueryMessage();
+            return redirect(request.getLocationUri());
+        } catch (OAuthSystemException e) {
+            Logger.error("WTF 5036", e);
+            return forbidden();
+        }
+    }
 
 }

@@ -113,3 +113,7 @@ GET         /create_contests/:mockIndex                                controlle
 
 # Informar al webclient si el simulator esta activado (requiere Json)
 GET         /is_simulator_activated                                    controllers.admin.SimulatorController.isSimulatorActivated()
+
+# WIP
+GET         /updatesalaries                                            controllers.admin.DashboardController.index()
+GET         /googleoauth                                               controllers.admin.ImportController.googleOAuth()
