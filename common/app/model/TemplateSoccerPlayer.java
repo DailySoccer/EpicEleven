@@ -96,6 +96,14 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: #, activated: # }", templateSoccerTeamId, true).as(TemplateSoccerPlayer.class));
     }
 
+    static public List<TemplateSoccerPlayer> findAllFromInstances(List<InstanceSoccerPlayer> instanceSoccerPlayers) {
+        List<ObjectId> templateSoccerPlayerIds = new ArrayList<>();
+        for (InstanceSoccerPlayer instanceSoccerPlayer: instanceSoccerPlayers) {
+            templateSoccerPlayerIds.add(instanceSoccerPlayer.templateSoccerPlayerId);
+        }
+        return findAll(templateSoccerPlayerIds);
+    }
+
     static public List<TemplateSoccerPlayer> findAllActiveFromTeams(List<TemplateSoccerTeam> templateSoccerTeams) {
         List<ObjectId> teamIds = new ArrayList<>();
         for (TemplateSoccerTeam team: templateSoccerTeams) {
