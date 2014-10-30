@@ -68,5 +68,4 @@ public class ReturnHelperWithAttach extends ReturnHelper {
     }
 
     private JsonDataBuilder jsonDataBuilder = new JsonDataBuilder();
-    private ObjectIdMapper objectIdMapper = new ObjectIdMapper();
 }

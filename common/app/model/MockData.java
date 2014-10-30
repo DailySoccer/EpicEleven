@@ -58,20 +58,12 @@ public final class MockData {
         List<TemplateSoccerPlayer> forwards = new ArrayList<>();
 
         for (TemplateMatchEvent templateMatchEvent : TemplateContest.findOne(contest.templateContestId).getTemplateMatchEvents()) {
-            List<TemplateSoccerPlayer> soccerPlayersA = TemplateSoccerPlayer.findAllActiveFromTemplateTeam(templateMatchEvent.templateSoccerTeamAId);
-            List<TemplateSoccerPlayer> soccerPlayersB = TemplateSoccerPlayer.findAllActiveFromTemplateTeam(templateMatchEvent.templateSoccerTeamBId);
+            List<TemplateSoccerPlayer> soccerPlayers = TemplateSoccerPlayer.findAllFromInstances(contest.instanceSoccerPlayers);
 
-            goalKeepers.addAll(filterSoccerPlayersFromFieldPos(soccerPlayersA, FieldPos.GOALKEEPER));
-            goalKeepers.addAll(filterSoccerPlayersFromFieldPos(soccerPlayersB, FieldPos.GOALKEEPER));
-
-            defenses.addAll(filterSoccerPlayersFromFieldPos(soccerPlayersA, FieldPos.DEFENSE));
-            defenses.addAll(filterSoccerPlayersFromFieldPos(soccerPlayersB, FieldPos.DEFENSE));
-
-            middles.addAll(filterSoccerPlayersFromFieldPos(soccerPlayersA, FieldPos.MIDDLE));
-            middles.addAll(filterSoccerPlayersFromFieldPos(soccerPlayersB, FieldPos.MIDDLE));
-
-            forwards.addAll(filterSoccerPlayersFromFieldPos(soccerPlayersA, FieldPos.FORWARD));
-            forwards.addAll(filterSoccerPlayersFromFieldPos(soccerPlayersB, FieldPos.FORWARD));
+            goalKeepers.addAll(filterSoccerPlayersFromFieldPos(soccerPlayers, FieldPos.GOALKEEPER));
+            defenses.addAll(filterSoccerPlayersFromFieldPos(soccerPlayers, FieldPos.DEFENSE));
+            middles.addAll(filterSoccerPlayersFromFieldPos(soccerPlayers, FieldPos.MIDDLE));
+            forwards.addAll(filterSoccerPlayersFromFieldPos(soccerPlayers, FieldPos.FORWARD));
         }
 
         // Todos los usuarios excepto el "Test"

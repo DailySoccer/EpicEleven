@@ -29,8 +29,7 @@ public class ReturnHelper {
 
         try {
         	if (payload != null) {
-            	final String jsonPayload = new ObjectIdMapper().writerWithView(jsonView).writeValueAsString(payload);
-
+            	final String jsonPayload = objectIdMapper.writerWithView(jsonView).writeValueAsString(payload);
              	ret = new Content() {
                 	@Override public String body() { return jsonPayload; }
                 	@Override public String contentType() { return "application/json"; }
@@ -69,4 +68,6 @@ public class ReturnHelper {
             this.payload = payload;
         }
     }
+
+    static protected ObjectIdMapper objectIdMapper = new ObjectIdMapper();
 }

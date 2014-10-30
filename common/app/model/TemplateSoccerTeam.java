@@ -82,6 +82,14 @@ public class TemplateSoccerTeam implements JongoId, Initializer {
         return map;
     }
 
+    static public HashMap<ObjectId, TemplateSoccerTeam> findAllAsMap(List<ObjectId> templateSoccerTeamIds){
+        HashMap<ObjectId, TemplateSoccerTeam> map = new HashMap<>();
+        for (TemplateSoccerTeam templateSoccerTeam: findAll(templateSoccerTeamIds)) {
+            map.put(templateSoccerTeam.getId(), templateSoccerTeam);
+        }
+        return map;
+    }
+
     public boolean hasChanged(OptaTeam optaTeam) {
         return !optaTeamId.equals(optaTeam.optaTeamId) ||
                !name.equals(optaTeam.name) ||

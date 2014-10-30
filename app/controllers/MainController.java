@@ -75,6 +75,6 @@ public class MainController extends Controller {
         if (templateMatchEvent != null) {
             data.put("match_event", templateMatchEvent);
         }
-        return new ReturnHelper(data).toResult(JsonViews.Extended.class);
+        return new ReturnHelper(data).toResult(JsonViews.Statistics.class);
     }
 }

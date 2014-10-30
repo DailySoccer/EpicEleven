@@ -1,6 +1,8 @@
 package controllers.admin;
 
 import model.*;
+import org.bson.types.ObjectId;
+import org.joda.time.DateTime;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
 
@@ -66,10 +68,21 @@ public class TemplateContestForm {
     public static HashMap<String, String> matchEventsOptions(Date startDate) {
         HashMap<String, String> options = new LinkedHashMap<>();
 
-        Iterable<TemplateMatchEvent> templateMatchEventsResults = Model.templateMatchEvents().find("{startDate: {$gte: #}}", startDate).sort("{startDate : 1}").as(TemplateMatchEvent.class);
+        final int MAX_MATCH_EVENTS = 100;
+        List<TemplateMatchEvent> templateMatchEventsResults = utils.ListUtils.asList(Model.templateMatchEvents()
+                .find("{startDate: {$gte: #, $lte: #}}", startDate, new DateTime(startDate).plusDays(20).toDate())
+                .sort("{startDate : 1}").limit(MAX_MATCH_EVENTS).as(TemplateMatchEvent.class));
+
+        List<ObjectId> teamIds = new ArrayList<>();
         for (TemplateMatchEvent matchEvent: templateMatchEventsResults) {
-            TemplateSoccerTeam teamA = TemplateSoccerTeam.findOne(matchEvent.templateSoccerTeamAId);
-            TemplateSoccerTeam teamB = TemplateSoccerTeam.findOne(matchEvent.templateSoccerTeamBId);
+            teamIds.add(matchEvent.templateSoccerTeamAId);
+            teamIds.add(matchEvent.templateSoccerTeamBId);
+        }
+        Map<ObjectId, TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllAsMap(teamIds);
+
+        for (TemplateMatchEvent matchEvent: templateMatchEventsResults) {
+            TemplateSoccerTeam teamA = teams.get(matchEvent.templateSoccerTeamAId);
+            TemplateSoccerTeam teamB = teams.get(matchEvent.templateSoccerTeamBId);
             options.put(matchEvent.templateMatchEventId.toString(), String.format("%s - %s vs %s",
                         GlobalDate.formatDate(matchEvent.startDate),
                         teamA.name, teamB.name));
