@@ -18,7 +18,7 @@ object BackendBuild extends Build {
     val out = new PrintWriter(fileName)
 
     try {
-      outLines.reverse.foreach(line => out.println(line))
+      outLines.foreach(line => {out.println(line)})
     }
     finally {
       out.close()
