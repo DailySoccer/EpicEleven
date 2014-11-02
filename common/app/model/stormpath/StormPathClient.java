@@ -32,18 +32,18 @@ public class StormPathClient {
         _client = null;
         _myApp = null;
 
-        if (Play.isDev()) {
-            try {
+        try {
+            if (Play.isDev()) {
                 apiKey = ApiKeys.builder().setFileLocation("./conf/apiKey.properties").build();
             }
-            catch (IllegalStateException e) {
-                Logger.info("Stormpath DISCONNECTED");
+            else {
+                apiKey = ApiKeys.builder().setId(Play.application().configuration().getString("stormpath.id"))
+                        .setSecret(Play.application().configuration().getString("stormpath.secret"))
+                        .build();
             }
         }
-        else {
-            apiKey = ApiKeys.builder().setId(Play.application().configuration().getString("stormpath.id"))
-                    .setSecret(Play.application().configuration().getString("stormpath.secret"))
-                    .build();
+        catch (Exception e) {
+            Logger.info("Stormpath DISCONNECTED");
         }
 
         if (apiKey != null) {
