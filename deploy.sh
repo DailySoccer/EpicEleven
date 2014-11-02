@@ -128,7 +128,8 @@ fi
 # Vuelta adonde estabamos en el repositorio backend
 git checkout $branch_name
 
-git branch -D deploy
+# Vamos a probar a no borrar la rama durante una temporada
+# git branch -D deploy
 
 # Volvemos a dejar tambien al webclient en la rama que estaba
 cd ../webclient
