@@ -15,6 +15,7 @@ import com.stormpath.sdk.client.Clients;
 import com.stormpath.sdk.resource.ResourceException;
 import com.stormpath.sdk.tenant.Tenant;
 import play.Logger;
+import play.Play;
 import play.libs.F;
 
 import java.util.HashMap;
@@ -27,30 +28,53 @@ public class StormPathClient {
 
     public StormPathClient() {
 
-        ApiKey apiKey = ApiKeys.builder().setFileLocation("./apiKey.properties").build();
+        ApiKey apiKey = null;
+        _client = null;
+        _myApp = null;
 
-        _client = Clients.builder().setApiKey(apiKey).build();
+        if (Play.isDev()) {
+            try {
+                apiKey = ApiKeys.builder().setFileLocation("./conf/apiKey.properties").build();
+            }
+            catch (IllegalStateException e) {
+                Logger.info("Stormpath DISCONNECTED");
+            }
+        }
+        else {
+            apiKey = ApiKeys.builder().setId(Play.application().configuration().getString("stormpath.id"))
+                    .setSecret(Play.application().configuration().getString("stormpath.secret"))
+                    .build();
+        }
 
-        Tenant _tenant = _client.getCurrentTenant();
+        if (apiKey != null) {
+            _client = Clients.builder().setApiKey(apiKey).build();
 
-        ApplicationList applications = _tenant.getApplications();
+            Tenant _tenant = _client.getCurrentTenant();
 
-        for (Application app : applications) {
-            if (app.getName().equals(APPLICATION_NAME)) {
-                _myApp = app;
+            ApplicationList applications = _tenant.getApplications();
+
+            for (Application app : applications) {
+                if (app.getName().equals(APPLICATION_NAME)) {
+                    _myApp = app;
+                }
+            }
+
+            if (_myApp == null) {
+                _myApp = _client.instantiate(Application.class);
+
+                _myApp.setName(APPLICATION_NAME); //must be unique among your other apps
+                _myApp = _client.createApplication(
+                        Applications.newCreateRequestFor(_myApp).createDirectory().build());
             }
         }
 
-        if (_myApp == null) {
-            _myApp = _client.instantiate(Application.class);
-
-            _myApp.setName(APPLICATION_NAME); //must be unique among your other apps
-            _myApp = _client.createApplication(
-                    Applications.newCreateRequestFor(_myApp).createDirectory().build());
-        }
     }
 
     public String register(String givenName, String email, String password) { //, ObjectId userId) {
+        if (_client == null) {
+            return null;
+        }
+
         Account account = _client.instantiate(Account.class);
 
         account.setGivenName(givenName);
@@ -79,6 +103,10 @@ public class StormPathClient {
 
 
     public String askForPasswordReset(String email) {
+        if (_client == null) {
+            return null;
+        }
+
         try {
             _myApp.sendPasswordResetEmail(email);
         }
@@ -94,6 +122,10 @@ public class StormPathClient {
     }
 
     public String verifyPasswordResetToken(String token) {
+        if (_client == null) {
+            return null;
+        }
+
         try {
             _myApp.verifyPasswordResetToken(token);
         }
@@ -109,6 +141,10 @@ public class StormPathClient {
     }
 
     public F.Tuple<Account, String> resetPasswordWithToken(String token, String password) {
+        if (_myApp == null) {
+            return null;
+        }
+
         Account account;
         try {
             account = _myApp.resetPassword(token, password);
@@ -125,6 +161,10 @@ public class StormPathClient {
     }
 
     public Account login(String usernameOrEmail, String rawPassword){
+        if (_myApp == null) {
+            return null;
+        }
+
         //Create an authentication request using the credentials
         AuthenticationRequest request = new UsernamePasswordRequest(usernameOrEmail, rawPassword);
 
@@ -150,6 +190,10 @@ public class StormPathClient {
     }
 
     public String changeUserProfile(String userEmail, String firstName, String lastName, String email) {
+        if (_myApp == null) {
+            return null;
+        }
+
         Map<String, Object> queryParams = new HashMap<>();
         queryParams.put("email", userEmail);
         AccountList accounts = _myApp.getAccounts(queryParams);
@@ -172,6 +216,10 @@ public class StormPathClient {
     }
 
     public String updatePassword(String userEmail, String password) {
+        if (_myApp == null) {
+            return null;
+        }
+
         Map<String, Object> queryParams = new HashMap<>();
         queryParams.put("email", userEmail);
         AccountList accounts = _myApp.getAccounts(queryParams);

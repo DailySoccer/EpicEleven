@@ -16,6 +16,8 @@ import java.util.Date;
 import java.util.List;
 
 public class TemplateContest implements JongoId, Initializer {
+    public static final String FILL_WITH_MOCK_USERS = "%MockUsers";
+
     @Id
     public ObjectId templateContestId;
 
@@ -176,8 +178,9 @@ public class TemplateContest implements JongoId, Initializer {
         // Cuantas instancias tenemos creadas?
         long instances = Model.contests().count("{templateContestId: #}", templateContestId);
 
+        boolean mockDataUsers = name.contains(FILL_WITH_MOCK_USERS);
         for (long i=instances; i < minInstances; i++) {
-            instantiateContest(/*addMockDataUsers*/ !Play.isProd());
+            instantiateContest(mockDataUsers);
         }
 
         // Incluir los premios del torneo (ya no se podrá cambiar la forma de calcularlo)

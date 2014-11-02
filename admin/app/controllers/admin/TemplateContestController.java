@@ -284,7 +284,7 @@ public class TemplateContestController extends Controller {
 
         templateCount = (templateCount + 1) % contestNameSuffixes.length;
 
-        templateContest.name = "%StartDate - " + contestNameSuffixes[templateCount];
+        templateContest.name = "%StartDate - " + contestNameSuffixes[templateCount] + " " + TemplateContest.FILL_WITH_MOCK_USERS;
         templateContest.minInstances = 3;
         templateContest.maxEntries = maxEntries;
         templateContest.prizeType = prizeType;
