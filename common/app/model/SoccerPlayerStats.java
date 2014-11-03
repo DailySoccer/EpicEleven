@@ -1,5 +1,6 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import model.opta.OptaMatchEventStats;
 import org.bson.types.ObjectId;
 
@@ -9,14 +10,26 @@ import java.util.List;
 
 public class SoccerPlayerStats {
 
+    @JsonView(JsonViews.NotForClient.class)
     public String optaPlayerId;
+
     public String optaCompetitionId;
+
+    @JsonView(JsonViews.Statistics.class)
     public String optaMatchEventId;
 
+    @JsonView(JsonViews.Statistics.class)
     public Date startDate;
+
+    @JsonView(JsonViews.Statistics.class)
     public ObjectId opponentTeamId;
+
     public int fantasyPoints;
+
+    @JsonView(JsonViews.Statistics.class)
     public int playedMinutes;
+
+    @JsonView(JsonViews.Statistics.class)
     public HashMap<String, Integer> statsCount = new HashMap<>();   // SoccerPlayerStatType => num de veces que ha ocurrido
 
     public SoccerPlayerStats() { }
