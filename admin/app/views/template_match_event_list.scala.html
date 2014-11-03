@@ -49,6 +49,7 @@
             <th>OptaTeamAId</th>
             <th>OptaTeamBId</th>
             <th>Teams</th>
+            <th>Competition</th>
             <th>Start Date</th>
             <th>State</th>
         </tr>
@@ -89,6 +90,7 @@
                     }
                 </a></td>
             </td>
+            <td>@p.optaCompetitionId</td>
             <td>@GlobalDate.formatDate(p.startDate)</td>
             <td>@match_event_state(p)</td>
         </tr>

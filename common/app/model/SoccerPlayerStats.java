@@ -10,6 +10,7 @@ import java.util.List;
 public class SoccerPlayerStats {
 
     public String optaPlayerId;
+    public String optaCompetitionId;
     public String optaMatchEventId;
 
     public Date startDate;
@@ -20,7 +21,8 @@ public class SoccerPlayerStats {
 
     public SoccerPlayerStats() { }
 
-    public SoccerPlayerStats(Date startDate, String optaPlayerId, String optaMatchEventId, ObjectId opponentTeamId, int fantasyPoints) {
+    public SoccerPlayerStats(Date startDate, String optaPlayerId, String optaCompetitionId, String optaMatchEventId, ObjectId opponentTeamId, int fantasyPoints) {
+        this.optaCompetitionId = optaCompetitionId;
         this.optaMatchEventId = optaMatchEventId;
         this.optaPlayerId = optaPlayerId;
 

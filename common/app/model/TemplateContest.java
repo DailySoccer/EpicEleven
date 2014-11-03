@@ -40,6 +40,8 @@ public class TemplateContest implements JongoId, Initializer {
 
     public Date startDate;
 
+    public String optaCompetitionId;
+
     @JsonView(JsonViews.Extended.class)
     public List<ObjectId> templateMatchEventIds;
 
@@ -70,6 +72,7 @@ public class TemplateContest implements JongoId, Initializer {
         this.templateMatchEventIds = new ArrayList<>();
         for (String templateMatchEventId : templateMatchEvents) {
             TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOneFromOptaId(templateMatchEventId);
+            this.optaCompetitionId = templateMatchEvent.optaCompetitionId;
             this.templateMatchEventIds.add(templateMatchEvent.templateMatchEventId);
 
             if (startDate == null || templateMatchEvent.startDate.before(startDate)) {
