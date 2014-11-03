@@ -268,6 +268,10 @@ public class StormPathClient {
         return null;
     }
 
+    public CustomData getCustomDataForAccount(Account account) {
+        return _client.getResource(account.getCustomData().getHref(), CustomData.class);
+    }
+
 
     public static StormPathClient instance() {
         if (_instance == null) {

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.MongoException;
 import com.stormpath.sdk.account.Account;
+import com.stormpath.sdk.directory.CustomData;
 import model.GlobalDate;
 import model.Model;
 import model.Session;
@@ -295,7 +296,7 @@ public class LoginController extends Controller {
                 if (theUser == null) {
                     Logger.debug("Creamos el usuario porque no esta en nuestra DB y sí en Stormpath: {}", account.getEmail());
 
-                    theUser = new User(account.getGivenName(), account.getSurname(), account.getUsername(), account.getEmail());
+                    theUser = new User(account.getGivenName(), account.getSurname(), getOrSetNickname(account), account.getEmail());
                     Model.users().insert(theUser);
                 }
             }
@@ -310,6 +311,35 @@ public class LoginController extends Controller {
 
         }
         return returnHelper.toResult();
+    }
+
+    private static String getOrSetNickname(Account account) {
+        // Si el nickname está en Stormpath ,lo cogemos de ahí.
+        // Si no, lo generamos y lo guardamos en stormpath
+        // Devolvemos el nickname
+        String nickname;
+        CustomData customData = StormPathClient.instance().getCustomDataForAccount(account);
+        if (customData.containsKey("nickname")) {
+            nickname = (String) customData.get("nickname");
+        }
+        else {
+            nickname = generateNewNickname(account);
+            customData.put("nickname", nickname);
+            customData.save();
+        }
+        return nickname;
+    }
+
+    private static String generateNewNickname(Account account) {
+        String base = account.getGivenName()+" "+account.getSurname();
+        String nickname = base;
+        int count = 0;
+
+        while (null != Model.users().findOne("{nickName:'#'}", nickname).as(User.class)) {
+            nickname = base+" "+Integer.toString(++count);
+        }
+
+        return nickname;
     }
 
     private static void setSession(ReturnHelper returnHelper, User theUser) {
