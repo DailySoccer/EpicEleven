@@ -319,10 +319,10 @@ public class LoginController extends Controller {
     public static Result changeUserProfile() {
 
         User theUser = (User)ctx().args.get("User");
-
         Form<ChangeParams> changeParamsForm = form(ChangeParams.class).bindFromRequest();
         ChangeParams params;
         JsonNode result = new ObjectMapper().createObjectNode().put("result", "ok");
+        Map<String, String> allErrors = new HashMap<>();
 
         boolean somethingChanged = false;
 
@@ -338,13 +338,22 @@ public class LoginController extends Controller {
                 theUser.lastName = params.lastName;
                 somethingChanged = true;
             }
-
+            if (!params.nickName.isEmpty()) {
+                if (!theUser.nickName.equals(params.nickName)) {
+                    if (null != User.findByName(params.nickName)) {
+                        allErrors.put("nickName", "Otro usuario tiene este nickname.");
+                    }
+                }
+                theUser.nickName = params.nickName;
+                somethingChanged = true;
+            }
             if (!params.email.isEmpty()) {
                 theUser.email = params.email;
                 somethingChanged = true;
             }
 
-            Map<String, String> allErrors = changeStormpathProfile(theUser, params, somethingChanged, originalEmail);
+            if (allErrors.isEmpty())
+                allErrors = changeStormpathProfile(theUser, params, somethingChanged, originalEmail);
 
             if (allErrors.isEmpty()) {
                 Model.users().update(theUser.userId).with(theUser);
@@ -372,7 +381,7 @@ public class LoginController extends Controller {
 
         if (!originalEmail.endsWith("test.com")) {
             if (somethingChanged) {
-                String profErrors = stormPathClient.changeUserProfile(originalEmail, theUser.firstName, theUser.lastName, theUser.email);
+                String profErrors = stormPathClient.changeUserProfile(originalEmail, theUser.firstName, theUser.lastName, theUser.nickName, theUser.email);
                 allErrors.putAll(translateError(profErrors));
             }
 
