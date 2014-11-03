@@ -12,6 +12,7 @@ import com.stormpath.sdk.authc.AuthenticationResult;
 import com.stormpath.sdk.authc.UsernamePasswordRequest;
 import com.stormpath.sdk.client.Client;
 import com.stormpath.sdk.client.Clients;
+import com.stormpath.sdk.directory.CustomData;
 import com.stormpath.sdk.resource.ResourceException;
 import com.stormpath.sdk.tenant.Tenant;
 import play.Logger;
@@ -32,18 +33,18 @@ public class StormPathClient {
         _client = null;
         _myApp = null;
 
-        if (Play.isDev()) {
-            try {
+        try {
+            if (Play.isDev()) {
                 apiKey = ApiKeys.builder().setFileLocation("./conf/apiKey.properties").build();
             }
-            catch (IllegalStateException e) {
-                Logger.info("Stormpath DISCONNECTED");
+            else {
+                apiKey = ApiKeys.builder().setId(Play.application().configuration().getString("stormpath.id"))
+                        .setSecret(Play.application().configuration().getString("stormpath.secret"))
+                        .build();
             }
         }
-        else {
-            apiKey = ApiKeys.builder().setId(Play.application().configuration().getString("stormpath.id"))
-                    .setSecret(Play.application().configuration().getString("stormpath.secret"))
-                    .build();
+        catch (Exception e) {
+            Logger.info("Stormpath DISCONNECTED");
         }
 
         if (apiKey != null) {
@@ -189,7 +190,7 @@ public class StormPathClient {
         return null;
     }
 
-    public String changeUserProfile(String userEmail, String firstName, String lastName, String email) {
+    public String changeUserProfile(String userEmail, String firstName, String lastName, String nickName, String email) {
         if (_myApp == null) {
             return null;
         }
@@ -204,10 +205,17 @@ public class StormPathClient {
         }
 
         if (usersAccount != null) {
-            usersAccount.setGivenName(firstName);
-            usersAccount.setSurname(lastName);
-            usersAccount.setEmail(email);
-            usersAccount.save();
+            CustomData customData = _client.getResource(usersAccount.getCustomData().getHref(), CustomData.class);
+            customData.put("nickname", nickName);
+            customData.save();
+
+            if (usersAccount.getDirectory().getProvider().getProviderId().equals("stormpath")) {
+                usersAccount.setGivenName(firstName);
+                usersAccount.setSurname(lastName);
+                usersAccount.setEmail(email);
+                usersAccount.setUsername(nickName);
+                usersAccount.save();
+            }
         }
         else {
             return "Users profile changes failed";
