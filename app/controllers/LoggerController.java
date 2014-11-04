@@ -25,17 +25,10 @@ public class LoggerController extends Controller {
         String address = request().remoteAddress();
 
         if (params.level.equals("SHOUT")) {
-            Logger.error("\n[Client {} from {}] WTF 101 at {}:\n" +
-                           "[Client {} from {}]--------------------------\n" +
-                           "[Client {} from {}] {}\n" +
-                           "[Client {} from {}]--------------------------",
-                           params.level, address, params.time,
-                           params.level, address,
-                           params.level, address, params.message,
-                           params.level, address);
+            Logger.error("[WTF 101 from {} at {}] {}", address, params.time, params.message);
         }
         else {
-            Logger.info("[Client {} from {}] Message at {}: {}", params.level, address, params.time, params.message);
+            Logger.info("[{} from {} at {}] {}", params.level, address, params.time, params.message);
         }
 
         return ok();
