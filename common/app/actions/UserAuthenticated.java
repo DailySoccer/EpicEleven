@@ -25,11 +25,15 @@ public @interface UserAuthenticated {
             User theUser = SessionUtils.getUserFromRequest(ctx.request());
 
             if (theUser == null) {
-                Logger.info("UserAuthenticated fallo: " + ctx.request().uri());
+                Logger.info("UserAuthenticated: Fallo de autentificacion en url " + ctx.request().uri());
+
+                // Tenemos que poner las headers bien para que llegue el 401 al cliente. Si no, el error que le da es como
+                // que no tiene Allow
+                AllowCors.preFlight(ctx.request(), ctx.response());
 
                 return F.Promise.promise(new F.Function0<Result>() {
                     public Result apply() throws Throwable {
-                        return badRequest();
+                        return unauthorized();
                     }
                 });
             }
