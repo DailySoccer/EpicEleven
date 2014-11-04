@@ -33,7 +33,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
     @JsonView(JsonViews.NotForClient.class)
     public boolean activated;
 
-    @JsonView(JsonViews.Statistics.class)
+    @JsonView(JsonViews.Extended.class)
     public List<SoccerPlayerStats> stats = new ArrayList<>();
 
     @JsonView(JsonViews.Public.class)
