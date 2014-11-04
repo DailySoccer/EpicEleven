@@ -13,7 +13,7 @@ public class LoggerController extends Controller {
 
     public static class Params {
         public String level;
-        public String time;
+        public String email;
         public String message;
     }
 
@@ -25,10 +25,10 @@ public class LoggerController extends Controller {
         String address = request().remoteAddress();
 
         if (params.level.equals("SHOUT")) {
-            Logger.error("[WTF 101 from {} at {}] {}", address, params.time, params.message);
+            Logger.error("[WTF 101 from {}, {}] {}", params.email, address, params.message);
         }
         else {
-            Logger.info("[{} from {} at {}] {}", params.level, address, params.time, params.message);
+            Logger.info("[{} from {}, {}] {}", params.level, params.email, address, params.message);
         }
 
         return ok();
