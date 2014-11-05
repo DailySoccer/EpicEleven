@@ -22,6 +22,9 @@ public class SoccerPlayerStats {
     public Date startDate;
 
     @JsonView(JsonViews.Statistics.class)
+    public ObjectId teamId;
+
+    @JsonView(JsonViews.Statistics.class)
     public ObjectId opponentTeamId;
 
     public int fantasyPoints;
@@ -34,12 +37,13 @@ public class SoccerPlayerStats {
 
     public SoccerPlayerStats() { }
 
-    public SoccerPlayerStats(Date startDate, String optaPlayerId, String optaCompetitionId, String optaMatchEventId, ObjectId opponentTeamId, int fantasyPoints) {
+    public SoccerPlayerStats(Date startDate, String optaPlayerId, String optaCompetitionId, String optaMatchEventId, ObjectId teamId, ObjectId opponentTeamId, int fantasyPoints) {
         this.optaCompetitionId = optaCompetitionId;
         this.optaMatchEventId = optaMatchEventId;
         this.optaPlayerId = optaPlayerId;
 
         this.startDate = startDate;
+        this.teamId = teamId;
         this.opponentTeamId = opponentTeamId;
         this.fantasyPoints = fantasyPoints;
 
