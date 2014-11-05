@@ -52,7 +52,7 @@ public class ContestController extends Controller {
                     case 3: return String.format("<a href=\"%s\">%s</a>",
                                 routes.TemplateContestController.show(fieldValue).url(),
                                 fieldValue);
-                    case 4:
+                    case 5:
                         if(fieldValue.equals("Finished")) {
                             return "<button class=\"btn btn-danger\">Finished</button>";
                         } else if(fieldValue.equals("Live")) {
