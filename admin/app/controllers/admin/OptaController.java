@@ -66,8 +66,6 @@ public class OptaController extends Controller {
                         "pointsTranslationId",
                         "competitionId",
                         "gameId",
-                        "homeTeamId",
-                        "awayTeamId",
                         "optaPlayerId",
                         "typeId",
                         "points",
@@ -82,13 +80,11 @@ public class OptaController extends Controller {
                     case 0: return optaEvent.pointsTranslationId != null ? optaEvent.pointsTranslationId.toString() : "-";
                     case 1: return optaEvent.competitionId;
                     case 2: return optaEvent.gameId;
-                    case 3: return optaEvent.homeTeamId;
-                    case 4: return optaEvent.awayTeamId;
-                    case 5: return optaEvent.optaPlayerId;
-                    case 6: return String.valueOf(optaEvent.typeId);
-                    case 7: return String.valueOf(optaEvent.points);
-                    case 8: return GlobalDate.formatDate(optaEvent.timestamp);
-                    case 9: return GlobalDate.formatDate(optaEvent.lastModified);
+                    case 3: return optaEvent.optaPlayerId;
+                    case 4: return String.valueOf(optaEvent.typeId);
+                    case 5: return String.valueOf(optaEvent.points);
+                    case 6: return GlobalDate.formatDate(optaEvent.timestamp);
+                    case 7: return GlobalDate.formatDate(optaEvent.lastModified);
                 }
                 return "<invalid value>";
             }

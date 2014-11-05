@@ -49,8 +49,6 @@
             <th>CompetitionId</th>
             <th>GameId</th>
             <th>EventId</th>
-            <th>HomeTeamId</th>
-            <th>AwayTeamId</th>
             <th>TimeStamp</th>
             <th>Elapsed</th>
             <th>LastModified</th>
@@ -66,8 +64,6 @@
             <td>@p.competitionId</td>
             <td>@p.gameId</td>
             <td>@p.eventId</td>
-            <td>@p.homeTeamId</td>
-            <td>@p.awayTeamId</td>
             <td>@GlobalDate.formatDate(p.timestamp)</td>
             <td>@("%02d".format(p.min)):@("%02d".format(p.sec))</td>
         @if(p.lastModified != null) {
