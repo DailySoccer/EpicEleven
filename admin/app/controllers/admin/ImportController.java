@@ -5,6 +5,7 @@ import com.google.gdata.client.spreadsheet.SpreadsheetService;
 import com.google.gdata.data.PlainTextConstruct;
 import com.google.gdata.data.spreadsheet.*;
 import com.google.gdata.util.ServiceException;
+import model.Model;
 import model.SoccerPlayerStats;
 import model.TemplateSoccerPlayer;
 import model.TemplateSoccerTeam;
@@ -402,6 +403,7 @@ public class ImportController extends Controller {
             List <TemplateSoccerPlayer> soccerPlayers = TemplateSoccerPlayer.findAll();
             for (TemplateSoccerPlayer soccerPlayer: soccerPlayers) {
                 String teamName = TemplateSoccerTeam.findOne(soccerPlayer.templateTeamId).name;
+
                 for (SoccerPlayerStats stat: soccerPlayer.stats) {
                     // Create a local representation of the new row.
                     ListEntry row = new ListEntry();
@@ -410,7 +412,7 @@ public class ImportController extends Controller {
                     row.getCustomElements().setValueLocal("nombre", soccerPlayer.name);
                     row.getCustomElements().setValueLocal("posicion", soccerPlayer.fieldPos.name());
                     row.getCustomElements().setValueLocal("equipo", teamName);
-                    row.getCustomElements().setValueLocal("competicion", "N/A");
+                    row.getCustomElements().setValueLocal("competicion",  Model.optaCompetitions().findOne("{competitionId: #}", stat.optaCompetitionId).as(OptaCompetition.class).competitionName);
                     row.getCustomElements().setValueLocal("fecha", new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy")) );
                     row.getCustomElements().setValueLocal("hora", new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm")) );
                     row.getCustomElements().setValueLocal("fp", Integer.toString(stat.fantasyPoints));
