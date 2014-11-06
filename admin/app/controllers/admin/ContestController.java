@@ -22,6 +22,7 @@ public class ContestController extends Controller {
                     "",                     // contestEntries.size
                     "maxEntries",
                     "templateContestId",
+                    "optaCompetitionId",
                     ""                      // templateContest.state
                 );
             }
@@ -33,7 +34,8 @@ public class ContestController extends Controller {
                     case 1: return String.valueOf(contest.contestEntries.size());
                     case 2: return String.valueOf(contest.maxEntries);
                     case 3: return contest.templateContestId.toString();
-                    case 4: if(contest.isHistory()) {
+                    case 4: return contest.optaCompetitionId;
+                    case 5: if(contest.isHistory()) {
                                 return "Finished";
                             } else if(contest.isLive()) {
                                 return "Live";
@@ -50,7 +52,7 @@ public class ContestController extends Controller {
                     case 3: return String.format("<a href=\"%s\">%s</a>",
                                 routes.TemplateContestController.show(fieldValue).url(),
                                 fieldValue);
-                    case 4:
+                    case 5:
                         if(fieldValue.equals("Finished")) {
                             return "<button class=\"btn btn-danger\">Finished</button>";
                         } else if(fieldValue.equals("Live")) {

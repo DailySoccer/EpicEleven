@@ -25,8 +25,19 @@ public class ContestController extends Controller {
      */
     // @Cached(key = "ActiveContest", duration = 1)
     public static Result getActiveContests() {
-        List<Contest> contests = Contest.findAllActiveNotFull(JsonViews.ActiveContests.class);
-        return new ReturnHelper(ImmutableMap.of("contests", contests)).toResult();
+        // Query que compara el "número de entries" con "maxEntries" (parece más lenta que haciendo el filtro a mano)
+        // List<Contest> contests = Contest.findAllActiveNotFull(JsonViews.ActiveContests.class);
+        List<Contest> contests = Contest.findAllActive(JsonViews.ActiveContests.class);
+
+        // Filtrar los contests que ya están completos
+        List<Contest> contestsNotFull = new ArrayList<>(contests.size());
+        for (Contest contest: contests) {
+            if (!contest.isFull()) {
+                contestsNotFull.add(contest);
+            }
+        }
+
+        return new ReturnHelper(ImmutableMap.of("contests", contestsNotFull)).toResult();
     }
 
     @UserAuthenticated

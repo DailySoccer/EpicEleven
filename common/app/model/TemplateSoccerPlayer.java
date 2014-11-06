@@ -33,12 +33,18 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
     @JsonView(JsonViews.NotForClient.class)
     public boolean activated;
 
-    @JsonView(JsonViews.Statistics.class)
+    @JsonView(JsonViews.Extended.class)
     public List<SoccerPlayerStats> stats = new ArrayList<>();
 
     @JsonView(JsonViews.Public.class)
     public int getPlayedMatches() {
-        return stats.size();
+        int numPlayed = 0;
+        for (SoccerPlayerStats stat: stats) {
+            if (stat.fantasyPoints > 0 || !stat.statsCount.isEmpty()) {
+                numPlayed++;
+            }
+        }
+        return numPlayed;
     }
 
     public TemplateSoccerPlayer() {
@@ -119,30 +125,25 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         int index = searchIndexForMatchEvent(soccerPlayerStats.optaMatchEventId);
         // Son estadísticas nuevas?
         if (index == -1) {
-            // Añadimos una nueva estadística si el futbolista ha jugado en el partido
-            updateStats = (soccerPlayerStats.playedMinutes > 0 || !soccerPlayerStats.statsCount.isEmpty());
-            if (updateStats) {
-                stats.add(soccerPlayerStats);
-            }
+            // Añadimos una nueva estadística
+            stats.add(soccerPlayerStats);
         }
         else {
             // Actualizar las estadísticas
             stats.set(index, soccerPlayerStats);
         }
 
-        if (updateStats) {
-            fantasyPoints = calculateFantasyPointsFromStats();
+        fantasyPoints = calculateFantasyPointsFromStats();
 
-            if (index == -1) {
-                Model.templateSoccerPlayers()
-                        .update("{optaPlayerId: #}", soccerPlayerStats.optaPlayerId)
-                        .with("{$set: {fantasyPoints: #}, $push: {stats: #}}", fantasyPoints, soccerPlayerStats);
-            }
-            else {
-                Model.templateSoccerPlayers()
-                        .update("{optaPlayerId: #, \"stats.optaMatchEventId\":#}", soccerPlayerStats.optaPlayerId, soccerPlayerStats.optaMatchEventId)
-                        .with("{$set: {fantasyPoints: #, \"stats.$\": #}}", fantasyPoints, soccerPlayerStats);
-            }
+        if (index == -1) {
+            Model.templateSoccerPlayers()
+                    .update("{optaPlayerId: #}", soccerPlayerStats.optaPlayerId)
+                    .with("{$set: {fantasyPoints: #}, $push: {stats: #}}", fantasyPoints, soccerPlayerStats);
+        }
+        else {
+            Model.templateSoccerPlayers()
+                    .update("{optaPlayerId: #, \"stats.optaMatchEventId\":#}", soccerPlayerStats.optaPlayerId, soccerPlayerStats.optaMatchEventId)
+                    .with("{$set: {fantasyPoints: #, \"stats.$\": #}}", fantasyPoints, soccerPlayerStats);
         }
     }
 

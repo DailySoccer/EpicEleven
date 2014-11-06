@@ -35,6 +35,7 @@ public class TemplateContestController extends Controller {
                         "state",
                         "name",
                         "",              // Num. Matches
+                        "optaCompetitionId",
                         "minInstances",
                         "maxEntries",
                         "salaryCap",
@@ -54,15 +55,16 @@ public class TemplateContestController extends Controller {
                     case 0: return templateContest.state.toString();
                     case 1: return templateContest.name;
                     case 2: return String.valueOf(templateContest.templateMatchEventIds.size());
-                    case 3: return String.valueOf(templateContest.minInstances);
-                    case 4: return String.valueOf(templateContest.maxEntries);
-                    case 5: return String.valueOf(templateContest.salaryCap);
-                    case 6: return String.valueOf(templateContest.entryFee);
-                    case 7: return String.valueOf(templateContest.prizeType);
-                    case 8: return GlobalDate.formatDate(templateContest.startDate);
-                    case 9: return GlobalDate.formatDate(templateContest.activationAt);
-                    case 10: return "";
+                    case 3: return templateContest.optaCompetitionId;
+                    case 4: return String.valueOf(templateContest.minInstances);
+                    case 5: return String.valueOf(templateContest.maxEntries);
+                    case 6: return String.valueOf(templateContest.salaryCap);
+                    case 7: return String.valueOf(templateContest.entryFee);
+                    case 8: return String.valueOf(templateContest.prizeType);
+                    case 9: return GlobalDate.formatDate(templateContest.startDate);
+                    case 10: return GlobalDate.formatDate(templateContest.activationAt);
                     case 11: return "";
+                    case 12: return "";
                 }
                 return "<invalid value>";
             }
@@ -150,6 +152,7 @@ public class TemplateContestController extends Controller {
         templateContest.templateMatchEventIds = new ArrayList<>();
         for (String templateMatchEventId: params.templateMatchEvents) {
             TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId));
+            templateContest.optaCompetitionId = templateMatchEvent.optaCompetitionId;
             templateContest.templateMatchEventIds.add(templateMatchEvent.templateMatchEventId);
 
             if (startDate == null || templateMatchEvent.startDate.before(startDate)) {
@@ -299,6 +302,7 @@ public class TemplateContestController extends Controller {
         templateContest.createdAt = GlobalDate.getCurrentDate();
 
         for (TemplateMatchEvent match: templateMatchEvents) {
+            templateContest.optaCompetitionId = match.optaCompetitionId;
             templateContest.templateMatchEventIds.add(match.templateMatchEventId);
         }
 

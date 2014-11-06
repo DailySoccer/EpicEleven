@@ -185,8 +185,9 @@ public class TemplateMatchEvent implements JongoId, Initializer {
             TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(soccerPlayer.templateSoccerPlayerId);
 
             // Generamos las estadísticas del partido para este futbolista
+            ObjectId teamId = templateSoccerTeamId.equals(templateSoccerTeamAId) ? templateSoccerTeamAId : templateSoccerTeamBId;
             ObjectId opponentTeamId = templateSoccerTeamId.equals(templateSoccerTeamAId) ? templateSoccerTeamBId : templateSoccerTeamAId;
-            SoccerPlayerStats soccerPlayerStats = new SoccerPlayerStats(startDate, soccerPlayer.optaPlayerId, optaMatchEventId, opponentTeamId, getSoccerPlayerFantasyPoints(soccerPlayer.templateSoccerPlayerId));
+            SoccerPlayerStats soccerPlayerStats = new SoccerPlayerStats(startDate, soccerPlayer.optaPlayerId, optaCompetitionId, optaMatchEventId, teamId, opponentTeamId, getSoccerPlayerFantasyPoints(soccerPlayer.templateSoccerPlayerId));
 
             templateSoccerPlayer.updateStats(soccerPlayerStats);
 

@@ -45,7 +45,7 @@ public class TemplateSoccerPlayerController extends Controller {
                     case 3: return templateSoccerPlayer.fieldPos.toString();
                     case 4: return String.valueOf(templateSoccerPlayer.salary);
                     case 5: return String.valueOf(templateSoccerPlayer.fantasyPoints);
-                    case 6: return String.valueOf(templateSoccerPlayer.stats.size());
+                    case 6: return String.valueOf(templateSoccerPlayer.getPlayedMatches());
                     case 7:
                             TemplateSoccerTeam templateSoccerTeam = TemplateSoccerTeam.findOne(templateSoccerPlayer.templateTeamId);
                             return templateSoccerTeam.name;

@@ -44,6 +44,8 @@ public class Contest implements JongoId {
 
     public Date startDate;
 
+    public String optaCompetitionId;
+
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyLiveContests.class})
     public List<ObjectId> templateMatchEventIds = new ArrayList<>();
 
@@ -62,6 +64,7 @@ public class Contest implements JongoId {
         prizeType = template.prizeType;
         prizes = template.prizes;
         startDate = template.startDate;
+        optaCompetitionId = template.optaCompetitionId;
         templateMatchEventIds = template.templateMatchEventIds;
         instanceSoccerPlayers = template.instanceSoccerPlayers;
         createdAt = GlobalDate.getCurrentDate();
