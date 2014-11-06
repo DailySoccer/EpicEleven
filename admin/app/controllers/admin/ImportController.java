@@ -5,7 +5,6 @@ import com.google.gdata.client.spreadsheet.SpreadsheetService;
 import com.google.gdata.data.PlainTextConstruct;
 import com.google.gdata.data.spreadsheet.*;
 import com.google.gdata.util.ServiceException;
-import model.Model;
 import model.SoccerPlayerStats;
 import model.TemplateSoccerPlayer;
 import model.TemplateSoccerTeam;
@@ -29,6 +28,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class ImportController extends Controller {
@@ -86,7 +86,7 @@ public class ImportController extends Controller {
         OptaImportUtils.evaluateDirtyTeams(competitionsSelected, teamsNew, null, null);
 
         int news = OptaImportUtils.importTeams(teamsNew);
-        FlashMessage.success( String.format("Imported %d teams New", news) );
+        FlashMessage.success(String.format("Imported %d teams New", news));
         return redirect(routes.ImportController.showImportTeams());
     }
 
@@ -95,7 +95,7 @@ public class ImportController extends Controller {
         OptaImportUtils.evaluateDirtyTeams(null, teamsChanged, null);
 
         int changes = OptaImportUtils.importTeams(teamsChanged);
-        FlashMessage.success( String.format("Imported %d teams Changed", changes) );
+        FlashMessage.success(String.format("Imported %d teams Changed", changes));
         return redirect(routes.ImportController.showImportTeams());
     }
 
@@ -117,7 +117,7 @@ public class ImportController extends Controller {
         OptaImportUtils.evaluateDirtySoccers(playersNew, playersChanged, null);
 
         int news = OptaImportUtils.importPlayers(playersNew);
-        FlashMessage.success( String.format("Imported %d soccers New", news) );
+        FlashMessage.success(String.format("Imported %d soccers New", news));
 
         int changes = OptaImportUtils.importPlayers(playersChanged);
         FlashMessage.success( String.format("Imported %d soccers Changed", changes) );
@@ -401,8 +401,19 @@ public class ImportController extends Controller {
             ListFeed listFeed = service.getFeed(listFeedUrl, ListFeed.class);
 
             List <TemplateSoccerPlayer> soccerPlayers = TemplateSoccerPlayer.findAll();
+
+            HashMap<String, String> soccerTeamsMap = new HashMap<>();
+            for (TemplateSoccerTeam templateSoccerTeam: TemplateSoccerTeam.findAll()) {
+                soccerTeamsMap.put(templateSoccerTeam.templateSoccerTeamId.toString(), templateSoccerTeam.name);
+            }
+
+            HashMap<String, String> optaCompetitions = new HashMap<>();
+            for (OptaCompetition optaCompetition: OptaCompetition.findAll()) {
+                optaCompetitions.put(optaCompetition.competitionId, optaCompetition.competitionName);
+            }
+
             for (TemplateSoccerPlayer soccerPlayer: soccerPlayers) {
-                String teamName = TemplateSoccerTeam.findOne(soccerPlayer.templateTeamId).name;
+                String teamName = soccerTeamsMap.containsKey(soccerPlayer.templateTeamId.toString()) ? soccerTeamsMap.get(soccerPlayer.templateTeamId.toString()) : "unknown";
 
                 for (SoccerPlayerStats stat: soccerPlayer.stats) {
                     // Create a local representation of the new row.
@@ -412,7 +423,7 @@ public class ImportController extends Controller {
                     row.getCustomElements().setValueLocal("nombre", soccerPlayer.name);
                     row.getCustomElements().setValueLocal("posicion", soccerPlayer.fieldPos.name());
                     row.getCustomElements().setValueLocal("equipo", teamName);
-                    row.getCustomElements().setValueLocal("competicion",  Model.optaCompetitions().findOne("{competitionId: #}", stat.optaCompetitionId).as(OptaCompetition.class).competitionName);
+                    row.getCustomElements().setValueLocal("competicion", optaCompetitions.get(stat.optaCompetitionId));
                     row.getCustomElements().setValueLocal("fecha", new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy")) );
                     row.getCustomElements().setValueLocal("hora", new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm")) );
                     row.getCustomElements().setValueLocal("fp", Integer.toString(stat.fantasyPoints));
