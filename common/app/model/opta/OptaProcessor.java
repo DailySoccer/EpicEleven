@@ -1,9 +1,6 @@
 package model.opta;
 
-import model.GlobalDate;
-import model.Model;
-import model.OpsLog;
-import model.PointsTranslation;
+import model.*;
 import org.bson.types.ObjectId;
 import org.jdom2.Element;
 import org.jdom2.input.JDOMParseException;
@@ -292,11 +289,18 @@ public class OptaProcessor {
 
         int teamRef = Integer.parseInt(getStringId(teamData,"TeamRef"));
 
+        List<OptaPlayer> soccerPlayers = OptaPlayer.findAllFromTeam(getStringId(teamData,"TeamRef"));
+
+        Set<String> defenseIDs = new HashSet<>();
+        for (OptaPlayer soccerPlayer: soccerPlayers) {
+            if (soccerPlayer.position.equals("Goalkeeper") || soccerPlayer.position.equals("Defender")) {
+                defenseIDs.add(soccerPlayer.optaPlayerId);
+            }
+        }
+
         for (Element matchPlayer : teamData.getChild("PlayerLineUp").getChildren("MatchPlayer")) {
 
-            if (matchPlayer.getAttribute("Position").getValue().equals("Goalkeeper") ||
-                matchPlayer.getAttribute("Position").getValue().equals("Defender")) {
-
+            if (defenseIDs.contains(getStringId(matchPlayer, "PlayerRef"))) {
                 for (Element playerStat : matchPlayer.getChildren("Stat")) {
                     if (processGoalsConcededOrCleanSheetInner(F9, cleanSheet, teamRef, matchPlayer, playerStat)) {
                         break;
