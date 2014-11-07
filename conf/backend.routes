@@ -14,6 +14,8 @@ GET            /get_scoring_rules                                      controlle
 
 # Login
 POST           /login                                                  controllers.LoginController.login()
+POST           /facebooklogin                                          controllers.LoginController.facebookLogin()
+
 
 POST           /signup                                                 controllers.LoginController.signup()
 GET            /get_user_profile                                       controllers.LoginController.getUserProfile()

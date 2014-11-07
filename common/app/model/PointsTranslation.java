@@ -12,6 +12,7 @@ import java.util.List;
 
 public class PointsTranslation implements JongoId, Initializer {
     @Id
+    @JsonView(JsonViews.NotForClient.class)
     public ObjectId pointsTranslationId;
 
     @JsonView(JsonViews.NotForClient.class)
