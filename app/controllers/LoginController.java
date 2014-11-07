@@ -271,6 +271,12 @@ public class LoginController extends Controller {
                 }
             }
 
+            else if (!isTest && account==null){
+                loginParamsForm.reject("email", "email or password incorrect");
+                returnHelper.setKO(loginParamsForm.errorsAsJson());
+                theUser = null;
+            }
+
             if (theUser != null) {
                 setSession(returnHelper, theUser);
             }
@@ -299,16 +305,16 @@ public class LoginController extends Controller {
                     theUser = new User(account.getGivenName(), account.getSurname(), getOrSetNickname(account), account.getEmail());
                     Model.users().insert(theUser);
                 }
+
+                if (theUser != null) {
+                    setSession(returnHelper, theUser);
+                }
+
             }
             else {
                 loginParamsForm.reject("email", "token incorrect");
                 returnHelper.setKO(loginParamsForm.errorsAsJson());
             }
-
-            if (theUser != null) {
-                setSession(returnHelper, theUser);
-            }
-
         }
         return returnHelper.toResult();
     }
