@@ -5,6 +5,9 @@ import com.google.gdata.client.spreadsheet.SpreadsheetService;
 import com.google.gdata.data.PlainTextConstruct;
 import com.google.gdata.data.spreadsheet.*;
 import com.google.gdata.util.ServiceException;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
+import model.Model;
 import model.SoccerPlayerStats;
 import model.TemplateSoccerPlayer;
 import model.TemplateSoccerTeam;
@@ -22,6 +25,7 @@ import org.joda.time.format.DateTimeFormat;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utils.BatchWriteOperation;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -61,7 +65,7 @@ public class ExcelController extends Controller {
             OAuthJSONAccessTokenResponse response2 = oAuthClient.accessToken(request);
 
 
-            System.out.println("\nAccess Token: " + response2.getAccessToken() + "\nExpires in: " + response2.getExpiresIn()  );
+            Logger.info("\nAccess Token: " + response2.getAccessToken() + "\nExpires in: " + response2.getExpiresIn());
 
             _accessToken = response2.getAccessToken();
             _refreshToken = response2.getRefreshToken();
@@ -75,7 +79,7 @@ public class ExcelController extends Controller {
     }
 
     public static Result googleOAuth2() {
-        _code = request().getQueryString("code");
+        String _code = request().getQueryString("code");
 
         try {
             OAuthClientRequest request = OAuthClientRequest
@@ -92,7 +96,7 @@ public class ExcelController extends Controller {
             OAuthJSONAccessTokenResponse response2 = oAuthClient.accessToken(request);
 
 
-            System.out.println("\nAccess Token: " + response2.getAccessToken() + "\nExpires in: " + response2.getExpiresIn()  );
+            Logger.info("\nAccess Token: " + response2.getAccessToken() + "\nExpires in: " + response2.getExpiresIn());
 
             _accessToken = response2.getAccessToken();
             _refreshToken = response2.getRefreshToken();
@@ -135,7 +139,6 @@ public class ExcelController extends Controller {
 
             readSalaries(service, ourSpreadSheet);
 
-            //DateTime lastLogDate =
             getLastLog(service, ourSpreadSheet);
 
             WorksheetEntry ourWorksheet = resetLog(service, ourSpreadSheet);
@@ -161,21 +164,42 @@ public class ExcelController extends Controller {
         ListFeed salariesFeed = getSalariesFeed(service, ourSpreadSheet);
 
         HashMap<String, Integer> newSalaries = new HashMap<>();
+        HashMap<String, String> newTags = new HashMap<>();
 
         for (ListEntry row : salariesFeed.getEntries()) {
             newSalaries.put(row.getCustomElements().getValue("optaplayerid"),
                             Integer.parseInt(row.getCustomElements().getValue("salary")));
+
+            newTags.put(row.getCustomElements().getValue("optaplayerid"),
+                        row.getCustomElements().getValue("tags"));
         }
 
         HashMap<String, TemplateSoccerPlayer> soccerPlayers = TemplateSoccerPlayer.findAllAsMap();
 
+        BatchWriteOperation batchWriteOperation = new BatchWriteOperation(Model.templateSoccerPlayers().getDBCollection().initializeUnorderedBulkOperation());
+
+
         for (String optaPlayerId: newSalaries.keySet()) {
+
             if (soccerPlayers.containsKey(optaPlayerId)) {
-                TemplateSoccerPlayer myPlayer = soccerPlayers.get(optaPlayerId);
-                myPlayer.salary = newSalaries.get(optaPlayerId);
-                myPlayer.updateDocument();
+
+                DBObject query = new BasicDBObject("optaPlayerId", optaPlayerId);
+                BasicDBObject bdo = new BasicDBObject("salary", newSalaries.get(optaPlayerId));
+
+                if (newTags.containsKey(optaPlayerId) && newTags.get(optaPlayerId)!=null) {
+                    String[] tagsArray = newTags.get(optaPlayerId).split(",");
+                    for (int i = 0; i<tagsArray.length; i++) {
+                        tagsArray[i] = tagsArray[i].trim();
+                    }
+                    bdo.append("tags", tagsArray);
+                }
+
+                DBObject update = new BasicDBObject("$set", bdo);
+                batchWriteOperation.find(query).updateOne(update);
             }
         }
+
+        batchWriteOperation.execute();
     }
 
     private static void fillLog(SpreadsheetService service, WorksheetEntry ourWorksheet) throws IOException, ServiceException {
@@ -264,7 +288,7 @@ public class ExcelController extends Controller {
         WorksheetFeed worksheetFeed = service.getFeed(
                 ourSpreadSheet.getWorksheetFeedUrl(), WorksheetFeed.class);
 
-        WorksheetEntry ourWorksheet = null;
+        WorksheetEntry ourWorksheet = new WorksheetEntry();
         for (WorksheetEntry worksheet : worksheetFeed.getEntries()) {
             if (worksheet.getTitle().getPlainText().equals(SALARIES_WORKSHEET_NAME)) {
                 ourWorksheet = worksheet;
@@ -276,8 +300,7 @@ public class ExcelController extends Controller {
 
 
     private static ListFeed getLastLogFeed(SpreadsheetService service, SpreadsheetEntry ourSpreadSheet) throws IOException, ServiceException {
-        WorksheetEntry ourWorksheet = getLastLogWorksheet(service, ourSpreadSheet);
-        return service.getFeed(ourWorksheet.getListFeedUrl(), ListFeed.class);
+        return service.getFeed(getLastLogWorksheet(service, ourSpreadSheet).getListFeedUrl(), ListFeed.class);
     }
 
     private static WorksheetEntry getLastLogWorksheet(SpreadsheetService service, SpreadsheetEntry ourSpreadSheet) throws IOException, ServiceException {
@@ -338,8 +361,7 @@ public class ExcelController extends Controller {
                                           DateTimeFormat.forPattern("HH:mm dd/MM/yyyy"));
         }
 
-        //_lastLogDate = new DateTime(2014, 10, 20, 00, 00);
-        return _lastLogDate; //Año mes dia hora minuto
+        return _lastLogDate;
     }
 
     private static void updateLastLog(SpreadsheetService service,  SpreadsheetEntry ourSpreadSheet) throws IOException, ServiceException {
@@ -362,7 +384,6 @@ public class ExcelController extends Controller {
 
     private static String _accessToken;
     private static String _refreshToken;
-    private static String _code;
     private static DateTime _lastLogDate = new DateTime(1970, 1, 1, 0, 0);
 
     private final static String SPREADSHEET_NAME = "Epic Eleven - Salarios - LFP";

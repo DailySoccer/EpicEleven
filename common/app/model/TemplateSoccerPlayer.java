@@ -9,10 +9,7 @@ import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class TemplateSoccerPlayer implements JongoId, Initializer {
     @Id
@@ -27,6 +24,8 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
     public int fantasyPoints;
 
     public ObjectId templateTeamId;
+
+    public String[] tags;
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
