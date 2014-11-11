@@ -11,6 +11,7 @@ import utils.ListUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 public class TemplateSoccerPlayer implements JongoId, Initializer {
@@ -92,6 +93,14 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
 
     public static List<TemplateSoccerPlayer> findAll(List<ObjectId> idList) {
         return ListUtils.asList(Model.findObjectIds(Model.templateSoccerPlayers(), "_id", idList).as(TemplateSoccerPlayer.class));
+    }
+
+    static public HashMap<String, TemplateSoccerPlayer> findAllAsMap(){
+        HashMap<String, TemplateSoccerPlayer> map = new HashMap<>();
+        for (TemplateSoccerPlayer optaPlayer: findAll()) {
+            map.put(optaPlayer.optaPlayerId, optaPlayer);
+        }
+        return map;
     }
 
     static public List<TemplateSoccerPlayer> findAllFromTemplateTeam(ObjectId templateSoccerTeamId) {

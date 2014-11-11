@@ -115,6 +115,6 @@ GET         /create_contests/:mockIndex                                controlle
 GET         /is_simulator_activated                                    controllers.admin.SimulatorController.isSimulatorActivated()
 
 # WIP
-GET         /googleoauth                                               controllers.admin.ImportController.googleOAuth()
-GET         /updatesalaries                                            controllers.admin.ImportController.googleOAuth2()
+GET         /spreadsheet                                               controllers.admin.ExcelController.googleOAuth()
+GET         /updatesalaries                                            controllers.admin.ExcelController.googleOAuth2()
 
