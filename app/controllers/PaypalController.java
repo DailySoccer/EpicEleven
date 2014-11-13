@@ -1,11 +1,13 @@
 package controllers;
 
+import actions.AllowCors;
 import actions.UserAuthenticated;
 import com.mongodb.util.JSON;
 import com.paypal.api.payments.*;
 import com.paypal.core.rest.APIContext;
 import com.paypal.core.rest.OAuthTokenCredential;
 import com.paypal.core.rest.PayPalRESTException;
+import model.User;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -14,6 +16,7 @@ import model.Order;
 
 import java.util.*;
 
+@AllowCors.Origin
 public class PaypalController extends Controller {
     static final String MODE_SANDBOX = "sandbox";
     static final String MODE_LIVE = "live";
@@ -38,23 +41,19 @@ public class PaypalController extends Controller {
     static final String PAYMENT_STATE_CANCELED = "canceled";
     static final String PAYMENT_STATE_EXPIRED = "expired";
 
-    // @UserAuthenticated
-    public static Result init() {
-        ObjectId userId = new ObjectId(); // ((User)ctx().args.get("User")).userId;
-
+    public static Result init(String userId, int money) {
         Map<String, String> sdkConfig = getSdkConfig();
 
         Result result = badRequest();
 
         try {
             String accessToken = new OAuthTokenCredential(CLIENT_ID, SECRET, sdkConfig).getAccessToken();
-
             ObjectId orderId = new ObjectId();
 
-            Payment payment = createPayment(accessToken, orderId, "creating a payment", 12);
+            Payment payment = createPayment(accessToken, orderId, "creating a payment", money);
             Logger.info("payment.create: {}", payment.toJSON());
 
-            Order.create(orderId, userId, Order.TransactionType.PAYPAL, payment.getId(), JSON.parse(payment.toJSON()));
+            Order.create(orderId, new ObjectId(userId), Order.TransactionType.PAYPAL, payment.getId(), JSON.parse(payment.toJSON()));
 
             List<Links> links = payment.getLinks();
             for (Links link: links) {

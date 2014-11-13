@@ -56,7 +56,7 @@ GET            /date_last_xml                                          controlle
 POST           /opta                                                   controllers.OptaHttpController.optaXmlInput()
 
 # Paypal
-GET            /paypal/init                                            controllers.PaypalController.init()
+GET            /paypal/init/:userId/:money                             controllers.PaypalController.init(userId, money: Int)
 GET            /paypal/execute                                         controllers.PaypalController.execute()
 
 # Loguear error del cliente
