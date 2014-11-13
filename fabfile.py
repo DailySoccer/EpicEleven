@@ -3,16 +3,16 @@
 
 try:
     from fabric.api import local, lcd, env, task
-    from fabric.utils import indent
+    from fabric.utils import indent, abort
     from fabric.colors import green, red, blue, cyan
 except ImportError, e:
     print 'Instalación: '
     print '\t$ sudo easy_install install pip'
     print '\t$ sudo pip install fabric'
 
-from tempfile import mkstemp
+from tempfile import mkstemp, mkdtemp
 from os import remove
-from shutil import move
+from shutil import move, rmtree
 
 remotes_allowed_message = 'The only allowed Heroku remotes are: staging/production'
 remotes_allowed = ('staging', 'production')
@@ -76,6 +76,50 @@ def prepare_branch():
         inc_version()
         if env.dest in production_dests and env.back_branch_name != 'master':
             env.all_set = merge_branch_to_from('master', env.back_branch_name)
+
+@task
+def copydb(origin='', destination='', password=''):
+    """
+    (mongocp) needs origin, destination and password
+    """
+    if not origin or not destination:
+        abort("""Usage:
+                 $ fab copydb:origin=origin,destination=destination,password=password
+
+                 origin must be a production backup file, \'local\', \'production\' or \'staging\'
+                 destination must be \'local\', \'production\' or \'staging\'
+                 password for destination database should be quoted""")
+
+    if origin == destination:
+        abort('Destination cannot be the same as origin')
+
+    OPTS_DICT = {'local':
+                     '-h localhost:27017 -d dailySoccerDB',
+                 'production':
+                     '-h lamppost.7.mongolayer.com:10078 -d app23671191 -u "admin" -p "%s"' % (password),
+                 'staging':
+                     '-h lamppost.7.mongolayer.com:10011 -d app26235550 -u "admin" -p "%s"' % (password)
+                }
+
+    # Name of the MongoDB database in production
+    env.prod_app_name = None if origin in OPTS_DICT else 'app23671191'
+
+    if destination in OPTS_DICT:
+        #Creamos un directorio temporal
+        temp_dir = mkdtemp()
+
+        if env.prod_app_name:
+            local('tar xzf %s -C %s' % (tarfile, temp_dir))
+            local('mongodump --dbpath %s' % (temp_dir))
+            local('mongorestore --drop %s dump/%s' % (OPTS_DICT[destination], origin))
+            rmtree('dump')
+        else:
+            local('mongodump %s -o %s' % (OPTS_DICT[origin], temp_dir))
+            dir_created = local('ls %s' % temp_dir, capture=True)
+            local('mongorestore --drop %s %s/%s' % (OPTS_DICT[destination], temp_dir, dir_created))
+
+        #Borramos el directorio temporal
+        rmtree(temp_dir)
 
 
 def get_branch_name():
