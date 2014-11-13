@@ -24,7 +24,7 @@ def prepare_branch(dest):
         print 'Destino inválido desde esta rama'
         all_set = False
 
-    stashed = stashed()
+    stashed = stash()
 
     inc_version()
     commit('Incrementando versión para deploy')
@@ -41,7 +41,7 @@ def get_branch_name():
     return local('git symbolic-ref -q HEAD', capture=True)[11:]
 
 
-def stashed():
+def stash():
     return 'No local changes to save' not in local('git stash', capture=True)
 
 
@@ -83,7 +83,7 @@ def commit(message):
 
 
 def prepare_client(dest):
-    client_stashed = stashed()
+    client_stashed = stash()
     client_branch_name = get_branch_name()
     if dest in production_dests:
         merge_branch_to_from('master', 'develop')
