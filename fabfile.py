@@ -160,9 +160,10 @@ def deploy(dest='staging', mode='release'):
     Deploy a Heroku. Parámetros: dest=staging/production,mode=release/debug
     """
     env.dest, env.mode = dest, mode
+    env.public_deleted = False
+    env.client_branch_name = 'develop'
 
     prepare_branch()
-    env.client_branch_name = 'develop'
     if env.all_set:
         print blue('Deploying mode %s to %s from %s' % (env.mode, env.dest,
                                                          env.back_branch_name))
