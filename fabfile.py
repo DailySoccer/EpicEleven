@@ -110,7 +110,7 @@ def commit(message):
     local('git commit -am "%s"' % message)
 
 
-def prepare_client(dest):
+def prepare_client(dest, mode):
     client_stashed = stash()
     client_branch_name = get_branch_name()
     if dest in production_dests:
@@ -157,7 +157,7 @@ def deploy(dest='staging', mode='release'):
         remove_admin_folder(dest)
         public_deleted = rm_public()
         with cd('../webclient'):
-            client_branch_name = prepare_client(dest)
+            client_branch_name = prepare_client(dest, mode)
         commit_for_deploy()
         heroku_push(dest)
         wake_dest(dest)
