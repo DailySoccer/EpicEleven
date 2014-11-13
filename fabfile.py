@@ -130,7 +130,7 @@ def post_build_client():
 def commit_for_deploy():
     print blue("Commit for deploy...")
     local('git add .')
-    local('git commit -am "Including build in deploy branch"')
+    local('git commit --allow-empty -am "Including build in deploy branch"')
 
 def heroku_push():
     print blue("Pushing to Heroku...")
