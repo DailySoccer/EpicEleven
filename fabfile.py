@@ -108,7 +108,7 @@ def prepare_client():
     env.client_branch_name = get_branch_name()
     if env.dest in production_dests:
         return merge_branch_to_from('master','develop')
-    return False
+    return True
 
 def build_client(mode, client_stashed):
     local('./build.sh %s' % mode)
