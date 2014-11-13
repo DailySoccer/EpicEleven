@@ -168,7 +168,10 @@ def prepare_client():
 
 def build_client():
     print blue("Building client...")
-    local('./build.sh %s' % env.mode)
+    if env.dest in production_dests:
+        local('./build_for_deploy.sh %s' % env.mode)
+    else:
+        local('./build.sh %s' % env.mode)
 
 def post_build_client():
     print blue("Client post build...")
@@ -222,7 +225,8 @@ def deploy(dest='staging', mode='release'):
                                                          env.back_branch_name))
         create_deploy_branch()
         remove_admin_folder()
-        #rm_public() # NOT DELETING PUBLIC FOLDER
+        if env.dest in production_dests:
+            rm_public()
         with lcd('../webclient'):
             if prepare_client():
                 build_client()
