@@ -1,6 +1,7 @@
 package model;
 
 import org.bson.types.ObjectId;
+import utils.ViewProjection;
 
 public class InstanceSoccerPlayer {
     public ObjectId templateSoccerPlayerId;
@@ -19,4 +20,10 @@ public class InstanceSoccerPlayer {
         fieldPos = template.fieldPos;
         salary = template.salary;
     }
+
+    static public InstanceSoccerPlayer findOne(ObjectId contestId, ObjectId templateSoccerPlayerId) {
+        Contest contest = Model.contests().findOne("{_id : #}", contestId).projection(ViewProjection.get(JsonViews.InstanceSoccerPlayers.class, Contest.class)).as(Contest.class);
+        return contest.getInstanceSoccerPlayer(templateSoccerPlayerId);
+    }
+
 }

@@ -49,7 +49,7 @@ public class Contest implements JongoId {
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyLiveContests.class})
     public List<ObjectId> templateMatchEventIds = new ArrayList<>();
 
-    @JsonView(value={JsonViews.Extended.class, JsonViews.MyLiveContests.class})
+    @JsonView(value={JsonViews.Extended.class, JsonViews.MyLiveContests.class, JsonViews.InstanceSoccerPlayers.class})
     public List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
 
     public Contest() {}
@@ -104,6 +104,10 @@ public class Contest implements JongoId {
             aContest = Model.contests().findOne(new ObjectId(contestId)).as(Contest.class);
         }
         return aContest;
+    }
+
+    static public Contest findOne(ObjectId contestId, Class<?> projectionClass) {
+        return Model.contests().findOne("{_id : #}", contestId).projection(ViewProjection.get(projectionClass, Contest.class)).as(Contest.class);
     }
 
     static public Contest findOneFromContestEntry(ObjectId contestEntryId) {

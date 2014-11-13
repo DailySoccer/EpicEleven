@@ -46,10 +46,7 @@ public class MainController extends Controller {
      * Obtener la información sobre un InstanceSoccerPlayer (estadísticas,...)
      */
     public static Result getInstanceSoccerPlayerInfo(String contestId, String templateSoccerPlayerId) {
-
-        Contest contest = Contest.findOne(contestId);
-        InstanceSoccerPlayer instanceSoccerPlayer = contest.getInstanceSoccerPlayer(new ObjectId(templateSoccerPlayerId));
-
+        InstanceSoccerPlayer instanceSoccerPlayer = InstanceSoccerPlayer.findOne(new ObjectId(contestId), new ObjectId(templateSoccerPlayerId));
         TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(templateSoccerPlayerId));
 
         Set<ObjectId> templateSoccerTeamIds = new HashSet<>();
