@@ -25,6 +25,9 @@ def prepare_branch(dest):
 
     stashed = stashed()
 
+    inc_version()
+    commit('Incrementando versión para deploy')
+
     if all_set:
         if dest in production_dests and branch_name != 'master':
             all_set = merge_branch_to_from(dest, branch_name)
@@ -68,6 +71,14 @@ def rm_public():
 
 def build_client(mode):
     local('./build_for_deploy.sh %s' % mode)
+
+
+def inc_version():
+    inc_version.main()
+
+
+def commit(message):
+    local('git commit -am "%s"' % message)
 
 
 def prepare_client(dest):
