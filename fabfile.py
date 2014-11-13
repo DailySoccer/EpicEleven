@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-from fabric.api import local
+from fabric.api import local, cd
 
 from tempfile import mkstemp
 from os import remove
