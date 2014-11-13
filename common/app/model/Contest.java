@@ -211,6 +211,19 @@ public class Contest implements JongoId {
         user.updateStats();
     }
 
+    public InstanceSoccerPlayer getInstanceSoccerPlayer(ObjectId templateSoccerPlayerId) {
+        InstanceSoccerPlayer instanceSoccerPlayer = null;
+        for (InstanceSoccerPlayer soccerPlayer: instanceSoccerPlayers) {
+            if (soccerPlayer.templateSoccerPlayerId.equals(templateSoccerPlayerId)) {
+                instanceSoccerPlayer = soccerPlayer;
+                break;
+            }
+        }
+        if (instanceSoccerPlayer == null)
+            throw new RuntimeException("WTF 7312: instanceSoccerPlayer == null");
+        return instanceSoccerPlayer;
+    }
+
     public Contest getSameContestWithFreeSlot(ObjectId userId) {
         String query = String.format("{templateContestId: #, 'contestEntries.%s': {$exists: false}, 'contestEntries.userId': {$ne:#}}", maxEntries-1);
         return Model.contests().findOne(query, templateContestId, userId).as(Contest.class);
