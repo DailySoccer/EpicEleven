@@ -3,7 +3,8 @@
 
 try:
     from fabric.api import local, lcd, env, task
-    from fabric.colors import green, red, blue
+    from fabric.utils import indent
+    from fabric.colors import green, red, blue, cyan
 except ImportError, e:
     print 'Instalación: '
     print '\t$ sudo easy_install install pip'
@@ -67,8 +68,8 @@ def prepare_branch():
         env.back_stashed = stash()
         inc_version()
         commit('Incrementando versión para deploy')
-        if dest in production_dests and branch_name != 'master':
-            env.all_set = merge_branch_to_from(dest, branch_name)
+        if env.dest in production_dests and branch_name != 'master':
+            env.all_set = merge_branch_to_from('master', branch_name)
 
 
 def get_branch_name():
@@ -101,7 +102,8 @@ def rm_public():
 def commit(message):
     local('git commit -am "%s"' % message)
 
-def prepare_client(dest):
+def prepare_client():
+    print blue("prepare client")
     env.client_stashed = stash()
     env.client_branch_name = get_branch_name()
     if env.dest in production_dests:
@@ -144,7 +146,7 @@ def deploy(dest='staging', mode='release'):
 
     prepare_branch()
     env.client_branch_name = 'develop'
-    if all_set:
+    if env.all_set:
         print green('Deploying to %s from %s' % (env.dest, env.back_branch_name))
         create_deploy_branch()
         remove_admin_folder()
@@ -161,22 +163,22 @@ def deploy(dest='staging', mode='release'):
             post_build_client()
         if env.public_deleted:
             git_checkout("public")
-        launch_functional_tests(dest)
+        launch_functional_tests()
     if env.back_stashed:
         unstash()
 
 
 def help():
     print 'Uso:'
-    print cyan('\n$ fab deploy:dest=staging,mode=debug')
+    print cyan(indent('$ fab deploy:dest=staging,mode=debug'))
     print ' o bien:'
-    print cyan('\n$ fab deploy:staging,debug')
+    print cyan(indent('$ fab deploy:staging,debug'))
     print ''
     print 'Destinos posibles: staging, production'
     print 'Modos posibles: debug, release'
     print ''
     print 'Para ver la lista de comandos:'
-    print cyan('\n$ fab -l')
+    print cyan(indent('$ fab -l'))
 
 if __name__ == '__main__':
     help()
