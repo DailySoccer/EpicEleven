@@ -110,8 +110,8 @@ def prepare_client():
         return merge_branch_to_from('master','develop')
     return True
 
-def build_client(mode, client_stashed):
-    local('./build.sh %s' % mode)
+def build_client():
+    local('./build.sh %s' % env.mode)
 
 def post_build_client():
     if env.client_stashed:
@@ -147,7 +147,8 @@ def deploy(dest='staging', mode='release'):
     prepare_branch()
     env.client_branch_name = 'develop'
     if env.all_set:
-        print green('Deploying to %s from %s' % (env.dest, env.back_branch_name))
+        print green('Deploying mode %s to %s from %s' % (env.mode, env.dest,
+                                                         env.back_branch_name))
         create_deploy_branch()
         remove_admin_folder()
         rm_public()
