@@ -26,7 +26,7 @@ def prepare_branch(dest):
 
     stashed = stash()
 
-    inc_version()
+    increment_version()
     commit('Incrementando versión para deploy')
 
     if all_set:
@@ -74,7 +74,7 @@ def build_client(mode):
     local('./build_for_deploy.sh %s' % mode)
 
 
-def inc_version():
+def increment_version():
     inc_version.main()
 
 
