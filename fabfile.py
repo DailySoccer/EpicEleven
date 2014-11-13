@@ -129,7 +129,7 @@ def post_build_client():
 
 def commit_for_deploy():
     print blue("Commit for deploy...")
-    local('git add . --all')
+    local('git add .')
     local('git commit -am "Including build in deploy branch"')
 
 def heroku_push():
@@ -166,7 +166,7 @@ def deploy(dest='staging', mode='release'):
                                                          env.back_branch_name))
         create_deploy_branch()
         remove_admin_folder()
-        rm_public()
+        #rm_public() # NOT DELETING PUBLIC FOLDER
         with lcd('../webclient'):
             if prepare_client():
                 build_client()
