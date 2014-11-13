@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-from fabric.api import local, cd
+from fabric.api import local, lcd
 
 from tempfile import mkstemp
 from os import remove
@@ -156,13 +156,13 @@ def deploy(dest='staging', mode='release'):
         deploy_branch()
         remove_admin_folder(dest)
         public_deleted = rm_public()
-        with cd('../webclient'):
+        with lcd('../webclient'):
             client_branch_name = prepare_client(dest, mode)
         commit_for_deploy()
         heroku_push(dest)
         wake_dest(dest)
         git_checkout(branch_name)
-        with cd('../webclient'):
+        with lcd('../webclient'):
             git_checkout(client_branch_name)
         if public_deleted:
             git_checkout("public")
