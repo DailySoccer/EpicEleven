@@ -3,10 +3,42 @@
 
 from fabric.api import local
 
+from tempfile import mkstemp
+from os import remove
+from shutil import move
+
 remotes_allowed_message = 'The only allowed Heroku remotes are: staging/production'
 remotes_allowed = ('staging', 'production')
 branches_allowed_to_prod = ('develop', 'master')
 production_dests = ('production',)
+
+
+def inc_version():
+    LISTA = [('.',2),('.',2),('"',0),('"',2)]
+    BUILDFILE = 'build.sbt'
+    def general(text, params):
+        if not params:
+            try:
+                return str(int(text)+1)
+            except ValueError:
+                return '0'
+        else:
+            our_params = params.pop()
+            partitioned = list(text.partition(our_params[0]))
+            partitioned[our_params[1]] = general(partitioned[our_params[1]], params)
+            return ''.join(partitioned)
+
+    fh, abs_path = mkstemp()
+
+    with open(BUILDFILE, 'r') as f:
+        with open(abs_path, 'w') as e:
+            for line in f.readlines():
+                if line.startswith('version'):
+                    line = general(line, LISTA)
+                e.write(line)
+
+    remove(BUILDFILE)
+    move(abs_path, BUILDFILE)
 
 
 def prepare_branch(dest):
@@ -26,7 +58,7 @@ def prepare_branch(dest):
 
     stashed = stash()
 
-    increment_version()
+    inc_version()
     commit('Incrementando versión para deploy')
 
     if all_set:
@@ -72,10 +104,6 @@ def rm_public():
 
 def build_client(mode):
     local('./build_for_deploy.sh %s' % mode)
-
-
-def increment_version():
-    inc_version.main()
 
 
 def commit(message):
