@@ -203,7 +203,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
             TemplateSoccerPlayer templateSoccer = new TemplateSoccerPlayer(optaPlayer, templateTeam.templateSoccerTeamId);
 
             TemplateSoccerPlayerMetadata templateSoccerPlayerMetadata = TemplateSoccerPlayerMetadata.findOne(optaPlayer.optaPlayerId);
-            templateSoccer.salary = templateSoccerPlayerMetadata!=null? templateSoccerPlayerMetadata.salary: (templateSoccer.name.length()*500+2500);
+            templateSoccer.salary = templateSoccerPlayerMetadata!=null? templateSoccerPlayerMetadata.salary: (templateSoccer.name.length()*500);
 
             templateSoccer.updateDocument();
         }
