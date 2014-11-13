@@ -20,6 +20,7 @@ branches_allowed_to_prod = ('develop', 'master')
 production_dests = ('production',)
 
 def inc_version():
+    print(blue('Incrementing version...'))
     LISTA = [('.',2),('.',2),('"',0),('"',2)]
     BUILDFILE = 'build.sbt'
     def general(text, params):
@@ -44,6 +45,7 @@ def inc_version():
     move(abs_path, BUILDFILE)
 
 def prepare_branch():
+    print(blue('Preparing branch...'))
 
     env.all_set, env.back_stashed = True, False
 
@@ -68,20 +70,23 @@ def prepare_branch():
         env.back_stashed = stash()
         inc_version()
         commit('Incrementando versión para deploy')
-        if env.dest in production_dests and branch_name != 'master':
-            env.all_set = merge_branch_to_from('master', branch_name)
+        if env.dest in production_dests and env.back_branch_name != 'master':
+            env.all_set = merge_branch_to_from('master', env.back_branch_name)
 
 
 def get_branch_name():
     return local('git symbolic-ref -q HEAD', capture=True)[11:]
 
 def stash():
+    print(blue('Stashing if needed...'))
     return 'No local changes to save' not in local('git stash', capture=True)
 
 def unstash():
+    print(blue('Unstashing...'))
     local('git stash pop')
 
 def merge_branch_to_from(dest, orig):
+    print(blue('Merging %s to %s...' % (orig, dest)))
     if git_checkout(dest):
         local('git pull')
         merge = local('git merge -X theirs %s --commit -m "Merge branch \'%s\'" --no-ff' %
@@ -90,20 +95,23 @@ def merge_branch_to_from(dest, orig):
     return False
 
 def create_deploy_branch():
+    print(blue('Creating deploy branch...'))
     local('git checkout -B deploy')
 
 def remove_admin_folder():
     if env.dest in production_dests:
+        print(blue('Removing admin folder...'))
         local('rm -rf admin')
 
 def rm_public():
+    print(blue('Removing public folder...'))
     env.public_deleted = local('rm public').succeeded
 
 def commit(message):
     local('git commit -am "%s"' % message)
 
 def prepare_client():
-    print blue("prepare client")
+    print blue("Preparing client...")
     env.client_stashed = stash()
     env.client_branch_name = get_branch_name()
     if env.dest in production_dests:
@@ -111,31 +119,38 @@ def prepare_client():
     return True
 
 def build_client():
+    print blue("Building client...")
     local('./build.sh %s' % env.mode)
 
 def post_build_client():
+    print blue("Client post build...")
     if env.client_stashed:
         unstash()
 
 def commit_for_deploy():
-    local('git add .')
+    print blue("Commit for deploy...")
+    local('git add . --all')
     local('git commit -am "Including build in deploy branch"')
 
 def heroku_push():
+    print blue("Pushing to Heroku...")
     local('git push %s deploy:master --force' % env.dest)
 
 def wake_dest():
     wakeable_dests = {'staging': 'http://dailysoccer-staging.herokuapp.com'}
     if env.dest in wakeable_dests:
-        local('curl "%s" > /dev/null 2>&1' % wakeable_dests[env.dest])
+        print blue("Waking up servers...")
+        local('curl "%s"' % wakeable_dests[env.dest])
 
 def git_checkout(branch_name_or_file):
+    print blue("Returning %s..." % branch_name_or_file)
     return local('git checkout %s' % branch_name_or_file).succeeded
 
 def launch_functional_tests():
     test_hooks = {'staging': 'https://drone.io/hook?id=github.com/DailySoccer/webtest&token=ncTodtcZ2iTgEIxBRuHR'}
     if env.dest in test_hooks:
-        local('curl "%s" > /dev/null 2>&1 &' % test_hooks[env.dest])
+        print blue("Launching functional tests...")
+        local('curl "%s"' % test_hooks[env.dest])
 
 @task
 def deploy(dest='staging', mode='release'):
@@ -147,7 +162,7 @@ def deploy(dest='staging', mode='release'):
     prepare_branch()
     env.client_branch_name = 'develop'
     if env.all_set:
-        print green('Deploying mode %s to %s from %s' % (env.mode, env.dest,
+        print blue('Deploying mode %s to %s from %s' % (env.mode, env.dest,
                                                          env.back_branch_name))
         create_deploy_branch()
         remove_admin_folder()
