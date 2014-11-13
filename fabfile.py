@@ -19,7 +19,11 @@ remotes_allowed = ('staging', 'production')
 branches_allowed_to_prod = ('develop', 'master')
 production_dests = ('production',)
 
+@task
 def inc_version():
+    """
+    Increments version in build.sbt file and commit it
+    """
     print(blue('Incrementing version...'))
     LISTA = [('.',2),('.',2),('"',0),('"',2)]
     BUILDFILE = 'build.sbt'
@@ -43,6 +47,7 @@ def inc_version():
                 e.write(line)
     remove(BUILDFILE)
     move(abs_path, BUILDFILE)
+    commit('Incrementando versión para deploy')
 
 def prepare_branch():
     print(blue('Preparing branch...'))
@@ -69,7 +74,6 @@ def prepare_branch():
     if env.all_set:
         env.back_stashed = stash()
         inc_version()
-        commit('Incrementando versión para deploy')
         if env.dest in production_dests and env.back_branch_name != 'master':
             env.all_set = merge_branch_to_from('master', env.back_branch_name)
 
@@ -148,8 +152,13 @@ def git_checkout(branch_name_or_file):
     print blue("Returning %s..." % branch_name_or_file)
     return local('git checkout %s' % branch_name_or_file).succeeded
 
-def launch_functional_tests():
+@task
+def launch_functional_tests(dest='staging'):
+    """
+    Launches functional tests
+    """
     test_hooks = {'staging': 'https://drone.io/hook?id=github.com/DailySoccer/webtest&token=ncTodtcZ2iTgEIxBRuHR'}
+    env.dest = dest if not hasattr(env, 'dest') else env.dest
     if env.dest in test_hooks:
         print blue("Launching functional tests...")
         local('curl "%s"' % test_hooks[env.dest])
