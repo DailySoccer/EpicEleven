@@ -133,7 +133,7 @@ def heroku_push(dest):
 def wake_dest(dest='staging'):
     wakeable_dests = {'staging': 'http://dailysoccer-staging.herokuapp.com'}
 
-    if dest in wakeable_dests.keys:
+    if dest in wakeable_dests:
         local('curl "%s" > /dev/null 2>&1' % wakeable_dests[dest])
 
 
@@ -144,7 +144,7 @@ def git_checkout(branch_name):
 def launch_functional_tests(dest):
     test_hooks = {'staging': 'https://drone.io/hook?id=github.com/DailySoccer/webtest&token=ncTodtcZ2iTgEIxBRuHR'}
 
-    if dest in test_hooks.keys:
+    if dest in test_hooks:
         local('curl "%s" > /dev/null 2>&1 &' % test_hooks[dest])
 
 
