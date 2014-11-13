@@ -124,12 +124,14 @@ def build_client():
 
 def post_build_client():
     print blue("Client post build...")
+    local('git checkout -- .')
     if env.client_stashed:
         unstash()
 
 def commit_for_deploy():
     print blue("Commit for deploy...")
     local('git add .')
+    # Allow empty is passed not to crash if no changes are done in the commit
     local('git commit --allow-empty -am "Including build in deploy branch"')
 
 def heroku_push():
