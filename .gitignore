@@ -22,3 +22,4 @@ data/heroku_production_mongo_dump.sh
 data/snapshot*.tar.gz
 .env
 conf/apiKey_prod.properties
+*.pyc

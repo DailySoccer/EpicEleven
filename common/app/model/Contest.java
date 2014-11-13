@@ -49,7 +49,7 @@ public class Contest implements JongoId {
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyLiveContests.class})
     public List<ObjectId> templateMatchEventIds = new ArrayList<>();
 
-    @JsonView(value={JsonViews.Extended.class, JsonViews.MyLiveContests.class})
+    @JsonView(value={JsonViews.Extended.class, JsonViews.MyLiveContests.class, JsonViews.InstanceSoccerPlayers.class})
     public List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
 
     public Contest() {}
@@ -104,6 +104,10 @@ public class Contest implements JongoId {
             aContest = Model.contests().findOne(new ObjectId(contestId)).as(Contest.class);
         }
         return aContest;
+    }
+
+    static public Contest findOne(ObjectId contestId, Class<?> projectionClass) {
+        return Model.contests().findOne("{_id : #}", contestId).projection(ViewProjection.get(projectionClass, Contest.class)).as(Contest.class);
     }
 
     static public Contest findOneFromContestEntry(ObjectId contestEntryId) {
@@ -209,6 +213,19 @@ public class Contest implements JongoId {
         // TODO: Dar premios
         // Actualmente únicamente actualizamos las estadísticas de torneos ganados
         user.updateStats();
+    }
+
+    public InstanceSoccerPlayer getInstanceSoccerPlayer(ObjectId templateSoccerPlayerId) {
+        InstanceSoccerPlayer instanceSoccerPlayer = null;
+        for (InstanceSoccerPlayer soccerPlayer: instanceSoccerPlayers) {
+            if (soccerPlayer.templateSoccerPlayerId.equals(templateSoccerPlayerId)) {
+                instanceSoccerPlayer = soccerPlayer;
+                break;
+            }
+        }
+        if (instanceSoccerPlayer == null)
+            throw new RuntimeException("WTF 7312: instanceSoccerPlayer == null");
+        return instanceSoccerPlayer;
     }
 
     public Contest getSameContestWithFreeSlot(ObjectId userId) {

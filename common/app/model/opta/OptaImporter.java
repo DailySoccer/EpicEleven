@@ -77,7 +77,7 @@ public class OptaImporter {
                         templatePlayer = new TemplateSoccerPlayer(optaPlayer, templateTeam.templateSoccerTeamId);
 
                         TemplateSoccerPlayerMetadata templateSoccerPlayerMetadata = TemplateSoccerPlayerMetadata.findOne(optaPlayer.optaPlayerId);
-                        templatePlayer.salary = templateSoccerPlayerMetadata != null ? templateSoccerPlayerMetadata.salary : (templatePlayer.name.length()*500+2500);
+                        templatePlayer.salary = templateSoccerPlayerMetadata != null ? templateSoccerPlayerMetadata.salary : (templatePlayer.name.length()*500);
 
                         templatePlayer.updateDocument();
                         OpsLog.onNew(OPS_LOG_IMPORT, optaPlayer);

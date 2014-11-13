@@ -5,6 +5,8 @@ GET            /current_date                                           controlle
 
 # Informacion de un futbolista
 GET            /get_soccer_player_info/:soccerPlayer                   controllers.MainController.getTemplateSoccerPlayerInfo(soccerPlayer)
+GET            /get_instance_soccer_player_info/:contest/:soccerPlayer controllers.MainController.getInstanceSoccerPlayerInfo(contest, soccerPlayer)
+
 
 # Reglas del juego
 GET            /get_scoring_rules                                      controllers.MainController.getScoringRules()
