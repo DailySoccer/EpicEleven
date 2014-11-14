@@ -258,7 +258,8 @@ def deploy(dest='staging', mode='release'):
 def handle_sigterm(signal, frame):
     return_to_previous_state()
     if env.back_stashed:
-        unstash()
+        with lcd('../backend'):
+            unstash()
     sys.exit(0)
 
 def return_to_previous_state():
