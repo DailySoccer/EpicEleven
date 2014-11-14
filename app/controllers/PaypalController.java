@@ -41,7 +41,7 @@ public class PaypalController extends Controller {
     static final String PAYMENT_STATE_CANCELED = "canceled";
     static final String PAYMENT_STATE_EXPIRED = "expired";
 
-    public static Result init(String userId, int money) {
+    public static Result approvalPayment(String userId, int money) {
         Map<String, String> sdkConfig = getSdkConfig();
 
         Result result = badRequest();
@@ -74,7 +74,7 @@ public class PaypalController extends Controller {
      *  ?success=true&paymentId=PAY-9AB311545W6759534KRNXYOA&token=EC-9NA34841MA1300346&PayerID=WZADK9MZSSL5N
      *  ?cancel=true
      */
-    public static Result execute() {
+    public static Result executePayment() {
         final String PAYMENT_ID = "paymentId";
         final String PAYER_ID = "PayerID";
 
