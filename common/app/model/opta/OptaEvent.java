@@ -17,6 +17,8 @@ public class OptaEvent {
     @Id
     public ObjectId optaEventId;
     public String gameId;
+    public String homeTeamId;
+    public String awayTeamId;
     public String competitionId;
     public String seasonId;
     public int teamId;
@@ -54,6 +56,8 @@ public class OptaEvent {
 
     public OptaEvent(Element event, Element game) {
         this.gameId = game.getAttributeValue("id");
+        this.homeTeamId = game.getAttributeValue("home_team_id");
+        this.awayTeamId = game.getAttributeValue("away_team_id");
         this.competitionId = game.getAttributeValue("competition_id");
         this.seasonId = game.getAttributeValue("season_id");
         this.teamId = Integer.parseInt(event.getAttributeValue("team_id"));
