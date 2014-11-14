@@ -253,7 +253,13 @@ def help():
     print 'Destinos posibles: staging, production'
     print 'Modos posibles: debug, release'
     print ''
-    print 'Para ver la lista de comandos:'
+    print("""Uso de MongoCP:
+             $ fab copydb:origin=origin,destination=destination,password=password
+
+             origin must be a production backup file, \'local\', \'production\' or \'staging\'
+             destination must be \'local\', \'production\' or \'staging\'
+             password for destination database should be quoted""")
+    print 'Para ver la lista completa de comandos:'
     print cyan(indent('$ fab -l'))
 
 if __name__ == '__main__':
