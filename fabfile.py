@@ -172,9 +172,8 @@ def prepare_client():
 
 def build_client():
     print blue("Building client...")
-    env.client_failed = any(x in local('./build_for_deploy.sh %s' % env.mode,
-                                       capture=True)
-                            for x in ("error", "failed"))
+    client_build = local('./build_for_deploy.sh %s' % env.mode, capture=True)
+    env.client_failed = any(x in client_built for x in ("error", "failed"))
     """
     if env.dest in production_dests:
         local('./build_for_deploy.sh %s' % env.mode)
