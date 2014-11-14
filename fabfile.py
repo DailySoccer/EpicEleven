@@ -161,7 +161,6 @@ def remove_admin_folder():
 def rm_public():
     print(blue('Removing public folder...'))
     env.public_deleted = local('rm public').succeeded
-    print(red(env.public_deleted))
 
 def commit(message):
     local('git commit -am "%s"' % message)
@@ -264,7 +263,10 @@ def handle_sigterm(signal, frame):
 
 def return_to_previous_state():
     if env.switched_to_deploy:
-        git_checkout(env.back_branch_name)
+        with lcd('../backend'):
+            if env.public_deleted:
+                git_checkout('-- public')
+            git_checkout(env.back_branch_name)
     with lcd('../webclient'):
         git_checkout(env.client_branch_name)
         post_build_client()
