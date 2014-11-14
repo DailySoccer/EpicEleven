@@ -5,12 +5,13 @@ try:
     from fabric.api import local, lcd, env, task
     from fabric.utils import indent, abort
     from fabric.colors import green, red, blue, cyan
-except ImportError, e:
+except ImportError as e:
     print 'Instalación: '
     print '\t$ sudo easy_install install pip'
     print '\t$ sudo pip uninstall fabric paramiko'
     print '\t$ sudo pip install paramiko==1.10'
     print '\t$ sudo pip install fabric'
+
 
 from tempfile import mkstemp, mkdtemp
 from os import remove
@@ -252,23 +253,25 @@ def deploy(dest='staging', mode='release'):
         unstash()
 
 
-def help():
+def fab_help():
     print 'Uso:'
     print cyan(indent('$ fab deploy:dest=staging,mode=debug'))
     print ' o bien:'
     print cyan(indent('$ fab deploy:staging,debug'))
     print ''
-    print 'Destinos posibles: staging, production'
-    print 'Modos posibles: debug, release'
+    print 'Destinos posibles: '+cyan('staging, production')
+    print 'Modos posibles: '+cyan('debug, release')
     print ''
-    print("""Uso de MongoCP:
-             $ fab copydb:origin=origin,destination=destination,password=password
-
-             origin must be a production backup file, \'local\', \'production\' or \'staging\'
-             destination must be \'local\', \'production\' or \'staging\'
-             password for destination database should be quoted""")
+    print 'Uso de MongoCP:'
+    print cyan(indent('$ fab copydb:origin=production,destination=local[,password="password"]'))
+    print ''
+    print 'Orígenes posibles: '+cyan('\'/home/.../backup.tar.gz\', \'local\', \'production\' o \'staging\'')
+    print 'Destinos posibles: '+cyan('\'local\', \'production\' o \'staging\'')
+    print 'Hint: Si la contraseña no funciona quizá puedes entrecomillarla o no ponerla y que la pida'
+    print ''
     print 'Para ver la lista completa de comandos:'
     print cyan(indent('$ fab -l'))
 
 if __name__ == '__main__':
-    help()
+    fab_help()
+
