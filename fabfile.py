@@ -259,6 +259,7 @@ def handle_sigterm(signal, frame):
     return_to_previous_state()
     if env.back_stashed:
         unstash()
+    sys.exit(0)
 
 def return_to_previous_state():
     if env.switched_to_deploy:
