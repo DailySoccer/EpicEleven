@@ -19,16 +19,17 @@ public class PaypalController extends Controller {
     static final String MODE_LIVE = "live";
     static final String MODE_CONFIG = MODE_SANDBOX;
 
-    static final String CANCEL_PATH = "/paypal/execute_payment?cancel=true&orderId=";
-    static final String RETURN_PATH = "/paypal/execute_payment?success=true&orderId=";
+    // Las rutas relativas a las que enviaremos las respuestas proporcionadas por Paypal
+    static final String SERVER_CANCEL_PATH = "/paypal/execute_payment?cancel=true&orderId=";
+    static final String SERVER_RETURN_PATH = "/paypal/execute_payment?success=true&orderId=";
 
     /*
         LIVE CONFIGURATION
      */
     static final String LIVE_CLIENT_ID = "AXGKyxAeNjwaGg4gNwHDEoidWC7_uQeRgaFAWTccuLqb1-R-s11FWbceSWR0";
     static final String LIVE_SECRET = "ENlBYxDHZVn_hotpxYtCXD3NPvvPQSmj8CbfzYWZyaFddkQTwhhw3GxV5Ipe";
-    static final String LIVE_CANCEL_URL = "http://backend.epiceleven.com" + CANCEL_PATH;
-    static final String LIVE_RETURN_URL = "http://backend.epiceleven.com" + RETURN_PATH;
+    static final String LIVE_CANCEL_URL = "http://backend.epiceleven.com" + SERVER_CANCEL_PATH;
+    static final String LIVE_RETURN_URL = "http://backend.epiceleven.com" + SERVER_RETURN_PATH;
 
     /*
         SANDBOX CONFIGURATION
@@ -59,9 +60,9 @@ public class PaypalController extends Controller {
     // La url a la que redirigimos al usuario cuando el proceso de pago se complete (con éxito o cancelación)
     static final String REFERER_URL_DEFAULT = "www.epiceleven.com";
     // Lo que añadiremos a la url para informar al webclient
-    static final String RESPONSE_PATH = "#/payment/response/";
-    static final String RESPONSE_SUCCESS = "success";
-    static final String RESPONSE_CANCELED = "canceled";
+    static final String CLIENT_RESPONSE_PATH = "#/payment/response/";
+    static final String CLIENT_RESPONSE_SUCCESS = "success";
+    static final String CLIENT_RESPONSE_CANCELED = "canceled";
 
     static String refererUrl = REFERER_URL_DEFAULT;
 
@@ -72,7 +73,7 @@ public class PaypalController extends Controller {
         Map<String, String> sdkConfig = getSdkConfig();
 
         // Si Paypal no responde con un adecuado "approval url", cancelaremos la solicitud
-        Result result = redirect(refererUrl + RESPONSE_PATH + RESPONSE_CANCELED);
+        Result result = redirect(refererUrl + CLIENT_RESPONSE_PATH + CLIENT_RESPONSE_CANCELED);
 
         try {
             // Obtener la autorización de Paypal a nuestra cuenta
@@ -153,6 +154,7 @@ public class PaypalController extends Controller {
                 else{
                     // Pago cancelado
                     order.canceled(response);
+                    success = false;
                 }
             } catch (PayPalRESTException e) {
                 e.printStackTrace();
@@ -168,7 +170,7 @@ public class PaypalController extends Controller {
             }
         }
 
-        return redirect(refererUrl + RESPONSE_PATH + (success ? RESPONSE_SUCCESS : RESPONSE_CANCELED));
+        return redirect(refererUrl + CLIENT_RESPONSE_PATH + (success ? CLIENT_RESPONSE_SUCCESS : CLIENT_RESPONSE_CANCELED));
     }
 
     private static Map<String, String> getSdkConfig() {
@@ -265,8 +267,8 @@ public class PaypalController extends Controller {
             }
             else {
                 // Le redirigimos a la url desde la que vino la solicitud
-                redirectUrls.setCancelUrl(refererUrl + CANCEL_PATH + orderId.toString());
-                redirectUrls.setReturnUrl(refererUrl + RETURN_PATH + orderId.toString());
+                redirectUrls.setCancelUrl(refererUrl + SERVER_CANCEL_PATH + orderId.toString());
+                redirectUrls.setReturnUrl(refererUrl + SERVER_RETURN_PATH + orderId.toString());
             }
         }
         return redirectUrls;
