@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 try:
@@ -8,6 +8,8 @@ try:
 except ImportError, e:
     print 'Instalación: '
     print '\t$ sudo easy_install install pip'
+    print '\t$ sudo pip uninstall fabric paramiko'
+    print '\t$ sudo pip install paramiko==1.10'
     print '\t$ sudo pip install fabric'
 
 from tempfile import mkstemp, mkdtemp
