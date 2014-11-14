@@ -262,13 +262,13 @@ def handle_sigterm(signal, frame):
     sys.exit(0)
 
 def return_to_previous_state():
+    if env.public_deleted:
+        git_checkout("-- public")
     if env.switched_to_deploy:
         git_checkout(env.back_branch_name)
     with lcd('../webclient'):
         git_checkout(env.client_branch_name)
         post_build_client()
-    if env.public_deleted:
-        git_checkout("-- public")
 
 def fab_help():
     print 'Uso:'
