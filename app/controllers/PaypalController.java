@@ -41,7 +41,16 @@ public class PaypalController extends Controller {
     static final String PAYMENT_STATE_CANCELED = "canceled";
     static final String PAYMENT_STATE_EXPIRED = "expired";
 
+    static final String REFERER_URL_DEFAULT = "www.epiceleven.com";
+    static final String RESPONSE_PATH = "#/payment/response/";
+    static final String RESPONSE_SUCCESS = "success";
+    static final String RESPONSE_CANCELED = "canceled";
+
+    static String refererUrl = REFERER_URL_DEFAULT;
+
     public static Result approvalPayment(String userId, int money) {
+        refererUrl = request().hasHeader("Referer") ? request().getHeader("Referer") : REFERER_URL_DEFAULT;
+
         Map<String, String> sdkConfig = getSdkConfig();
 
         Result result = badRequest();
@@ -117,7 +126,7 @@ public class PaypalController extends Controller {
             }
         }
 
-        return success ? ok("Ok") : badRequest();
+        return redirect(refererUrl + RESPONSE_PATH + (success ? RESPONSE_SUCCESS : RESPONSE_CANCELED));
     }
 
     private static Map<String, String> getSdkConfig() {
