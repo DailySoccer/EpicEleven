@@ -9,9 +9,7 @@ import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class TemplateSoccerPlayer implements JongoId, Initializer {
     @Id
@@ -26,6 +24,8 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
     public int fantasyPoints;
 
     public ObjectId templateTeamId;
+
+    public String[] tags;
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
@@ -92,6 +92,14 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
 
     public static List<TemplateSoccerPlayer> findAll(List<ObjectId> idList) {
         return ListUtils.asList(Model.findObjectIds(Model.templateSoccerPlayers(), "_id", idList).as(TemplateSoccerPlayer.class));
+    }
+
+    static public HashMap<String, TemplateSoccerPlayer> findAllAsMap(){
+        HashMap<String, TemplateSoccerPlayer> map = new HashMap<>();
+        for (TemplateSoccerPlayer optaPlayer: findAll()) {
+            map.put(optaPlayer.optaPlayerId, optaPlayer);
+        }
+        return map;
     }
 
     static public List<TemplateSoccerPlayer> findAllFromTemplateTeam(ObjectId templateSoccerTeamId) {
