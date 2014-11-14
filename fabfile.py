@@ -76,6 +76,7 @@ def prepare_branch():
     validate_branch()
     if env.all_set:
         env.back_stashed = stash()
+        env.warn_only = True
         inc_version()
         if env.dest in production_dests and env.back_branch_name != 'master':
             env.all_set = merge_branch_to_from('master', env.back_branch_name)
@@ -147,7 +148,7 @@ def merge_branch_to_from(dest, orig):
 
 def create_deploy_branch():
     print(blue('Creating deploy branch...'))
-    local('git checkout -B deploy')
+    env.switched_to_deploy = local('git checkout -B deploy').succeeded
 
 def remove_admin_folder():
     if env.dest in production_dests:
@@ -171,7 +172,7 @@ def prepare_client():
 
 def build_client():
     print blue("Building client...")
-    local('./build_for_deploy.sh %s' % env.mode)
+    env.client_built = local('./build_for_deploy.sh %s' % env.mode).succeeded
     """
     if env.dest in production_dests:
         local('./build_for_deploy.sh %s' % env.mode)
@@ -239,16 +240,19 @@ def deploy(dest='staging', mode='release'):
         with lcd('../webclient'):
             if prepare_client():
                 build_client()
-        commit_for_deploy()
-        heroku_push()
-        wake_dest()
-        git_checkout(env.back_branch_name)
+        if env.client_built:
+            commit_for_deploy()
+            heroku_push()
+            wake_dest()
+        if env.switched_to_deploy:
+            git_checkout(env.back_branch_name)
         with lcd('../webclient'):
             git_checkout(env.client_branch_name)
             post_build_client()
         if env.public_deleted:
             git_checkout("public")
-        launch_functional_tests()
+        if env.client_built:
+            launch_functional_tests()
     if env.back_stashed:
         unstash()
 
