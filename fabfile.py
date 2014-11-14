@@ -16,6 +16,9 @@ except ImportError as e:
 from tempfile import mkstemp, mkdtemp
 from os import remove
 from shutil import move, rmtree
+import signal
+import sys
+
 
 remotes_allowed_message = 'The only allowed Heroku remotes are: staging/production'
 remotes_allowed = ('staging', 'production')
@@ -50,7 +53,7 @@ def inc_version():
                 e.write(line)
     remove(BUILDFILE)
     move(abs_path, BUILDFILE)
-    commit('Incrementando versión para deploy')
+    env.incd_version = commit('Incrementando versión para deploy')
 
 def prepare_branch():
     print(blue('Preparing branch...'))
@@ -245,18 +248,26 @@ def deploy(dest='staging', mode='release'):
             commit_for_deploy()
             heroku_push()
             wake_dest()
-        if env.switched_to_deploy:
-            git_checkout(env.back_branch_name)
-        with lcd('../webclient'):
-            git_checkout(env.client_branch_name)
-            post_build_client()
-        if env.public_deleted:
-            git_checkout("public")
+        return_to_previous_state()
         if env.client_built:
             launch_functional_tests()
     if env.back_stashed:
         unstash()
 
+
+def handle_sigterm(signal, frame):
+    return_to_previous_state()
+    if env.back_stashed:
+        unstash()
+
+def return_to_previous_state():
+    if env.switched_to_deploy:
+        git_checkout(env.back_branch_name)
+    with lcd('../webclient'):
+        git_checkout(env.client_branch_name)
+        post_build_client()
+    if env.public_deleted:
+        git_checkout("-- public")
 
 def fab_help():
     print 'Uso:'
@@ -276,6 +287,9 @@ def fab_help():
     print ''
     print 'Para ver la lista completa de comandos:'
     print cyan(indent('$ fab -l'))
+
+signal.signal(signal.SIGTERM, handle_sigterm)
+signal.signal(signal.SIGINT, handle_sigterm)
 
 if __name__ == '__main__':
     fab_help()
