@@ -19,13 +19,16 @@ public class PaypalController extends Controller {
     static final String MODE_LIVE = "live";
     static final String MODE_CONFIG = MODE_SANDBOX;
 
+    static final String CANCEL_PATH = "/paypal/execute_payment?cancel=true&orderId=";
+    static final String RETURN_PATH = "/paypal/execute_payment?success=true&orderId=";
+
     /*
         LIVE CONFIGURATION
      */
     static final String LIVE_CLIENT_ID = "AXGKyxAeNjwaGg4gNwHDEoidWC7_uQeRgaFAWTccuLqb1-R-s11FWbceSWR0";
     static final String LIVE_SECRET = "ENlBYxDHZVn_hotpxYtCXD3NPvvPQSmj8CbfzYWZyaFddkQTwhhw3GxV5Ipe";
-    static final String LIVE_CANCEL_URL = "https://devtools-paypal.com/guide/pay_paypal?cancel=true&orderId=";
-    static final String LIVE_RETURN_URL = "https://devtools-paypal.com/guide/pay_paypal?success=true&orderId=";
+    static final String LIVE_CANCEL_URL = "http://backend.epiceleven.com" + CANCEL_PATH;
+    static final String LIVE_RETURN_URL = "http://backend.epiceleven.com" + RETURN_PATH;
 
     /*
         SANDBOX CONFIGURATION
@@ -212,18 +215,7 @@ public class PaypalController extends Controller {
         payment.setIntent("sale");
         payment.setPayer(payer);
         payment.setTransactions(transactions);
-
-        // Incluir en las urls el identificador del pedido
-        RedirectUrls redirectUrls = new RedirectUrls();
-        if (isLive(sdkConfig)) {
-            redirectUrls.setCancelUrl(LIVE_CANCEL_URL + orderId.toString());
-            redirectUrls.setReturnUrl(LIVE_RETURN_URL + orderId.toString());
-        }
-        else {
-            redirectUrls.setCancelUrl(SANDBOX_CANCEL_URL + orderId.toString());
-            redirectUrls.setReturnUrl(SANDBOX_RETURN_URL + orderId.toString());
-        }
-        payment.setRedirectUrls(redirectUrls);
+        payment.setRedirectUrls(getRedirectUrls(sdkConfig, orderId));
 
         // Solicitud de "aprobación" a Paypal
         Payment createdPayment = null;
@@ -255,6 +247,29 @@ public class PaypalController extends Controller {
             e.printStackTrace();
         }
         return paymentResult;
+    }
+
+    private static RedirectUrls getRedirectUrls(Map<String, String> sdkConfig, ObjectId orderId) {
+        // Incluir en las urls el identificador del pedido
+        RedirectUrls redirectUrls = new RedirectUrls();
+        if (isLive(sdkConfig)) {
+            redirectUrls.setCancelUrl(LIVE_CANCEL_URL + orderId.toString());
+            redirectUrls.setReturnUrl(LIVE_RETURN_URL + orderId.toString());
+        }
+        else {
+            // Solicitud de pago desde un "localHost"?
+            if (refererUrl.contains("localhost") || refererUrl.contains("127.")) {
+                // Las urls de respuesta serán las de Paypal...
+                redirectUrls.setCancelUrl(SANDBOX_CANCEL_URL + orderId.toString());
+                redirectUrls.setReturnUrl(SANDBOX_RETURN_URL + orderId.toString());
+            }
+            else {
+                // Le redirigimos a la url desde la que vino la solicitud
+                redirectUrls.setCancelUrl(refererUrl + CANCEL_PATH + orderId.toString());
+                redirectUrls.setReturnUrl(refererUrl + RETURN_PATH + orderId.toString());
+            }
+        }
+        return redirectUrls;
     }
 
     private static String getAccessToken(Map<String, String> sdkConfig) throws PayPalRESTException {
