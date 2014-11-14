@@ -19,9 +19,13 @@ public class PaypalController extends Controller {
     static final String MODE_LIVE = "live";
     static final String MODE_CONFIG = MODE_SANDBOX;
 
-    // Las rutas relativas a las que enviaremos las respuestas proporcionadas por Paypal
+    // Las rutas relativas al SERVER a las que enviaremos las respuestas proporcionadas por Paypal
     static final String SERVER_CANCEL_PATH = "/paypal/execute_payment?cancel=true&orderId=";
     static final String SERVER_RETURN_PATH = "/paypal/execute_payment?success=true&orderId=";
+
+    // Las rutas relativas al CLIENT a las que enviaremos las respuestas proporcionadas por Paypal
+    static final String CLIENT_CANCEL_PATH = "#/payment/response/canceled";
+    static final String CLIENT_SUCCESS_PATH = "#/payment/response/success";
 
     /*
         LIVE CONFIGURATION
@@ -59,11 +63,6 @@ public class PaypalController extends Controller {
 
     // La url a la que redirigimos al usuario cuando el proceso de pago se complete (con éxito o cancelación)
     static final String REFERER_URL_DEFAULT = "www.epiceleven.com";
-    // Lo que añadiremos a la url para informar al webclient
-    static final String CLIENT_RESPONSE_PATH = "#/payment/response/";
-    static final String CLIENT_RESPONSE_SUCCESS = "success";
-    static final String CLIENT_RESPONSE_CANCELED = "canceled";
-
     static String refererUrl = REFERER_URL_DEFAULT;
 
     public static Result approvalPayment(String userId, int money) {
@@ -73,7 +72,7 @@ public class PaypalController extends Controller {
         Map<String, String> sdkConfig = getSdkConfig();
 
         // Si Paypal no responde con un adecuado "approval url", cancelaremos la solicitud
-        Result result = redirect(refererUrl + CLIENT_RESPONSE_PATH + CLIENT_RESPONSE_CANCELED);
+        Result result = redirect(refererUrl + CLIENT_CANCEL_PATH);
 
         try {
             // Obtener la autorización de Paypal a nuestra cuenta
@@ -170,7 +169,7 @@ public class PaypalController extends Controller {
             }
         }
 
-        return redirect(refererUrl + CLIENT_RESPONSE_PATH + (success ? CLIENT_RESPONSE_SUCCESS : CLIENT_RESPONSE_CANCELED));
+        return redirect(refererUrl + (success ? CLIENT_SUCCESS_PATH : CLIENT_CANCEL_PATH));
     }
 
     private static Map<String, String> getSdkConfig() {
