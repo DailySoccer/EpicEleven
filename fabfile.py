@@ -173,7 +173,7 @@ def prepare_client():
 def build_client():
     print blue("Building client...")
     client_build = local('./build_for_deploy.sh %s' % env.mode, capture=True)
-    env.client_failed = any(x in client_build.stderr for x in ("error", "failed"))
+    env.client_built = not any(x in client_build.stderr for x in ("error", "failed"))
     """
     if env.dest in production_dests:
         local('./build_for_deploy.sh %s' % env.mode)
@@ -241,7 +241,7 @@ def deploy(dest='staging', mode='release'):
         with lcd('../webclient'):
             if prepare_client():
                 build_client()
-        if not env.client_failed:
+        if env.client_built:
             commit_for_deploy()
             heroku_push()
             wake_dest()
