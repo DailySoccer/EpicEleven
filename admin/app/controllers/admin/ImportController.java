@@ -1,5 +1,7 @@
 package controllers.admin;
 
+
+
 import model.opta.*;
 import play.Logger;
 import play.mvc.Controller;
@@ -65,7 +67,7 @@ public class ImportController extends Controller {
         OptaImportUtils.evaluateDirtyTeams(competitionsSelected, teamsNew, null, null);
 
         int news = OptaImportUtils.importTeams(teamsNew);
-        FlashMessage.success( String.format("Imported %d teams New", news) );
+        FlashMessage.success(String.format("Imported %d teams New", news));
         return redirect(routes.ImportController.showImportTeams());
     }
 
@@ -74,7 +76,7 @@ public class ImportController extends Controller {
         OptaImportUtils.evaluateDirtyTeams(null, teamsChanged, null);
 
         int changes = OptaImportUtils.importTeams(teamsChanged);
-        FlashMessage.success( String.format("Imported %d teams Changed", changes) );
+        FlashMessage.success(String.format("Imported %d teams Changed", changes));
         return redirect(routes.ImportController.showImportTeams());
     }
 
@@ -96,7 +98,7 @@ public class ImportController extends Controller {
         OptaImportUtils.evaluateDirtySoccers(playersNew, playersChanged, null);
 
         int news = OptaImportUtils.importPlayers(playersNew);
-        FlashMessage.success( String.format("Imported %d soccers New", news) );
+        FlashMessage.success(String.format("Imported %d soccers New", news));
 
         int changes = OptaImportUtils.importPlayers(playersChanged);
         FlashMessage.success( String.format("Imported %d soccers Changed", changes) );
@@ -197,6 +199,5 @@ public class ImportController extends Controller {
         }
         return redirect(routes.DashboardController.index());
     }
-
 
 }

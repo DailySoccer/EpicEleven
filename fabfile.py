@@ -1,18 +1,24 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 try:
     from fabric.api import local, lcd, env, task
     from fabric.utils import indent, abort
     from fabric.colors import green, red, blue, cyan
-except ImportError, e:
+except ImportError as e:
     print 'Instalación: '
     print '\t$ sudo easy_install install pip'
+    print '\t$ sudo pip uninstall fabric paramiko'
+    print '\t$ sudo pip install paramiko==1.10'
     print '\t$ sudo pip install fabric'
+
 
 from tempfile import mkstemp, mkdtemp
 from os import remove
 from shutil import move, rmtree
+import signal
+import sys
+
 
 remotes_allowed_message = 'The only allowed Heroku remotes are: staging/production'
 remotes_allowed = ('staging', 'production')
@@ -47,7 +53,7 @@ def inc_version():
                 e.write(line)
     remove(BUILDFILE)
     move(abs_path, BUILDFILE)
-    commit('Incrementando versión para deploy')
+    env.incd_version = commit('Incrementando versión para deploy')
 
 def prepare_branch():
     print(blue('Preparing branch...'))
@@ -73,6 +79,7 @@ def prepare_branch():
     validate_branch()
     if env.all_set:
         env.back_stashed = stash()
+        env.warn_only = True
         inc_version()
         if env.dest in production_dests and env.back_branch_name != 'master':
             env.all_set = merge_branch_to_from('master', env.back_branch_name)
@@ -144,7 +151,7 @@ def merge_branch_to_from(dest, orig):
 
 def create_deploy_branch():
     print(blue('Creating deploy branch...'))
-    local('git checkout -B deploy')
+    env.switched_to_deploy = local('git checkout -B deploy').succeeded
 
 def remove_admin_folder():
     if env.dest in production_dests:
@@ -168,10 +175,14 @@ def prepare_client():
 
 def build_client():
     print blue("Building client...")
+    client_build = local('./build_for_deploy.sh %s' % env.mode, capture=True)
+    env.client_built = not any(x in client_build.stderr for x in ("error", "failed"))
+    """
     if env.dest in production_dests:
         local('./build_for_deploy.sh %s' % env.mode)
     else:
         local('./build.sh %s' % env.mode)
+    """
 
 def post_build_client():
     print blue("Client post build...")
@@ -225,36 +236,64 @@ def deploy(dest='staging', mode='release'):
                                                          env.back_branch_name))
         create_deploy_branch()
         remove_admin_folder()
-        if env.dest in production_dests:
-            rm_public()
+
+        #if env.dest in production_dests:
+        #    rm_public()
+        rm_public()
+
         with lcd('../webclient'):
             if prepare_client():
                 build_client()
-        commit_for_deploy()
-        heroku_push()
-        wake_dest()
-        git_checkout(env.back_branch_name)
-        with lcd('../webclient'):
-            git_checkout(env.client_branch_name)
-            post_build_client()
-        if env.public_deleted:
-            git_checkout("public")
-        launch_functional_tests()
+        if env.client_built:
+            commit_for_deploy()
+            heroku_push()
+            wake_dest()
+        return_to_previous_state()
+        if env.client_built:
+            launch_functional_tests()
     if env.back_stashed:
         unstash()
 
 
-def help():
+def handle_sigterm(signal, frame):
+    return_to_previous_state()
+    if env.back_stashed:
+        with lcd('../backend'):
+            unstash()
+    sys.exit(0)
+
+def return_to_previous_state():
+    if env.switched_to_deploy:
+        with lcd('../backend'):
+            if env.public_deleted:
+                git_checkout('-- public')
+            git_checkout(env.back_branch_name)
+    with lcd('../webclient'):
+        git_checkout(env.client_branch_name)
+        post_build_client()
+
+def fab_help():
     print 'Uso:'
     print cyan(indent('$ fab deploy:dest=staging,mode=debug'))
     print ' o bien:'
     print cyan(indent('$ fab deploy:staging,debug'))
     print ''
-    print 'Destinos posibles: staging, production'
-    print 'Modos posibles: debug, release'
+    print 'Destinos posibles: '+cyan('staging, production')
+    print 'Modos posibles: '+cyan('debug, release')
     print ''
-    print 'Para ver la lista de comandos:'
+    print 'Uso de MongoCP:'
+    print cyan(indent('$ fab copydb:origin=production,destination=local[,password="password"]'))
+    print ''
+    print 'Orígenes posibles: '+cyan('\'/home/.../backup.tar.gz\', \'local\', \'production\' o \'staging\'')
+    print 'Destinos posibles: '+cyan('\'local\', \'production\' o \'staging\'')
+    print 'Hint: Si la contraseña no funciona quizá puedes entrecomillarla o no ponerla y que la pida'
+    print ''
+    print 'Para ver la lista completa de comandos:'
     print cyan(indent('$ fab -l'))
 
+signal.signal(signal.SIGTERM, handle_sigterm)
+signal.signal(signal.SIGINT, handle_sigterm)
+
 if __name__ == '__main__':
-    help()
+    fab_help()
+
