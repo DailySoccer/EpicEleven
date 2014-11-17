@@ -273,6 +273,12 @@ def return_to_previous_state():
         post_build_client()
 
 def fab_help():
+    print 'Instalación: '
+    print cyan(indent('$ sudo easy_install install pip'))
+    print cyan(indent('$ sudo pip uninstall fabric paramiko'))
+    print cyan(indent('$ sudo pip install paramiko==1.10'))
+    print cyan(indent('$ sudo pip install fabric'))
+    print ''
     print 'Uso:'
     print cyan(indent('$ fab deploy:dest=staging,mode=debug'))
     print ' o bien:'
