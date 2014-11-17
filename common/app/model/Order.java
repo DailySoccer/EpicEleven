@@ -27,6 +27,7 @@ public class Order {
 
     public String paymentId;
     public String payerId;
+    public String referer;
 
     public Object response;
 
@@ -41,25 +42,25 @@ public class Order {
         this.paymentId = paymentId;
     }
 
-    public void waitingPayment(String payerId) {
+    public void setWaitingPayment(String payerId) {
         this.state = State.WAITING_PAYMENT;
         this.payerId = payerId;
         Model.orders().update(orderId).with("{$set: {state: #, payerId: #}}", this.state, this.payerId);
     }
 
-    public void pending(Object response) {
+    public void setPending(Object response) {
         this.state = State.PENDING;
         this.response = response;
         Model.orders().update(orderId).with("{$set: {state: #, response: #}}", this.state, this.response);
     }
 
-    public void completed(Object response) {
+    public void setCompleted(Object response) {
         this.state = State.COMPLETED;
         this.response = response;
         Model.orders().update(orderId).with("{$set: {state: #, response: #}}", this.state, this.response);
     }
 
-    public void canceled(Object response) {
+    public void setCanceled(Object response) {
         this.state = State.CANCELED;
 
         if (response != null ) {
@@ -79,8 +80,9 @@ public class Order {
         return Model.orders().findOne("{paymentId : #}", paymentId).as(Order.class);
     }
 
-    static public Order create (ObjectId orderId, ObjectId userId, TransactionType transactionType, String paymentId, Object response) {
+    static public Order create (ObjectId orderId, ObjectId userId, TransactionType transactionType, String paymentId, String referer, Object response) {
         Order order = new Order(orderId, userId, transactionType, paymentId);
+        order.referer = referer;
         order.response = response;
         Model.orders().insert(order);
         return order;

@@ -6,6 +6,7 @@ import com.paypal.api.payments.*;
 import com.paypal.core.rest.APIContext;
 import com.paypal.core.rest.OAuthTokenCredential;
 import com.paypal.core.rest.PayPalRESTException;
+import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
 import org.bson.types.ObjectId;
@@ -62,17 +63,16 @@ public class PaypalController extends Controller {
     static final String PAYMENT_STATE_EXPIRED = "expired";
 
     // La url a la que redirigimos al usuario cuando el proceso de pago se complete (con éxito o cancelación)
-    static final String REFERER_URL_DEFAULT = "www.epiceleven.com";
-    static String refererUrl = REFERER_URL_DEFAULT;
+    static final String REFERER_URL_DEFAULT = "epiceleven.com";
 
     public static Result approvalPayment(String userId, int money) {
         // Obtenemos desde qué url están haciendo la solicitud
-        refererUrl = request().hasHeader("Referer") ? request().getHeader("Referer") : REFERER_URL_DEFAULT;
+        String refererUrl = request().hasHeader("Referer") ? request().getHeader("Referer") : REFERER_URL_DEFAULT;
 
         Map<String, String> sdkConfig = getSdkConfig();
 
         // Si Paypal no responde con un adecuado "approval url", cancelaremos la solicitud
-        Result result = redirect(refererUrl + CLIENT_CANCEL_PATH);
+        Result result = null;
 
         try {
             // Obtener la autorización de Paypal a nuestra cuenta
@@ -86,7 +86,8 @@ public class PaypalController extends Controller {
             // Logger.info("payment.create: {}", payment.toJSON());
 
             // Creamos el pedido (con el identificador generado y el de la solicitud de pago)
-            Order.create(orderId, new ObjectId(userId), Order.TransactionType.PAYPAL, payment.getId(), JSON.parse(payment.toJSON()));
+            //      Únicamente almacenamos el referer si no es el de "por defecto"
+            Order.create(orderId, new ObjectId(userId), Order.TransactionType.PAYPAL, payment.getId(), !refererUrl.contains(REFERER_URL_DEFAULT) ? refererUrl : null, JSON.parse(payment.toJSON()));
 
             // Buscamos la url para conseguir la "aprobación" del pagador
             List<Links> links = payment.getLinks();
@@ -98,9 +99,13 @@ public class PaypalController extends Controller {
                 }
             }
         } catch (PayPalRESTException e) {
-            e.printStackTrace();
+            Logger.error("WTF 7741: ", e);
         }
 
+        if (result == null) {
+            Logger.error("WTF 1209: Paypal: Link approval not found");
+            result = redirect(refererUrl + CLIENT_CANCEL_PATH);
+        }
         return result;
     }
 
@@ -118,57 +123,60 @@ public class PaypalController extends Controller {
         // Identificador del pedido que hemos incluido en las urls de respuesta de Paypal
         String orderId = request().getQueryString(QUERY_STRING_ORDER_KEY);
 
+        // Buscamos el pedido mediante su identificador
+        Order order = Order.findOne(orderId);
+
         // Respuesta "exitosa"?
         boolean success = request().queryString().containsKey(QUERY_STRING_SUCCESS_KEY);
         if (success) {
             // Identificador del pago
-            String paymentID = request().getQueryString(PAYMENT_ID);
+            String paymentId = request().getQueryString(PAYMENT_ID);
+            if (!order.paymentId.equals(paymentId)) {
+                Logger.error("WTF 7743: order.paymentId({}) != paymentId({})", order.paymentId, paymentId);
+            }
 
             // Obtener el identificador del "pagador" (Paypal lo proporciona en la url)
             String payerId = request().getQueryString(PAYER_ID);
 
-            // Obtenemos el pedido (podemos hacerlo mediante el identificador del pago o por el orderId)
-            Order order = Order.findOneFromPayment(paymentID);
-            order.waitingPayment(payerId);
+            order.setWaitingPayment(payerId);
 
             try {
                 // Obtener la autorización de Paypal a nuestra cuenta
                 String accessToken = getAccessToken(sdkConfig);
 
                 // Completar el pago "ya aprobado" por el pagador
-                Payment payment = completePayment(sdkConfig, accessToken, paymentID, payerId);
+                Payment payment = completePayment(sdkConfig, accessToken, paymentId, payerId);
                 // Logger.info("payment.execute: {}", payment.toJSON());
 
                 // Evaluar la respuesta de Paypal (values: "created", "approved", "failed", "canceled", "expired", "pending")
                 Object response = JSON.parse(payment.toJSON());
                 if (payment.getState().equals(PAYMENT_STATE_APPROVED)) {
                     // Pago aprobado
-                    order.completed(response);
+                    order.setCompleted(response);
                 }
                 else if (payment.getState().equals(PAYMENT_STATE_PENDING)) {
                     // El pago permanece pendiente de evaluación posterior
                     // TODO: Cómo enterarnos de cuándo lo validan?
-                    order.pending(response);
+                    order.setPending(response);
                 }
                 else{
                     // Pago cancelado
-                    order.canceled(response);
+                    order.setCanceled(response);
                     success = false;
                 }
             } catch (PayPalRESTException e) {
-                e.printStackTrace();
+                Logger.error("WTF 7742: ", e);
             }
         }
         else {
             // Respuesta "cancelada"?
             boolean canceled = request().queryString().containsKey(QUERY_STRING_CANCEL_KEY);
             if (canceled) {
-                // Buscamos el pedido mediante su identificador
-                Order order = Order.findOne(orderId);
-                order.canceled(null);
+                order.setCanceled(null);
             }
         }
 
+        String refererUrl = order.referer != null ? order.referer : REFERER_URL_DEFAULT;
         return redirect(refererUrl + (success ? CLIENT_SUCCESS_PATH : CLIENT_CANCEL_PATH));
     }
 
@@ -197,10 +205,23 @@ public class PaypalController extends Controller {
         amount.setCurrency(CURRENCY);
         amount.setTotal(String.valueOf(money));
 
+        // Crear la lista de productos
+        List<Item> items = new ArrayList<>();
+        Item item = new Item();
+        item.setQuantity(String.valueOf(1));
+        item.setName("Producto 1");
+        item.setPrice(String.valueOf(money));
+        item.setCurrency(CURRENCY);
+        items.add(item);
+
+        ItemList itemList = new ItemList();
+        itemList.setItems(items);
+
         // Descripción (127 caracteres max.) y Cantidad solicitada
         Transaction transaction = new Transaction();
         transaction.setDescription(description);
         transaction.setAmount(amount);
+        transaction.setItemList(itemList);
 
         // Detalles de la transacción
         List<Transaction> transactions = new ArrayList<>();
@@ -258,17 +279,8 @@ public class PaypalController extends Controller {
             redirectUrls.setReturnUrl(LIVE_RETURN_URL + orderId.toString());
         }
         else {
-            // Solicitud de pago desde un "localHost"?
-            if (refererUrl.contains("localhost") || refererUrl.contains("127.")) {
-                // Las urls de respuesta serán las de Paypal...
-                redirectUrls.setCancelUrl(SANDBOX_CANCEL_URL + orderId.toString());
-                redirectUrls.setReturnUrl(SANDBOX_RETURN_URL + orderId.toString());
-            }
-            else {
-                // Le redirigimos a la url desde la que vino la solicitud
-                redirectUrls.setCancelUrl(refererUrl + SERVER_CANCEL_PATH + orderId.toString());
-                redirectUrls.setReturnUrl(refererUrl + SERVER_RETURN_PATH + orderId.toString());
-            }
+            redirectUrls.setCancelUrl("http://" + request().host() + SERVER_CANCEL_PATH + orderId.toString());
+            redirectUrls.setReturnUrl("http://" + request().host() + SERVER_RETURN_PATH + orderId.toString());
         }
         return redirectUrls;
     }
