@@ -8,7 +8,7 @@
 
 name := "backend"
 
-version := "1.0.6"
+version := "1.0.8"
 
 scalaVersion := "2.11.1"
 
