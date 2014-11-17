@@ -183,6 +183,26 @@ public class PaypalController extends Controller {
         return redirect(refererUrl + (success ? CLIENT_SUCCESS_PATH : CLIENT_CANCEL_PATH));
     }
 
+    public static Result verifyPayment(String paymentId) {
+        String response = "";
+
+        try {
+            Map<String, String> sdkConfig = getSdkConfig();
+            String accessToken = getAccessToken(sdkConfig);
+
+            APIContext apiContext = new APIContext(accessToken);
+            apiContext.setConfigurationMap(sdkConfig);
+
+            Payment payment = Payment.get(apiContext, paymentId);
+            response = payment.toJSON();
+
+        } catch (PayPalRESTException e) {
+            e.printStackTrace();
+        }
+
+        return ok(response);
+    }
+
     private static Map<String, String> getSdkConfig() {
         Map<String, String> sdkConfig = new HashMap<>();
         sdkConfig.put("mode", MODE_CONFIG);
