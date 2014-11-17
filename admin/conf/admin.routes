@@ -115,6 +115,10 @@ GET         /create_contests/:mockIndex                                controlle
 GET         /is_simulator_activated                                    controllers.admin.SimulatorController.isSimulatorActivated()
 
 # WIP
-GET         /spreadsheet                                               controllers.admin.ExcelController.googleOAuth()
-GET         /updatesalaries                                            controllers.admin.ExcelController.googleOAuth2()
+GET         /googledocs                                                controllers.admin.ExcelController.index()
+GET         /googledocs/auth                                           controllers.admin.ExcelController.googleOAuth()
+GET         /googledocs/auth2                                          controllers.admin.ExcelController.googleOAuth2()
+GET         /googledocs/refresh                                        controllers.admin.ExcelController.refreshToken()
 
+GET         /googledocs/load_salaries                                  controllers.admin.ExcelController.loadSalaries()
+GET         /googledocs/write_log                                      controllers.admin.ExcelController.writeSoccerPlayersLog()
