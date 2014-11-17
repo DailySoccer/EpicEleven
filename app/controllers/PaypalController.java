@@ -6,6 +6,7 @@ import com.paypal.api.payments.*;
 import com.paypal.core.rest.APIContext;
 import com.paypal.core.rest.OAuthTokenCredential;
 import com.paypal.core.rest.PayPalRESTException;
+import model.Product;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -62,10 +63,12 @@ public class PaypalController extends Controller {
     static final String PAYMENT_STATE_CANCELED = "canceled";
     static final String PAYMENT_STATE_EXPIRED = "expired";
 
+    static final String TRANSACTION_DESCRIPTION = "Creating a payment";
+
     // La url a la que redirigimos al usuario cuando el proceso de pago se complete (con éxito o cancelación)
     static final String REFERER_URL_DEFAULT = "epiceleven.com";
 
-    public static Result approvalPayment(String userId, int money) {
+    public static Result approvalPayment(String userId, String productId) {
         // Obtenemos desde qué url están haciendo la solicitud
         String refererUrl = request().hasHeader("Referer") ? request().getHeader("Referer") : REFERER_URL_DEFAULT;
 
@@ -82,12 +85,12 @@ public class PaypalController extends Controller {
             ObjectId orderId = new ObjectId();
 
             // Creamos la solicitud de pago (le proporcionamos el identificador del pedido para referencias posteriores)
-            Payment payment = createPayment(accessToken, orderId, "creating a payment", money);
+            Payment payment = createPayment(accessToken, orderId, Product.findOne(productId));
             // Logger.info("payment.create: {}", payment.toJSON());
 
             // Creamos el pedido (con el identificador generado y el de la solicitud de pago)
             //      Únicamente almacenamos el referer si no es el de "por defecto"
-            Order.create(orderId, new ObjectId(userId), Order.TransactionType.PAYPAL, payment.getId(), !refererUrl.contains(REFERER_URL_DEFAULT) ? refererUrl : null, JSON.parse(payment.toJSON()));
+            Order.create(orderId, new ObjectId(userId), Order.TransactionType.PAYPAL, payment.getId(), refererUrl, JSON.parse(payment.toJSON()));
 
             // Buscamos la url para conseguir la "aprobación" del pagador
             List<Links> links = payment.getLinks();
@@ -190,11 +193,10 @@ public class PaypalController extends Controller {
      *
      * @param accessToken   Autorización de acceso proporcionado por Paypal
      * @param orderId       Identificador del pedido. Se incluirá en la url de respuesta de Paypal para reconocer a qué pedido hace referencia
-     * @param description   Texto asociado al pago
-     * @param money         Dinero que solicitamos
+     * @param product       Producto que se quiere comprar
      * @return Respuesta dada por Paypal (podría ser "aprobada", "quedarse pendiente" o "cancelada")
      */
-    private static Payment createPayment(String accessToken, ObjectId orderId, String description, int money) {
+    private static Payment createPayment(String accessToken, ObjectId orderId, Product product) {
         Map<String, String> sdkConfig = getSdkConfig();
 
         APIContext apiContext = new APIContext(accessToken);
@@ -203,14 +205,14 @@ public class PaypalController extends Controller {
         // Moneda usada y dinero
         Amount amount = new Amount();
         amount.setCurrency(CURRENCY);
-        amount.setTotal(String.valueOf(money));
+        amount.setTotal(String.valueOf(product.price));
 
         // Crear la lista de productos
         List<Item> items = new ArrayList<>();
         Item item = new Item();
         item.setQuantity(String.valueOf(1));
-        item.setName("Producto 1");
-        item.setPrice(String.valueOf(money));
+        item.setName(product.name);
+        item.setPrice(String.valueOf(product.price));
         item.setCurrency(CURRENCY);
         items.add(item);
 
@@ -219,7 +221,7 @@ public class PaypalController extends Controller {
 
         // Descripción (127 caracteres max.) y Cantidad solicitada
         Transaction transaction = new Transaction();
-        transaction.setDescription(description);
+        transaction.setDescription(TRANSACTION_DESCRIPTION);
         transaction.setAmount(amount);
         transaction.setItemList(itemList);
 

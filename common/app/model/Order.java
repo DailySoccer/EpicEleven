@@ -5,6 +5,8 @@ import org.jongo.marshall.jackson.oid.Id;
 import org.bson.types.ObjectId;
 
 public class Order {
+    static final String REFERER_URL_DEFAULT = "epiceleven.com";
+
     public enum TransactionType {
         PAYPAL
     }
@@ -80,9 +82,12 @@ public class Order {
         return Model.orders().findOne("{paymentId : #}", paymentId).as(Order.class);
     }
 
-    static public Order create (ObjectId orderId, ObjectId userId, TransactionType transactionType, String paymentId, String referer, Object response) {
+    static public Order create (ObjectId orderId, ObjectId userId, TransactionType transactionType, String paymentId, String refererUrl, Object response) {
         Order order = new Order(orderId, userId, transactionType, paymentId);
-        order.referer = referer;
+        // No almacenamos el referer si es el "por defecto"
+        if (!refererUrl.contains(REFERER_URL_DEFAULT)) {
+            order.referer = refererUrl;
+        }
         order.response = response;
         Model.orders().insert(order);
         return order;
