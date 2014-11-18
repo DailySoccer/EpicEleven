@@ -24,6 +24,8 @@ remotes_allowed_message = 'The only allowed Heroku remotes are: staging/producti
 remotes_allowed = ('staging', 'production')
 branches_allowed_to_prod = ('develop', 'master')
 production_dests = ('production',)
+heroku_apps_names = {'production': 'dailysoccer',
+                     'staging':    'dailysoccer-staging'}
 
 @task
 def inc_version():
@@ -206,13 +208,14 @@ def heroku_push():
 
 def heroku_version():
     print blue("Getting Heroku version of the app...")
-    env.heroku_version = local("heroku releases | tail -2 | awk '{print $1}'", capture=True)
+    env.heroku_version = local("heroku releases -a %s | tail -2 | awk '{print $1}'" % heroku_apps_names[env.dest], capture=True)
     heroku_set_variable('rel', env.heroku_version)
-    local('git tag %s %s' % (env.heroku_version, env.last_commit))
+    local('git tag %s-%s %s' % (env.heroku_version, env.dest, env.last_commit))
 
 def heroku_set_variable(var_name, var_value):
     print blue("Setting Heroku variable %s" % var_name)
-    local("heroku config:add %s=%s" % (var_name, var_value))
+    local("heroku -a %s config:add %s=%s" % (heroku_apps_names[env.dest],
+                                             var_name, var_value))
 
 def wake_dest():
     wakeable_dests = {'staging': 'http://dailysoccer-staging.herokuapp.com'}
