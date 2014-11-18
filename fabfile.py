@@ -178,9 +178,8 @@ def prepare_client():
 
 def build_client():
     print blue("Building client...")
-    env.client_built = True
-    #client_build = local('./build_for_deploy.sh %s' % env.mode, capture=True)
-    #env.client_built = not any(x in client_build.stderr for x in ("error", "failed"))
+    client_build = local('./build_for_deploy.sh %s' % env.mode, capture=True)
+    env.client_built = not any(x in client_build.stderr for x in ("error", "failed"))
     """
     if env.dest in production_dests:
         local('./build_for_deploy.sh %s' % env.mode)
@@ -205,13 +204,12 @@ def save_last_commit():
 
 def heroku_push():
     print blue("Pushing to Heroku...")
-    #local('git push %s deploy:master --force' % env.dest)
+    local('git push %s deploy:master --force' % env.dest)
 
 def heroku_version():
     print blue("Getting Heroku version of the app...")
     env.heroku_version = local("heroku releases --app %s | head -2 | tail -1 | awk '{print $1}'" % heroku_apps_names[env.dest], capture=True)
     heroku_set_variable('rel', env.heroku_version)
-    print red(env.heroku_version)
     local('git tag %s-%s %s' % (env.heroku_version, env.dest, env.last_commit))
 
 def heroku_set_variable(var_name, var_value):
@@ -223,7 +221,7 @@ def wake_dest():
     wakeable_dests = {'staging': 'http://dailysoccer-staging.herokuapp.com'}
     if env.dest in wakeable_dests:
         print blue("Waking up servers...")
-        local('curl "%s"' % wakeable_dests[env.dest])
+        local('curl "%s"' % wakeable_dests[env.dest], capture=True)
 
 def git_checkout(branch_name_or_file):
     print blue("Returning %s..." % branch_name_or_file)
@@ -238,7 +236,7 @@ def launch_functional_tests(dest='staging'):
     env.dest = dest if not hasattr(env, 'dest') else env.dest
     if env.dest in test_hooks:
         print blue("Launching functional tests...")
-        local('curl "%s"' % test_hooks[env.dest])
+        local('curl "%s"' % test_hooks[env.dest], capture=True)
 
 @task
 def deploy(dest='staging', mode='release'):
