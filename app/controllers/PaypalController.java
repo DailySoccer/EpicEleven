@@ -151,6 +151,20 @@ public class PaypalController extends Controller {
         return ok(response);
     }
 
+    public static Result history() {
+        String response = "";
+
+        try {
+            PaymentHistory paymentHistory = PaypalPayment.instance().history();
+            response = paymentHistory.toJSON();
+
+        } catch (PayPalRESTException e) {
+            e.printStackTrace();
+        }
+
+        return ok(response);
+    }
+
     public static Result webhook() {
         return ok();
     }

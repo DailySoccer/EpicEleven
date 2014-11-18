@@ -120,6 +120,12 @@ public class PaypalPayment {
         return Payment.get(getAPIContext(), paymentId);
     }
 
+    public PaymentHistory history() throws PayPalRESTException {
+        Map<String, String> containerMap = new HashMap<>();
+        containerMap.put("count", "10");
+        return Payment.list(getAPIContext(), containerMap);
+    }
+
     public APIContext getAPIContext() throws PayPalRESTException {
         APIContext apiContext = new APIContext(getAccessToken());
         apiContext.setConfigurationMap(getSdkConfig());

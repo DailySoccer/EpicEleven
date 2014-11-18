@@ -59,6 +59,7 @@ POST           /opta                                                   controlle
 GET            /paypal/approval_payment/:userId/:productId             controllers.PaypalController.approvalPayment(userId, productId)
 GET            /paypal/execute_payment                                 controllers.PaypalController.executePayment()
 GET            /paypal/verify_payment/:paymentId                       controllers.PaypalController.verifyPayment(paymentId)
+GET            /paypal/history                                         controllers.PaypalController.history()
 POST           /paypal/webhook                                         controllers.PaypalController.webhook()
 
 # Loguear error del cliente
