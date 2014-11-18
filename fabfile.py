@@ -80,7 +80,8 @@ def prepare_branch():
     if env.all_set:
         env.back_stashed = stash()
         env.warn_only = True
-        inc_version()
+        save_last_commit()
+        #inc_version()
         if env.dest in production_dests and env.back_branch_name != 'master':
             env.all_set = merge_branch_to_from('master', env.back_branch_name)
 
@@ -196,9 +197,22 @@ def commit_for_deploy():
     # Allow empty is passed not to crash if no changes are done in the commit
     local('git commit --allow-empty -am "Including build in deploy branch"')
 
+def save_last_commit():
+    env.last_commit = local('git rev-parse HEAD', capture=True)
+
 def heroku_push():
     print blue("Pushing to Heroku...")
     local('git push %s deploy:master --force' % env.dest)
+
+def heroku_version():
+    print blue("Getting Heroku version of the app...")
+    env.heroku_version = local("heroku releases | tail -2 | awk '{print $1}'", capture=True)
+    heroku_set_variable('rel', env.heroku_version)
+    local('git tag %s %s' % (env.heroku_version, env.last_commit))
+
+def heroku_set_variable(var_name, var_value):
+    print blue("Setting Heroku variable %s" % var_name)
+    local("heroku config:add %s=%s" % (var_name, var_value))
 
 def wake_dest():
     wakeable_dests = {'staging': 'http://dailysoccer-staging.herokuapp.com'}
@@ -247,6 +261,7 @@ def deploy(dest='staging', mode='release'):
         if env.client_built:
             commit_for_deploy()
             heroku_push()
+            heroku_version()
             wake_dest()
         return_to_previous_state()
         if env.client_built:
