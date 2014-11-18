@@ -12,8 +12,6 @@ import play.mvc.Result;
 import org.bson.types.ObjectId;
 import model.Order;
 
-import java.util.*;
-
 @AllowCors.Origin
 public class PaypalController extends Controller {
     // Las rutas relativas al CLIENT a las que enviaremos las respuestas proporcionadas por Paypal
@@ -24,9 +22,6 @@ public class PaypalController extends Controller {
     static final String QUERY_STRING_SUCCESS_KEY = "success";
     static final String QUERY_STRING_CANCEL_KEY = "cancel";
     static final String QUERY_STRING_ORDER_KEY = "orderId";
-
-    // Identificador de un Link enviado por Paypal para proceder a la "aprobación" del pago por parte del pagador
-    static final String LINK_APPROVAL_URL = "approval_url";
 
     // Los distintos estados posibles de un pago
     static final String PAYMENT_STATE_CREATED = "created";
@@ -61,14 +56,9 @@ public class PaypalController extends Controller {
             //      Únicamente almacenamos el referer si no es el de "por defecto"
             Order.create(orderId, new ObjectId(userId), Order.TransactionType.PAYPAL, payment.getId(), refererUrl, JSON.parse(payment.toJSON()));
 
-            // Buscamos la url para conseguir la "aprobación" del pagador
-            List<Links> links = payment.getLinks();
-            for (Links link: links) {
-                if (link.getRel().equals(LINK_APPROVAL_URL)) {
-                    // Redirigimos al pagador a Paypal para que se identifique y gestione el pago
-                    result = redirect(link.getHref());
-                    break;
-                }
+            String redirectUrl = PaypalPayment.instance().getApprovalURL(payment);
+            if (redirectUrl != null) {
+                result = redirect(redirectUrl);
             }
         } catch (PayPalRESTException e) {
             Logger.error("WTF 7741: ", e);

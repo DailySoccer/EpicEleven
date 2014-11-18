@@ -5,11 +5,7 @@ import com.paypal.core.rest.APIContext;
 import com.paypal.core.rest.OAuthTokenCredential;
 import com.paypal.core.rest.PayPalRESTException;
 import org.bson.types.ObjectId;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PaypalPayment {
 
@@ -42,6 +38,9 @@ public class PaypalPayment {
     static final String CURRENCY = "EUR";
 
     static final String TRANSACTION_DESCRIPTION = "Creating a payment";
+
+    // Identificador de un Link enviado por Paypal para proceder a la "aprobación" del pago por parte del pagador
+    static final String LINK_APPROVAL_URL = "approval_url";
 
     public static PaypalPayment instance() {
         if (_instance == null) {
@@ -133,6 +132,18 @@ public class PaypalPayment {
             _sdkConfig.put("mode", MODE_CONFIG);
         }
         return _sdkConfig;
+    }
+
+    public String getApprovalURL(Payment payment) {
+        String redirectUrl = null;
+        List<Links> links = payment.getLinks();
+        for (Links link : links) {
+            if (link.getRel().equalsIgnoreCase(LINK_APPROVAL_URL)) {
+                redirectUrl = link.getHref();
+                break;
+            }
+        }
+        return redirectUrl;
     }
 
     public RedirectUrls getRedirectUrls(ObjectId orderId) {
