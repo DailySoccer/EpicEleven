@@ -214,7 +214,7 @@ def heroku_version():
 
 def heroku_set_variable(var_name, var_value):
     print blue("Setting Heroku variable %s" % var_name)
-    local("heroku -a %s config:add %s=%s" % (heroku_apps_names[env.dest],
+    local("heroku config:add %s=%s --app %s" % (heroku_apps_names[env.dest],
                                              var_name, var_value))
 
 def wake_dest():
