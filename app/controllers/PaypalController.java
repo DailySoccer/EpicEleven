@@ -3,9 +3,8 @@ package controllers;
 import actions.AllowCors;
 import com.mongodb.util.JSON;
 import com.paypal.api.payments.*;
-import com.paypal.core.rest.APIContext;
-import com.paypal.core.rest.OAuthTokenCredential;
 import com.paypal.core.rest.PayPalRESTException;
+import model.PaypalPayment;
 import model.Product;
 import play.Logger;
 import play.mvc.Controller;
@@ -17,35 +16,9 @@ import java.util.*;
 
 @AllowCors.Origin
 public class PaypalController extends Controller {
-    static final String MODE_SANDBOX = "sandbox";
-    static final String MODE_LIVE = "live";
-    static final String MODE_CONFIG = MODE_SANDBOX;
-
-    // Las rutas relativas al SERVER a las que enviaremos las respuestas proporcionadas por Paypal
-    static final String SERVER_CANCEL_PATH = "/paypal/execute_payment?cancel=true&orderId=";
-    static final String SERVER_RETURN_PATH = "/paypal/execute_payment?success=true&orderId=";
-
     // Las rutas relativas al CLIENT a las que enviaremos las respuestas proporcionadas por Paypal
     static final String CLIENT_CANCEL_PATH = "#/payment/response/canceled";
     static final String CLIENT_SUCCESS_PATH = "#/payment/response/success";
-
-    /*
-        LIVE CONFIGURATION
-     */
-    static final String LIVE_CLIENT_ID = "AXGKyxAeNjwaGg4gNwHDEoidWC7_uQeRgaFAWTccuLqb1-R-s11FWbceSWR0";
-    static final String LIVE_SECRET = "ENlBYxDHZVn_hotpxYtCXD3NPvvPQSmj8CbfzYWZyaFddkQTwhhw3GxV5Ipe";
-    static final String LIVE_CANCEL_URL = "http://backend.epiceleven.com" + SERVER_CANCEL_PATH;
-    static final String LIVE_RETURN_URL = "http://backend.epiceleven.com" + SERVER_RETURN_PATH;
-
-    /*
-        SANDBOX CONFIGURATION
-     */
-    static final String SANDBOX_CLIENT_ID = "AXGKyxAeNjwaGg4gNwHDEoidWC7_uQeRgaFAWTccuLqb1-R-s11FWbceSWR0";
-    static final String SANDBOX_SECRET = "ENlBYxDHZVn_hotpxYtCXD3NPvvPQSmj8CbfzYWZyaFddkQTwhhw3GxV5Ipe";
-    static final String SANDBOX_CANCEL_URL = "https://devtools-paypal.com/guide/pay_paypal?cancel=true&orderId=";
-    static final String SANDBOX_RETURN_URL = "https://devtools-paypal.com/guide/pay_paypal?success=true&orderId=";
-
-    static final String CURRENCY = "EUR";
 
     // Las keys que incluimos en las urls de respuesta de Paypal
     static final String QUERY_STRING_SUCCESS_KEY = "success";
@@ -63,8 +36,6 @@ public class PaypalController extends Controller {
     static final String PAYMENT_STATE_CANCELED = "canceled";
     static final String PAYMENT_STATE_EXPIRED = "expired";
 
-    static final String TRANSACTION_DESCRIPTION = "Creating a payment";
-
     // La url a la que redirigimos al usuario cuando el proceso de pago se complete (con éxito o cancelación)
     static final String REFERER_URL_DEFAULT = "epiceleven.com";
 
@@ -72,20 +43,18 @@ public class PaypalController extends Controller {
         // Obtenemos desde qué url están haciendo la solicitud
         String refererUrl = request().hasHeader("Referer") ? request().getHeader("Referer") : REFERER_URL_DEFAULT;
 
-        Map<String, String> sdkConfig = getSdkConfig();
-
         // Si Paypal no responde con un adecuado "approval url", cancelaremos la solicitud
         Result result = null;
 
         try {
-            // Obtener la autorización de Paypal a nuestra cuenta
-            String accessToken = getAccessToken(sdkConfig);
+            // Especificar a qué host enviaremos los urls de respuesta
+            PaypalPayment.instance().setHostName(request().host());
 
             // Crear el identificador del nuevo pedido
             ObjectId orderId = new ObjectId();
 
             // Creamos la solicitud de pago (le proporcionamos el identificador del pedido para referencias posteriores)
-            Payment payment = createPayment(accessToken, orderId, Product.findOne(productId));
+            Payment payment = PaypalPayment.instance().createPayment(orderId, Product.findOne(productId));
             // Logger.info("payment.create: {}", payment.toJSON());
 
             // Creamos el pedido (con el identificador generado y el de la solicitud de pago)
@@ -121,8 +90,6 @@ public class PaypalController extends Controller {
         final String PAYMENT_ID = "paymentId";
         final String PAYER_ID = "PayerID";
 
-        Map<String, String> sdkConfig = getSdkConfig();
-
         // Identificador del pedido que hemos incluido en las urls de respuesta de Paypal
         String orderId = request().getQueryString(QUERY_STRING_ORDER_KEY);
 
@@ -144,11 +111,8 @@ public class PaypalController extends Controller {
             order.setWaitingPayment(payerId);
 
             try {
-                // Obtener la autorización de Paypal a nuestra cuenta
-                String accessToken = getAccessToken(sdkConfig);
-
                 // Completar el pago "ya aprobado" por el pagador
-                Payment payment = completePayment(sdkConfig, accessToken, paymentId, payerId);
+                Payment payment = PaypalPayment.instance().completePayment(paymentId, payerId);
                 // Logger.info("payment.execute: {}", payment.toJSON());
 
                 // Evaluar la respuesta de Paypal (values: "created", "approved", "failed", "canceled", "expired", "pending")
@@ -187,13 +151,7 @@ public class PaypalController extends Controller {
         String response = "";
 
         try {
-            Map<String, String> sdkConfig = getSdkConfig();
-            String accessToken = getAccessToken(sdkConfig);
-
-            APIContext apiContext = new APIContext(accessToken);
-            apiContext.setConfigurationMap(sdkConfig);
-
-            Payment payment = Payment.get(apiContext, paymentId);
+            Payment payment = PaypalPayment.instance().verifyPayment(paymentId);
             response = payment.toJSON();
 
         } catch (PayPalRESTException e) {
@@ -203,117 +161,7 @@ public class PaypalController extends Controller {
         return ok(response);
     }
 
-    private static Map<String, String> getSdkConfig() {
-        Map<String, String> sdkConfig = new HashMap<>();
-        sdkConfig.put("mode", MODE_CONFIG);
-        return sdkConfig;
-    }
-
-    /**
-     *
-     * @param accessToken   Autorización de acceso proporcionado por Paypal
-     * @param orderId       Identificador del pedido. Se incluirá en la url de respuesta de Paypal para reconocer a qué pedido hace referencia
-     * @param product       Producto que se quiere comprar
-     * @return Respuesta dada por Paypal (podría ser "aprobada", "quedarse pendiente" o "cancelada")
-     */
-    private static Payment createPayment(String accessToken, ObjectId orderId, Product product) {
-        Map<String, String> sdkConfig = getSdkConfig();
-
-        APIContext apiContext = new APIContext(accessToken);
-        apiContext.setConfigurationMap(sdkConfig);
-
-        // Moneda usada y dinero
-        Amount amount = new Amount();
-        amount.setCurrency(CURRENCY);
-        amount.setTotal(String.valueOf(product.price));
-
-        // Crear la lista de productos
-        List<Item> items = new ArrayList<>();
-        Item item = new Item();
-        item.setQuantity(String.valueOf(1));
-        item.setName(product.name);
-        item.setPrice(String.valueOf(product.price));
-        item.setCurrency(CURRENCY);
-        items.add(item);
-
-        ItemList itemList = new ItemList();
-        itemList.setItems(items);
-
-        // Descripción (127 caracteres max.) y Cantidad solicitada
-        Transaction transaction = new Transaction();
-        transaction.setDescription(TRANSACTION_DESCRIPTION);
-        transaction.setAmount(amount);
-        transaction.setItemList(itemList);
-
-        // Detalles de la transacción
-        List<Transaction> transactions = new ArrayList<>();
-        transactions.add(transaction);
-
-        // Solicitamos pago mediante "paypal" (values: "paypal", "credit_card")
-        //    - Direct Credit Card Payments: únicamente disponible en "United States" y "United Kingdom"
-        Payer payer = new Payer();
-        payer.setPaymentMethod("paypal");
-
-        // Solicitud de  pago "inmediato" "sale" (values: "sale", "authorize", "order")
-        Payment payment = new Payment();
-        payment.setIntent("sale");
-        payment.setPayer(payer);
-        payment.setTransactions(transactions);
-        payment.setRedirectUrls(getRedirectUrls(sdkConfig, orderId));
-
-        // Solicitud de "aprobación" a Paypal
-        Payment createdPayment = null;
-        try {
-            createdPayment = payment.create(apiContext);
-        } catch (PayPalRESTException e) {
-            e.printStackTrace();
-        }
-        return createdPayment;
-    }
-
-    private static Payment completePayment(Map<String, String> sdkConfig, String accessToken, String paymentId, String payerId) {
-        APIContext apiContext = new APIContext(accessToken);
-        apiContext.setConfigurationMap(sdkConfig);
-
-        // Proporcionamos el identificador del pago
-        Payment payment = new Payment();
-        payment.setId(paymentId);
-
-        // Proporcionar el id del "pagador" (proporcionado en el "return_url" por Paypal)
-        PaymentExecution paymentExecute = new PaymentExecution();
-        paymentExecute.setPayerId(payerId);
-
-        Payment paymentResult = null;
-        try {
-            // Procedemos a solicitar a Paypal que lleve a cabo el pago, para que el dinero pase de una cuenta a otra
-            paymentResult = payment.execute(apiContext, paymentExecute);
-        } catch (PayPalRESTException e) {
-            e.printStackTrace();
-        }
-        return paymentResult;
-    }
-
-    private static RedirectUrls getRedirectUrls(Map<String, String> sdkConfig, ObjectId orderId) {
-        // Incluir en las urls el identificador del pedido
-        RedirectUrls redirectUrls = new RedirectUrls();
-        if (isLive(sdkConfig)) {
-            redirectUrls.setCancelUrl(LIVE_CANCEL_URL + orderId.toString());
-            redirectUrls.setReturnUrl(LIVE_RETURN_URL + orderId.toString());
-        }
-        else {
-            redirectUrls.setCancelUrl("http://" + request().host() + SERVER_CANCEL_PATH + orderId.toString());
-            redirectUrls.setReturnUrl("http://" + request().host() + SERVER_RETURN_PATH + orderId.toString());
-        }
-        return redirectUrls;
-    }
-
-    private static String getAccessToken(Map<String, String> sdkConfig) throws PayPalRESTException {
-        return isLive(sdkConfig)
-                    ? new OAuthTokenCredential(LIVE_CLIENT_ID, LIVE_SECRET, sdkConfig).getAccessToken()
-                    : new OAuthTokenCredential(SANDBOX_CLIENT_ID, SANDBOX_SECRET, sdkConfig).getAccessToken();
-    }
-
-    private static boolean isLive(Map<String, String> sdkConfig) {
-        return sdkConfig.get("mode").equals(MODE_LIVE);
+    public static Result webhook() {
+        return ok();
     }
 }
