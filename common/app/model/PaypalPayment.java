@@ -160,18 +160,24 @@ public class PaypalPayment {
         return redirectUrls;
     }
 
+    // ###AccessToken
+    // Retrieve the access token from OAuthTokenCredential by passing in ClientID and ClientSecret
+    // It is not mandatory to generate Access Token on a per call basis.
+    // Typically the access token can be generated once and reused within the expiry window
     public String getAccessToken() throws PayPalRESTException {
-        String accessToken = isLive()
+        if (_accessToken == null) {
+            _accessToken = isLive()
                     ? new OAuthTokenCredential(LIVE_CLIENT_ID, LIVE_SECRET, getSdkConfig()).getAccessToken()
                     : new OAuthTokenCredential(SANDBOX_CLIENT_ID, SANDBOX_SECRET, getSdkConfig()).getAccessToken();
 
-        /*
-        // ClientID and ClientSecret retrieved from configuration
-        String clientID = ConfigManager.getInstance().getValue("clientID");
-        String clientSecret = ConfigManager.getInstance().getValue("clientSecret");
-        accessToken = new OAuthTokenCredential(clientID, clientSecret).getAccessToken();
-        */
-        return accessToken;
+            /*
+            // ClientID and ClientSecret retrieved from configuration
+            String clientID = ConfigManager.getInstance().getValue("clientID");
+            String clientSecret = ConfigManager.getInstance().getValue("clientSecret");
+            _accessToken = new OAuthTokenCredential(clientID, clientSecret).getAccessToken();
+            */
+        }
+        return _accessToken;
     }
 
     public boolean isLive() {
@@ -180,5 +186,6 @@ public class PaypalPayment {
 
     static PaypalPayment _instance;
     Map<String, String> _sdkConfig;
+    String _accessToken;
     String _hostName = HOSTNAME_DEFAULT;
 }
