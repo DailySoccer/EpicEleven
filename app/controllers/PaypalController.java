@@ -1,12 +1,14 @@
 package controllers;
 
 import actions.AllowCors;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.util.JSON;
 import com.paypal.api.payments.*;
 import com.paypal.core.rest.PayPalRESTException;
 import model.PaypalPayment;
 import model.Product;
 import play.Logger;
+import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import org.bson.types.ObjectId;
@@ -30,6 +32,9 @@ public class PaypalController extends Controller {
     static final String PAYMENT_STATE_PENDING = "pending";
     static final String PAYMENT_STATE_CANCELED = "canceled";
     static final String PAYMENT_STATE_EXPIRED = "expired";
+
+    static final String EVENT_PAYMENT_SALE_COMPLETED = "PAYMENT.SALE.COMPLETED";
+    static final String EVENT_PAYMENT_SALE_REVERSED = "PAYMENT.SALE.REVERSED";
 
     // La url a la que redirigimos al usuario cuando el proceso de pago se complete (con éxito o cancelación)
     static final String REFERER_URL_DEFAULT = "epiceleven.com";
@@ -165,7 +170,26 @@ public class PaypalController extends Controller {
         return ok(response);
     }
 
+    @BodyParser.Of(BodyParser.Json.class)
     public static Result webhook() {
+        JsonNode json = request().body().asJson();
+        Logger.info("webhook: {}", json);
+
+        if (json.get("resource_type").textValue().equalsIgnoreCase("sale")) {
+            JsonNode jsonResource = json.findPath("resource");
+            if (json.get("event_type").textValue().equalsIgnoreCase("EVENT_PAYMENT_SALE_COMPLETED")) {
+                String paymentId = jsonResource.get("parent_payment").textValue();
+                String state = jsonResource.get("state").textValue(); // pending; completed; refunded; partially_refunded
+                Logger.info("paymentId: {} - state: {}", paymentId, state);
+            } else if (json.get("event_type").textValue().equalsIgnoreCase("EVENT_PAYMENT_SALE_REVERSED")) {
+                String paymentId = jsonResource.get("parent_payment").textValue();
+                String state = jsonResource.get("state").textValue(); // pending; completed; refunded; partially_refunded
+                String pendingReason = jsonResource.get("pending_reason").textValue();
+                String reasonCode = jsonResource.get("reason_code").textValue();
+                Logger.info("paymentId: {} - state: {} - pendingReason: {} - reasonCode: {}",
+                        paymentId, state, pendingReason, reasonCode);
+            }
+        }
         return ok();
     }
 }
