@@ -24,6 +24,8 @@ remotes_allowed_message = 'The only allowed Heroku remotes are: staging/producti
 remotes_allowed = ('staging', 'production')
 branches_allowed_to_prod = ('develop', 'master')
 production_dests = ('production',)
+heroku_apps_names = {'production': 'dailysoccer',
+                     'staging':    'dailysoccer-staging'}
 
 @task
 def inc_version():
@@ -80,7 +82,8 @@ def prepare_branch():
     if env.all_set:
         env.back_stashed = stash()
         env.warn_only = True
-        inc_version()
+        save_last_commit()
+        #inc_version()
         if env.dest in production_dests and env.back_branch_name != 'master':
             env.all_set = merge_branch_to_from('master', env.back_branch_name)
 
@@ -196,15 +199,29 @@ def commit_for_deploy():
     # Allow empty is passed not to crash if no changes are done in the commit
     local('git commit --allow-empty -am "Including build in deploy branch"')
 
+def save_last_commit():
+    env.last_commit = local('git rev-parse HEAD', capture=True)
+
 def heroku_push():
     print blue("Pushing to Heroku...")
     local('git push %s deploy:master --force' % env.dest)
+
+def heroku_version():
+    print blue("Getting Heroku version of the app...")
+    env.heroku_version = local("heroku releases --app %s | head -2 | tail -1 | awk '{print $1}'" % heroku_apps_names[env.dest], capture=True)
+    heroku_set_variable('rel', env.heroku_version)
+    local('git tag %s-%s %s' % (env.heroku_version, env.dest, env.last_commit))
+
+def heroku_set_variable(var_name, var_value):
+    print blue("Setting Heroku variable %s" % var_name)
+    local("heroku config:set %s=%s --app %s" % (var_name, var_value,
+                                                heroku_apps_names[env.dest]))
 
 def wake_dest():
     wakeable_dests = {'staging': 'http://dailysoccer-staging.herokuapp.com'}
     if env.dest in wakeable_dests:
         print blue("Waking up servers...")
-        local('curl "%s"' % wakeable_dests[env.dest])
+        local('curl "%s"' % wakeable_dests[env.dest], capture=True)
 
 def git_checkout(branch_name_or_file):
     print blue("Returning %s..." % branch_name_or_file)
@@ -219,7 +236,7 @@ def launch_functional_tests(dest='staging'):
     env.dest = dest if not hasattr(env, 'dest') else env.dest
     if env.dest in test_hooks:
         print blue("Launching functional tests...")
-        local('curl "%s"' % test_hooks[env.dest])
+        local('curl "%s"' % test_hooks[env.dest], capture=True)
 
 @task
 def deploy(dest='staging', mode='release'):
@@ -247,6 +264,7 @@ def deploy(dest='staging', mode='release'):
         if env.client_built:
             commit_for_deploy()
             heroku_push()
+            heroku_version()
             wake_dest()
         return_to_previous_state()
         if env.client_built:
