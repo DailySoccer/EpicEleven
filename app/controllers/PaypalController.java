@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.util.JSON;
 import com.paypal.api.payments.*;
 import com.paypal.core.rest.PayPalRESTException;
+import model.Model;
 import model.PaypalPayment;
 import model.Product;
 import play.Logger;
@@ -55,11 +56,11 @@ public class PaypalController extends Controller {
 
             // Creamos la solicitud de pago (le proporcionamos el identificador del pedido para referencias posteriores)
             Payment payment = PaypalPayment.instance().createPayment(orderId, Product.findOne(productId));
-            // Logger.info("payment.create: {}", payment.toJSON());
+            Model.paypalResponses().insert(payment.toJSON());
 
             // Creamos el pedido (con el identificador generado y el de la solicitud de pago)
             //      Únicamente almacenamos el referer si no es el de "por defecto"
-            Order.create(orderId, new ObjectId(userId), Order.TransactionType.PAYPAL, payment.getId(), refererUrl, JSON.parse(payment.toJSON()));
+            Order.create(orderId, new ObjectId(userId), Order.TransactionType.PAYPAL, payment.getId(), refererUrl);
 
             String redirectUrl = PaypalPayment.instance().getApprovalURL(payment);
             if (redirectUrl != null) {
@@ -108,22 +109,22 @@ public class PaypalController extends Controller {
             try {
                 // Completar el pago "ya aprobado" por el pagador
                 Payment payment = PaypalPayment.instance().completePayment(paymentId, payerId);
-                // Logger.info("payment.execute: {}", payment.toJSON());
+                Model.paypalResponses().insert(payment.toJSON());
 
                 // Evaluar la respuesta de Paypal (values: "created", "approved", "failed", "canceled", "expired", "pending")
                 Object response = JSON.parse(payment.toJSON());
                 if (payment.getState().equals(PAYMENT_STATE_APPROVED)) {
                     // Pago aprobado
-                    order.setCompleted(response);
+                    order.setCompleted();
                 }
                 else if (payment.getState().equals(PAYMENT_STATE_PENDING)) {
                     // El pago permanece pendiente de evaluación posterior
                     // TODO: Cómo enterarnos de cuándo lo validan?
-                    order.setPending(response);
+                    order.setPending();
                 }
                 else{
                     // Pago cancelado
-                    order.setCanceled(response);
+                    order.setCanceled();
                     success = false;
                 }
             } catch (PayPalRESTException e) {
@@ -134,7 +135,7 @@ public class PaypalController extends Controller {
             // Respuesta "cancelada"?
             boolean canceled = request().queryString().containsKey(QUERY_STRING_CANCEL_KEY);
             if (canceled) {
-                order.setCanceled(null);
+                order.setCanceled();
             }
         }
 
@@ -173,6 +174,7 @@ public class PaypalController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public static Result webhook() {
         JsonNode json = request().body().asJson();
+        Model.paypalResponses().insert(json);
         Logger.info("webhook: {}", json);
 
         if (json.get("resource_type").textValue().equalsIgnoreCase("sale")) {

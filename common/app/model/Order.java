@@ -31,8 +31,6 @@ public class Order {
     public String payerId;
     public String referer;
 
-    public Object response;
-
     public Order() {
     }
 
@@ -50,28 +48,19 @@ public class Order {
         Model.orders().update(orderId).with("{$set: {state: #, payerId: #}}", this.state, this.payerId);
     }
 
-    public void setPending(Object response) {
+    public void setPending() {
         this.state = State.PENDING;
-        this.response = response;
-        Model.orders().update(orderId).with("{$set: {state: #, response: #}}", this.state, this.response);
+        Model.orders().update(orderId).with("{$set: {state: #}}", this.state);
     }
 
-    public void setCompleted(Object response) {
+    public void setCompleted() {
         this.state = State.COMPLETED;
-        this.response = response;
-        Model.orders().update(orderId).with("{$set: {state: #, response: #}}", this.state, this.response);
+        Model.orders().update(orderId).with("{$set: {state: #}}", this.state);
     }
 
-    public void setCanceled(Object response) {
+    public void setCanceled() {
         this.state = State.CANCELED;
-
-        if (response != null ) {
-            this.response = response;
-            Model.orders().update(orderId).with("{$set: {state: #, response: #}}", this.state, this.response);
-        }
-        else {
-            Model.orders().update(orderId).with("{$set: {state: #}}", this.state);
-        }
+        Model.orders().update(orderId).with("{$set: {state: #}}", this.state);
     }
 
     static public Order findOne(String orderId) {
@@ -82,13 +71,12 @@ public class Order {
         return Model.orders().findOne("{paymentId : #}", paymentId).as(Order.class);
     }
 
-    static public Order create (ObjectId orderId, ObjectId userId, TransactionType transactionType, String paymentId, String refererUrl, Object response) {
+    static public Order create (ObjectId orderId, ObjectId userId, TransactionType transactionType, String paymentId, String refererUrl) {
         Order order = new Order(orderId, userId, transactionType, paymentId);
         // No almacenamos el referer si es el "por defecto"
         if (!refererUrl.contains(REFERER_URL_DEFAULT)) {
             order.referer = refererUrl;
         }
-        order.response = response;
         Model.orders().insert(order);
         return order;
     }
