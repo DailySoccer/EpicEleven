@@ -209,13 +209,15 @@ def heroku_push():
 def heroku_version():
     print blue("Getting Heroku version of the app...")
     env.heroku_version = local("heroku releases --app %s | head -2 | tail -1 | awk '{print $1}'" % heroku_apps_names[env.dest], capture=True)
-    heroku_set_variable('rel', env.heroku_version)
     local('git tag %s-%s %s' % (env.heroku_version, env.dest, env.last_commit))
+    #heroku_set_variable('rel', env.heroku_version)
 
+"""
 def heroku_set_variable(var_name, var_value):
     print blue("Setting Heroku variable %s" % var_name)
     local("heroku config:set %s=%s --app %s" % (var_name, var_value,
                                                 heroku_apps_names[env.dest]))
+"""
 
 def wake_dest():
     wakeable_dests = {'staging': 'http://dailysoccer-staging.herokuapp.com'}
