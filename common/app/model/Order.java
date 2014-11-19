@@ -31,15 +31,18 @@ public class Order {
     public String payerId;
     public String referer;
 
+    public Product product;
+
     public Order() {
     }
 
-    public Order(ObjectId orderId, ObjectId userId, TransactionType transactionType, String paymentId) {
+    public Order(ObjectId orderId, ObjectId userId, TransactionType transactionType, String paymentId, Product product) {
         this.orderId = orderId;
         this.transactionType = transactionType;
         this.userId = userId;
         this.state = State.WAITING_APPROVAL;
         this.paymentId = paymentId;
+        this.product = product;
     }
 
     public void setWaitingPayment(String payerId) {
@@ -71,8 +74,8 @@ public class Order {
         return Model.orders().findOne("{paymentId : #}", paymentId).as(Order.class);
     }
 
-    static public Order create (ObjectId orderId, ObjectId userId, TransactionType transactionType, String paymentId, String refererUrl) {
-        Order order = new Order(orderId, userId, transactionType, paymentId);
+    static public Order create (ObjectId orderId, ObjectId userId, TransactionType transactionType, String paymentId, Product product, String refererUrl) {
+        Order order = new Order(orderId, userId, transactionType, paymentId, product);
         // No almacenamos el referer si es el "por defecto"
         if (!refererUrl.contains(REFERER_URL_DEFAULT)) {
             order.referer = refererUrl;

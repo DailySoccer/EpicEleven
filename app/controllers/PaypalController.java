@@ -54,13 +54,16 @@ public class PaypalController extends Controller {
             // Crear el identificador del nuevo pedido
             ObjectId orderId = new ObjectId();
 
+            // Producto que quiere comprar
+            Product product = Product.findOne(productId);
+
             // Creamos la solicitud de pago (le proporcionamos el identificador del pedido para referencias posteriores)
-            Payment payment = PaypalPayment.instance().createPayment(orderId, Product.findOne(productId));
+            Payment payment = PaypalPayment.instance().createPayment(orderId, product);
             Model.paypalResponses().insert(payment.toJSON());
 
             // Creamos el pedido (con el identificador generado y el de la solicitud de pago)
             //      Únicamente almacenamos el referer si no es el de "por defecto"
-            Order.create(orderId, new ObjectId(userId), Order.TransactionType.PAYPAL, payment.getId(), refererUrl);
+            Order.create(orderId, new ObjectId(userId), Order.TransactionType.PAYPAL, payment.getId(), product, refererUrl);
 
             String redirectUrl = PaypalPayment.instance().getApprovalURL(payment);
             if (redirectUrl != null) {
