@@ -27,7 +27,11 @@ public class AllowCors {
             // Cuando estamos en el mismo dominio (localhost:9000 o dailysoccer-staging), no recibimos origin.
             // La header "Access-Control-Allow-Credentials" no nos hace falta ponerla a true pq no usamos cookies.
             if (origin != null && isWhiteListed(origin)) {
+
                 context.response().setHeader("Access-Control-Allow-Origin", origin);
+
+                // Necesitamos que se pueda acceder a la version del servidor, mandada desde un filtro global en Global
+                context.response().setHeader("Access-Control-Expose-Headers", "Release-Version");
             }
 
             return delegate.call(context);
