@@ -23,7 +23,6 @@ import org.apache.oltu.oauth2.common.message.types.GrantType;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import play.Logger;
-import play.libs.ws.WS;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.BatchWriteOperation;
@@ -50,7 +49,7 @@ public class ExcelController extends Controller {
                 OAuthClientRequest request = OAuthClientRequest
                         .authorizationProvider(OAuthProviderType.GOOGLE)
                         .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
-                        .setRedirectURI("http://localhost:9000/admin/updatesalaries")
+                        .setRedirectURI("http://localhost:9000/admin/googledocs/authn")
                         .setResponseType("code")
                         .setScope("https://spreadsheets.google.com/feeds https://docs.google.com/feeds")
                         .buildQueryMessage();
@@ -70,7 +69,7 @@ public class ExcelController extends Controller {
     }
     */
 
-    public static void refreshToken() {
+    public static Result refreshToken() {
         if (request().cookie(_googleRefreshToken) != null) {
             try {
                 OAuthClientRequest request = OAuthClientRequest
@@ -90,12 +89,15 @@ public class ExcelController extends Controller {
                 response().setCookie(_googleAuthToken, response2.getAccessToken());
                 response().setCookie(_googleRefreshToken, response2.getRefreshToken());
 
+
             } catch (OAuthSystemException e) {
                 Logger.error("WTF 5036", e);
             } catch (OAuthProblemException e) {
                 Logger.error("WTF 5037", e);
             }
         }
+        else return googleOAuth();
+        return ok();
     }
 
     public static Result googleOAuth2() {
@@ -107,7 +109,7 @@ public class ExcelController extends Controller {
                     .setGrantType(GrantType.AUTHORIZATION_CODE)
                     .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
                     .setClientSecret("cDI00MZJyCmp4r655ZAgy8hG")
-                    .setRedirectURI("http://localhost:9000/admin/updatesalaries")
+                    .setRedirectURI("http://localhost:9000/admin/googledocs/authn")
                     .setCode(_code)
                     .buildBodyMessage();
 
@@ -115,24 +117,24 @@ public class ExcelController extends Controller {
             OAuthClient oAuthClient = new OAuthClient(new URLConnectionClient());
             OAuthJSONAccessTokenResponse response2 = oAuthClient.accessToken(request);
 
+            response().setCookie(_googleAuthToken, response2.getAccessToken());
+            if (response2.getRefreshToken() != null)
+                response().setCookie(_googleRefreshToken, response2.getRefreshToken());
+
 
             Logger.info("\nAccess Token: " + response2.getAccessToken() + "\nExpires in: " + response2.getExpiresIn());
-
-            response().setCookie(_googleAuthToken, response2.getAccessToken());
-            response().setCookie(_googleRefreshToken, response2.getRefreshToken());
-
         }
         catch (OAuthSystemException e) {
-            Logger.error("WTF 5036", e);
+            Logger.error("WTF 5038", e);
             return forbidden();
         }
 
         catch (OAuthProblemException e) {
-            Logger.error("WTF 5037", e);
+            Logger.error("WTF 5039", e);
             return forbidden();
         }
 
-        return redirect("http://localhost:9000/admin");
+        return index();
     }
 
     public static Result writeSoccerPlayersLog() {

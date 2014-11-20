@@ -117,7 +117,7 @@ GET         /is_simulator_activated                                    controlle
 # WIP
 GET         /googledocs                                                controllers.admin.ExcelController.index()
 GET         /googledocs/auth                                           controllers.admin.ExcelController.googleOAuth()
-GET         /googledocs/auth2                                          controllers.admin.ExcelController.googleOAuth2()
+GET         /googledocs/authn                                          controllers.admin.ExcelController.googleOAuth2()
 GET         /googledocs/refresh                                        controllers.admin.ExcelController.refreshToken()
 
 GET         /googledocs/load_salaries                                  controllers.admin.ExcelController.loadSalaries()
