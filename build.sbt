@@ -16,6 +16,7 @@ libraryDependencies ++= Seq(
   cache,
   filters,
   javaJdbc,
+  javaWs,
   "org.mongodb" % "mongo-java-driver" % "2.12.3",                   // https://github.com/mongodb/mongo-java-driver
   "org.jongo" % "jongo" % "1.0",                                    // http://jongo.org/
   "postgresql" % "postgresql" % "9.1-901-1.jdbc4",
