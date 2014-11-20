@@ -15,6 +15,7 @@ public class LoggerController extends Controller {
         public String level;
         public String email;
         public String message;
+        public String userAgent;
     }
 
     public static Result log() {
@@ -25,10 +26,10 @@ public class LoggerController extends Controller {
         String address = request().remoteAddress();
 
         if (params.level.equals("SHOUT")) {
-            Logger.error("[WTF 101 from {}, {}] {}", params.email, address, params.message);
+            Logger.error("[WTF 101 from {}, {}, {}] {}", params.email, address, params.userAgent, params.message);
         }
         else {
-            Logger.info("[{} from {}, {}] {}", params.level, params.email, address, params.message);
+            Logger.info("[{} from {}, {}, {}] {}", params.level, params.email, address, params.userAgent, params.message);
         }
 
         return ok();
