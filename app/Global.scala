@@ -1,23 +1,20 @@
-import com.google.common.io.BaseEncoding
 import play.Logger
+import play.api.Play.current
 import play.api._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import play.api.libs.json.JsArray
+import play.api.libs.ws.{WS, WSRequestHolder}
 import play.api.mvc.{EssentialAction, Filter, Filters}
 import play.filters.gzip.GzipFilter
-import play.api.libs.ws.{WS, WSRequestHolder, WSResponse}
-import scala.concurrent.{Await, Future}
-import play.api.Play.current
 
-import play.api.libs.json.JsPath
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
 
 // http://www.playframework.com/documentation/2.2.x/ScalaGlobal
 object Global extends GlobalSettings {
 
   def isWorker: Boolean = { scala.util.Properties.propOrNull("config.isworker") == "true" }
 
-  var release = "devel" //will be set with getRelease if in production
+  var release = "devel" // Will be set with getRelease if in production
 
   def getRelease:String = {
     var version = "devel"
@@ -68,17 +65,19 @@ object Global extends GlobalSettings {
   }
 
   override def onStart(app: Application) {
-    Logger.info("Application has started")
+    Logger.info("Epic Eleven has started")
 
     release = getRelease
+    Logger.info(s"Epic Eleven version $release")
+
     model.Model.init()
     actors.DailySoccerActors.init(isWorker)
   }
 
   override def onStop(app: Application) {
-    Logger.info("Application shutdown...")
+    Logger.info("Epic Eleven shutdown...")
 
-    actors.DailySoccerActors.shutdown();
+    actors.DailySoccerActors.shutdown()
     model.Model.shutdown()
   }
 }
