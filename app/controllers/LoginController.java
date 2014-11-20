@@ -212,6 +212,10 @@ public class LoginController extends Controller {
             returnError.put("nickName", "Ya existe una cuenta con ese nombre de usuario. Escoge otro.");
         }
         else
+        if (error.contains("Minimum length is 4")) {
+            returnError.put("nickName", "Al menos 4 caracteres");
+        }
+        else
         if (error.contains("Account password minimum length not satisfied.")) {
             returnError.put("password", "La contraseña es demasiado corta.");
         }
