@@ -223,7 +223,7 @@ public class ExcelController extends Controller {
 
         for (ListEntry row : salariesFeed.getEntries()) {
             newSalaries.put(row.getCustomElements().getValue("optaplayerid"),
-                            Integer.parseInt(row.getCustomElements().getValue("salary")));
+                            Integer.parseInt(row.getCustomElements().getValue("final salary")));
 
             newTags.put(row.getCustomElements().getValue("optaplayerid"),
                         row.getCustomElements().getValue("tags"));
@@ -239,7 +239,7 @@ public class ExcelController extends Controller {
             if (soccerPlayers.containsKey(optaPlayerId)) {
 
                 DBObject query = new BasicDBObject("optaPlayerId", optaPlayerId);
-                BasicDBObject bdo = new BasicDBObject("salary", newSalaries.get(optaPlayerId));
+                BasicDBObject bdo = new BasicDBObject("final salary", newSalaries.get(optaPlayerId));
 
                 if (newTags.containsKey(optaPlayerId) && newTags.get(optaPlayerId)!=null) {
                     String[] tagsArray = newTags.get(optaPlayerId).split(",");
@@ -446,6 +446,6 @@ public class ExcelController extends Controller {
     private final static String SPREADSHEET_NAME = "Epic Eleven - Salarios - LFP";
     private final static String LOG_WORKSHEET_NAME = "LOG";
     private final static String LASTLOG_WORKSHEET_NAME = "Last LOG";
-    private final static String SALARIES_WORKSHEET_NAME = "Salarios";
+    private final static String SALARIES_WORKSHEET_NAME = "Salarios Finales";
 
 }
