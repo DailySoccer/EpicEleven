@@ -56,7 +56,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         fieldPos = transformToFieldPosFromOptaPos(optaPlayer.position);
         templateTeamId = aTemplateTeamId;
         createdAt = GlobalDate.getCurrentDate();
-        activated = true;
+        activated = false;
     }
 
     public void Initialize() { }
