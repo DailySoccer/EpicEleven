@@ -258,10 +258,11 @@ public class LoginController extends Controller {
             Account account = isTest? null : StormPathClient.instance().login(loginParams.email, loginParams.password);
 
             // Si entramos con Test, debemos entrar con correo, no con username
-            String email = isTest?loginParams.email:account.getEmail();
+            // Victor 21/11/14: Comentado por crash
+            //String email = isTest?loginParams.email:account.getEmail();
 
             // Buscamos el usuario en Mongo
-            User theUser = Model.users().findOne("{email:'#'}", email).as(User.class);
+            User theUser = Model.users().findOne("{email:'#'}", loginParams.email).as(User.class);
 
             if (theUser == null) {
                 // Si el usuario tiene cuenta en StormPath, pero no existe en nuestra BD, lo creamos en nuestra BD
