@@ -207,11 +207,13 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
      */
     static public boolean importSoccer(OptaPlayer optaPlayer) {
         TemplateSoccerTeam templateTeam = TemplateSoccerTeam.findOneFromOptaId(optaPlayer.teamId);
+
+
         if (templateTeam != null) {
             TemplateSoccerPlayer templateSoccer = new TemplateSoccerPlayer(optaPlayer, templateTeam.templateSoccerTeamId);
 
-            TemplateSoccerPlayerMetadata templateSoccerPlayerMetadata = TemplateSoccerPlayerMetadata.findOne(optaPlayer.optaPlayerId);
-            templateSoccer.salary = templateSoccerPlayerMetadata!=null? templateSoccerPlayerMetadata.salary: (templateSoccer.name.length()*500);
+            TemplateSoccerPlayer origTemplateSoccerPlayer = TemplateSoccerPlayer.findOneFromOptaId(optaPlayer.optaPlayerId);
+            templateSoccer.salary = (origTemplateSoccerPlayer != null)? origTemplateSoccerPlayer.salary: templateSoccer.name.length()*500;
 
             templateSoccer.updateDocument();
         }
