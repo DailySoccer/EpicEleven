@@ -7,6 +7,7 @@ import model.opta.OptaPlayer;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
+import play.Play;
 import utils.ListUtils;
 
 import java.util.*;
@@ -56,7 +57,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         fieldPos = transformToFieldPosFromOptaPos(optaPlayer.position);
         templateTeamId = aTemplateTeamId;
         createdAt = GlobalDate.getCurrentDate();
-        activated = false;
+        activated = Play.application().configuration().getBoolean("activate_players_by_default");
     }
 
     public void Initialize() { }
