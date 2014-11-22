@@ -35,47 +35,69 @@ import java.util.List;
 
 public class ExcelController extends Controller {
 
-    public static Result googleOAuth() {
-        try {
-            OAuthClientRequest request = OAuthClientRequest
-                    .authorizationProvider(OAuthProviderType.GOOGLE)
-                    .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
-                    .setRedirectURI("http://localhost:9000/admin/updatesalaries")
-                    .setResponseType("code")
-                    .setScope("https://spreadsheets.google.com/feeds https://docs.google.com/feeds")
-                    .buildQueryMessage();
-            return redirect(request.getLocationUri());
-        } catch (OAuthSystemException e) {
-            Logger.error("WTF 5036", e);
-            return forbidden();
-        }
+    public static Result index() {
+        if (request().cookie(_googleAuthToken) == null)
+            return googleOAuth();
+
+        return ok(views.html.googledocs.render());
     }
 
-    public static void refreshToken() {
-        try {
-            OAuthClientRequest request = OAuthClientRequest
-                    .tokenProvider(OAuthProviderType.GOOGLE)
-                    .setGrantType(GrantType.REFRESH_TOKEN)
-                    .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
-                    .setClientSecret("cDI00MZJyCmp4r655ZAgy8hG")
-                    .setRefreshToken(_refreshToken)
-                    .buildBodyMessage();
 
-            OAuthClient oAuthClient = new OAuthClient(new URLConnectionClient());
-            OAuthJSONAccessTokenResponse response2 = oAuthClient.accessToken(request);
-
-
-            Logger.info("\nAccess Token: " + response2.getAccessToken() + "\nExpires in: " + response2.getExpiresIn());
-
-            _accessToken = response2.getAccessToken();
-            _refreshToken = response2.getRefreshToken();
+    public static Result googleOAuth() {
+        if (request().cookie(_googleAuthToken) == null) {
+            try {
+                OAuthClientRequest request = OAuthClientRequest
+                        .authorizationProvider(OAuthProviderType.GOOGLE)
+                        .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
+                        .setRedirectURI("http://localhost:9000/admin/googledocs/authn")
+                        .setResponseType("code")
+                        .setScope("https://spreadsheets.google.com/feeds https://docs.google.com/feeds")
+                        .buildQueryMessage();
+                return redirect(request.getLocationUri());
+            } catch (OAuthSystemException e) {
+                Logger.error("WTF 5036", e);
+                return forbidden();
+            }
         }
-        catch (OAuthSystemException e) {
-            Logger.error("WTF 5036", e);
+        return index();
+    }
+
+    /**
+    public static void getExpiration(String token) {
+        https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=
+
+    }
+    */
+
+    public static Result refreshToken() {
+        if (request().cookie(_googleRefreshToken) != null) {
+            try {
+                OAuthClientRequest request = OAuthClientRequest
+                        .tokenProvider(OAuthProviderType.GOOGLE)
+                        .setGrantType(GrantType.REFRESH_TOKEN)
+                        .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
+                        .setClientSecret("cDI00MZJyCmp4r655ZAgy8hG")
+                        .setRefreshToken(request().cookie(_googleRefreshToken).value())
+                        .buildBodyMessage();
+
+                OAuthClient oAuthClient = new OAuthClient(new URLConnectionClient());
+                OAuthJSONAccessTokenResponse response2 = oAuthClient.accessToken(request);
+
+
+                Logger.info("\nAccess Token: " + response2.getAccessToken() + "\nExpires in: " + response2.getExpiresIn());
+
+                response().setCookie(_googleAuthToken, response2.getAccessToken());
+                response().setCookie(_googleRefreshToken, response2.getRefreshToken());
+
+
+            } catch (OAuthSystemException e) {
+                Logger.error("WTF 5036", e);
+            } catch (OAuthProblemException e) {
+                Logger.error("WTF 5037", e);
+            }
         }
-        catch (OAuthProblemException e) {
-            Logger.error("WTF 5037", e);
-        }
+        else return googleOAuth();
+        return ok();
     }
 
     public static Result googleOAuth2() {
@@ -87,7 +109,7 @@ public class ExcelController extends Controller {
                     .setGrantType(GrantType.AUTHORIZATION_CODE)
                     .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
                     .setClientSecret("cDI00MZJyCmp4r655ZAgy8hG")
-                    .setRedirectURI("http://localhost:9000/admin/updatesalaries")
+                    .setRedirectURI("http://localhost:9000/admin/googledocs/authn")
                     .setCode(_code)
                     .buildBodyMessage();
 
@@ -95,35 +117,32 @@ public class ExcelController extends Controller {
             OAuthClient oAuthClient = new OAuthClient(new URLConnectionClient());
             OAuthJSONAccessTokenResponse response2 = oAuthClient.accessToken(request);
 
+            response().setCookie(_googleAuthToken, response2.getAccessToken());
+            if (response2.getRefreshToken() != null)
+                response().setCookie(_googleRefreshToken, response2.getRefreshToken());
+
 
             Logger.info("\nAccess Token: " + response2.getAccessToken() + "\nExpires in: " + response2.getExpiresIn());
-
-            _accessToken = response2.getAccessToken();
-            _refreshToken = response2.getRefreshToken();
-            worksheetWork();
-
-
         }
         catch (OAuthSystemException e) {
-            Logger.error("WTF 5036", e);
+            Logger.error("WTF 5038", e);
             return forbidden();
         }
 
         catch (OAuthProblemException e) {
-            Logger.error("WTF 5037", e);
+            Logger.error("WTF 5039", e);
             return forbidden();
         }
 
-        return redirect("http://localhost:9000/admin");
+        return index();
     }
 
-    public static void worksheetWork() {
-
+    public static Result writeSoccerPlayersLog() {
         try {
             SpreadsheetService service =
                     new SpreadsheetService("MySpreadsheetIntegration-v1");
 
-            service.setAuthSubToken(_accessToken);
+            service.setAuthSubToken(request().cookie(_googleAuthToken).value());
 
             // TODO: Authorize the service object for a specific user (see other sections)
 
@@ -136,8 +155,6 @@ public class ExcelController extends Controller {
                     SpreadsheetFeed.class);
 
             SpreadsheetEntry ourSpreadSheet = getSpreadsheet(feed);
-
-            readSalaries(service, ourSpreadSheet);
 
             getLastLog(service, ourSpreadSheet);
 
@@ -157,6 +174,44 @@ public class ExcelController extends Controller {
         } catch (IOException e) {
             Logger.error("WTF 5296", e);
         }
+
+        return index();
+    }
+
+
+    public static Result loadSalaries() {
+
+        try {
+            SpreadsheetService service =
+                    new SpreadsheetService("MySpreadsheetIntegration-v1");
+
+            service.setAuthSubToken(request().cookie(_googleAuthToken).value());
+
+            // TODO: Authorize the service object for a specific user (see other sections)
+
+            // Define the URL to request.  This should never change.
+            URL SPREADSHEET_FEED_URL = new URL(
+                    "https://spreadsheets.google.com/feeds/spreadsheets/private/full");
+
+            // Make a request to the API and get all spreadsheets.
+            SpreadsheetFeed feed = service.getFeed(SPREADSHEET_FEED_URL,
+                    SpreadsheetFeed.class);
+
+            SpreadsheetEntry ourSpreadSheet = getSpreadsheet(feed);
+
+            readSalaries(service, ourSpreadSheet);
+
+        } catch (MalformedURLException e) {
+            Logger.error("WTF 5096", e);
+        } catch (ServiceException e) {
+            Logger.error("WTF 5196", e);
+            e.printStackTrace();
+        } catch (IOException e) {
+            Logger.error("WTF 5296", e);
+        }
+
+        return index();
+
     }
 
     private static void readSalaries(SpreadsheetService service,  SpreadsheetEntry ourSpreadSheet) throws IOException, ServiceException {
@@ -168,7 +223,7 @@ public class ExcelController extends Controller {
 
         for (ListEntry row : salariesFeed.getEntries()) {
             newSalaries.put(row.getCustomElements().getValue("optaplayerid"),
-                            Integer.parseInt(row.getCustomElements().getValue("salary")));
+                            Integer.parseInt(row.getCustomElements().getValue("final salary")));
 
             newTags.put(row.getCustomElements().getValue("optaplayerid"),
                         row.getCustomElements().getValue("tags"));
@@ -184,7 +239,7 @@ public class ExcelController extends Controller {
             if (soccerPlayers.containsKey(optaPlayerId)) {
 
                 DBObject query = new BasicDBObject("optaPlayerId", optaPlayerId);
-                BasicDBObject bdo = new BasicDBObject("salary", newSalaries.get(optaPlayerId));
+                BasicDBObject bdo = new BasicDBObject("final salary", newSalaries.get(optaPlayerId));
 
                 if (newTags.containsKey(optaPlayerId) && newTags.get(optaPlayerId)!=null) {
                     String[] tagsArray = newTags.get(optaPlayerId).split(",");
@@ -382,13 +437,15 @@ public class ExcelController extends Controller {
     }
 
 
-    private static String _accessToken;
-    private static String _refreshToken;
+
     private static DateTime _lastLogDate = new DateTime(1970, 1, 1, 0, 0);
+
+    private final static String _googleAuthToken = "googleAuthToken";
+    private final static String _googleRefreshToken = "googleRefreshToken";
 
     private final static String SPREADSHEET_NAME = "Epic Eleven - Salarios - LFP";
     private final static String LOG_WORKSHEET_NAME = "LOG";
     private final static String LASTLOG_WORKSHEET_NAME = "Last LOG";
-    private final static String SALARIES_WORKSHEET_NAME = "Salarios";
+    private final static String SALARIES_WORKSHEET_NAME = "Salarios Finales";
 
 }

@@ -1,0 +1,18 @@
+@import controllers.admin.routes._
+
+@main("DailySoccer - Admin - Google Docs") {
+
+<h1 class="page-header">Google Docs integration</h1>
+
+<div>
+    <a class="btn btn-primary" href="@ExcelController.loadSalaries" title="Read Players' salaries from Google Docs.">
+        Read Players' Salaries
+    </a>
+
+    <a class="btn btn-primary" href="@ExcelController.writeSoccerPlayersLog" title="Write Players' Activity Log to Google Docs.">
+        Write Players' Activity
+    </a>
+
+</div>
+
+}
