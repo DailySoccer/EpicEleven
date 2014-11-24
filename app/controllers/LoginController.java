@@ -258,35 +258,38 @@ public class LoginController extends Controller {
             Account account = isTest? null : StormPathClient.instance().login(loginParams.email, loginParams.password);
 
             // Si entramos con Test, debemos entrar con correo, no con username
-            // Victor 21/11/14: Comentado por crash
-            //String email = isTest?loginParams.email:account.getEmail();
+            String email = isTest? loginParams.email: account!=null? account.getEmail(): null;
 
-            // Buscamos el usuario en Mongo
-            User theUser = Model.users().findOne("{email:'#'}", loginParams.email).as(User.class);
+            if (email != null) {
+                // Buscamos el usuario en Mongo
+                User theUser = Model.users().findOne("{email:'#'}", email).as(User.class);
 
-            if (theUser == null) {
-                // Si el usuario tiene cuenta en StormPath, pero no existe en nuestra BD, lo creamos en nuestra BD
-                if (account != null) {
-                    Logger.debug("Creamos el usuario porque no esta en nuestra DB y sí en Stormpath: {}", account.getEmail());
+                if (theUser == null) {
+                    // Si el usuario tiene cuenta en StormPath, pero no existe en nuestra BD, lo creamos en nuestra BD
+                    if (account != null) {
+                        Logger.debug("Creamos el usuario porque no esta en nuestra DB y sí en Stormpath: {}", account.getEmail());
 
-                    theUser = new User(account.getGivenName(), account.getSurname(), account.getUsername(), account.getEmail());
-                    Model.users().insert(theUser);
-                }
-                // Si el usuario no tiene cuenta en Stormpath ni lo encontramos en nuestra BD -> Reject
-                else {
+                        theUser = new User(account.getGivenName(), account.getSurname(), account.getUsername(), account.getEmail());
+                        Model.users().insert(theUser);
+                    }
+                    // Si el usuario no tiene cuenta en Stormpath ni lo encontramos en nuestra BD -> Reject
+                    else {
+                        loginParamsForm.reject("email", "email or password incorrect");
+                        returnHelper.setKO(loginParamsForm.errorsAsJson());
+                    }
+                } else if (!isTest && account == null) {
                     loginParamsForm.reject("email", "email or password incorrect");
                     returnHelper.setKO(loginParamsForm.errorsAsJson());
+                    theUser = null;
+                }
+
+                if (theUser != null) {
+                    setSession(returnHelper, theUser);
                 }
             }
-
-            else if (!isTest && account==null){
+            else {
                 loginParamsForm.reject("email", "email or password incorrect");
                 returnHelper.setKO(loginParamsForm.errorsAsJson());
-                theUser = null;
-            }
-
-            if (theUser != null) {
-                setSession(returnHelper, theUser);
             }
         }
 
