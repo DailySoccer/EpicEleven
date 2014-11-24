@@ -246,7 +246,7 @@ def deploy(dest='staging', mode='release'):
     Deploy a Heroku. Parámetros: dest=staging/production,mode=release/debug
     """
     env.dest, env.mode = dest, mode
-    env.public_deleted = False
+    env.public_deleted, env.client_built = False, False
     env.client_branch_name = 'develop'
 
     prepare_branch()
