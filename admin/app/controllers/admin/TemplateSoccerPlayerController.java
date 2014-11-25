@@ -32,7 +32,8 @@ public class TemplateSoccerPlayerController extends Controller {
                         "salary",
                         "fantasyPoints",
                         "",
-                        ""                  // Team
+                        "",                 // Team
+                        "createdAt"
                 );
             }
 
@@ -49,6 +50,7 @@ public class TemplateSoccerPlayerController extends Controller {
                     case 7:
                             TemplateSoccerTeam templateSoccerTeam = TemplateSoccerTeam.findOne(templateSoccerPlayer.templateTeamId);
                             return templateSoccerTeam.name;
+                    case 8: return String.valueOf(templateSoccerPlayer.createdAt);
                 }
                 return "<invalid value>";
             }
