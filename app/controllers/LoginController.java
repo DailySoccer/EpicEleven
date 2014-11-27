@@ -1,6 +1,7 @@
 package controllers;
 
 import actions.AllowCors;
+import actions.ExceptionCatch;
 import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,6 +24,7 @@ import play.libs.Crypto;
 import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.With;
 import utils.ReturnHelper;
 
 import java.util.HashMap;
@@ -31,6 +33,7 @@ import java.util.Map;
 import static play.data.Form.form;
 
 @AllowCors.Origin
+@With(ExceptionCatch.class)
 public class LoginController extends Controller {
 
     // https://github.com/playframework/playframework/tree/master/samples/java/forms

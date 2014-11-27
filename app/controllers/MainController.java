@@ -1,17 +1,19 @@
 package controllers;
 
 import actions.AllowCors;
+import actions.ExceptionCatch;
 import com.google.common.collect.ImmutableMap;
 import model.*;
 import org.bson.types.ObjectId;
-import play.mvc.Controller;
-import play.mvc.Result;
+import play.Logger;
+import play.mvc.*;
 import utils.ListUtils;
 import utils.ReturnHelper;
 
 import java.util.*;
 
 @AllowCors.Origin
+@With(ExceptionCatch.class)
 public class MainController extends Controller {
 
     public static Result ping() {
