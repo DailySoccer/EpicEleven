@@ -80,18 +80,18 @@ public class PointsTranslation implements JongoId, Initializer {
     public static void createDefault() {
         int[][] pointsTable = {
                 {OptaEventType.PASS_SUCCESSFUL.code, 2},               // pase bien hecho
-                {OptaEventType.TAKE_ON.code, 30},                      // regate
+                {OptaEventType.TAKE_ON.code, 50},                      // regate
                 {OptaEventType.FOUL_RECEIVED.code, 10},                // falta recibida
                 {OptaEventType.TACKLE.code, 30},                       // recuperacion/entrada sin posesion
                 {OptaEventType.TACKLE_EFFECTIVE.code, 30},             // recuperacion/entrada con posesion
                 {OptaEventType.INTERCEPTION.code, 30},                 // intercepcion
-                {OptaEventType.SAVE_GOALKEEPER.code, 100},             // parada
+                {OptaEventType.SAVE_GOALKEEPER.code, 120},             // parada
                 {OptaEventType.SAVE_PLAYER.code, 40},                  // tiro bloqueado por jugador
-                {OptaEventType.CLAIM.code, 120},                       // captura balon
+                {OptaEventType.CLAIM.code, 150},                       // captura balon
                 {OptaEventType.CLEARANCE.code, 40},                    // parada
-                {OptaEventType.MISS.code, 60},                         // tiro a puerta
-                {OptaEventType.POST.code, 80},                         // tiro a puerta
-                {OptaEventType.ATTEMPT_SAVED.code, 80},                // tiro a puerta
+                {OptaEventType.MISS.code, 80},                         // tiro a puerta
+                {OptaEventType.POST.code, 150},                        // tiro a puerta
+                {OptaEventType.ATTEMPT_SAVED.code, 150},               // tiro a puerta
                 {OptaEventType.ASSIST.code, 110},                      // asistencia
                 //{16, 100},                                           // gol
                 {OptaEventType.GOAL_SCORED_BY_GOALKEEPER.code, 1000},  // gol del portero
@@ -101,12 +101,12 @@ public class PointsTranslation implements JongoId, Initializer {
                 {OptaEventType.OWN_GOAL.code, -10},                    // gol en contra
                 {OptaEventType.YELLOW_CARD.code, -100},                // tarjeta amarilla
                 {OptaEventType.SECOND_YELLOW_CARD.code, -100},         // tarjeta amarilla (segunda)
-                {OptaEventType.PUNCH.code, 100},                       // despeje puños
+                {OptaEventType.PUNCH.code, 120},                       // despeje puños
                 {OptaEventType.PASS_UNSUCCESSFUL.code, -1},            // perdida de balon, pase perdido
                 {OptaEventType.DISPOSSESSED.code, -30},                // perdida de balon
-                {OptaEventType.ERROR.code, -10},                       // perdida de balon
-                {OptaEventType.DECISIVE_ERROR.code, -100},             // perdida de balon
-                {OptaEventType.CAUGHT_OFFSIDE.code, -40},              // fuera de juego
+                {OptaEventType.ERROR.code, -120},                       // perdida de balon
+                {OptaEventType.DECISIVE_ERROR.code, -120},             // perdida de balon
+                {OptaEventType.CAUGHT_OFFSIDE.code, -10},              // fuera de juego
                 {OptaEventType.FOUL_COMMITTED.code, -100},              // falta infligida
                 {OptaEventType.RED_CARD.code, -200},                   // tarjeta roja
                 {OptaEventType.PENALTY_COMMITTED.code, -150},          // penalty infligido
