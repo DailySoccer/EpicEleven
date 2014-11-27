@@ -223,7 +223,7 @@ public class ExcelController extends Controller {
 
         for (ListEntry row : salariesFeed.getEntries()) {
             newSalaries.put(row.getCustomElements().getValue("optaplayerid"),
-                            Integer.parseInt(row.getCustomElements().getValue("final salary")));
+                            Integer.parseInt(row.getCustomElements().getValue("finalsalary")));
 
             newTags.put(row.getCustomElements().getValue("optaplayerid"),
                         row.getCustomElements().getValue("tags"));
@@ -239,7 +239,7 @@ public class ExcelController extends Controller {
             if (soccerPlayers.containsKey(optaPlayerId)) {
 
                 DBObject query = new BasicDBObject("optaPlayerId", optaPlayerId);
-                BasicDBObject bdo = new BasicDBObject("final salary", newSalaries.get(optaPlayerId));
+                BasicDBObject bdo = new BasicDBObject("salary", newSalaries.get(optaPlayerId));
 
                 if (newTags.containsKey(optaPlayerId) && newTags.get(optaPlayerId)!=null) {
                     String[] tagsArray = newTags.get(optaPlayerId).split(",");
