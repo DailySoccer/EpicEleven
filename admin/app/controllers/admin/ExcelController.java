@@ -30,7 +30,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 public class ExcelController extends Controller {
 
@@ -204,11 +203,14 @@ public class ExcelController extends Controller {
 
             getLastLog(service, ourSpreadSheet);
 
-            WorksheetEntry ourWorksheet = resetLog(service, ourSpreadSheet);
+            WorksheetEntry ourWorksheet = null;//resetLog(service, ourSpreadSheet);
+
 
             //fillTitleCells(service, ourWorksheet);
 
             fillLog(service, ourWorksheet);
+            //fillLog2(service, ourWorksheet);
+
 
             updateLastLog(service, ourSpreadSheet);
 
@@ -280,10 +282,10 @@ public class ExcelController extends Controller {
 
         for (ListEntry row : salariesFeed.getEntries()) {
             newSalaries.put(row.getCustomElements().getValue("optaplayerid"),
-                            Integer.parseInt(row.getCustomElements().getValue("finalsalary")));
+                    Integer.parseInt(row.getCustomElements().getValue("finalsalary"))); //Espacios en nombres de columnas prohibidos
 
             newTags.put(row.getCustomElements().getValue("optaplayerid"),
-                        row.getCustomElements().getValue("tags"));
+                    row.getCustomElements().getValue("tags"));
         }
 
         HashMap<String, TemplateSoccerPlayer> soccerPlayers = TemplateSoccerPlayer.findAllAsMap();
@@ -321,28 +323,39 @@ public class ExcelController extends Controller {
 
     private static void fillLog(SpreadsheetService service, WorksheetEntry ourWorksheet) throws IOException, ServiceException {
         // Fetch the list feed of the worksheet.
-        URL listFeedUrl = ourWorksheet.getListFeedUrl();
+        //URL listFeedUrl = ourWorksheet.getListFeedUrl();
 
-        ListFeed listFeed = service.getFeed(listFeedUrl, ListFeed.class);
+        //ListFeed listFeed = service.getFeed(listFeedUrl, ListFeed.class);
 
-        List<TemplateSoccerPlayer> soccerPlayers = TemplateSoccerPlayer.findAll();
+        //List<TemplateSoccerPlayer> soccerPlayers = ;
 
-        HashMap<String, String> soccerTeamsMap = new HashMap<>();
-        for (TemplateSoccerTeam templateSoccerTeam: TemplateSoccerTeam.findAll()) {
-            soccerTeamsMap.put(templateSoccerTeam.templateSoccerTeamId.toString(), templateSoccerTeam.name);
+        /*
+        List<TemplateSoccerPlayer> bestSoccers = new ArrayList<>();
+
+        for (TemplateSoccerPlayer soccerPlayer: soccerPlayers) {
+            if ((soccerPlayer.stats.size() > 1) && (soccerPlayer.fantasyPoints>1)) {
+                bestSoccers.add(soccerPlayer);
+            }
         }
+        */
 
         HashMap<String, String> optaCompetitions = new HashMap<>();
         for (OptaCompetition optaCompetition: OptaCompetition.findAll()) {
             optaCompetitions.put(optaCompetition.competitionId, optaCompetition.competitionName);
         }
 
-        for (TemplateSoccerPlayer soccerPlayer: soccerPlayers) {
-            String teamName = soccerTeamsMap.containsKey(soccerPlayer.templateTeamId.toString()) ? soccerTeamsMap.get(soccerPlayer.templateTeamId.toString()) : "unknown";
 
-            for (SoccerPlayerStats stat: soccerPlayer.stats) {
-                if (_lastLogDate.isBefore(stat.startDate.getTime())) {
-                    // Create a local representation of the new row.
+        HashMap<String, String> soccerTeamsMap = new HashMap<>();
+        for (TemplateSoccerTeam templateSoccerTeam: TemplateSoccerTeam.findAll()) {
+            soccerTeamsMap.put(templateSoccerTeam.templateSoccerTeamId.toString(), templateSoccerTeam.name);
+
+            for (TemplateSoccerPlayer soccerPlayer: TemplateSoccerPlayer.findAllFromTemplateTeam(templateSoccerTeam.templateSoccerTeamId)) {
+                    String teamName = soccerTeamsMap.containsKey(soccerPlayer.templateTeamId.toString()) ? soccerTeamsMap.get(soccerPlayer.templateTeamId.toString()) : "unknown";
+
+                    for (SoccerPlayerStats stat : soccerPlayer.stats) {
+                        if (_lastLogDate.isBefore(stat.startDate.getTime())) {
+                            // Create a local representation of the new row.
+                 /*
                     ListEntry row = new ListEntry();
 
                     row.getCustomElements().setValueLocal("id", soccerPlayer.optaPlayerId);
@@ -357,10 +370,52 @@ public class ExcelController extends Controller {
 
                     // Send the new row to the API for insertion.
                     row = service.insert(listFeedUrl, row);
+                 */
+
+                        /*
+                        list = new ArrayList<>();
+                        list.add(soccerPlayer.optaPlayerId);
+                        list.add(soccerPlayer.name);
+                        list.add(soccerPlayer.fieldPos.name());
+                        list.add(teamName);
+                        list.add(optaCompetitions.get(stat.optaCompetitionId));
+                        list.add(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy")));
+                        list.add(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm")));
+                        list.add(Integer.toString(stat.fantasyPoints));
+                        delim = "";
+                        sb = new StringBuilder();
+                        for (String i : list) {
+                            sb.append(delim).append(i);
+                            delim = ",";
+                        }
+                        System.out.println(sb.toString());
+                        */
+
+                            System.out.print(soccerPlayer.optaPlayerId+",");
+                            System.out.print(soccerPlayer.name+",");
+                            System.out.print(soccerPlayer.fieldPos.name()+",");
+                            System.out.print(teamName+",");
+                            System.out.print(optaCompetitions.get(stat.optaCompetitionId)+",");
+                            System.out.print(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy"))+",");
+                            System.out.print(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm"))+",");
+                            System.out.print(Integer.toString(stat.playedMinutes)+",");
+                            System.out.print(Integer.toString(stat.fantasyPoints)+"\n");
+
+
+
+                        }
+
                 }
+
             }
 
+
         }
+
+
+
+
+
     }
 
     private static SpreadsheetEntry getSpreadsheet(SpreadsheetFeed feed) {
