@@ -125,11 +125,11 @@ public class LoginController extends Controller {
         if (!passwordResetParamsForm.hasErrors()) {
             params = passwordResetParamsForm.get();
 
-            F.Tuple<Account, String> accountError = StormPathClient.instance().resetPasswordWithToken(params.token, params.password);
+            F.Tuple<Account, Integer> accountError = StormPathClient.instance().resetPasswordWithToken(params.token, params.password);
 
             User theUser = null;
             Account account = accountError._1;
-            String error = accountError._2;
+            int error = accountError._2;
             if (account != null) {
                 theUser = Model.users().findOne("{email:'#'}", account.getEmail()).as(User.class);
 
@@ -178,10 +178,13 @@ public class LoginController extends Controller {
 
     private static Map<String, String> createUser(SignupParams theParams) {
 
-        StormPathClient stormPathClient = new StormPathClient();
-        String registerError = stormPathClient.register(theParams.nickName, theParams.email, theParams.password);
+        int error = -1;
 
-        if (registerError == null) {
+        if (StormPathClient.instance().isConnected()) {
+            error = StormPathClient.instance().register(theParams.nickName, theParams.email, theParams.password);
+        }
+
+        if (error == -1) {
             // Puede ocurrir que salte una excepcion por duplicidad. No seria un error de programacion puesto que, aunque
             // comprobamos si el email o nickname estan duplicados antes de llamar aqui, es posible que se creen en
             // paralelo. Por esto, la vamos a controlar explicitamente
@@ -189,21 +192,23 @@ public class LoginController extends Controller {
                 Model.users().insert(new User(theParams.firstName, theParams.lastName, theParams.nickName,
                                               theParams.email));
             } catch (MongoException exc) {
+                error = 1; // "Hubo un problema en la creación de tu usuario"
                 Logger.error("createUser: ", exc);
-                HashMap<String, String> mongoError = new HashMap<>();
-                mongoError.put("email", "Hubo un problema en la creación de tu usuario");
-                return mongoError;
             }
 
         }
-        return translateError(registerError);
+        return error==-1? new HashMap<String, String>(): translateError(error);
+        //return translateError(registerError);
     }
 
-    private static Map<String, String> translateError(String error) {
+    private static Map<String, String> translateError(int error) {
         HashMap<String, String> returnError = new HashMap<>();
-        if (error == null) {
-            return returnError;
-        }
+        returnError.put("email", "Ya existe una cuenta con ese email. Indica otro email.");
+
+        return returnError;
+
+        // TODO:
+  /*
         if (error.contains("Account with that email already exists.  Please choose another email.")) {
             returnError.put("email", "Ya existe una cuenta con ese email. Indica otro email.");
         }
@@ -231,16 +236,20 @@ public class LoginController extends Controller {
         if (error.contains("Password requires a numeric character!")) {
             returnError.put("password", "La contraseña debe contener al menos un número");
         }
+  */
 
         //TODO: Incluir:
+       // result.put("email", "Hubo un problema en la creación de tu usuario");
+
         /*
          Cannot invoke the action, eventually got an error: com.stormpath.sdk.resource.ResourceException: HTTP 409, Stormpath 409 (mailto:support@stormpath.com): Another resource with that information already exists. This is likely due to a constraint violation. Please update to retrieve the latest version of the information and try again if necessary.
          */
-
+/*
         else {
             Logger.error("Error no traducido: \n {}", error);
         }
         return returnError;
+*/
     }
 
 
@@ -277,10 +286,6 @@ public class LoginController extends Controller {
                         loginParamsForm.reject("email", "email or password incorrect");
                         returnHelper.setKO(loginParamsForm.errorsAsJson());
                     }
-                } else if (!isTest && account == null) {
-                    loginParamsForm.reject("email", "email or password incorrect");
-                    returnHelper.setKO(loginParamsForm.errorsAsJson());
-                    theUser = null;
                 }
 
                 if (theUser != null) {
@@ -306,7 +311,7 @@ public class LoginController extends Controller {
             FBLoginParams loginParams = loginParamsForm.get();
 
             Account account = StormPathClient.instance().facebookLogin(loginParams.accessToken);
-            User theUser = null;
+            User theUser;
             if (account != null) {
                 theUser = Model.users().findOne("{email:'#'}", account.getEmail()).as(User.class);
 
@@ -317,9 +322,7 @@ public class LoginController extends Controller {
                     Model.users().insert(theUser);
                 }
 
-                if (theUser != null) {
-                    setSession(returnHelper, theUser);
-                }
+                setSession(returnHelper, theUser);
 
             }
             else {
@@ -466,12 +469,12 @@ public class LoginController extends Controller {
 
         if (!originalEmail.endsWith("test.com")) {
             if (somethingChanged) {
-                String profErrors = stormPathClient.changeUserProfile(originalEmail, theUser.firstName, theUser.lastName, theUser.nickName, theUser.email);
+                int profErrors = stormPathClient.changeUserProfile(originalEmail, theUser.firstName, theUser.lastName, theUser.nickName, theUser.email);
                 allErrors.putAll(translateError(profErrors));
             }
 
             if (params.password.length() > 0) {
-                String upErrors = stormPathClient.updatePassword(originalEmail, params.password);
+                int upErrors = stormPathClient.updatePassword(originalEmail, params.password);
                 allErrors.putAll(translateError(upErrors));
             }
         }

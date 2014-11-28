@@ -37,6 +37,8 @@ public class StormPathClient {
         try {
             if (Play.isDev()) {
                 apiKey = ApiKeys.builder().setFileLocation("./conf/apiKey.properties").build();
+
+
             }
             else {
                 apiKey = ApiKeys.builder().setId(Play.application().configuration().getString("stormpath.id"))
@@ -68,14 +70,15 @@ public class StormPathClient {
                 _myApp = _client.createApplication(
                         Applications.newCreateRequestFor(_myApp).createDirectory().build());
             }
+            _connected = _myApp!=null;
         }
     }
 
-    public String register(String givenName, String email, String password) { //, ObjectId userId) {
-        if (_client == null) {
-            return null;
-        }
+    public boolean isConnected() {
+        return _connected;
+    }
 
+    public int register(String givenName, String email, String password) { //, ObjectId userId) {
         Account account = _client.instantiate(Account.class);
 
         account.setGivenName(givenName);
@@ -97,17 +100,13 @@ public class StormPathClient {
             Logger.error(ex.getMessage());
             Logger.error(ex.getStatus() + " " + ex.getMessage());
 
-            return ex.getMessage();
+            return ex.getCode();
         }
-        return null;
+        return -1;
     }
 
 
-    public String askForPasswordReset(String email) {
-        if (_client == null) {
-            return null;
-        }
-
+    public int askForPasswordReset(String email) {
         try {
             _myApp.sendPasswordResetEmail(email);
         }
@@ -119,14 +118,10 @@ public class StormPathClient {
 
             return ex.getMessage();
         }
-        return null;
+        return -1;
     }
 
-    public String verifyPasswordResetToken(String token) {
-        if (_client == null) {
-            return null;
-        }
-
+    public int verifyPasswordResetToken(String token) {
         try {
             _myApp.verifyPasswordResetToken(token);
         }
@@ -138,14 +133,10 @@ public class StormPathClient {
 
             return ex.getMessage();
         }
-        return null;
+        return -1;
     }
 
-    public F.Tuple<Account, String> resetPasswordWithToken(String token, String password) {
-        if (_myApp == null) {
-            return null;
-        }
-
+    public F.Tuple<Account, Integer> resetPasswordWithToken(String token, String password) {
         Account account;
         try {
             account = _myApp.resetPassword(token, password);
@@ -156,9 +147,9 @@ public class StormPathClient {
             Logger.error(ex.getMessage());
             Logger.error(ex.getStatus() + " " + ex.getMessage());
 
-            return new F.Tuple<>(null, ex.getMessage());
+            return new F.Tuple<>(null, ex.getCode());
         }
-        return new F.Tuple<>(account, null);
+        return new F.Tuple<>(account, -1);
     }
 
     public Account facebookLogin(String accessToken){
@@ -180,10 +171,6 @@ public class StormPathClient {
     }
 
     public Account login(String usernameOrEmail, String rawPassword){
-        if (_myApp == null) {
-            return null;
-        }
-
         //Create an authentication request using the credentials
         AuthenticationRequest request = new UsernamePasswordRequest(usernameOrEmail, rawPassword);
 
@@ -208,10 +195,7 @@ public class StormPathClient {
         return null;
     }
 
-    public String changeUserProfile(String userEmail, String firstName, String lastName, String nickName, String email) {
-        if (_myApp == null) {
-            return null;
-        }
+    public int changeUserProfile(String userEmail, String firstName, String lastName, String nickName, String email) {
 
         Map<String, Object> queryParams = new HashMap<>();
         queryParams.put("email", userEmail);
@@ -238,13 +222,10 @@ public class StormPathClient {
         else {
             return "Users profile changes failed";
         }
-        return null;
+        return -1;
     }
 
-    public String updatePassword(String userEmail, String password) {
-        if (_myApp == null) {
-            return null;
-        }
+    public int updatePassword(String userEmail, String password) {
 
         Map<String, Object> queryParams = new HashMap<>();
         queryParams.put("email", userEmail);
@@ -262,7 +243,7 @@ public class StormPathClient {
         else {
             return "Password change failed";
         }
-        return null;
+        return -1;
     }
 
     public CustomData getCustomDataForAccount(Account account) {
@@ -278,6 +259,7 @@ public class StormPathClient {
     }
 
     Client _client;
-    Application _myApp = null;
+    Application _myApp;
     static StormPathClient _instance;
+    boolean _connected = false;
 }
