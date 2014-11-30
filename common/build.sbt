@@ -13,6 +13,7 @@ libraryDependencies ++= Seq(
   ,"commons-dbutils" % "commons-dbutils" % "1.6"           // http://commons.apache.org/proper/commons-dbutils/index.html
   ,"org.jooq" % "jooq" % "3.5.0"
   ,"org.jooq" % "jooq-meta" % "3.5.0"
+  ,"org.flywaydb" % "flyway-core" % "3.1"
 )
 
 sources in (Compile,doc) := Seq.empty

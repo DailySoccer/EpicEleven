@@ -3,6 +3,7 @@ package model;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.mongodb.*;
 import org.bson.types.ObjectId;
+import org.flywaydb.core.Flyway;
 import org.jongo.Find;
 import org.jongo.Jongo;
 import org.jongo.Mapper;
@@ -90,6 +91,11 @@ public class Model {
 
     private static void ensurePostgresDB() throws SQLException {
 
+        Flyway flyway = new Flyway();
+        flyway.setDataSource(play.db.DB.getDataSource());
+        flyway.migrate();
+
+        /*
         try (Connection connection = play.db.DB.getConnection()) {
             try (Statement stmt = connection.createStatement()) {
                 stmt.execute("CREATE TABLE IF NOT EXISTS optaxml (" +
@@ -120,6 +126,7 @@ public class Model {
                              "END$$;");
             }
         }
+        */
     }
 
     static public String getMongoAppEnv(){
