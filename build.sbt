@@ -22,6 +22,8 @@ libraryDependencies ++= Seq(
   "postgresql" % "postgresql" % "9.1-901-1.jdbc4",
   "com.google.guava" % "guava" % "17.0",
   "com.newrelic.agent.java" % "newrelic-agent" % "3.10.0"
+  ,"com.stormpath.sdk" % "stormpath-sdk-api" % "1.0.RC2"
+  ,"com.stormpath.sdk" % "stormpath-sdk-httpclient" % "1.0.RC2"
 )
 
 // Desconectamos la compilacion de documentacion, que nos ralentiza el deploy
