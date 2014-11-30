@@ -94,7 +94,7 @@
       <packageName>model.sql</packageName>
 
       <!-- The destination directory of your generated classes -->
-      <directory>../common/app</directory>
+      <directory>../../common/app</directory>
     </target>
   </generator>
 </configuration>
