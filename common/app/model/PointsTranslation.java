@@ -10,7 +10,7 @@ import utils.ListUtils;
 import java.util.Date;
 import java.util.List;
 
-public class PointsTranslation implements JongoId, Initializer {
+public class PointsTranslation implements JongoId {
     @Id
     @JsonView(JsonViews.NotForClient.class)
     public ObjectId pointsTranslationId;
@@ -31,7 +31,6 @@ public class PointsTranslation implements JongoId, Initializer {
     }
 
     public PointsTranslation() {}
-    public void Initialize() {}
 
     public ObjectId getId() {
         return pointsTranslationId;

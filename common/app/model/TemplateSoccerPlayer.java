@@ -12,7 +12,7 @@ import utils.ListUtils;
 
 import java.util.*;
 
-public class TemplateSoccerPlayer implements JongoId, Initializer {
+public class TemplateSoccerPlayer implements JongoId {
     @Id
     public ObjectId templateSoccerPlayerId;
 
@@ -48,8 +48,7 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         return numPlayed;
     }
 
-    public TemplateSoccerPlayer() {
-    }
+    public TemplateSoccerPlayer() { }
 
     public TemplateSoccerPlayer(OptaPlayer optaPlayer, ObjectId aTemplateTeamId) {
         optaPlayerId = optaPlayer.optaPlayerId;
@@ -59,8 +58,6 @@ public class TemplateSoccerPlayer implements JongoId, Initializer {
         createdAt = GlobalDate.getCurrentDate();
         activated = Play.application().configuration().getBoolean("activate_players_by_default");
     }
-
-    public void Initialize() { }
 
     public ObjectId getId() {
         return templateSoccerPlayerId;
