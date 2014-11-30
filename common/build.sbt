@@ -11,6 +11,8 @@ libraryDependencies ++= Seq(
   ,"org.jdom" % "jdom" % "2.0.2"
   ,"postgresql" % "postgresql" % "9.1-901-1.jdbc4"
   ,"commons-dbutils" % "commons-dbutils" % "1.6"           // http://commons.apache.org/proper/commons-dbutils/index.html
+  ,"org.jooq" % "jooq" % "3.5.0"
+  ,"org.jooq" % "jooq-meta" % "3.5.0"
 )
 
 sources in (Compile,doc) := Seq.empty
