@@ -9,11 +9,14 @@ import model.Model;
 import model.PaypalPayment;
 import model.Product;
 import play.Logger;
+import play.data.Form;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import org.bson.types.ObjectId;
 import model.Order;
+
+import java.util.Map;
 
 @AllowCors.Origin
 public class PaypalController extends Controller {
@@ -172,6 +175,12 @@ public class PaypalController extends Controller {
         }
 
         return ok(response);
+    }
+
+    public static Result ipnListener() {
+        Map<String, String> data = Form.form().bindFromRequest().data();
+        Logger.info("ipn: {}", data.toString());
+        return ok();
     }
 
     @BodyParser.Of(BodyParser.Json.class)
