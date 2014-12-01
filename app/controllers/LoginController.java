@@ -185,14 +185,20 @@ public class LoginController extends Controller {
             // Puede ocurrir que salte una excepcion por duplicidad. No seria un error de programacion puesto que, aunque
             // comprobamos si el email o nickname estan duplicados antes de llamar aqui, es posible que se creen en
             // paralelo. Por esto, la vamos a controlar explicitamente
-            try {
-                Model.users().insert(new User(theParams.firstName, theParams.lastName, theParams.nickName,
-                                              theParams.email));
-            } catch (MongoException exc) {
-                Logger.error("createUser: ", exc);
-                HashMap<String, String> mongoError = new HashMap<>();
-                mongoError.put("email", "Hubo un problema en la creación de tu usuario");
-                return mongoError;
+
+            // Puede estar ya el usuario si ha entrado con Facebook
+            User theUser = Model.users().findOne("{email:'#'}", theParams.email.toLowerCase()).as(User.class);
+
+            if (theUser == null) {
+                try {
+                    Model.users().insert(new User(theParams.firstName, theParams.lastName, theParams.nickName,
+                                                  theParams.email.toLowerCase()));
+                } catch (MongoException exc) {
+                    Logger.error("createUser: ", exc);
+                    HashMap<String, String> mongoError = new HashMap<>();
+                    mongoError.put("email", "Hubo un problema en la creación de tu usuario");
+                    return mongoError;
+                }
             }
 
         }
