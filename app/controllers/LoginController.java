@@ -195,18 +195,19 @@ public class LoginController extends Controller {
             if (theUser == null) {
                 try {
                     Model.users().insert(new User(theParams.firstName, theParams.lastName, theParams.nickName,
-                                                  theParams.email.toLowerCase()));
+                            theParams.email.toLowerCase()));
                 } catch (MongoException exc) {
-                error = 0; // "Hubo un problema en la creación de tu usuario"
-                User user = model.User.findByName(theParams.nickName);
-                if (user != null) {
-                    error += 1; //"Ya existe una cuenta con ese nombre de usuario. Elige uno diferente."
+                    error = 0; // "Hubo un problema en la creación de tu usuario"
+                    User user = model.User.findByName(theParams.nickName);
+                    if (user != null) {
+                        error += 1; //"Ya existe una cuenta con ese nombre de usuario. Elige uno diferente."
+                    }
+                    user = model.User.findByEmail(theParams.email.toLowerCase());
+                    if (user != null) {
+                        error += 2; //"Ya existe una cuenta con ese email. Indica otro email."
+                    }
+                    Logger.error("createUser: ", exc);
                 }
-                user = model.User.findByEmail(theParams.email);
-                if (user != null) {
-                    error += 2; //"Ya existe una cuenta con ese email. Indica otro email."
-                }
-                Logger.error("createUser: ", exc);
             }
 
         }
@@ -231,6 +232,7 @@ public class LoginController extends Controller {
             returnError.put("email", "Ya existe una cuenta con ese email. Indica otro email.");
         }
         else if (error == 2001) {
+            //TODO: leer el
             returnError.put("email", "Ya existe una cuenta con ese email. Indica otro email.");
         }
         else if (error != -1) {
@@ -299,7 +301,7 @@ public class LoginController extends Controller {
             Account account = isTest? null : StormPathClient.instance().login(loginParams.email, loginParams.password);
 
             // Si entramos con Test, debemos entrar con correo, no con username
-            String email = isTest? loginParams.email: account!=null? account.getEmail(): null;
+            String email = isTest? loginParams.email.toLowerCase(): account!=null? account.getEmail().toLowerCase(): null;
 
             if (email != null) {
                 // Buscamos el usuario en Mongo
@@ -310,8 +312,19 @@ public class LoginController extends Controller {
                     if (account != null) {
                         Logger.debug("Creamos el usuario porque no esta en nuestra DB y sí en Stormpath: {}", account.getEmail());
 
-                        theUser = new User(account.getGivenName(), account.getSurname(), account.getUsername(), account.getEmail());
-                        Model.users().insert(theUser);
+                        theUser = new User(account.getGivenName(), account.getSurname(), account.getUsername(), account.getEmail().toLowerCase());
+
+                        try {
+                            Model.users().insert(theUser);
+                        } catch (MongoException exc) {
+                            String nickname = generateNewNickname(account);
+                            if (-1 == StormPathClient.instance().changeUserProfile(theUser.email, theUser.firstName,
+                                                                                   theUser.lastName, nickname, theUser.email)) {
+                                Model.users().insert(theUser);
+                            }
+
+                        }
+
                     }
                     // Si el usuario no tiene cuenta en Stormpath ni lo encontramos en nuestra BD -> Reject
                     else {
@@ -345,12 +358,12 @@ public class LoginController extends Controller {
             Account account = StormPathClient.instance().facebookLogin(loginParams.accessToken);
             User theUser;
             if (account != null) {
-                theUser = Model.users().findOne("{email:'#'}", account.getEmail()).as(User.class);
+                theUser = Model.users().findOne("{email:'#'}", account.getEmail().toLowerCase()).as(User.class);
 
                 if (theUser == null) {
                     Logger.debug("Creamos el usuario porque no esta en nuestra DB y sí en Stormpath: {}", account.getEmail());
 
-                    theUser = new User(account.getGivenName(), account.getSurname(), getOrSetNickname(account), account.getEmail());
+                    theUser = new User(account.getGivenName(), account.getSurname(), getOrSetNickname(account), account.getEmail().toLowerCase());
                     Model.users().insert(theUser);
                 }
 
@@ -461,14 +474,14 @@ public class LoginController extends Controller {
             if (!params.nickName.isEmpty()) {
                 if (!theUser.nickName.equals(params.nickName)) {
                     if (null != User.findByName(params.nickName)) {
-                        allErrors.put("nickName", "Otro usuario tiene este nickname.");
+                        allErrors.put("nickName", "Ya existe una cuenta con ese nombre de usuario. Elige uno diferente.");
                     }
                 }
                 theUser.nickName = params.nickName;
                 somethingChanged = true;
             }
             if (!params.email.isEmpty()) {
-                theUser.email = params.email;
+                theUser.email = params.email.toLowerCase();
                 somethingChanged = true;
             }
 
