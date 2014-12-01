@@ -10,7 +10,6 @@ import java.util.Map;
 
 public class PaypalIPNMessage {
 
-    private static final long serialVersionUID = -7187275404183441828L;
     private static final String ENCODING = "windows-1252";
 
     private Map<String, String> ipnMap = new HashMap<>();
@@ -27,16 +26,10 @@ public class PaypalIPNMessage {
         httpConfiguration = new HttpConfiguration();
         ipnEndpoint = getIPNEndpoint();
         httpConfiguration.setEndPointUrl(ipnEndpoint);
-        httpConfiguration.setConnectionTimeout(Integer
-                .parseInt(configurationMap
-                        .get(Constants.HTTP_CONNECTION_TIMEOUT)));
-        httpConfiguration.setMaxRetry(Integer.parseInt(configurationMap
-                .get(Constants.HTTP_CONNECTION_RETRY)));
-        httpConfiguration.setReadTimeout(Integer.parseInt(configurationMap
-                .get(Constants.HTTP_CONNECTION_READ_TIMEOUT)));
-        httpConfiguration.setMaxHttpConnection(Integer
-                .parseInt(configurationMap
-                        .get(Constants.HTTP_CONNECTION_MAX_CONNECTION)));
+        httpConfiguration.setConnectionTimeout(Integer.parseInt(configurationMap.get(Constants.HTTP_CONNECTION_TIMEOUT)));
+        httpConfiguration.setMaxRetry(Integer.parseInt(configurationMap.get(Constants.HTTP_CONNECTION_RETRY)));
+        httpConfiguration.setReadTimeout(Integer.parseInt(configurationMap.get(Constants.HTTP_CONNECTION_READ_TIMEOUT)));
+        httpConfiguration.setMaxHttpConnection(Integer.parseInt(configurationMap.get(Constants.HTTP_CONNECTION_MAX_CONNECTION)));
     }
 
     /**
@@ -58,8 +51,7 @@ public class PaypalIPNMessage {
      *            {@link Map} representing IPN name/value pair
      * @param configurationMap
      */
-    public PaypalIPNMessage(Map<String, String> ipnMap,
-                      Map<String, String> configurationMap) {
+    public PaypalIPNMessage(Map<String, String> ipnMap, Map<String, String> configurationMap) {
         this.configurationMap = SDKUtil.combineDefaultMap(configurationMap);
         initialize();
         payload = new StringBuffer("cmd=_notify-validate");
@@ -70,8 +62,7 @@ public class PaypalIPNMessage {
                 String name = entry.getKey();
                 String value = entry.getValue();
                 try {
-                    this.ipnMap.put(name,
-                            URLDecoder.decode(value, encoding));
+                    this.ipnMap.put(name, URLDecoder.decode(value, encoding));
                     payload.append("&").append(name).append("=")
                             .append(URLEncoder.encode(value, encoding));
                 } catch (Exception e) {
@@ -88,8 +79,7 @@ public class PaypalIPNMessage {
         Map<String, String> headerMap = new HashMap<>();
         URL url = null;
         String res = Constants.EMPTY_STRING;
-        HttpConnection connection = ConnectionManager.getInstance()
-                .getConnection();
+        HttpConnection connection = ConnectionManager.getInstance().getConnection();
 
         try {
 
@@ -125,30 +115,27 @@ public class PaypalIPNMessage {
      * @return IPN value for corresponding IpnName
      */
     public String getIpnValue(String ipnName) {
-
         return this.ipnMap.get(ipnName);
-
     }
 
     /**
      * @return Transaction Type (eg: express_checkout, cart, web_accept)
      */
     public String getTransactionType() {
-        return this.ipnMap.containsKey("txn_type") ? this.ipnMap
-                .get("txn_type") : this.ipnMap.get("transaction_type");
+        return this.ipnMap.containsKey("txn_type")  ? this.ipnMap.get("txn_type")
+                                                    : this.ipnMap.get("transaction_type");
     }
 
     private String getIPNEndpoint() {
-        String ipnEPoint = null;
-        ipnEPoint = configurationMap.get(Constants.IPN_ENDPOINT);
+        String ipnEPoint = configurationMap.get(Constants.IPN_ENDPOINT);
         if (ipnEPoint == null) {
             String mode = configurationMap.get(Constants.MODE);
-            if (mode != null
-                    && (Constants.SANDBOX.equalsIgnoreCase(configurationMap.get(Constants.MODE).trim()))) {
-                ipnEPoint = Constants.IPN_SANDBOX_ENDPOINT;
-            } else if (mode != null
-                    && (Constants.LIVE.equalsIgnoreCase(configurationMap.get(Constants.MODE).trim()))) {
-                ipnEPoint = Constants.IPN_LIVE_ENDPOINT;
+            if (mode != null) {
+                if (Constants.SANDBOX.equalsIgnoreCase(configurationMap.get(Constants.MODE).trim())) {
+                    ipnEPoint = Constants.IPN_SANDBOX_ENDPOINT;
+                } else if (Constants.LIVE.equalsIgnoreCase(configurationMap.get(Constants.MODE).trim())) {
+                    ipnEPoint = Constants.IPN_LIVE_ENDPOINT;
+                }
             }
         }
         return ipnEPoint;
