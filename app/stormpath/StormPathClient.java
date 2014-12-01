@@ -78,7 +78,7 @@ public class StormPathClient {
         return _connected;
     }
 
-    public int register(String givenName, String email, String password) { //, ObjectId userId) {
+    public F.Tuple<Integer, String> register(String givenName, String email, String password) { //, ObjectId userId) {
         Account account = _client.instantiate(Account.class);
 
         account.setGivenName(givenName);
@@ -101,13 +101,14 @@ public class StormPathClient {
             Logger.error(ex.getStatus() + " " + ex.getMessage());
             Logger.error(ex.getMoreInfo());
 
-            return ex.getCode();
+            return new F.Tuple<>(ex.getCode(), ex.getMessage());
+
         }
-        return -1;
+        return new F.Tuple<>(-1, "");
     }
 
 
-    public int askForPasswordReset(String email) {
+    public F.Tuple<Integer, String> askForPasswordReset(String email) {
         try {
             _myApp.sendPasswordResetEmail(email);
         }
@@ -118,12 +119,12 @@ public class StormPathClient {
             Logger.error(ex.getStatus() + " " + ex.getMessage());
             Logger.error(ex.getMoreInfo());
 
-            return ex.getCode(); //ex.getMessage();
+            return new F.Tuple<>(ex.getCode(), ex.getMessage());
         }
-        return -1;
+        return new F.Tuple<>(-1, "");
     }
 
-    public int verifyPasswordResetToken(String token) {
+    public F.Tuple<Integer, String> verifyPasswordResetToken(String token) {
         try {
             _myApp.verifyPasswordResetToken(token);
         }
@@ -134,12 +135,12 @@ public class StormPathClient {
             Logger.error(ex.getStatus() + " " + ex.getMessage());
             Logger.error(ex.getMoreInfo());
 
-            return ex.getCode(); //ex.getMessage();
+            return new F.Tuple<>(ex.getCode(), ex.getMessage());
         }
-        return -1;
+        return new F.Tuple<>(-1, "");
     }
 
-    public F.Tuple<Account, Integer> resetPasswordWithToken(String token, String password) {
+    public F.Tuple<Account, F.Tuple<Integer, String>> resetPasswordWithToken(String token, String password) {
         Account account;
         try {
             account = _myApp.resetPassword(token, password);
@@ -151,9 +152,9 @@ public class StormPathClient {
             Logger.error(ex.getStatus() + " " + ex.getMessage());
             Logger.error(ex.getMoreInfo());
 
-            return new F.Tuple<>(null, ex.getCode());
+            return new F.Tuple<>(null, new F.Tuple<>(ex.getCode(), ex.getMessage()));
         }
-        return new F.Tuple<>(account, -1);
+        return new F.Tuple<>(account, new F.Tuple<>(-1, ""));
     }
 
     public Account facebookLogin(String accessToken){
@@ -196,14 +197,13 @@ public class StormPathClient {
                 Logger.error(ex.getMessage()); // Will output: "Invalid username or password."{
                 Logger.error(ex.getStatus() + " " + ex.getMessage());
                 Logger.error(ex.getMoreInfo());
-
             }
 
         }
         return null;
     }
 
-    public int changeUserProfile(String userEmail, String firstName, String lastName, String nickName, String email) {
+    public F.Tuple<Integer, String> changeUserProfile(String userEmail, String firstName, String lastName, String nickName, String email) {
 
         Map<String, Object> queryParams = new HashMap<>();
         queryParams.put("email", userEmail);
@@ -224,16 +224,26 @@ public class StormPathClient {
                 usersAccount.setSurname(lastName);
                 usersAccount.setEmail(email);
                 usersAccount.setUsername(nickName);
-                usersAccount.save();
+                try {
+                    usersAccount.save();
+                } catch (ResourceException ex) {
+                    Logger.error(String.valueOf(ex.getStatus())); // Will output: 400
+                    Logger.error(String.valueOf(ex.getCode())); // Will output: 400
+                    Logger.error(ex.getMessage()); // Will output: "Invalid username or password."{
+                    Logger.error(ex.getStatus() + " " + ex.getMessage());
+                    Logger.error(ex.getMoreInfo());
+
+                    return new F.Tuple<>(ex.getCode(), ex.getMessage());
+                }
             }
         }
         else {
-            return 991; //"Users profile changes failed";
+            return new F.Tuple<>(991, "El cambio en el perfil ha fallado.");
         }
-        return -1;
+        return new F.Tuple<>(-1, "");
     }
 
-    public int updatePassword(String userEmail, String password) {
+    public F.Tuple<Integer, String> updatePassword(String userEmail, String password) {
 
         Map<String, Object> queryParams = new HashMap<>();
         queryParams.put("email", userEmail);
@@ -246,12 +256,23 @@ public class StormPathClient {
 
         if (usersAccount != null) {
             usersAccount.setPassword(password);
-            usersAccount.save();
+            try {
+                usersAccount.save();
+            }
+            catch (ResourceException ex) {
+                Logger.error(String.valueOf(ex.getStatus())); // Will output: 400
+                Logger.error(String.valueOf(ex.getCode())); // Will output: 400
+                Logger.error(ex.getMessage()); // Will output: "Invalid username or password."{
+                Logger.error(ex.getStatus() + " " + ex.getMessage());
+                Logger.error(ex.getMoreInfo());
+
+                return new F.Tuple<>(ex.getCode(), ex.getMessage());
+            }
         }
         else {
-            return 992; //"Password change failed";
+            return new F.Tuple<>(992, "El cambio de contraseña ha fallado");
         }
-        return -1;
+        return new F.Tuple<>(-1, "");
     }
 
     public CustomData getCustomDataForAccount(Account account) {

@@ -11,20 +11,22 @@ public final class MockData {
 
 
     static public void ensureMockDataUsers() {
-        createUser("Fran",      "Galvez",       "Fran",         "fran@test.com", "");
-        createUser("Victor",    "Mendiluce",    "Zincoontrin",  "vmendi@test.com", "");
-        createUser("Santiago",  "Gonzalez",     "Flaco",        "flaco@test.com", "");
-        createUser("Santiago",  "Revelo",       "Revelo",       "revelo@test.com", "");
-        createUser("Javier",    "Lajara",       "Javi",         "javi@test.com", "");
-        createUser("Ximo",      "Martinez",     "Ximo",         "ximo@test.com", "");
-        createUser("Santiago",  "R. Bedate",    "Neo",          "neo@test.com", "");
-        createUser("Federico",  "Mon",          "Fede",         "fede@test.com", "");
-        createUser("Jesús",     "Tapial",       "Machus",       "machus@test.com", "");
-        createUser("Antonio",   "Galvez",       "Antonio",      "antonio@test.com", "");
-        createUser("Belen",     "Cao",          "Belen",        "belen@test.com", "");
-        createUser("Goyo",      "Iniesta",      "Goyo",         "goyo@test.com", "");
+        createUser("Fran",      "Galvez",       "FranTest",         "fran@test.com", "");
+        createUser("Victor",    "Mendiluce",    "ZincoontrinTest",  "vmendi@test.com", "");
+        createUser("Santiago",  "Gonzalez",     "FlacoTest",        "flaco@test.com", "");
+        createUser("Santiago",  "Revelo",       "ReveloTest",       "revelo@test.com", "");
+        createUser("Javier",    "Lajara",       "JaviTest",         "javi@test.com", "");
+        createUser("Ximo",      "Martinez",     "XimoTest",         "ximo@test.com", "");
+        createUser("Santiago",  "R. Bedate",    "NeoTest",          "neo@test.com", "");
+        createUser("Federico",  "Mon",          "FedeTest",         "fede@test.com", "");
+        createUser("Jesús",     "Tapial",       "MachusTest",       "machus@test.com", "");
+        createUser("Antonio",   "Galvez",       "AntonioTest",      "antonio@test.com", "");
+        createUser("Belen",     "Cao",          "BelenTest",        "belen@test.com", "");
+        createUser("Goyo",      "Iniesta",      "GoyoTest",         "goyo@test.com", "");
+        createUser("María",     "Aguilera",     "MariaTest",        "maria@test.com", "");
 
-        createUser("Test",      "Test",         "Test",         "test@test.com", "");
+
+        createUser("Test",      "Test",         "TestTest",         "test@test.com", "");
     }
 
     static private void createUser(String firstName, String lastName, String nickName, String email, String password) {
