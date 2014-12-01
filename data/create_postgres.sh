@@ -1,11 +1,9 @@
 #!/bin/sh
 
-which brew &>/dev/null
+which postgres &>/dev/null
 
 if [ $? -eq 0 ]
   then
-    # If brew is installed, try first brew cask to install brew
-    #brew install postgresql
     PGDATA="/usr/local/var/postgres"
     export PGDATA
     postgres &
@@ -21,6 +19,6 @@ if [ $? -eq 0 ]
     echo "TODO HA IDO BIEN"
 
   else
-    echo "Necesitas instalar brew: $ ruby -e \"\$(curl -fsSL https://raw.github.com/Homebrew/homebrew/go/install)\""
+    echo "Necesitas instalar postgres: brew install postgres"
     exit 1;
 fi
