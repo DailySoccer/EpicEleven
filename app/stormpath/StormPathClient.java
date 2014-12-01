@@ -97,8 +97,7 @@ public class StormPathClient {
         catch (ResourceException ex) {
             Logger.error(String.valueOf(ex.getStatus()));
             Logger.error(String.valueOf(ex.getCode()));
-            Logger.error(ex.getMessage());
-            Logger.error(ex.getStatus() + " " + ex.getMessage());
+            Logger.error(ex.getMessage());            
             Logger.error(ex.getMoreInfo());
 
             return new F.Tuple<>(ex.getCode(), ex.getMessage());
@@ -116,7 +115,6 @@ public class StormPathClient {
             Logger.error(String.valueOf(ex.getStatus()));
             Logger.error(String.valueOf(ex.getCode()));
             Logger.error(ex.getMessage());
-            Logger.error(ex.getStatus() + " " + ex.getMessage());
             Logger.error(ex.getMoreInfo());
 
             return new F.Tuple<>(ex.getCode(), ex.getMessage());
@@ -129,10 +127,7 @@ public class StormPathClient {
             _myApp.verifyPasswordResetToken(token);
         }
         catch (ResourceException ex) {
-            Logger.error(String.valueOf(ex.getStatus()));
-            Logger.error(String.valueOf(ex.getCode()));
             Logger.error(ex.getMessage());
-            Logger.error(ex.getStatus() + " " + ex.getMessage());
             Logger.error(ex.getMoreInfo());
 
             return new F.Tuple<>(ex.getCode(), ex.getMessage());
@@ -146,10 +141,7 @@ public class StormPathClient {
             account = _myApp.resetPassword(token, password);
         }
         catch (ResourceException ex) {
-            Logger.error(String.valueOf(ex.getStatus()));
-            Logger.error(String.valueOf(ex.getCode()));
             Logger.error(ex.getMessage());
-            Logger.error(ex.getStatus() + " " + ex.getMessage());
             Logger.error(ex.getMoreInfo());
 
             return new F.Tuple<>(null, new F.Tuple<>(ex.getCode(), ex.getMessage()));
@@ -167,10 +159,7 @@ public class StormPathClient {
             return result.getAccount();
         }
         catch (ResourceException ex) {
-            Logger.error(String.valueOf(ex.getStatus()));
-            Logger.error(String.valueOf(ex.getCode()));
             Logger.error(ex.getMessage());
-            Logger.error(ex.getStatus() + " " + ex.getMessage());
             Logger.error(ex.getMoreInfo());
 
         }
@@ -192,10 +181,7 @@ public class StormPathClient {
                 Logger.info("Invalid login for {}", usernameOrEmail);
             }
             else {
-                Logger.error(String.valueOf(ex.getStatus())); // Will output: 400
-                Logger.error(String.valueOf(ex.getCode())); // Will output: 400
-                Logger.error(ex.getMessage()); // Will output: "Invalid username or password."{
-                Logger.error(ex.getStatus() + " " + ex.getMessage());
+                Logger.error(ex.getMessage()); // Will output: "Invalid username or password."
                 Logger.error(ex.getMoreInfo());
             }
 
@@ -227,10 +213,7 @@ public class StormPathClient {
                 try {
                     usersAccount.save();
                 } catch (ResourceException ex) {
-                    Logger.error(String.valueOf(ex.getStatus())); // Will output: 400
-                    Logger.error(String.valueOf(ex.getCode())); // Will output: 400
-                    Logger.error(ex.getMessage()); // Will output: "Invalid username or password."{
-                    Logger.error(ex.getStatus() + " " + ex.getMessage());
+                    Logger.error(ex.getMessage()); // Will output: "Invalid username or password."
                     Logger.error(ex.getMoreInfo());
 
                     return new F.Tuple<>(ex.getCode(), ex.getMessage());
@@ -260,10 +243,7 @@ public class StormPathClient {
                 usersAccount.save();
             }
             catch (ResourceException ex) {
-                Logger.error(String.valueOf(ex.getStatus())); // Will output: 400
-                Logger.error(String.valueOf(ex.getCode())); // Will output: 400
-                Logger.error(ex.getMessage()); // Will output: "Invalid username or password."{
-                Logger.error(ex.getStatus() + " " + ex.getMessage());
+                Logger.error(ex.getMessage()); // Will output: "Invalid username or password."
                 Logger.error(ex.getMoreInfo());
 
                 return new F.Tuple<>(ex.getCode(), ex.getMessage());
