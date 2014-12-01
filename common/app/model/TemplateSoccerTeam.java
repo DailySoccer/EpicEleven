@@ -13,7 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-public class TemplateSoccerTeam implements JongoId, Initializer {
+public class TemplateSoccerTeam implements JongoId {
     @Id
     public ObjectId templateSoccerTeamId;
 
@@ -34,8 +34,6 @@ public class TemplateSoccerTeam implements JongoId, Initializer {
         shortName = optaTeam.shortName;
         createdAt = GlobalDate.getCurrentDate();
     }
-
-    public void Initialize() { }
 
     public ObjectId getId() {
         return templateSoccerTeamId;

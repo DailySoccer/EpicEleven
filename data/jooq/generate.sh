@@ -1,0 +1,1 @@
+java -cp jooq-3.5.0.jar:jooq-meta-3.5.0.jar:jooq-codegen-3.5.0.jar:postgresql.postgresql-9.1-901-1.jdbc4.jar:. org.jooq.util.GenerationTool /jooq-config.xml

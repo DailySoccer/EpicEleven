@@ -12,7 +12,7 @@ import model.GlobalDate;
 import model.Model;
 import model.Session;
 import model.User;
-import model.stormpath.StormPathClient;
+import stormpath.StormPathClient;
 import play.Logger;
 import play.Play;
 import play.data.Form;

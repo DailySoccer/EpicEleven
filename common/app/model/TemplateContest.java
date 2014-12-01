@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class TemplateContest implements JongoId, Initializer {
+public class TemplateContest implements JongoId {
     public static final String FILL_WITH_MOCK_USERS = "%MockUsers";
 
     @Id
@@ -80,10 +80,6 @@ public class TemplateContest implements JongoId, Initializer {
             }
         }
         this.startDate = startDate;
-    }
-
-    public void Initialize() {
-        state = ContestState.OFF;
     }
 
     public ObjectId getId() {
