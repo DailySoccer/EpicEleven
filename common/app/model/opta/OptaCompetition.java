@@ -1,7 +1,6 @@
 package model.opta;
 
 import model.GlobalDate;
-import model.Initializer;
 import model.JongoId;
 import model.Model;
 import org.bson.types.ObjectId;
@@ -12,7 +11,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-public class OptaCompetition implements JongoId, Initializer {
+public class OptaCompetition implements JongoId {
 
     public ObjectId _id;
     public boolean activated;
@@ -37,8 +36,6 @@ public class OptaCompetition implements JongoId, Initializer {
     public ObjectId getId() {
         return _id;
     }
-
-    public void Initialize() {}
 
     public static String createId(String seasonId, String competitionId) {
         return String.format("%s-%s", seasonId, competitionId);

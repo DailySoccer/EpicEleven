@@ -1,4 +1,4 @@
-package model.stormpath;
+package stormpath;
 
 import com.stormpath.sdk.account.Account;
 import com.stormpath.sdk.account.AccountList;
@@ -33,8 +33,6 @@ public class StormPathClient {
     public StormPathClient() {
 
         ApiKey apiKey = null;
-        _client = null;
-        _myApp = null;
 
         try {
             if (Play.isDev()) {
@@ -71,7 +69,6 @@ public class StormPathClient {
                         Applications.newCreateRequestFor(_myApp).createDirectory().build());
             }
         }
-
     }
 
     public String register(String givenName, String email, String password) { //, ObjectId userId) {
@@ -281,10 +278,6 @@ public class StormPathClient {
     }
 
     Client _client;
-
     Application _myApp = null;
-
     static StormPathClient _instance;
-
-
 }

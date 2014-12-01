@@ -3,6 +3,8 @@ package model;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.mongodb.*;
 import org.bson.types.ObjectId;
+import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.MigrationInfo;
 import org.jongo.Find;
 import org.jongo.Jongo;
 import org.jongo.Mapper;
@@ -14,9 +16,6 @@ import play.Play;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 
 
@@ -50,13 +49,7 @@ public class Model {
     static public void init() {
 
         ensureMongo("localhost");
-
-        try {
-            ensurePostgresDB();
-        }
-        catch (Exception exc) {
-            Logger.error("Error creating optaxml: ", exc);
-        }
+        ensurePostgresDB();
     }
 
     static public void ensureMongo(String appEnv) {
@@ -88,37 +81,25 @@ public class Model {
         }
     }
 
-    private static void ensurePostgresDB() throws SQLException {
+    private static void ensurePostgresDB() {
 
-        try (Connection connection = play.db.DB.getConnection()) {
-            try (Statement stmt = connection.createStatement()) {
-                stmt.execute("CREATE TABLE IF NOT EXISTS optaxml (" +
-                             " id serial PRIMARY KEY, " +
-                             " xml text, " +
-                             " headers text, " +
-                             " created_at timestamp with time zone, " +
-                             " name text, " +
-                             " feed_type text, " +
-                             " game_id text, " +
-                             " competition_id text, " +
-                             " season_id text, " +
-                             " last_updated timestamp with time zone " +
-                             " );");
+        Logger.info("Ejecutando migraciones Flyway.");
 
-                // http://dba.stackexchange.com/questions/35616/create-index-if-it-does-not-exist
-                stmt.execute("DO $$ " +
-                             "BEGIN " +
-                                 "IF NOT EXISTS ( " +
-                                     "SELECT 1 " +
-                                     "FROM  pg_class c " +
-                                     "JOIN  pg_namespace n ON n.oid = c.relnamespace " +
-                                     "WHERE c.relname = 'created_at_index' " +
-                                     "AND   n.nspname = 'public' " +
-                                     ") THEN " +
-                                     "CREATE INDEX created_at_index ON public.optaxml (created_at); " +
-                                 "END IF; " +
-                             "END$$;");
-            }
+        Flyway flyway = new Flyway();
+        flyway.setDataSource(play.db.DB.getDataSource());
+
+        // Las localizaciones puede ser "filesystem:" o "classpath:". Cuando necesitemos alguna migracion en Java, mirar
+        // bien el manual de Flyway.
+        flyway.setLocations("filesystem:common/app/model/migrations");
+
+        // Como venimos de una DB ya existente, marcamos la primera migracion como baseline
+        flyway.setBaselineOnMigrate(true);
+        flyway.migrate();
+
+        Logger.info("Migraciones Flyway ejecutadas. Estas son todas:");
+
+        for (MigrationInfo info : flyway.info().all()) {
+            Logger.info("V{} - Script: {} - State: {}", info.getVersion(), info.getScript(), info.getState());
         }
     }
 
@@ -153,8 +134,10 @@ public class Model {
     }
 
     static public void shutdown() {
-        if (_mongoClient != null)
+        if (_mongoClient != null) {
             _mongoClient.close();
+            _mongoClient = null;
+        }
     }
 
     static public void resetDB() {

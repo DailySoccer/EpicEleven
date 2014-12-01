@@ -13,7 +13,7 @@ import utils.ListUtils;
 
 import java.util.*;
 
-public class TemplateMatchEvent implements JongoId, Initializer {
+public class TemplateMatchEvent implements JongoId {
     public enum PeriodType {
         PRE_GAME(0),
         FIRST_HALF(1),
@@ -67,8 +67,6 @@ public class TemplateMatchEvent implements JongoId, Initializer {
     public Date gameFinishedDate;
 
     public TemplateMatchEvent() { }
-
-    public void Initialize() { }
 
     public ObjectId getId() {
         return templateMatchEventId;
