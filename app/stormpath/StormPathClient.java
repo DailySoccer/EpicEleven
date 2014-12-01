@@ -47,7 +47,7 @@ public class StormPathClient {
             }
         }
         catch (Exception e) {
-            Logger.info("Stormpath DISCONNECTED");
+            Logger.error("Stormpath DISCONNECTED");
         }
 
         if (apiKey != null) {
