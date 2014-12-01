@@ -81,9 +81,9 @@ public class LoginController extends Controller {
         if (!askForPasswordResetParamsForm.hasErrors()) {
             params = askForPasswordResetParamsForm.get();
 
-            String askForPasswordResetErrors = StormPathClient.instance().askForPasswordReset(params.email);
+            int askForPasswordResetErrors = StormPathClient.instance().askForPasswordReset(params.email);
 
-            if (askForPasswordResetErrors == null) {
+            if (askForPasswordResetErrors == -1) {
                 returnHelper.setOK(ImmutableMap.of("success", "Password reset sent"));
             }
             else {
@@ -103,9 +103,9 @@ public class LoginController extends Controller {
         if (!verifyPasswordResetTokenParamsForm.hasErrors()) {
             params = verifyPasswordResetTokenParamsForm.get();
 
-            String verifyPasswordResetTokenErrors = StormPathClient.instance().verifyPasswordResetToken(params.token);
+            int verifyPasswordResetTokenErrors = StormPathClient.instance().verifyPasswordResetToken(params.token);
 
-            if (verifyPasswordResetTokenErrors == null) {
+            if (verifyPasswordResetTokenErrors == -1) {
                 returnHelper.setOK(ImmutableMap.of("success", "Password reset token valid"));
             } else {
                 returnHelper.setKO(ImmutableMap.of("error", verifyPasswordResetTokenErrors));
@@ -192,7 +192,15 @@ public class LoginController extends Controller {
                 Model.users().insert(new User(theParams.firstName, theParams.lastName, theParams.nickName,
                                               theParams.email));
             } catch (MongoException exc) {
-                error = 1; // "Hubo un problema en la creación de tu usuario"
+                error = 0; // "Hubo un problema en la creación de tu usuario"
+                User user = model.User.findByName(theParams.nickName);
+                if (user != null) {
+                    error += 1; //"Ya existe una cuenta con ese nombre de usuario. Elige uno diferente."
+                }
+                user = model.User.findByEmail(theParams.email);
+                if (user != null) {
+                    error += 2; //"Ya existe una cuenta con ese email. Indica otro email."
+                }
                 Logger.error("createUser: ", exc);
             }
 
@@ -203,7 +211,26 @@ public class LoginController extends Controller {
 
     private static Map<String, String> translateError(int error) {
         HashMap<String, String> returnError = new HashMap<>();
-        returnError.put("email", "Ya existe una cuenta con ese email. Indica otro email.");
+
+        if (error == 0) {
+            returnError.put("email", "Hubo un problema en la creación de tu usuario");
+        }
+        else if (error == 1) {
+            returnError.put("nickName", "Ya existe una cuenta con ese nombre de usuario. Elige uno diferente.");
+        }
+        else if (error == 2) {
+            returnError.put("email", "Ya existe una cuenta con ese email. Indica otro email.");
+        }
+        else if (error == 3) {
+            returnError.put("nickName", "Ya existe una cuenta con ese nombre de usuario. Elige uno diferente.");
+            returnError.put("email", "Ya existe una cuenta con ese email. Indica otro email.");
+        }
+        else if (error == 2001) {
+            returnError.put("email", "Ya existe una cuenta con ese email. Indica otro email.");
+        }
+        else if (error != -1) {
+            returnError.put("email", String.valueOf(error));
+        }
 
         return returnError;
 
@@ -283,7 +310,7 @@ public class LoginController extends Controller {
                     }
                     // Si el usuario no tiene cuenta en Stormpath ni lo encontramos en nuestra BD -> Reject
                     else {
-                        loginParamsForm.reject("email", "email or password incorrect");
+                        loginParamsForm.reject("email", "Email o contraseña incorrectos");
                         returnHelper.setKO(loginParamsForm.errorsAsJson());
                     }
                 }
@@ -293,7 +320,7 @@ public class LoginController extends Controller {
                 }
             }
             else {
-                loginParamsForm.reject("email", "email or password incorrect");
+                loginParamsForm.reject("email", "Email o contraseña incorrectos");
                 returnHelper.setKO(loginParamsForm.errorsAsJson());
             }
         }
@@ -326,7 +353,7 @@ public class LoginController extends Controller {
 
             }
             else {
-                loginParamsForm.reject("email", "token incorrect");
+                loginParamsForm.reject("email", "Token incorrecto");
                 returnHelper.setKO(loginParamsForm.errorsAsJson());
             }
         }
@@ -464,7 +491,7 @@ public class LoginController extends Controller {
 
     private static Map<String, String> changeStormpathProfile(User theUser, ChangeParams params, boolean somethingChanged, String originalEmail) {
 
-        StormPathClient stormPathClient = new StormPathClient();
+        StormPathClient stormPathClient = StormPathClient.instance();
         Map<String, String> allErrors = new HashMap<>();
 
         if (!originalEmail.endsWith("test.com")) {

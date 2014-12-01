@@ -99,6 +99,7 @@ public class StormPathClient {
             Logger.error(String.valueOf(ex.getCode()));
             Logger.error(ex.getMessage());
             Logger.error(ex.getStatus() + " " + ex.getMessage());
+            Logger.error(ex.getMoreInfo());
 
             return ex.getCode();
         }
@@ -115,8 +116,9 @@ public class StormPathClient {
             Logger.error(String.valueOf(ex.getCode()));
             Logger.error(ex.getMessage());
             Logger.error(ex.getStatus() + " " + ex.getMessage());
+            Logger.error(ex.getMoreInfo());
 
-            return ex.getMessage();
+            return ex.getCode(); //ex.getMessage();
         }
         return -1;
     }
@@ -130,8 +132,9 @@ public class StormPathClient {
             Logger.error(String.valueOf(ex.getCode()));
             Logger.error(ex.getMessage());
             Logger.error(ex.getStatus() + " " + ex.getMessage());
+            Logger.error(ex.getMoreInfo());
 
-            return ex.getMessage();
+            return ex.getCode(); //ex.getMessage();
         }
         return -1;
     }
@@ -146,6 +149,7 @@ public class StormPathClient {
             Logger.error(String.valueOf(ex.getCode()));
             Logger.error(ex.getMessage());
             Logger.error(ex.getStatus() + " " + ex.getMessage());
+            Logger.error(ex.getMoreInfo());
 
             return new F.Tuple<>(null, ex.getCode());
         }
@@ -166,6 +170,8 @@ public class StormPathClient {
             Logger.error(String.valueOf(ex.getCode()));
             Logger.error(ex.getMessage());
             Logger.error(ex.getStatus() + " " + ex.getMessage());
+            Logger.error(ex.getMoreInfo());
+
         }
         return null;
     }
@@ -189,6 +195,8 @@ public class StormPathClient {
                 Logger.error(String.valueOf(ex.getCode())); // Will output: 400
                 Logger.error(ex.getMessage()); // Will output: "Invalid username or password."{
                 Logger.error(ex.getStatus() + " " + ex.getMessage());
+                Logger.error(ex.getMoreInfo());
+
             }
 
         }
@@ -220,7 +228,7 @@ public class StormPathClient {
             }
         }
         else {
-            return "Users profile changes failed";
+            return 991; //"Users profile changes failed";
         }
         return -1;
     }
@@ -241,7 +249,7 @@ public class StormPathClient {
             usersAccount.save();
         }
         else {
-            return "Password change failed";
+            return 992; //"Password change failed";
         }
         return -1;
     }
