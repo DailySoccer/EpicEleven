@@ -52,6 +52,7 @@ public class ExcelController extends Controller {
                         .setRedirectURI("http://localhost:9000/admin/googledocs/authn")
                         .setResponseType("code")
                         .setScope("https://spreadsheets.google.com/feeds https://docs.google.com/feeds")
+                        .setParameter("access_type", "offline")
                         .buildQueryMessage();
                 return redirect(request.getLocationUri());
             } catch (OAuthSystemException e) {
@@ -169,8 +170,9 @@ public class ExcelController extends Controller {
         } catch (MalformedURLException e) {
             Logger.error("WTF 5096", e);
         } catch (ServiceException e) {
-            Logger.error("WTF 5196", e);
-            e.printStackTrace();
+            // Si no tenemos autorización, refrescamos el token y volvemos a intentar
+            refreshToken();
+            writeSoccerPlayersLog();
         } catch (IOException e) {
             Logger.error("WTF 5296", e);
         }
@@ -204,8 +206,9 @@ public class ExcelController extends Controller {
         } catch (MalformedURLException e) {
             Logger.error("WTF 5096", e);
         } catch (ServiceException e) {
-            Logger.error("WTF 5196", e);
-            e.printStackTrace();
+            // Si no tenemos autorización, refrescamos el token y volvemos a intentar
+            refreshToken();
+            writeSoccerPlayersLog();
         } catch (IOException e) {
             Logger.error("WTF 5296", e);
         }
