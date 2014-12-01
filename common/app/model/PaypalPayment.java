@@ -4,14 +4,13 @@ import com.paypal.api.payments.*;
 import com.paypal.core.rest.APIContext;
 import com.paypal.core.rest.OAuthTokenCredential;
 import com.paypal.core.rest.PayPalRESTException;
+import com.paypal.core.Constants;
 import org.bson.types.ObjectId;
 import java.util.*;
 
 public class PaypalPayment {
 
-    static final String MODE_SANDBOX = "sandbox";
-    static final String MODE_LIVE = "live";
-    static final String MODE_CONFIG = MODE_SANDBOX;
+    static final String MODE_CONFIG = Constants.SANDBOX;
 
     static final String HOSTNAME_DEFAULT = "backend.epiceleven.com";
 
@@ -135,7 +134,7 @@ public class PaypalPayment {
     public Map<String, String> getSdkConfig() {
         if (_sdkConfig == null) {
             _sdkConfig = new HashMap<>();
-            _sdkConfig.put("mode", MODE_CONFIG);
+            _sdkConfig.put(Constants.MODE, MODE_CONFIG);
         }
         return _sdkConfig;
     }
@@ -187,7 +186,7 @@ public class PaypalPayment {
     }
 
     public boolean isLive() {
-        return getSdkConfig().get("mode").equals(MODE_LIVE);
+        return Constants.LIVE.equalsIgnoreCase(getSdkConfig().get(Constants.MODE));
     }
 
     static PaypalPayment _instance;

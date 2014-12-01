@@ -4,18 +4,16 @@ import actions.AllowCors;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.util.JSON;
 import com.paypal.api.payments.*;
+import com.paypal.core.*;
 import com.paypal.core.rest.PayPalRESTException;
-import model.Model;
-import model.PaypalPayment;
-import model.Product;
+import model.*;
+import model.Order;
 import play.Logger;
 import play.data.Form;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import org.bson.types.ObjectId;
-import model.Order;
-
 import java.util.Map;
 
 @AllowCors.Origin
@@ -180,6 +178,11 @@ public class PaypalController extends Controller {
     public static Result ipnListener() {
         Map<String, String> data = Form.form().bindFromRequest().data();
         Logger.info("ipn: {}", data.toString());
+
+        PaypalIPNMessage ipnMessage = new PaypalIPNMessage(data, PaypalPayment.instance().getSdkConfig());
+        if (ipnMessage.validate()) {
+            Logger.info("ipnMessage validate");
+        }
         return ok();
     }
 
