@@ -348,6 +348,7 @@ public class ExcelController extends Controller {
                     row.getCustomElements().setValueLocal("competicion", optaCompetitions.get(stat.optaCompetitionId));
                     row.getCustomElements().setValueLocal("fecha", new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy")) );
                     row.getCustomElements().setValueLocal("hora", new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm")) );
+                    row.getCustomElements().setValueLocal("minutos", Integer.toString(stat.playedMinutes));
                     row.getCustomElements().setValueLocal("fp", Integer.toString(stat.fantasyPoints));
 
                     // Send the new row to the API for insertion.
