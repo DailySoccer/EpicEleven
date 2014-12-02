@@ -118,12 +118,11 @@ public class PaypalController extends Controller {
                 Model.paypalResponses().insert(payment.toJSON());
 
                 // Evaluar la respuesta de Paypal (values: "created", "approved", "failed", "canceled", "expired", "pending")
-                Object response = JSON.parse(payment.toJSON());
-                if (payment.getState().equals(PAYMENT_STATE_APPROVED)) {
+                if (payment.getState().equalsIgnoreCase(PAYMENT_STATE_APPROVED)) {
                     // Pago aprobado
                     order.setCompleted();
                 }
-                else if (payment.getState().equals(PAYMENT_STATE_PENDING)) {
+                else if (payment.getState().equalsIgnoreCase(PAYMENT_STATE_PENDING)) {
                     // El pago permanece pendiente de evaluación posterior (ipnListener)
                     order.setPending();
                 }
