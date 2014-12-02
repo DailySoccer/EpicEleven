@@ -66,8 +66,20 @@ public class Order {
         Model.orders().update(orderId).with("{$set: {state: #}}", this.state);
     }
 
+    public boolean isPending() {
+        return state.equals(State.PENDING);
+    }
+
+    public boolean isCompleted() {
+        return state.equals(State.COMPLETED);
+    }
+
+    public boolean isCanceled() {
+        return state.equals(State.CANCELED);
+    }
+
     static public Order findOne(String orderId) {
-        return Model.orders().findOne("{_id : #}", new ObjectId(orderId)).as(Order.class);
+        return ObjectId.isValid(orderId) ? Model.orders().findOne("{_id : #}", new ObjectId(orderId)).as(Order.class) : null;
     }
 
     static public Order findOneFromPayment(String paymentId) {

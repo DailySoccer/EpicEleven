@@ -9,6 +9,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PaypalIPNMessage {
+    public static final String FIELD_RECEIVER_EMAIL = "receiver_email";
+    public static final String FIELD_PAYMENT_STATUS = "payment_status";
+    public static final String FIELD_TRANSACTION_ID = "txn_id";
+    public static final String FIELD_CUSTOM_ID = "custom";
+
+    public static final String PAYMENT_STATUS_COMPLETED = "Completed";
+    public static final String PAYMENT_STATUS_DENIED = "Denied";
+    public static final String PAYMENT_STATUS_FAILED = "Failed";
 
     private static final String ENCODING = "windows-1252";
 
@@ -115,15 +123,25 @@ public class PaypalIPNMessage {
      * @return IPN value for corresponding IpnName
      */
     public String getIpnValue(String ipnName) {
-        return this.ipnMap.get(ipnName);
+        return ipnMap.get(ipnName);
     }
 
     /**
      * @return Transaction Type (eg: express_checkout, cart, web_accept)
      */
     public String getTransactionType() {
-        return this.ipnMap.containsKey("txn_type")  ? this.ipnMap.get("txn_type")
-                                                    : this.ipnMap.get("transaction_type");
+        return ipnMap.containsKey("txn_type")   ? ipnMap.get("txn_type")
+                                                : ipnMap.get("transaction_type");
+    }
+
+    public boolean isPaymentStatusCompleted() {
+        return PAYMENT_STATUS_COMPLETED.equalsIgnoreCase(ipnMap.get(FIELD_PAYMENT_STATUS));
+    }
+
+    public boolean isPaymentStatusFailed() {
+        String paymentStatus = ipnMap.get(FIELD_PAYMENT_STATUS);
+        return  PAYMENT_STATUS_DENIED.equalsIgnoreCase(paymentStatus) ||
+                PAYMENT_STATUS_FAILED.equalsIgnoreCase(paymentStatus);
     }
 
     private String getIPNEndpoint() {
@@ -131,9 +149,9 @@ public class PaypalIPNMessage {
         if (ipnEPoint == null) {
             String mode = configurationMap.get(Constants.MODE);
             if (mode != null) {
-                if (Constants.SANDBOX.equalsIgnoreCase(configurationMap.get(Constants.MODE).trim())) {
+                if (Constants.SANDBOX.equalsIgnoreCase(mode.trim())) {
                     ipnEPoint = Constants.IPN_SANDBOX_ENDPOINT;
-                } else if (Constants.LIVE.equalsIgnoreCase(configurationMap.get(Constants.MODE).trim())) {
+                } else if (Constants.LIVE.equalsIgnoreCase(mode.trim())) {
                     ipnEPoint = Constants.IPN_LIVE_ENDPOINT;
                 }
             }

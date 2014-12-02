@@ -18,6 +18,8 @@ import java.util.Map;
 
 @AllowCors.Origin
 public class PaypalController extends Controller {
+    static final String SELLER_EMAIL = "epiceleven@business.com";
+
     // Las rutas relativas al CLIENT a las que enviaremos las respuestas proporcionadas por Paypal
     static final String CLIENT_CANCEL_PATH = "#/payment/response/canceled";
     static final String CLIENT_SUCCESS_PATH = "#/payment/response/success";
@@ -122,8 +124,7 @@ public class PaypalController extends Controller {
                     order.setCompleted();
                 }
                 else if (payment.getState().equals(PAYMENT_STATE_PENDING)) {
-                    // El pago permanece pendiente de evaluación posterior
-                    // TODO: Cómo enterarnos de cuándo lo validan?
+                    // El pago permanece pendiente de evaluación posterior (ipnListener)
                     order.setPending();
                 }
                 else{
@@ -177,11 +178,37 @@ public class PaypalController extends Controller {
 
     public static Result ipnListener() {
         Map<String, String> data = Form.form().bindFromRequest().data();
-        Logger.info("ipn: {}", data.toString());
+        Logger.info("IPN: {}", data.toString());
 
         PaypalIPNMessage ipnMessage = new PaypalIPNMessage(data, PaypalPayment.instance().getSdkConfig());
         if (ipnMessage.validate()) {
-            Logger.info("ipnMessage validate");
+            String receiverEmail = ipnMessage.getIpnValue(PaypalIPNMessage.FIELD_RECEIVER_EMAIL);
+            if (receiverEmail.equalsIgnoreCase(SELLER_EMAIL)) {
+                // TODO: ¿Queremos verificar el email?
+            }
+            Logger.info("receiverEmail: {}", ipnMessage.getIpnValue(PaypalIPNMessage.FIELD_RECEIVER_EMAIL));
+
+            // TODO: Verificar estado del pedido vs estado del IPNMessage
+            if (ipnMessage.isPaymentStatusCompleted()) {
+                // Actualizaremos el pedido únicamente si está "pending" (esperando respuesta)
+                //  de esta forma garantizamos que no tenemos en cuenta mensajes antiguos o repetidos
+                Order order = Order.findOne(ipnMessage.getIpnValue(PaypalIPNMessage.FIELD_CUSTOM_ID));
+                if (order != null && order.isPending()) {
+                    order.setCompleted();
+                }
+            }
+
+            String transactionId = ipnMessage.getIpnValue(PaypalIPNMessage.FIELD_TRANSACTION_ID);
+            String paymentStatus = ipnMessage.getIpnValue(PaypalIPNMessage.FIELD_PAYMENT_STATUS);
+            Model.paypalResponses()
+                    .update("{txn_id: #, payment_status: #}", transactionId, paymentStatus)
+                    .upsert()
+                    .with(ipnMessage.getIpnMap());
+
+            Logger.info("IPN Message valid");
+        }
+        else {
+            Logger.error("IPN Message invalid: {}", data.toString());
         }
         return ok();
     }

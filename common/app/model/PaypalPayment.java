@@ -81,6 +81,7 @@ public class PaypalPayment {
         transaction.setDescription(TRANSACTION_DESCRIPTION);
         transaction.setAmount(amount);
         transaction.setItemList(itemList);
+        transaction.setCustom(orderId.toString());
 
         // Detalles de la transacción
         List<Transaction> transactions = new ArrayList<>();
