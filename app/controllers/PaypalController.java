@@ -188,6 +188,7 @@ public class PaypalController extends Controller {
             }
             Logger.info("receiverEmail: {}", ipnMessage.getIpnValue(PaypalIPNMessage.FIELD_RECEIVER_EMAIL));
 
+            // TODO: Verificar el importe del pedido
             // TODO: Verificar estado del pedido vs estado del IPNMessage
             if (ipnMessage.isPaymentStatusCompleted()) {
                 // Actualizaremos el pedido únicamente si está "pending" (esperando respuesta)
