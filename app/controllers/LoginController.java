@@ -87,7 +87,7 @@ public class LoginController extends Controller {
                 returnHelper.setOK(ImmutableMap.of("success", "Instrucciones para cambiar contraseña enviadas."));
             }
             else {
-                returnHelper.setKO(ImmutableMap.of("error", translateError(askForPasswordResetErrors)));
+                returnHelper.setKO(translateError(askForPasswordResetErrors));
             }
         }
         return returnHelper.toResult();
@@ -241,6 +241,9 @@ public class LoginController extends Controller {
             else {
                 returnError.put("nickName", "Ya existe una cuenta con ese nombre de usuario. Elige uno diferente.");
             }
+        }
+        else if (error._1 == 404) {
+            returnError.put("email", "Algo ha ido mal, comprueba que la dirección esté bien escrita.");
         }
         else if (error._1 != -1) {
             returnError.put("error", (error._2));

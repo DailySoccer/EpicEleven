@@ -70,6 +70,38 @@ public class ExcelController extends Controller {
     }
     */
 
+    public static String refreshToken(String refreshToken) {
+        String result = "";
+
+        if (refreshToken != null) {
+            try {
+                OAuthClientRequest request = OAuthClientRequest
+                        .tokenProvider(OAuthProviderType.GOOGLE)
+                        .setGrantType(GrantType.REFRESH_TOKEN)
+                        .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
+                        .setClientSecret("cDI00MZJyCmp4r655ZAgy8hG")
+                        .setRefreshToken(refreshToken)
+                        .buildBodyMessage();
+
+                OAuthClient oAuthClient = new OAuthClient(new URLConnectionClient());
+                OAuthJSONAccessTokenResponse response2 = oAuthClient.accessToken(request);
+
+
+                Logger.info("\nAccess Token: " + response2.getAccessToken() + "\nExpires in: " + response2.getExpiresIn());
+
+                result = response2.getAccessToken();
+
+
+            } catch (OAuthSystemException e) {
+                Logger.error("WTF 5036", e);
+            } catch (OAuthProblemException e) {
+                Logger.error("WTF 5037", e);
+            }
+        }
+        return result;
+    }
+
+
     public static Result refreshToken() {
         if (request().cookie(_googleRefreshToken) != null) {
             try {
@@ -139,11 +171,25 @@ public class ExcelController extends Controller {
     }
 
     public static Result writeSoccerPlayersLog() {
+        return writeSoccerPlayersLog(request().cookie(_googleAuthToken).value(),
+                                     request().cookie(_googleRefreshToken).value());
+    }
+
+
+
+
+    public static Result writeSoccerPlayersLog(String authToken, String refreshToken) {
+
+        response().setCookie(_googleAuthToken, authToken);
+        response().setCookie(_googleRefreshToken, refreshToken);
+
+
         try {
+
             SpreadsheetService service =
                     new SpreadsheetService("MySpreadsheetIntegration-v1");
 
-            service.setAuthSubToken(request().cookie(_googleAuthToken).value());
+            service.setAuthSubToken(authToken);
 
             // TODO: Authorize the service object for a specific user (see other sections)
 
@@ -171,8 +217,8 @@ public class ExcelController extends Controller {
             Logger.error("WTF 5096", e);
         } catch (ServiceException e) {
             // Si no tenemos autorización, refrescamos el token y volvemos a intentar
-            refreshToken();
-            writeSoccerPlayersLog();
+            String cookie = refreshToken(refreshToken);
+            return writeSoccerPlayersLog(cookie, refreshToken);
         } catch (IOException e) {
             Logger.error("WTF 5296", e);
         }
@@ -182,12 +228,21 @@ public class ExcelController extends Controller {
 
 
     public static Result loadSalaries() {
+        return loadSalaries(request().cookie(_googleAuthToken).value(),
+                            request().cookie(_googleRefreshToken).value());
+    }
+
+
+
+    public static Result loadSalaries(String authToken, String refreshToken) {
+        response().setCookie(_googleAuthToken, authToken);
+        response().setCookie(_googleRefreshToken, refreshToken);
 
         try {
             SpreadsheetService service =
                     new SpreadsheetService("MySpreadsheetIntegration-v1");
 
-            service.setAuthSubToken(request().cookie(_googleAuthToken).value());
+            service.setAuthSubToken(authToken);
 
             // TODO: Authorize the service object for a specific user (see other sections)
 
@@ -207,8 +262,8 @@ public class ExcelController extends Controller {
             Logger.error("WTF 5096", e);
         } catch (ServiceException e) {
             // Si no tenemos autorización, refrescamos el token y volvemos a intentar
-            refreshToken();
-            writeSoccerPlayersLog();
+            String cookie = refreshToken(refreshToken);
+            return loadSalaries(cookie, refreshToken);
         } catch (IOException e) {
             Logger.error("WTF 5296", e);
         }
@@ -293,6 +348,7 @@ public class ExcelController extends Controller {
                     row.getCustomElements().setValueLocal("competicion", optaCompetitions.get(stat.optaCompetitionId));
                     row.getCustomElements().setValueLocal("fecha", new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy")) );
                     row.getCustomElements().setValueLocal("hora", new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm")) );
+                    row.getCustomElements().setValueLocal("minutos", Integer.toString(stat.playedMinutes));
                     row.getCustomElements().setValueLocal("fp", Integer.toString(stat.fantasyPoints));
 
                     // Send the new row to the API for insertion.

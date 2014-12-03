@@ -26,7 +26,7 @@ public final class MockData {
         createUser("María",     "Aguilera",     "MariaTest",        "maria@test.com", "");
 
 
-        createUser("Test",      "Test",         "TestTest",         "test@test.com", "");
+        createUser("Test",      "Test",         "Test",             "test@test.com", "");
     }
 
     static private void createUser(String firstName, String lastName, String nickName, String email, String password) {
