@@ -207,7 +207,7 @@ public class ExcelController extends Controller {
 
             WorksheetEntry ourWorksheet = resetLog(service, ourSpreadSheet);
 
-            fillTitleCells(service, ourWorksheet);
+            //fillTitleCells(service, ourWorksheet);
 
             fillLog(service, ourWorksheet);
 
@@ -388,7 +388,7 @@ public class ExcelController extends Controller {
             // Create a local representation of the new worksheet.
             ourWorksheet = new WorksheetEntry();
             ourWorksheet.setTitle(new PlainTextConstruct(LOG_WORKSHEET_NAME));
-            ourWorksheet.setColCount(8);
+            ourWorksheet.setColCount(9);
             ourWorksheet.setRowCount(1);
 
             URL worksheetFeedUrl = ourSpreadSheet.getWorksheetFeedUrl();
@@ -459,6 +459,9 @@ public class ExcelController extends Controller {
                 cell.changeInputValueLocal("hora");
                 cell.update();
             } else if (cell.getTitle().getPlainText().equals("H1")) {
+                cell.changeInputValueLocal("minutos");
+                cell.update();
+            } else if (cell.getTitle().getPlainText().equals("I1")) {
                 cell.changeInputValueLocal("fp");
                 cell.update();
             }
