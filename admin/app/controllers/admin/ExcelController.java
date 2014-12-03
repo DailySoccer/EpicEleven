@@ -298,14 +298,19 @@ public class ExcelController extends Controller {
 
                 DBObject query = new BasicDBObject("optaPlayerId", optaPlayerId);
                 BasicDBObject bdo = new BasicDBObject("salary", newSalaries.get(optaPlayerId));
+                boolean activated = false;
 
                 if (newTags.containsKey(optaPlayerId) && newTags.get(optaPlayerId)!=null) {
                     String[] tagsArray = newTags.get(optaPlayerId).split(",");
                     for (int i = 0; i<tagsArray.length; i++) {
                         tagsArray[i] = tagsArray[i].trim();
+                        if (tagsArray[i].equals("activo")) {
+                            activated = true;
+                        }
                     }
                     bdo.append("tags", tagsArray);
                 }
+                bdo.append("activated", activated);
 
                 DBObject update = new BasicDBObject("$set", bdo);
                 batchWriteOperation.find(query).updateOne(update);
