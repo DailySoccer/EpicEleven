@@ -207,7 +207,7 @@ public class ExcelController extends Controller {
 
             WorksheetEntry ourWorksheet = resetLog(service, ourSpreadSheet);
 
-            fillTitleCells(service, ourWorksheet);
+            //fillTitleCells(service, ourWorksheet);
 
             fillLog(service, ourWorksheet);
 
@@ -298,14 +298,19 @@ public class ExcelController extends Controller {
 
                 DBObject query = new BasicDBObject("optaPlayerId", optaPlayerId);
                 BasicDBObject bdo = new BasicDBObject("salary", newSalaries.get(optaPlayerId));
+                boolean activated = false;
 
                 if (newTags.containsKey(optaPlayerId) && newTags.get(optaPlayerId)!=null) {
                     String[] tagsArray = newTags.get(optaPlayerId).split(",");
                     for (int i = 0; i<tagsArray.length; i++) {
                         tagsArray[i] = tagsArray[i].trim();
+                        if (tagsArray[i].equals("activo")) {
+                            activated = true;
+                        }
                     }
                     bdo.append("tags", tagsArray);
                 }
+                bdo.append("activated", activated);
 
                 DBObject update = new BasicDBObject("$set", bdo);
                 batchWriteOperation.find(query).updateOne(update);
@@ -388,7 +393,7 @@ public class ExcelController extends Controller {
             // Create a local representation of the new worksheet.
             ourWorksheet = new WorksheetEntry();
             ourWorksheet.setTitle(new PlainTextConstruct(LOG_WORKSHEET_NAME));
-            ourWorksheet.setColCount(8);
+            ourWorksheet.setColCount(9);
             ourWorksheet.setRowCount(1);
 
             URL worksheetFeedUrl = ourSpreadSheet.getWorksheetFeedUrl();
@@ -459,6 +464,9 @@ public class ExcelController extends Controller {
                 cell.changeInputValueLocal("hora");
                 cell.update();
             } else if (cell.getTitle().getPlainText().equals("H1")) {
+                cell.changeInputValueLocal("minutos");
+                cell.update();
+            } else if (cell.getTitle().getPlainText().equals("I1")) {
                 cell.changeInputValueLocal("fp");
                 cell.update();
             }

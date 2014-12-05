@@ -211,7 +211,10 @@ public class TemplateSoccerPlayer implements JongoId {
             TemplateSoccerPlayer templateSoccer = new TemplateSoccerPlayer(optaPlayer, templateTeam.templateSoccerTeamId);
 
             TemplateSoccerPlayer origTemplateSoccerPlayer = TemplateSoccerPlayer.findOneFromOptaId(optaPlayer.optaPlayerId);
-            templateSoccer.salary = (origTemplateSoccerPlayer != null)? origTemplateSoccerPlayer.salary: templateSoccer.name.length()*500;
+            templateSoccer.salary = (origTemplateSoccerPlayer != null)? origTemplateSoccerPlayer.salary:
+                                                                        Play.application().configuration().getInt("base_salary")>0?
+                                                                                Play.application().configuration().getInt("base_salary"):
+                                                                                templateSoccer.name.length()*500;
 
             templateSoccer.updateDocument();
         }

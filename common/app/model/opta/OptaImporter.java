@@ -1,8 +1,12 @@
 package model.opta;
 
 import model.*;
+import play.Play;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 public class OptaImporter {
     public static String OPS_LOG_IMPORT = "IMPORT";
@@ -76,7 +80,9 @@ public class OptaImporter {
                     else {
                         templatePlayer = new TemplateSoccerPlayer(optaPlayer, templateTeam.templateSoccerTeamId);
 
-                        templatePlayer.salary = templatePlayer.name.length()*500;
+                        templatePlayer.salary = Play.application().configuration().getInt("base_salary")>0?
+                                                    Play.application().configuration().getInt("base_salary"):
+                                                    templatePlayer.name.length()*500;
 
                         templatePlayer.updateDocument();
                         OpsLog.onNew(OPS_LOG_IMPORT, optaPlayer);
