@@ -24,7 +24,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utils.BatchWriteOperation;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -178,52 +178,24 @@ public class ExcelController extends Controller {
 
     public static Result writeSoccerPlayersLog(String authToken, String refreshToken) {
 
-        response().setCookie(_googleAuthToken, authToken);
-        response().setCookie(_googleRefreshToken, refreshToken);
-
-
         try {
 
-            SpreadsheetService service =
-                    new SpreadsheetService("MySpreadsheetIntegration-v1");
-
-            service.setAuthSubToken(authToken);
-
-            // TODO: Authorize the service object for a specific user (see other sections)
-
-            // Define the URL to request.  This should never change.
-            URL SPREADSHEET_FEED_URL = new URL(
-                    "https://spreadsheets.google.com/feeds/spreadsheets/private/full");
-
-            // Make a request to the API and get all spreadsheets.
-            SpreadsheetFeed feed = service.getFeed(SPREADSHEET_FEED_URL,
-                    SpreadsheetFeed.class);
-
-            SpreadsheetEntry ourSpreadSheet = getSpreadsheet(feed);
-
-            getLastLog(service, ourSpreadSheet);
-
-            WorksheetEntry ourWorksheet = null;//resetLog(service, ourSpreadSheet);
-
-
-            //fillTitleCells(service, ourWorksheet);
-
-            fillLog(service, ourWorksheet);
-            //fillLog2(service, ourWorksheet);
-
-
-            updateLastLog(service, ourSpreadSheet);
+            fillLog();
 
         } catch (MalformedURLException e) {
             Logger.error("WTF 5096", e);
-        } catch (ServiceException e) {
-            // Si no tenemos autorización, refrescamos el token y volvemos a intentar
-            String cookie = refreshToken(refreshToken);
-            return writeSoccerPlayersLog(cookie, refreshToken);
+
         } catch (IOException e) {
             Logger.error("WTF 5296", e);
         }
 
+        File file = new File("log.csv");
+        try {
+            response().setHeader("Content-Disposition", "attachment; filename=log.csv");
+            return ok(new FileInputStream(file));
+        } catch (FileNotFoundException e) {
+            Logger.error("WTF 93431");
+        }
         return index();
     }
 
@@ -321,28 +293,15 @@ public class ExcelController extends Controller {
         batchWriteOperation.execute();
     }
 
-    private static void fillLog(SpreadsheetService service, WorksheetEntry ourWorksheet) throws IOException, ServiceException {
-        // Fetch the list feed of the worksheet.
-        //URL listFeedUrl = ourWorksheet.getListFeedUrl();
-
-        //ListFeed listFeed = service.getFeed(listFeedUrl, ListFeed.class);
-
-        //List<TemplateSoccerPlayer> soccerPlayers = ;
-
-        /*
-        List<TemplateSoccerPlayer> bestSoccers = new ArrayList<>();
-
-        for (TemplateSoccerPlayer soccerPlayer: soccerPlayers) {
-            if ((soccerPlayer.stats.size() > 1) && (soccerPlayer.fantasyPoints>1)) {
-                bestSoccers.add(soccerPlayer);
-            }
-        }
-        */
+    private static void fillLog() throws IOException {
 
         HashMap<String, String> optaCompetitions = new HashMap<>();
         for (OptaCompetition optaCompetition: OptaCompetition.findAll()) {
             optaCompetitions.put(optaCompetition.competitionId, optaCompetition.competitionName);
         }
+
+        PrintWriter writer = new PrintWriter("log.csv", "UTF-8");
+        writer.println("id,nombre,posicion,equipo,competicion,fecha,hora,minutos,fp");
 
 
         HashMap<String, String> soccerTeamsMap = new HashMap<>();
@@ -355,53 +314,16 @@ public class ExcelController extends Controller {
                     for (SoccerPlayerStats stat : soccerPlayer.stats) {
                         if (_lastLogDate.isBefore(stat.startDate.getTime())) {
                             // Create a local representation of the new row.
-                 /*
-                    ListEntry row = new ListEntry();
 
-                    row.getCustomElements().setValueLocal("id", soccerPlayer.optaPlayerId);
-                    row.getCustomElements().setValueLocal("nombre", soccerPlayer.name);
-                    row.getCustomElements().setValueLocal("posicion", soccerPlayer.fieldPos.name());
-                    row.getCustomElements().setValueLocal("equipo", teamName);
-                    row.getCustomElements().setValueLocal("competicion", optaCompetitions.get(stat.optaCompetitionId));
-                    row.getCustomElements().setValueLocal("fecha", new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy")) );
-                    row.getCustomElements().setValueLocal("hora", new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm")) );
-                    row.getCustomElements().setValueLocal("minutos", Integer.toString(stat.playedMinutes));
-                    row.getCustomElements().setValueLocal("fp", Integer.toString(stat.fantasyPoints));
-
-                    // Send the new row to the API for insertion.
-                    row = service.insert(listFeedUrl, row);
-                 */
-
-                        /*
-                        list = new ArrayList<>();
-                        list.add(soccerPlayer.optaPlayerId);
-                        list.add(soccerPlayer.name);
-                        list.add(soccerPlayer.fieldPos.name());
-                        list.add(teamName);
-                        list.add(optaCompetitions.get(stat.optaCompetitionId));
-                        list.add(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy")));
-                        list.add(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm")));
-                        list.add(Integer.toString(stat.fantasyPoints));
-                        delim = "";
-                        sb = new StringBuilder();
-                        for (String i : list) {
-                            sb.append(delim).append(i);
-                            delim = ",";
-                        }
-                        System.out.println(sb.toString());
-                        */
-
-                            System.out.print(soccerPlayer.optaPlayerId+",");
-                            System.out.print(soccerPlayer.name+",");
-                            System.out.print(soccerPlayer.fieldPos.name()+",");
-                            System.out.print(teamName+",");
-                            System.out.print(optaCompetitions.get(stat.optaCompetitionId)+",");
-                            System.out.print(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy"))+",");
-                            System.out.print(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm"))+",");
-                            System.out.print(Integer.toString(stat.playedMinutes)+",");
-                            System.out.print(Integer.toString(stat.fantasyPoints)+"\n");
-
-
+                            writer.print(soccerPlayer.optaPlayerId + ",");
+                            writer.print(soccerPlayer.name+",");
+                            writer.print(soccerPlayer.fieldPos.name()+",");
+                            writer.print(teamName + ",");
+                            writer.print(optaCompetitions.get(stat.optaCompetitionId)+",");
+                            writer.print(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy"))+",");
+                            writer.print(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm"))+",");
+                            writer.print(Integer.toString(stat.playedMinutes)+",");
+                            writer.print(Integer.toString(stat.fantasyPoints)+"\n");
 
                         }
 
@@ -412,9 +334,7 @@ public class ExcelController extends Controller {
 
         }
 
-
-
-
+        writer.close();
 
     }
 
