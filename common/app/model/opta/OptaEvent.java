@@ -26,12 +26,7 @@ public class OptaEvent {
     public int eventId;
     public String optaPlayerId;
     //ObjectId?
-    public int parentId;
     public int periodId;
-    // <DEBUG>
-    public int outcome;
-    public ArrayList<Integer> qualifiers = new ArrayList<>();
-    // </DEBUG>
     public Date timestamp;
     public Date lastModified;
     public int min;
@@ -53,7 +48,6 @@ public class OptaEvent {
         this.seasonId = seasonId;
 
         this.timestamp = timestamp;
-        this.qualifiers = new ArrayList<>();
 
         this.points = points;
         this.pointsTranslationId = pointsTranslationId;
@@ -70,11 +64,13 @@ public class OptaEvent {
         this.periodId = Integer.parseInt(event.getAttributeValue("period_id"));
         this.eventId = Integer.parseInt(event.getAttributeValue("event_id"));
         this.typeId = Integer.parseInt(event.getAttributeValue("type_id"));
-        this.outcome = Integer.parseInt(event.getAttributeValue("outcome"));
+        int outcome = Integer.parseInt(event.getAttributeValue("outcome"));
         this.timestamp = GlobalDate.parseDate(event.getAttributeValue("timestamp"), null);
         this.lastModified = GlobalDate.parseDate(event.getAttributeValue("last_modified"), null);
         this.min = Integer.parseInt(event.getAttributeValue("min"));
         this.sec = Integer.parseInt(event.getAttributeValue("sec"));
+
+        ArrayList<Integer> qualifiers = new ArrayList<>();
 
         if (event.getAttribute("player_id") != null) {
             this.optaPlayerId = event.getAttributeValue("player_id");
@@ -83,10 +79,10 @@ public class OptaEvent {
         String optaPlayerOffsideId = "<player_offside>";
         if (event.getChildren("Q") != null) {
             List<Element> qualifierList = event.getChildren("Q");
-            this.qualifiers = new ArrayList<>((qualifierList).size());
+            qualifiers = new ArrayList<>((qualifierList).size());
             for (Element qualifier : qualifierList) {
                 Integer tempQualifier = Integer.parseInt(qualifier.getAttributeValue("qualifier_id"));
-                this.qualifiers.add(tempQualifier);
+                qualifiers.add(tempQualifier);
 
                 // Se ha dejado a un futbolista en fuera de juego?
                 if (tempQualifier == 7) {
@@ -98,7 +94,7 @@ public class OptaEvent {
         // DERIVED EVENTS GO HERE
         // Pase exitoso o fracasado
         if (this.typeId == 1) {
-            if (this.outcome == 1) {
+            if (outcome == 1) {
                 this.typeId = OptaEventType.PASS_SUCCESSFUL.code;  //Pase exitoso-> 1001
             }
             else {
@@ -106,33 +102,33 @@ public class OptaEvent {
             }
         }
         // Asistencia
-        if (this.typeId == OptaEventType.PASS_SUCCESSFUL.code && this.qualifiers.contains(210)) {
+        if (this.typeId == OptaEventType.PASS_SUCCESSFUL.code && qualifiers.contains(210)) {
             this.typeId = OptaEventType.ASSIST.code;  //Asistencia -> 1210
         }
         // Falta/Penalty infligido
-        else if (this.typeId == OptaEventType.FOUL_RECEIVED.code && this.outcome == 0) {
-            if (this.qualifiers.contains(9)) {
+        else if (this.typeId == OptaEventType.FOUL_RECEIVED.code && outcome == 0) {
+            if (qualifiers.contains(9)) {
                 this.typeId = OptaEventType.PENALTY_COMMITTED.code;  //Penalty infligido -> 1409
             } else {
                 this.typeId = OptaEventType.FOUL_COMMITTED.code;  // Falta infligida -> 1004
             }
         }
         // Segunda tarjeta amarilla -> 1017
-        else if (this.typeId == OptaEventType.YELLOW_CARD.code && this.qualifiers.contains(32)) {
+        else if (this.typeId == OptaEventType.YELLOW_CARD.code && qualifiers.contains(32)) {
             this.typeId = OptaEventType.SECOND_YELLOW_CARD.code;
         }
         // Tarjeta roja -> 1117
-        else if (this.typeId == OptaEventType.YELLOW_CARD.code && this.qualifiers.contains(33)) {
+        else if (this.typeId == OptaEventType.YELLOW_CARD.code && qualifiers.contains(33)) {
             this.typeId = OptaEventType.RED_CARD.code;
         }
         // Penalty miss -> 1410
         else if ((this.typeId == OptaEventType.MISS.code || this.typeId == OptaEventType.POST.code ||
                 this.typeId == OptaEventType.ATTEMPT_SAVED.code) &&
-                this.outcome == 0 && this.qualifiers.contains(9)) {
+                outcome == 0 && qualifiers.contains(9)) {
             this.typeId = OptaEventType.PENALTY_FAILED.code;
-        } else if (this.typeId == 16 && this.outcome == 1) {
+        } else if (this.typeId == 16 && outcome == 1) {
             // Gol en contra -> 1699
-            if (this.qualifiers.contains(28)) {
+            if (qualifiers.contains(28)) {
                 this.typeId = OptaEventType.OWN_GOAL.code;
             } else {
                 // Diferencias en goles:
@@ -157,28 +153,28 @@ public class OptaEvent {
             }
         }
         // Penalty parado -> 1058
-        else if (this.typeId == 58 && !this.qualifiers.contains(186)) {
+        else if (this.typeId == 58 && !qualifiers.contains(186)) {
             this.typeId = OptaEventType.GOALKEEPER_SAVES_PENALTY.code;
         }
         // Effective Tackle -> 1007
-        else if (this.typeId == OptaEventType.TACKLE.code && this.outcome == 1) {
+        else if (this.typeId == OptaEventType.TACKLE.code && outcome == 1) {
             this.typeId = OptaEventType.TACKLE_EFFECTIVE.code;
         }
         // Caught Offside -> 1072
-        else if (this.typeId == 2 && this.qualifiers.contains(7)) {
+        else if (this.typeId == 2 && qualifiers.contains(7)) {
             this.typeId = OptaEventType.CAUGHT_OFFSIDE.code;
             this.optaPlayerId = optaPlayerOffsideId;
         }
         // Player Saves -> 1010
-        else if (this.typeId == OptaEventType.SAVE_GOALKEEPER.code && this.qualifiers.contains(94)) {
+        else if (this.typeId == OptaEventType.SAVE_GOALKEEPER.code && qualifiers.contains(94)) {
             this.typeId = OptaEventType.SAVE_PLAYER.code;
         }
         // Player Saves -> 1051
         else if (this.typeId == OptaEventType.ERROR.code) {
-            if (this.qualifiers.contains(170)) {
+            if (qualifiers.contains(170)) {
                 this.typeId = OptaEventType.DECISIVE_ERROR.code;
             }
-            else if (!this.qualifiers.contains(169)) {
+            else if (!qualifiers.contains(169)) {
                 this.typeId = OptaEventType._INVALID_.code;
             }
         }
