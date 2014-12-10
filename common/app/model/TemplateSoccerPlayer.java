@@ -41,7 +41,7 @@ public class TemplateSoccerPlayer implements JongoId {
     public int getPlayedMatches() {
         int numPlayed = 0;
         for (SoccerPlayerStats stat: stats) {
-            if (stat.fantasyPoints > 0 || !stat.statsCount.isEmpty()) {
+            if (stat.hasPlayed()) {
                 numPlayed++;
             }
         }
@@ -154,11 +154,17 @@ public class TemplateSoccerPlayer implements JongoId {
     }
 
     private int calculateFantasyPointsFromStats() {
+        int numPlayedMatches = 0;
         int fantasyPointsMedia = 0;
         for (SoccerPlayerStats stat : stats) {
-            fantasyPointsMedia += stat.fantasyPoints;
+            if (stat.hasPlayed()) {
+                fantasyPointsMedia += stat.fantasyPoints;
+                numPlayedMatches++;
+            }
         }
-        fantasyPointsMedia /= stats.size();
+        if (numPlayedMatches > 0) {
+            fantasyPointsMedia /= numPlayedMatches;
+        }
         return fantasyPointsMedia;
     }
 

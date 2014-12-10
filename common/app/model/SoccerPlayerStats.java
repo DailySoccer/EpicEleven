@@ -57,6 +57,10 @@ public class SoccerPlayerStats {
         return 0;
     }
 
+    public boolean hasPlayed() {
+        return (playedMinutes > 0 || fantasyPoints > 0 || !statsCount.isEmpty());
+    }
+
     private void init() {
         // Logger.debug("Stats: {} -----", optaPlayerId);
 
