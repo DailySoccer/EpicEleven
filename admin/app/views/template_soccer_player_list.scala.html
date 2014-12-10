@@ -35,6 +35,7 @@
             }
         }
 
+        /*
         function changeStateActivated(element, value) {
             var id = element.attr("data-competition-id")
             $.ajax({
@@ -48,13 +49,17 @@
             });
             return true;
         }
+        */
+
 
         function registerToEdit() {
+            /*
             $(".edit-activated")
                 .off()
                 .click(function() {
                     changeStateActivated($(this), $(this).is(':checked'));
                 });
+            */
 
             $(".edit-salary")
                 .off()
@@ -84,7 +89,7 @@
         $(document).ready( function(){
             $('#ajax_table_id').dataTable( {
               "columns": [
-                { "title": "Activated" },
+                { "title": "Tags" },
                 { "title": "OptaId" },
                 { "title": "Name" },
                 { "title": "Field" },

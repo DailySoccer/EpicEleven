@@ -7,10 +7,7 @@ import com.google.gdata.data.spreadsheet.*;
 import com.google.gdata.util.ServiceException;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import model.Model;
-import model.SoccerPlayerStats;
-import model.TemplateSoccerPlayer;
-import model.TemplateSoccerTeam;
+import model.*;
 import model.opta.OptaCompetition;
 import org.apache.oltu.oauth2.client.OAuthClient;
 import org.apache.oltu.oauth2.client.URLConnectionClient;
@@ -30,6 +27,8 @@ import utils.BatchWriteOperation;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -301,14 +300,16 @@ public class ExcelController extends Controller {
                 boolean activated = false;
 
                 if (newTags.containsKey(optaPlayerId) && newTags.get(optaPlayerId)!=null) {
-                    String[] tagsArray = newTags.get(optaPlayerId).split(",");
-                    for (int i = 0; i<tagsArray.length; i++) {
-                        tagsArray[i] = tagsArray[i].trim();
-                        if (tagsArray[i].equals("activo")) {
-                            activated = true;
+                    List<String> tagList = Arrays.asList(newTags.get(optaPlayerId).split(",[ ]*"));
+                    ArrayList<TemplateSoccerPlayerTag> validTagList = new ArrayList<>();
+
+                    for (String tag: tagList) {
+                        if (TemplateSoccerPlayerTag.isValid(tag)) {
+                            validTagList.add(TemplateSoccerPlayerTag.getEnum(tag));
                         }
                     }
-                    bdo.append("tags", tagsArray);
+                    activated = validTagList.contains(TemplateSoccerPlayerTag.ACTIVO);
+                    bdo.append("tags", validTagList);
                 }
                 bdo.append("activated", activated);
 

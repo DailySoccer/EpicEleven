@@ -26,13 +26,10 @@ public class TemplateSoccerPlayer implements JongoId {
 
     public ObjectId templateTeamId;
 
-    public String[] tags;
+    public List<TemplateSoccerPlayerTag> tags;
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
-
-    @JsonView(JsonViews.NotForClient.class)
-    public boolean activated;
 
     @JsonView(JsonViews.Extended.class)
     public List<SoccerPlayerStats> stats = new ArrayList<>();
@@ -56,7 +53,10 @@ public class TemplateSoccerPlayer implements JongoId {
         fieldPos = transformToFieldPosFromOptaPos(optaPlayer.position);
         templateTeamId = aTemplateTeamId;
         createdAt = GlobalDate.getCurrentDate();
-        activated = Play.application().configuration().getBoolean("activate_players_by_default");
+        tags = new ArrayList<>();
+        if (Play.application().configuration().getBoolean("activate_players_by_default")) {
+            tags.add(TemplateSoccerPlayerTag.ACTIVO);
+        }
     }
 
     public ObjectId getId() {

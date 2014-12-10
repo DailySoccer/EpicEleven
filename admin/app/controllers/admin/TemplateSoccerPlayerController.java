@@ -2,6 +2,7 @@ package controllers.admin;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.base.Joiner;
 import model.*;
 import model.opta.OptaEvent;
 import org.bson.types.ObjectId;
@@ -25,7 +26,7 @@ public class TemplateSoccerPlayerController extends Controller {
         return PaginationData.withAjax(request().queryString(), Model.templateSoccerPlayers(), TemplateSoccerPlayer.class, new PaginationData() {
             public List<String> getFieldNames() {
                 return ImmutableList.of(
-                        "activated",
+                        "tags",
                         "optaPlayerId",
                         "name",
                         "fieldPos",
@@ -40,7 +41,7 @@ public class TemplateSoccerPlayerController extends Controller {
             public String getFieldByIndex(Object data, Integer index) {
                 TemplateSoccerPlayer templateSoccerPlayer = (TemplateSoccerPlayer) data;
                 switch (index) {
-                    case 0: return String.valueOf(templateSoccerPlayer.activated);
+                    case 0: return templateSoccerPlayer.tags==null?"": Joiner.on(", ").join(templateSoccerPlayer.tags);
                     case 1: return templateSoccerPlayer.optaPlayerId;
                     case 2: return templateSoccerPlayer.name;
                     case 3: return templateSoccerPlayer.fieldPos.toString();
@@ -58,11 +59,13 @@ public class TemplateSoccerPlayerController extends Controller {
             public String getRenderFieldByIndex(Object data, String fieldValue, Integer index) {
                 TemplateSoccerPlayer templateSoccerPlayer = (TemplateSoccerPlayer) data;
                 switch (index) {
+                    /*
                     case 0:
                         return String.format("<input class=\"edit-activated\" type=\"checkbox\" %s data-competition-id=\"%s\" value=\"%s\">",
                                 templateSoccerPlayer.activated ? "checked" : "",
                                 templateSoccerPlayer.templateSoccerPlayerId,
                                 fieldValue);
+                    */
                     case 4:
                         return String.format("<p class=\"edit-salary\" contenteditable=\"false\" data-player-id=%s>%s</p>",
                                     templateSoccerPlayer.templateSoccerPlayerId,
@@ -90,6 +93,7 @@ public class TemplateSoccerPlayerController extends Controller {
         return ok("OK");
     }
 
+    /*
     public static Result changeState(String templateSoccerPlayerId, String activated) {
         Model.templateSoccerPlayers().update(new ObjectId(templateSoccerPlayerId)).with("{$set: {activated: #}}", activated.equals("true"));
 
@@ -98,6 +102,7 @@ public class TemplateSoccerPlayerController extends Controller {
                 "activated", activated));
         return ok("OK");
     }
+    */
 
     public static Result showFantasyPointsInContest(String contestId, String playerId) {
         List<OptaEvent> optaEventList = new ArrayList<>();
