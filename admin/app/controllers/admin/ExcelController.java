@@ -300,13 +300,14 @@ public class ExcelController extends Controller {
 
                 if (newTags.containsKey(optaPlayerId) && newTags.get(optaPlayerId)!=null) {
                     List<String> tagList = Arrays.asList(newTags.get(optaPlayerId).split(",[ ]*"));
-                    ArrayList<TemplateSoccerPlayerTag> validTagList = new ArrayList<>();
+                    ArrayList<String> validTagList = new ArrayList<>();
 
                     for (String tag: tagList) {
                         if (TemplateSoccerPlayerTag.isValid(tag)) {
-                            validTagList.add(TemplateSoccerPlayerTag.getEnum(tag));
+                            validTagList.add(TemplateSoccerPlayerTag.getEnum(tag).toString());
                         }
                     }
+
                     bdo.append("tags", validTagList);
                 }
 
