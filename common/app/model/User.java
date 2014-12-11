@@ -2,9 +2,11 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import org.bson.types.ObjectId;
+import org.jongo.Aggregate;
 import org.jongo.marshall.jackson.oid.Id;
 import utils.ListUtils;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -85,4 +87,18 @@ public class User {
                 "}}", userId);
         Model.users().update(userId).with("{$set: {wins: #}}", contestsGanados);
     }
+
+    public BigDecimal calculateBalance() {
+        List<Balance> balance = Model.transactions().aggregate("{$match: { \"changes.accounts.accountId\": #, state: \"VALID\"}}", userId)
+                .and("{$unwind: \"$changes.accounts\"}")
+                .and("{$match: {\"changes.accounts.accountId\": #}}", userId)
+                .and("{$group: {_id: \"total\", total: { $sum: \"$changes.accounts.value\" }}}")
+                .as(Balance.class);
+
+        return (!balance.isEmpty()) ? balance.get(0).total : new BigDecimal(0);
+    }
+}
+
+class Balance {
+    BigDecimal total;
 }

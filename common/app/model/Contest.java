@@ -227,6 +227,9 @@ public class Contest implements JongoId {
         // Actualizamos las estadísticas de torneos ganados
         User user = User.findOne(winner.userId);
         user.updateStats();
+
+        BigDecimal balance = user.calculateBalance();
+        play.Logger.info("User({}): Balance: {}€", user.userId.toString(), balance);
     }
 
     public InstanceSoccerPlayer getInstanceSoccerPlayer(ObjectId templateSoccerPlayerId) {
