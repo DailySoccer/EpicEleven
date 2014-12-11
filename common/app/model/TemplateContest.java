@@ -54,6 +54,9 @@ public class TemplateContest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
+    @JsonView(JsonViews.NotForClient.class)
+    public boolean closed = false;
+
     public TemplateContest() { }
 
     public TemplateContest(String name, int minInstances, int maxEntries, int salaryCap,
@@ -91,6 +94,11 @@ public class TemplateContest implements JongoId {
     public boolean isLive()     { return (state == ContestState.LIVE); }
     public boolean isHistory()  { return (state == ContestState.HISTORY); }
 
+    public void setClosed() {
+        Model.templateContests()
+                .update("{_id: #, state: \"HISTORY\"}", templateContestId)
+                .with("{$set: {closed: true}}");
+    }
 
     public List<TemplateMatchEvent> getTemplateMatchEvents() {
         return TemplateMatchEvent.findAll(templateMatchEventIds);
@@ -131,6 +139,10 @@ public class TemplateContest implements JongoId {
         return ListUtils.asList(Model.templateContests()
                                      .find("{state: \"OFF\", activationAt: {$lte: #}, startDate: {$gte: #}}", activationAt, GlobalDate.getCurrentDate())
                                      .as(TemplateContest.class));
+    }
+
+    static public List<TemplateContest> findHistoryNotClosed() {
+        return ListUtils.asList(Model.templateContests().find("{state: \"HISTORY\", closed: false}").as(TemplateContest.class));
     }
 
     /**

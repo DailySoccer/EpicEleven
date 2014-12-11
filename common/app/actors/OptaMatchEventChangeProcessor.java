@@ -74,9 +74,6 @@ public class OptaMatchEventChangeProcessor {
                         .update("{templateContestId: #, state: \"LIVE\"}", templateContest.templateContestId)
                         .multi()
                         .with("{$set: {state: \"HISTORY\"}}");
-
-                // Aqui es el único sitio donde se darán los premios
-                templateContest.givePrizes();
             }
         }
 

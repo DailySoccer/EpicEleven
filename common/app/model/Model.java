@@ -44,6 +44,7 @@ public class Model {
     static public MongoCollection pointsTranslation() { return _jongo.getCollection("pointsTranslation"); }
     static public MongoCollection optaProcessor()     { return _jongo.getCollection("optaProcessor"); }
 
+    static public MongoCollection transactions() { return _jongo.getCollection("transactions"); }
     static public MongoCollection simulator() { return _jongo.getCollection("simulator"); }
 
     static public void init() {

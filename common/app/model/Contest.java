@@ -1,8 +1,12 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import model.transactions.AccountOp;
+import model.transactions.PrizeChange;
+import model.transactions.Transaction;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
+import java.math.BigDecimal;
 import utils.BatchWriteOperation;
 import utils.ListUtils;
 import utils.ViewProjection;
@@ -208,10 +212,20 @@ public class Contest implements JongoId {
         if (winner == null)
             throw new RuntimeException("WTF 7221: givePrizes, winner == null");
 
-        User user = User.findOne(winner.userId);
-
         // TODO: Dar premios
-        // Actualmente únicamente actualizamos las estadísticas de torneos ganados
+        if (!prizes.equals(PrizeType.FREE)) {
+            PrizeChange prizeChange = new PrizeChange(contestId);
+            for (ContestEntry contestEntry : contestEntries) {
+                if (contestEntry.position < prizes.size()) {
+                    AccountOp accountOp = new AccountOp(contestEntry.userId, new BigDecimal(prizes.get(contestEntry.position)));
+                    prizeChange.accounts.add(accountOp);
+                }
+            }
+            Transaction.createPrizeTransaction(prizeChange);
+        }
+
+        // Actualizamos las estadísticas de torneos ganados
+        User user = User.findOne(winner.userId);
         user.updateStats();
     }
 
