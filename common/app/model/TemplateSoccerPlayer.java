@@ -105,7 +105,7 @@ public class TemplateSoccerPlayer implements JongoId {
     }
 
     static public List<TemplateSoccerPlayer> findAllActiveFromTemplateTeam(ObjectId templateSoccerTeamId) {
-        return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: #, activated: # }", templateSoccerTeamId, true).as(TemplateSoccerPlayer.class));
+        return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: #, tags: {$elemMatch: {$eq: #}} }", templateSoccerTeamId, TemplateSoccerPlayerTag.ACTIVO).as(TemplateSoccerPlayer.class));
     }
 
     static public List<TemplateSoccerPlayer> findAllFromInstances(List<InstanceSoccerPlayer> instanceSoccerPlayers) {
@@ -121,7 +121,7 @@ public class TemplateSoccerPlayer implements JongoId {
         for (TemplateSoccerTeam team: templateSoccerTeams) {
             teamIds.add(team.templateSoccerTeamId);
         }
-        return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: {$in: #}, activated: # }", teamIds, true).as(TemplateSoccerPlayer.class));
+        return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: {$in: #}, tags: {$elemMatch: {$eq: #}} }", teamIds, TemplateSoccerPlayerTag.ACTIVO).as(TemplateSoccerPlayer.class));
     }
 
     public void updateStats(SoccerPlayerStats soccerPlayerStats) {
@@ -184,7 +184,7 @@ public class TemplateSoccerPlayer implements JongoId {
         return !optaPlayerId.equals(optaPlayer.optaPlayerId) ||
                !name.equals(optaPlayer.name) ||
                !fieldPos.equals(transformToFieldPosFromOptaPos(optaPlayer.position)) ||
-               !(TemplateSoccerTeam.findOne(templateTeamId, optaPlayer.teamId) != null);
+               (TemplateSoccerTeam.findOne(templateTeamId, optaPlayer.teamId) == null);
     }
 
     public void changeDocument(OptaPlayer optaPlayer) {

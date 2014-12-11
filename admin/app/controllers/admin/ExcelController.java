@@ -297,7 +297,6 @@ public class ExcelController extends Controller {
 
                 DBObject query = new BasicDBObject("optaPlayerId", optaPlayerId);
                 BasicDBObject bdo = new BasicDBObject("salary", newSalaries.get(optaPlayerId));
-                boolean activated = false;
 
                 if (newTags.containsKey(optaPlayerId) && newTags.get(optaPlayerId)!=null) {
                     List<String> tagList = Arrays.asList(newTags.get(optaPlayerId).split(",[ ]*"));
@@ -308,10 +307,8 @@ public class ExcelController extends Controller {
                             validTagList.add(TemplateSoccerPlayerTag.getEnum(tag));
                         }
                     }
-                    activated = validTagList.contains(TemplateSoccerPlayerTag.ACTIVO);
                     bdo.append("tags", validTagList);
                 }
-                bdo.append("activated", activated);
 
                 DBObject update = new BasicDBObject("$set", bdo);
                 batchWriteOperation.find(query).updateOne(update);

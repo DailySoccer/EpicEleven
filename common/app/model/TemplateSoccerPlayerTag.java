@@ -1,30 +1,19 @@
 package model;
 
-import java.util.Arrays;
-
 public enum TemplateSoccerPlayerTag {
-    ACTIVO  ("activo");
+    ACTIVO;
 
-    public final String text;
 
-    TemplateSoccerPlayerTag(String c) {
-        text = c;
+    TemplateSoccerPlayerTag() {
+
     }
 
     public static boolean isValid(String c) {
-        return Arrays.asList(TemplateSoccerPlayerTag.values()).contains(c);
+        return TemplateSoccerPlayerTag.getEnum(c) != null;
     }
 
-    public String toString() {
-        return text;
-    }
 
     public static TemplateSoccerPlayerTag getEnum(String c) {
-        for (TemplateSoccerPlayerTag templateSoccerPlayerTag : TemplateSoccerPlayerTag.values()){
-            if (templateSoccerPlayerTag.text.equals(c)) {
-                return templateSoccerPlayerTag;
-            }
-        }
-        return null;
+        return TemplateSoccerPlayerTag.valueOf(c.toUpperCase());
     }
 }
