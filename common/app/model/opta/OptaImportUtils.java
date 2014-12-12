@@ -2,75 +2,11 @@ package model.opta;
 
 import model.*;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
 public class OptaImportUtils {
-    public static void importAll() {
-        importTeams();
-        importPlayers();
-        importMatchEvents();
-    }
-
-    public static int importTeams(List<OptaTeam> optaTeams) {
-        int imported = 0;
-        for(OptaTeam optaTeam : optaTeams) {
-            if (TemplateSoccerTeam.importTeam(optaTeam)) {
-                imported++;
-            }
-        }
-        return imported;
-    }
-
-    public static int importPlayers(List<OptaPlayer> optaPlayers) {
-        int imported = 0;
-        for(OptaPlayer optaPlayer : optaPlayers) {
-            if (TemplateSoccerPlayer.importSoccer(optaPlayer)) {
-                imported++;
-            }
-        }
-        return imported;
-    }
-
-    public static int importMatchEvents(List<OptaMatchEvent> optaMatchEvents) {
-        int imported = 0;
-        for(OptaMatchEvent optaMatchEvent : optaMatchEvents) {
-            if (TemplateMatchEvent.importMatchEvent(optaMatchEvent)) {
-                imported++;
-            }
-        }
-        return imported;
-    }
-
-    private static void importTeams() {
-        List<String> competitionsActivated = OptaCompetition.asIds(OptaCompetition.findAllActive());
-        List<OptaTeam> teamsNew = new ArrayList<>();
-        List<OptaTeam> teamsChanged = new ArrayList<>();
-        evaluateDirtyTeams(competitionsActivated, teamsNew, teamsChanged, null);
-
-        importTeams(teamsNew);
-        importTeams(teamsChanged);
-    }
-
-    private static void importPlayers() {
-        List<OptaPlayer> playersNew = new ArrayList<>();
-        List<OptaPlayer> playersChanged = new ArrayList<>();
-        evaluateDirtySoccers(playersNew, playersChanged, null);
-
-        importPlayers(playersNew);
-        importPlayers(playersChanged);
-    }
-
-    private static void importMatchEvents() {
-        List<OptaMatchEvent> matchesNew = new ArrayList<>();
-        List<OptaMatchEvent> matchesChanged = new ArrayList<>();
-        evaluateDirtyMatchEvents(matchesNew, matchesChanged, null);
-
-        importMatchEvents(matchesNew);
-        importMatchEvents(matchesChanged);
-    }
 
     public static void evaluateDirtyTeams(List<String> seasonCompetitionIds, List<OptaTeam> news, List<OptaTeam> changes, List<OptaTeam> invalidates) {
 

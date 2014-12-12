@@ -206,30 +206,6 @@ public class TemplateSoccerPlayer implements JongoId {
         Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).update("{optaPlayerId: #}", optaPlayerId).upsert().with(this);
     }
 
-    /**
-     * Importar un optaPlayer
-     */
-    static public boolean importSoccer(OptaPlayer optaPlayer) {
-        TemplateSoccerTeam templateTeam = TemplateSoccerTeam.findOneFromOptaId(optaPlayer.teamId);
-
-
-        if (templateTeam != null) {
-            TemplateSoccerPlayer templateSoccer = new TemplateSoccerPlayer(optaPlayer, templateTeam.templateSoccerTeamId);
-
-            TemplateSoccerPlayer origTemplateSoccerPlayer = TemplateSoccerPlayer.findOneFromOptaId(optaPlayer.optaPlayerId);
-            templateSoccer.salary = (origTemplateSoccerPlayer != null)? origTemplateSoccerPlayer.salary:
-                                                                        Play.application().configuration().getInt("base_salary")>0?
-                                                                                Play.application().configuration().getInt("base_salary"):
-                                                                                templateSoccer.name.length()*500;
-
-            templateSoccer.updateDocument();
-        }
-        else {
-            Logger.error("importSoccer ({}): invalid teamID({})", optaPlayer.optaPlayerId, optaPlayer.teamId);
-            return false;
-        }
-        return true;
-    }
 
     static public boolean isInvalidFromImport(OptaPlayer optaPlayer) {
         boolean invalid = (optaPlayer.teamId == null) || optaPlayer.teamId.isEmpty();

@@ -51,11 +51,6 @@ public class TestController extends Controller {
         return ok("OK");
     }
 
-    static public Result importEverything() {
-        DashboardController.importEverything();
-        return ok("OK");
-    }
-
     static public Result getCurrentDate() {
         return ok(SimulatorController.getCurrentDate());
     }
