@@ -88,8 +88,22 @@ public class User {
         Model.users().update(userId).with("{$set: {wins: #}}", contestsGanados);
     }
 
+    public Integer getSeqId() {
+        List<SeqId> seqId = Model.transactions()
+                .aggregate("{$match: { \"changes.accounts.accountId\": #}}", userId)
+                .and("{$unwind: \"$changes.accounts\"}")
+                .and("{$match: {\"changes.accounts.accountId\": #}}", userId)
+                .and("{$project: { \"changes.accounts.seqId\": 1 }}")
+                .and("{$sort: { \"changes.accounts.seqId\": -1 }}")
+                .and("{$limit: 1}")
+                .and("{$group: {_id: \"seqId\", seqId: { $first: \"$changes.accounts.seqId\" }}}")
+                .as(SeqId.class);
+        return (!seqId.isEmpty() && seqId.get(0).seqId != null) ? seqId.get(0).seqId : 0;
+    }
+
     public BigDecimal calculateBalance() {
-        List<Balance> balance = Model.transactions().aggregate("{$match: { \"changes.accounts.accountId\": #, state: \"VALID\"}}", userId)
+        List<Balance> balance = Model.transactions()
+                .aggregate("{$match: { \"changes.accounts.accountId\": #, state: \"VALID\"}}", userId)
                 .and("{$unwind: \"$changes.accounts\"}")
                 .and("{$match: {\"changes.accounts.accountId\": #}}", userId)
                 .and("{$group: {_id: \"total\", total: { $sum: \"$changes.accounts.value\" }}}")
@@ -97,6 +111,10 @@ public class User {
 
         return (!balance.isEmpty()) ? balance.get(0).total : new BigDecimal(0);
     }
+}
+
+class SeqId {
+    Integer seqId;
 }
 
 class Balance {

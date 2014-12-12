@@ -213,11 +213,12 @@ public class Contest implements JongoId {
             throw new RuntimeException("WTF 7221: givePrizes, winner == null");
 
         // TODO: Dar premios
-        if (!prizes.equals(PrizeType.FREE)) {
+        if (!prizes.isEmpty()) {
             PrizeChange prizeChange = new PrizeChange(contestId);
             for (ContestEntry contestEntry : contestEntries) {
                 if (contestEntry.position < prizes.size()) {
-                    AccountOp accountOp = new AccountOp(contestEntry.userId, new BigDecimal(prizes.get(contestEntry.position)));
+                    User user = User.findOne(contestEntry.userId);
+                    AccountOp accountOp = new AccountOp(contestEntry.userId, new BigDecimal(prizes.get(contestEntry.position)), user.getSeqId() + 1);
                     prizeChange.accounts.add(accountOp);
                 }
             }
@@ -225,11 +226,11 @@ public class Contest implements JongoId {
         }
 
         // Actualizamos las estadísticas de torneos ganados
-        User user = User.findOne(winner.userId);
-        user.updateStats();
+        User userWinner = User.findOne(winner.userId);
+        userWinner.updateStats();
 
-        BigDecimal balance = user.calculateBalance();
-        play.Logger.info("User({}): Balance: {}€", user.userId.toString(), balance);
+        BigDecimal balance = userWinner.calculateBalance();
+        play.Logger.info("User({}): Balance: {}€", userWinner.userId.toString(), balance);
     }
 
     public InstanceSoccerPlayer getInstanceSoccerPlayer(ObjectId templateSoccerPlayerId) {

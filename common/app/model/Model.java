@@ -172,6 +172,7 @@ public class Model {
         ensureUsersDB(theMongoDB);
         ensureOptaDB(theMongoDB);
         ensureContestsDB(theMongoDB);
+        ensureTransactionsDB(theMongoDB);
     }
 
     static private void ensureUsersDB(DB theMongoDB) {
@@ -255,6 +256,12 @@ public class Model {
         }
     }
 
+    static private void ensureTransactionsDB(DB theMongoDB) {
+        if (!theMongoDB.collectionExists("transactions")) {
+            DBCollection transactions = theMongoDB.createCollection("transactions", new BasicDBObject());
+            transactions.createIndex(new BasicDBObject("changes.accounts.accountId", 1).append("changes.accounts.seqId", 1), new BasicDBObject("unique", true));
+        }
+    }
 
     /**
      * Query de una lista de ObjectIds (en una misma query)
