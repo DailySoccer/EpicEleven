@@ -80,9 +80,9 @@ public class OptaImporter {
                     else {
                         templatePlayer = new TemplateSoccerPlayer(optaPlayer, templateTeam.templateSoccerTeamId);
 
-                        templatePlayer.salary = Play.application().configuration().getInt("base_salary")>0?
-                                                    Play.application().configuration().getInt("base_salary"):
-                                                    templatePlayer.name.length()*500;
+                        templatePlayer.salary = Play.application().configuration().getBoolean("debug_salary")?
+                                                        templatePlayer.name.length()*500:
+                                                        -1;
 
                         templatePlayer.updateDocument();
                         OpsLog.onNew(OPS_LOG_IMPORT, optaPlayer);
