@@ -35,27 +35,9 @@
             }
         }
 
-        function changeStateActivated(element, value) {
-            var id = element.attr("data-competition-id")
-            $.ajax({
-                url: "/admin/template_soccer_player/"+id+"/activated/"+value,
-                success: function(result) {
-                    element.effect( "highlight", {}, 1000 );
-                },
-                error: function(result) {
-                    element.effect( "highlight", {color:"#FF0000"}, 1000 );
-                }
-            });
-            return true;
-        }
+
 
         function registerToEdit() {
-            $(".edit-activated")
-                .off()
-                .click(function() {
-                    changeStateActivated($(this), $(this).is(':checked'));
-                });
-
             $(".edit-salary")
                 .off()
                 .attr("contenteditable", @canEditSalaries)
@@ -84,7 +66,7 @@
         $(document).ready( function(){
             $('#ajax_table_id').dataTable( {
               "columns": [
-                { "title": "Activated" },
+                { "title": "Tags" },
                 { "title": "OptaId" },
                 { "title": "Name" },
                 { "title": "Field" },

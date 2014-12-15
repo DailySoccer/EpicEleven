@@ -26,13 +26,11 @@ public class TemplateSoccerPlayer implements JongoId {
 
     public ObjectId templateTeamId;
 
-    public String[] tags;
+    @JsonView(JsonViews.NotForClient.class)
+    public List<TemplateSoccerPlayerTag> tags = new ArrayList<>();
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
-
-    @JsonView(JsonViews.NotForClient.class)
-    public boolean activated;
 
     @JsonView(JsonViews.Extended.class)
     public List<SoccerPlayerStats> stats = new ArrayList<>();
@@ -56,7 +54,9 @@ public class TemplateSoccerPlayer implements JongoId {
         fieldPos = transformToFieldPosFromOptaPos(optaPlayer.position);
         templateTeamId = aTemplateTeamId;
         createdAt = GlobalDate.getCurrentDate();
-        activated = Play.application().configuration().getBoolean("activate_players_by_default");
+        if (Play.application().configuration().getBoolean("activate_players_by_default")) {
+            tags.add(TemplateSoccerPlayerTag.ACTIVO);
+        }
     }
 
     public ObjectId getId() {
@@ -105,7 +105,7 @@ public class TemplateSoccerPlayer implements JongoId {
     }
 
     static public List<TemplateSoccerPlayer> findAllActiveFromTemplateTeam(ObjectId templateSoccerTeamId) {
-        return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: #, activated: # }", templateSoccerTeamId, true).as(TemplateSoccerPlayer.class));
+        return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: #, tags: {$elemMatch: {$eq: #}} }", templateSoccerTeamId, TemplateSoccerPlayerTag.ACTIVO).as(TemplateSoccerPlayer.class));
     }
 
     static public List<TemplateSoccerPlayer> findAllFromInstances(List<InstanceSoccerPlayer> instanceSoccerPlayers) {
@@ -121,7 +121,7 @@ public class TemplateSoccerPlayer implements JongoId {
         for (TemplateSoccerTeam team: templateSoccerTeams) {
             teamIds.add(team.templateSoccerTeamId);
         }
-        return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: {$in: #}, activated: # }", teamIds, true).as(TemplateSoccerPlayer.class));
+        return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: {$in: #}, tags: {$elemMatch: {$eq: #}} }", teamIds, TemplateSoccerPlayerTag.ACTIVO).as(TemplateSoccerPlayer.class));
     }
 
     public void updateStats(SoccerPlayerStats soccerPlayerStats) {
@@ -184,7 +184,7 @@ public class TemplateSoccerPlayer implements JongoId {
         return !optaPlayerId.equals(optaPlayer.optaPlayerId) ||
                !name.equals(optaPlayer.name) ||
                !fieldPos.equals(transformToFieldPosFromOptaPos(optaPlayer.position)) ||
-               !(TemplateSoccerTeam.findOne(templateTeamId, optaPlayer.teamId) != null);
+               (TemplateSoccerTeam.findOne(templateTeamId, optaPlayer.teamId) == null);
     }
 
     public void changeDocument(OptaPlayer optaPlayer) {
