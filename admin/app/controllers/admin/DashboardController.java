@@ -11,16 +11,7 @@ public class DashboardController extends Controller {
         return ok(views.html.dashboard.render(OptaCompetition.findAllActive()));
     }
 
-    static public Result importEverything() {
-        ImportController.importSalaries();
-        ImportController.importAllTeams();
-        ImportController.importAllSoccers();
-        ImportController.importAllMatchEvents();
-        return index();
-    }
-
     static public Result initialSetup() {
-        importEverything();
         PointsTranslationController.resetToDefault();
         TemplateContestController.createAll();
         return index();
