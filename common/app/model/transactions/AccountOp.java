@@ -6,10 +6,10 @@ import java.math.BigDecimal;
 import java.util.List;
 
 public class AccountOp {
-    public ObjectId accountId;
-    public BigDecimal value;
-    public BigDecimal cachedBalance;
-    public Integer seqId;
+    public ObjectId accountId;          // Identificador del "account" (actualmente corresponde a un userId)
+    public BigDecimal value;            // Cantidad a modificar el balance
+    public Integer seqId;               // Secuencia de operaciones de un "account" determinado
+    public BigDecimal cachedBalance;    // El balance del "account" (en el momento que se hizo el "commit")
 
     public AccountOp() {}
 
@@ -20,21 +20,26 @@ public class AccountOp {
     }
 
     public boolean canCommit() {
+        // Comprobamos que NO exista ninguna transacción "anterior" ("seqId" menor) de la misma "account" sin "commit"
         return Model.transactions()
                 .count("{ \"changes.accounts\": {$elemMatch: { accountId: #, seqId: { $lt: # } }}, proc: #}",
                         accountId, seqId, Transaction.TransactionProc.UNCOMMITTED) == 0;
     }
 
     public void updateBalance() {
+        // Obtenemos el balance del anterior COMMIT
         BigDecimal lastBalance = getLastBalance();
+        // Actualizamos el cachedBalance del "account"
         Model.transactions().update("{ \"changes.accounts\": { $elemMatch: {accountId: #, seqId: #} } }", accountId, seqId).with("{$set: {\"changes.accounts.$.cachedBalance\": #}}", lastBalance.add(value).doubleValue());
     }
 
     public BigDecimal getLastBalance() {
+        // Si es el primer seqId no existe ninguno anterior
         if (seqId == 1) {
             return new BigDecimal(0);
         }
 
+        // TODO: ¿necesitamos comprobar que el commit es del "seqId" inmediatamente anterior?
         List<AccountOp> accountOp = Model.transactions()
                 .aggregate("{$match: { \"changes.accounts.accountId\": #, proc: #, state: \"VALID\"}}", accountId, Transaction.TransactionProc.COMMITTED)
                 .and("{$unwind: \"$changes.accounts\"}")

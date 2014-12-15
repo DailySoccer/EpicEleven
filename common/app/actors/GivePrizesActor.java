@@ -35,8 +35,6 @@ public class GivePrizesActor extends UntypedActor {
 
         for (TemplateContest templateContest : TemplateContest.findHistoryNotClosed()) {
             templateContest.givePrizes();
-
-            // throw new RuntimeException();
             templateContest.setClosed();
         }
     }

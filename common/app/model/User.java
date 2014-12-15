@@ -108,7 +108,6 @@ public class User {
                 .and("{$match: {\"changes.accounts.accountId\": #}}", userId)
                 .and("{$group: {_id: \"total\", total: { $sum: \"$changes.accounts.value\" }}}")
                 .as(Balance.class);
-
         return (!balance.isEmpty()) ? balance.get(0).total : new BigDecimal(0);
     }
 }

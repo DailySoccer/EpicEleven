@@ -9,8 +9,6 @@ import org.jongo.marshall.jackson.oid.Id;
 import org.bson.types.ObjectId;
 import utils.ObjectIdMapper;
 
-import java.math.BigDecimal;
-
 public class Transaction {
     public enum TransactionType {
         PRIZE
@@ -46,7 +44,7 @@ public class Transaction {
         Model.transactions().update(transactionId).with("{$set: {proc: #}}", TransactionProc.COMMITTED);
     }
 
-    String toJson() {
+    private String toJson() {
         String json = "";
         try {
             ObjectWriter ow = new ObjectIdMapper().writer().withDefaultPrettyPrinter();

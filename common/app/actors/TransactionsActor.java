@@ -3,11 +3,8 @@ package actors;
 import akka.actor.UntypedActor;
 import model.GlobalDate;
 import model.Model;
-import model.TemplateContest;
 import model.transactions.AccountOp;
-import model.transactions.PrizeChange;
 import model.transactions.Transaction;
-import model.transactions.*;
 import play.Logger;
 import scala.concurrent.duration.Duration;
 import utils.ListUtils;
@@ -41,9 +38,13 @@ public class TransactionsActor extends UntypedActor {
     private void onTick() {
         Logger.info("Transactions: {}", GlobalDate.getCurrentDateString());
 
+        /*
+        *   Una transacción pasará de Uncommitted a Committed cuando verifique que todas las anteriores transacciones
+        *   de sus "accounts" han sido realizadas (anteriores AccountOp.seqId en estado Committed)
+        *   Toda "account" en estado Committed tendrá el AccountOp.cachedBalance correctamente actualizado
+         */
         List<Transaction> transactions = ListUtils.asList(Model.transactions().find("{proc: #, state: #}",
                 Transaction.TransactionProc.UNCOMMITTED, Transaction.TransactionState.VALID).as(Transaction.class));
-
         for (Transaction transaction: transactions) {
             boolean valid = true;
             for (AccountOp accountOp: transaction.changes.accounts) {
@@ -53,7 +54,6 @@ public class TransactionsActor extends UntypedActor {
                 }
                 accountOp.updateBalance();
             }
-
             if (valid) {
                 transaction.commit();
             }
