@@ -34,10 +34,16 @@ public class Transaction {
     public TransactionType type;
     public TransactionChange changes;
 
+    public Transaction() {}
+
     private Transaction(TransactionType type) {
         this.proc = TransactionProc.UNCOMMITTED;
         this.state = TransactionState.VALID;
         this.type = type;
+    }
+
+    public void commit () {
+        Model.transactions().update(transactionId).with("{$set: {proc: #}}", TransactionProc.COMMITTED);
     }
 
     String toJson() {

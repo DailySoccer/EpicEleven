@@ -181,6 +181,7 @@ public class OptaSimulator implements Runnable {
 
                 Akka.system().actorSelection("/user/InstantiateConstestsActor").tell("SimulatorTick", ActorRef.noSender());
                 Akka.system().actorSelection("/user/GivePrizesActor").tell("SimulatorTick", ActorRef.noSender());
+                Akka.system().actorSelection("/user/TransactionsActor").tell("SimulatorTick", ActorRef.noSender());
             }
             catch (InterruptedException e) {
                 Logger.error("WTF 2311", e);
