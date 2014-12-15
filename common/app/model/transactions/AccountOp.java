@@ -1,6 +1,7 @@
 package model.transactions;
 
 import model.Model;
+import model.User;
 import org.bson.types.ObjectId;
 import java.math.BigDecimal;
 import java.util.List;
@@ -28,9 +29,11 @@ public class AccountOp {
 
     public void updateBalance() {
         // Obtenemos el balance del anterior COMMIT
-        BigDecimal lastBalance = getLastBalance();
+        BigDecimal lastBalance = getLastBalance().add(value);
         // Actualizamos el cachedBalance del "account"
-        Model.transactions().update("{ \"changes.accounts\": { $elemMatch: {accountId: #, seqId: #} } }", accountId, seqId).with("{$set: {\"changes.accounts.$.cachedBalance\": #}}", lastBalance.add(value).doubleValue());
+        Model.transactions().update("{ \"changes.accounts\": { $elemMatch: {accountId: #, seqId: #} } }", accountId, seqId).with("{$set: {\"changes.accounts.$.cachedBalance\": #}}", lastBalance.doubleValue());
+        // Actualizamos el user
+        User.updateBalance(accountId, lastBalance);
     }
 
     public BigDecimal getLastBalance() {

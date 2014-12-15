@@ -21,6 +21,7 @@ public class User {
 	public String email;
 
     public int wins;
+    public BigDecimal cachedBalance;
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
@@ -74,6 +75,10 @@ public class User {
 
     static public User findByEmail(String email) {
         return Model.users().findOne("{email: #}", email).as(User.class);
+    }
+
+    static public void updateBalance(ObjectId userId, BigDecimal balance) {
+        Model.users().update(userId).with("{$set: {cachedBalance: #}}", balance.doubleValue());
     }
 
     public void updateStats() {
