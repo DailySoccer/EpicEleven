@@ -59,13 +59,6 @@ public class TemplateSoccerPlayerController extends Controller {
             public String getRenderFieldByIndex(Object data, String fieldValue, Integer index) {
                 TemplateSoccerPlayer templateSoccerPlayer = (TemplateSoccerPlayer) data;
                 switch (index) {
-                    /*
-                    case 0:
-                        return String.format("<input class=\"edit-activated\" type=\"checkbox\" %s data-competition-id=\"%s\" value=\"%s\">",
-                                templateSoccerPlayer.activated ? "checked" : "",
-                                templateSoccerPlayer.templateSoccerPlayerId,
-                                fieldValue);
-                    */
                     case 4:
                         return String.format("<p class=\"edit-salary\" contenteditable=\"false\" data-player-id=%s>%s</p>",
                                     templateSoccerPlayer.templateSoccerPlayerId,
@@ -92,17 +85,6 @@ public class TemplateSoccerPlayerController extends Controller {
                 "salary", salary));
         return ok("OK");
     }
-
-    /*
-    public static Result changeState(String templateSoccerPlayerId, String activated) {
-        Model.templateSoccerPlayers().update(new ObjectId(templateSoccerPlayerId)).with("{$set: {activated: #}}", activated.equals("true"));
-
-        OpsLog.onChange("ACTIVATED", OpsLog.ActingOn.PLAYER, ImmutableMap.of(
-                "templateSoccerPlayerId", templateSoccerPlayerId,
-                "activated", activated));
-        return ok("OK");
-    }
-    */
 
     public static Result showFantasyPointsInContest(String contestId, String playerId) {
         List<OptaEvent> optaEventList = new ArrayList<>();

@@ -26,6 +26,7 @@ public class TemplateSoccerPlayer implements JongoId {
 
     public ObjectId templateTeamId;
 
+    @JsonView(JsonViews.NotForClient.class)
     public List<TemplateSoccerPlayerTag> tags = new ArrayList<>();
 
     @JsonView(JsonViews.NotForClient.class)
