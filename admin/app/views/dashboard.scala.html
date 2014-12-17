@@ -1,5 +1,7 @@
 @(competitions_enabled : List[model.opta.OptaCompetition])
 
+@import controllers.admin.AdminController
+
 @import controllers.admin.routes._
 
 @scripts = {
@@ -62,6 +64,7 @@ function getMongo() {
         <option value="dailysoccer">Epic Eleven</option>
     </select>
 
+    @if(AdminController.isLocalMongo()) {
     <div style="float: right; margin-right:100px;">
         <a href="@DashboardController.resetDB" class="btn btn-danger">Reset DB</a>
         @if(competitions_enabled.isEmpty) {
@@ -70,6 +73,7 @@ function getMongo() {
             <a href="@DashboardController.initialSetup" class="btn btn-danger">Initial Setup</a>
         }
     </div>
+    }
 </div>
 <br/>
 <div>

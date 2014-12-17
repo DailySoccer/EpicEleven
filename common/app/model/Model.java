@@ -21,6 +21,8 @@ import java.util.List;
 
 public class Model {
 
+    static public final String _localhostMongoAppEnv = "localhost";
+
     static public MongoCollection opsLog() { return _jongo.getCollection("opsLog"); }
 
     static public MongoCollection sessions() { return _jongo.getCollection("sessions"); }
@@ -48,7 +50,7 @@ public class Model {
 
     static public void init() {
 
-        ensureMongo("localhost");
+        ensureMongo(_localhostMongoAppEnv);
         ensurePostgresDB();
     }
 
@@ -107,10 +109,14 @@ public class Model {
         return _mongoAppEnv;
     }
 
+    static public boolean isLocalMongoAppEnv() {
+        return _localhostMongoAppEnv.equals(getMongoAppEnv());
+    }
+
     static private String getMongoUriForApp(String appEnv) {
         String ret = Play.application().configuration().getString("mongodb.uri");
 
-        if (!appEnv.equals("localhost")) {
+        if (!appEnv.equals(_localhostMongoAppEnv)) {
             try {
                 ret = readLineFromInputStream(Runtime.getRuntime().exec("heroku config:get MONGOHQ_URL -a " + appEnv));
             }
