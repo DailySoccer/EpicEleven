@@ -1,4 +1,4 @@
-package model;
+package model.paypal;
 
 import com.paypal.core.*;
 

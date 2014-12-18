@@ -1,10 +1,11 @@
-package model;
+package model.paypal;
 
 import com.paypal.api.payments.*;
 import com.paypal.core.rest.APIContext;
 import com.paypal.core.rest.OAuthTokenCredential;
 import com.paypal.core.rest.PayPalRESTException;
 import com.paypal.core.Constants;
+import model.Product;
 import org.bson.types.ObjectId;
 import java.util.*;
 

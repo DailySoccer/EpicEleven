@@ -2,12 +2,12 @@ package controllers;
 
 import actions.AllowCors;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.mongodb.util.JSON;
 import com.paypal.api.payments.*;
-import com.paypal.core.*;
 import com.paypal.core.rest.PayPalRESTException;
 import model.*;
 import model.Order;
+import model.paypal.PaypalIPNMessage;
+import model.paypal.PaypalPayment;
 import play.Logger;
 import play.data.Form;
 import play.mvc.BodyParser;
