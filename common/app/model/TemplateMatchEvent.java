@@ -66,6 +66,9 @@ public class TemplateMatchEvent implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public Date gameFinishedDate;
 
+    @JsonView(JsonViews.NotForClient.class)
+    public HashSet<String> pendingTasks = new HashSet();
+
     public TemplateMatchEvent() { }
 
     public ObjectId getId() {
@@ -146,16 +149,30 @@ public class TemplateMatchEvent implements JongoId {
 
     public void setGameStarted() {
         gameStartedDate = GlobalDate.getCurrentDate();
-        Model.templateMatchEvents().update(templateMatchEventId).with("{$set: {gameStartedDate: #}}", gameStartedDate);
+        Model.templateMatchEvents().update("{_id: #, gameStartedDate: {$exists: 0}}", templateMatchEventId).with("{$set: {gameStartedDate: #}}", gameStartedDate);
     }
 
     public void setGameFinished() {
         gameFinishedDate = GlobalDate.getCurrentDate();
-        Model.templateMatchEvents().update(templateMatchEventId).with("{$set: {gameFinishedDate: #}}", gameFinishedDate);
+        Model.templateMatchEvents().update("{_id: #, gameFinishedDate: {$exists: 0}}", templateMatchEventId).with("{$set: {gameFinishedDate: #}}", gameFinishedDate);
     }
 
     public boolean isGameStarted()  { return gameStartedDate != null;  }
     public boolean isGameFinished() { return gameFinishedDate != null; }
+
+    public void setPending(String task) {
+        pendingTasks.add(task);
+        Model.templateMatchEvents().update(templateMatchEventId).with("{$push: {pendingTasks: #}}", task);
+    }
+
+    public void clearPending(String task) {
+        pendingTasks.remove(task);
+        Model.templateMatchEvents().update(templateMatchEventId).with("{$pull: {pendingTasks: #}}", task);
+    }
+
+    public boolean isPending(String task) {
+        return pendingTasks.contains(task);
+    }
 
     public int getFantasyPointsForTeam(ObjectId templateSoccerTeamId) {
         int points = 0;
@@ -178,14 +195,12 @@ public class TemplateMatchEvent implements JongoId {
         saveStats(templateSoccerTeamBId, TemplateSoccerPlayer.findAllFromTemplateTeam(templateSoccerTeamBId));
     }
 
-    public void saveStats(ObjectId templateSoccerTeamId, List<TemplateSoccerPlayer> soccersPlayers) {
-        for (TemplateSoccerPlayer soccerPlayer : soccersPlayers) {
-            TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(soccerPlayer.templateSoccerPlayerId);
-
+    public void saveStats(ObjectId templateSoccerTeamId, List<TemplateSoccerPlayer> templateSoccerPlayers) {
+        for (TemplateSoccerPlayer templateSoccerPlayer : templateSoccerPlayers) {
             // Generamos las estadísticas del partido para este futbolista
             ObjectId teamId = templateSoccerTeamId.equals(templateSoccerTeamAId) ? templateSoccerTeamAId : templateSoccerTeamBId;
             ObjectId opponentTeamId = templateSoccerTeamId.equals(templateSoccerTeamAId) ? templateSoccerTeamBId : templateSoccerTeamAId;
-            SoccerPlayerStats soccerPlayerStats = new SoccerPlayerStats(startDate, soccerPlayer.optaPlayerId, optaCompetitionId, optaMatchEventId, teamId, opponentTeamId, getSoccerPlayerFantasyPoints(soccerPlayer.templateSoccerPlayerId));
+            SoccerPlayerStats soccerPlayerStats = new SoccerPlayerStats(startDate, templateSoccerPlayer.optaPlayerId, optaCompetitionId, optaMatchEventId, teamId, opponentTeamId, getSoccerPlayerFantasyPoints(templateSoccerPlayer.templateSoccerPlayerId));
 
             templateSoccerPlayer.updateStats(soccerPlayerStats);
 
