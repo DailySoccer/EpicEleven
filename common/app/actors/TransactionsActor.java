@@ -46,16 +46,6 @@ public class TransactionsActor extends UntypedActor {
         List<Transaction> transactions = ListUtils.asList(Model.transactions().find("{proc: #, state: #}",
                 Transaction.TransactionProc.UNCOMMITTED, Transaction.TransactionState.VALID).as(Transaction.class));
         for (Transaction transaction: transactions) {
-            boolean valid = true;
-            for (AccountOp accountOp: transaction.changes.accounts) {
-                if (!accountOp.canCommit()) {
-                    valid = false;
-                    break;
-                }
-                accountOp.updateBalance();
-            }
-            if (valid) {
-                transaction.commit();
-            }
+            transaction.commit();
         }
     }}

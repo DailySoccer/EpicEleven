@@ -39,8 +39,19 @@ public class Transaction {
         this.type = type;
     }
 
-    public void commit () {
-        Model.transactions().update(transactionId).with("{$set: {proc: #}}", TransactionProc.COMMITTED);
+    public boolean commit () {
+        boolean valid = true;
+        for (AccountOp accountOp: changes.accounts) {
+            if (!accountOp.canCommit()) {
+                valid = false;
+                break;
+            }
+            accountOp.updateBalance();
+        }
+        if (valid) {
+            Model.transactions().update(transactionId).with("{$set: {proc: #}}", TransactionProc.COMMITTED);
+        }
+        return valid;
     }
 
     private String toJson() {
@@ -60,6 +71,8 @@ public class Transaction {
         WriteResult result = Model.transactions().update("{type: #, 'changes.contestId': #}", transaction.type, prizeChange.contestId).upsert().with(transaction);
         if (result.getN() > 0) {
             play.Logger.info(transaction.toJson());
+
+            transaction.commit();
         }
         return transaction;
     }
