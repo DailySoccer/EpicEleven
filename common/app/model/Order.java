@@ -1,8 +1,12 @@
 package model;
 
-import com.google.gson.JsonObject;
+import model.transactions.AccountOp;
+import model.transactions.TransactionOp;
+import model.transactions.TransactionOpOrder;
 import org.jongo.marshall.jackson.oid.Id;
 import org.bson.types.ObjectId;
+
+import java.math.BigDecimal;
 
 public class Order {
     static final String REFERER_URL_DEFAULT = "epiceleven.com";
@@ -57,6 +61,8 @@ public class Order {
     }
 
     public void setCompleted() {
+        createTransaction();
+
         this.state = State.COMPLETED;
         Model.orders().update(orderId).with("{$set: {state: #}}", this.state);
     }
@@ -76,6 +82,17 @@ public class Order {
 
     public boolean isCanceled() {
         return state.equals(State.CANCELED);
+    }
+
+    private void createTransaction() {
+        User user = User.findOne(userId);
+
+        TransactionOpOrder orderChange = new TransactionOpOrder(orderId, paymentId);
+
+        AccountOp accountOp = new AccountOp(userId, new BigDecimal(product.price), user.getSeqId() + 1);
+        orderChange.accounts.add(accountOp);
+
+        TransactionOp.createOrderTransaction(orderChange);
     }
 
     static public Order findOne(String orderId) {

@@ -10,7 +10,8 @@ import utils.ObjectIdMapper;
 
 public class TransactionOp {
     public enum TransactionType {
-        PRIZE
+        PRIZE,
+        ORDER
     };
 
     public enum TransactionProc {
@@ -69,6 +70,16 @@ public class TransactionOp {
         TransactionOp transactionOp = new TransactionOp(TransactionType.PRIZE);
         transactionOp.changes = prizeChange;
         WriteResult result = Model.transactions().update("{type: #, 'changes.contestId': #}", transactionOp.type, prizeChange.contestId).upsert().with(transactionOp);
+        if (result.getN() > 0) {
+            play.Logger.info(transactionOp.toJson());
+        }
+        return transactionOp;
+    }
+
+    public static TransactionOp createOrderTransaction(TransactionOpOrder orderOp) {
+        TransactionOp transactionOp = new TransactionOp(TransactionType.ORDER);
+        transactionOp.changes = orderOp;
+        WriteResult result = Model.transactions().update("{type: #, 'changes.orderId': #, 'changes.paymentId': #}", transactionOp.type, orderOp.orderId, orderOp.paymentId).upsert().with(transactionOp);
         if (result.getN() > 0) {
             play.Logger.info(transactionOp.toJson());
         }
