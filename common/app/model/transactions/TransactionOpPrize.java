@@ -2,10 +2,10 @@ package model.transactions;
 
 import org.bson.types.ObjectId;
 
-public class PrizeChange extends TransactionChange {
+public class TransactionOpPrize extends TransactionOps {
     public ObjectId contestId;
 
-    public PrizeChange(ObjectId contestId) {
+    public TransactionOpPrize(ObjectId contestId) {
         super();
         this.contestId = contestId;
     }

@@ -1,7 +1,6 @@
 package model.transactions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.WriteResult;
 import model.Model;
@@ -30,7 +29,7 @@ public class Transaction {
     public TransactionProc proc;
     public TransactionState state;
     public TransactionType type;
-    public TransactionChange changes;
+    public TransactionOps changes;
 
     public Transaction() {}
 
@@ -55,7 +54,7 @@ public class Transaction {
         return json;
     }
 
-    public static Transaction createPrizeTransaction(PrizeChange prizeChange) {
+    public static Transaction createPrizeTransaction(TransactionOpPrize prizeChange) {
         Transaction transaction = new Transaction(TransactionType.PRIZE);
         transaction.changes = prizeChange;
         WriteResult result = Model.transactions().update("{type: #, 'changes.contestId': #}", transaction.type, prizeChange.contestId).upsert().with(transaction);

@@ -2,7 +2,7 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import model.transactions.AccountOp;
-import model.transactions.PrizeChange;
+import model.transactions.TransactionOpPrize;
 import model.transactions.Transaction;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
@@ -214,7 +214,7 @@ public class Contest implements JongoId {
 
         // Si el contest tiene premios para repartir...
         if (!prizes.isEmpty()) {
-            PrizeChange prizeChange = new PrizeChange(contestId);
+            TransactionOpPrize prizeChange = new TransactionOpPrize(contestId);
             for (ContestEntry contestEntry : contestEntries) {
                 if (contestEntry.position < prizes.size()) {
                     User user = User.findOne(contestEntry.userId);
