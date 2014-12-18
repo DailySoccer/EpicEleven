@@ -174,7 +174,7 @@ public class Contest implements JongoId {
         return contains;
     }
 
-    public void updateRanking(BatchWriteOperation bulkOperation, TemplateContest templateContest, List<TemplateMatchEvent> templateMatchEvents) {
+    public void updateRanking(TemplateContest templateContest, List<TemplateMatchEvent> templateMatchEvents) {
         if (contestEntries.isEmpty()) {
             return;
         }
@@ -190,8 +190,7 @@ public class Contest implements JongoId {
         for (ContestEntry contestEntry : contestEntries) {
             contestEntry.position = index++;
             contestEntry.prize = templateContest.getPositionPrize(contestEntry.position);
-            // contestEntry.updateRanking();
-            contestEntry.updateRanking(bulkOperation);
+            contestEntry.updateRanking();
         }
     }
 

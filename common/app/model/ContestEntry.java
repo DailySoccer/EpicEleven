@@ -57,16 +57,6 @@ public class ContestEntry implements JongoId {
                     position, fantasyPoints, prize);
     }
 
-    public void updateRanking(BatchWriteOperation bulkOperation) {
-        // Logger.info("ContestEntry: {} | UserId: {} | Position: {} | FantasyPoints: {}", contestEntryId, userId, position, fantasyPoints);
-
-        DBObject query = new BasicDBObject("contestEntries._id", getId());
-        DBObject update = new BasicDBObject("$set", new BasicDBObject("contestEntries.$.position", position)
-                                                              .append("contestEntries.$.fantasyPoints", fantasyPoints)
-                                                              .append("contestEntries.$.prize", prize));
-        bulkOperation.find(query).updateOne(update);
-    }
-
     static public ContestEntry findOne(String contestEntryId) {
         ContestEntry aContestEntry = null;
         if (ObjectId.isValid(contestEntryId)) {

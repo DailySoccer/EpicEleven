@@ -245,18 +245,9 @@ public class TemplateContest implements JongoId {
     }
 
     public void givePrizes() {
-        List<Contest> contests = Contest.findAllFromTemplateContest(templateContestId);
         List<TemplateMatchEvent> templateMatchEvents = getTemplateMatchEvents();
-
-        // Actualizamos los rankings de cada contest
-        BatchWriteOperation bulkOperation = new BatchWriteOperation(Model.contests().getDBCollection().initializeOrderedBulkOperation());
-         for (Contest contest : contests) {
-            contest.updateRanking(bulkOperation, this, templateMatchEvents);
-        }
-        bulkOperation.execute();
-
-        // Damos los premios según la posición en el Ranking
-        for (Contest contest : contests) {
+        for (Contest contest : Contest.findAllFromTemplateContest(templateContestId)) {
+            contest.updateRanking(this, templateMatchEvents);
             contest.givePrizes();
         }
     }
