@@ -55,6 +55,14 @@ GET            /date_last_xml                                          controlle
 # Por aqui nos entran todos nuestros datos de opta
 POST           /opta                                                   controllers.OptaHttpController.optaXmlInput()
 
+# Paypal
+GET            /paypal/approval_payment/:userId/:productId             controllers.PaypalController.approvalPayment(userId, productId)
+GET            /paypal/execute_payment                                 controllers.PaypalController.executePayment()
+GET            /paypal/verify_payment/:paymentId                       controllers.PaypalController.verifyPayment(paymentId)
+GET            /paypal/history                                         controllers.PaypalController.history()
+POST           /paypal/ipn                                             controllers.PaypalController.ipnListener()
+POST           /paypal/webhook                                         controllers.PaypalController.webhook()
+
 # Loguear error del cliente
 POST           /log                                                    controllers.LoggerController.log()
 
