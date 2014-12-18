@@ -50,7 +50,7 @@ public class AccountOp {
                 .and("{$project: { \"changes.accounts.seqId\": 1, \"changes.accounts.cachedBalance\": 1 }}")
                 .and("{$sort: { \"changes.accounts.seqId\": -1 }}")
                 .and("{$limit: 1}")
-                .and("{$group: {_id: \"balance\", cachedBalance: { $first: \"$changes.accounts.cachedBalance\" }}}")
+                .and("{$group: {_id: \"balance\", accountId: { $first: \"$changes.accounts.accountId\" }, cachedBalance: { $first: \"$changes.accounts.cachedBalance\" }}}")
                 .as(AccountOp.class);
 
         return (!accountOp.isEmpty()) ? accountOp.get(0).cachedBalance : new BigDecimal(0);

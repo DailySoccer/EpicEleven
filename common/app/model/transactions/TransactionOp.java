@@ -71,8 +71,6 @@ public class TransactionOp {
         WriteResult result = Model.transactions().update("{type: #, 'changes.contestId': #}", transactionOp.type, prizeChange.contestId).upsert().with(transactionOp);
         if (result.getN() > 0) {
             play.Logger.info(transactionOp.toJson());
-
-            transactionOp.commit();
         }
         return transactionOp;
     }

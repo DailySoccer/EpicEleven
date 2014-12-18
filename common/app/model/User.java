@@ -1,6 +1,7 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import model.transactions.AccountOp;
 import org.bson.types.ObjectId;
 import org.jongo.Aggregate;
 import org.jongo.marshall.jackson.oid.Id;
@@ -94,33 +95,25 @@ public class User {
     }
 
     public Integer getSeqId() {
-        List<SeqId> seqId = Model.transactions()
+        List<AccountOp> account = Model.transactions()
                 .aggregate("{$match: { \"changes.accounts.accountId\": #}}", userId)
                 .and("{$unwind: \"$changes.accounts\"}")
                 .and("{$match: {\"changes.accounts.accountId\": #}}", userId)
                 .and("{$project: { \"changes.accounts.seqId\": 1 }}")
                 .and("{$sort: { \"changes.accounts.seqId\": -1 }}")
                 .and("{$limit: 1}")
-                .and("{$group: {_id: \"seqId\", seqId: { $first: \"$changes.accounts.seqId\" }}}")
-                .as(SeqId.class);
-        return (!seqId.isEmpty() && seqId.get(0).seqId != null) ? seqId.get(0).seqId : 0;
+                .and("{$group: {_id: \"seqId\", accountId: { $first: \"$changes.accounts.accountId\" }, seqId: { $first: \"$changes.accounts.seqId\" }}}")
+                .as(AccountOp.class);
+        return (!account.isEmpty() && account.get(0).seqId != null) ? account.get(0).seqId : 0;
     }
 
     public BigDecimal calculateBalance() {
-        List<Balance> balance = Model.transactions()
+        List<AccountOp> account = Model.transactions()
                 .aggregate("{$match: { \"changes.accounts.accountId\": #, state: \"VALID\"}}", userId)
                 .and("{$unwind: \"$changes.accounts\"}")
                 .and("{$match: {\"changes.accounts.accountId\": #}}", userId)
-                .and("{$group: {_id: \"total\", total: { $sum: \"$changes.accounts.value\" }}}")
-                .as(Balance.class);
-        return (!balance.isEmpty()) ? balance.get(0).total : new BigDecimal(0);
+                .and("{$group: {_id: \"value\", accountId: { $first: \"$changes.accounts.accountId\" }, value: { $sum: \"$changes.accounts.value\" }}}")
+                .as(AccountOp.class);
+        return (!account.isEmpty()) ? account.get(0).value : new BigDecimal(0);
     }
-}
-
-class SeqId {
-    Integer seqId;
-}
-
-class Balance {
-    BigDecimal total;
 }
