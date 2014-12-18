@@ -3,11 +3,11 @@ package model;
 import com.fasterxml.jackson.annotation.JsonView;
 import model.transactions.AccountOp;
 import model.transactions.TransactionOpPrize;
-import model.transactions.Transaction;
+import model.transactions.TransactionOp;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import java.math.BigDecimal;
-import utils.BatchWriteOperation;
+
 import utils.ListUtils;
 import utils.ViewProjection;
 
@@ -221,7 +221,7 @@ public class Contest implements JongoId {
                     prizeChange.accounts.add(accountOp);
                 }
             }
-            Transaction.createPrizeTransaction(prizeChange);
+            TransactionOp.createPrizeTransaction(prizeChange);
         }
 
         // Actualizamos las estadísticas de torneos ganados

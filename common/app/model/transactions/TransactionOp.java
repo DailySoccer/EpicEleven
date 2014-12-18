@@ -8,7 +8,7 @@ import org.jongo.marshall.jackson.oid.Id;
 import org.bson.types.ObjectId;
 import utils.ObjectIdMapper;
 
-public class Transaction {
+public class TransactionOp {
     public enum TransactionType {
         PRIZE
     };
@@ -31,9 +31,9 @@ public class Transaction {
     public TransactionType type;
     public TransactionOps changes;
 
-    public Transaction() {}
+    public TransactionOp() {}
 
-    private Transaction(TransactionType type) {
+    private TransactionOp(TransactionType type) {
         this.proc = TransactionProc.UNCOMMITTED;
         this.state = TransactionState.VALID;
         this.type = type;
@@ -65,15 +65,15 @@ public class Transaction {
         return json;
     }
 
-    public static Transaction createPrizeTransaction(TransactionOpPrize prizeChange) {
-        Transaction transaction = new Transaction(TransactionType.PRIZE);
-        transaction.changes = prizeChange;
-        WriteResult result = Model.transactions().update("{type: #, 'changes.contestId': #}", transaction.type, prizeChange.contestId).upsert().with(transaction);
+    public static TransactionOp createPrizeTransaction(TransactionOpPrize prizeChange) {
+        TransactionOp transactionOp = new TransactionOp(TransactionType.PRIZE);
+        transactionOp.changes = prizeChange;
+        WriteResult result = Model.transactions().update("{type: #, 'changes.contestId': #}", transactionOp.type, prizeChange.contestId).upsert().with(transactionOp);
         if (result.getN() > 0) {
-            play.Logger.info(transaction.toJson());
+            play.Logger.info(transactionOp.toJson());
 
-            transaction.commit();
+            transactionOp.commit();
         }
-        return transaction;
+        return transactionOp;
     }
 }
