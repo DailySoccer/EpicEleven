@@ -17,6 +17,9 @@ public class EnterContestJob extends Job {
     ObjectId contestId;
     List<ObjectId> soccerIds;
 
+    public EnterContestJob() {
+    }
+
     private EnterContestJob(ObjectId userId, ObjectId contestId, List<ObjectId> soccersIds) {
         this.userId = userId;
         this.contestId = contestId;
@@ -63,15 +66,29 @@ public class EnterContestJob extends Job {
                             // Se ha realizado el pago correctamente
                             bValid = true;
                         }
-                    }
-                    else {
+                    } else {
                         // El contest O es GRATIS O ha sido PAGADO
                         bValid = true;
                     }
                 }
             }
 
-            updateState(JobState.PROCESSING, bValid ? JobState.DONE : JobState.CANCELED);
+            updateState(JobState.PROCESSING, bValid ? JobState.DONE : JobState.CANCELING);
+        }
+
+        if (state.equals(JobState.CANCELING)) {
+
+            // Verificamos si el usuario ha sido incluido en el contest
+            Contest contest = Contest.findOne(contestId);
+            if (contest != null) {
+                ContestEntry contestEntry = contest.getContestEntryWithUser(userId);
+                if (contestEntry != null) {
+                    // Lo quitamos del contest
+                    ContestEntry.remove(userId, contestId, contestEntry.contestEntryId);
+                }
+            }
+
+            updateState(JobState.CANCELING, JobState.CANCELED);
         }
     }
 

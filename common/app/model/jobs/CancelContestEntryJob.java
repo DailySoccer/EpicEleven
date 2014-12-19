@@ -17,6 +17,9 @@ public class CancelContestEntryJob extends Job {
     ObjectId contestId;
     ObjectId contestEntryId;
 
+    public CancelContestEntryJob() {
+    }
+
     private CancelContestEntryJob(ObjectId userId, ObjectId contestId, ObjectId contestEntryId) {
         this.userId = userId;
         this.contestId = contestId;

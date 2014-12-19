@@ -17,7 +17,8 @@ public class Job {
         TODO        (0),
         PROCESSING  (1),
         DONE        (2),
-        CANCELED    (3);
+        CANCELING   (3),
+        CANCELED    (4);
 
         public final int id;
 
@@ -71,9 +72,15 @@ public class Job {
                 "{state: #, lastModified: {$lt: #}}", state, dateThreshold
         );
         Job job = find.as(Job.class);
-        switch (job.type) {
-            case ENTER_CONTEST: job = find.as(EnterContestJob.class); break;
-            case CANCEL_CONTEST_ENTRY: job = find.as(CancelContestEntryJob.class); break;
+        if (job != null) {
+            switch (job.type) {
+                case ENTER_CONTEST:
+                    job = find.as(EnterContestJob.class);
+                    break;
+                case CANCEL_CONTEST_ENTRY:
+                    job = find.as(CancelContestEntryJob.class);
+                    break;
+            }
         }
         return job;
     }

@@ -4,6 +4,8 @@ import akka.actor.UntypedActor;
 import model.GlobalDate;
 import model.Model;
 import model.accounting.AccountingOp;
+import model.jobs.Job;
+import org.joda.time.DateTime;
 import play.Logger;
 import scala.concurrent.duration.Duration;
 import utils.ListUtils;
@@ -18,7 +20,7 @@ public class TransactionsActor extends UntypedActor {
 
             case "Tick":
                 onTick();
-                getContext().system().scheduler().scheduleOnce(Duration.create(30, TimeUnit.MINUTES), getSelf(),
+                getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.MINUTES), getSelf(),
                         "Tick", getContext().dispatcher(), null);
                 break;
 
@@ -46,5 +48,20 @@ public class TransactionsActor extends UntypedActor {
                 AccountingOp.TransactionProc.UNCOMMITTED, AccountingOp.TransactionState.VALID).as(AccountingOp.class));
         for (AccountingOp accountingOp : accountingOps) {
             accountingOp.commit();
+        }
+
+        Job jobTodo = Job.findJobByStateAndLastModified(Job.JobState.TODO, new DateTime().minusMinutes(1).getMillis());
+        if (jobTodo != null) {
+            jobTodo.apply();
+        }
+
+        Job jobProcessing = Job.findJobByStateAndLastModified(Job.JobState.PROCESSING, new DateTime().minusMinutes(1).getMillis());
+        if (jobProcessing != null) {
+            jobProcessing.apply();
+        }
+
+        Job jobCanceled = Job.findJobByStateAndLastModified(Job.JobState.CANCELED, new DateTime().minusMinutes(1).getMillis());
+        if (jobCanceled != null) {
+            jobCanceled.apply();
         }
     }}
