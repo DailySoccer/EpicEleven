@@ -95,7 +95,15 @@ public class User {
     }
 
     public Integer getSeqId() {
-        List<AccountOp> account = Model.transactions()
+        return User.getSeqId(userId);
+    }
+
+    public BigDecimal calculateBalance() {
+        return User.calculateBalance(userId);
+    }
+
+    static public Integer getSeqId(ObjectId userId) {
+        List<AccountOp> account = Model.accountingTransactions()
                 .aggregate("{$match: { \"changes.accounts.accountId\": #}}", userId)
                 .and("{$unwind: \"$changes.accounts\"}")
                 .and("{$match: {\"changes.accounts.accountId\": #}}", userId)
@@ -107,8 +115,8 @@ public class User {
         return (!account.isEmpty() && account.get(0).seqId != null) ? account.get(0).seqId : 0;
     }
 
-    public BigDecimal calculateBalance() {
-        List<AccountOp> account = Model.transactions()
+    static public BigDecimal calculateBalance(ObjectId userId) {
+        List<AccountOp> account = Model.accountingTransactions()
                 .aggregate("{$match: { \"changes.accounts.accountId\": #, state: \"VALID\"}}", userId)
                 .and("{$unwind: \"$changes.accounts\"}")
                 .and("{$match: {\"changes.accounts.accountId\": #}}", userId)

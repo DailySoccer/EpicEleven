@@ -85,11 +85,9 @@ public class Order {
     }
 
     private void createTransaction() {
-        User user = User.findOne(userId);
-
         TransactionOpOrder orderChange = new TransactionOpOrder(orderId, paymentId);
 
-        AccountOp accountOp = new AccountOp(userId, new BigDecimal(product.price), user.getSeqId() + 1);
+        AccountOp accountOp = new AccountOp(userId, new BigDecimal(product.price), User.getSeqId(userId) + 1);
         orderChange.accounts.add(accountOp);
 
         TransactionOp.createOrderTransaction(orderChange);

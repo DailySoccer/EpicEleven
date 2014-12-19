@@ -50,7 +50,7 @@ public class TransactionOp {
             accountOp.updateBalance();
         }
         if (valid) {
-            Model.transactions().update(transactionId).with("{$set: {proc: #}}", TransactionProc.COMMITTED);
+            Model.accountingTransactions().update(transactionId).with("{$set: {proc: #}}", TransactionProc.COMMITTED);
         }
         return valid;
     }
@@ -69,7 +69,7 @@ public class TransactionOp {
     public static TransactionOp createPrizeTransaction(TransactionOpPrize prizeChange) {
         TransactionOp transactionOp = new TransactionOp(TransactionType.PRIZE);
         transactionOp.changes = prizeChange;
-        WriteResult result = Model.transactions().update("{type: #, 'changes.contestId': #}", transactionOp.type, prizeChange.contestId).upsert().with(transactionOp);
+        WriteResult result = Model.accountingTransactions().update("{type: #, 'changes.contestId': #}", transactionOp.type, prizeChange.contestId).upsert().with(transactionOp);
         if (result.getN() > 0) {
             play.Logger.info(transactionOp.toJson());
         }
@@ -79,7 +79,7 @@ public class TransactionOp {
     public static TransactionOp createOrderTransaction(TransactionOpOrder orderOp) {
         TransactionOp transactionOp = new TransactionOp(TransactionType.ORDER);
         transactionOp.changes = orderOp;
-        WriteResult result = Model.transactions().update("{type: #, 'changes.orderId': #, 'changes.paymentId': #}", transactionOp.type, orderOp.orderId, orderOp.paymentId).upsert().with(transactionOp);
+        WriteResult result = Model.accountingTransactions().update("{type: #, 'changes.orderId': #, 'changes.paymentId': #}", transactionOp.type, orderOp.orderId, orderOp.paymentId).upsert().with(transactionOp);
         if (result.getN() > 0) {
             play.Logger.info(transactionOp.toJson());
         }

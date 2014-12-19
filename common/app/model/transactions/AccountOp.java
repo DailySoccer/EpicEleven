@@ -22,7 +22,7 @@ public class AccountOp {
 
     public boolean canCommit() {
         // Comprobamos que NO exista ninguna transacción "anterior" ("seqId" menor) de la misma "account" sin "commit"
-        return Model.transactions()
+        return Model.accountingTransactions()
                 .count("{ \"changes.accounts\": {$elemMatch: { accountId: #, seqId: { $lt: # } }}, proc: #}",
                         accountId, seqId, TransactionOp.TransactionProc.UNCOMMITTED) == 0;
     }
@@ -31,7 +31,7 @@ public class AccountOp {
         // Obtenemos el balance del anterior COMMIT
         BigDecimal lastBalance = getLastBalance().add(value);
         // Actualizamos el cachedBalance del "account"
-        Model.transactions().update("{ \"changes.accounts\": { $elemMatch: {accountId: #, seqId: #} } }", accountId, seqId).with("{$set: {\"changes.accounts.$.cachedBalance\": #}}", lastBalance.doubleValue());
+        Model.accountingTransactions().update("{ \"changes.accounts\": { $elemMatch: {accountId: #, seqId: #} } }", accountId, seqId).with("{$set: {\"changes.accounts.$.cachedBalance\": #}}", lastBalance.doubleValue());
         // Actualizamos el user
         User.updateBalance(accountId, lastBalance);
     }
@@ -43,7 +43,7 @@ public class AccountOp {
         }
 
         // TODO: ¿necesitamos comprobar que el commit es del "seqId" inmediatamente anterior?
-        List<AccountOp> accountOp = Model.transactions()
+        List<AccountOp> accountOp = Model.accountingTransactions()
                 .aggregate("{$match: { \"changes.accounts.accountId\": #, proc: #, state: \"VALID\"}}", accountId, TransactionOp.TransactionProc.COMMITTED)
                 .and("{$unwind: \"$changes.accounts\"}")
                 .and("{$match: {\"changes.accounts.accountId\": #}}", accountId)

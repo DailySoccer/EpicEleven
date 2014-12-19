@@ -44,7 +44,7 @@ public class Model {
     static public MongoCollection pointsTranslation() { return _jongo.getCollection("pointsTranslation"); }
     static public MongoCollection optaProcessor()     { return _jongo.getCollection("optaProcessor"); }
 
-    static public MongoCollection transactions() { return _jongo.getCollection("transactions"); }
+    static public MongoCollection accountingTransactions() { return _jongo.getCollection("accountingTransactions"); }
     static public MongoCollection orders() { return _jongo.getCollection("orders"); }
     static public MongoCollection paypalResponses() { return _jongo.getCollection("paypalResponses"); }
 
@@ -260,9 +260,9 @@ public class Model {
     }
 
     static private void ensureTransactionsDB(DB theMongoDB) {
-        if (!theMongoDB.collectionExists("transactions")) {
-            DBCollection transactions = theMongoDB.createCollection("transactions", new BasicDBObject());
-            transactions.createIndex(new BasicDBObject("changes.accounts.accountId", 1).append("changes.accounts.seqId", 1), new BasicDBObject("unique", true));
+        if (!theMongoDB.collectionExists("accountingTransactions")) {
+            DBCollection accountingTransactions = theMongoDB.createCollection("accountingTransactions", new BasicDBObject());
+            accountingTransactions.createIndex(new BasicDBObject("changes.accounts.accountId", 1).append("changes.accounts.seqId", 1), new BasicDBObject("unique", true));
         }
     }
 

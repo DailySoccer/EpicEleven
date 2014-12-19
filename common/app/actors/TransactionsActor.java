@@ -42,7 +42,7 @@ public class TransactionsActor extends UntypedActor {
         *   de sus "accounts" han sido realizadas (anteriores AccountOp.seqId en estado Committed)
         *   Toda "account" en estado Committed tendrá el AccountOp.cachedBalance correctamente actualizado
          */
-        List<TransactionOp> transactionOps = ListUtils.asList(Model.transactions().find("{proc: #, state: #}",
+        List<TransactionOp> transactionOps = ListUtils.asList(Model.accountingTransactions().find("{proc: #, state: #}",
                 TransactionOp.TransactionProc.UNCOMMITTED, TransactionOp.TransactionState.VALID).as(TransactionOp.class));
         for (TransactionOp transactionOp : transactionOps) {
             transactionOp.commit();
