@@ -54,9 +54,7 @@ public class User {
     }
 
     static public User findByName(String username) {
-        //User aUser = null;
         return Model.users().findOne("{nickName: #}", username).as(User.class);
-        //return aUser;
     }
 
     static public User findOne(ObjectId userId) {

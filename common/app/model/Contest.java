@@ -2,7 +2,7 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import model.accounting.AccountOp;
-import model.accounting.AccountingOpPrize;
+import model.accounting.AccountingOpsPrize;
 import model.accounting.AccountingOp;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
@@ -163,6 +163,26 @@ public class Contest implements JongoId {
                 .as(Contest.class));
     }
 
+    static public List<Contest> findAllWithContestEntriesNotPaid() {
+        List<Contest> contests = Model.contests()
+                .aggregate("{$match: { entryFee: {$gt: 0}, \"contestEntries.paidEntry\": false}}")
+                .and("{$unwind: \"$contestEntries\"}")
+                .and("{$match: {\"contestEntries.paidEntry\": false}}")
+                .as(Contest.class);
+        return contests;
+    }
+
+    public ContestEntry getContestEntryWithUser(ObjectId userId) {
+        ContestEntry ret = null;
+        for (ContestEntry contestEntry: contestEntries) {
+            if (contestEntry.userId.equals(userId)) {
+                ret = contestEntry;
+                break;
+            }
+        }
+        return ret;
+    }
+
     public boolean containsContestEntryWithUser(ObjectId userId) {
         boolean contains = false;
         for (ContestEntry contestEntry: contestEntries) {
@@ -213,7 +233,7 @@ public class Contest implements JongoId {
 
         // Si el contest tiene premios para repartir...
         if (!prizes.isEmpty()) {
-            AccountingOpPrize prizeChange = new AccountingOpPrize(contestId);
+            AccountingOpsPrize prizeChange = new AccountingOpsPrize(contestId);
             for (ContestEntry contestEntry : contestEntries) {
                 if (contestEntry.position < prizes.size()) {
                     User user = User.findOne(contestEntry.userId);
@@ -221,7 +241,7 @@ public class Contest implements JongoId {
                     prizeChange.accounts.add(accountOp);
                 }
             }
-            AccountingOp.createPrizeTransaction(prizeChange);
+            AccountingOpsPrize.create(prizeChange);
         }
 
         // Actualizamos las estadísticas de torneos ganados

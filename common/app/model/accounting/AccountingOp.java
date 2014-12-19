@@ -11,7 +11,9 @@ import utils.ObjectIdMapper;
 public class AccountingOp {
     public enum TransactionType {
         PRIZE,
-        ORDER
+        ORDER,
+        ENTER_CONTEST,
+        CANCEL_CONTEST_ENTRY
     };
 
     public enum TransactionProc {
@@ -34,7 +36,7 @@ public class AccountingOp {
 
     public AccountingOp() {}
 
-    private AccountingOp(TransactionType type) {
+    public AccountingOp(TransactionType type) {
         this.proc = TransactionProc.UNCOMMITTED;
         this.state = TransactionState.VALID;
         this.type = type;
@@ -55,7 +57,7 @@ public class AccountingOp {
         return valid;
     }
 
-    private String toJson() {
+    public String toJson() {
         String json = "";
         try {
             ObjectWriter ow = new ObjectIdMapper().writer().withDefaultPrettyPrinter();
@@ -64,25 +66,5 @@ public class AccountingOp {
             e.printStackTrace();
         }
         return json;
-    }
-
-    public static AccountingOp createPrizeTransaction(AccountingOpPrize prizeChange) {
-        AccountingOp accountingOp = new AccountingOp(TransactionType.PRIZE);
-        accountingOp.changes = prizeChange;
-        WriteResult result = Model.accountingTransactions().update("{type: #, 'changes.contestId': #}", accountingOp.type, prizeChange.contestId).upsert().with(accountingOp);
-        if (result.getN() > 0) {
-            play.Logger.info(accountingOp.toJson());
-        }
-        return accountingOp;
-    }
-
-    public static AccountingOp createOrderTransaction(AccountingOpOrder orderOp) {
-        AccountingOp accountingOp = new AccountingOp(TransactionType.ORDER);
-        accountingOp.changes = orderOp;
-        WriteResult result = Model.accountingTransactions().update("{type: #, 'changes.orderId': #, 'changes.paymentId': #}", accountingOp.type, orderOp.orderId, orderOp.paymentId).upsert().with(accountingOp);
-        if (result.getN() > 0) {
-            play.Logger.info(accountingOp.toJson());
-        }
-        return accountingOp;
     }
 }

@@ -5,6 +5,8 @@ import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.*;
+import model.jobs.CancelContestEntryJob;
+import model.jobs.EnterContestJob;
 import org.bson.types.ObjectId;
 import play.Logger;
 import play.data.Form;
@@ -14,6 +16,7 @@ import play.mvc.Result;
 import utils.ListUtils;
 import utils.ReturnHelper;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +35,7 @@ public class ContestEntryController extends Controller {
     private static final String ERROR_CONTEST_ENTRY_INVALID = "ERROR_CONTEST_ENTRY_INVALID";
     private static final String ERROR_OP_UNAUTHORIZED = "ERROR_OP_UNAUTHORIZED";
     private static final String ERROR_USER_ALREADY_INCLUDED = "ERROR_USER_ALREADY_INCLUDED";
+    private static final String ERROR_USER_BALANCE_NEGATIVE = "ERROR_USER_BALANCE_NEGATIVE";
     private static final String ERROR_RETRY_OP = "ERROR_RETRY_OP";
 
     public static class AddContestEntryParams {
@@ -85,10 +89,22 @@ public class ContestEntryController extends Controller {
             if (errores.isEmpty()) {
                 errores = validateContestEntry(aContest, idsList);
             }
+
+            if (errores.isEmpty()) {
+                if (aContest.entryFee > 0) {
+                    // Verificar que el usuario tiene dinero suficiente...
+                    BigDecimal userBalance = User.calculateBalance(theUser.userId);
+                    if (userBalance.compareTo(new BigDecimal(aContest.entryFee)) < 0) {
+                        errores.add(ERROR_USER_BALANCE_NEGATIVE);
+                    }
+                }
+            }
             if (errores.isEmpty()) {
                 assert aContest != null;
                 contestId = aContest.contestId.toString();
-                if (!ContestEntry.create(theUser.userId, aContest.contestId, idsList)) {
+
+                EnterContestJob enterContestJob = EnterContestJob.create(theUser.userId, aContest.contestId, idsList);
+                if (!enterContestJob.isDone()) {
                     errores.add(ERROR_RETRY_OP);
                 }
             }
@@ -199,7 +215,8 @@ public class ContestEntryController extends Controller {
                 }
 
                 if (!contestEntryForm.hasErrors()) {
-                    if (!ContestEntry.remove(theUser.userId, contest.contestId, contestEntry.contestEntryId)) {
+                    CancelContestEntryJob cancelContestEntryJob = CancelContestEntryJob.create(theUser.userId, contest.contestId, contestEntry.contestEntryId);
+                    if (!cancelContestEntryJob.isDone()) {
                         contestEntryForm.reject(ERROR_RETRY_OP);
                     }
                 }

@@ -5,12 +5,16 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
+import model.accounting.AccountOp;
+import model.accounting.AccountingOpsEnterContest;
+import model.accounting.AccountingOpsOrder;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.BatchWriteOperation;
 import utils.ListUtils;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -35,6 +39,9 @@ public class ContestEntry implements JongoId {
     public int fantasyPoints;
 
     @JsonView(JsonViews.NotForClient.class)
+    public boolean paidEntry = false;
+
+    @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
     public ContestEntry() {}
@@ -55,6 +62,13 @@ public class ContestEntry implements JongoId {
             .update("{'contestEntries._id': #}", getId())
             .with("{$set: {'contestEntries.$.position': #, 'contestEntries.$.fantasyPoints': #, 'contestEntries.$.prize': #}}",
                     position, fantasyPoints, prize);
+    }
+
+    public void setPaidEntry(boolean paid) {
+        Model.contests()
+                .update("{'contestEntries._id': #}", getId())
+                .with("{$set: {'contestEntries.$.paidEntry': #}}", paid);
+        paidEntry = paid;
     }
 
     static public ContestEntry findOne(String contestEntryId) {

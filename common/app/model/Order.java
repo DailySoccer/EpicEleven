@@ -2,7 +2,7 @@ package model;
 
 import model.accounting.AccountOp;
 import model.accounting.AccountingOp;
-import model.accounting.AccountingOpOrder;
+import model.accounting.AccountingOpsOrder;
 import org.jongo.marshall.jackson.oid.Id;
 import org.bson.types.ObjectId;
 
@@ -85,12 +85,12 @@ public class Order {
     }
 
     private void createTransaction() {
-        AccountingOpOrder orderChange = new AccountingOpOrder(orderId, paymentId);
+        AccountingOpsOrder orderChange = new AccountingOpsOrder(orderId, paymentId);
 
         AccountOp accountOp = new AccountOp(userId, new BigDecimal(product.price), User.getSeqId(userId) + 1);
         orderChange.accounts.add(accountOp);
 
-        AccountingOp.createOrderTransaction(orderChange);
+        AccountingOpsOrder.create(orderChange);
     }
 
     static public Order findOne(String orderId) {
