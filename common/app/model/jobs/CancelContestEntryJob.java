@@ -40,6 +40,7 @@ public class CancelContestEntryJob extends Job {
                 if (contestEntry != null) {
 
                     // Si el contest es de pago y ha sido pagado...
+                    // TODO: En el caso de que sea un contest de pago y no haya sido pagado, no permitimos su cancelación... ?
                     if (contest.entryFee > 0 && contestEntry.paidEntry) {
                         // Crear la transacción de Abandonar un Contest
                         AccountingOpsCancelContestEntry cancelContestEntryChange = new AccountingOpsCancelContestEntry(contestId, contestEntryId);
@@ -52,8 +53,8 @@ public class CancelContestEntryJob extends Job {
 
                         bValid = true;
                     }
-                    else {
-                        // El contest O es GRATIS O NO ha sido PAGADO
+                    else if (contest.entryFee == 0) {
+                        // El contest es GRATIS
                         bValid = true;
                     }
                 }

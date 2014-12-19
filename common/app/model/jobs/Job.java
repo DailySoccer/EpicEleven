@@ -73,6 +73,7 @@ public class Job {
         Job job = find.as(Job.class);
         switch (job.type) {
             case ENTER_CONTEST: job = find.as(EnterContestJob.class); break;
+            case CANCEL_CONTEST_ENTRY: job = find.as(CancelContestEntryJob.class); break;
         }
         return job;
     }
