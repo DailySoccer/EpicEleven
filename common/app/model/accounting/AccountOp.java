@@ -1,4 +1,4 @@
-package model.transactions;
+package model.accounting;
 
 import model.Model;
 import model.User;

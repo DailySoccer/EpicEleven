@@ -3,7 +3,7 @@ package actors;
 import akka.actor.UntypedActor;
 import model.GlobalDate;
 import model.Model;
-import model.transactions.TransactionOp;
+import model.accounting.TransactionOp;
 import play.Logger;
 import scala.concurrent.duration.Duration;
 import utils.ListUtils;

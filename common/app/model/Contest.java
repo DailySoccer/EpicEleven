@@ -1,9 +1,9 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import model.transactions.AccountOp;
-import model.transactions.TransactionOpPrize;
-import model.transactions.TransactionOp;
+import model.accounting.AccountOp;
+import model.accounting.TransactionOpPrize;
+import model.accounting.TransactionOp;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import java.math.BigDecimal;

@@ -1,4 +1,4 @@
-package model.transactions;
+package model.accounting;
 
 import java.util.ArrayList;
 import java.util.List;

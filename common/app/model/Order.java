@@ -1,8 +1,8 @@
 package model;
 
-import model.transactions.AccountOp;
-import model.transactions.TransactionOp;
-import model.transactions.TransactionOpOrder;
+import model.accounting.AccountOp;
+import model.accounting.TransactionOp;
+import model.accounting.TransactionOpOrder;
 import org.jongo.marshall.jackson.oid.Id;
 import org.bson.types.ObjectId;
 

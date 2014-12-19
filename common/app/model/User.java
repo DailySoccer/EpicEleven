@@ -1,9 +1,8 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import model.transactions.AccountOp;
+import model.accounting.AccountOp;
 import org.bson.types.ObjectId;
-import org.jongo.Aggregate;
 import org.jongo.marshall.jackson.oid.Id;
 import utils.ListUtils;
 

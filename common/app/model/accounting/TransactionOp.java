@@ -1,4 +1,4 @@
-package model.transactions;
+package model.accounting;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
