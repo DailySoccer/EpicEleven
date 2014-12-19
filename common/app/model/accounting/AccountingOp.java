@@ -1,5 +1,6 @@
 package model.accounting;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.mongodb.WriteResult;
@@ -8,6 +9,10 @@ import org.jongo.marshall.jackson.oid.Id;
 import org.bson.types.ObjectId;
 import utils.ObjectIdMapper;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS,property="_class")
 public class AccountingOp {
     public enum TransactionType {
         PRIZE,
@@ -32,7 +37,7 @@ public class AccountingOp {
     public TransactionProc proc;
     public TransactionState state;
     public TransactionType type;
-    public AccountingOps changes;
+    public List<AccountOp> accounts = new ArrayList<>();
 
     public AccountingOp() {}
 
@@ -44,7 +49,7 @@ public class AccountingOp {
 
     public boolean commit () {
         boolean valid = true;
-        for (AccountOp accountOp: changes.accounts) {
+        for (AccountOp accountOp: accounts) {
             if (!accountOp.canCommit()) {
                 valid = false;
                 break;

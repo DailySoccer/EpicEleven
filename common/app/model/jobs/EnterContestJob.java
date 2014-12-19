@@ -1,12 +1,11 @@
 package model.jobs;
 
-import com.mongodb.WriteResult;
+import com.google.common.collect.ImmutableList;
 import model.Contest;
 import model.ContestEntry;
-import model.Model;
 import model.User;
 import model.accounting.AccountOp;
-import model.accounting.AccountingOpsEnterContest;
+import model.accounting.AccountingOpEnterContest;
 import org.bson.types.ObjectId;
 
 import java.math.BigDecimal;
@@ -55,10 +54,9 @@ public class EnterContestJob extends Job {
                         BigDecimal userBalance = User.calculateBalance(userId);
                         if (userBalance.compareTo(new BigDecimal(contest.entryFee)) >= 0) {
                             // Registrar el pago
-                            AccountingOpsEnterContest enterContestChange = new AccountingOpsEnterContest(contestId, contestEntry.contestEntryId);
-                            AccountOp accountOp = new AccountOp(userId, new BigDecimal(-contest.entryFee), seqId);
-                            enterContestChange.accounts.add(accountOp);
-                            AccountingOpsEnterContest.create(enterContestChange);
+                            AccountingOpEnterContest.create(contestId, contestEntry.contestEntryId, ImmutableList.of(
+                                    new AccountOp(userId, new BigDecimal(-contest.entryFee), seqId)
+                            ));
 
                             // Marcarlo como pagado
                             contestEntry.setPaidEntry(true);

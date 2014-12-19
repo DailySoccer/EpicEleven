@@ -1,8 +1,8 @@
 package model;
 
+import com.google.common.collect.ImmutableList;
 import model.accounting.AccountOp;
-import model.accounting.AccountingOp;
-import model.accounting.AccountingOpsOrder;
+import model.accounting.AccountingOpOrder;
 import org.jongo.marshall.jackson.oid.Id;
 import org.bson.types.ObjectId;
 
@@ -61,7 +61,9 @@ public class Order {
     }
 
     public void setCompleted() {
-        createTransaction();
+        AccountingOpOrder.create(orderId, paymentId, ImmutableList.of(
+                new AccountOp(userId, new BigDecimal(product.price), User.getSeqId(userId) + 1)
+        ));
 
         this.state = State.COMPLETED;
         Model.orders().update(orderId).with("{$set: {state: #}}", this.state);
@@ -82,15 +84,6 @@ public class Order {
 
     public boolean isCanceled() {
         return state.equals(State.CANCELED);
-    }
-
-    private void createTransaction() {
-        AccountingOpsOrder orderChange = new AccountingOpsOrder(orderId, paymentId);
-
-        AccountOp accountOp = new AccountOp(userId, new BigDecimal(product.price), User.getSeqId(userId) + 1);
-        orderChange.accounts.add(accountOp);
-
-        AccountingOpsOrder.create(orderChange);
     }
 
     static public Order findOne(String orderId) {

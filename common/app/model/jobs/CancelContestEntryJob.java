@@ -1,13 +1,11 @@
 package model.jobs;
 
-import com.mongodb.WriteResult;
+import com.google.common.collect.ImmutableList;
 import model.Contest;
 import model.ContestEntry;
-import model.Model;
 import model.User;
 import model.accounting.AccountOp;
-import model.accounting.AccountingOpsCancelContestEntry;
-import model.accounting.AccountingOpsEnterContest;
+import model.accounting.AccountingOpCancelContestEntry;
 import org.bson.types.ObjectId;
 
 import java.math.BigDecimal;
@@ -46,10 +44,9 @@ public class CancelContestEntryJob extends Job {
                     // TODO: En el caso de que sea un contest de pago y no haya sido pagado, no permitimos su cancelación... ?
                     if (contest.entryFee > 0 && contestEntry.paidEntry) {
                         // Crear la transacción de Abandonar un Contest
-                        AccountingOpsCancelContestEntry cancelContestEntryChange = new AccountingOpsCancelContestEntry(contestId, contestEntryId);
-                        AccountOp accountOp = new AccountOp(userId, new BigDecimal(contest.entryFee), User.getSeqId(userId) + 1);
-                        cancelContestEntryChange.accounts.add(accountOp);
-                        AccountingOpsCancelContestEntry.create(cancelContestEntryChange);
+                        AccountingOpCancelContestEntry.create(contestId, contestEntryId, ImmutableList.of(
+                                new AccountOp(userId, new BigDecimal(contest.entryFee), User.getSeqId(userId) + 1)
+                        ));
 
                         // Marcarlo como NO pagado
                         contestEntry.setPaidEntry(false);

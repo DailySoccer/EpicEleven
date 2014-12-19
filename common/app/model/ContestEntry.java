@@ -1,20 +1,13 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
-import model.accounting.AccountOp;
-import model.accounting.AccountingOpsEnterContest;
-import model.accounting.AccountingOpsOrder;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
-import utils.BatchWriteOperation;
 import utils.ListUtils;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;

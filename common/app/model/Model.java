@@ -264,7 +264,7 @@ public class Model {
     static private void ensureTransactionsDB(DB theMongoDB) {
         if (!theMongoDB.collectionExists("accountingTransactions")) {
             DBCollection accountingTransactions = theMongoDB.createCollection("accountingTransactions", new BasicDBObject());
-            accountingTransactions.createIndex(new BasicDBObject("changes.accounts.accountId", 1).append("changes.accounts.seqId", 1), new BasicDBObject("unique", true));
+            accountingTransactions.createIndex(new BasicDBObject("accounts.accountId", 1).append("accounts.seqId", 1), new BasicDBObject("unique", true));
         }
     }
 

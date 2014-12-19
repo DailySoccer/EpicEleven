@@ -101,23 +101,23 @@ public class User {
 
     static public Integer getSeqId(ObjectId userId) {
         List<AccountOp> account = Model.accountingTransactions()
-                .aggregate("{$match: { \"changes.accounts.accountId\": #}}", userId)
-                .and("{$unwind: \"$changes.accounts\"}")
-                .and("{$match: {\"changes.accounts.accountId\": #}}", userId)
-                .and("{$project: { \"changes.accounts.seqId\": 1 }}")
-                .and("{$sort: { \"changes.accounts.seqId\": -1 }}")
+                .aggregate("{$match: { \"accounts.accountId\": #}}", userId)
+                .and("{$unwind: \"$accounts\"}")
+                .and("{$match: {\"accounts.accountId\": #}}", userId)
+                .and("{$project: { \"accounts.seqId\": 1 }}")
+                .and("{$sort: { \"accounts.seqId\": -1 }}")
                 .and("{$limit: 1}")
-                .and("{$group: {_id: \"seqId\", accountId: { $first: \"$changes.accounts.accountId\" }, seqId: { $first: \"$changes.accounts.seqId\" }}}")
+                .and("{$group: {_id: \"seqId\", accountId: { $first: \"$accounts.accountId\" }, seqId: { $first: \"$accounts.seqId\" }}}")
                 .as(AccountOp.class);
         return (!account.isEmpty() && account.get(0).seqId != null) ? account.get(0).seqId : 0;
     }
 
     static public BigDecimal calculateBalance(ObjectId userId) {
         List<AccountOp> account = Model.accountingTransactions()
-                .aggregate("{$match: { \"changes.accounts.accountId\": #, state: \"VALID\"}}", userId)
-                .and("{$unwind: \"$changes.accounts\"}")
-                .and("{$match: {\"changes.accounts.accountId\": #}}", userId)
-                .and("{$group: {_id: \"value\", accountId: { $first: \"$changes.accounts.accountId\" }, value: { $sum: \"$changes.accounts.value\" }}}")
+                .aggregate("{$match: { \"accounts.accountId\": #, state: \"VALID\"}}", userId)
+                .and("{$unwind: \"$accounts\"}")
+                .and("{$match: {\"accounts.accountId\": #}}", userId)
+                .and("{$group: {_id: \"value\", accountId: { $first: \"$accounts.accountId\" }, value: { $sum: \"$accounts.value\" }}}")
                 .as(AccountOp.class);
         return (!account.isEmpty()) ? account.get(0).value : new BigDecimal(0);
     }

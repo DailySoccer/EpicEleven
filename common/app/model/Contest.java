@@ -2,8 +2,7 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import model.accounting.AccountOp;
-import model.accounting.AccountingOpsPrize;
-import model.accounting.AccountingOp;
+import model.accounting.AccountingOpPrize;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import java.math.BigDecimal;
@@ -233,15 +232,14 @@ public class Contest implements JongoId {
 
         // Si el contest tiene premios para repartir...
         if (!prizes.isEmpty()) {
-            AccountingOpsPrize prizeChange = new AccountingOpsPrize(contestId);
+            List<AccountOp> accounts = new ArrayList<>();
             for (ContestEntry contestEntry : contestEntries) {
                 if (contestEntry.position < prizes.size()) {
                     User user = User.findOne(contestEntry.userId);
-                    AccountOp accountOp = new AccountOp(contestEntry.userId, new BigDecimal(prizes.get(contestEntry.position)), user.getSeqId() + 1);
-                    prizeChange.accounts.add(accountOp);
+                    accounts.add(new AccountOp(contestEntry.userId, new BigDecimal(prizes.get(contestEntry.position)), user.getSeqId() + 1));
                 }
             }
-            AccountingOpsPrize.create(prizeChange);
+            AccountingOpPrize.create(contestId, accounts);
         }
 
         // Actualizamos las estadísticas de torneos ganados

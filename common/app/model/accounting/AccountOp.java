@@ -23,7 +23,7 @@ public class AccountOp {
     public boolean canCommit() {
         // Comprobamos que NO exista ninguna transacción "anterior" ("seqId" menor) de la misma "account" sin "commit"
         return Model.accountingTransactions()
-                .count("{ \"changes.accounts\": {$elemMatch: { accountId: #, seqId: { $lt: # } }}, proc: #}",
+                .count("{ accounts: {$elemMatch: { accountId: #, seqId: { $lt: # } }}, proc: #}",
                         accountId, seqId, AccountingOp.TransactionProc.UNCOMMITTED) == 0;
     }
 
@@ -31,7 +31,7 @@ public class AccountOp {
         // Obtenemos el balance del anterior COMMIT
         BigDecimal lastBalance = getLastBalance().add(value);
         // Actualizamos el cachedBalance del "account"
-        Model.accountingTransactions().update("{ \"changes.accounts\": { $elemMatch: {accountId: #, seqId: #} } }", accountId, seqId).with("{$set: {\"changes.accounts.$.cachedBalance\": #}}", lastBalance.doubleValue());
+        Model.accountingTransactions().update("{ accounts: { $elemMatch: {accountId: #, seqId: #} } }", accountId, seqId).with("{$set: {\"accounts.$.cachedBalance\": #}}", lastBalance.doubleValue());
         // Actualizamos el user
         User.updateBalance(accountId, lastBalance);
     }
@@ -44,13 +44,13 @@ public class AccountOp {
 
         // TODO: ¿necesitamos comprobar que el commit es del "seqId" inmediatamente anterior?
         List<AccountOp> accountOp = Model.accountingTransactions()
-                .aggregate("{$match: { \"changes.accounts.accountId\": #, proc: #, state: \"VALID\"}}", accountId, AccountingOp.TransactionProc.COMMITTED)
-                .and("{$unwind: \"$changes.accounts\"}")
-                .and("{$match: {\"changes.accounts.accountId\": #}}", accountId)
-                .and("{$project: { \"changes.accounts.seqId\": 1, \"changes.accounts.cachedBalance\": 1 }}")
-                .and("{$sort: { \"changes.accounts.seqId\": -1 }}")
+                .aggregate("{$match: { \"accounts.accountId\": #, proc: #, state: \"VALID\"}}", accountId, AccountingOp.TransactionProc.COMMITTED)
+                .and("{$unwind: \"$accounts\"}")
+                .and("{$match: {\"accounts.accountId\": #}}", accountId)
+                .and("{$project: { \"accounts.seqId\": 1, \"accounts.cachedBalance\": 1 }}")
+                .and("{$sort: { \"accounts.seqId\": -1 }}")
                 .and("{$limit: 1}")
-                .and("{$group: {_id: \"balance\", accountId: { $first: \"$changes.accounts.accountId\" }, cachedBalance: { $first: \"$changes.accounts.cachedBalance\" }}}")
+                .and("{$group: {_id: \"balance\", accountId: { $first: \"$accounts.accountId\" }, cachedBalance: { $first: \"$accounts.cachedBalance\" }}}")
                 .as(AccountOp.class);
 
         return (!accountOp.isEmpty()) ? accountOp.get(0).cachedBalance : new BigDecimal(0);
