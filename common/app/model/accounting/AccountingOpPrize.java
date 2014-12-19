@@ -2,10 +2,10 @@ package model.accounting;
 
 import org.bson.types.ObjectId;
 
-public class TransactionOpPrize extends TransactionOps {
+public class AccountingOpPrize extends AccountingOps {
     public ObjectId contestId;
 
-    public TransactionOpPrize(ObjectId contestId) {
+    public AccountingOpPrize(ObjectId contestId) {
         super();
         this.contestId = contestId;
     }

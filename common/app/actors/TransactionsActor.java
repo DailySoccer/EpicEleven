@@ -3,7 +3,7 @@ package actors;
 import akka.actor.UntypedActor;
 import model.GlobalDate;
 import model.Model;
-import model.accounting.TransactionOp;
+import model.accounting.AccountingOp;
 import play.Logger;
 import scala.concurrent.duration.Duration;
 import utils.ListUtils;
@@ -42,9 +42,9 @@ public class TransactionsActor extends UntypedActor {
         *   de sus "accounts" han sido realizadas (anteriores AccountOp.seqId en estado Committed)
         *   Toda "account" en estado Committed tendrá el AccountOp.cachedBalance correctamente actualizado
          */
-        List<TransactionOp> transactionOps = ListUtils.asList(Model.accountingTransactions().find("{proc: #, state: #}",
-                TransactionOp.TransactionProc.UNCOMMITTED, TransactionOp.TransactionState.VALID).as(TransactionOp.class));
-        for (TransactionOp transactionOp : transactionOps) {
-            transactionOp.commit();
+        List<AccountingOp> accountingOps = ListUtils.asList(Model.accountingTransactions().find("{proc: #, state: #}",
+                AccountingOp.TransactionProc.UNCOMMITTED, AccountingOp.TransactionState.VALID).as(AccountingOp.class));
+        for (AccountingOp accountingOp : accountingOps) {
+            accountingOp.commit();
         }
     }}

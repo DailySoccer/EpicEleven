@@ -8,7 +8,7 @@ import org.jongo.marshall.jackson.oid.Id;
 import org.bson.types.ObjectId;
 import utils.ObjectIdMapper;
 
-public class TransactionOp {
+public class AccountingOp {
     public enum TransactionType {
         PRIZE,
         ORDER
@@ -30,11 +30,11 @@ public class TransactionOp {
     public TransactionProc proc;
     public TransactionState state;
     public TransactionType type;
-    public TransactionOps changes;
+    public AccountingOps changes;
 
-    public TransactionOp() {}
+    public AccountingOp() {}
 
-    private TransactionOp(TransactionType type) {
+    private AccountingOp(TransactionType type) {
         this.proc = TransactionProc.UNCOMMITTED;
         this.state = TransactionState.VALID;
         this.type = type;
@@ -66,23 +66,23 @@ public class TransactionOp {
         return json;
     }
 
-    public static TransactionOp createPrizeTransaction(TransactionOpPrize prizeChange) {
-        TransactionOp transactionOp = new TransactionOp(TransactionType.PRIZE);
-        transactionOp.changes = prizeChange;
-        WriteResult result = Model.accountingTransactions().update("{type: #, 'changes.contestId': #}", transactionOp.type, prizeChange.contestId).upsert().with(transactionOp);
+    public static AccountingOp createPrizeTransaction(AccountingOpPrize prizeChange) {
+        AccountingOp accountingOp = new AccountingOp(TransactionType.PRIZE);
+        accountingOp.changes = prizeChange;
+        WriteResult result = Model.accountingTransactions().update("{type: #, 'changes.contestId': #}", accountingOp.type, prizeChange.contestId).upsert().with(accountingOp);
         if (result.getN() > 0) {
-            play.Logger.info(transactionOp.toJson());
+            play.Logger.info(accountingOp.toJson());
         }
-        return transactionOp;
+        return accountingOp;
     }
 
-    public static TransactionOp createOrderTransaction(TransactionOpOrder orderOp) {
-        TransactionOp transactionOp = new TransactionOp(TransactionType.ORDER);
-        transactionOp.changes = orderOp;
-        WriteResult result = Model.accountingTransactions().update("{type: #, 'changes.orderId': #, 'changes.paymentId': #}", transactionOp.type, orderOp.orderId, orderOp.paymentId).upsert().with(transactionOp);
+    public static AccountingOp createOrderTransaction(AccountingOpOrder orderOp) {
+        AccountingOp accountingOp = new AccountingOp(TransactionType.ORDER);
+        accountingOp.changes = orderOp;
+        WriteResult result = Model.accountingTransactions().update("{type: #, 'changes.orderId': #, 'changes.paymentId': #}", accountingOp.type, orderOp.orderId, orderOp.paymentId).upsert().with(accountingOp);
         if (result.getN() > 0) {
-            play.Logger.info(transactionOp.toJson());
+            play.Logger.info(accountingOp.toJson());
         }
-        return transactionOp;
+        return accountingOp;
     }
 }
