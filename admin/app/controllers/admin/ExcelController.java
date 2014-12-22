@@ -2,7 +2,6 @@ package controllers.admin;
 
 
 import com.google.gdata.client.spreadsheet.SpreadsheetService;
-import com.google.gdata.data.PlainTextConstruct;
 import com.google.gdata.data.spreadsheet.*;
 import com.google.gdata.util.ServiceException;
 import com.mongodb.BasicDBObject;
@@ -62,12 +61,6 @@ public class ExcelController extends Controller {
         return index();
     }
 
-    /**
-    public static void getExpiration(String token) {
-        https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=
-
-    }
-    */
 
     public static String refreshToken(String refreshToken) {
         String result = "";
@@ -84,9 +77,6 @@ public class ExcelController extends Controller {
 
                 OAuthClient oAuthClient = new OAuthClient(new URLConnectionClient());
                 OAuthJSONAccessTokenResponse response2 = oAuthClient.accessToken(request);
-
-
-                Logger.info("\nAccess Token: " + response2.getAccessToken() + "\nExpires in: " + response2.getExpiresIn());
 
                 result = response2.getAccessToken();
 
@@ -114,9 +104,6 @@ public class ExcelController extends Controller {
 
                 OAuthClient oAuthClient = new OAuthClient(new URLConnectionClient());
                 OAuthJSONAccessTokenResponse response2 = oAuthClient.accessToken(request);
-
-
-                Logger.info("\nAccess Token: " + response2.getAccessToken() + "\nExpires in: " + response2.getExpiresIn());
 
                 response().setCookie(_googleAuthToken, response2.getAccessToken());
                 response().setCookie(_googleRefreshToken, response2.getRefreshToken());
@@ -150,11 +137,8 @@ public class ExcelController extends Controller {
             OAuthJSONAccessTokenResponse response2 = oAuthClient.accessToken(request);
 
             response().setCookie(_googleAuthToken, response2.getAccessToken());
-            if (response2.getRefreshToken() != null)
-                response().setCookie(_googleRefreshToken, response2.getRefreshToken());
+            response().setCookie(_googleRefreshToken, response2.getRefreshToken());
 
-
-            Logger.info("\nAccess Token: " + response2.getAccessToken() + "\nExpires in: " + response2.getExpiresIn());
         }
         catch (OAuthSystemException e) {
             Logger.error("WTF 5038", e);
@@ -169,64 +153,34 @@ public class ExcelController extends Controller {
         return index();
     }
 
+
+
     public static Result writeSoccerPlayersLog() {
-        if (request().cookie(_googleRefreshToken) != null) {
-            return writeSoccerPlayersLog(request().cookie(_googleAuthToken).value(),
-                    request().cookie(_googleRefreshToken).value());
-        }
-        else {
-            return writeSoccerPlayersLog(request().cookie(_googleAuthToken).value(),
-                    null);
-        }
-    }
+        Chunks<String> chunks = new StringChunks() {
 
+            // Called when the stream is ready
+            public void onReady(Chunks.Out<String> out) {
+                fillLog(out);
+            }
 
-
-
-    public static Result writeSoccerPlayersLog(String authToken, String refreshToken) {
-
-        try {
-
-            fillLog();
-
-        } catch (MalformedURLException e) {
-            Logger.error("WTF 5096", e);
-
-        } catch (IOException e) {
-            Logger.error("WTF 5296", e);
-        }
-
-        File file = new File("log.csv");
-        try {
-            response().setHeader("Content-Disposition", "attachment; filename=log.csv");
-            return ok(new FileInputStream(file));
-        } catch (FileNotFoundException e) {
-            Logger.error("WTF 93431");
-        }
-        return index();
+        };
+        response().setHeader("Content-Disposition", "attachment; filename=log.csv");
+        response().setHeader("Transfer-Encoding", "chunked");
+        return ok(chunks);
     }
 
 
     public static Result loadSalaries() {
-        if (request().cookie(_googleRefreshToken) != null) {
-            return loadSalaries(request().cookie(_googleAuthToken).value(),
-                    request().cookie(_googleRefreshToken).value());
-        }
-        else {
-            return loadSalaries(request().cookie(_googleAuthToken).value(),
-                    null);
-        }
-
-    }
+        return loadSalaries(request().cookie(_googleAuthToken).value(),
+                request().cookie(_googleRefreshToken).value());
+}
 
 
 
     public static Result loadSalaries(String authToken, String refreshToken) {
         response().setCookie(_googleAuthToken, authToken);
+        response().setCookie(_googleRefreshToken, refreshToken);
 
-        if (refreshToken != null) {
-            response().setCookie(_googleRefreshToken, refreshToken);
-        }
 
         try {
             SpreadsheetService service =
@@ -310,16 +264,14 @@ public class ExcelController extends Controller {
         batchWriteOperation.execute();
     }
 
-    private static void fillLog() throws IOException {
+    private static void fillLog(Chunks.Out<String> out) {
 
         HashMap<String, String> optaCompetitions = new HashMap<>();
         for (OptaCompetition optaCompetition: OptaCompetition.findAll()) {
             optaCompetitions.put(optaCompetition.competitionId, optaCompetition.competitionName);
         }
 
-        PrintWriter writer = new PrintWriter("log.csv", "UTF-8");
-        writer.println("id,nombre,posicion,equipo,competicion,fecha,hora,minutos,fp");
-
+        out.write("id,nombre,posicion,equipo,competicion,fecha,hora,minutos,fp\n");
 
         HashMap<String, String> soccerTeamsMap = new HashMap<>();
         for (TemplateSoccerTeam templateSoccerTeam: TemplateSoccerTeam.findAll()) {
@@ -329,20 +281,18 @@ public class ExcelController extends Controller {
                     String teamName = soccerTeamsMap.containsKey(soccerPlayer.templateTeamId.toString()) ? soccerTeamsMap.get(soccerPlayer.templateTeamId.toString()) : "unknown";
 
                     for (SoccerPlayerStats stat : soccerPlayer.stats) {
-                        if (_lastLogDate.isBefore(stat.startDate.getTime())) {
-                            // Create a local representation of the new row.
+                        out.write(soccerPlayer.optaPlayerId + ","+
+                                        soccerPlayer.name+","+
+                                        soccerPlayer.fieldPos.name()+","+
+                                        teamName + ","+
+                                        optaCompetitions.get(stat.optaCompetitionId)+","+
+                                        new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy"))+","+
+                                        new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm"))+","+
+                                        Integer.toString(stat.playedMinutes)+","+
+                                        Integer.toString(stat.fantasyPoints)+"\n"
+                        );
 
-                            writer.print(soccerPlayer.optaPlayerId + ",");
-                            writer.print(soccerPlayer.name+",");
-                            writer.print(soccerPlayer.fieldPos.name()+",");
-                            writer.print(teamName + ",");
-                            writer.print(optaCompetitions.get(stat.optaCompetitionId)+",");
-                            writer.print(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy"))+",");
-                            writer.print(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm"))+",");
-                            writer.print(Integer.toString(stat.playedMinutes)+",");
-                            writer.print(Integer.toString(stat.fantasyPoints)+"\n");
 
-                        }
 
                 }
 
@@ -350,8 +300,7 @@ public class ExcelController extends Controller {
 
 
         }
-
-        writer.close();
+        out.close();
 
     }
 
@@ -368,31 +317,6 @@ public class ExcelController extends Controller {
         return ourSpreadSheet;
     }
 
-    private static WorksheetEntry resetLog(SpreadsheetService service, SpreadsheetEntry ourSpreadSheet) throws IOException, ServiceException {
-        WorksheetFeed worksheetFeed = service.getFeed(
-                ourSpreadSheet.getWorksheetFeedUrl(), WorksheetFeed.class);
-
-        WorksheetEntry ourWorksheet = null;
-        for (WorksheetEntry worksheet : worksheetFeed.getEntries()) {
-            if (worksheet.getTitle().getPlainText().equals(LOG_WORKSHEET_NAME)) {
-                ourWorksheet = worksheet;
-                break;
-            }
-        }
-
-        if (ourWorksheet == null) {
-            // Create a local representation of the new worksheet.
-            ourWorksheet = new WorksheetEntry();
-            ourWorksheet.setTitle(new PlainTextConstruct(LOG_WORKSHEET_NAME));
-            ourWorksheet.setColCount(9);
-            ourWorksheet.setRowCount(1);
-
-            URL worksheetFeedUrl = ourSpreadSheet.getWorksheetFeedUrl();
-            service.insert(worksheetFeedUrl, ourWorksheet);
-        }
-
-        return ourWorksheet;
-    }
 
     private static ListFeed getSalariesFeed(SpreadsheetService service, SpreadsheetEntry ourSpreadSheet) throws IOException, ServiceException {
         WorksheetFeed worksheetFeed = service.getFeed(
@@ -408,102 +332,11 @@ public class ExcelController extends Controller {
         return service.getFeed(ourWorksheet.getListFeedUrl(), ListFeed.class);
     }
 
-
-    private static ListFeed getLastLogFeed(SpreadsheetService service, SpreadsheetEntry ourSpreadSheet) throws IOException, ServiceException {
-        return service.getFeed(getLastLogWorksheet(service, ourSpreadSheet).getListFeedUrl(), ListFeed.class);
-    }
-
-    private static WorksheetEntry getLastLogWorksheet(SpreadsheetService service, SpreadsheetEntry ourSpreadSheet) throws IOException, ServiceException {
-        WorksheetFeed worksheetFeed = service.getFeed(
-                ourSpreadSheet.getWorksheetFeedUrl(), WorksheetFeed.class);
-
-        WorksheetEntry ourWorksheet = null;
-        for (WorksheetEntry worksheet : worksheetFeed.getEntries()) {
-            if (worksheet.getTitle().getPlainText().equals(LASTLOG_WORKSHEET_NAME)) {
-                ourWorksheet = worksheet;
-                break;
-            }
-        }
-        return ourWorksheet;
-    }
-
-    private static void fillTitleCells(SpreadsheetService service, WorksheetEntry ourWorksheet) throws IOException, ServiceException {
-        // Fetch the cell feed of the worksheet.
-        CellFeed cellFeed = service.getFeed(ourWorksheet.getCellFeedUrl(), CellFeed.class);
-
-        // Iterate through each cell, updating its value if necessary.
-        for (CellEntry cell : cellFeed.getEntries()) {
-            if (cell.getTitle().getPlainText().equals("A1")) {
-                cell.changeInputValueLocal("id");
-                cell.update();
-            } else if (cell.getTitle().getPlainText().equals("B1")) {
-                cell.changeInputValueLocal("nombre");
-                cell.update();
-            } else if (cell.getTitle().getPlainText().equals("C1")) {
-                cell.changeInputValueLocal("posicion");
-                cell.update();
-            } else if (cell.getTitle().getPlainText().equals("D1")) {
-                cell.changeInputValueLocal("equipo");
-                cell.update();
-            } else if (cell.getTitle().getPlainText().equals("E1")) {
-                cell.changeInputValueLocal("competicion");
-                cell.update();
-            } else if (cell.getTitle().getPlainText().equals("F1")) {
-                cell.changeInputValueLocal("fecha");
-                cell.update();
-            } else if (cell.getTitle().getPlainText().equals("G1")) {
-                cell.changeInputValueLocal("hora");
-                cell.update();
-            } else if (cell.getTitle().getPlainText().equals("H1")) {
-                cell.changeInputValueLocal("minutos");
-                cell.update();
-            } else if (cell.getTitle().getPlainText().equals("I1")) {
-                cell.changeInputValueLocal("fp");
-                cell.update();
-            }
-        }
-    }
-
-    private static DateTime getLastLog(SpreadsheetService service,  SpreadsheetEntry ourSpreadSheet) throws IOException, ServiceException {
-
-        ListFeed feed = getLastLogFeed(service, ourSpreadSheet);
-
-        for (ListEntry row : feed.getEntries()) {
-            _lastLogDate = DateTime.parse(row.getCustomElements().getValue("hora")+" "+
-                                          row.getCustomElements().getValue("fecha"),
-                                          DateTimeFormat.forPattern("HH:mm dd/MM/yyyy"));
-        }
-
-        return _lastLogDate;
-    }
-
-    private static void updateLastLog(SpreadsheetService service,  SpreadsheetEntry ourSpreadSheet) throws IOException, ServiceException {
-        WorksheetEntry ourWorksheet = getLastLogWorksheet(service, ourSpreadSheet);
-
-        ourWorksheet.setColCount(2);
-        ourWorksheet.setRowCount(1);
-        ourWorksheet.update();
-
-        URL listFeedUrl = ourWorksheet.getListFeedUrl();
-
-        ListEntry row = new ListEntry();
-
-        row.getCustomElements().setValueLocal("fecha", new DateTime().toString("dd/MM/yyyy"));
-        row.getCustomElements().setValueLocal("hora", new DateTime().toString("HH:mm"));
-
-        service.insert(listFeedUrl, row);
-    }
-
-
-
-    private static DateTime _lastLogDate = new DateTime(1970, 1, 1, 0, 0);
-
     private final static String _googleAuthToken = "googleAuthToken";
     private final static String _googleRefreshToken = "googleRefreshToken";
 
     private final static String SPREADSHEET_NAME = "Epic Eleven - Salarios - LFP";
-    private final static String LOG_WORKSHEET_NAME = "LOG";
-    private final static String LASTLOG_WORKSHEET_NAME = "Last LOG";
+
     private final static String SALARIES_WORKSHEET_NAME = "Salarios Finales";
 
 }
