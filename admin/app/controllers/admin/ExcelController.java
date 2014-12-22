@@ -16,6 +16,10 @@ import org.apache.oltu.oauth2.common.OAuthProviderType;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import org.apache.oltu.oauth2.common.message.types.GrantType;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import play.Logger;
@@ -24,12 +28,11 @@ import play.mvc.Result;
 import utils.BatchWriteOperation;
 
 import java.io.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class ExcelController extends Controller {
 
@@ -265,6 +268,24 @@ public class ExcelController extends Controller {
     }
 
     private static void fillLog(Chunks.Out<String> out) {
+
+        Workbook wb = new HSSFWorkbook();
+
+        Sheet mySheet = wb.createSheet("Log");
+
+
+        Row row = mySheet.createRow((short)2);
+
+        row.createCell(0).setCellValue(1.1);
+        row.createCell(1).setCellValue(new Date());
+        row.createCell(2).setCellValue(Calendar.getInstance());
+        row.createCell(3).setCellValue("a string");
+        row.createCell(4).setCellValue(true);
+
+        FileOutputStream fileOut = new FileOutputStream("workbook.xls");
+        wb.write(fileOut);
+        fileOut.close();
+
 
         HashMap<String, String> optaCompetitions = new HashMap<>();
         for (OptaCompetition optaCompetition: OptaCompetition.findAll()) {
