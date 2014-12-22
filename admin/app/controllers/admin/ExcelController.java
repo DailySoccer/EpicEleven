@@ -137,7 +137,8 @@ public class ExcelController extends Controller {
             OAuthJSONAccessTokenResponse response2 = oAuthClient.accessToken(request);
 
             response().setCookie(_googleAuthToken, response2.getAccessToken());
-            response().setCookie(_googleRefreshToken, response2.getRefreshToken());
+            if (response2.getRefreshToken() != null)
+                response().setCookie(_googleRefreshToken, response2.getRefreshToken());
 
         }
         catch (OAuthSystemException e) {
