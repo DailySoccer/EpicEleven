@@ -30,6 +30,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 public class ExcelController extends Controller {
 
@@ -169,8 +170,14 @@ public class ExcelController extends Controller {
     }
 
     public static Result writeSoccerPlayersLog() {
-        return writeSoccerPlayersLog(request().cookie(_googleAuthToken).value(),
-                                     request().cookie(_googleRefreshToken).value());
+        if (request().cookie(_googleRefreshToken) != null) {
+            return writeSoccerPlayersLog(request().cookie(_googleAuthToken).value(),
+                    request().cookie(_googleRefreshToken).value());
+        }
+        else {
+            return writeSoccerPlayersLog(request().cookie(_googleAuthToken).value(),
+                    null);
+        }
     }
 
 
@@ -201,15 +208,25 @@ public class ExcelController extends Controller {
 
 
     public static Result loadSalaries() {
-        return loadSalaries(request().cookie(_googleAuthToken).value(),
-                            request().cookie(_googleRefreshToken).value());
+        if (request().cookie(_googleRefreshToken) != null) {
+            return loadSalaries(request().cookie(_googleAuthToken).value(),
+                    request().cookie(_googleRefreshToken).value());
+        }
+        else {
+            return loadSalaries(request().cookie(_googleAuthToken).value(),
+                    null);
+        }
+
     }
 
 
 
     public static Result loadSalaries(String authToken, String refreshToken) {
         response().setCookie(_googleAuthToken, authToken);
-        response().setCookie(_googleRefreshToken, refreshToken);
+
+        if (refreshToken != null) {
+            response().setCookie(_googleRefreshToken, refreshToken);
+        }
 
         try {
             SpreadsheetService service =
