@@ -27,12 +27,16 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utils.BatchWriteOperation;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 public class ExcelController extends Controller {
 
@@ -159,18 +163,25 @@ public class ExcelController extends Controller {
 
 
 
-    public static Result writeSoccerPlayersLog() {
+    public static Result writeSoccerPlayersLog() throws IOException {
+
+        FileOutputStream log = fillLog();
+
+        FileInputStream input = new FileInputStream(log.getFD());
+
+        /*
         Chunks<String> chunks = new StringChunks() {
 
             // Called when the stream is ready
             public void onReady(Chunks.Out<String> out) {
-                fillLog(out);
+                fillLog();
             }
 
         };
-        response().setHeader("Content-Disposition", "attachment; filename=log.csv");
-        response().setHeader("Transfer-Encoding", "chunked");
-        return ok(chunks);
+        */
+        response().setHeader("Content-Disposition", "attachment; filename=log.xls");
+       // response().setHeader("Transfer-Encoding", "chunked");
+        return ok(input);
     }
 
 
@@ -267,34 +278,37 @@ public class ExcelController extends Controller {
         batchWriteOperation.execute();
     }
 
-    private static void fillLog(Chunks.Out<String> out) {
+    private static FileOutputStream fillLog() {
 
         Workbook wb = new HSSFWorkbook();
 
         Sheet mySheet = wb.createSheet("Log");
 
-
-        Row row = mySheet.createRow((short)2);
-
-        row.createCell(0).setCellValue(1.1);
-        row.createCell(1).setCellValue(new Date());
-        row.createCell(2).setCellValue(Calendar.getInstance());
-        row.createCell(3).setCellValue("a string");
-        row.createCell(4).setCellValue(true);
-
-        FileOutputStream fileOut = new FileOutputStream("workbook.xls");
-        wb.write(fileOut);
-        fileOut.close();
-
+        int rowCounter = 0;
 
         HashMap<String, String> optaCompetitions = new HashMap<>();
         for (OptaCompetition optaCompetition: OptaCompetition.findAll()) {
             optaCompetitions.put(optaCompetition.competitionId, optaCompetition.competitionName);
         }
 
-        out.write("id,nombre,posicion,equipo,competicion,fecha,hora,minutos,fp\n");
+
+        //out.write("id,nombre,posicion,equipo,competicion,fecha,hora,minutos,fp\n");
+        Row rowTitle = mySheet.createRow((short)rowCounter++);
+        rowTitle.createCell(0).setCellValue("id");
+        rowTitle.createCell(1).setCellValue("nombre");
+        rowTitle.createCell(2).setCellValue("posicion");
+        rowTitle.createCell(3).setCellValue("equipo");
+        rowTitle.createCell(4).setCellValue("competicion");
+        rowTitle.createCell(5).setCellValue("fecha");
+        rowTitle.createCell(6).setCellValue("hora");
+        rowTitle.createCell(7).setCellValue("minutos");
+        rowTitle.createCell(8).setCellValue("fp");
+
 
         HashMap<String, String> soccerTeamsMap = new HashMap<>();
+
+
+        Row row;
         for (TemplateSoccerTeam templateSoccerTeam: TemplateSoccerTeam.findAll()) {
             soccerTeamsMap.put(templateSoccerTeam.templateSoccerTeamId.toString(), templateSoccerTeam.name);
 
@@ -302,6 +316,20 @@ public class ExcelController extends Controller {
                     String teamName = soccerTeamsMap.containsKey(soccerPlayer.templateTeamId.toString()) ? soccerTeamsMap.get(soccerPlayer.templateTeamId.toString()) : "unknown";
 
                     for (SoccerPlayerStats stat : soccerPlayer.stats) {
+
+                        row = mySheet.createRow((short)rowCounter++);
+                        row.createCell(0).setCellValue(soccerPlayer.optaPlayerId);
+                        row.createCell(1).setCellValue(soccerPlayer.name);
+                        row.createCell(2).setCellValue(soccerPlayer.fieldPos.name());
+                        row.createCell(3).setCellValue(teamName);
+                        row.createCell(4).setCellValue(optaCompetitions.get(stat.optaCompetitionId));
+                        row.createCell(5).setCellValue(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy")));
+                        row.createCell(6).setCellValue(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm")));
+                        row.createCell(7).setCellValue(stat.playedMinutes);
+                        row.createCell(8).setCellValue(stat.fantasyPoints);
+
+
+                        /*
                         out.write(soccerPlayer.optaPlayerId + ","+
                                         soccerPlayer.name+","+
                                         soccerPlayer.fieldPos.name()+","+
@@ -312,17 +340,33 @@ public class ExcelController extends Controller {
                                         Integer.toString(stat.playedMinutes)+","+
                                         Integer.toString(stat.fantasyPoints)+"\n"
                         );
+                        */
 
-
-
-                }
+                    }
 
             }
 
 
         }
-        out.close();
+        //out.close();
 
+        try {
+            FileOutputStream fileOut = new FileOutputStream("workbook.xls");
+            wb.write(fileOut);
+            fileOut.close();
+
+            return fileOut;
+
+        }
+        catch (FileNotFoundException e) {
+            Logger.error("WTF 23126");
+        }
+        catch (IOException e) {
+            Logger.error("WTF 21276");
+
+        }
+
+        return null;
     }
 
     private static SpreadsheetEntry getSpreadsheet(SpreadsheetFeed feed) {
