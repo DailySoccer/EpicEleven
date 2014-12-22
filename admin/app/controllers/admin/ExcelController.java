@@ -27,10 +27,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utils.BatchWriteOperation;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -165,22 +162,13 @@ public class ExcelController extends Controller {
 
     public static Result writeSoccerPlayersLog() throws IOException {
 
-        FileOutputStream log = fillLog();
+        fillLog();
 
-        FileInputStream input = new FileInputStream(log.getFD());
+        FileInputStream input = new FileInputStream(new File("workbook.xls"));
 
-        /*
-        Chunks<String> chunks = new StringChunks() {
-
-            // Called when the stream is ready
-            public void onReady(Chunks.Out<String> out) {
-                fillLog();
-            }
-
-        };
-        */
         response().setHeader("Content-Disposition", "attachment; filename=log.xls");
-       // response().setHeader("Transfer-Encoding", "chunked");
+
+
         return ok(input);
     }
 
@@ -278,7 +266,7 @@ public class ExcelController extends Controller {
         batchWriteOperation.execute();
     }
 
-    private static FileOutputStream fillLog() {
+    private static void fillLog() {
 
         Workbook wb = new HSSFWorkbook();
 
@@ -292,7 +280,6 @@ public class ExcelController extends Controller {
         }
 
 
-        //out.write("id,nombre,posicion,equipo,competicion,fecha,hora,minutos,fp\n");
         Row rowTitle = mySheet.createRow((short)rowCounter++);
         rowTitle.createCell(0).setCellValue("id");
         rowTitle.createCell(1).setCellValue("nombre");
@@ -328,34 +315,17 @@ public class ExcelController extends Controller {
                         row.createCell(7).setCellValue(stat.playedMinutes);
                         row.createCell(8).setCellValue(stat.fantasyPoints);
 
-
-                        /*
-                        out.write(soccerPlayer.optaPlayerId + ","+
-                                        soccerPlayer.name+","+
-                                        soccerPlayer.fieldPos.name()+","+
-                                        teamName + ","+
-                                        optaCompetitions.get(stat.optaCompetitionId)+","+
-                                        new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy"))+","+
-                                        new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm"))+","+
-                                        Integer.toString(stat.playedMinutes)+","+
-                                        Integer.toString(stat.fantasyPoints)+"\n"
-                        );
-                        */
-
                     }
 
             }
 
 
         }
-        //out.close();
 
         try {
             FileOutputStream fileOut = new FileOutputStream("workbook.xls");
             wb.write(fileOut);
             fileOut.close();
-
-            return fileOut;
 
         }
         catch (FileNotFoundException e) {
@@ -366,7 +336,6 @@ public class ExcelController extends Controller {
 
         }
 
-        return null;
     }
 
     private static SpreadsheetEntry getSpreadsheet(SpreadsheetFeed feed) {
