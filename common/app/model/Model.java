@@ -48,7 +48,7 @@ public class Model {
 
     static public void init() {
 
-        ensureMongo("localhost");
+        ensureMongo(_LOCAL_HOST_MONGO_APP_ENV);
         ensurePostgresDB();
     }
 
@@ -107,10 +107,14 @@ public class Model {
         return _mongoAppEnv;
     }
 
+    static public boolean isLocalMongoAppEnv() {
+        return _LOCAL_HOST_MONGO_APP_ENV.equals(getMongoAppEnv());
+    }
+
     static private String getMongoUriForApp(String appEnv) {
         String ret = Play.application().configuration().getString("mongodb.uri");
 
-        if (!appEnv.equals("localhost")) {
+        if (!appEnv.equals(_LOCAL_HOST_MONGO_APP_ENV)) {
             try {
                 ret = readLineFromInputStream(Runtime.getRuntime().exec("heroku config:get MONGOHQ_URL -a " + appEnv));
             }
@@ -263,6 +267,7 @@ public class Model {
     }
 
 
+    static private final String _LOCAL_HOST_MONGO_APP_ENV = "localhost";
     static private String _mongoAppEnv;
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/
