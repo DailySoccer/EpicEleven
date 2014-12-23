@@ -271,7 +271,7 @@ public class ExcelController extends Controller {
 
     }
 
-    private static void readSalaries(SpreadsheetService service,  SpreadsheetEntry ourSpreadSheet) throws IOException, ServiceException {
+    private static void readSalaries(SpreadsheetService service, SpreadsheetEntry ourSpreadSheet) throws IOException, ServiceException {
 
         ListFeed salariesFeed = getSalariesFeed(service, ourSpreadSheet);
 
@@ -286,34 +286,33 @@ public class ExcelController extends Controller {
                         row.getCustomElements().getValue("tags"));
         }
 
-        HashMap<String, TemplateSoccerPlayer> soccerPlayers = TemplateSoccerPlayer.findAllAsMap();
-
         BatchWriteOperation batchWriteOperation = new BatchWriteOperation(Model.templateSoccerPlayers().getDBCollection().initializeUnorderedBulkOperation());
 
+        for (String optaPlayerId : newSalaries.keySet()) {
 
-        for (String optaPlayerId: newSalaries.keySet()) {
-
-            if (soccerPlayers.containsKey(optaPlayerId)) {
-
-                DBObject query = new BasicDBObject("optaPlayerId", optaPlayerId);
-                BasicDBObject bdo = new BasicDBObject("salary", newSalaries.get(optaPlayerId));
-
-                if (newTags.containsKey(optaPlayerId) && newTags.get(optaPlayerId)!=null) {
-                    List<String> tagList = Arrays.asList(newTags.get(optaPlayerId).split(",[ ]*"));
-                    ArrayList<String> validTagList = new ArrayList<>();
-
-                    for (String tag: tagList) {
-                        if (TemplateSoccerPlayerTag.isValid(tag)) {
-                            validTagList.add(TemplateSoccerPlayerTag.getEnum(tag).toString());
-                        }
-                    }
-
-                    bdo.append("tags", validTagList);
-                }
-
-                DBObject update = new BasicDBObject("$set", bdo);
-                batchWriteOperation.find(query).updateOne(update);
+            if (!TemplateSoccerPlayer.exists(optaPlayerId)) {
+                Logger.error("Se ha detectado un futbolista {} en el excel que no existe en la base de datos", optaPlayerId);
+                continue;
             }
+
+            DBObject query = new BasicDBObject("optaPlayerId", optaPlayerId);
+            BasicDBObject bdo = new BasicDBObject("salary", newSalaries.get(optaPlayerId));
+
+            List<String> tagList = newTags.get(optaPlayerId) != null?
+                                       Arrays.asList(newTags.get(optaPlayerId).split(",[ ]*")) :
+                                       new ArrayList<String>();
+
+            // Si hay algun tag invalido, simplemente paramos de importar salarios (forzamos a que lo corrijan)
+            for (String tag : tagList) {
+                if (!TemplateSoccerPlayerTag.isValid(tag)) {
+                    throw new RuntimeException("WTF 5761: Se ha encontrado un tag invalido " + tag);
+                }
+            }
+
+            bdo.append("tags", tagList);
+
+            DBObject update = new BasicDBObject("$set", bdo);
+            batchWriteOperation.find(query).updateOne(update);
         }
 
         batchWriteOperation.execute();
