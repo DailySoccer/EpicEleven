@@ -3,17 +3,14 @@ package model;
 public enum TemplateSoccerPlayerTag {
     ACTIVE;
 
-
-    TemplateSoccerPlayerTag() {
-
-    }
+    TemplateSoccerPlayerTag() { }
 
     public static boolean isValid(String c) {
-        return TemplateSoccerPlayerTag.getEnum(c) != null;
-    }
-
-
-    public static TemplateSoccerPlayerTag getEnum(String c) {
-        return TemplateSoccerPlayerTag.valueOf(c.toUpperCase());
+        for (TemplateSoccerPlayerTag val : TemplateSoccerPlayerTag.values()) {
+            if (val.toString().equals(c)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

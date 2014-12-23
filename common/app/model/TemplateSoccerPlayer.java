@@ -84,6 +84,10 @@ public class TemplateSoccerPlayer implements JongoId {
         return Model.templateSoccerPlayers().findOne("{optaPlayerId: #}", optaPlayerId).as(TemplateSoccerPlayer.class);
     }
 
+    static public boolean exists(String optaPlayerId) {
+        return Model.templateSoccerPlayers().count("{optaPlayerId: #}", optaPlayerId) == 1;
+    }
+
     public static List<TemplateSoccerPlayer> findAll() {
         return ListUtils.asList(Model.templateSoccerPlayers().find().as(TemplateSoccerPlayer.class));
     }
