@@ -14,18 +14,26 @@ public class AccountingOpOrder extends AccountingOp {
     }
 
     public AccountingOpOrder(ObjectId orderId, String paymentId) {
-        super(AccountingOp.TransactionType.ORDER);
+        super(TransactionType.ORDER);
         this.orderId = orderId;
         this.paymentId = paymentId;
     }
 
+    static public AccountingOpOrder findOne (ObjectId orderId, String paymentId) {
+        return Model.accountingTransactions()
+                .findOne("{type: #, orderId: #, paymentId: #}", TransactionType.ORDER, orderId, paymentId)
+                .as(AccountingOpOrder.class);
+    }
+
     static public AccountingOp create(ObjectId orderId, String paymentId, List<AccountOp> accounts) {
-        AccountingOpOrder accountingOp = new AccountingOpOrder(orderId, paymentId);
-        accountingOp.accounts = accounts;
-        WriteResult result = Model.accountingTransactions().update("{type: #, orderId: #, paymentId: #}",
-                accountingOp.type, accountingOp.orderId, accountingOp.paymentId).upsert().with(accountingOp);
-        if (result.getN() > 0) {
-            play.Logger.info(accountingOp.toJson());
+        AccountingOpOrder accountingOp = findOne(orderId, paymentId);
+        if (accountingOp == null) {
+            accountingOp = new AccountingOpOrder(orderId, paymentId);
+            accountingOp.accounts = accounts;
+            WriteResult result = Model.accountingTransactions().insert(accountingOp);
+            if (result.getN() > 0) {
+                play.Logger.info(accountingOp.toJson());
+            }
         }
         return accountingOp;
     }

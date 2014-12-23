@@ -17,13 +17,21 @@ public class AccountingOpPrize extends AccountingOp {
         this.contestId = contestId;
     }
 
+    static public AccountingOpPrize findOne (ObjectId contestId) {
+        return Model.accountingTransactions()
+                .findOne("{type: #, contestId: #}", TransactionType.PRIZE, contestId)
+                .as(AccountingOpPrize.class);
+    }
+
     static public AccountingOp create(ObjectId contestId, List<AccountOp> accounts) {
-        AccountingOpPrize accountingOp = new AccountingOpPrize(contestId);
-        accountingOp.accounts = accounts;
-        WriteResult result = Model.accountingTransactions().update("{type: #, contestId: #}",
-                accountingOp.type, accountingOp.contestId).upsert().with(accountingOp);
-        if (result.getN() > 0) {
-            play.Logger.info(accountingOp.toJson());
+        AccountingOpPrize accountingOp = findOne(contestId);
+        if (accountingOp == null) {
+            accountingOp = new AccountingOpPrize(contestId);
+            accountingOp.accounts = accounts;
+            WriteResult result = Model.accountingTransactions().insert(accountingOp);
+            if (result.getN() > 0) {
+                play.Logger.info(accountingOp.toJson());
+            }
         }
         return accountingOp;
     }
