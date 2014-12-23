@@ -32,9 +32,6 @@ public class ContestEntry implements JongoId {
     public int fantasyPoints;
 
     @JsonView(JsonViews.NotForClient.class)
-    public boolean paidEntry = false;
-
-    @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
     public ContestEntry() {}
@@ -57,12 +54,6 @@ public class ContestEntry implements JongoId {
                     position, fantasyPoints, prize);
     }
 
-    public void setPaidEntry(boolean paid) {
-        Model.contests()
-                .update("{'contestEntries._id': #}", getId())
-                .with("{$set: {'contestEntries.$.paidEntry': #}}", paid);
-        paidEntry = paid;
-    }
 
     static public ContestEntry findOne(String contestEntryId) {
         ContestEntry aContestEntry = null;

@@ -42,8 +42,9 @@ public class Job {
         return state.equals(JobState.CANCELED);
     }
 
-    public void apply() {
-    }
+    public void apply() {}
+
+    public void continueProcessing() {}
 
     public void updateState(JobState fromState, JobState toState) {
         WriteResult result = Model.jobs().update(

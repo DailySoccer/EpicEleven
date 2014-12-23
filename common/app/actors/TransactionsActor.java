@@ -52,16 +52,16 @@ public class TransactionsActor extends UntypedActor {
 
         Job jobTodo = Job.findJobByStateAndLastModified(Job.JobState.TODO, new DateTime().minusMinutes(1).getMillis());
         if (jobTodo != null) {
-            jobTodo.apply();
+            jobTodo.continueProcessing();
         }
 
         Job jobProcessing = Job.findJobByStateAndLastModified(Job.JobState.PROCESSING, new DateTime().minusMinutes(1).getMillis());
         if (jobProcessing != null) {
-            jobProcessing.apply();
+            jobProcessing.continueProcessing();
         }
 
         Job jobCanceled = Job.findJobByStateAndLastModified(Job.JobState.CANCELED, new DateTime().minusMinutes(1).getMillis());
         if (jobCanceled != null) {
-            jobCanceled.apply();
+            jobCanceled.continueProcessing();
         }
     }}

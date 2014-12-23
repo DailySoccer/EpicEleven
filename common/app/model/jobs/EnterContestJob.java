@@ -1,23 +1,28 @@
 package model.jobs;
 
 import com.google.common.collect.ImmutableList;
-import model.Contest;
-import model.ContestEntry;
-import model.User;
+import com.mongodb.DuplicateKeyException;
+import com.mongodb.WriteResult;
+import model.*;
 import model.accounting.AccountOp;
+import model.accounting.AccountingOp;
+import model.accounting.AccountingOpCancelContestEntry;
 import model.accounting.AccountingOpEnterContest;
 import org.bson.types.ObjectId;
+import play.Logger;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 public class EnterContestJob extends Job {
-    ObjectId userId;
-    ObjectId contestId;
-    List<ObjectId> soccerIds;
+    public ObjectId userId;
+    public ObjectId contestId;
+    public List<ObjectId> soccerIds;
 
-    public EnterContestJob() {
-    }
+    // ContestEntry generado por este Job
+    public ObjectId contestEntryId;
+
+    public EnterContestJob() {}
 
     private EnterContestJob(ObjectId userId, ObjectId contestId, List<ObjectId> soccersIds) {
         this.userId = userId;
@@ -35,39 +40,27 @@ public class EnterContestJob extends Job {
 
             boolean bValid = false;
 
-            // Intentamos crear el contestEntry
-            ContestEntry.create(userId, contestId, soccerIds);
-
-            // Verificamos que el usuario haya sido incluido en el contest
             Contest contest = Contest.findOne(contestId);
             if (contest != null) {
                 ContestEntry contestEntry = contest.getContestEntryWithUser(userId);
-                if (contestEntry != null) {
+                if (contestEntry == null) {
+                    contestEntry = createContestEntry();
 
-                    // Si el contest es de pago y no ha sido pagado...
-                    if (contest.entryFee > 0 && !contestEntry.paidEntry) {
-                        // Registramos el seqId, de tal forma que si se produce una alteracion en el número de operaciones
-                        // del usuario se lance una excepcion que impida la inserción ya que (accountId, seqId) es "unique key"
-                        Integer seqId = User.getSeqId(userId) + 1;
+                    bValid = (contest.entryFee > 0) ? transactionPayment(contest.entryFee) : true;
 
-                        // El usuario tiene dinero suficiente?
-                        BigDecimal userBalance = User.calculateBalance(userId);
-                        if (userBalance.compareTo(new BigDecimal(contest.entryFee)) >= 0) {
-                            // Registrar el pago
-                            AccountingOpEnterContest.create(contestId, contestEntry.contestEntryId, ImmutableList.of(
-                                    new AccountOp(userId, new BigDecimal(-contest.entryFee), seqId)
-                            ));
+                    if (bValid) {
+                        bValid = transactionInsert(contest, contestEntry);
 
-                            // Marcarlo como pagado
-                            contestEntry.setPaidEntry(true);
-
-                            // Se ha realizado el pago correctamente
-                            bValid = true;
+                        // TODO: Verificar si ya existen el número minimo de instancias
+                        // Crear instancias automáticamente según se vayan llenando las anteriores
+                        if (bValid && contest.isFull()) {
+                            TemplateContest.findOne(contest.templateContestId).instantiateContest(false);
                         }
-                    } else {
-                        // El contest O es GRATIS O ha sido PAGADO
-                        bValid = true;
                     }
+                }
+                else {
+                    // Ya estaba en el contest
+                    bValid = true;
                 }
             }
 
@@ -75,19 +68,103 @@ public class EnterContestJob extends Job {
         }
 
         if (state.equals(JobState.CANCELING)) {
-
-            // Verificamos si el usuario ha sido incluido en el contest
-            Contest contest = Contest.findOne(contestId);
-            if (contest != null) {
-                ContestEntry contestEntry = contest.getContestEntryWithUser(userId);
-                if (contestEntry != null) {
-                    // Lo quitamos del contest
-                    ContestEntry.remove(userId, contestId, contestEntry.contestEntryId);
-                }
-            }
+            cancelAccountOp();
 
             updateState(JobState.CANCELING, JobState.CANCELED);
         }
+    }
+
+    @Override
+    public void continueProcessing() {
+        if (state.equals(JobState.TODO) || state.equals(JobState.CANCELING) || contestEntryId == null) {
+            updateState(state, JobState.CANCELED);
+            return;
+        }
+
+        Contest contestWithContestEntry = Contest.findOneFromContestEntry(contestEntryId);
+        if (contestWithContestEntry == null) {
+            cancelAccountOp();
+            updateState(state, JobState.CANCELED);
+        }
+        else {
+            // Si ya está incluido en el contest, lo damos por terminado
+            updateState(state, JobState.DONE);
+        }
+    }
+
+    private boolean transactionPayment(int entryFee) {
+        boolean transactionValid = false;
+
+        // Registramos el seqId, de tal forma que si se produce una alteracion en el número de operaciones
+        // del usuario se lance una excepcion que impida la inserción ya que (accountId, seqId) es "unique key"
+        Integer seqId = User.getSeqId(userId) + 1;
+
+        // El usuario tiene dinero suficiente?
+        BigDecimal userBalance = User.calculateBalance(userId);
+        if (userBalance.compareTo(new BigDecimal(entryFee)) >= 0) {
+            try {
+                // Registrar el pago
+                AccountingOpEnterContest.create(contestId, contestEntryId, ImmutableList.of(
+                        new AccountOp(userId, new BigDecimal(-entryFee), seqId)
+                ));
+
+                transactionValid = true;
+            }
+            catch(DuplicateKeyException duplicateKeyException) {
+                play.Logger.info("DuplicateKeyException");
+            }
+        }
+
+        return transactionValid;
+    }
+
+    private boolean transactionInsert(Contest contest, ContestEntry contestEntry) {
+        // Insertamos el contestEntry en el contest
+        //  Comprobamos que el contest siga ACTIVE, que el usuario no esté ya inscrito y que existan Huecos Libres
+        String query = String.format("{_id: #, state: \"ACTIVE\", contestEntries.userId: {$ne: #}, contestEntries.%s: {$exists: false}}", contest.maxEntries - 1);
+        WriteResult result = Model.contests().update(query, contestId, userId)
+                .with("{$addToSet: {contestEntries: #}}", contestEntry);
+
+        // Comprobamos el número de documentos afectados (error == 0)
+        return (result.getN() > 0);
+    }
+
+    private void cancelAccountOp () {
+        // Tenemos que tener un contestEntryId para proceder a la cancelación
+        if (contestEntryId != null) {
+            // Hemos quitado dinero al usuario...?
+            AccountingOp accountingOp = AccountingOpEnterContest.findOne(contestId, contestEntryId);
+            if (accountingOp != null) {
+                Contest contest = Contest.findOne(contestId);
+
+                // Generamos la operación de cancelación (ingresarle dinero)
+                AccountingOpCancelContestEntry.create(contestId, contestEntryId, ImmutableList.of(
+                        new AccountOp(userId, new BigDecimal(contest.entryFee), User.getSeqId(userId) + 1)
+                ));
+            }
+        }
+    }
+
+    private ContestEntry createContestEntry() {
+        ContestEntry contestEntry = null;
+
+        // Generamos el identificador del ContestEntry
+        contestEntryId = new ObjectId();
+
+        // Actualizamos el job el identificador
+        WriteResult result = Model.jobs().update(
+            "{ _id: #}", transactionId
+        ).with(
+            "{$set: { contestEntryId: # }}", contestEntryId
+        );
+
+        // Si va bien, creamos el contestEntry
+        if (result.getN() > 0) {
+            contestEntry = new ContestEntry(userId, soccerIds);
+            contestEntry.contestEntryId = contestEntryId;
+        }
+
+        return contestEntry;
     }
 
     public static EnterContestJob create(ObjectId userId, ObjectId contestId, List<ObjectId> soccersIds) {
