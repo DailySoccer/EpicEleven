@@ -1,11 +1,16 @@
 package model.jobs;
 
 import com.mongodb.WriteResult;
+import model.GlobalDate;
 import model.Model;
 import org.bson.types.ObjectId;
 import org.jongo.FindOne;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
+import utils.ListUtils;
+
+import java.util.Date;
+import java.util.List;
 
 public class Job {
     public enum JobType {
@@ -32,7 +37,7 @@ public class Job {
 
     public JobType type;
     public JobState state;
-    public long lastModified;
+    public Date lastModified;
 
     public boolean isDone() {
         return state.equals(JobState.DONE);
@@ -42,6 +47,8 @@ public class Job {
         return state.equals(JobState.CANCELED);
     }
 
+    public boolean isFinished() { return isDone() || isCanceled(); }
+
     public void apply() {}
 
     public void continueProcessing() {}
@@ -50,7 +57,7 @@ public class Job {
         WriteResult result = Model.jobs().update(
                 "{ _id: #, state: #}", jobId, fromState
         ).with(
-                "{$set: { state: #, lastModified: #}}", toState, System.currentTimeMillis()
+                "{$set: { state: #, lastModified: #}}", toState, GlobalDate.getCurrentDate()
         );
 
         if (result.getN() > 0) {
@@ -64,11 +71,17 @@ public class Job {
     public static void insert (JobType type, Job job) {
         job.type = type;
         job.state = JobState.TODO;
-        job.lastModified = System.currentTimeMillis();
+        job.lastModified = GlobalDate.getCurrentDate();
         Model.jobs().insert(job);
     }
 
-    public static Job findJobByStateAndLastModified(JobState state, long dateThreshold) {
+    public static List<Job> findByStateAndLastModified(JobState state, Date dateThreshold) {
+        return ListUtils.asList(Model.jobs().find(
+                "{state: #, lastModified: {$lt: #}}", state, dateThreshold
+        ).as(Job.class));
+    }
+
+    public static Job findOneByStateAndLastModified(JobState state, Date dateThreshold) {
         FindOne find = Model.jobs().findOne(
                 "{state: #, lastModified: {$lt: #}}", state, dateThreshold
         );

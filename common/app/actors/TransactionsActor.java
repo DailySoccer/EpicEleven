@@ -50,18 +50,17 @@ public class TransactionsActor extends UntypedActor {
             accountingOp.commit();
         }
 
-        Job jobTodo = Job.findJobByStateAndLastModified(Job.JobState.TODO, new DateTime().minusMinutes(1).getMillis());
-        if (jobTodo != null) {
-            jobTodo.continueProcessing();
+        final int MINUTES_THRESHOLD = 1;
+
+        for (Job job: Job.findByStateAndLastModified(Job.JobState.TODO, new DateTime().minusMinutes(MINUTES_THRESHOLD).toDate())) {
+            job.continueProcessing();
         }
 
-        Job jobProcessing = Job.findJobByStateAndLastModified(Job.JobState.PROCESSING, new DateTime().minusMinutes(1).getMillis());
-        if (jobProcessing != null) {
-            jobProcessing.continueProcessing();
+        for (Job job: Job.findByStateAndLastModified(Job.JobState.PROCESSING, new DateTime().minusMinutes(MINUTES_THRESHOLD).toDate())) {
+            job.continueProcessing();
         }
 
-        Job jobCanceled = Job.findJobByStateAndLastModified(Job.JobState.CANCELED, new DateTime().minusMinutes(1).getMillis());
-        if (jobCanceled != null) {
-            jobCanceled.continueProcessing();
+        for (Job job: Job.findByStateAndLastModified(Job.JobState.CANCELING, new DateTime().minusMinutes(MINUTES_THRESHOLD).toDate())) {
+            job.continueProcessing();
         }
     }}
