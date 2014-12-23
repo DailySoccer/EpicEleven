@@ -11,8 +11,7 @@ public class AccountingOpCancelContestEntry extends AccountingOp {
     public ObjectId contestId;
     public ObjectId contestEntryId;
 
-    public AccountingOpCancelContestEntry() {
-    }
+    public AccountingOpCancelContestEntry() {}
 
     public AccountingOpCancelContestEntry(ObjectId contestId, ObjectId contestEntryId) {
         super(TransactionType.CANCEL_CONTEST_ENTRY);

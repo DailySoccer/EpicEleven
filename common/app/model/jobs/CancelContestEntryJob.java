@@ -7,6 +7,7 @@ import model.ContestEntry;
 import model.Model;
 import model.User;
 import model.accounting.AccountOp;
+import model.accounting.AccountingOp;
 import model.accounting.AccountingOpCancelContestEntry;
 import org.bson.types.ObjectId;
 import play.Logger;
@@ -45,6 +46,9 @@ public class CancelContestEntryJob extends Job {
                 if (bValid) {
                     // Realizamos la gestión del payment
                     bValid = (contest.entryFee > 0) ? transactionPayment(contest.entryFee) : true;
+
+                    if (!bValid)
+                        throw new RuntimeException("WTF 131313: CancelContestEntry invalid");
                 }
             }
             else {
@@ -92,10 +96,10 @@ public class CancelContestEntryJob extends Job {
 
     private boolean transactionPayment(int entryFee) {
         // Crear la transacción de Abandonar un Contest
-        AccountingOpCancelContestEntry.create(contestId, contestEntryId, ImmutableList.of(
+        AccountingOp accountingOp = AccountingOpCancelContestEntry.create(contestId, contestEntryId, ImmutableList.of(
                 new AccountOp(userId, new BigDecimal(entryFee), User.getSeqId(userId) + 1)
         ));
-        return true;
+        return accountingOp != null;
     }
 
     public static CancelContestEntryJob create(ObjectId userId, ObjectId contestId, ObjectId contestEntryId) {

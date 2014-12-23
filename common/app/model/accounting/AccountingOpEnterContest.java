@@ -10,6 +10,8 @@ public class AccountingOpEnterContest extends AccountingOp {
     public ObjectId contestId;
     public ObjectId contestEntryId;
 
+    public AccountingOpEnterContest() {}
+
     public AccountingOpEnterContest(ObjectId contestId, ObjectId contestEntryId) {
         super(TransactionType.ENTER_CONTEST);
         this.contestId = contestId;
@@ -18,9 +20,7 @@ public class AccountingOpEnterContest extends AccountingOp {
 
     static public AccountingOpEnterContest findOne (ObjectId contestId, ObjectId contestEntryId) {
         return Model.accountingTransactions()
-                .findOne("{type: #, contestId: #, contestEntryId: #}",
-                        TransactionType.ENTER_CONTEST, contestId, contestEntryId
-                        )
+                .findOne("{type: #, contestId: #, contestEntryId: #}", TransactionType.ENTER_CONTEST, contestId, contestEntryId)
                 .as(AccountingOpEnterContest.class);
     }
 

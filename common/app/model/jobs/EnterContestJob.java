@@ -9,7 +9,6 @@ import model.accounting.AccountingOp;
 import model.accounting.AccountingOpCancelContestEntry;
 import model.accounting.AccountingOpEnterContest;
 import org.bson.types.ObjectId;
-import play.Logger;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -104,11 +103,11 @@ public class EnterContestJob extends Job {
         if (userBalance.compareTo(new BigDecimal(entryFee)) >= 0) {
             try {
                 // Registrar el pago
-                AccountingOpEnterContest.create(contestId, contestEntryId, ImmutableList.of(
+                AccountingOp accountingOp = AccountingOpEnterContest.create(contestId, contestEntryId, ImmutableList.of(
                         new AccountOp(userId, new BigDecimal(-entryFee), seqId)
                 ));
 
-                transactionValid = true;
+                transactionValid = (accountingOp != null);
             }
             catch(DuplicateKeyException duplicateKeyException) {
                 play.Logger.info("DuplicateKeyException");
@@ -153,7 +152,7 @@ public class EnterContestJob extends Job {
 
         // Actualizamos el job el identificador
         WriteResult result = Model.jobs().update(
-            "{ _id: #}", transactionId
+            "{ _id: #}", jobId
         ).with(
             "{$set: { contestEntryId: # }}", contestEntryId
         );

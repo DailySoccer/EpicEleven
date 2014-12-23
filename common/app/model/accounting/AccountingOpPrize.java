@@ -9,8 +9,7 @@ import java.util.List;
 public class AccountingOpPrize extends AccountingOp {
     public ObjectId contestId;
 
-    public AccountingOpPrize() {
-    }
+    public AccountingOpPrize() {}
 
     public AccountingOpPrize(ObjectId contestId) {
         super(TransactionType.PRIZE);

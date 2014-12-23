@@ -28,7 +28,7 @@ public class Job {
     }
 
     @Id
-    public ObjectId transactionId;
+    public ObjectId jobId;
 
     public JobType type;
     public JobState state;
@@ -48,7 +48,7 @@ public class Job {
 
     public void updateState(JobState fromState, JobState toState) {
         WriteResult result = Model.jobs().update(
-                "{ _id: #, state: #}", transactionId, fromState
+                "{ _id: #, state: #}", jobId, fromState
         ).with(
                 "{$set: { state: #, lastModified: #}}", toState, System.currentTimeMillis()
         );
@@ -57,7 +57,7 @@ public class Job {
             state = toState;
         }
         else {
-            Logger.error("WTF 7209: updateState: {} from: {} to: {}", transactionId, fromState, toState);
+            Logger.error("WTF 7209: updateState: {} from: {} to: {}", jobId, fromState, toState);
         }
     }
 

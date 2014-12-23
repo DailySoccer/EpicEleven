@@ -10,8 +10,7 @@ public class AccountingOpOrder extends AccountingOp {
     public ObjectId orderId;
     public String paymentId;
 
-    public AccountingOpOrder() {
-    }
+    public AccountingOpOrder() {}
 
     public AccountingOpOrder(ObjectId orderId, String paymentId) {
         super(TransactionType.ORDER);
