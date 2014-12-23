@@ -16,18 +16,16 @@ import org.apache.oltu.oauth2.common.OAuthProviderType;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import org.apache.oltu.oauth2.common.message.types.GrantType;
-import org.apache.poi.ss.usermodel.DataConsolidateFunction;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.AreaReference;
-import org.apache.poi.ss.util.CellReference;
-import org.apache.poi.xssf.usermodel.XSSFPivotTable;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import play.Logger;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
 import utils.BatchWriteOperation;
 
@@ -42,123 +40,17 @@ import java.util.List;
 public class ExcelController extends Controller {
 
     public static Result index() {
-        if (request().cookie(_googleAuthToken) == null)
-            return googleOAuth();
-
         return ok(views.html.googledocs.render());
     }
 
 
     public static Result googleOAuth() {
-        if (request().cookie(_googleAuthToken) == null) {
-            try {
-                OAuthClientRequest request = OAuthClientRequest
-                        .authorizationProvider(OAuthProviderType.GOOGLE)
-                        .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
-                        .setRedirectURI("http://localhost:9000/admin/googledocs/authn")
-                        .setResponseType("code")
-                        .setScope("https://spreadsheets.google.com/feeds https://docs.google.com/feeds")
-                        .setParameter("access_type", "offline")
-                        .buildQueryMessage();
-                return redirect(request.getLocationUri());
-            } catch (OAuthSystemException e) {
-                Logger.error("WTF 5036", e);
-                return forbidden();
-            }
-        }
         return index();
     }
 
 
-    public static String refreshToken(String refreshToken) {
-        String result = "";
-
-        if (refreshToken != null) {
-            try {
-                OAuthClientRequest request = OAuthClientRequest
-                        .tokenProvider(OAuthProviderType.GOOGLE)
-                        .setGrantType(GrantType.REFRESH_TOKEN)
-                        .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
-                        .setClientSecret("cDI00MZJyCmp4r655ZAgy8hG")
-                        .setRefreshToken(refreshToken)
-                        .buildBodyMessage();
-
-                OAuthClient oAuthClient = new OAuthClient(new URLConnectionClient());
-                OAuthJSONAccessTokenResponse response2 = oAuthClient.accessToken(request);
-
-                result = response2.getAccessToken();
-
-
-            } catch (OAuthSystemException e) {
-                Logger.error("WTF 5036", e);
-            } catch (OAuthProblemException e) {
-                Logger.error("WTF 5037", e);
-            }
-        }
-        return result;
-    }
-
-
-    public static Result refreshToken() {
-        if (request().cookie(_googleRefreshToken) != null) {
-            try {
-                OAuthClientRequest request = OAuthClientRequest
-                        .tokenProvider(OAuthProviderType.GOOGLE)
-                        .setGrantType(GrantType.REFRESH_TOKEN)
-                        .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
-                        .setClientSecret("cDI00MZJyCmp4r655ZAgy8hG")
-                        .setRefreshToken(request().cookie(_googleRefreshToken).value())
-                        .buildBodyMessage();
-
-                OAuthClient oAuthClient = new OAuthClient(new URLConnectionClient());
-                OAuthJSONAccessTokenResponse response2 = oAuthClient.accessToken(request);
-
-                response().setCookie(_googleAuthToken, response2.getAccessToken());
-                response().setCookie(_googleRefreshToken, response2.getRefreshToken());
-
-
-            } catch (OAuthSystemException e) {
-                Logger.error("WTF 5036", e);
-            } catch (OAuthProblemException e) {
-                Logger.error("WTF 5037", e);
-            }
-        }
-        else return googleOAuth();
-        return ok();
-    }
 
     public static Result googleOAuth2() {
-        String _code = request().getQueryString("code");
-
-        try {
-            OAuthClientRequest request = OAuthClientRequest
-                    .tokenProvider(OAuthProviderType.GOOGLE)
-                    .setGrantType(GrantType.AUTHORIZATION_CODE)
-                    .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
-                    .setClientSecret("cDI00MZJyCmp4r655ZAgy8hG")
-                    .setRedirectURI("http://localhost:9000/admin/googledocs/authn")
-                    .setCode(_code)
-                    .buildBodyMessage();
-
-
-            OAuthClient oAuthClient = new OAuthClient(new URLConnectionClient());
-            OAuthJSONAccessTokenResponse response2 = oAuthClient.accessToken(request);
-
-            response().setCookie(_googleAuthToken, response2.getAccessToken());
-            if (response2.getRefreshToken() != null)
-                response().setCookie(_googleRefreshToken, response2.getRefreshToken());
-
-        }
-        catch (OAuthSystemException e) {
-            Logger.error("WTF 5038", e);
-            return forbidden();
-        }
-
-        catch (OAuthProblemException e) {
-            Logger.error("WTF 5039", e);
-            return forbidden();
-        }
-
         return index();
     }
 
@@ -168,107 +60,98 @@ public class ExcelController extends Controller {
 
         fillLog();
 
-        FileInputStream input = new FileInputStream(new File("workbook.xls"));
+        FileInputStream input = new FileInputStream(new File("workbook.xlsx"));
 
-        response().setHeader("Content-Disposition", "attachment; filename=log.xls");
-
+        response().setHeader("Content-Disposition", "attachment; filename=log.xlsx");
 
         return ok(input);
     }
 
 
-    public static Result loadSalaries() {
-        return loadSalaries(request().cookie(_googleAuthToken).value(),
-                request().cookie(_googleRefreshToken).value());
-}
+
+    public static Result upload() {
+        Http.MultipartFormData body = request().body().asMultipartFormData();
+        Http.MultipartFormData.FilePart newSalariesFile = body.getFile("picture");
+        if (newSalariesFile != null) {
+            File file = newSalariesFile.getFile();
+            parseSalariesFile(file);
+            return ok(views.html.googledocs.render());
+
+        } else {
+            flash("error", "Missing file");
+            return ok(views.html.googledocs.render());
+        }
+    }
 
 
 
-    public static Result loadSalaries(String authToken, String refreshToken) {
-        response().setCookie(_googleAuthToken, authToken);
-        response().setCookie(_googleRefreshToken, refreshToken);
+    private static void parseSalariesFile(File file) {
 
+        Logger.debug("Parse salaries");
+
+        Workbook wb = null; // XSSFWorkbook. (inp);
+        try {
+            wb = WorkbookFactory.create(file);
+        } catch (IOException e) {
+            Logger.error("WTF 89532");
+        } catch (InvalidFormatException e) {
+            Logger.error("WTF 81952");
+        }
 
         try {
-            SpreadsheetService service =
-                    new SpreadsheetService("MySpreadsheetIntegration-v1");
+            XSSFSheet sheet = (XSSFSheet) wb.getSheet("Salarios calculados"); //getSheetAt(0);
+            Logger.debug("Hay salaries");
 
-            service.setAuthSubToken(authToken);
+            HashMap<String, Integer> newSalaries = new HashMap<>();
+            HashMap<String, String> newTags = new HashMap<>();
 
-            // TODO: Authorize the service object for a specific user (see other sections)
+            Row myRow;
 
-            // Define the URL to request.  This should never change.
-            URL SPREADSHEET_FEED_URL = new URL(
-                    "https://spreadsheets.google.com/feeds/spreadsheets/private/full");
+            for (int i = 0; i< sheet.getLastRowNum(); i++) {
+                myRow = sheet.getRow(i);
 
-            // Make a request to the API and get all spreadsheets.
-            SpreadsheetFeed feed = service.getFeed(SPREADSHEET_FEED_URL,
-                    SpreadsheetFeed.class);
+                newSalaries.put(myRow.getCell(0).getStringCellValue(), (int)myRow.getCell(2).getNumericCellValue()); //Espacios en nombres de columnas prohibidos
+                newTags.put(myRow.getCell(0).getStringCellValue(), myRow.getCell(4).getStringCellValue().trim());
 
-            SpreadsheetEntry ourSpreadSheet = getSpreadsheet(feed);
-
-            readSalaries(service, ourSpreadSheet);
-
-        } catch (MalformedURLException e) {
-            Logger.error("WTF 5096", e);
-        } catch (ServiceException e) {
-            // Si no tenemos autorización, refrescamos el token y volvemos a intentar
-            String cookie = refreshToken(refreshToken);
-            return loadSalaries(cookie, refreshToken);
-        } catch (IOException e) {
-            Logger.error("WTF 5296", e);
-        }
-
-        return index();
-
-    }
-
-    private static void readSalaries(SpreadsheetService service, SpreadsheetEntry ourSpreadSheet) throws IOException, ServiceException {
-
-        ListFeed salariesFeed = getSalariesFeed(service, ourSpreadSheet);
-
-        HashMap<String, Integer> newSalaries = new HashMap<>();
-        HashMap<String, String> newTags = new HashMap<>();
-
-        for (ListEntry row : salariesFeed.getEntries()) {
-            newSalaries.put(row.getCustomElements().getValue("optaplayerid"),
-                    Integer.parseInt(row.getCustomElements().getValue("finalsalary"))); //Espacios en nombres de columnas prohibidos
-
-            newTags.put(row.getCustomElements().getValue("optaplayerid"),
-                    row.getCustomElements().getValue("tags"));
-        }
-
-        BatchWriteOperation batchWriteOperation = new BatchWriteOperation(Model.templateSoccerPlayers().getDBCollection().initializeUnorderedBulkOperation());
-
-        for (String optaPlayerId : newSalaries.keySet()) {
-
-            if (!TemplateSoccerPlayer.exists(optaPlayerId)) {
-                Logger.error("Se ha detectado un futbolista {} en el excel que no existe en la base de datos", optaPlayerId);
-                continue;
             }
 
-            DBObject query = new BasicDBObject("optaPlayerId", optaPlayerId);
-            BasicDBObject bdo = new BasicDBObject("salary", newSalaries.get(optaPlayerId));
+            BatchWriteOperation batchWriteOperation = new BatchWriteOperation(Model.templateSoccerPlayers().getDBCollection().initializeUnorderedBulkOperation());
 
-            List<String> tagList = newTags.get(optaPlayerId) != null?
-                                       Arrays.asList(newTags.get(optaPlayerId).split(",[ ]*")) :
-                                       new ArrayList<String>();
+            for (String optaPlayerId : newSalaries.keySet()) {
 
-            // Si hay algun tag invalido, simplemente paramos de importar salarios (forzamos a que lo corrijan)
-            for (String tag : tagList) {
-                if (!TemplateSoccerPlayerTag.isValid(tag)) {
-                    throw new RuntimeException("WTF 5761: Se ha encontrado un tag invalido " + tag);
+                if (!TemplateSoccerPlayer.exists(optaPlayerId)) {
+                    Logger.error("Se ha detectado un futbolista {} en el excel que no existe en la base de datos", optaPlayerId);
+                    continue;
                 }
+
+                DBObject query = new BasicDBObject("optaPlayerId", optaPlayerId);
+                BasicDBObject bdo = new BasicDBObject("salary", newSalaries.get(optaPlayerId));
+
+                List<String> tagList = newTags.get(optaPlayerId) != null && !newTags.get(optaPlayerId).equals("") ?
+                        Arrays.asList(newTags.get(optaPlayerId).split(",[ ]*")) :
+                        new ArrayList<String>();
+
+                // Si hay algun tag invalido, simplemente paramos de importar salarios (forzamos a que lo corrijan)
+                for (String tag : tagList) {
+                    if (!TemplateSoccerPlayerTag.isValid(tag)) {
+                        throw new RuntimeException("WTF 5761: Se ha encontrado un tag invalido " + tag);
+                    }
+                }
+
+                bdo.append("tags", tagList);
+
+                DBObject update = new BasicDBObject("$set", bdo);
+                batchWriteOperation.find(query).updateOne(update);
             }
 
-            bdo.append("tags", tagList);
+            batchWriteOperation.execute();
 
-            DBObject update = new BasicDBObject("$set", bdo);
-            batchWriteOperation.find(query).updateOne(update);
         }
-
-        batchWriteOperation.execute();
+        catch (NullPointerException e) {
+            Logger.error("WTF 1252: No hay hoja Salarios calculados");
+        }
     }
+
 
     private static void fillLog() {
 
@@ -295,31 +178,60 @@ public class ExcelController extends Controller {
         rowTitle.createCell(7).setCellValue("minutos");
         rowTitle.createCell(8).setCellValue("fp");
 
-
         HashMap<String, String> soccerTeamsMap = new HashMap<>();
 
+        XSSFSheet pivotSheet = (XSSFSheet) wb.createSheet("Pivot");
+        XSSFSheet emaSheet = (XSSFSheet) wb.createSheet("EMAs");
+        XSSFSheet salarySheet = (XSSFSheet) wb.createSheet("Salarios calculados");
 
-        Row row;
+
+        Row row, emaRow, pivotRow, salaryRow;
+
+        int playerRowCounter = 0;
+
         for (TemplateSoccerTeam templateSoccerTeam: TemplateSoccerTeam.findAll()) {
             soccerTeamsMap.put(templateSoccerTeam.templateSoccerTeamId.toString(), templateSoccerTeam.name);
 
             for (TemplateSoccerPlayer soccerPlayer: TemplateSoccerPlayer.findAllFromTemplateTeam(templateSoccerTeam.templateSoccerTeamId)) {
-                    String teamName = soccerTeamsMap.containsKey(soccerPlayer.templateTeamId.toString()) ? soccerTeamsMap.get(soccerPlayer.templateTeamId.toString()) : "unknown";
+                String teamName = soccerTeamsMap.containsKey(soccerPlayer.templateTeamId.toString()) ? soccerTeamsMap.get(soccerPlayer.templateTeamId.toString()) : "unknown";
 
-                    for (SoccerPlayerStats stat : soccerPlayer.stats) {
+                pivotRow = pivotSheet.createRow((short)playerRowCounter);
+                salaryRow = salarySheet.createRow((short)playerRowCounter);
+                emaRow = emaSheet.createRow((short)playerRowCounter++);
 
-                        row = mySheet.createRow((short)rowCounter++);
-                        row.createCell(0).setCellValue(soccerPlayer.optaPlayerId);
-                        row.createCell(1).setCellValue(soccerPlayer.name);
-                        row.createCell(2).setCellValue(soccerPlayer.fieldPos.name());
-                        row.createCell(3).setCellValue(teamName);
-                        row.createCell(4).setCellValue(optaCompetitions.get(stat.optaCompetitionId));
-                        row.createCell(5).setCellValue(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy")));
-                        row.createCell(6).setCellValue(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm")));
-                        row.createCell(7).setCellValue(stat.playedMinutes);
-                        row.createCell(8).setCellValue(stat.fantasyPoints);
+                pivotRow.createCell(0).setCellValue(soccerPlayer.optaPlayerId);
 
-                    }
+                emaRow.createCell(0).setCellValue(soccerPlayer.optaPlayerId);
+                emaRow.createCell(1).setCellValue(calcEma(soccerPlayer.stats));
+
+                salaryRow.createCell(0).setCellValue(soccerPlayer.optaPlayerId);
+                salaryRow.createCell(1).setCellValue(soccerPlayer.name);
+                salaryRow.createCell(2).setCellValue(soccerPlayer.salary);
+                salaryRow.createCell(3).setCellValue(getSalary(calcEma(soccerPlayer.stats)));
+                salaryRow.createCell(4).setCellValue(soccerPlayer.tags.toString().substring(1,soccerPlayer.tags.toString().length()-1));
+
+
+                int statCounter = 0;
+
+                for (SoccerPlayerStats stat : soccerPlayer.stats) {
+
+                    row = mySheet.createRow((short)rowCounter++);
+                    row.createCell(0).setCellValue(soccerPlayer.optaPlayerId);
+                    row.createCell(1).setCellValue(soccerPlayer.name);
+                    row.createCell(2).setCellValue(soccerPlayer.fieldPos.name());
+                    row.createCell(3).setCellValue(teamName);
+                    row.createCell(4).setCellValue(optaCompetitions.get(stat.optaCompetitionId));
+                    row.createCell(5).setCellValue(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy")));
+                    row.createCell(6).setCellValue(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm")));
+                    row.createCell(7).setCellValue(stat.playedMinutes);
+                    row.createCell(8).setCellValue(stat.fantasyPoints);
+
+                    pivotRow.createCell((statCounter*2)+1).setCellValue(stat.fantasyPoints);
+                    pivotRow.createCell((statCounter*2)+2).setCellValue(stat.playedMinutes);
+
+                    statCounter++;
+
+                }
 
             }
 
@@ -327,18 +239,8 @@ public class ExcelController extends Controller {
         }
 
 
-        XSSFPivotTable pivotTable = mySheet.createPivotTable(new AreaReference("A:I"), new CellReference("H5"));
-
-        pivotTable.addRowLabel(0);
-        //Sum up the second column
-        pivotTable.addColumnLabel(DataConsolidateFunction.SUM, 1);
-        //Set the third column as filter
-        pivotTable.addColumnLabel(DataConsolidateFunction.SUM, 2);
-        //Add filter on forth column
-        pivotTable.addReportFilter(3);
-
         try {
-            FileOutputStream fileOut = new FileOutputStream("workbook.xls");
+            FileOutputStream fileOut = new FileOutputStream("workbook.xlsx");
             wb.write(fileOut);
             fileOut.close();
 
@@ -353,39 +255,41 @@ public class ExcelController extends Controller {
 
     }
 
-    private static SpreadsheetEntry getSpreadsheet(SpreadsheetFeed feed) {
-        SpreadsheetEntry ourSpreadSheet = null;
-        // Iterate through all of the spreadsheets returned
-        for (SpreadsheetEntry spreadsheet : feed.getEntries()) {
-            // Print the title of this spreadsheet to the screen
-            if (spreadsheet.getTitle().getPlainText().equals(SPREADSHEET_NAME)) {
-                ourSpreadSheet = spreadsheet;
-                break;
+    private static double calcEma (List<SoccerPlayerStats> stats) {
+        double factor = 0.2;
+        double prevValue = Integer.MIN_VALUE;
+        double hfactor = 0.02;
+        double complemFactor = 0.8;
+
+        for (SoccerPlayerStats stat : stats) {
+            if (prevValue==Integer.MIN_VALUE) {
+                prevValue = stat.fantasyPoints;
+            } else {
+                if (stat.fantasyPoints == 0 && stat.playedMinutes < 5) {
+                    prevValue = (1-hfactor)*prevValue;
+                }
+                else {
+                    prevValue = (factor * stat.fantasyPoints) + (complemFactor*prevValue);
+                }
             }
         }
-        return ourSpreadSheet;
+        return prevValue;
+
     }
 
 
-    private static ListFeed getSalariesFeed(SpreadsheetService service, SpreadsheetEntry ourSpreadSheet) throws IOException, ServiceException {
-        WorksheetFeed worksheetFeed = service.getFeed(
-                ourSpreadSheet.getWorksheetFeedUrl(), WorksheetFeed.class);
+    private static int getSalary(double input) {
+        int maxFPS = 500;
+        int minSalario = 4500;
+        int maxSalario = 6700; //14500;
 
-        WorksheetEntry ourWorksheet = new WorksheetEntry();
-        for (WorksheetEntry worksheet : worksheetFeed.getEntries()) {
-            if (worksheet.getTitle().getPlainText().equals(SALARIES_WORKSHEET_NAME)) {
-                ourWorksheet = worksheet;
-                break;
-            }
-        }
-        return service.getFeed(ourWorksheet.getListFeedUrl(), ListFeed.class);
+        int rangeSalario = (maxSalario-minSalario);
+
+        double fps = input>1? input: 1;
+        int salario = (int)((fps * rangeSalario)/maxFPS) + minSalario;
+
+        return salario - (salario % 100);
     }
 
-    private final static String _googleAuthToken = "googleAuthToken";
-    private final static String _googleRefreshToken = "googleRefreshToken";
-
-    private final static String SPREADSHEET_NAME = "Epic Eleven - Salarios - LFP";
-
-    private final static String SALARIES_WORKSHEET_NAME = "Salarios Finales";
 
 }
