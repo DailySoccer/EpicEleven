@@ -16,10 +16,14 @@ import org.apache.oltu.oauth2.common.OAuthProviderType;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import org.apache.oltu.oauth2.common.message.types.GrantType;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.DataConsolidateFunction;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.AreaReference;
+import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.xssf.usermodel.XSSFPivotTable;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import play.Logger;
@@ -268,9 +272,9 @@ public class ExcelController extends Controller {
 
     private static void fillLog() {
 
-        Workbook wb = new HSSFWorkbook();
+        Workbook wb = new XSSFWorkbook();
 
-        Sheet mySheet = wb.createSheet("Log");
+        XSSFSheet mySheet = (XSSFSheet) wb.createSheet("Log");
 
         int rowCounter = 0;
 
@@ -321,6 +325,17 @@ public class ExcelController extends Controller {
 
 
         }
+
+
+        XSSFPivotTable pivotTable = mySheet.createPivotTable(new AreaReference("A:I"), new CellReference("H5"));
+
+        pivotTable.addRowLabel(0);
+        //Sum up the second column
+        pivotTable.addColumnLabel(DataConsolidateFunction.SUM, 1);
+        //Set the third column as filter
+        pivotTable.addColumnLabel(DataConsolidateFunction.SUM, 2);
+        //Add filter on forth column
+        pivotTable.addReportFilter(3);
 
         try {
             FileOutputStream fileOut = new FileOutputStream("workbook.xls");
