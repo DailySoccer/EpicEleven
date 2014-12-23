@@ -1,5 +1,7 @@
 @(competitions_enabled : List[model.opta.OptaCompetition])
 
+@import controllers.admin.AdminController
+
 @import controllers.admin.routes._
 
 @scripts = {
@@ -10,8 +12,27 @@ $(document).ready(function() {
 
 });
 
+function setOverlay() {
+   var docHeight = $(document).height();
+
+   $("body").append("<div id='overlay'></div>");
+
+   $("#overlay")
+      .height(docHeight)
+      .css({
+         'opacity' : 0.6,
+         'position': 'absolute',
+         'top': 0,
+         'left': 0,
+         'background-color': 'gray',
+         'width': '100%',
+         'z-index': 5000
+      });
+}
+
 function setMongo() {
         var new_mongo = $('#mongo-conn').val();
+        setOverlay();
         var another_temp = $.ajax({
                         url: "/admin/setmongo/"+new_mongo,
                         success: function (result) {
@@ -43,6 +64,7 @@ function getMongo() {
         <option value="dailysoccer">Epic Eleven</option>
     </select>
 
+    @if(AdminController.isLocalMongo()) {
     <div style="float: right; margin-right:100px;">
         <a href="@DashboardController.resetDB" class="btn btn-danger">Reset DB</a>
         @if(competitions_enabled.isEmpty) {
@@ -51,6 +73,7 @@ function getMongo() {
             <a href="@DashboardController.initialSetup" class="btn btn-danger">Initial Setup</a>
         }
     </div>
+    }
 </div>
 <br/>
 <div>

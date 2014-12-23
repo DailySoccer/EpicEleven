@@ -26,13 +26,11 @@ public class TemplateSoccerPlayer implements JongoId {
 
     public ObjectId templateTeamId;
 
-    public String[] tags;
+    @JsonView(JsonViews.NotForClient.class)
+    public List<TemplateSoccerPlayerTag> tags = new ArrayList<>();
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
-
-    @JsonView(JsonViews.NotForClient.class)
-    public boolean activated;
 
     @JsonView(JsonViews.Extended.class)
     public List<SoccerPlayerStats> stats = new ArrayList<>();
@@ -56,7 +54,9 @@ public class TemplateSoccerPlayer implements JongoId {
         fieldPos = transformToFieldPosFromOptaPos(optaPlayer.position);
         templateTeamId = aTemplateTeamId;
         createdAt = GlobalDate.getCurrentDate();
-        activated = Play.application().configuration().getBoolean("activate_players_by_default");
+        if (Play.application().configuration().getBoolean("activate_players_by_default")) {
+            tags.add(TemplateSoccerPlayerTag.ACTIVE);
+        }
     }
 
     public ObjectId getId() {
@@ -84,6 +84,10 @@ public class TemplateSoccerPlayer implements JongoId {
         return Model.templateSoccerPlayers().findOne("{optaPlayerId: #}", optaPlayerId).as(TemplateSoccerPlayer.class);
     }
 
+    static public boolean exists(String optaPlayerId) {
+        return Model.templateSoccerPlayers().count("{optaPlayerId: #}", optaPlayerId) == 1;
+    }
+
     public static List<TemplateSoccerPlayer> findAll() {
         return ListUtils.asList(Model.templateSoccerPlayers().find().as(TemplateSoccerPlayer.class));
     }
@@ -105,7 +109,7 @@ public class TemplateSoccerPlayer implements JongoId {
     }
 
     static public List<TemplateSoccerPlayer> findAllActiveFromTemplateTeam(ObjectId templateSoccerTeamId) {
-        return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: #, activated: # }", templateSoccerTeamId, true).as(TemplateSoccerPlayer.class));
+        return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: #, tags: {$elemMatch: {$eq: #}} }", templateSoccerTeamId, TemplateSoccerPlayerTag.ACTIVE).as(TemplateSoccerPlayer.class));
     }
 
     static public List<TemplateSoccerPlayer> findAllFromInstances(List<InstanceSoccerPlayer> instanceSoccerPlayers) {
@@ -121,7 +125,7 @@ public class TemplateSoccerPlayer implements JongoId {
         for (TemplateSoccerTeam team: templateSoccerTeams) {
             teamIds.add(team.templateSoccerTeamId);
         }
-        return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: {$in: #}, activated: # }", teamIds, true).as(TemplateSoccerPlayer.class));
+        return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: {$in: #}, tags: {$elemMatch: {$eq: #}} }", teamIds, TemplateSoccerPlayerTag.ACTIVE).as(TemplateSoccerPlayer.class));
     }
 
     public void updateStats(SoccerPlayerStats soccerPlayerStats) {
@@ -184,7 +188,7 @@ public class TemplateSoccerPlayer implements JongoId {
         return !optaPlayerId.equals(optaPlayer.optaPlayerId) ||
                !name.equals(optaPlayer.name) ||
                !fieldPos.equals(transformToFieldPosFromOptaPos(optaPlayer.position)) ||
-               !(TemplateSoccerTeam.findOne(templateTeamId, optaPlayer.teamId) != null);
+               (TemplateSoccerTeam.findOne(templateTeamId, optaPlayer.teamId) == null);
     }
 
     public void changeDocument(OptaPlayer optaPlayer) {
@@ -206,30 +210,6 @@ public class TemplateSoccerPlayer implements JongoId {
         Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).update("{optaPlayerId: #}", optaPlayerId).upsert().with(this);
     }
 
-    /**
-     * Importar un optaPlayer
-     */
-    static public boolean importSoccer(OptaPlayer optaPlayer) {
-        TemplateSoccerTeam templateTeam = TemplateSoccerTeam.findOneFromOptaId(optaPlayer.teamId);
-
-
-        if (templateTeam != null) {
-            TemplateSoccerPlayer templateSoccer = new TemplateSoccerPlayer(optaPlayer, templateTeam.templateSoccerTeamId);
-
-            TemplateSoccerPlayer origTemplateSoccerPlayer = TemplateSoccerPlayer.findOneFromOptaId(optaPlayer.optaPlayerId);
-            templateSoccer.salary = (origTemplateSoccerPlayer != null)? origTemplateSoccerPlayer.salary:
-                                                                        Play.application().configuration().getInt("base_salary")>0?
-                                                                                Play.application().configuration().getInt("base_salary"):
-                                                                                templateSoccer.name.length()*500;
-
-            templateSoccer.updateDocument();
-        }
-        else {
-            Logger.error("importSoccer ({}): invalid teamID({})", optaPlayer.optaPlayerId, optaPlayer.teamId);
-            return false;
-        }
-        return true;
-    }
 
     static public boolean isInvalidFromImport(OptaPlayer optaPlayer) {
         boolean invalid = (optaPlayer.teamId == null) || optaPlayer.teamId.isEmpty();

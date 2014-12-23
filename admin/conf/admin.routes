@@ -4,18 +4,9 @@ GET         /initial_setup                                             controlle
 
 GET         /import_teams                                              controllers.admin.ImportController.showImportTeams()
 GET         /import_teams/:competitionId                               controllers.admin.ImportController.showImportTeamsFromCompetition(competitionId : String)
-GET         /import_all_new_teams                                      controllers.admin.ImportController.importAllNewTeams()
-GET         /import_all_new_teams/:competitionId                       controllers.admin.ImportController.importAllNewTeamsFromCompetition(competitionId : String)
-GET         /import_all_changed_teams                                  controllers.admin.ImportController.importAllChangedTeams()
-GET         /import_all_teams                                          controllers.admin.ImportController.importAllTeams()
 GET         /import_soccers                                            controllers.admin.ImportController.showImportSoccers()
-GET         /import_all_new_soccers                                    controllers.admin.ImportController.importAllNewSoccers()
-GET         /import_all_changed_soccers                                controllers.admin.ImportController.importAllChangedSoccers()
-GET         /import_all_soccers                                        controllers.admin.ImportController.importAllSoccers()
 GET         /import_match_events                                       controllers.admin.ImportController.showImportMatchEvents()
-GET         /import_all_new_match_events                               controllers.admin.ImportController.importAllNewMatchEvents()
-GET         /import_all_changed_match_events                           controllers.admin.ImportController.importAllChangedMatchEvents()
-GET         /import_all_match_events                                   controllers.admin.ImportController.importAllMatchEvents()
+
 
 GET         /points_translation/create                                 controllers.admin.PointsTranslationController.resetToDefault()
 GET         /points_translations                                       controllers.admin.PointsTranslationController.index()
@@ -62,7 +53,6 @@ GET         /template_soccer_players                                   controlle
 GET         /template_soccer_players/ajax                              controllers.admin.TemplateSoccerPlayerController.indexAjax()
 GET         /template_soccer_player/edit_salaries                      controllers.admin.TemplateSoccerPlayerController.editSalaries()
 GET         /template_soccer_player/:soccerPlayer/salary/:salary       controllers.admin.TemplateSoccerPlayerController.changeSalary(soccerPlayer : String, salary : Int)
-GET         /template_soccer_player/:soccerPlayer/activated/:state     controllers.admin.TemplateSoccerPlayerController.changeState(soccerPlayer : String, state : String)
 
 GET         /opta_competitions                                         controllers.admin.OptaController.optaCompetitions()
 GET         /opta_competitions/:competition/activated/:state           controllers.admin.OptaController.changeCompetitionState(competition : String, state : String)
@@ -93,8 +83,6 @@ GET         /snapshot                                                  controlle
 GET         /continue_from_snapshot                                    controllers.admin.SnapshotController.continueFromSnapshot()
 GET         /snapshot_dump                                             controllers.admin.SnapshotController.snapshotDump()
 GET         /snapshot_restore                                          controllers.admin.SnapshotController.snapshotRestore()
-GET         /import_salaries                                           controllers.admin.ImportController.importSalaries()
-GET         /export_salaries                                           controllers.admin.ImportController.exportSalaries()
 
 GET         /refresher                                                 controllers.admin.RefresherController.index()
 GET         /import_from_last                                          controllers.admin.RefresherController.importFromLast()
@@ -105,7 +93,6 @@ GET         /last_date                                                 controlle
 GET         /test_goto/:year/:month/:day/:hour/:minute                 controllers.admin.TestController.gotoDateTest(year: Int, month: Int, day: Int, hour: Int, minute: Int)
 GET         /test_start                                                controllers.admin.TestController.start()
 GET         /test_goto_timestamp/:timestamp                            controllers.admin.TestController.gotoDate(timestamp : Long)
-GET         /test_import_everything                                    controllers.admin.TestController.importEverything()
 GET         /test_current_date                                         controllers.admin.TestController.getCurrentDate()
 
 GET         /test_initial_setup                                        controllers.admin.TestController.initialSetup()
