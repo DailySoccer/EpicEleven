@@ -21,8 +21,6 @@ import java.util.List;
 
 public class Model {
 
-    static public final String _LOCAL_HOST_MONGO_APP_ENV = "localhost";
-
     static public MongoCollection opsLog() { return _jongo.getCollection("opsLog"); }
 
     static public MongoCollection sessions() { return _jongo.getCollection("sessions"); }
@@ -269,6 +267,7 @@ public class Model {
     }
 
 
+    static private final String _LOCAL_HOST_MONGO_APP_ENV = "localhost";
     static private String _mongoAppEnv;
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/
