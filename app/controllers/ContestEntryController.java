@@ -1,6 +1,7 @@
 package controllers;
 
 import actions.AllowCors;
+import actions.ExceptionCatch;
 import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,6 +12,7 @@ import play.data.Form;
 import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.With;
 import utils.ListUtils;
 import utils.ReturnHelper;
 
@@ -20,6 +22,7 @@ import java.util.List;
 import static play.data.Form.form;
 
 @AllowCors.Origin
+@With(ExceptionCatch.class)
 public class ContestEntryController extends Controller {
 
     private static final String CONTEST_ENTRY_KEY = "error";
