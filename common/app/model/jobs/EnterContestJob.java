@@ -48,7 +48,7 @@ public class EnterContestJob extends Job {
                     bValid = (contest.entryFee > 0) ? transactionPayment(contest.entryFee) : true;
 
                     if (bValid) {
-                        bValid = transactionInsert(contest, contestEntry);
+                        bValid = transactionContestEntryInsert(contest, contestEntry);
 
                         // TODO: Verificar si ya existen el número minimo de instancias
                         // Crear instancias automáticamente según se vayan llenando las anteriores
@@ -117,7 +117,7 @@ public class EnterContestJob extends Job {
         return transactionValid;
     }
 
-    private boolean transactionInsert(Contest contest, ContestEntry contestEntry) {
+    private boolean transactionContestEntryInsert(Contest contest, ContestEntry contestEntry) {
         // Insertamos el contestEntry en el contest
         //  Comprobamos que el contest siga ACTIVE, que el usuario no esté ya inscrito y que existan Huecos Libres
         String query = String.format("{_id: #, state: \"ACTIVE\", contestEntries.userId: {$ne: #}, contestEntries.%s: {$exists: false}}", contest.maxEntries - 1);
