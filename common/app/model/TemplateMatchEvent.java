@@ -303,7 +303,7 @@ public class TemplateMatchEvent implements JongoId {
                 .multi()
                 .with(setPattern, fantasyPoints);
 
-        liveFantasyPoints.put(soccerPlayerId.toString(), fantasyPoints);
+        liveFantasyPoints.put(soccerPlayerId, fantasyPoints);
     }
     
     public static TemplateMatchEvent createFromOpta(OptaMatchEvent optaMatchEvent) {

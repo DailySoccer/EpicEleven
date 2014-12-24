@@ -45,7 +45,7 @@ public class EnterContestJob extends Job {
                 if (contestEntry == null) {
                     contestEntry = createContestEntry();
 
-                    bValid = (contest.entryFee > 0) ? transactionPayment(contest.entryFee) : true;
+                    bValid = (contest.entryFee <= 0) || transactionPayment(contest.entryFee);
 
                     if (bValid) {
                         bValid = transactionContestEntryInsert(contest, contestEntry);

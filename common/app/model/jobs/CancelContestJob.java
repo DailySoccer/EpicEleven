@@ -1,7 +1,5 @@
 package model.jobs;
 
-import com.google.common.collect.ImmutableList;
-import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 import model.Contest;
 import model.ContestEntry;
@@ -9,7 +7,6 @@ import model.Model;
 import model.User;
 import model.accounting.*;
 import org.bson.types.ObjectId;
-import play.Logger;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;

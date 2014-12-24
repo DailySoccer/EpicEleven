@@ -35,7 +35,7 @@ public class CancelContestEntryJob extends Job {
 
         if (state.equals(JobState.PROCESSING)) {
 
-            boolean bValid = false;
+            boolean bValid;
 
             // Verificamos que el usuario está en el contest
             Contest contest = Contest.findOneFromContestEntry(contestEntryId);
@@ -54,7 +54,7 @@ public class CancelContestEntryJob extends Job {
             //  el que gestione la devolución del pago
             if (bValid) {
                 // Realizamos la gestión del payment
-                bValid = (contest.entryFee > 0) ? transactionPayment(contest.entryFee) : true;
+                bValid = (contest.entryFee <= 0) || transactionPayment(contest.entryFee);
 
                 if (!bValid)
                     throw new RuntimeException("WTF 131313: CancelContestEntry invalid");

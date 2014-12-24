@@ -3,7 +3,6 @@ package model.accounting;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.mongodb.WriteResult;
 import model.Model;
 import org.jongo.marshall.jackson.oid.Id;
 import org.bson.types.ObjectId;
@@ -20,17 +19,17 @@ public class AccountingOp {
         ENTER_CONTEST,
         CANCEL_CONTEST_ENTRY,
         CANCEL_CONTEST
-    };
+    }
 
     public enum TransactionProc {
         COMMITTED,
         UNCOMMITTED
-    };
+    }
 
     public enum TransactionState {
         VALID,
         CANCELLED
-    };
+    }
 
     @Id
     public ObjectId transactionId;

@@ -7,8 +7,6 @@ import com.mongodb.WriteResult;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
-import play.Play;
-import utils.BatchWriteOperation;
 import utils.ListUtils;
 
 import java.util.ArrayList;
