@@ -99,10 +99,6 @@ public class SimulatorController extends Controller {
         return isSimulatorCreated()? OptaSimulator.instance().getNextStepDesc() : "";
     }
 
-    public static boolean isSnapshotEnabled() {
-        return false;
-    }
-
     public static boolean isSimulatorPaused() {
         return !isSimulatorCreated() || OptaSimulator.instance().isPaused();
     }
