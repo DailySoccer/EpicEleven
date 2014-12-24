@@ -31,7 +31,6 @@ object BackendBuild extends Build {
 
     val common = Project(id = "common",
                          base = file("./common"))
-                 .enablePlugins(PlayJava)
 
     if (file("./admin").exists()) {
       val admin = Project(id = "admin",
