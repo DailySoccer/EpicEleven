@@ -42,18 +42,25 @@ public class CancelContestEntryJob extends Job {
             if (contest != null) {
                 // Intentamos quitar el contestEntry
                 bValid = transactionRemove();
-
-                if (bValid) {
-                    // Realizamos la gestión del payment
-                    bValid = (contest.entryFee > 0) ? transactionPayment(contest.entryFee) : true;
-
-                    if (!bValid)
-                        throw new RuntimeException("WTF 131313: CancelContestEntry invalid");
-                }
             }
             else {
-                // El usuario ya no estaba en el contest
-                bValid = true;
+                // Aunque no esté el contestEntry incluido en el contest
+                //  puede que tengamos una tarea pendiente
+                contest = Model.contests().findOne("{_id: #, pendingJobs: {$in: [#]}}", contestId, jobId).as(Contest.class);
+                bValid = (contest != null);
+            }
+
+            // Únicamente el job que haya sido el que haya quitado el contestEntry será
+            //  el que gestione la devolución del pago
+            if (bValid) {
+                // Realizamos la gestión del payment
+                bValid = (contest.entryFee > 0) ? transactionPayment(contest.entryFee) : true;
+
+                if (!bValid)
+                    throw new RuntimeException("WTF 131313: CancelContestEntry invalid");
+
+                // Quitar la tarea pendiente
+                Model.contests().update("{_id: #}", contestId).with("{$pull: {pendingJobs: #}}", jobId);
             }
 
             updateState(JobState.PROCESSING, bValid ? JobState.DONE : JobState.CANCELED);
@@ -76,7 +83,7 @@ public class CancelContestEntryJob extends Job {
         try {
             Contest contest = Model.contests()
                     .findAndModify("{_id: #, state: \"ACTIVE\", contestEntries._id: #, contestEntries.userId: #}", contestId, contestEntryId, userId)
-                    .with("{$pull: {contestEntries: {_id: #}}}", contestEntryId)
+                    .with("{$pull: {contestEntries: {_id: #}}, $addToSet: {pendingJobs: #}}", contestEntryId, jobId)
                     .as(Contest.class);
 
             if (contest != null) {

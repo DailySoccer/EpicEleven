@@ -1,5 +1,6 @@
 package model.jobs;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.mongodb.WriteResult;
 import model.GlobalDate;
 import model.Model;
@@ -12,6 +13,7 @@ import utils.ListUtils;
 import java.util.Date;
 import java.util.List;
 
+@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS,property="_class")
 public class Job {
     public enum JobType {
         ENTER_CONTEST,

@@ -55,6 +55,9 @@ public class Contest implements JongoId {
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyLiveContests.class, JsonViews.InstanceSoccerPlayers.class})
     public List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
 
+    @JsonView(JsonViews.NotForClient.class)
+    private List<Object> pendingJobs;
+
     public Contest() {}
 
     public Contest(TemplateContest template) {
