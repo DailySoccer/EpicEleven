@@ -44,18 +44,6 @@ public class ExcelController extends Controller {
     }
 
 
-    public static Result googleOAuth() {
-        return index();
-    }
-
-
-
-    public static Result googleOAuth2() {
-        return index();
-    }
-
-
-
     public static Result writeSoccerPlayersLog() throws IOException {
 
         fillLog();
@@ -168,7 +156,7 @@ public class ExcelController extends Controller {
 
 
         Row rowTitle = mySheet.createRow((short)rowCounter++);
-        rowTitle.createCell(0).setCellValue("id");
+        rowTitle.createCell(0).setCellValue("optaPlayerId");
         rowTitle.createCell(1).setCellValue("nombre");
         rowTitle.createCell(2).setCellValue("posicion");
         rowTitle.createCell(3).setCellValue("equipo");
@@ -176,7 +164,7 @@ public class ExcelController extends Controller {
         rowTitle.createCell(5).setCellValue("fecha");
         rowTitle.createCell(6).setCellValue("hora");
         rowTitle.createCell(7).setCellValue("minutos");
-        rowTitle.createCell(8).setCellValue("fp");
+        rowTitle.createCell(8).setCellValue("fantasyPoints");
 
         HashMap<String, String> soccerTeamsMap = new HashMap<>();
 
@@ -187,7 +175,22 @@ public class ExcelController extends Controller {
 
         Row row, emaRow, pivotRow, salaryRow;
 
-        int playerRowCounter = 0;
+        int playerRowCounter = 1;
+
+        salaryRow = salarySheet.createRow((short)0);
+        salaryRow.createCell(0).setCellValue("optaPlayerId");
+        salaryRow.createCell(1).setCellValue("nombre");
+        salaryRow.createCell(2).setCellValue("currentSalary");
+        salaryRow.createCell(3).setCellValue("calculatedSalary");
+        salaryRow.createCell(4).setCellValue("currentTags");
+
+
+        emaRow = emaSheet.createRow((short)0);
+        emaRow.createCell(0).setCellValue("optaPlayerId");
+        emaRow.createCell(1).setCellValue("EMAfp");
+
+        pivotRow = emaSheet.createRow((short)0);
+
 
         for (TemplateSoccerTeam templateSoccerTeam: TemplateSoccerTeam.findAll()) {
             soccerTeamsMap.put(templateSoccerTeam.templateSoccerTeamId.toString(), templateSoccerTeam.name);
