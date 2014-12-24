@@ -16,19 +16,18 @@ libraryDependencies ++= Seq(
   ,"org.flywaydb" % "flyway-core" % "3.1"
 )
 
-// Pero no queremos las carpetas por defecto de sbt, definimos las nuestras con un solo root
+// No queremos las carpetas por defecto de sbt, definimos las nuestras con un solo root
 sourceDirectory in Compile := baseDirectory.value / "app"
-sourceDirectory in Test := baseDirectory.value / "test"
-scalaSource in Compile := baseDirectory.value / "app"
-scalaSource in Test := baseDirectory.value / "test"
-javaSource in Compile := baseDirectory.value / "app"
-javaSource in Test := baseDirectory.value / "test"
-resourceDirectory in Compile := baseDirectory.value / "app"
-resourceDirectory in Test := baseDirectory.value / "test"
 
+scalaSource in Compile := baseDirectory.value / "app"
+
+javaSource in Compile := baseDirectory.value / "app"
+
+resourceDirectory in Compile := baseDirectory.value / "app"
 
 sources in (Compile,doc) := Seq.empty
+
 publishArtifact in (Compile, packageDoc) := false
 
-
-javacOptions := List("-encoding", "utf-8", "-Xlint:unchecked")
+// Al no ser proyecto play, hay que configurar a mano el encoding
+javacOptions := List("-encoding", "utf-8") //, "-Xlint:unchecked")
