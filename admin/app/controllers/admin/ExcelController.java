@@ -1,24 +1,15 @@
 package controllers.admin;
 
 
-import com.google.gdata.client.spreadsheet.SpreadsheetService;
-import com.google.gdata.data.spreadsheet.*;
-import com.google.gdata.util.ServiceException;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import model.*;
 import model.opta.OptaCompetition;
-import org.apache.oltu.oauth2.client.OAuthClient;
-import org.apache.oltu.oauth2.client.URLConnectionClient;
-import org.apache.oltu.oauth2.client.request.OAuthClientRequest;
-import org.apache.oltu.oauth2.client.response.OAuthJSONAccessTokenResponse;
-import org.apache.oltu.oauth2.common.OAuthProviderType;
-import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
-import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
-import org.apache.oltu.oauth2.common.message.types.GrantType;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.joda.time.DateTime;
@@ -30,8 +21,6 @@ import play.mvc.Result;
 import utils.BatchWriteOperation;
 
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -48,7 +37,7 @@ public class ExcelController extends Controller {
 
         fillLog();
 
-        FileInputStream input = new FileInputStream(new File("workbook.xlsx"));
+        FileInputStream input = new FileInputStream(new File(_filename));
 
         response().setHeader("Content-Disposition", "attachment; filename=log.xlsx");
 
@@ -87,7 +76,7 @@ public class ExcelController extends Controller {
         }
 
         try {
-            XSSFSheet sheet = (XSSFSheet) wb.getSheet("Salarios calculados"); //getSheetAt(0);
+            XSSFSheet sheet = (XSSFSheet) wb.getSheet("Salaries"); //getSheetAt(0);
             Logger.debug("Hay salaries");
 
             HashMap<String, Integer> newSalaries = new HashMap<>();
@@ -136,8 +125,71 @@ public class ExcelController extends Controller {
 
         }
         catch (NullPointerException e) {
-            Logger.error("WTF 1252: No hay hoja Salarios calculados");
+            Logger.error("WTF 1252: No hay hoja Salaries");
         }
+    }
+
+
+    private static void fillLogRowTitle(Sheet sheet) {
+        Row rowTitle = sheet.createRow((short)0);
+        rowTitle.createCell(0).setCellValue(_optaPlayerId);
+        rowTitle.createCell(1).setCellValue(_name);
+        rowTitle.createCell(2).setCellValue(_position);
+        rowTitle.createCell(3).setCellValue(_team);
+        rowTitle.createCell(4).setCellValue(_competition);
+        rowTitle.createCell(5).setCellValue(_date);
+        rowTitle.createCell(6).setCellValue(_time);
+        rowTitle.createCell(7).setCellValue(_minutesPlayed);
+        rowTitle.createCell(8).setCellValue(_fantasyPoints);
+    }
+
+
+    private static void fillSalaryRowTitle(Sheet sheet) {
+        Row salaryRow = sheet.createRow((short)0);
+        salaryRow.createCell(0).setCellValue(_optaPlayerId);
+        salaryRow.createCell(1).setCellValue(_name);
+        salaryRow.createCell(2).setCellValue(_currentSalary);
+        salaryRow.createCell(3).setCellValue(_calculatedSalary);
+        salaryRow.createCell(4).setCellValue(_currentTags);
+    }
+
+
+    private static void fillEMARowTitle(Sheet sheet) {
+        Row emaRow = sheet.createRow((short) 0);
+        emaRow.createCell(0).setCellValue(_optaPlayerId);
+        emaRow.createCell(1).setCellValue(_emaFP);
+    }
+
+
+    private static void fillSalaryRow(Row salaryRow, TemplateSoccerPlayer soccerPlayer) {
+        salaryRow.createCell(0).setCellValue(soccerPlayer.optaPlayerId);
+        salaryRow.createCell(1).setCellValue(soccerPlayer.name);
+        salaryRow.createCell(2).setCellValue(soccerPlayer.salary);
+        salaryRow.createCell(3).setCellValue(getSalary(calcEma(soccerPlayer.stats)));
+        salaryRow.createCell(4).setCellValue(soccerPlayer.tags.toString().substring(1,soccerPlayer.tags.toString().length()-1));
+    }
+
+
+    private static void fillLogRow(HashMap<String, String> optaCompetitions, Row row, TemplateSoccerPlayer soccerPlayer,
+                                   String teamName, SoccerPlayerStats stat) {
+        row.createCell(0).setCellValue(soccerPlayer.optaPlayerId);
+        row.createCell(1).setCellValue(soccerPlayer.name);
+        row.createCell(2).setCellValue(soccerPlayer.fieldPos.name());
+        row.createCell(3).setCellValue(teamName);
+        row.createCell(4).setCellValue(optaCompetitions.get(stat.optaCompetitionId));
+        row.createCell(5).setCellValue(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy")));
+        row.createCell(6).setCellValue(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm")));
+        row.createCell(7).setCellValue(stat.playedMinutes);
+        row.createCell(8).setCellValue(stat.fantasyPoints);
+    }
+
+
+    private static void fillPivotRows(Row pivotRow, Row pivotTitleRow, int statCounter, SoccerPlayerStats stat) {
+        pivotRow.createCell((statCounter*2)+1).setCellValue(stat.fantasyPoints);
+        pivotRow.createCell((statCounter*2)+2).setCellValue(stat.playedMinutes);
+
+        pivotTitleRow.createCell((statCounter*2)+1).setCellValue(_fantasyPoints);
+        pivotTitleRow.createCell((statCounter*2)+2).setCellValue(_minutesPlayed);
     }
 
 
@@ -145,51 +197,33 @@ public class ExcelController extends Controller {
 
         Workbook wb = new XSSFWorkbook();
 
-        XSSFSheet mySheet = (XSSFSheet) wb.createSheet("Log");
+        XSSFSheet logSheet = (XSSFSheet) wb.createSheet(_log);
+        XSSFSheet pivotSheet = (XSSFSheet) wb.createSheet(_pivot);
+        XSSFSheet emaSheet = (XSSFSheet) wb.createSheet(_emas);
+        XSSFSheet salarySheet = (XSSFSheet) wb.createSheet(_salaries);
 
-        int rowCounter = 0;
+
+        int rowCounter = 1;
 
         HashMap<String, String> optaCompetitions = new HashMap<>();
         for (OptaCompetition optaCompetition: OptaCompetition.findAll()) {
             optaCompetitions.put(optaCompetition.competitionId, optaCompetition.competitionName);
         }
 
+        Row row, emaRow, pivotRow, pivotTitleRow, salaryRow;
 
-        Row rowTitle = mySheet.createRow((short)rowCounter++);
-        rowTitle.createCell(0).setCellValue("optaPlayerId");
-        rowTitle.createCell(1).setCellValue("nombre");
-        rowTitle.createCell(2).setCellValue("posicion");
-        rowTitle.createCell(3).setCellValue("equipo");
-        rowTitle.createCell(4).setCellValue("competicion");
-        rowTitle.createCell(5).setCellValue("fecha");
-        rowTitle.createCell(6).setCellValue("hora");
-        rowTitle.createCell(7).setCellValue("minutos");
-        rowTitle.createCell(8).setCellValue("fantasyPoints");
+        fillLogRowTitle(logSheet);
+        fillSalaryRowTitle(salarySheet);
+        fillEMARowTitle(emaSheet);
+
+        pivotTitleRow = pivotSheet.createRow((short)0);
+        pivotTitleRow.createCell(0).setCellValue(_optaPlayerId);
+
 
         HashMap<String, String> soccerTeamsMap = new HashMap<>();
 
-        XSSFSheet pivotSheet = (XSSFSheet) wb.createSheet("Pivot");
-        XSSFSheet emaSheet = (XSSFSheet) wb.createSheet("EMAs");
-        XSSFSheet salarySheet = (XSSFSheet) wb.createSheet("Salarios calculados");
-
-
-        Row row, emaRow, pivotRow, salaryRow;
 
         int playerRowCounter = 1;
-
-        salaryRow = salarySheet.createRow((short)0);
-        salaryRow.createCell(0).setCellValue("optaPlayerId");
-        salaryRow.createCell(1).setCellValue("nombre");
-        salaryRow.createCell(2).setCellValue("currentSalary");
-        salaryRow.createCell(3).setCellValue("calculatedSalary");
-        salaryRow.createCell(4).setCellValue("currentTags");
-
-
-        emaRow = emaSheet.createRow((short)0);
-        emaRow.createCell(0).setCellValue("optaPlayerId");
-        emaRow.createCell(1).setCellValue("EMAfp");
-
-        pivotRow = emaSheet.createRow((short)0);
 
 
         for (TemplateSoccerTeam templateSoccerTeam: TemplateSoccerTeam.findAll()) {
@@ -207,30 +241,16 @@ public class ExcelController extends Controller {
                 emaRow.createCell(0).setCellValue(soccerPlayer.optaPlayerId);
                 emaRow.createCell(1).setCellValue(calcEma(soccerPlayer.stats));
 
-                salaryRow.createCell(0).setCellValue(soccerPlayer.optaPlayerId);
-                salaryRow.createCell(1).setCellValue(soccerPlayer.name);
-                salaryRow.createCell(2).setCellValue(soccerPlayer.salary);
-                salaryRow.createCell(3).setCellValue(getSalary(calcEma(soccerPlayer.stats)));
-                salaryRow.createCell(4).setCellValue(soccerPlayer.tags.toString().substring(1,soccerPlayer.tags.toString().length()-1));
-
+                fillSalaryRow(salaryRow, soccerPlayer);
 
                 int statCounter = 0;
 
                 for (SoccerPlayerStats stat : soccerPlayer.stats) {
 
-                    row = mySheet.createRow((short)rowCounter++);
-                    row.createCell(0).setCellValue(soccerPlayer.optaPlayerId);
-                    row.createCell(1).setCellValue(soccerPlayer.name);
-                    row.createCell(2).setCellValue(soccerPlayer.fieldPos.name());
-                    row.createCell(3).setCellValue(teamName);
-                    row.createCell(4).setCellValue(optaCompetitions.get(stat.optaCompetitionId));
-                    row.createCell(5).setCellValue(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy")));
-                    row.createCell(6).setCellValue(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm")));
-                    row.createCell(7).setCellValue(stat.playedMinutes);
-                    row.createCell(8).setCellValue(stat.fantasyPoints);
+                    row = logSheet.createRow((short)rowCounter++);
+                    fillLogRow(optaCompetitions, row, soccerPlayer, teamName, stat);
 
-                    pivotRow.createCell((statCounter*2)+1).setCellValue(stat.fantasyPoints);
-                    pivotRow.createCell((statCounter*2)+2).setCellValue(stat.playedMinutes);
+                    fillPivotRows(pivotRow, pivotTitleRow, statCounter, stat);
 
                     statCounter++;
 
@@ -243,7 +263,7 @@ public class ExcelController extends Controller {
 
 
         try {
-            FileOutputStream fileOut = new FileOutputStream("workbook.xlsx");
+            FileOutputStream fileOut = new FileOutputStream(_filename);
             wb.write(fileOut);
             fileOut.close();
 
@@ -257,6 +277,7 @@ public class ExcelController extends Controller {
         }
 
     }
+
 
     private static double calcEma (List<SoccerPlayerStats> stats) {
         double factor = 0.2;
@@ -295,4 +316,27 @@ public class ExcelController extends Controller {
     }
 
 
+    private static String _optaPlayerId = "optaPlayerId";
+
+    private static String _name = "name";
+    private static String _position = "position";
+    private static String _team = "team";
+    private static String _competition = "competition";
+    private static String _date = "date";
+    private static String _time = "time";
+    private static String _minutesPlayed = "minutesPlayed";
+    private static String _fantasyPoints = "fantasyPoints";
+
+    private static String _currentSalary = "currentSalary";
+    private static String _calculatedSalary = "calculatedSalary";
+    private static String _currentTags = "currentTags";
+
+    private static String _emaFP = "EMAfp";
+
+    private static String _log = "Log";
+    private static String _pivot = "Pivot";
+    private static String _emas = "EMAs";
+    private static String _salaries = "Salaries";
+
+    private static String _filename = "workbook.xlsx";
 }
