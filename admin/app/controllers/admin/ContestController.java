@@ -37,6 +37,8 @@ public class ContestController extends Controller {
                     case 4: return contest.optaCompetitionId;
                     case 5: if(contest.isHistory()) {
                                 return "Finished";
+                            } else if(contest.isCanceled()) {
+                                return "Canceled";
                             } else if(contest.isLive()) {
                                 return "Live";
                             } else {
@@ -55,6 +57,8 @@ public class ContestController extends Controller {
                     case 5:
                         if(fieldValue.equals("Finished")) {
                             return "<button class=\"btn btn-danger\">Finished</button>";
+                        } else if(fieldValue.equals("Canceled")) {
+                            return "<button class=\"btn btn-danger\">Canceled</button>";
                         } else if(fieldValue.equals("Live")) {
                             return "<button class=\"btn btn-success\">Live</button>";
                         } else {

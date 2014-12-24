@@ -17,7 +17,8 @@ import java.util.List;
 public class Job {
     public enum JobType {
         ENTER_CONTEST,
-        CANCEL_CONTEST_ENTRY
+        CANCEL_CONTEST_ENTRY,
+        CANCEL_CONTEST
     }
 
     public enum JobState {

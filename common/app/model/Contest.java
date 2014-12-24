@@ -56,7 +56,7 @@ public class Contest implements JongoId {
     public List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
 
     @JsonView(JsonViews.NotForClient.class)
-    private List<Object> pendingJobs;
+    public List<Object> pendingJobs;
 
     public Contest() {}
 
@@ -82,6 +82,7 @@ public class Contest implements JongoId {
     public boolean isActive()   { return (state == ContestState.ACTIVE); }
     public boolean isLive()     { return (state == ContestState.LIVE); }
     public boolean isHistory()  { return (state == ContestState.HISTORY); }
+    public boolean isCanceled() { return (state == ContestState.CANCELED); }
 
     public boolean isFull() { return getNumEntries() >= maxEntries; }
 
@@ -146,6 +147,13 @@ public class Contest implements JongoId {
                 .as(Contest.class));
     }
 
+    static public List<Contest> findAllActiveNotFullWithEntryFee(ObjectId templateMatchEventId) {
+        return ListUtils.asList(Model.contests()
+                .find("{$and: [{state: \"ACTIVE\", templateMatchEventIds: {$in:[#]}, entryFee: {$gt: 0}}, {$where: \"this.contestEntries.length < this.maxEntries\"}]}", templateMatchEventId)
+                .projection(ViewProjection.get(JsonViews.Public.class, Contest.class))
+                .as(Contest.class));
+    }
+
     static public List<Contest> findAllMyActive(ObjectId userId, Class<?> projectionClass) {
         return findAllMyContests(userId, "{state: \"ACTIVE\", \"contestEntries.userId\": #}", projectionClass);
     }
@@ -163,15 +171,6 @@ public class Contest implements JongoId {
                 .find(query, userId)
                 .projection(ViewProjection.get(projectionClass, Contest.class))
                 .as(Contest.class));
-    }
-
-    static public List<Contest> findAllWithContestEntriesNotPaid() {
-        List<Contest> contests = Model.contests()
-                .aggregate("{$match: { entryFee: {$gt: 0}, \"contestEntries.paidEntry\": false}}")
-                .and("{$unwind: \"$contestEntries\"}")
-                .and("{$match: {\"contestEntries.paidEntry\": false}}")
-                .as(Contest.class);
-        return contests;
     }
 
     public ContestEntry getContestEntryWithUser(ObjectId userId) {

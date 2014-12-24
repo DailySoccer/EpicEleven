@@ -18,7 +18,8 @@ public class AccountingOp {
         PRIZE,
         ORDER,
         ENTER_CONTEST,
-        CANCEL_CONTEST_ENTRY
+        CANCEL_CONTEST_ENTRY,
+        CANCEL_CONTEST
     };
 
     public enum TransactionProc {

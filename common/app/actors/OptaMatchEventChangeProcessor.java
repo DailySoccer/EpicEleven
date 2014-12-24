@@ -1,12 +1,16 @@
 package actors;
 
+import model.Contest;
 import model.Model;
 import model.TemplateContest;
 import model.TemplateMatchEvent;
+import model.jobs.*;
 import model.opta.OptaEvent;
 import model.opta.OptaProcessor;
+import play.Logger;
 
 import java.util.HashSet;
+import java.util.List;
 
 public class OptaMatchEventChangeProcessor {
     public OptaMatchEventChangeProcessor(OptaProcessor processor) {
@@ -52,6 +56,16 @@ public class OptaMatchEventChangeProcessor {
     }
 
     private void actionWhenMatchEventIsStarted(TemplateMatchEvent matchEvent) {
+        // Buscar aquellos contests que incluyan el partido, que tengan un entryFee y que no estén llenos...
+        List<Contest> contestsNotFull = Contest.findAllActiveNotFullWithEntryFee(matchEvent.templateMatchEventId);
+        for (Contest contest: contestsNotFull) {
+            // Crear un job para cancelar el contest
+            Job job = CancelContestJob.create(contest.contestId);
+            if (!job.isDone()) {
+                Logger.error("CancelContestJob {} error", contest.contestId);
+            }
+        }
+
         // Los template contests (que incluyan este match event y que esten "activos") tienen que ser marcados como "live"
         Model.templateContests()
                 .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}", matchEvent.templateMatchEventId)
