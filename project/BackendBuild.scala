@@ -1,3 +1,6 @@
+//
+// Sbt es 'enrevesado'. Para poder tocar y entenderlo bien hace falta leerse el tutorial completo!
+//
 import play.PlayJava
 import sbt._
 import sbt.Keys._
@@ -10,9 +13,17 @@ object BackendBuild extends Build {
   lazy val commonSettings = Seq(
     version := "1.0.0",
     scalaVersion := "2.11.1",
+
     // Desconectamos la compilacion de documentacion, que nos ralentiza el deploy
     sources in (Compile,doc) := Seq.empty,
-    publishArtifact in (Compile, packageDoc) := false
+    publishArtifact in (Compile, packageDoc) := false,
+
+    // Quitamos la carpeta "assets" de todos los subprojectos
+    resourceDirectory in Compile := baseDirectory.value / "app",
+
+    // Para que la compilacion incremental sea mas rapida. De momento dicen que es experimental con sbt 0.13.7
+    // http://typesafe.com/blog/improved-dependency-management-with-sbt-0137
+    updateOptions := updateOptions.value.withCachedResolution(true)
   )
 
   lazy val removeAdminFromRouter = taskKey[Unit]("Removes the admin route from the router")
@@ -70,4 +81,10 @@ object BackendBuild extends Build {
       Seq(common, backend)
     }
   }
+
+  // Hacemos el hook de las rutas hijas (por ejemplo, admin/) dentro del fichero de routas ('backend.routes'), como
+  // esta documentado que hay que hacerlo, con la sintaxis de flecha "-> /admin admin.routes". Esto genera un warning
+  // sobre que debemos activar las reflectiveCalls en Scala. Pero como no sabemos las implicaciones de hacer esto,
+  // preferimos dejarlo sin activar hasta que investiguemos mas y que siga saltando el warning.
+  //scalacOptions ++= { Seq("-feature", "-language:reflectiveCalls") }
 }
