@@ -7,6 +7,11 @@ import scala.io.Source
 
 object BackendBuild extends Build {
 
+  lazy val commonSettings = Seq(
+    version := "1.0.0",
+    scalaVersion := "2.11.1"
+  )
+
   lazy val removeAdminFromRouter = taskKey[Unit]("Removes the admin route from the router")
 
   val removeAdminFromRouterTask = removeAdminFromRouter := {
@@ -31,29 +36,33 @@ object BackendBuild extends Build {
 
     val common = Project(id = "common",
                          base = file("./common"))
+                .settings(commonSettings:_*)
 
     if (file("./admin").exists()) {
       val admin = Project(id = "admin",
                           base = file("./admin"))
                  .dependsOn(common)
                  .enablePlugins(PlayJava)
+                 .settings(commonSettings:_*)
 
       val backend = Project(id = "backend",
                             base = file("."))
                     .aggregate(common, admin)
                     .dependsOn(common, admin)
                     .enablePlugins(PlayJava)
+                    .settings(commonSettings:_*)
 
       Seq(common, admin, backend)
     }
     else {
       val backend = Project(id = "backend",
-                            base = file("."),
-                            settings = Seq(removeAdminFromRouterTask,
-                                           compile in Compile <<= (compile in Compile).dependsOn(removeAdminFromRouter)))
+                            base = file("."))
                     .aggregate(common)
                     .dependsOn(common)
                     .enablePlugins(PlayJava)
+                    .settings(removeAdminFromRouterTask,
+                              compile in Compile <<= (compile in Compile).dependsOn(removeAdminFromRouter))
+                    .settings(commonSettings:_*)
 
       Seq(common, backend)
     }

@@ -8,10 +8,6 @@
 
 name := "backend"
 
-version := "1.0.10"
-
-scalaVersion := "2.11.1"
-
 libraryDependencies ++= Seq(
   cache
   ,filters
@@ -25,6 +21,10 @@ libraryDependencies ++= Seq(
 sources in (Compile,doc) := Seq.empty
 
 publishArtifact in (Compile, packageDoc) := false
+
+// Para que la compilacion incremental sea mas rapida. De momento dicen que es experimental con sbt 0.13.7
+// http://typesafe.com/blog/improved-dependency-management-with-sbt-0137
+updateOptions := updateOptions.value.withCachedResolution(true)
 
 // javacOptions ++= Seq("-Xlint:deprecation")
 
