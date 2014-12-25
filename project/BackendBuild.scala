@@ -1,6 +1,6 @@
 import play.PlayJava
 import sbt._
-import Keys._
+import sbt.Keys._
 
 import java.io.PrintWriter
 import scala.io.Source
@@ -9,7 +9,10 @@ object BackendBuild extends Build {
 
   lazy val commonSettings = Seq(
     version := "1.0.0",
-    scalaVersion := "2.11.1"
+    scalaVersion := "2.11.1",
+    // Desconectamos la compilacion de documentacion, que nos ralentiza el deploy
+    sources in (Compile,doc) := Seq.empty,
+    publishArtifact in (Compile, packageDoc) := false
   )
 
   lazy val removeAdminFromRouter = taskKey[Unit]("Removes the admin route from the router")

@@ -21,9 +21,5 @@ javaSource in Compile := baseDirectory.value / "app"
 
 resourceDirectory in Compile := baseDirectory.value / "app"
 
-sources in (Compile,doc) := Seq.empty
-
-publishArtifact in (Compile, packageDoc) := false
-
 // Al no ser proyecto play, hay que configurar a mano el encoding
 javacOptions := List("-encoding", "utf-8") //, "-Xlint:unchecked")
