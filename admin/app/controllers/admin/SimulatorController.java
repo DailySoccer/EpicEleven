@@ -1,6 +1,5 @@
 package controllers.admin;
 
-import actions.AllowCors;
 import com.google.common.collect.ImmutableMap;
 import model.GlobalDate;
 import org.joda.time.DateTime;
@@ -100,10 +99,6 @@ public class SimulatorController extends Controller {
         return isSimulatorCreated()? OptaSimulator.instance().getNextStepDesc() : "";
     }
 
-    public static boolean isSnapshotEnabled() {
-        return false;
-    }
-
     public static boolean isSimulatorPaused() {
         return !isSimulatorCreated() || OptaSimulator.instance().isPaused();
     }
@@ -112,8 +107,9 @@ public class SimulatorController extends Controller {
         return OptaSimulator.isCreated();
     }
 
-    @AllowCors.Origin
     public static Result isSimulatorActivated() {
+        // Puesto que se llamara desde el cliente en un dominio distinto, tenemos que poner el CORS
+        response().setHeader("Access-Control-Allow-Origin", "*");
         return new ReturnHelper(ImmutableMap.of("simulator_activated", OptaSimulator.isCreated())).toResult();
     }
 

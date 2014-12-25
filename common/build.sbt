@@ -1,9 +1,5 @@
 name := "common"
 
-version := "1.0-SNAPSHOT"
-
-scalaVersion := "2.11.1"
-
 libraryDependencies ++= Seq(
   javaJdbc
   ,"org.mongodb" % "mongo-java-driver" % "2.12.3"
@@ -16,8 +12,18 @@ libraryDependencies ++= Seq(
   ,"org.flywaydb" % "flyway-core" % "3.1"
 )
 
+// No queremos las carpetas por defecto de sbt, definimos las nuestras con un solo root
+sourceDirectory in Compile := baseDirectory.value / "app"
+
+scalaSource in Compile := baseDirectory.value / "app"
+
+javaSource in Compile := baseDirectory.value / "app"
+
+resourceDirectory in Compile := baseDirectory.value / "app"
+
 sources in (Compile,doc) := Seq.empty
 
 publishArtifact in (Compile, packageDoc) := false
 
-//javacOptions := List("-encoding", "utf-8", "-Xlint:unchecked")
+// Al no ser proyecto play, hay que configurar a mano el encoding
+javacOptions := List("-encoding", "utf-8") //, "-Xlint:unchecked")

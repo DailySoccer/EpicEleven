@@ -5,7 +5,6 @@ import actions.UserAuthenticated;
 import com.google.common.collect.ImmutableMap;
 import model.*;
 import org.bson.types.ObjectId;
-import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
