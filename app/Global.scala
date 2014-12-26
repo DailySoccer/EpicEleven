@@ -21,19 +21,24 @@ object Global extends GlobalSettings {
   def getRelease:String = {
     var version = "devel"
 
-    val herokuKey = Play.current.configuration.getString("heroku_key").orNull
-    val herokuApp = Play.current.configuration.getString("heroku_app").orNull
+    try {
+      val herokuKey = Play.current.configuration.getString("heroku_key").orNull
+      val herokuApp = Play.current.configuration.getString("heroku_app").orNull
 
-    if (herokuKey != null) {
-      val url = f"https://api.heroku.com/apps/$herokuApp%s/releases"
-      val holder : WSRequestHolder = WS.url(url).withHeaders(("Authorization",  f"Bearer $herokuKey%s"))
+      if (herokuKey != null) {
+        val url = f"https://api.heroku.com/apps/$herokuApp%s/releases"
+        val holder: WSRequestHolder = WS.url(url).withHeaders(("Authorization", f"Bearer $herokuKey%s"))
 
-      val futureResponse : Future[String] = holder.get().map {
-        response => (response.json \\ "name").last.as[String]
+        val futureResponse: Future[String] = holder.get().map {
+          response => (response.json \\ "name").last.as[String]
+        }
+
+        version = Await.result(futureResponse, 10 seconds)
       }
-
-      version = Await.result(futureResponse, 10 seconds)
+    } catch {
+      case e: Exception => Logger.error("WTF 7932: ", e)
     }
+
     version
   }
 
