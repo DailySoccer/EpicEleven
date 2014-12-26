@@ -56,8 +56,7 @@ object build extends Build {
                          base = file("./common"))
                 .settings(commonSettings:_*)
                 .settings(libraryDependencies ++= Seq(
-                    "com.typesafe.play" %% "play" % play.core.PlayVersion.current
-                    ,javaJdbc
+                    javaJdbc
                     ,"org.mongodb" % "mongo-java-driver" % "2.12.3"
                     ,"org.jongo" % "jongo" % "1.0"
                     ,"org.jdom" % "jdom" % "2.0.2"
@@ -67,13 +66,7 @@ object build extends Build {
                     ,"org.jooq" % "jooq-meta" % "3.5.0"
                     ,"org.flywaydb" % "flyway-core" % "3.1"
                   ))
-                // No queremos las carpetas por defecto de sbt (este no es un PlayProject), definimos las nuestras con un solo root.
-                // Por no ser un proyecto play, hay que definir a mano el encoding
-                .settings(sourceDirectory in Compile := baseDirectory.value / "app",
-                          scalaSource in Compile := baseDirectory.value / "app",
-                          javaSource in Compile := baseDirectory.value / "app",
-                          resourceDirectory in Compile := baseDirectory.value / "app",
-                          javacOptions := List("-encoding", "utf-8"))
+                .enablePlugins(PlayJava)
 
     var backend = Project(id = "backend",
                           base = file("."))
