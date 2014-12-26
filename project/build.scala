@@ -82,6 +82,8 @@ object build extends Build {
                     ,"com.stormpath.sdk" % "stormpath-sdk-api" % "1.0.RC2"
                     ,"com.stormpath.sdk" % "stormpath-sdk-httpclient" % "1.0.RC2"
                   ))
+                 .aggregate(common)
+                 .dependsOn(common)
 
     if (file("./admin").exists()) {
       val admin = Project(id = "admin",
@@ -97,8 +99,8 @@ object build extends Build {
                    ,"org.apache.oltu.oauth2" % "org.apache.oltu.oauth2.client" % "1.0.0"
                  ))
 
-      backend = backend.aggregate(common, admin)
-                       .dependsOn(common, admin)
+      backend = backend.aggregate(admin)
+                       .dependsOn(admin)
 
       Seq(common, admin, backend)
     }
