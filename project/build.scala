@@ -19,9 +19,6 @@ object build extends Build {
     sources in (Compile,doc) := Seq.empty,
     publishArtifact in (Compile, packageDoc) := false,
 
-    // Quitamos la carpeta "assets" de todos los subprojectos
-    resourceDirectory in Compile := baseDirectory.value / "app",
-
     // Para que la compilacion incremental sea mas rapida. De momento dicen que es experimental con sbt 0.13.7
     // http://typesafe.com/blog/improved-dependency-management-with-sbt-0137
     updateOptions := updateOptions.value.withCachedResolution(true)
@@ -68,6 +65,7 @@ object build extends Build {
                 .settings(sourceDirectory in Compile := baseDirectory.value / "app",
                           scalaSource in Compile := baseDirectory.value / "app",
                           javaSource in Compile := baseDirectory.value / "app",
+                          resourceDirectory in Compile := baseDirectory.value / "app",
                           javacOptions := List("-encoding", "utf-8"))
 
     var backend = Project(id = "backend",
