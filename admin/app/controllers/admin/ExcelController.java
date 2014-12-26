@@ -63,8 +63,6 @@ public class ExcelController extends Controller {
 
     private static void parseSalariesFile(File file) {
 
-        Logger.debug("Parse salaries");
-
         Workbook wb = null; // XSSFWorkbook. (inp);
         try {
             wb = WorkbookFactory.create(file);
