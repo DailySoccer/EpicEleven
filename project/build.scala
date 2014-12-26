@@ -10,6 +10,7 @@ import scala.io.Source
 
 object build extends Build {
 
+  /*
   lazy val commonSettings = Seq(
     version := "1.0.0",
     scalaVersion := "2.11.1",
@@ -22,6 +23,7 @@ object build extends Build {
     // http://typesafe.com/blog/improved-dependency-management-with-sbt-0137
     updateOptions := updateOptions.value.withCachedResolution(true)
   )
+  */
 
   lazy val removeAdminFromRouter = taskKey[Unit]("Removes the admin route from the router")
 
@@ -71,12 +73,12 @@ object build extends Build {
     }
     else {
       val backend = Project(id = "backend",
-                            base = file("."))
+                            base = file("."),
+                            settings = Seq(removeAdminFromRouterTask,
+                                           compile in Compile <<= (compile in Compile).dependsOn(removeAdminFromRouter)))
                     .aggregate(common)
                     .dependsOn(common)
                     .enablePlugins(PlayJava)
-                    .settings(removeAdminFromRouterTask,
-                              compile in Compile <<= (compile in Compile).dependsOn(removeAdminFromRouter))
 
       Seq(common, backend)
     }
