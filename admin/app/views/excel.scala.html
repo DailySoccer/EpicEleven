@@ -1,0 +1,28 @@
+@import controllers.admin.routes._
+
+@import helper._
+
+@main("DailySoccer - Admin - Excel") {
+
+
+
+<h1 class="page-header">Excel integration</h1>
+
+<div>
+
+    @helper.form(action = ExcelController.upload, 'enctype -> "multipart/form-data") {
+
+    <input type="file" name="excel">
+    <p>
+        <input class="btn btn-primary" type="submit" value="Read salaries">
+    </p>
+
+    }
+
+    <a class="btn btn-primary" href="@ExcelController.writeSoccerPlayersLog" title="Write Players' Activity Log to Excel.">
+        Write Players' Activity
+    </a>
+
+</div>
+
+}

@@ -102,7 +102,7 @@ GET         /create_contests/:mockIndex                                controlle
 GET         /is_simulator_activated                                    controllers.admin.SimulatorController.isSimulatorActivated()
 
 # WIP
-GET         /googledocs                                                controllers.admin.ExcelController.index()
-POST        /googledocs/upload                                         controllers.admin.ExcelController.upload()
+GET         /excel                                                     controllers.admin.ExcelController.index()
+POST        /excel/upload                                              controllers.admin.ExcelController.upload()
 
-GET         /googledocs/write_log                                      controllers.admin.ExcelController.writeSoccerPlayersLog()
+GET         /excel/write_log                                           controllers.admin.ExcelController.writeSoccerPlayersLog()

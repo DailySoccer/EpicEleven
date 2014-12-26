@@ -29,7 +29,7 @@ import java.util.List;
 public class ExcelController extends Controller {
 
     public static Result index() {
-        return ok(views.html.googledocs.render());
+        return ok(views.html.excel.render());
     }
 
 
@@ -48,15 +48,14 @@ public class ExcelController extends Controller {
 
     public static Result upload() {
         Http.MultipartFormData body = request().body().asMultipartFormData();
-        Http.MultipartFormData.FilePart newSalariesFile = body.getFile("picture");
+        Http.MultipartFormData.FilePart newSalariesFile = body.getFile("excel");
         if (newSalariesFile != null) {
-            File file = newSalariesFile.getFile();
-            parseSalariesFile(file);
-            return ok(views.html.googledocs.render());
+            parseSalariesFile(newSalariesFile.getFile());
+            return ok(views.html.excel.render());
 
         } else {
             flash("error", "Missing file");
-            return ok(views.html.googledocs.render());
+            return ok(views.html.excel.render());
         }
     }
 
@@ -76,19 +75,19 @@ public class ExcelController extends Controller {
         }
 
         try {
-            XSSFSheet sheet = (XSSFSheet) wb.getSheet("Salaries"); //getSheetAt(0);
-            Logger.debug("Hay salaries");
+            XSSFSheet sheet = (XSSFSheet) wb.getSheet(_salaries); //getSheetAt(0);
 
             HashMap<String, Integer> newSalaries = new HashMap<>();
             HashMap<String, String> newTags = new HashMap<>();
 
             Row myRow;
 
-            for (int i = 0; i< sheet.getLastRowNum(); i++) {
+            // Empezamos desde el 1 para saltarnos la fila título
+            for (int i = 1; i<= sheet.getLastRowNum(); i++) {
                 myRow = sheet.getRow(i);
 
-                newSalaries.put(myRow.getCell(0).getStringCellValue(), (int)myRow.getCell(2).getNumericCellValue()); //Espacios en nombres de columnas prohibidos
-                newTags.put(myRow.getCell(0).getStringCellValue(), myRow.getCell(4).getStringCellValue().trim());
+                newSalaries.put(myRow.getCell(0).getStringCellValue(), (int)myRow.getCell(4).getNumericCellValue()); //Espacios en nombres de columnas prohibidos
+                newTags.put(myRow.getCell(0).getStringCellValue(), myRow.getCell(5).getStringCellValue().trim());
 
             }
 
@@ -150,7 +149,8 @@ public class ExcelController extends Controller {
         salaryRow.createCell(1).setCellValue(_name);
         salaryRow.createCell(2).setCellValue(_currentSalary);
         salaryRow.createCell(3).setCellValue(_calculatedSalary);
-        salaryRow.createCell(4).setCellValue(_currentTags);
+        salaryRow.createCell(4).setCellValue(_salary);
+        salaryRow.createCell(5).setCellValue(_currentTags);
     }
 
 
@@ -166,7 +166,8 @@ public class ExcelController extends Controller {
         salaryRow.createCell(1).setCellValue(soccerPlayer.name);
         salaryRow.createCell(2).setCellValue(soccerPlayer.salary);
         salaryRow.createCell(3).setCellValue(getSalary(calcEma(soccerPlayer.stats)));
-        salaryRow.createCell(4).setCellValue(soccerPlayer.tags.toString().substring(1,soccerPlayer.tags.toString().length()-1));
+        salaryRow.createCell(4).setCellFormula("D"+(salaryRow.getRowNum()+1));
+        salaryRow.createCell(5).setCellValue(soccerPlayer.tags.toString().substring(1,soccerPlayer.tags.toString().length()-1));
     }
 
 
@@ -184,14 +185,17 @@ public class ExcelController extends Controller {
     }
 
 
-    private static void fillPivotRows(Row pivotRow, Row pivotTitleRow, int statCounter, SoccerPlayerStats stat) {
+    private static void fillPivotRows(Row pivotRow, int statCounter, SoccerPlayerStats stat) {
         pivotRow.createCell((statCounter*2)+1).setCellValue(stat.fantasyPoints);
         pivotRow.createCell((statCounter*2)+2).setCellValue(stat.playedMinutes);
-
-        pivotTitleRow.createCell((statCounter*2)+1).setCellValue(_fantasyPoints);
-        pivotTitleRow.createCell((statCounter*2)+2).setCellValue(_minutesPlayed);
     }
 
+    private static void fillPivotTitleRows(Row pivotTitleRow, int statNumber)  {
+        for (int i=0; i<statNumber; i++) {
+            pivotTitleRow.createCell((i*2)+1).setCellValue(_fantasyPoints);
+            pivotTitleRow.createCell((i*2)+2).setCellValue(_minutesPlayed);
+        }
+    }
 
     private static void fillLog() {
 
@@ -202,29 +206,22 @@ public class ExcelController extends Controller {
         XSSFSheet emaSheet = (XSSFSheet) wb.createSheet(_emas);
         XSSFSheet salarySheet = (XSSFSheet) wb.createSheet(_salaries);
 
-
-        int rowCounter = 1;
-
         HashMap<String, String> optaCompetitions = new HashMap<>();
         for (OptaCompetition optaCompetition: OptaCompetition.findAll()) {
             optaCompetitions.put(optaCompetition.competitionId, optaCompetition.competitionName);
         }
 
-        Row row, emaRow, pivotRow, pivotTitleRow, salaryRow;
+        Row row, emaRow, pivotRow, salaryRow;
 
         fillLogRowTitle(logSheet);
         fillSalaryRowTitle(salarySheet);
         fillEMARowTitle(emaSheet);
 
-        pivotTitleRow = pivotSheet.createRow((short)0);
-        pivotTitleRow.createCell(0).setCellValue(_optaPlayerId);
-
-
         HashMap<String, String> soccerTeamsMap = new HashMap<>();
 
-
         int playerRowCounter = 1;
-
+        int maxStatNumber = 0;
+        int rowCounter = 1;
 
         for (TemplateSoccerTeam templateSoccerTeam: TemplateSoccerTeam.findAll()) {
             soccerTeamsMap.put(templateSoccerTeam.templateSoccerTeamId.toString(), templateSoccerTeam.name);
@@ -244,23 +241,23 @@ public class ExcelController extends Controller {
                 fillSalaryRow(salaryRow, soccerPlayer);
 
                 int statCounter = 0;
-
                 for (SoccerPlayerStats stat : soccerPlayer.stats) {
-
                     row = logSheet.createRow((short)rowCounter++);
                     fillLogRow(optaCompetitions, row, soccerPlayer, teamName, stat);
 
-                    fillPivotRows(pivotRow, pivotTitleRow, statCounter, stat);
+                    fillPivotRows(pivotRow, statCounter, stat);
 
                     statCounter++;
-
                 }
 
+                maxStatNumber = (soccerPlayer.stats.size() > maxStatNumber)? soccerPlayer.stats.size(): maxStatNumber;
             }
 
 
         }
-
+        Row pivotTitleRow = pivotSheet.createRow((short)0);
+        pivotTitleRow.createCell(0).setCellValue(_optaPlayerId);
+        fillPivotTitleRows(pivotTitleRow, maxStatNumber);
 
         try {
             FileOutputStream fileOut = new FileOutputStream(_filename);
@@ -273,9 +270,7 @@ public class ExcelController extends Controller {
         }
         catch (IOException e) {
             Logger.error("WTF 21276");
-
         }
-
     }
 
 
@@ -287,8 +282,11 @@ public class ExcelController extends Controller {
 
         for (SoccerPlayerStats stat : stats) {
             if (prevValue==Integer.MIN_VALUE) {
-                prevValue = stat.fantasyPoints;
-            } else {
+                if (!(stat.fantasyPoints == 0 && stat.playedMinutes < 5)) {
+                    prevValue = stat.fantasyPoints;
+                }
+            }
+            else {
                 if (stat.fantasyPoints == 0 && stat.playedMinutes < 5) {
                     prevValue = (1-hfactor)*prevValue;
                 }
@@ -298,7 +296,6 @@ public class ExcelController extends Controller {
             }
         }
         return prevValue;
-
     }
 
 
@@ -329,6 +326,7 @@ public class ExcelController extends Controller {
 
     private static String _currentSalary = "currentSalary";
     private static String _calculatedSalary = "calculatedSalary";
+    private static String _salary = "salary";
     private static String _currentTags = "currentTags";
 
     private static String _emaFP = "EMAfp";
