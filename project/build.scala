@@ -53,21 +53,18 @@ object build extends Build {
 
     val common = Project(id = "common",
                          base = file("./common"))
-                .settings(commonSettings:_*)
 
     if (file("./admin").exists()) {
       val admin = Project(id = "admin",
                           base = file("./admin"))
                  .dependsOn(common)
                  .enablePlugins(PlayJava)
-                 .settings(commonSettings:_*)
 
       val backend = Project(id = "backend",
                             base = file("."))
                     .aggregate(common, admin)
                     .dependsOn(common, admin)
                     .enablePlugins(PlayJava)
-                    .settings(commonSettings:_*)
 
       Seq(common, admin, backend)
     }
@@ -79,7 +76,6 @@ object build extends Build {
                     .enablePlugins(PlayJava)
                     .settings(removeAdminFromRouterTask,
                               compile in Compile <<= (compile in Compile).dependsOn(removeAdminFromRouter))
-                    .settings(commonSettings:_*)
 
       Seq(common, backend)
     }
