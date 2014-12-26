@@ -1,8 +1,6 @@
 import play.Logger
 import play.api.Play.current
 import play.api._
-import play.api.mvc._
-import play.api.mvc.Results._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.ws.{WS, WSRequestHolder}
 import play.api.mvc.{EssentialAction, Filter, Filters}
@@ -86,12 +84,6 @@ object Global extends GlobalSettings {
 
     actors.DailySoccerActors.shutdown()
     model.Model.shutdown()
-  }
-
-  override def onError(request: RequestHeader, ex: Throwable) = {
-    // Si se provoca una excepcion la capturamos aqui de forma global, y devolvemos un HttpStatus 500, asegurandonos
-    // de settear bien el CORS para que el browser no se niegue a decirle al cliente lo que esta pasando realmente
-    Future.successful(InternalServerError("Internal Server Error").withHeaders("Access-Control-Allow-Origin" -> "*"))
   }
 }
 
