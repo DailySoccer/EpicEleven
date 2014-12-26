@@ -56,7 +56,8 @@ object build extends Build {
                          base = file("./common"))
                 .settings(commonSettings:_*)
                 .settings(libraryDependencies ++= Seq(
-                     javaJdbc
+                    "com.typesafe.play" %% "play" % play.core.PlayVersion.current
+                    ,javaJdbc
                     ,"org.mongodb" % "mongo-java-driver" % "2.12.3"
                     ,"org.jongo" % "jongo" % "1.0"
                     ,"org.jdom" % "jdom" % "2.0.2"
