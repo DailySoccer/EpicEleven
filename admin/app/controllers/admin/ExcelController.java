@@ -37,7 +37,7 @@ public class ExcelController extends Controller {
 
         fillLog();
 
-        FileInputStream input = new FileInputStream(new File(_filename));
+        FileInputStream input = new FileInputStream(new File(_FILENAME));
 
         response().setHeader("Content-Disposition", "attachment; filename=log.xlsx");
 
@@ -75,7 +75,7 @@ public class ExcelController extends Controller {
         }
 
         try {
-            XSSFSheet sheet = (XSSFSheet) wb.getSheet(_salaries); //getSheetAt(0);
+            XSSFSheet sheet = (XSSFSheet) wb.getSheet(_SALARIES); //getSheetAt(0);
 
             HashMap<String, Integer> newSalaries = new HashMap<>();
             HashMap<String, String> newTags = new HashMap<>();
@@ -131,33 +131,33 @@ public class ExcelController extends Controller {
 
     private static void fillLogRowTitle(Sheet sheet) {
         Row rowTitle = sheet.createRow((short)0);
-        rowTitle.createCell(0).setCellValue(_optaPlayerId);
-        rowTitle.createCell(1).setCellValue(_name);
-        rowTitle.createCell(2).setCellValue(_position);
-        rowTitle.createCell(3).setCellValue(_team);
-        rowTitle.createCell(4).setCellValue(_competition);
-        rowTitle.createCell(5).setCellValue(_date);
-        rowTitle.createCell(6).setCellValue(_time);
-        rowTitle.createCell(7).setCellValue(_minutesPlayed);
-        rowTitle.createCell(8).setCellValue(_fantasyPoints);
+        rowTitle.createCell(0).setCellValue(_OPTA_PLAYER_ID);
+        rowTitle.createCell(1).setCellValue(_NAME);
+        rowTitle.createCell(2).setCellValue(_POSITION);
+        rowTitle.createCell(3).setCellValue(_TEAM);
+        rowTitle.createCell(4).setCellValue(_COMPETITION);
+        rowTitle.createCell(5).setCellValue(_DATE);
+        rowTitle.createCell(6).setCellValue(_TIME);
+        rowTitle.createCell(7).setCellValue(_MINUTES_PLAYED);
+        rowTitle.createCell(8).setCellValue(_FANTASY_POINTS);
     }
 
 
     private static void fillSalaryRowTitle(Sheet sheet) {
         Row salaryRow = sheet.createRow((short)0);
-        salaryRow.createCell(0).setCellValue(_optaPlayerId);
-        salaryRow.createCell(1).setCellValue(_name);
-        salaryRow.createCell(2).setCellValue(_currentSalary);
-        salaryRow.createCell(3).setCellValue(_calculatedSalary);
-        salaryRow.createCell(4).setCellValue(_salary);
-        salaryRow.createCell(5).setCellValue(_currentTags);
+        salaryRow.createCell(0).setCellValue(_OPTA_PLAYER_ID);
+        salaryRow.createCell(1).setCellValue(_NAME);
+        salaryRow.createCell(2).setCellValue(_CURRENT_SALARY);
+        salaryRow.createCell(3).setCellValue(_CALCULATED_SALARY);
+        salaryRow.createCell(4).setCellValue(_SALARY);
+        salaryRow.createCell(5).setCellValue(_CURRENT_TAGS);
     }
 
 
     private static void fillEMARowTitle(Sheet sheet) {
         Row emaRow = sheet.createRow((short) 0);
-        emaRow.createCell(0).setCellValue(_optaPlayerId);
-        emaRow.createCell(1).setCellValue(_emaFP);
+        emaRow.createCell(0).setCellValue(_OPTA_PLAYER_ID);
+        emaRow.createCell(1).setCellValue(_EMA_FP);
     }
 
 
@@ -192,8 +192,8 @@ public class ExcelController extends Controller {
 
     private static void fillPivotTitleRows(Row pivotTitleRow, int statNumber)  {
         for (int i=0; i<statNumber; i++) {
-            pivotTitleRow.createCell((i*2)+1).setCellValue(_fantasyPoints);
-            pivotTitleRow.createCell((i*2)+2).setCellValue(_minutesPlayed);
+            pivotTitleRow.createCell((i*2)+1).setCellValue(_FANTASY_POINTS);
+            pivotTitleRow.createCell((i*2)+2).setCellValue(_MINUTES_PLAYED);
         }
     }
 
@@ -201,10 +201,10 @@ public class ExcelController extends Controller {
 
         Workbook wb = new XSSFWorkbook();
 
-        XSSFSheet logSheet = (XSSFSheet) wb.createSheet(_log);
-        XSSFSheet pivotSheet = (XSSFSheet) wb.createSheet(_pivot);
-        XSSFSheet emaSheet = (XSSFSheet) wb.createSheet(_emas);
-        XSSFSheet salarySheet = (XSSFSheet) wb.createSheet(_salaries);
+        XSSFSheet logSheet = (XSSFSheet) wb.createSheet(_LOG);
+        XSSFSheet pivotSheet = (XSSFSheet) wb.createSheet(_PIVOT);
+        XSSFSheet emaSheet = (XSSFSheet) wb.createSheet(_EMAS);
+        XSSFSheet salarySheet = (XSSFSheet) wb.createSheet(_SALARIES);
 
         HashMap<String, String> optaCompetitions = new HashMap<>();
         for (OptaCompetition optaCompetition: OptaCompetition.findAll()) {
@@ -256,11 +256,11 @@ public class ExcelController extends Controller {
 
         }
         Row pivotTitleRow = pivotSheet.createRow((short)0);
-        pivotTitleRow.createCell(0).setCellValue(_optaPlayerId);
+        pivotTitleRow.createCell(0).setCellValue(_OPTA_PLAYER_ID);
         fillPivotTitleRows(pivotTitleRow, maxStatNumber);
 
         try {
-            FileOutputStream fileOut = new FileOutputStream(_filename);
+            FileOutputStream fileOut = new FileOutputStream(_FILENAME);
             wb.write(fileOut);
             fileOut.close();
 
@@ -313,28 +313,28 @@ public class ExcelController extends Controller {
     }
 
 
-    private static String _optaPlayerId = "optaPlayerId";
+    private static final String _OPTA_PLAYER_ID = "optaPlayerId";
 
-    private static String _name = "name";
-    private static String _position = "position";
-    private static String _team = "team";
-    private static String _competition = "competition";
-    private static String _date = "date";
-    private static String _time = "time";
-    private static String _minutesPlayed = "minutesPlayed";
-    private static String _fantasyPoints = "fantasyPoints";
+    private static final String _NAME = "name";
+    private static final String _POSITION = "position";
+    private static final String _TEAM = "team";
+    private static final String _COMPETITION = "competition";
+    private static final String _DATE = "date";
+    private static final String _TIME = "time";
+    private static final String _MINUTES_PLAYED = "minutesPlayed";
+    private static final String _FANTASY_POINTS = "fantasyPoints";
 
-    private static String _currentSalary = "currentSalary";
-    private static String _calculatedSalary = "calculatedSalary";
-    private static String _salary = "salary";
-    private static String _currentTags = "currentTags";
+    private static final String _CURRENT_SALARY = "currentSalary";
+    private static final String _CALCULATED_SALARY = "calculatedSalary";
+    private static final String _SALARY = "salary";
+    private static final String _CURRENT_TAGS = "currentTags";
 
-    private static String _emaFP = "EMAfp";
+    private static final String _EMA_FP = "EMAfp";
 
-    private static String _log = "Log";
-    private static String _pivot = "Pivot";
-    private static String _emas = "EMAs";
-    private static String _salaries = "Salaries";
+    private static final String _LOG = "Log";
+    private static final String _PIVOT = "Pivot";
+    private static final String _EMAS = "EMAs";
+    private static final String _SALARIES = "Salaries";
 
-    private static String _filename = "workbook.xlsx";
+    private static final String _FILENAME = "workbook.xlsx";
 }
