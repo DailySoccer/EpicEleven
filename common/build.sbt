@@ -17,13 +17,13 @@ libraryDependencies ++= Seq(
 )
 
 // No queremos las carpetas por defecto de sbt, definimos las nuestras con un solo root
-sourceDirectory in Compile := baseDirectory.value / "app"
+//sourceDirectory in Compile := baseDirectory.value / "app"
 
-scalaSource in Compile := baseDirectory.value / "app"
+//scalaSource in Compile := baseDirectory.value / "app"
 
-javaSource in Compile := baseDirectory.value / "app"
+//javaSource in Compile := baseDirectory.value / "app"
 
-resourceDirectory in Compile := baseDirectory.value / "app"
+//resourceDirectory in Compile := baseDirectory.value / "app"
 
 // Al no ser proyecto play, hay que configurar a mano el encoding
-javacOptions := List("-encoding", "utf-8") //, "-Xlint:unchecked")
+//javacOptions := List("-encoding", "utf-8") //, "-Xlint:unchecked")
