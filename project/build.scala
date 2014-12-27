@@ -1,10 +1,12 @@
 //
 // Sbt es 'enrevesado'. Para poder tocar y entenderlo bien hace falta leerse el tutorial completo!
 //
+import play.PlayImport.PlayKeys._
 import play.PlayJava
 import sbt._
 import sbt.Keys._
 import play.Play.autoImport._
+import com.typesafe.sbt.web.SbtWeb.autoImport._
 
 import java.io.PrintWriter
 import scala.io.Source
@@ -18,6 +20,8 @@ object build extends Build {
     // Desconectamos la compilacion de documentacion, que nos ralentiza el deploy
     sources in (Compile,doc) := Seq.empty,
     publishArtifact in (Compile, packageDoc) := false,
+
+    sourceDirectory in Assets := (sourceDirectory in Compile).value,
 
     // Para que la compilacion incremental sea mas rapida. De momento dicen que es experimental con sbt 0.13.7
     // http://typesafe.com/blog/improved-dependency-management-with-sbt-0137
@@ -66,6 +70,7 @@ object build extends Build {
                     ,"org.jooq" % "jooq-meta" % "3.5.0"
                     ,"org.flywaydb" % "flyway-core" % "3.1"
                   ))
+                .settings(resourceDirectory in Assets := baseDirectory.value / "app")
                 .enablePlugins(PlayJava)
 
     var backend = Project(id = "backend",
