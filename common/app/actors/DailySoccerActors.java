@@ -4,6 +4,13 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import play.libs.Akka;
 
+import play.api.DefaultApplication;
+import play.api.Play;
+import play.api.Mode;
+import play.api.Application;
+
+import java.io.File;
+
 public class DailySoccerActors {
 
     //
@@ -35,5 +42,10 @@ public class DailySoccerActors {
 
         // Hacemos un 'join' para asegurar que no matamos el modelo estando todavia procesando
         Akka.system().awaitTermination();
+    }
+
+    static public void main(String[] args) {
+        Application application = new DefaultApplication(new File(args[0]), DailySoccerActors.class.getClassLoader(), null, Mode.Prod());
+        Play.start(application);
     }
 }
