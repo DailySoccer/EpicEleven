@@ -37,7 +37,7 @@ public class ExcelController extends Controller {
 
         FileInputStream input = new FileInputStream(new File(_FILENAME));
 
-        response().setHeader("Content-Disposition", "attachment; filename=log.xlsx");
+        response().setHeader("Content-Disposition", "attachment; filename=ActivityLog.xlsx");
 
         return ok(input);
     }
