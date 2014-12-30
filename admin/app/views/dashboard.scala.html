@@ -77,23 +77,21 @@ function getMongo() {
 </div>
 <br/>
 <div>
-    <a href="@OptaController.optaCompetitions" class="btn btn-primary">Select Competitions</a>
+    <p><a href="@OptaController.optaCompetitions" class="btn btn-primary">Select Competitions</a></p>
     @if(competitions_enabled.isEmpty) {
         <span class="bg-danger text-danger" style="padding:5px">&#8999; Ninguna Competición</span>
     } else {
         @for((p, index) <- competitions_enabled.zipWithIndex) {
-            <em class="bg-success text-primary" style="margin:5px; padding:5px">&#10003; @p.competitionName/@p.seasonId</em>
+            <p><em class="bg-success text-primary" style="margin:35px; padding:5px">&#10003; @p.competitionName/@p.seasonId</em></p>
         }
     }
 </div>
 <br/>
 <div>
-    <a class="btn btn-primary" href="@ExcelController.index" title="Excel Import/Export">
-        Excel Import/Export
-    </a>
-    <a href="@ImportController.showImportTeams" class="btn btn-warning">Import Teams</a>
-    <a href="@ImportController.showImportSoccers" class="btn btn-warning">Import SoccerPlayers</a>
-    <a href="@ImportController.showImportMatchEvents" class="btn btn-warning">Import MatchEvents</a>
+    <p><a class="btn btn-primary" href="@ExcelController.index" title="Excel Import/Export">
+        Salaries Import/Export
+    </a></p>
+    <a href="@ImportController.showImportTeams" class="btn btn-warning">Opta Import Log</a>
 </div>
 
 <br/>
