@@ -6,10 +6,8 @@ import com.mongodb.DBObject;
 import model.*;
 import model.opta.OptaCompetition;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.joda.time.DateTime;
@@ -80,12 +78,16 @@ public class ExcelController extends Controller {
 
             Row myRow;
 
+            FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
+
             // Empezamos desde el 1 para saltarnos la fila título
             for (int i = 1; i<= sheet.getLastRowNum(); i++) {
                 myRow = sheet.getRow(i);
 
-                newSalaries.put(myRow.getCell(0).getStringCellValue(), (int)myRow.getCell(4).getNumericCellValue()); //Espacios en nombres de columnas prohibidos
-                newTags.put(myRow.getCell(0).getStringCellValue(), myRow.getCell(5).getStringCellValue().trim());
+                newSalaries.put(myRow.getCell(_SalarySheet.OPTA_PLAYER_ID.column).getStringCellValue(),
+                                (int)evaluator.evaluate(myRow.getCell(_SalarySheet.SALARY.column)).getNumberValue());
+                newTags.put(myRow.getCell(_SalarySheet.OPTA_PLAYER_ID.column).getStringCellValue(),
+                            myRow.getCell(_SalarySheet.CURRENT_TAGS.column).getStringCellValue().trim());
 
             }
 
@@ -98,8 +100,8 @@ public class ExcelController extends Controller {
                     continue;
                 }
 
-                DBObject query = new BasicDBObject("optaPlayerId", optaPlayerId);
-                BasicDBObject bdo = new BasicDBObject("salary", newSalaries.get(optaPlayerId));
+                DBObject query = new BasicDBObject(_OPTA_PLAYER_ID, optaPlayerId);
+                BasicDBObject bdo = new BasicDBObject(_SALARY, newSalaries.get(optaPlayerId));
 
                 List<String> tagList = newTags.get(optaPlayerId) != null && !newTags.get(optaPlayerId).equals("") ?
                         Arrays.asList(newTags.get(optaPlayerId).split(",[ ]*")) :
@@ -129,57 +131,56 @@ public class ExcelController extends Controller {
 
     private static void fillLogRowTitle(Sheet sheet) {
         Row rowTitle = sheet.createRow((short)0);
-        rowTitle.createCell(0).setCellValue(_OPTA_PLAYER_ID);
-        rowTitle.createCell(1).setCellValue(_NAME);
-        rowTitle.createCell(2).setCellValue(_POSITION);
-        rowTitle.createCell(3).setCellValue(_TEAM);
-        rowTitle.createCell(4).setCellValue(_COMPETITION);
-        rowTitle.createCell(5).setCellValue(_DATE);
-        rowTitle.createCell(6).setCellValue(_TIME);
-        rowTitle.createCell(7).setCellValue(_MINUTES_PLAYED);
-        rowTitle.createCell(8).setCellValue(_FANTASY_POINTS);
+
+        for (_LogSheet logValue : _LogSheet.values()) {
+            rowTitle.createCell(logValue.column).setCellValue(logValue.colName);
+        }
+
     }
 
 
     private static void fillSalaryRowTitle(Sheet sheet) {
         Row salaryRow = sheet.createRow((short)0);
-        salaryRow.createCell(0).setCellValue(_OPTA_PLAYER_ID);
-        salaryRow.createCell(1).setCellValue(_NAME);
-        salaryRow.createCell(2).setCellValue(_CURRENT_SALARY);
-        salaryRow.createCell(3).setCellValue(_CALCULATED_SALARY);
-        salaryRow.createCell(4).setCellValue(_SALARY);
-        salaryRow.createCell(5).setCellValue(_CURRENT_TAGS);
+
+        for (_SalarySheet salaryValue: _SalarySheet.values()) {
+            salaryRow.createCell(salaryValue.column).setCellValue(salaryValue.colName);
+        }
     }
 
 
     private static void fillEMARowTitle(Sheet sheet) {
         Row emaRow = sheet.createRow((short) 0);
-        emaRow.createCell(0).setCellValue(_OPTA_PLAYER_ID);
-        emaRow.createCell(1).setCellValue(_EMA_FP);
+        for (_EMASheet emaValue: _EMASheet.values()) {
+            emaRow.createCell(emaValue.column).setCellValue(emaValue.colName);
+        }
     }
 
 
     private static void fillSalaryRow(Row salaryRow, TemplateSoccerPlayer soccerPlayer) {
-        salaryRow.createCell(0).setCellValue(soccerPlayer.optaPlayerId);
-        salaryRow.createCell(1).setCellValue(soccerPlayer.name);
-        salaryRow.createCell(2).setCellValue(soccerPlayer.salary);
-        salaryRow.createCell(3).setCellValue(getSalary(calcEma(soccerPlayer.stats)));
-        salaryRow.createCell(4).setCellFormula("D"+(salaryRow.getRowNum()+1));
-        salaryRow.createCell(5).setCellValue(soccerPlayer.tags.toString().substring(1,soccerPlayer.tags.toString().length()-1));
+
+        salaryRow.createCell(_SalarySheet.OPTA_PLAYER_ID.column).setCellValue(soccerPlayer.optaPlayerId);
+        salaryRow.createCell(_SalarySheet.NAME.column).setCellValue(soccerPlayer.name);
+        salaryRow.createCell(_SalarySheet.CURRENT_SALARY.column).setCellValue(soccerPlayer.salary);
+
+        Cell calculatedSalaryCell = salaryRow.createCell(_SalarySheet.CALCULATED_SALARY.column);
+        calculatedSalaryCell.setCellValue(getSalary(calcEma(soccerPlayer.stats)));
+        salaryRow.createCell(_SalarySheet.SALARY.column).setCellFormula(new CellReference(calculatedSalaryCell).formatAsString());
+
+        salaryRow.createCell(_SalarySheet.CURRENT_TAGS.column).setCellValue(soccerPlayer.tags.toString().substring(1, soccerPlayer.tags.toString().length() - 1));
     }
 
 
     private static void fillLogRow(HashMap<String, String> optaCompetitions, Row row, TemplateSoccerPlayer soccerPlayer,
                                    String teamName, SoccerPlayerStats stat) {
-        row.createCell(0).setCellValue(soccerPlayer.optaPlayerId);
-        row.createCell(1).setCellValue(soccerPlayer.name);
-        row.createCell(2).setCellValue(soccerPlayer.fieldPos.name());
-        row.createCell(3).setCellValue(teamName);
-        row.createCell(4).setCellValue(optaCompetitions.get(stat.optaCompetitionId));
-        row.createCell(5).setCellValue(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy")));
-        row.createCell(6).setCellValue(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm")));
-        row.createCell(7).setCellValue(stat.playedMinutes);
-        row.createCell(8).setCellValue(stat.fantasyPoints);
+        row.createCell(_LogSheet.OPTA_PLAYER_ID.column).setCellValue(soccerPlayer.optaPlayerId);
+        row.createCell(_LogSheet.NAME.column).setCellValue(soccerPlayer.name);
+        row.createCell(_LogSheet.POSITION.column).setCellValue(soccerPlayer.fieldPos.name());
+        row.createCell(_LogSheet.TEAM.column).setCellValue(teamName);
+        row.createCell(_LogSheet.COMPETITION.column).setCellValue(optaCompetitions.get(stat.optaCompetitionId));
+        row.createCell(_LogSheet.DATE.column).setCellValue(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy")));
+        row.createCell(_LogSheet.TIME.column).setCellValue(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm")));
+        row.createCell(_LogSheet.MINUTES_PLAYED.column).setCellValue(stat.playedMinutes);
+        row.createCell(_LogSheet.FANTASY_POINTS.column).setCellValue(stat.fantasyPoints);
     }
 
 
@@ -189,9 +190,8 @@ public class ExcelController extends Controller {
     }
 
     private static void fillPivotTitleRows(Row pivotTitleRow, int statNumber)  {
-        for (int i=0; i<statNumber; i++) {
-            pivotTitleRow.createCell((i*2)+1).setCellValue(_FANTASY_POINTS);
-            pivotTitleRow.createCell((i*2)+2).setCellValue(_MINUTES_PLAYED);
+        for (int i=0; i<((statNumber*2)+1); i++) {
+            pivotTitleRow.createCell(i).setCellValue(_PivotSheet.getName(i));
         }
     }
 
@@ -231,10 +231,10 @@ public class ExcelController extends Controller {
                 salaryRow = salarySheet.createRow((short)playerRowCounter);
                 emaRow = emaSheet.createRow((short)playerRowCounter++);
 
-                pivotRow.createCell(0).setCellValue(soccerPlayer.optaPlayerId);
+                pivotRow.createCell(_PivotSheet.OPTA_PLAYER_ID.column).setCellValue(soccerPlayer.optaPlayerId);
 
-                emaRow.createCell(0).setCellValue(soccerPlayer.optaPlayerId);
-                emaRow.createCell(1).setCellValue(calcEma(soccerPlayer.stats));
+                emaRow.createCell(_EMASheet.OPTA_PLAYER_ID.column).setCellValue(soccerPlayer.optaPlayerId);
+                emaRow.createCell(_EMASheet.EMA_FP.column).setCellValue(calcEma(soccerPlayer.stats));
 
                 fillSalaryRow(salaryRow, soccerPlayer);
 
@@ -254,7 +254,7 @@ public class ExcelController extends Controller {
 
         }
         Row pivotTitleRow = pivotSheet.createRow((short)0);
-        pivotTitleRow.createCell(0).setCellValue(_OPTA_PLAYER_ID);
+        pivotTitleRow.createCell(_PivotSheet.OPTA_PLAYER_ID.column).setCellValue(_PivotSheet.OPTA_PLAYER_ID.colName);
         fillPivotTitleRows(pivotTitleRow, maxStatNumber);
 
         try {
@@ -313,14 +313,15 @@ public class ExcelController extends Controller {
 
     private static final String _OPTA_PLAYER_ID = "optaPlayerId";
 
+    private static final String _MINUTES_PLAYED = "minutesPlayed";
+    private static final String _FANTASY_POINTS = "fantasyPoints";
+
     private static final String _NAME = "name";
     private static final String _POSITION = "position";
     private static final String _TEAM = "team";
     private static final String _COMPETITION = "competition";
     private static final String _DATE = "date";
     private static final String _TIME = "time";
-    private static final String _MINUTES_PLAYED = "minutesPlayed";
-    private static final String _FANTASY_POINTS = "fantasyPoints";
 
     private static final String _CURRENT_SALARY = "currentSalary";
     private static final String _CALCULATED_SALARY = "calculatedSalary";
@@ -335,4 +336,74 @@ public class ExcelController extends Controller {
     private static final String _SALARIES = "Salaries";
 
     private static final String _FILENAME = "workbook.xlsx";
-}
+
+
+    private enum _LogSheet {
+        OPTA_PLAYER_ID  (0, _OPTA_PLAYER_ID),
+        NAME            (1, _NAME),
+        POSITION        (2, _POSITION),
+        TEAM            (3, _TEAM),
+        COMPETITION     (4, _COMPETITION),
+        DATE            (5, _DATE),
+        TIME            (6, _TIME),
+        MINUTES_PLAYED  (7, _MINUTES_PLAYED),
+        FANTASY_POINTS  (8, _FANTASY_POINTS);
+
+        public final int column;
+        public final String colName;
+
+        _LogSheet(int c, String name) {
+            column = c;
+            colName = name;
+        }
+    }
+
+    private enum _SalarySheet {
+        OPTA_PLAYER_ID      (0, _OPTA_PLAYER_ID),
+        NAME                (1, _NAME),
+        CURRENT_SALARY      (2, _CURRENT_SALARY),
+        CALCULATED_SALARY   (3, _CALCULATED_SALARY),
+        SALARY              (4, _SALARY),
+        CURRENT_TAGS        (5, _CURRENT_TAGS);
+
+        public final int column;
+        public final String colName;
+
+        _SalarySheet(int c, String name) {
+            column = c;
+            colName = name;
+        }
+    }
+
+    private enum _EMASheet {
+        OPTA_PLAYER_ID  (0, _OPTA_PLAYER_ID),
+        EMA_FP          (1, _EMA_FP);
+
+        public final int column;
+        public final String colName;
+
+        _EMASheet(int c, String name) {
+            column = c;
+            colName = name;
+        }
+    }
+
+    private enum _PivotSheet {
+        OPTA_PLAYER_ID  (0, _OPTA_PLAYER_ID);
+
+        public final int column;
+        public final String colName;
+
+        _PivotSheet(int c, String name) {
+            column = c;
+            colName = name;
+        }
+
+        public static String getName(int col) {
+            return (col==0)? _PivotSheet.OPTA_PLAYER_ID.colName:
+                    (col%2==0)? _MINUTES_PLAYED: _FANTASY_POINTS;
+
+        }
+    }
+
+    }
