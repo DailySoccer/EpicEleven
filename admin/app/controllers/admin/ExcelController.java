@@ -127,6 +127,13 @@ public class ExcelController extends Controller {
     }
 
 
+    private static void autoSizeColumns(Sheet sheet, int numCols) {
+        for (int i=0; i<=numCols; i++) {
+            sheet.autoSizeColumn(i);
+        }
+    }
+
+
     private static void fillLogRowTitle(Sheet sheet) {
         Row rowTitle = sheet.createRow((short)0);
 
@@ -187,7 +194,7 @@ public class ExcelController extends Controller {
         pivotRow.createCell((statCounter*2)+2).setCellValue(stat.playedMinutes);
     }
 
-    private static void fillPivotTitleRows(Row pivotTitleRow, int statNumber)  {
+    private static void fillPivotTitleRows(Row pivotTitleRow, int statNumber, Sheet sheet)  {
         for (int i=0; i<((statNumber*2)+1); i++) {
             pivotTitleRow.createCell(i).setCellValue(_PivotSheet.getName(i));
         }
@@ -253,7 +260,12 @@ public class ExcelController extends Controller {
         }
         Row pivotTitleRow = pivotSheet.createRow((short)0);
         pivotTitleRow.createCell(_PivotSheet.OPTA_PLAYER_ID.column).setCellValue(_PivotSheet.OPTA_PLAYER_ID.colName);
-        fillPivotTitleRows(pivotTitleRow, maxStatNumber);
+        fillPivotTitleRows(pivotTitleRow, maxStatNumber, pivotSheet);
+
+        autoSizeColumns(pivotSheet, (maxStatNumber*2)+1);
+        autoSizeColumns(logSheet, _LogSheet.lastCol.column);
+        autoSizeColumns(salarySheet, _SalarySheet.lastCol.column);
+        autoSizeColumns(emaSheet, _EMASheet.lastCol.column);
 
         try {
             FileOutputStream fileOut = new FileOutputStream(_FILENAME);
@@ -350,6 +362,8 @@ public class ExcelController extends Controller {
         public final int column;
         public final String colName;
 
+        public static final _LogSheet lastCol = FANTASY_POINTS;
+
         _LogSheet(int c, String name) {
             column = c;
             colName = name;
@@ -367,6 +381,8 @@ public class ExcelController extends Controller {
         public final int column;
         public final String colName;
 
+        public static final _SalarySheet lastCol = CURRENT_TAGS;
+
         _SalarySheet(int c, String name) {
             column = c;
             colName = name;
@@ -379,6 +395,8 @@ public class ExcelController extends Controller {
 
         public final int column;
         public final String colName;
+
+        public static final _EMASheet lastCol = EMA_FP;
 
         _EMASheet(int c, String name) {
             column = c;
