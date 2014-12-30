@@ -43,7 +43,6 @@ public class ExcelController extends Controller {
     }
 
 
-
     public static Result upload() {
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart newSalariesFile = body.getFile("excel");
@@ -56,7 +55,6 @@ public class ExcelController extends Controller {
             return ok(views.html.excel.render());
         }
     }
-
 
 
     private static void parseSalariesFile(File file) {
@@ -406,4 +404,4 @@ public class ExcelController extends Controller {
         }
     }
 
-    }
+}

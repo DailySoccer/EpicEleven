@@ -4,25 +4,21 @@
 
 @main("DailySoccer - Admin - Excel") {
 
+    <h1 class="page-header">Excel integration</h1>
 
+    <div>
 
-<h1 class="page-header">Excel integration</h1>
-
-<div>
-
-    @helper.form(action = ExcelController.upload, 'enctype -> "multipart/form-data") {
-
-    <input type="file" name="excel">
-    <p>
-        <input class="btn btn-primary" type="submit" value="Read salaries">
-    </p>
-
-    }
-
-    <a class="btn btn-primary" href="@ExcelController.writeSoccerPlayersLog" title="Write Players' Activity Log to Excel.">
-        Write Players' Activity
-    </a>
-
-</div>
+        <p>
+        @helper.form(action = ExcelController.upload, 'enctype -> "multipart/form-data") {
+            <input class="btn btn-primary" type="submit" value="Read salaries">
+            <input type="file" name="excel" style="display: inline;">
+        }
+        </p>
+        <p>
+            <a class="btn btn-primary" href="@ExcelController.writeSoccerPlayersLog" title="Write Players' Activity Log to Excel.">
+                Write Players' Activity
+            </a>
+        </p>
+    </div>
 
 }
