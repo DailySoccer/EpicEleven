@@ -46,17 +46,17 @@ public class ExcelController extends Controller {
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart newSalariesFile = body.getFile("excel");
         if (newSalariesFile != null) {
-            parseSalariesFile(newSalariesFile.getFile());
-            return ok(views.html.excel.render());
-
+            FlashMessage.success(parseSalariesFile(newSalariesFile.getFile()) +" Salaries read successfully");
+            return redirect(routes.ExcelController.index());
         } else {
-            flash("error", "Missing file");
-            return ok(views.html.excel.render());
+            FlashMessage.danger("Missing file, select one through \"Choose file\"");
+            return redirect(routes.ExcelController.index());
         }
     }
 
 
-    private static void parseSalariesFile(File file) {
+    private static int parseSalariesFile(File file) {
+        int salariesRead = 0;
 
         Workbook wb = null; // XSSFWorkbook. (inp);
         try {
@@ -118,11 +118,13 @@ public class ExcelController extends Controller {
             }
 
             batchWriteOperation.execute();
+            salariesRead = newSalaries.size();
 
         }
         catch (NullPointerException e) {
             Logger.error("WTF 1252: No hay hoja Salaries");
         }
+        return salariesRead;
     }
 
 
