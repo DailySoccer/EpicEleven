@@ -33,13 +33,12 @@ public class ExcelController extends Controller {
 
     public static Result writeSoccerPlayersLog() throws IOException {
 
-        fillLog();
-
-        FileInputStream input = new FileInputStream(new File(_FILENAME));
-
         response().setHeader("Content-Disposition", "attachment; filename=ActivityLog.xlsx");
 
-        return ok(input);
+        File tempFile = fillLog();
+        FileInputStream activityLogStream = new FileInputStream(tempFile);
+        assert tempFile.delete();
+        return ok(activityLogStream);
     }
 
 
@@ -200,7 +199,7 @@ public class ExcelController extends Controller {
         }
     }
 
-    private static void fillLog() {
+    private static File fillLog() {
 
         Workbook wb = new XSSFWorkbook();
 
@@ -268,10 +267,12 @@ public class ExcelController extends Controller {
         autoSizeColumns(emaSheet, _EMASheet.lastCol.column);
 
         try {
-            FileOutputStream fileOut = new FileOutputStream(_FILENAME);
+            File tempFile = File.createTempFile("temp-ActivityLog", ".xlsx");
+            FileOutputStream fileOut = new FileOutputStream(tempFile);
             wb.write(fileOut);
             fileOut.close();
 
+            return tempFile;
         }
         catch (FileNotFoundException e) {
             Logger.error("WTF 23126");
@@ -279,6 +280,7 @@ public class ExcelController extends Controller {
         catch (IOException e) {
             Logger.error("WTF 21276");
         }
+        return null; //Si ha ocurrido excepción devolvemos null
     }
 
 
@@ -344,8 +346,6 @@ public class ExcelController extends Controller {
     private static final String _PIVOT = "Pivot";
     private static final String _EMAS = "EMAs";
     private static final String _SALARIES = "Salaries";
-
-    private static final String _FILENAME = "workbook.xlsx";
 
 
     private enum _LogSheet {
