@@ -244,7 +244,7 @@ public class TemplateContest implements JongoId {
 
     public void givePrizes() {
         List<TemplateMatchEvent> templateMatchEvents = getTemplateMatchEvents();
-        for (Contest contest : Contest.findAllFromTemplateContest(templateContestId)) {
+        for (Contest contest : Contest.findAllNotCanceledFromTemplateContest(templateContestId)) {
             contest.updateRanking(this, templateMatchEvents);
             contest.givePrizes();
         }

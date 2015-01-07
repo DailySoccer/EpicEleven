@@ -129,6 +129,10 @@ public class Contest implements JongoId {
         return ListUtils.asList(Model.contests().find("{templateContestId: #}", templateContestId).as(Contest.class));
     }
 
+    static public List<Contest> findAllNotCanceledFromTemplateContest(ObjectId templateContestId) {
+        return ListUtils.asList(Model.contests().find("{templateContestId: #, state: { $ne: \"CANCELED\" }}", templateContestId).as(Contest.class));
+    }
+
     static public List<Contest> findAllFromTemplateContests(List<TemplateContest> templateContests) {
         return ListUtils.asList(Model.findObjectIds(Model.contests(), "templateContestId", ListUtils.convertToIdList(templateContests)).as(Contest.class));
     }

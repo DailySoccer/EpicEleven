@@ -35,7 +35,9 @@ public class CancelContestJob extends Job {
             if (contest != null) {
                 if (!contest.isCanceled()) {
                     // Cancelamos el contest
-                    WriteResult result = Model.contests().update("{_id: #}", contestId).with("{$set: {state: \"CANCELED\"}, $addToSet: {pendingJobs: #}}", jobId);
+                    WriteResult result = Model.contests()
+                            .update("{_id: #, state: { $ne: \"CANCELED\" }}", contestId)
+                            .with("{$set: {state: \"CANCELED\"}, $addToSet: {pendingJobs: #}}", jobId);
                     bValid = (result.getN() > 0);
                 }
                 else {
@@ -52,6 +54,9 @@ public class CancelContestJob extends Job {
                         AccountingOp accountingOp = AccountingOpCancelContest.create(contestId, accounts);
                         bValid = (accountingOp != null);
                     }
+
+                    // Quitar la tarea pendiente
+                    Model.contests().update("{_id: #}", contestId).with("{$pull: {pendingJobs: #}}", jobId);
                 }
             }
 
