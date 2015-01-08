@@ -41,6 +41,11 @@ public class User {
         return new UserInfo(userId, firstName, lastName, nickName, wins);
     }
 
+    public User getProfile() {
+        cachedBalance = calculateBalance();
+        return this;
+    }
+
     /**
      * Query de un usuario por su identificador en mongoDB (verifica la validez del mismo)
      */

@@ -435,7 +435,7 @@ public class LoginController extends Controller {
 
     @UserAuthenticated
     public static Result getUserProfile() {
-        return new ReturnHelper(ctx().args.get("User")).toResult();
+        return new ReturnHelper(((User)ctx().args.get("User")).getProfile()).toResult();
     }
 
     public static class ChangeParams {
