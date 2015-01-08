@@ -41,7 +41,7 @@ public class CancelContestEntryJob extends Job {
             Contest contest = Contest.findOneFromContestEntry(contestEntryId);
             if (contest != null) {
                 // Intentamos quitar el contestEntry
-                bValid = transactionRemove();
+                bValid = transactionRemoveContestEntry();
             }
             else {
                 // Aunque no esté el contestEntry incluido en el contest
@@ -54,7 +54,7 @@ public class CancelContestEntryJob extends Job {
             //  el que gestione la devolución del pago
             if (bValid) {
                 // Realizamos la gestión del payment
-                bValid = (contest.entryFee <= 0) || transactionPayment(contest.entryFee);
+                bValid = (contest.entryFee <= 0) || transactionReturnPayment(contest.entryFee);
 
                 if (!bValid)
                     throw new RuntimeException("WTF 131313: CancelContestEntry invalid");
@@ -77,7 +77,7 @@ public class CancelContestEntryJob extends Job {
         apply();
     }
 
-    private boolean transactionRemove() {
+    private boolean transactionRemoveContestEntry() {
         boolean transactionValid = false;
 
         try {
@@ -101,7 +101,7 @@ public class CancelContestEntryJob extends Job {
         return transactionValid;
     }
 
-    private boolean transactionPayment(int entryFee) {
+    private boolean transactionReturnPayment(int entryFee) {
         // Crear la transacción de Abandonar un Contest
         AccountingOp accountingOp = AccountingOpCancelContestEntry.create(contestId, contestEntryId, ImmutableList.of(
                 new AccountOp(userId, new BigDecimal(entryFee), User.getSeqId(userId) + 1)
