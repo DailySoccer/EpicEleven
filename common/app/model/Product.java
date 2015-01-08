@@ -1,18 +1,25 @@
 package model;
 
-public enum Product {
-    PRODUCT_1   ("Product 1: Platinum", 10),
-    PRODUCT_2   ("Product 2: Gold", 20);
+import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 
-    public final String name;
-    public final int price;
+public class Product {
+    public String name;
+    public int price;
 
-    Product (String name, int price) {
+    public Product () {}
+
+    public Product (String name, int price) {
         this.name = name;
         this.price = price;
     }
 
     static public Product findOne(String productId) {
-        return Product.valueOf(productId);
+        return catalog.get(productId);
     }
+
+    static private Map<String, Product> catalog = ImmutableMap.of(
+        "PRODUCT_1", new Product("Product 1: Platinum", 10),
+        "PRODUCT_2", new Product("Product 2: Gold", 20)
+    );
 }

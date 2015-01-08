@@ -43,7 +43,47 @@ public class PaypalController extends Controller {
     // La url a la que redirigimos al usuario cuando el proceso de pago se complete (con éxito o cancelación)
     static final String REFERER_URL_DEFAULT = "epiceleven.com";
 
-    public static Result approvalPayment(String userId, String productId) {
+    public static Result approvalPayment(String userId, int amount) {
+        // Obtenemos desde qué url están haciendo la solicitud
+        String refererUrl = request().hasHeader("Referer") ? request().getHeader("Referer") : REFERER_URL_DEFAULT;
+
+        // Si Paypal no responde con un adecuado "approval url", cancelaremos la solicitud
+        Result result = null;
+
+        try {
+            // Especificar a qué host enviaremos los urls de respuesta
+            PaypalPayment.instance().setHostName(request().host());
+
+            // Crear el identificador del nuevo pedido
+            ObjectId orderId = new ObjectId();
+
+            // Producto que quiere comprar
+            Product product = new Product("Payment", amount);
+
+            // Creamos la solicitud de pago (le proporcionamos el identificador del pedido para referencias posteriores)
+            Payment payment = PaypalPayment.instance().createPayment(orderId, product);
+            Model.paypalResponses().insert(payment.toJSON());
+
+            // Creamos el pedido (con el identificador generado y el de la solicitud de pago)
+            //      Únicamente almacenamos el referer si no es el de "por defecto"
+            Order.create(orderId, new ObjectId(userId), Order.TransactionType.PAYPAL, payment.getId(), product, refererUrl);
+
+            String redirectUrl = PaypalPayment.instance().getApprovalURL(payment);
+            if (redirectUrl != null) {
+                result = redirect(redirectUrl);
+            }
+        } catch (PayPalRESTException e) {
+            Logger.error("WTF 7741: ", e);
+        }
+
+        if (result == null) {
+            Logger.error("WTF 1209: Paypal: Link approval not found");
+            result = redirect(refererUrl + CLIENT_CANCEL_PATH);
+        }
+        return result;
+    }
+
+    public static Result approvalBuy(String userId, String productId) {
         // Obtenemos desde qué url están haciendo la solicitud
         String refererUrl = request().hasHeader("Referer") ? request().getHeader("Referer") : REFERER_URL_DEFAULT;
 
@@ -222,11 +262,11 @@ public class PaypalController extends Controller {
 
         if (json.get("resource_type").textValue().equalsIgnoreCase("sale")) {
             JsonNode jsonResource = json.findPath("resource");
-            if (json.get("event_type").textValue().equalsIgnoreCase("EVENT_PAYMENT_SALE_COMPLETED")) {
+            if (json.get("event_type").textValue().equalsIgnoreCase(EVENT_PAYMENT_SALE_COMPLETED)) {
                 String paymentId = jsonResource.get("parent_payment").textValue();
                 String state = jsonResource.get("state").textValue(); // pending; completed; refunded; partially_refunded
                 Logger.info("paymentId: {} - state: {}", paymentId, state);
-            } else if (json.get("event_type").textValue().equalsIgnoreCase("EVENT_PAYMENT_SALE_REVERSED")) {
+            } else if (json.get("event_type").textValue().equalsIgnoreCase(EVENT_PAYMENT_SALE_REVERSED)) {
                 String paymentId = jsonResource.get("parent_payment").textValue();
                 String state = jsonResource.get("state").textValue(); // pending; completed; refunded; partially_refunded
                 String pendingReason = jsonResource.get("pending_reason").textValue();
