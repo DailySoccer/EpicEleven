@@ -52,6 +52,17 @@ public class AccountingOp {
         return type;
     }
 
+    public AccountOp getAccountOp(ObjectId accountId) {
+        AccountOp accountOp = null;
+        for (AccountOp op : accounts) {
+            if (op.accountId.equals(accountId)) {
+                accountOp = op;
+                break;
+            }
+        }
+        return accountOp;
+    }
+
     public static List<AccountingOp> findAllFromUserId(ObjectId userId) {
         return ListUtils.asList(Model.accountingTransactions().find("{state: \"VALID\", \"accounts.accountId\": #}", userId).as(AccountingOp.class));
     }

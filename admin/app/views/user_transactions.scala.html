@@ -19,8 +19,8 @@
                         [
                             "@p.transactionId",
                             "@p.getTransactionType()",
-                            "@p.accounts.get(0).value",
-                            "@p.accounts.get(0).cachedBalance",
+                            "@p.getAccountOp(user.userId).value",
+                            "@p.getAccountOp(user.userId).cachedBalance",
                             "@p.transactionId.getDate()"
                         ] @if(index < transactions.size-1) { , }
                     }
@@ -39,7 +39,7 @@
 
 <div>
     <h3>@user.nickName (@user.email)</h3>
-    <div><strong>Balance:</strong> @user.calculateBalance()€</div>
+    <div><strong>Balance Total:</strong> @user.calculateBalance()€</div>
 </div>
 <br/>
 <div class="table-responsive">
