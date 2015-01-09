@@ -29,10 +29,7 @@ public class AccountingOpEnterContest extends AccountingOp {
         if (accountingOp == null) {
             accountingOp = new AccountingOpEnterContest(contestId, contestEntryId);
             accountingOp.accounts = accounts;
-            WriteResult result = Model.accountingTransactions().insert(accountingOp);
-            if (result.getN() > 0) {
-                play.Logger.info(accountingOp.toJson());
-            }
+            accountingOp.insert();
         }
         return accountingOp;
     }

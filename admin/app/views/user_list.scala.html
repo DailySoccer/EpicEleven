@@ -31,6 +31,12 @@
                         ] @if(index < users.size-1) { , }
                     }
                 ],
+                "columnDefs": [ {
+                    "targets": 7,
+                    "mRender": function (data, type, full) {
+                        return '<a href="user/' + full[0] + '/transactions">' + data + '</a>';
+                    }
+                } ],
                 stateSave: true,
                 iDisplayLength: 100,
                 "deferRender": true

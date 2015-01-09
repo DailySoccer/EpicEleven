@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import model.Model;
 import org.jongo.marshall.jackson.oid.Id;
 import org.bson.types.ObjectId;
+import utils.ListUtils;
 import utils.ObjectIdMapper;
 
 import java.util.ArrayList;
@@ -45,6 +46,19 @@ public class AccountingOp {
         this.proc = TransactionProc.UNCOMMITTED;
         this.state = TransactionState.VALID;
         this.type = type;
+    }
+
+    public TransactionType getTransactionType() {
+        return type;
+    }
+
+    public static List<AccountingOp> findAllFromUserId(ObjectId userId) {
+        return ListUtils.asList(Model.accountingTransactions().find("{state: \"VALID\", \"accounts.accountId\": #}", userId).as(AccountingOp.class));
+    }
+
+    public void insert() {
+        Model.accountingTransactions().insert(this);
+        commit();
     }
 
     public boolean commit () {

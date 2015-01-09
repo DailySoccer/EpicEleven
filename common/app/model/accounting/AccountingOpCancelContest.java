@@ -27,10 +27,7 @@ public class AccountingOpCancelContest extends AccountingOp {
         if (accountingOp == null) {
             accountingOp = new AccountingOpCancelContest(contestId);
             accountingOp.accounts = accounts;
-            WriteResult result = Model.accountingTransactions().insert(accountingOp);
-            if (result.getN() > 0) {
-                play.Logger.info(accountingOp.toJson());
-            }
+            accountingOp.insert();
         }
         return accountingOp;
     }

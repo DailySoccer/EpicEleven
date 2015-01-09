@@ -21,6 +21,7 @@ GET         /setmongo/:appEnv                                          controlle
 GET         /getmongo                                                  controllers.admin.AdminController.getMongoAppEnv()
 
 GET         /users                                                     controllers.admin.UserController.index()
+GET         /user/:userId/transactions                                 controllers.admin.UserController.transactions(userId : String)
 
 GET         /soccer_player_stats/:playerId                             controllers.admin.TemplateSoccerPlayerController.showStats(playerId : String)
 
