@@ -10,7 +10,9 @@ import utils.ListUtils;
 import utils.ObjectIdMapper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS,property="_class")
 public class AccountingOp {
@@ -50,6 +52,19 @@ public class AccountingOp {
 
     public TransactionType getTransactionType() {
         return type;
+    }
+
+    public Map<String, String> getAccountInfo(ObjectId accountId) {
+        Map<String, String> info = new HashMap<>();
+
+        AccountOp op = getAccountOp(accountId);
+        if (op != null) {
+            info.put("type", type.name());
+            info.put("value", op.value.toString());
+            info.put("createdAt", Long.toString(transactionId.getDate().getTime()));
+        }
+
+        return info;
     }
 
     public AccountOp getAccountOp(ObjectId accountId) {

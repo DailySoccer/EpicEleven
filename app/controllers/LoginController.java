@@ -12,6 +12,7 @@ import model.GlobalDate;
 import model.Model;
 import model.Session;
 import model.User;
+import model.accounting.AccountingOp;
 import stormpath.StormPathClient;
 import play.Logger;
 import play.Play;
@@ -25,7 +26,9 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ReturnHelper;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static play.data.Form.form;
@@ -436,6 +439,23 @@ public class LoginController extends Controller {
     @UserAuthenticated
     public static Result getUserProfile() {
         return new ReturnHelper(((User)ctx().args.get("User")).getProfile()).toResult();
+    }
+
+    @UserAuthenticated
+    public static Result getTransactionHistory() {
+        User theUser = (User)ctx().args.get("User");
+
+        List<Map<String, String>> transactions = new ArrayList<>();
+
+        List<AccountingOp> accountingOps = AccountingOp.findAllFromUserId(theUser.userId);
+        for (AccountingOp op : accountingOps) {
+            Map<String, String> accountInfo = op.getAccountInfo(theUser.userId);
+            if (!accountInfo.isEmpty()) {
+                transactions.add(accountInfo);
+            }
+        }
+
+        return new ReturnHelper(ImmutableMap.of("transactions", transactions)).toResult();
     }
 
     public static class ChangeParams {
