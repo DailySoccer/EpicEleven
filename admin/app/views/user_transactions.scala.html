@@ -21,7 +21,7 @@
                             "@p.getTransactionType()",
                             "@p.getAccountOp(user.userId).value",
                             "@p.getAccountOp(user.userId).cachedBalance",
-                            "@p.transactionId.getDate()"
+                            "@GlobalDate.formatDate(p.transactionId.getDate())"
                         ] @if(index < transactions.size-1) { , }
                     }
                 ],
