@@ -1,4 +1,4 @@
-@(users: model.User, transactions: List[model.accounting.AccountingOp])
+@(user: model.User, transactions: List[model.accounting.AccountingOp])
 
 @import model._
 @import controllers.admin.routes.DashboardController
@@ -37,6 +37,11 @@
 
 <h1 class="page-header">Transaction History</h1>
 
+<div>
+    <h3>@user.nickName (@user.email)</h3>
+    <div><strong>Balance:</strong> @user.calculateBalance()€</div>
+</div>
+<br/>
 <div class="table-responsive">
     <table id="ajax_table_id" class="table table-striped"></table>
 </div>
