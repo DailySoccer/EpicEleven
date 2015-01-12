@@ -163,6 +163,18 @@ public class ContestController extends Controller {
                 .toResult(JsonViews.FullContest.class);
     }
 
+    public static Result getContestInfo(String contestId) {
+        Contest contest = Contest.findOne(contestId);
+        List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
+        List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
+        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
+
+        return new ReturnHelper(ImmutableMap.of("contest", contest,
+                "users_info", usersInfoInContest,
+                "match_events", matchEvents,
+                "soccer_teams", teams)).toResult(JsonViews.ContestInfo.class);
+    }
+    
     public static Result getPublicContest(String contestId) {
         return attachInfoToContest(Contest.findOne(contestId)).toResult(JsonViews.Extended.class);
     }
