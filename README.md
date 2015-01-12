@@ -37,7 +37,7 @@ Installing the environment
     
     - Click on "Don't trust"
     - Select the certificate on the list and click in the "i" icon in the toolbar
-    - At "When using this certificate" choose: "Always Trust"
+    - In the "Trust" section, at "When using this certificate" choose: "Always Trust"
     - It will ask for your password. Afterwards you can close the window.
 
   - Route is now: https://backend.epiceleven.localhost:9000
