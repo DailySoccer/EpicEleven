@@ -5,6 +5,7 @@ import actions.UserAuthenticated;
 import com.google.common.collect.ImmutableMap;
 import model.*;
 import org.bson.types.ObjectId;
+import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
@@ -71,7 +72,11 @@ public class ContestController extends Controller {
 
     @UserAuthenticated
     public static Result getViewContest(String contestId) {
+        User theUser = (User)ctx().args.get("User");
         Contest contest = Contest.findOne(contestId);
+        if (!contest.containsContestEntryWithUser(theUser.userId)) {
+            Logger.error("WTF 7942: getViewContest: contest: {} user: {}", contestId, theUser.userId);
+        }
 
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
@@ -96,6 +101,10 @@ public class ContestController extends Controller {
     public static Result getMyContest(String contestId) {
         User theUser = (User)ctx().args.get("User");
         Contest contest = Contest.findOne(contestId);
+        if (!contest.containsContestEntryWithUser(theUser.userId)) {
+            Logger.error("WTF 7943: getMyContest: contest: {} user: {}", contestId, theUser.userId);
+            return new ReturnHelper(false, "MyContest invalid").toResult();
+        }
 
         // Quitamos todos fantasyTeam de los contestEntries que no sean del User
         for (ContestEntry contestEntry: contest.contestEntries) {
@@ -112,6 +121,7 @@ public class ContestController extends Controller {
         User theUser = (User)ctx().args.get("User");
         Contest contest = Contest.findOne(contestId);
         if (!contest.containsContestEntryWithUser(theUser.userId)) {
+            Logger.error("WTF 7944: getMyContestEntry: contest: {} user: {}", contestId, theUser.userId);
             return new ReturnHelper(false, "MyContestEntry invalid").toResult();
         }
 
