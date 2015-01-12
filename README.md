@@ -40,7 +40,7 @@ Installing the environment
     - At "When using this certificate" choose: "Always Trust"
     - It will ask for your password. Afterwards you can close the window.
 
-  - Route is now: https://backend.epiceleven.com:9000
+  - Route is now: https://backend.epiceleven.localhost:9000
 
 - Install Intellij Idea 13 and then follow this instructions:
 
