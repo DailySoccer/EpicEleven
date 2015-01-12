@@ -20,6 +20,11 @@ import java.util.Set;
 @AllowCors.Origin
 public class ContestController extends Controller {
 
+    private static final String ERROR_VIEW_CONTEST_INVALID = "ERROR_VIEW_CONTEST_INVALID";
+    private static final String ERROR_MY_CONTEST_INVALID = "ERROR_MY_CONTEST_INVALID";
+    private static final String ERROR_MY_CONTEST_ENTRY_INVALID = "ERROR_MY_CONTEST_ENTRY_INVALID";
+    private static final String ERROR_TEMPLATE_CONTEST_INVALID = "ERROR_TEMPLATE_CONTEST_INVALID";
+
     /*
      * Devuelve la lista de contests activos (aquellos a los que un usuario puede apuntarse)
      */
@@ -78,7 +83,7 @@ public class ContestController extends Controller {
         // No se puede ver el contest "completo" si está "activo" (únicamente en "live" o "history")
         if (contest.isActive()) {
             Logger.error("WTF 7945: getViewContest: contest: {} user: {}", contestId, theUser.userId);
-            return new ReturnHelper(false, "ViewContest invalid").toResult();
+            return new ReturnHelper(false, ERROR_VIEW_CONTEST_INVALID).toResult();
         }
 
         if (!contest.containsContestEntryWithUser(theUser.userId)) {
@@ -110,7 +115,7 @@ public class ContestController extends Controller {
         Contest contest = Contest.findOne(contestId);
         if (!contest.containsContestEntryWithUser(theUser.userId)) {
             Logger.error("WTF 7943: getMyContest: contest: {} user: {}", contestId, theUser.userId);
-            return new ReturnHelper(false, "MyContest invalid").toResult();
+            return new ReturnHelper(false, ERROR_MY_CONTEST_INVALID).toResult();
         }
 
         // Quitamos todos fantasyTeam de los contestEntries que no sean del User
@@ -129,7 +134,7 @@ public class ContestController extends Controller {
         Contest contest = Contest.findOne(contestId);
         if (!contest.containsContestEntryWithUser(theUser.userId)) {
             Logger.error("WTF 7944: getMyContestEntry: contest: {} user: {}", contestId, theUser.userId);
-            return new ReturnHelper(false, "MyContestEntry invalid").toResult();
+            return new ReturnHelper(false, ERROR_MY_CONTEST_ENTRY_INVALID).toResult();
         }
 
         Set<ObjectId> playersInContestEntry = new HashSet<>();
@@ -197,7 +202,7 @@ public class ContestController extends Controller {
         TemplateContest templateContest = TemplateContest.findOne(templateContestId);
 
         if (templateContest == null) {
-            return new ReturnHelper(false, "TemplateContest invalid").toResult();
+            return new ReturnHelper(false, ERROR_TEMPLATE_CONTEST_INVALID).toResult();
         }
 
         // Consultar por los partidos del TemplateContest (queremos su version "live")
