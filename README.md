@@ -23,6 +23,24 @@ Installing the environment
 - To run the server with debugging enabled:
 
     $ backend> ./_debug.sh
+    
+- UPDATE: To enable HTTPS:
+  - Edit the file "/etc/hosts" as root, for example:
+  
+    $ sudo vim /etc/hosts
+
+    Add " backend.epiceleven.localhost" after "127.0.0.1 localhost"
+
+  - Add the ssl.crt certificate to the Keychain Access:
+  
+    $ open conf/ssl.crt
+    
+    - Click on "Don't trust"
+    - Select the certificate on the list and click in the "i" icon in the toolbar
+    - At "When using this certificate" choose: "Always Trust"
+    - It will ask for your password. Afterwards you can close the window.
+
+  - Route is now: https://backend.epiceleven.com:9000
 
 - Install Intellij Idea 13 and then follow this instructions:
 
