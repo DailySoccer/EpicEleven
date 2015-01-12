@@ -74,6 +74,13 @@ public class ContestController extends Controller {
     public static Result getViewContest(String contestId) {
         User theUser = (User)ctx().args.get("User");
         Contest contest = Contest.findOne(contestId);
+
+        // No se puede ver el contest "completo" si está "activo" (únicamente en "live" o "history")
+        if (contest.isActive()) {
+            Logger.error("WTF 7945: getViewContest: contest: {} user: {}", contestId, theUser.userId);
+            return new ReturnHelper(false, "ViewContest invalid").toResult();
+        }
+
         if (!contest.containsContestEntryWithUser(theUser.userId)) {
             Logger.error("WTF 7942: getViewContest: contest: {} user: {}", contestId, theUser.userId);
         }
