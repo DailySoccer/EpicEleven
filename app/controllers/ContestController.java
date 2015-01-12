@@ -158,12 +158,6 @@ public class ContestController extends Controller {
                 .toResult(JsonViews.FullContest.class);
     }
 
-    @UserAuthenticated
-    public static Result getFullContest(String contestId) {
-        // User theUser = (User)ctx().args.get("User");
-        return attachInfoToContest(Contest.findOne(contestId)).toResult(JsonViews.FullContest.class);
-    }
-
     public static Result getPublicContest(String contestId) {
         return attachInfoToContest(Contest.findOne(contestId)).toResult(JsonViews.Extended.class);
     }
