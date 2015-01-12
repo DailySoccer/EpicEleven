@@ -111,6 +111,9 @@ public class ContestController extends Controller {
     public static Result getMyContestEntry(String contestId) {
         User theUser = (User)ctx().args.get("User");
         Contest contest = Contest.findOne(contestId);
+        if (!contest.containsContestEntryWithUser(theUser.userId)) {
+            return new ReturnHelper(false, "MyContestEntry invalid").toResult();
+        }
 
         Set<ObjectId> playersInContestEntry = new HashSet<>();
 
