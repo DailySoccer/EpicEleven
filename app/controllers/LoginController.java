@@ -454,7 +454,7 @@ public class LoginController extends Controller {
         User theUser = (User)ctx().args.get("User");
         Form<ChangeParams> changeParamsForm = form(ChangeParams.class).bindFromRequest();
         ChangeParams params;
-        JsonNode result = new ObjectMapper().createObjectNode().put("result", "ok");
+        Object result = theUser;
         Map<String, String> allErrors = new HashMap<>();
 
         boolean somethingChanged = false;
