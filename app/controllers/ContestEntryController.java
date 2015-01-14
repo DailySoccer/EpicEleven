@@ -4,6 +4,7 @@ import actions.AllowCors;
 import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
 import model.*;
 import model.jobs.CancelContestEntryJob;
 import model.jobs.EnterContestJob;
@@ -54,14 +55,14 @@ public class ContestEntryController extends Controller {
     public static Result addContestEntry() {
         Form<AddContestEntryParams> contestEntryForm = form(AddContestEntryParams.class).bindFromRequest();
 
+        User theUser = (User) ctx().args.get("User");
+
         String contestId = "";
 
         if (!contestEntryForm.hasErrors()) {
             AddContestEntryParams params = contestEntryForm.get();
 
             Logger.info("addContestEntry: contestId({}) soccerTeam({})", params.contestId, params.soccerTeam);
-
-            User theUser = (User) ctx().args.get("User");
 
             // Obtener el contestId : ObjectId
             Contest aContest = Contest.findOne(params.contestId);
@@ -115,10 +116,13 @@ public class ContestEntryController extends Controller {
             }
         }
 
-        JsonNode result = contestEntryForm.errorsAsJson();
+        Object result = contestEntryForm.errorsAsJson();
 
         if (!contestEntryForm.hasErrors()) {
-            result = new ObjectMapper().createObjectNode().put("result", "ok").put("contestId", contestId);
+            result = ImmutableMap.of(
+                    "result", "ok",
+                    "contestId", contestId,
+                    "profile", theUser.getProfile());
         }
         else {
             Logger.error("WTF 7239: addContestEntry: {}", contestEntryForm.errorsAsJson());
@@ -192,12 +196,12 @@ public class ContestEntryController extends Controller {
     public static Result cancelContestEntry() {
         Form<CancelContestEntryParams> contestEntryForm = form(CancelContestEntryParams.class).bindFromRequest();
 
+        User theUser = (User) ctx().args.get("User");
+
         if (!contestEntryForm.hasErrors()) {
             CancelContestEntryParams params = contestEntryForm.get();
 
             Logger.info("cancelContestEntry: contestEntryId({})", params.contestEntryId);
-
-            User theUser = (User) ctx().args.get("User");
 
             // Verificar que es un contestEntry válido
             ContestEntry contestEntry = ContestEntry.findOne(params.contestEntryId);
@@ -226,10 +230,12 @@ public class ContestEntryController extends Controller {
             }
         }
 
-        JsonNode result = contestEntryForm.errorsAsJson();
+        Object result = contestEntryForm.errorsAsJson();
 
         if (!contestEntryForm.hasErrors()) {
-            result = new ObjectMapper().createObjectNode().put("result", "ok");
+            result = ImmutableMap.of(
+                    "result", "ok",
+                    "profile", theUser.getProfile());
         }
         else {
             Logger.error("WTF 7241: cancelContestEntry: {}", contestEntryForm.errorsAsJson());
