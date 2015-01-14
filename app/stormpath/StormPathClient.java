@@ -122,6 +122,19 @@ public class StormPathClient {
         return new F.Tuple<>(-1, "");
     }
 
+    public F.Tuple<Integer, String> verifyAccountToken(String token) {
+        try {
+            _client.getCurrentTenant().verifyAccountEmail(token);
+        }
+        catch (ResourceException ex) {
+            Logger.error(ex.getMessage());
+            Logger.error(ex.getMoreInfo());
+
+            return new F.Tuple<>(ex.getCode(), ex.getMessage());
+        }
+        return new F.Tuple<>(-1, "");
+    }
+
     public F.Tuple<Integer, String> verifyPasswordResetToken(String token) {
         try {
             _myApp.verifyPasswordResetToken(token);
