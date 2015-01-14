@@ -17,12 +17,12 @@ public class Contest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
-    @JsonView(value={JsonViews.Public.class, JsonViews.AllContests.class})
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public ContestState state = ContestState.OFF;
 
     public String name;
 
-    @JsonView(value={JsonViews.Public.class, JsonViews.AllContests.class})
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public List<ContestEntry> contestEntries = new ArrayList<>();
 
     @JsonView(JsonViews.Public.class)
@@ -34,19 +34,19 @@ public class Contest implements JongoId {
 
     public int salaryCap;
 
-    @JsonView(value={JsonViews.Public.class, JsonViews.AllContests.class})
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public int entryFee;
-    @JsonView(value={JsonViews.Public.class, JsonViews.AllContests.class})
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public PrizeType prizeType;
 
-    @JsonView(JsonViews.Extended.class)
+    @JsonView(value={JsonViews.ContestInfo.class, JsonViews.Extended.class})
     public List<Integer> prizes;
 
     public Date startDate;
 
     public String optaCompetitionId;
 
-    @JsonView(value={JsonViews.Extended.class, JsonViews.MyLiveContests.class})
+    @JsonView(value={JsonViews.ContestInfo.class, JsonViews.Extended.class, JsonViews.MyLiveContests.class})
     public List<ObjectId> templateMatchEventIds = new ArrayList<>();
 
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyLiveContests.class, JsonViews.InstanceSoccerPlayers.class})

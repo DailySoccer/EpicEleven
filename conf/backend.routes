@@ -30,6 +30,7 @@ POST           /reset_password                                         controlle
 # Concursos globales activos (Lobby)
 GET            /get_active_contests                                    controllers.ContestController.getActiveContests()
 GET            /get_public_contest/:contest                            controllers.ContestController.getPublicContest(contest)
+GET            /get_contest_info/:contest                              controllers.ContestController.getContestInfo(contest)
 
 # Concursos asociados a usuario
 GET            /get_my_contests                                        controllers.ContestController.getMyContests()

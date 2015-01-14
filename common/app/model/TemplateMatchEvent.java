@@ -54,7 +54,7 @@ public class TemplateMatchEvent implements JongoId {
     @JsonView(JsonViews.Public.class)
     public int minutesPlayed;
 
-    @JsonView(JsonViews.Extended.class)
+    @JsonView(value={JsonViews.ContestInfo.class, JsonViews.Extended.class})
     public Date startDate;
 
     @JsonView(JsonViews.NotForClient.class)
