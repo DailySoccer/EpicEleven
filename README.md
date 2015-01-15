@@ -20,9 +20,37 @@ Installing the environment
     $ brew install mongo
     $ brew install postgres
 
-- To run the server with debugging enabled:
+- To run the server with debugging enabled in HTTP mode (no SSL certificate or modification to /etc/hosts required):
 
     $ backend> ./_debug.sh
+    
+    - Route is http://localhost
+    
+- To run the server in HTTPS mode:
+    
+    $ backend> ./_https_debug.sh
+    
+- To enable HTTPS:
+
+  - Edit the file "/etc/hosts" as root, for example:
+  
+    $ sudo open /etc/hosts
+
+    Add " backend.epiceleven.localhost" after "127.0.0.1 localhost". The line should read:
+    
+    127.0.0.1 localhost backend.epiceleven.localhost
+
+  - Add the ssl.crt certificate to the Keychain Access:
+  
+    $ open conf/ssl.crt
+    
+    - Click on "Don't trust"
+    - Select the certificate on the list and click in the "i" icon in the toolbar
+    - In the "Trust" section, at "When using this certificate" choose: "Always Trust"
+    - Close the window, it will ask for your password. Afterwards you can close the application.
+
+  - Route is now: https://backend.epiceleven.localhost:9000?https=true
+  - To run in debug mode in Dartium, add the query string param "https=true" to your launch url as well.
 
 - Install Intellij Idea 13 and then follow this instructions:
 

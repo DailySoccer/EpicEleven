@@ -1,31 +1,24 @@
 package controllers.admin;
 
 
-import com.google.gdata.client.spreadsheet.SpreadsheetService;
-import com.google.gdata.data.spreadsheet.*;
-import com.google.gdata.util.ServiceException;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import model.*;
 import model.opta.OptaCompetition;
-import org.apache.oltu.oauth2.client.OAuthClient;
-import org.apache.oltu.oauth2.client.URLConnectionClient;
-import org.apache.oltu.oauth2.client.request.OAuthClientRequest;
-import org.apache.oltu.oauth2.client.response.OAuthJSONAccessTokenResponse;
-import org.apache.oltu.oauth2.common.OAuthProviderType;
-import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
-import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
-import org.apache.oltu.oauth2.common.message.types.GrantType;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellReference;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import play.Logger;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
 import utils.BatchWriteOperation;
 
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -34,309 +27,401 @@ import java.util.List;
 public class ExcelController extends Controller {
 
     public static Result index() {
-        if (request().cookie(_googleAuthToken) == null)
-            return googleOAuth();
-
-        return ok(views.html.googledocs.render());
+        return ok(views.html.excel.render());
     }
 
 
-    public static Result googleOAuth() {
-        if (request().cookie(_googleAuthToken) == null) {
-            try {
-                OAuthClientRequest request = OAuthClientRequest
-                        .authorizationProvider(OAuthProviderType.GOOGLE)
-                        .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
-                        .setRedirectURI("http://localhost:9000/admin/googledocs/authn")
-                        .setResponseType("code")
-                        .setScope("https://spreadsheets.google.com/feeds https://docs.google.com/feeds")
-                        .setParameter("access_type", "offline")
-                        .buildQueryMessage();
-                return redirect(request.getLocationUri());
-            } catch (OAuthSystemException e) {
-                Logger.error("WTF 5036", e);
-                return forbidden();
-            }
+    public static Result writeSoccerPlayersLog() throws IOException {
+
+        response().setHeader("Content-Disposition", "attachment; filename=ActivityLog.xlsx");
+
+        File tempFile = fillLog();
+        FileInputStream activityLogStream = new FileInputStream(tempFile);
+        assert tempFile.delete();
+        return ok(activityLogStream);
+    }
+
+
+    public static Result upload() {
+        Http.MultipartFormData body = request().body().asMultipartFormData();
+        Http.MultipartFormData.FilePart newSalariesFile = body.getFile("excel");
+        if (newSalariesFile != null) {
+            FlashMessage.success(parseSalariesFile(newSalariesFile.getFile()) +" Salaries read successfully");
+            return redirect(routes.ExcelController.index());
+        } else {
+            FlashMessage.danger("Missing file, select one through \"Choose file\"");
+            return redirect(routes.ExcelController.index());
         }
-        return index();
     }
 
 
-    public static String refreshToken(String refreshToken) {
-        String result = "";
+    private static int parseSalariesFile(File file) {
+        int salariesRead = 0;
 
-        if (refreshToken != null) {
-            try {
-                OAuthClientRequest request = OAuthClientRequest
-                        .tokenProvider(OAuthProviderType.GOOGLE)
-                        .setGrantType(GrantType.REFRESH_TOKEN)
-                        .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
-                        .setClientSecret("cDI00MZJyCmp4r655ZAgy8hG")
-                        .setRefreshToken(refreshToken)
-                        .buildBodyMessage();
-
-                OAuthClient oAuthClient = new OAuthClient(new URLConnectionClient());
-                OAuthJSONAccessTokenResponse response2 = oAuthClient.accessToken(request);
-
-                result = response2.getAccessToken();
-
-
-            } catch (OAuthSystemException e) {
-                Logger.error("WTF 5036", e);
-            } catch (OAuthProblemException e) {
-                Logger.error("WTF 5037", e);
-            }
-        }
-        return result;
-    }
-
-
-    public static Result refreshToken() {
-        if (request().cookie(_googleRefreshToken) != null) {
-            try {
-                OAuthClientRequest request = OAuthClientRequest
-                        .tokenProvider(OAuthProviderType.GOOGLE)
-                        .setGrantType(GrantType.REFRESH_TOKEN)
-                        .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
-                        .setClientSecret("cDI00MZJyCmp4r655ZAgy8hG")
-                        .setRefreshToken(request().cookie(_googleRefreshToken).value())
-                        .buildBodyMessage();
-
-                OAuthClient oAuthClient = new OAuthClient(new URLConnectionClient());
-                OAuthJSONAccessTokenResponse response2 = oAuthClient.accessToken(request);
-
-                response().setCookie(_googleAuthToken, response2.getAccessToken());
-                response().setCookie(_googleRefreshToken, response2.getRefreshToken());
-
-
-            } catch (OAuthSystemException e) {
-                Logger.error("WTF 5036", e);
-            } catch (OAuthProblemException e) {
-                Logger.error("WTF 5037", e);
-            }
-        }
-        else return googleOAuth();
-        return ok();
-    }
-
-    public static Result googleOAuth2() {
-        String _code = request().getQueryString("code");
-
+        Workbook wb = null; // XSSFWorkbook. (inp);
         try {
-            OAuthClientRequest request = OAuthClientRequest
-                    .tokenProvider(OAuthProviderType.GOOGLE)
-                    .setGrantType(GrantType.AUTHORIZATION_CODE)
-                    .setClientId("779199222723-h36d9sjlliodjva1e2htb5rd2euhbao1.apps.googleusercontent.com")
-                    .setClientSecret("cDI00MZJyCmp4r655ZAgy8hG")
-                    .setRedirectURI("http://localhost:9000/admin/googledocs/authn")
-                    .setCode(_code)
-                    .buildBodyMessage();
-
-
-            OAuthClient oAuthClient = new OAuthClient(new URLConnectionClient());
-            OAuthJSONAccessTokenResponse response2 = oAuthClient.accessToken(request);
-
-            response().setCookie(_googleAuthToken, response2.getAccessToken());
-            if (response2.getRefreshToken() != null)
-                response().setCookie(_googleRefreshToken, response2.getRefreshToken());
-
-        }
-        catch (OAuthSystemException e) {
-            Logger.error("WTF 5038", e);
-            return forbidden();
-        }
-
-        catch (OAuthProblemException e) {
-            Logger.error("WTF 5039", e);
-            return forbidden();
-        }
-
-        return index();
-    }
-
-
-
-    public static Result writeSoccerPlayersLog() {
-        Chunks<String> chunks = new StringChunks() {
-
-            // Called when the stream is ready
-            public void onReady(Chunks.Out<String> out) {
-                fillLog(out);
-            }
-
-        };
-        response().setHeader("Content-Disposition", "attachment; filename=log.csv");
-        response().setHeader("Transfer-Encoding", "chunked");
-        return ok(chunks);
-    }
-
-
-    public static Result loadSalaries() {
-        return loadSalaries(request().cookie(_googleAuthToken).value(),
-                request().cookie(_googleRefreshToken).value());
-}
-
-
-
-    public static Result loadSalaries(String authToken, String refreshToken) {
-        response().setCookie(_googleAuthToken, authToken);
-        response().setCookie(_googleRefreshToken, refreshToken);
-
-
-        try {
-            SpreadsheetService service =
-                    new SpreadsheetService("MySpreadsheetIntegration-v1");
-
-            service.setAuthSubToken(authToken);
-
-            // TODO: Authorize the service object for a specific user (see other sections)
-
-            // Define the URL to request.  This should never change.
-            URL SPREADSHEET_FEED_URL = new URL(
-                    "https://spreadsheets.google.com/feeds/spreadsheets/private/full");
-
-            // Make a request to the API and get all spreadsheets.
-            SpreadsheetFeed feed = service.getFeed(SPREADSHEET_FEED_URL,
-                    SpreadsheetFeed.class);
-
-            SpreadsheetEntry ourSpreadSheet = getSpreadsheet(feed);
-
-            readSalaries(service, ourSpreadSheet);
-
-        } catch (MalformedURLException e) {
-            Logger.error("WTF 5096", e);
-        } catch (ServiceException e) {
-            // Si no tenemos autorización, refrescamos el token y volvemos a intentar
-            String cookie = refreshToken(refreshToken);
-            return loadSalaries(cookie, refreshToken);
+            wb = WorkbookFactory.create(file);
         } catch (IOException e) {
-            Logger.error("WTF 5296", e);
+            Logger.error("WTF 89532");
+        } catch (InvalidFormatException e) {
+            Logger.error("WTF 81952");
         }
 
-        return index();
+        try {
+            XSSFSheet sheet = (XSSFSheet) wb.getSheet(_SALARIES); //getSheetAt(0);
 
-    }
+            HashMap<String, Integer> newSalaries = new HashMap<>();
+            HashMap<String, String> newTags = new HashMap<>();
 
-    private static void readSalaries(SpreadsheetService service, SpreadsheetEntry ourSpreadSheet) throws IOException, ServiceException {
+            Row myRow;
 
-        ListFeed salariesFeed = getSalariesFeed(service, ourSpreadSheet);
+            FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
 
-        HashMap<String, Integer> newSalaries = new HashMap<>();
-        HashMap<String, String> newTags = new HashMap<>();
+            // Empezamos desde el 1 para saltarnos la fila título
+            for (int i = 1; i<= sheet.getLastRowNum(); i++) {
+                myRow = sheet.getRow(i);
 
-        for (ListEntry row : salariesFeed.getEntries()) {
-            newSalaries.put(row.getCustomElements().getValue("optaplayerid"),
-                    Integer.parseInt(row.getCustomElements().getValue("finalsalary"))); //Espacios en nombres de columnas prohibidos
+                newSalaries.put(myRow.getCell(_SalarySheet.OPTA_PLAYER_ID.column).getStringCellValue(),
+                                (int)evaluator.evaluate(myRow.getCell(_SalarySheet.SALARY.column)).getNumberValue());
+                newTags.put(myRow.getCell(_SalarySheet.OPTA_PLAYER_ID.column).getStringCellValue(),
+                            myRow.getCell(_SalarySheet.CURRENT_TAGS.column).getStringCellValue().trim());
 
-            newTags.put(row.getCustomElements().getValue("optaplayerid"),
-                    row.getCustomElements().getValue("tags"));
-        }
-
-        BatchWriteOperation batchWriteOperation = new BatchWriteOperation(Model.templateSoccerPlayers().getDBCollection().initializeUnorderedBulkOperation());
-
-        for (String optaPlayerId : newSalaries.keySet()) {
-
-            if (!TemplateSoccerPlayer.exists(optaPlayerId)) {
-                Logger.error("Se ha detectado un futbolista {} en el excel que no existe en la base de datos", optaPlayerId);
-                continue;
             }
 
-            DBObject query = new BasicDBObject("optaPlayerId", optaPlayerId);
-            BasicDBObject bdo = new BasicDBObject("salary", newSalaries.get(optaPlayerId));
+            BatchWriteOperation batchWriteOperation = new BatchWriteOperation(Model.templateSoccerPlayers().getDBCollection().initializeUnorderedBulkOperation());
 
-            List<String> tagList = newTags.get(optaPlayerId) != null?
-                                       Arrays.asList(newTags.get(optaPlayerId).split(",[ ]*")) :
-                                       new ArrayList<String>();
+            for (String optaPlayerId : newSalaries.keySet()) {
 
-            // Si hay algun tag invalido, simplemente paramos de importar salarios (forzamos a que lo corrijan)
-            for (String tag : tagList) {
-                if (!TemplateSoccerPlayerTag.isValid(tag)) {
-                    throw new RuntimeException("WTF 5761: Se ha encontrado un tag invalido " + tag);
+                if (!TemplateSoccerPlayer.exists(optaPlayerId)) {
+                    Logger.error("Se ha detectado un futbolista {} en el excel que no existe en la base de datos", optaPlayerId);
+                    continue;
                 }
+
+                DBObject query = new BasicDBObject(_OPTA_PLAYER_ID, optaPlayerId);
+                BasicDBObject bdo = new BasicDBObject(_SALARY, newSalaries.get(optaPlayerId));
+
+                List<String> tagList = newTags.get(optaPlayerId) != null && !newTags.get(optaPlayerId).equals("") ?
+                        Arrays.asList(newTags.get(optaPlayerId).split(",[ ]*")) :
+                        new ArrayList<String>();
+
+                // Si hay algun tag invalido, simplemente paramos de importar salarios (forzamos a que lo corrijan)
+                for (String tag : tagList) {
+                    if (!TemplateSoccerPlayerTag.isValid(tag)) {
+                        throw new RuntimeException("WTF 5761: Se ha encontrado un tag invalido " + tag);
+                    }
+                }
+
+                bdo.append("tags", tagList);
+
+                DBObject update = new BasicDBObject("$set", bdo);
+                batchWriteOperation.find(query).updateOne(update);
             }
 
-            bdo.append("tags", tagList);
+            batchWriteOperation.execute();
+            salariesRead = newSalaries.size();
 
-            DBObject update = new BasicDBObject("$set", bdo);
-            batchWriteOperation.find(query).updateOne(update);
         }
-
-        batchWriteOperation.execute();
+        catch (NullPointerException e) {
+            Logger.error("WTF 1252: No hay hoja Salaries");
+        }
+        return salariesRead;
     }
 
-    private static void fillLog(Chunks.Out<String> out) {
+
+    private static void autoSizeColumns(Sheet sheet, int numCols) {
+        for (int i=0; i<=numCols; i++) {
+            sheet.autoSizeColumn(i);
+        }
+    }
+
+
+    private static void fillLogRowTitle(Sheet sheet) {
+        Row rowTitle = sheet.createRow((short)0);
+
+        for (_LogSheet logValue : _LogSheet.values()) {
+            rowTitle.createCell(logValue.column).setCellValue(logValue.colName);
+        }
+
+    }
+
+
+    private static void fillSalaryRowTitle(Sheet sheet) {
+        Row salaryRow = sheet.createRow((short)0);
+
+        for (_SalarySheet salaryValue: _SalarySheet.values()) {
+            salaryRow.createCell(salaryValue.column).setCellValue(salaryValue.colName);
+        }
+    }
+
+
+    private static void fillEMARowTitle(Sheet sheet) {
+        Row emaRow = sheet.createRow((short) 0);
+        for (_EMASheet emaValue: _EMASheet.values()) {
+            emaRow.createCell(emaValue.column).setCellValue(emaValue.colName);
+        }
+    }
+
+
+    private static void fillSalaryRow(Row salaryRow, TemplateSoccerPlayer soccerPlayer) {
+
+        salaryRow.createCell(_SalarySheet.OPTA_PLAYER_ID.column).setCellValue(soccerPlayer.optaPlayerId);
+        salaryRow.createCell(_SalarySheet.NAME.column).setCellValue(soccerPlayer.name);
+        salaryRow.createCell(_SalarySheet.CURRENT_SALARY.column).setCellValue(soccerPlayer.salary);
+
+        Cell calculatedSalaryCell = salaryRow.createCell(_SalarySheet.CALCULATED_SALARY.column);
+        calculatedSalaryCell.setCellValue(getSalary(calcEma(soccerPlayer.stats)));
+        salaryRow.createCell(_SalarySheet.SALARY.column).setCellFormula(new CellReference(calculatedSalaryCell).formatAsString());
+
+        salaryRow.createCell(_SalarySheet.CURRENT_TAGS.column).setCellValue(soccerPlayer.tags.toString().substring(1, soccerPlayer.tags.toString().length() - 1));
+    }
+
+
+    private static void fillLogRow(HashMap<String, String> optaCompetitions, Row row, TemplateSoccerPlayer soccerPlayer,
+                                   String teamName, SoccerPlayerStats stat) {
+        row.createCell(_LogSheet.OPTA_PLAYER_ID.column).setCellValue(soccerPlayer.optaPlayerId);
+        row.createCell(_LogSheet.NAME.column).setCellValue(soccerPlayer.name);
+        row.createCell(_LogSheet.POSITION.column).setCellValue(soccerPlayer.fieldPos.name());
+        row.createCell(_LogSheet.TEAM.column).setCellValue(teamName);
+        row.createCell(_LogSheet.COMPETITION.column).setCellValue(optaCompetitions.get(stat.optaCompetitionId));
+        row.createCell(_LogSheet.DATE.column).setCellValue(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy")));
+        row.createCell(_LogSheet.TIME.column).setCellValue(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm")));
+        row.createCell(_LogSheet.MINUTES_PLAYED.column).setCellValue(stat.playedMinutes);
+        row.createCell(_LogSheet.FANTASY_POINTS.column).setCellValue(stat.fantasyPoints);
+    }
+
+
+    private static void fillPivotRows(Row pivotRow, int statCounter, SoccerPlayerStats stat) {
+        pivotRow.createCell((statCounter*2)+1).setCellValue(stat.fantasyPoints);
+        pivotRow.createCell((statCounter*2)+2).setCellValue(stat.playedMinutes);
+    }
+
+    private static void fillPivotTitleRows(Row pivotTitleRow, int statNumber, Sheet sheet)  {
+        for (int i=0; i<((statNumber*2)+1); i++) {
+            pivotTitleRow.createCell(i).setCellValue(_PivotSheet.getName(i));
+        }
+    }
+
+    private static File fillLog() {
+
+        Workbook wb = new XSSFWorkbook();
+
+        XSSFSheet logSheet = (XSSFSheet) wb.createSheet(_LOG);
+        XSSFSheet pivotSheet = (XSSFSheet) wb.createSheet(_PIVOT);
+        XSSFSheet emaSheet = (XSSFSheet) wb.createSheet(_EMAS);
+        XSSFSheet salarySheet = (XSSFSheet) wb.createSheet(_SALARIES);
 
         HashMap<String, String> optaCompetitions = new HashMap<>();
         for (OptaCompetition optaCompetition: OptaCompetition.findAll()) {
             optaCompetitions.put(optaCompetition.competitionId, optaCompetition.competitionName);
         }
 
-        out.write("id,nombre,posicion,equipo,competicion,fecha,hora,minutos,fp\n");
+        Row row, emaRow, pivotRow, salaryRow;
+
+        fillLogRowTitle(logSheet);
+        fillSalaryRowTitle(salarySheet);
+        fillEMARowTitle(emaSheet);
 
         HashMap<String, String> soccerTeamsMap = new HashMap<>();
+
+        int playerRowCounter = 1;
+        int maxStatNumber = 0;
+        int rowCounter = 1;
+
         for (TemplateSoccerTeam templateSoccerTeam: TemplateSoccerTeam.findAll()) {
             soccerTeamsMap.put(templateSoccerTeam.templateSoccerTeamId.toString(), templateSoccerTeam.name);
 
             for (TemplateSoccerPlayer soccerPlayer: TemplateSoccerPlayer.findAllFromTemplateTeam(templateSoccerTeam.templateSoccerTeamId)) {
-                    String teamName = soccerTeamsMap.containsKey(soccerPlayer.templateTeamId.toString()) ? soccerTeamsMap.get(soccerPlayer.templateTeamId.toString()) : "unknown";
+                String teamName = soccerTeamsMap.containsKey(soccerPlayer.templateTeamId.toString()) ? soccerTeamsMap.get(soccerPlayer.templateTeamId.toString()) : "unknown";
 
-                    for (SoccerPlayerStats stat : soccerPlayer.stats) {
-                        out.write(soccerPlayer.optaPlayerId + ","+
-                                        soccerPlayer.name+","+
-                                        soccerPlayer.fieldPos.name()+","+
-                                        teamName + ","+
-                                        optaCompetitions.get(stat.optaCompetitionId)+","+
-                                        new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy"))+","+
-                                        new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm"))+","+
-                                        Integer.toString(stat.playedMinutes)+","+
-                                        Integer.toString(stat.fantasyPoints)+"\n"
-                        );
+                pivotRow = pivotSheet.createRow((short)playerRowCounter);
+                salaryRow = salarySheet.createRow((short)playerRowCounter);
+                emaRow = emaSheet.createRow((short)playerRowCounter++);
 
+                pivotRow.createCell(_PivotSheet.OPTA_PLAYER_ID.column).setCellValue(soccerPlayer.optaPlayerId);
 
+                emaRow.createCell(_EMASheet.OPTA_PLAYER_ID.column).setCellValue(soccerPlayer.optaPlayerId);
+                emaRow.createCell(_EMASheet.EMA_FP.column).setCellValue(calcEma(soccerPlayer.stats));
 
+                fillSalaryRow(salaryRow, soccerPlayer);
+
+                int statCounter = 0;
+                for (SoccerPlayerStats stat : soccerPlayer.stats) {
+                    row = logSheet.createRow((short)rowCounter++);
+                    fillLogRow(optaCompetitions, row, soccerPlayer, teamName, stat);
+
+                    fillPivotRows(pivotRow, statCounter, stat);
+
+                    statCounter++;
                 }
 
+                maxStatNumber = (soccerPlayer.stats.size() > maxStatNumber)? soccerPlayer.stats.size(): maxStatNumber;
             }
 
 
         }
-        out.close();
+        Row pivotTitleRow = pivotSheet.createRow((short)0);
+        pivotTitleRow.createCell(_PivotSheet.OPTA_PLAYER_ID.column).setCellValue(_PivotSheet.OPTA_PLAYER_ID.colName);
+        fillPivotTitleRows(pivotTitleRow, maxStatNumber, pivotSheet);
 
+        autoSizeColumns(pivotSheet, (maxStatNumber*2)+1);
+        autoSizeColumns(logSheet, _LogSheet.lastCol.column);
+        autoSizeColumns(salarySheet, _SalarySheet.lastCol.column);
+        autoSizeColumns(emaSheet, _EMASheet.lastCol.column);
+
+        try {
+            File tempFile = File.createTempFile("temp-ActivityLog", ".xlsx");
+            FileOutputStream fileOut = new FileOutputStream(tempFile);
+            wb.write(fileOut);
+            fileOut.close();
+
+            return tempFile;
+        }
+        catch (FileNotFoundException e) {
+            Logger.error("WTF 23126");
+        }
+        catch (IOException e) {
+            Logger.error("WTF 21276");
+        }
+        return null; //Si ha ocurrido excepción devolvemos null
     }
 
-    private static SpreadsheetEntry getSpreadsheet(SpreadsheetFeed feed) {
-        SpreadsheetEntry ourSpreadSheet = null;
-        // Iterate through all of the spreadsheets returned
-        for (SpreadsheetEntry spreadsheet : feed.getEntries()) {
-            // Print the title of this spreadsheet to the screen
-            if (spreadsheet.getTitle().getPlainText().equals(SPREADSHEET_NAME)) {
-                ourSpreadSheet = spreadsheet;
-                break;
+
+    private static double calcEma (List<SoccerPlayerStats> stats) {
+        double factor = 0.2;
+        double prevValue = Integer.MIN_VALUE;
+        double hfactor = 0.02;
+        double complemFactor = 0.8;
+
+        for (SoccerPlayerStats stat : stats) {
+            if (prevValue==Integer.MIN_VALUE) {
+                if (!(stat.fantasyPoints == 0 && stat.playedMinutes < 5)) {
+                    prevValue = stat.fantasyPoints;
+                }
+            }
+            else {
+                if (stat.fantasyPoints == 0 && stat.playedMinutes < 5) {
+                    prevValue = (1-hfactor)*prevValue;
+                }
+                else {
+                    prevValue = (factor * stat.fantasyPoints) + (complemFactor*prevValue);
+                }
             }
         }
-        return ourSpreadSheet;
+        return prevValue;
     }
 
 
-    private static ListFeed getSalariesFeed(SpreadsheetService service, SpreadsheetEntry ourSpreadSheet) throws IOException, ServiceException {
-        WorksheetFeed worksheetFeed = service.getFeed(
-                ourSpreadSheet.getWorksheetFeedUrl(), WorksheetFeed.class);
+    private static int getSalary(double input) {
+        int maxFPS = 500;
+        int minSalario = 4500;
+        int maxSalario = 6700; //14500;
 
-        WorksheetEntry ourWorksheet = new WorksheetEntry();
-        for (WorksheetEntry worksheet : worksheetFeed.getEntries()) {
-            if (worksheet.getTitle().getPlainText().equals(SALARIES_WORKSHEET_NAME)) {
-                ourWorksheet = worksheet;
-                break;
-            }
+        int rangeSalario = (maxSalario-minSalario);
+
+        double fps = input>1? input: 1;
+        int salario = (int)((fps * rangeSalario)/maxFPS) + minSalario;
+
+        return salario - (salario % 100);
+    }
+
+
+    private static final String _OPTA_PLAYER_ID = "optaPlayerId";
+
+    private static final String _MINUTES_PLAYED = "minutesPlayed";
+    private static final String _FANTASY_POINTS = "fantasyPoints";
+
+    private static final String _NAME = "name";
+    private static final String _POSITION = "position";
+    private static final String _TEAM = "team";
+    private static final String _COMPETITION = "competition";
+    private static final String _DATE = "date";
+    private static final String _TIME = "time";
+
+    private static final String _CURRENT_SALARY = "currentSalary";
+    private static final String _CALCULATED_SALARY = "calculatedSalary";
+    private static final String _SALARY = "salary";
+    private static final String _CURRENT_TAGS = "currentTags";
+
+    private static final String _EMA_FP = "EMAfp";
+
+    private static final String _LOG = "Log";
+    private static final String _PIVOT = "Pivot";
+    private static final String _EMAS = "EMAs";
+    private static final String _SALARIES = "Salaries";
+
+
+    private enum _LogSheet {
+        OPTA_PLAYER_ID  (0, _OPTA_PLAYER_ID),
+        NAME            (1, _NAME),
+        POSITION        (2, _POSITION),
+        TEAM            (3, _TEAM),
+        COMPETITION     (4, _COMPETITION),
+        DATE            (5, _DATE),
+        TIME            (6, _TIME),
+        MINUTES_PLAYED  (7, _MINUTES_PLAYED),
+        FANTASY_POINTS  (8, _FANTASY_POINTS);
+
+        public final int column;
+        public final String colName;
+
+        public static final _LogSheet lastCol = FANTASY_POINTS;
+
+        _LogSheet(int c, String name) {
+            column = c;
+            colName = name;
         }
-        return service.getFeed(ourWorksheet.getListFeedUrl(), ListFeed.class);
     }
 
-    private final static String _googleAuthToken = "googleAuthToken";
-    private final static String _googleRefreshToken = "googleRefreshToken";
+    private enum _SalarySheet {
+        OPTA_PLAYER_ID      (0, _OPTA_PLAYER_ID),
+        NAME                (1, _NAME),
+        CURRENT_SALARY      (2, _CURRENT_SALARY),
+        CALCULATED_SALARY   (3, _CALCULATED_SALARY),
+        SALARY              (4, _SALARY),
+        CURRENT_TAGS        (5, _CURRENT_TAGS);
 
-    private final static String SPREADSHEET_NAME = "Epic Eleven - Salarios - LFP";
+        public final int column;
+        public final String colName;
 
-    private final static String SALARIES_WORKSHEET_NAME = "Salarios Finales";
+        public static final _SalarySheet lastCol = CURRENT_TAGS;
+
+        _SalarySheet(int c, String name) {
+            column = c;
+            colName = name;
+        }
+    }
+
+    private enum _EMASheet {
+        OPTA_PLAYER_ID  (0, _OPTA_PLAYER_ID),
+        EMA_FP          (1, _EMA_FP);
+
+        public final int column;
+        public final String colName;
+
+        public static final _EMASheet lastCol = EMA_FP;
+
+        _EMASheet(int c, String name) {
+            column = c;
+            colName = name;
+        }
+    }
+
+    private enum _PivotSheet {
+        OPTA_PLAYER_ID  (0, _OPTA_PLAYER_ID);
+
+        public final int column;
+        public final String colName;
+
+        _PivotSheet(int c, String name) {
+            column = c;
+            colName = name;
+        }
+
+        public static String getName(int col) {
+            return (col==0)? _PivotSheet.OPTA_PLAYER_ID.colName:
+                    (col%2==0)? _MINUTES_PLAYED: _FANTASY_POINTS;
+
+        }
+    }
 
 }

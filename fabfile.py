@@ -180,12 +180,6 @@ def build_client():
     print blue("Building client...")
     client_build = local('./build_for_deploy.sh %s' % env.mode, capture=True)
     env.client_built = not any(x in client_build.stderr for x in ("error", "failed"))
-    """
-    if env.dest in production_dests:
-        local('./build_for_deploy.sh %s' % env.mode)
-    else:
-        local('./build.sh %s' % env.mode)
-    """
 
 def post_build_client():
     print blue("Client post build...")

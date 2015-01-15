@@ -2,6 +2,7 @@ package actors;
 
 import akka.actor.ActorRef;
 import akka.actor.Props;
+import play.Logger;
 import play.libs.Akka;
 
 import play.api.DefaultApplication;
@@ -27,17 +28,19 @@ public class DailySoccerActors {
     //
     static public void init(boolean bIsWorker) {
 
-        final ActorRef instantiateConstestsActor = Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateConstestsActor");
-        final ActorRef optaProcessorActor = Akka.system().actorOf(Props.create(OptaProcessorActor.class), "OptaProcessorActor");
-
         if (bIsWorker) {
+            final ActorRef instantiateConstestsActor = Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateConstestsActor");
+            final ActorRef optaProcessorActor = Akka.system().actorOf(Props.create(OptaProcessorActor.class), "OptaProcessorActor");
+
             instantiateConstestsActor.tell("Tick", ActorRef.noSender());
             optaProcessorActor.tell("Tick", ActorRef.noSender());
         }
     }
 
     static public void shutdown() {
-        // Esto para todos los actores y metodos scheduleados
+
+        // Esto para todos los actores y metodos scheduleados. No es necesario mirar bIsWorker
+        // (aunque logeara "Shutdown application default Akka system.")
         Akka.system().shutdown();
 
         // Hacemos un 'join' para asegurar que no matamos el modelo estando todavia procesando
