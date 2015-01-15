@@ -21,6 +21,8 @@ public class User {
 	public String email;
 
     public int wins;
+
+    // TODO: De momento no es realmente un "cache", siempre lo recalculamos
     public BigDecimal cachedBalance;
 
     @JsonView(JsonViews.NotForClient.class)

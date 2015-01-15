@@ -101,7 +101,9 @@ public class ContestEntryController extends Controller {
                 }
             }
             if (errores.isEmpty()) {
-                assert aContest != null;
+                if (aContest == null) {
+                    throw new RuntimeException("WTF 8639: aContest != null");
+                }
                 contestId = aContest.contestId.toString();
 
                 EnterContestJob enterContestJob = EnterContestJob.create(theUser.userId, aContest.contestId, idsList);
@@ -249,7 +251,8 @@ public class ContestEntryController extends Controller {
         // Verificar que el contest sea válido
         if (contest == null) {
             errores.add(ERROR_CONTEST_INVALID);
-        } else {
+        }
+        else {
             // Verificar que el contest esté activo (ni "live" ni "history")
             if (!contest.isActive()) {
                 errores.add(ERROR_CONTEST_NOT_ACTIVE);

@@ -233,8 +233,8 @@ public class PaypalController extends Controller {
                 // Actualizaremos el pedido únicamente si está "pending" (esperando respuesta)
                 //  de esta forma garantizamos que no tenemos en cuenta mensajes antiguos o repetidos
                 Order order = Order.findOne(ipnMessage.getIpnValue(PaypalIPNMessage.FIELD_CUSTOM_ID));
-                // TODO: Puede que se necesite "completar" cualquier pedido incompleto (no sólo los "pending")
-                if (order != null && order.isPending()) {
+                // Aseguramos que siempre completamos el pedido, la operación "setCompleted" es idempotente
+                if (order != null) {
                     order.setCompleted();
                 }
             }
