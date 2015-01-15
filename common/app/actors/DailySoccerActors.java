@@ -26,13 +26,16 @@ public class DailySoccerActors {
     // El remoting en cualquier caso parece que lo vamos a necesitar, y quiza entonces sea buen momento para levantar
     // nuestro propio ActorSystem.
     //
-    static public void init() {
+    static public void init(boolean isWorker) {
 
+        // Aunque no seamos el worker, hay que inicializar los actores para que funcione el simulador
         final ActorRef instantiateConstestsActor = Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateConstestsActor");
         final ActorRef optaProcessorActor = Akka.system().actorOf(Props.create(OptaProcessorActor.class), "OptaProcessorActor");
 
-        instantiateConstestsActor.tell("Tick", ActorRef.noSender());
-        optaProcessorActor.tell("Tick", ActorRef.noSender());
+        if (isWorker) {
+            instantiateConstestsActor.tell("Tick", ActorRef.noSender());
+            optaProcessorActor.tell("Tick", ActorRef.noSender());
+        }
     }
 
     static public void shutdown() {
