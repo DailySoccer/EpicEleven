@@ -75,13 +75,19 @@ public class EnterContestJob extends Job {
 
     @Override
     public void continueProcessing() {
-        if (state.equals(JobState.TODO) || state.equals(JobState.CANCELING) || contestEntryId == null) {
-            updateState(state, JobState.CANCELED);
-            return;
+        // Cancelamos si:
+
+        // + No ha empezado a procesarse (JobState.TODO)
+        // + Estaba en proceso de cancelarse (JobState.CANCELING)
+        // + No se generó ningún contestEntry
+        boolean cancel = (state.equals(JobState.TODO) || state.equals(JobState.CANCELING) || contestEntryId == null);
+
+        if (!cancel) {
+            // + No se insertó el contestEntry en el contest
+            cancel = (Contest.findOneFromContestEntry(contestEntryId) == null);
         }
 
-        Contest contestWithContestEntry = Contest.findOneFromContestEntry(contestEntryId);
-        if (contestWithContestEntry == null) {
+        if (cancel) {
             cancelAccountOp();
             updateState(state, JobState.CANCELED);
         }
@@ -131,6 +137,10 @@ public class EnterContestJob extends Job {
     private void cancelAccountOp () {
         // Tenemos que tener un contestEntryId para proceder a la cancelación
         if (contestEntryId != null) {
+            // Registramos el seqId, de tal forma que si se produce una alteracion en el número de operaciones
+            // del usuario se lance una excepcion que impida la inserción ya que (accountId, seqId) es "unique key"
+            Integer seqId = User.getSeqId(userId) + 1;
+
             // Hemos quitado dinero al usuario...?
             AccountingOp accountingOp = AccountingOpEnterContest.findOne(contestId, contestEntryId);
             if (accountingOp != null) {
@@ -138,7 +148,7 @@ public class EnterContestJob extends Job {
 
                 // Generamos la operación de cancelación (ingresarle dinero)
                 AccountingOpCancelContestEntry.create(contestId, contestEntryId, ImmutableList.of(
-                        new AccountOp(userId, new BigDecimal(contest.entryFee), User.getSeqId(userId) + 1)
+                        new AccountOp(userId, new BigDecimal(contest.entryFee), seqId)
                 ));
             }
         }
