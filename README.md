@@ -24,7 +24,7 @@ Installing the environment
 
     $ backend> ./_debug.sh
     
-    - Route is http://localhost
+    - Route is http://localhost:9000
     
 - To run the server in HTTPS mode:
     
