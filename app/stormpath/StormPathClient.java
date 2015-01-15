@@ -95,10 +95,10 @@ public class StormPathClient {
             _myApp.createAccount(account);
         }
         catch (ResourceException ex) {
-            Logger.error(String.valueOf(ex.getStatus()));
-            Logger.error(String.valueOf(ex.getCode()));
-            Logger.error(ex.getMessage());            
-            Logger.error(ex.getMoreInfo());
+            Logger.error(String.valueOf(ex.getStatus()) +"\n"+
+                         String.valueOf(ex.getCode()) +"\n"+
+                         ex.getMessage() +"\n"+
+                         ex.getMoreInfo());
 
             return new F.Tuple<>(ex.getCode(), ex.getMessage());
 
@@ -112,10 +112,10 @@ public class StormPathClient {
             _myApp.sendPasswordResetEmail(email);
         }
         catch (ResourceException ex) {
-            Logger.error(String.valueOf(ex.getStatus()));
-            Logger.error(String.valueOf(ex.getCode()));
-            Logger.error(ex.getMessage());
-            Logger.error(ex.getMoreInfo());
+            Logger.error(String.valueOf(ex.getStatus()) +"\n"+
+                         String.valueOf(ex.getCode()) +"\n"+
+                         ex.getMessage() +"\n"+
+                         ex.getMoreInfo());
 
             return new F.Tuple<>(ex.getCode(), ex.getMessage());
         }
@@ -127,8 +127,8 @@ public class StormPathClient {
             _myApp.verifyPasswordResetToken(token);
         }
         catch (ResourceException ex) {
-            Logger.error(ex.getMessage());
-            Logger.error(ex.getMoreInfo());
+            Logger.error(ex.getMessage() +"\n"+
+                         ex.getMoreInfo());
 
             return new F.Tuple<>(ex.getCode(), ex.getMessage());
         }
@@ -141,8 +141,8 @@ public class StormPathClient {
             account = _myApp.resetPassword(token, password);
         }
         catch (ResourceException ex) {
-            Logger.error(ex.getMessage());
-            Logger.error(ex.getMoreInfo());
+            Logger.error(ex.getMessage() +"\n"+
+                         ex.getMoreInfo());
 
             return new F.Tuple<>(null, new F.Tuple<>(ex.getCode(), ex.getMessage()));
         }
@@ -159,9 +159,8 @@ public class StormPathClient {
             return result.getAccount();
         }
         catch (ResourceException ex) {
-            Logger.error(ex.getMessage());
-            Logger.error(ex.getMoreInfo());
-
+            Logger.error(ex.getMessage() +"\n"+
+                         ex.getMoreInfo());
         }
         return null;
     }
@@ -181,8 +180,9 @@ public class StormPathClient {
                 Logger.info("Invalid login for {}", usernameOrEmail);
             }
             else {
-                Logger.error(ex.getMessage()); // Will output: "Invalid username or password."
-                Logger.error(ex.getMoreInfo());
+                // Will output: "Invalid username or password."
+                Logger.error(ex.getMessage() +"\n"+
+                             ex.getMoreInfo());
             }
 
         }
@@ -213,8 +213,9 @@ public class StormPathClient {
                 try {
                     usersAccount.save();
                 } catch (ResourceException ex) {
-                    Logger.error(ex.getMessage()); // Will output: "Invalid username or password."
-                    Logger.error(ex.getMoreInfo());
+                    // Will output: "Invalid username or password."
+                    Logger.error(ex.getMessage() +"\n"+
+                                 ex.getMoreInfo());
 
                     return new F.Tuple<>(ex.getCode(), ex.getMessage());
                 }
@@ -243,8 +244,9 @@ public class StormPathClient {
                 usersAccount.save();
             }
             catch (ResourceException ex) {
-                Logger.error(ex.getMessage()); // Will output: "Invalid username or password."
-                Logger.error(ex.getMoreInfo());
+                // Will output: "Invalid username or password."
+                Logger.error(ex.getMessage() +"\n"+
+                             ex.getMoreInfo());
 
                 return new F.Tuple<>(ex.getCode(), ex.getMessage());
             }
