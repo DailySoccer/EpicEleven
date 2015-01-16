@@ -12,7 +12,7 @@ import model.GlobalDate;
 import model.Model;
 import model.Session;
 import model.User;
-import model.accounting.AccountingOp;
+import model.accounting.AccountingTran;
 import stormpath.StormPathClient;
 import play.Logger;
 import play.Play;
@@ -447,8 +447,8 @@ public class LoginController extends Controller {
 
         List<Map<String, String>> transactions = new ArrayList<>();
 
-        List<AccountingOp> accountingOps = AccountingOp.findAllFromUserId(theUser.userId);
-        for (AccountingOp op : accountingOps) {
+        List<AccountingTran> accountingTrans = AccountingTran.findAllFromUserId(theUser.userId);
+        for (AccountingTran op : accountingTrans) {
             Map<String, String> accountInfo = op.getAccountInfo(theUser.userId);
             if (!accountInfo.isEmpty()) {
                 transactions.add(accountInfo);

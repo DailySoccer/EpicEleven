@@ -2,7 +2,7 @@ package model;
 
 import com.google.common.collect.ImmutableList;
 import model.accounting.AccountOp;
-import model.accounting.AccountingOpOrder;
+import model.accounting.AccountingTranOrder;
 import org.jongo.marshall.jackson.oid.Id;
 import org.bson.types.ObjectId;
 
@@ -61,7 +61,7 @@ public class Order {
     }
 
     public void setCompleted() {
-        AccountingOpOrder.create(orderId, paymentId, ImmutableList.of(
+        AccountingTranOrder.create(orderId, paymentId, ImmutableList.of(
                 new AccountOp(userId, new BigDecimal(product.price), User.getSeqId(userId) + 1)
         ));
 

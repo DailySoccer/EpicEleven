@@ -5,28 +5,28 @@ import org.bson.types.ObjectId;
 
 import java.util.List;
 
-public class AccountingOpOrder extends AccountingOp {
+public class AccountingTranOrder extends AccountingTran {
     public ObjectId orderId;
     public String paymentId;
 
-    public AccountingOpOrder() {}
+    public AccountingTranOrder() {}
 
-    public AccountingOpOrder(ObjectId orderId, String paymentId) {
+    public AccountingTranOrder(ObjectId orderId, String paymentId) {
         super(TransactionType.ORDER);
         this.orderId = orderId;
         this.paymentId = paymentId;
     }
 
-    static public AccountingOpOrder findOne (ObjectId orderId, String paymentId) {
+    static public AccountingTranOrder findOne (ObjectId orderId, String paymentId) {
         return Model.accountingTransactions()
                 .findOne("{type: #, orderId: #, paymentId: #}", TransactionType.ORDER, orderId, paymentId)
-                .as(AccountingOpOrder.class);
+                .as(AccountingTranOrder.class);
     }
 
-    static public AccountingOp create(ObjectId orderId, String paymentId, List<AccountOp> accounts) {
-        AccountingOpOrder accountingOp = findOne(orderId, paymentId);
+    static public AccountingTran create(ObjectId orderId, String paymentId, List<AccountOp> accounts) {
+        AccountingTranOrder accountingOp = findOne(orderId, paymentId);
         if (accountingOp == null) {
-            accountingOp = new AccountingOpOrder(orderId, paymentId);
+            accountingOp = new AccountingTranOrder(orderId, paymentId);
             accountingOp.accountOps = accounts;
             accountingOp.insert();
         }

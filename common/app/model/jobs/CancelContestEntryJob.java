@@ -6,9 +6,7 @@ import model.Contest;
 import model.ContestEntry;
 import model.Model;
 import model.User;
-import model.accounting.AccountOp;
-import model.accounting.AccountingOp;
-import model.accounting.AccountingOpCancelContestEntry;
+import model.accounting.*;
 import org.bson.types.ObjectId;
 import play.Logger;
 
@@ -103,10 +101,10 @@ public class CancelContestEntryJob extends Job {
 
     private boolean transactionReturnPayment(int entryFee) {
         // Crear la transacción de Abandonar un Contest
-        AccountingOp accountingOp = AccountingOpCancelContestEntry.create(contestId, contestEntryId, ImmutableList.of(
+        AccountingTran accountingTran = AccountingTranCancelContestEntry.create(contestId, contestEntryId, ImmutableList.of(
                 new AccountOp(userId, new BigDecimal(entryFee), User.getSeqId(userId) + 1)
         ));
-        return accountingOp != null;
+        return accountingTran != null;
     }
 
     public static CancelContestEntryJob create(ObjectId userId, ObjectId contestId, ObjectId contestEntryId) {

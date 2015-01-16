@@ -2,7 +2,7 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import model.accounting.AccountOp;
-import model.accounting.AccountingOpPrize;
+import model.accounting.AccountingTranPrize;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import java.math.BigDecimal;
@@ -245,7 +245,7 @@ public class Contest implements JongoId {
                     accounts.add(new AccountOp(contestEntry.userId, new BigDecimal(prizes.get(contestEntry.position)), user.getSeqId() + 1));
                 }
             }
-            AccountingOpPrize.create(contestId, accounts);
+            AccountingTranPrize.create(contestId, accounts);
         }
 
         // Actualizamos las estadísticas de torneos ganados

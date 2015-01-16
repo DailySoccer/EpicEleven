@@ -3,7 +3,7 @@ package actors;
 import akka.actor.UntypedActor;
 import model.GlobalDate;
 import model.Model;
-import model.accounting.AccountingOp;
+import model.accounting.AccountingTran;
 import model.jobs.Job;
 import org.joda.time.DateTime;
 import play.Logger;
@@ -44,10 +44,10 @@ public class TransactionsActor extends UntypedActor {
         *   de sus "accountOps" han sido realizadas (anteriores AccountOp.seqId en estado Committed)
         *   Toda "account" en estado Committed tendrá el AccountOp.cachedBalance correctamente actualizado
          */
-        List<AccountingOp> accountingOps = ListUtils.asList(Model.accountingTransactions().find("{proc: #, state: #}",
-                AccountingOp.TransactionProc.UNCOMMITTED, AccountingOp.TransactionState.VALID).as(AccountingOp.class));
-        for (AccountingOp accountingOp : accountingOps) {
-            accountingOp.commit();
+        List<AccountingTran> accountingTrans = ListUtils.asList(Model.accountingTransactions().find("{proc: #, state: #}",
+                AccountingTran.TransactionProc.UNCOMMITTED, AccountingTran.TransactionState.VALID).as(AccountingTran.class));
+        for (AccountingTran accountingTran : accountingTrans) {
+            accountingTran.commit();
         }
 
         final int MINUTES_THRESHOLD = 1;

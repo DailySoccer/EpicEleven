@@ -5,26 +5,26 @@ import org.bson.types.ObjectId;
 
 import java.util.List;
 
-public class AccountingOpPrize extends AccountingOp {
+public class AccountingTranPrize extends AccountingTran {
     public ObjectId contestId;
 
-    public AccountingOpPrize() {}
+    public AccountingTranPrize() {}
 
-    public AccountingOpPrize(ObjectId contestId) {
+    public AccountingTranPrize(ObjectId contestId) {
         super(TransactionType.PRIZE);
         this.contestId = contestId;
     }
 
-    static public AccountingOpPrize findOne (ObjectId contestId) {
+    static public AccountingTranPrize findOne (ObjectId contestId) {
         return Model.accountingTransactions()
                 .findOne("{type: #, contestId: #}", TransactionType.PRIZE, contestId)
-                .as(AccountingOpPrize.class);
+                .as(AccountingTranPrize.class);
     }
 
-    static public AccountingOp create(ObjectId contestId, List<AccountOp> accounts) {
-        AccountingOpPrize accountingOp = findOne(contestId);
+    static public AccountingTran create(ObjectId contestId, List<AccountOp> accounts) {
+        AccountingTranPrize accountingOp = findOne(contestId);
         if (accountingOp == null) {
-            accountingOp = new AccountingOpPrize(contestId);
+            accountingOp = new AccountingTranPrize(contestId);
             accountingOp.accountOps = accounts;
             accountingOp.insert();
         }

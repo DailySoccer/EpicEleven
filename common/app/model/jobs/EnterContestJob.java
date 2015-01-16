@@ -4,10 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.WriteResult;
 import model.*;
-import model.accounting.AccountOp;
-import model.accounting.AccountingOp;
-import model.accounting.AccountingOpCancelContestEntry;
-import model.accounting.AccountingOpEnterContest;
+import model.accounting.*;
 import org.bson.types.ObjectId;
 
 import java.math.BigDecimal;
@@ -109,11 +106,11 @@ public class EnterContestJob extends Job {
         if (userBalance.compareTo(new BigDecimal(entryFee)) >= 0) {
             try {
                 // Registrar el pago
-                AccountingOp accountingOp = AccountingOpEnterContest.create(contestId, contestEntryId, ImmutableList.of(
+                AccountingTran accountingTran = AccountingTranEnterContest.create(contestId, contestEntryId, ImmutableList.of(
                         new AccountOp(userId, new BigDecimal(-entryFee), seqId)
                 ));
 
-                transactionValid = (accountingOp != null);
+                transactionValid = (accountingTran != null);
             }
             catch(DuplicateKeyException duplicateKeyException) {
                 play.Logger.info("DuplicateKeyException");
@@ -142,12 +139,12 @@ public class EnterContestJob extends Job {
             Integer seqId = User.getSeqId(userId) + 1;
 
             // Hemos quitado dinero al usuario...?
-            AccountingOp accountingOp = AccountingOpEnterContest.findOne(contestId, contestEntryId);
-            if (accountingOp != null) {
+            AccountingTran accountingTran = AccountingTranEnterContest.findOne(contestId, contestEntryId);
+            if (accountingTran != null) {
                 Contest contest = Contest.findOne(contestId);
 
                 // Generamos la operación de cancelación (ingresarle dinero)
-                AccountingOpCancelContestEntry.create(contestId, contestEntryId, ImmutableList.of(
+                AccountingTranCancelContestEntry.create(contestId, contestEntryId, ImmutableList.of(
                         new AccountOp(userId, new BigDecimal(contest.entryFee), seqId)
                 ));
             }

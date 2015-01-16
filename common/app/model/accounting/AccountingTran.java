@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS,property="_class")
-public class AccountingOp {
+public class AccountingTran {
     public enum TransactionType {
         PRIZE,
         ORDER,
@@ -42,9 +42,9 @@ public class AccountingOp {
     public TransactionType type;
     public List<AccountOp> accountOps = new ArrayList<>();
 
-    public AccountingOp() {}
+    public AccountingTran() {}
 
-    public AccountingOp(TransactionType type) {
+    public AccountingTran(TransactionType type) {
         this.proc = TransactionProc.UNCOMMITTED;
         this.state = TransactionState.VALID;
         this.type = type;
@@ -78,8 +78,8 @@ public class AccountingOp {
         return accountOp;
     }
 
-    public static List<AccountingOp> findAllFromUserId(ObjectId userId) {
-        return ListUtils.asList(Model.accountingTransactions().find("{state: \"VALID\", \"accountOps.accountId\": #}", userId).as(AccountingOp.class));
+    public static List<AccountingTran> findAllFromUserId(ObjectId userId) {
+        return ListUtils.asList(Model.accountingTransactions().find("{state: \"VALID\", \"accountOps.accountId\": #}", userId).as(AccountingTran.class));
     }
 
     public void insert() {

@@ -24,7 +24,7 @@ public class AccountOp {
         // Comprobamos que NO exista ninguna transacción "anterior" ("seqId" menor) de la misma "account" sin "commit"
         return Model.accountingTransactions()
                 .count("{ accountOps: {$elemMatch: { accountId: #, seqId: { $lt: # } }}, proc: #}",
-                        accountId, seqId, AccountingOp.TransactionProc.UNCOMMITTED) == 0;
+                        accountId, seqId, AccountingTran.TransactionProc.UNCOMMITTED) == 0;
     }
 
     public void updateBalance() {
@@ -44,7 +44,7 @@ public class AccountOp {
 
         // TODO: ¿necesitamos comprobar que el commit es del "seqId" inmediatamente anterior?
         List<AccountOp> accountOp = Model.accountingTransactions()
-                .aggregate("{$match: { \"accountOps.accountId\": #, proc: #, state: \"VALID\"}}", accountId, AccountingOp.TransactionProc.COMMITTED)
+                .aggregate("{$match: { \"accountOps.accountId\": #, proc: #, state: \"VALID\"}}", accountId, AccountingTran.TransactionProc.COMMITTED)
                 .and("{$unwind: \"$accountOps\"}")
                 .and("{$match: {\"accountOps.accountId\": #}}", accountId)
                 .and("{$project: { \"accountOps.seqId\": 1, \"accountOps.cachedBalance\": 1 }}")
