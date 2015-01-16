@@ -41,7 +41,7 @@ public class TransactionsActor extends UntypedActor {
 
         /*
         *   Una transacción pasará de Uncommitted a Committed cuando verifique que todas las anteriores transacciones
-        *   de sus "accounts" han sido realizadas (anteriores AccountOp.seqId en estado Committed)
+        *   de sus "accountOps" han sido realizadas (anteriores AccountOp.seqId en estado Committed)
         *   Toda "account" en estado Committed tendrá el AccountOp.cachedBalance correctamente actualizado
          */
         List<AccountingOp> accountingOps = ListUtils.asList(Model.accountingTransactions().find("{proc: #, state: #}",

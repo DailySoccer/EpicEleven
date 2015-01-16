@@ -40,7 +40,7 @@ public class AccountingOp {
     public TransactionProc proc;
     public TransactionState state;
     public TransactionType type;
-    public List<AccountOp> accounts = new ArrayList<>();
+    public List<AccountOp> accountOps = new ArrayList<>();
 
     public AccountingOp() {}
 
@@ -69,7 +69,7 @@ public class AccountingOp {
 
     public AccountOp getAccountOp(ObjectId accountId) {
         AccountOp accountOp = null;
-        for (AccountOp op : accounts) {
+        for (AccountOp op : accountOps) {
             if (op.accountId.equals(accountId)) {
                 accountOp = op;
                 break;
@@ -79,7 +79,7 @@ public class AccountingOp {
     }
 
     public static List<AccountingOp> findAllFromUserId(ObjectId userId) {
-        return ListUtils.asList(Model.accountingTransactions().find("{state: \"VALID\", \"accounts.accountId\": #}", userId).as(AccountingOp.class));
+        return ListUtils.asList(Model.accountingTransactions().find("{state: \"VALID\", \"accountOps.accountId\": #}", userId).as(AccountingOp.class));
     }
 
     public void insert() {
@@ -89,7 +89,7 @@ public class AccountingOp {
 
     public boolean commit () {
         boolean valid = true;
-        for (AccountOp accountOp: accounts) {
+        for (AccountOp accountOp: accountOps) {
             if (!accountOp.canCommit()) {
                 valid = false;
                 break;

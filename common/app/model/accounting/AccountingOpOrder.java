@@ -1,6 +1,5 @@
 package model.accounting;
 
-import com.mongodb.WriteResult;
 import model.Model;
 import org.bson.types.ObjectId;
 
@@ -28,7 +27,7 @@ public class AccountingOpOrder extends AccountingOp {
         AccountingOpOrder accountingOp = findOne(orderId, paymentId);
         if (accountingOp == null) {
             accountingOp = new AccountingOpOrder(orderId, paymentId);
-            accountingOp.accounts = accounts;
+            accountingOp.accountOps = accounts;
             accountingOp.insert();
         }
         return accountingOp;

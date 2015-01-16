@@ -97,6 +97,9 @@ public class Job {
                 case CANCEL_CONTEST_ENTRY:
                     job = find.as(CancelContestEntryJob.class);
                     break;
+                case CANCEL_CONTEST:
+                    job = find.as(CancelContestJob.class);
+                    break;
             }
         }
         return job;
