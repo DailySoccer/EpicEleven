@@ -23,6 +23,9 @@ GET         /getmongo                                                  controlle
 GET         /users                                                     controllers.admin.UserController.index()
 GET         /user/:userId/transactions                                 controllers.admin.UserController.transactions(userId : String)
 
+GET         /refunds                                                   controllers.admin.RefundController.index()
+GET         /refund/:refundId                                          controllers.admin.RefundController.apply(refundId)
+
 GET         /soccer_player_stats/:playerId                             controllers.admin.TemplateSoccerPlayerController.showStats(playerId : String)
 
 GET         /fantasy_points/contest/:contestId/:playerId               controllers.admin.TemplateSoccerPlayerController.showFantasyPointsInContest(contestId : String, playerId : String)

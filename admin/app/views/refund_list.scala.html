@@ -1,0 +1,54 @@
+@(refunds: List[model.Refund])
+
+@import model._
+@import controllers.admin.routes.DashboardController
+
+@scripts = {
+<script type="text/javascript">
+        $(document).ready( function(){
+            $('#ajax_table_id').dataTable( {
+                "columns": [
+                    { "title": "Id" },
+                    { "title": "CreatedAt" },
+                    { "title": "UserId" },
+                    { "title": "Amount" },
+                    { "title": "State" },
+                    { "title": "" }
+                ],
+                "data": [
+                    @for((p, index) <- refunds.zipWithIndex) {
+                        [
+                            "@p.refundId",
+                            "@GlobalDate.formatDate(p.refundId.getDate())",
+                            "@p.userId",
+                            "@p.amount",
+                            "@p.state.toString()",
+                            "@p.state.toString()"
+                        ] @if(index < refunds.size-1) { , }
+                    }
+                ],
+                 "columnDefs": [ {
+                    "targets": 5,
+                    "mRender": function (data, type, full) {
+                        if (data != "COMPLETED")
+                            return '<a href="refund/' + full[0] + '"><button class="btn btn-success">Apply</button></a>';
+                        return '';
+                    }
+                } ],
+                stateSave: true,
+                iDisplayLength: 100,
+                "deferRender": true
+            } );
+        })
+    </script>
+}
+
+@main("Refunds - Admin", scripts) {
+
+<h1 class="page-header">Refunds</h1>
+
+<br/>
+<div class="table-responsive">
+    <table id="ajax_table_id" class="table table-striped"></table>
+</div>
+}
