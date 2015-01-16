@@ -36,7 +36,7 @@ public class AccountingTran {
     }
 
     @Id
-    public ObjectId transactionId;
+    public ObjectId accountingTranId;
 
     public TransactionProc proc;
     public TransactionState state;
@@ -62,7 +62,7 @@ public class AccountingTran {
         if (op != null) {
             info.put("type", type.name());
             info.put("value", op.value.toString());
-            info.put("createdAt", Long.toString(transactionId.getDate().getTime()));
+            info.put("createdAt", Long.toString(accountingTranId.getDate().getTime()));
         }
 
         return info;
@@ -98,7 +98,7 @@ public class AccountingTran {
             accountOp.updateBalance();
         }
         if (valid) {
-            Model.accountingTransactions().update(transactionId).with("{$set: {proc: #}}", TransactionProc.COMMITTED);
+            Model.accountingTransactions().update(accountingTranId).with("{$set: {proc: #}}", TransactionProc.COMMITTED);
         }
         return valid;
     }
