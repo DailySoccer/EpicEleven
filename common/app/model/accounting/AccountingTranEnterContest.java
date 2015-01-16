@@ -28,7 +28,7 @@ public class AccountingTranEnterContest extends AccountingTran {
         if (accountingOp == null) {
             accountingOp = new AccountingTranEnterContest(contestId, contestEntryId);
             accountingOp.accountOps = accounts;
-            accountingOp.insert();
+            accountingOp.insertAndCommit();
         }
         return accountingOp;
     }

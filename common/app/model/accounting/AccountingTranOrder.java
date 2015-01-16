@@ -28,7 +28,7 @@ public class AccountingTranOrder extends AccountingTran {
         if (accountingOp == null) {
             accountingOp = new AccountingTranOrder(orderId, paymentId);
             accountingOp.accountOps = accounts;
-            accountingOp.insert();
+            accountingOp.insertAndCommit();
         }
         return accountingOp;
     }

@@ -29,7 +29,7 @@ public class AccountingTranCancelContestEntry extends AccountingTran {
         if (accountingOp == null) {
             accountingOp = new AccountingTranCancelContestEntry(contestId, contestEntryId);
             accountingOp.accountOps = accounts;
-            accountingOp.insert();
+            accountingOp.insertAndCommit();
         }
         return accountingOp;
     }

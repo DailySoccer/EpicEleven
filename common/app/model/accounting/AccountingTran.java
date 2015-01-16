@@ -83,7 +83,7 @@ public class AccountingTran {
         return ListUtils.asList(Model.accountingTransactions().find("{state: \"VALID\", \"accountOps.accountId\": #}", userId).as(AccountingTran.class));
     }
 
-    public void insert() {
+    public void insertAndCommit() {
         Model.accountingTransactions().insert(this);
         commit();
     }

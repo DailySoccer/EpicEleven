@@ -27,7 +27,7 @@ public class AccountingTranRefund extends AccountingTran {
         if (accountingOp == null) {
             accountingOp = new AccountingTranRefund(refundId);
             accountingOp.accountOps = accounts;
-            accountingOp.insert();
+            accountingOp.insertAndCommit();
         }
         return accountingOp;
     }
