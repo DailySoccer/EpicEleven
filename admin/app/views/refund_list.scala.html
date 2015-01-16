@@ -28,6 +28,12 @@
                     }
                 ],
                  "columnDefs": [ {
+                    "targets": 2,
+                    "mRender": function (data, type, full) {
+                        return '<a href="user/' + data + '/transactions">' + data + '</a>';
+                    }
+                },
+                {
                     "targets": 5,
                     "mRender": function (data, type, full) {
                         if (data != "COMPLETED")
