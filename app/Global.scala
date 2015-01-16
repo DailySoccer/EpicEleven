@@ -77,19 +77,13 @@ object Global extends GlobalSettings {
     Logger.info(s"Epic Eleven $processType version $release has started")
 
     model.Model.init()
-
-    if (isWorker) {
-      actors.DailySoccerActors.init()
-    }
+    actors.DailySoccerActors.init(isWorker)
   }
 
   override def onStop(app: Application) {
     Logger.info("Epic Eleven shutdown...")
 
-    if (isWorker) {
-      actors.DailySoccerActors.shutdown()
-    }
-
+    actors.DailySoccerActors.shutdown()
     model.Model.shutdown()
   }
 }
