@@ -58,6 +58,9 @@ public class Contest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public List<Object> pendingJobs;
 
+    @JsonView(JsonViews.NotForClient.class)
+    public boolean closed = false;
+
     public Contest() {}
 
     public Contest(TemplateContest template) {
@@ -85,6 +88,12 @@ public class Contest implements JongoId {
     public boolean isCanceled() { return (state == ContestState.CANCELED); }
 
     public boolean isFull() { return getNumEntries() >= maxEntries; }
+
+    public void setClosed() {
+        Model.contests()
+                .update("{_id: #, state: \"HISTORY\"}", contestId)
+                .with("{$set: {closed: true}}");
+    }
 
     public List<TemplateMatchEvent> getTemplateMatchEvents() {
         return TemplateMatchEvent.findAll(templateMatchEventIds);
@@ -158,6 +167,10 @@ public class Contest implements JongoId {
                 .as(Contest.class));
     }
 
+    static public List<Contest> findAllHistoryNotClosed() {
+        return ListUtils.asList(Model.contests().find("{state: \"HISTORY\", closed: false}").as(Contest.class));
+    }
+
     static public List<Contest> findAllMyActive(ObjectId userId, Class<?> projectionClass) {
         return findAllMyContests(userId, "{state: \"ACTIVE\", \"contestEntries.userId\": #}", projectionClass);
     }
@@ -199,10 +212,12 @@ public class Contest implements JongoId {
         return contains;
     }
 
-    public void updateRanking(TemplateContest templateContest, List<TemplateMatchEvent> templateMatchEvents) {
+    private void updateRanking() {
         if (contestEntries.isEmpty()) {
             return;
         }
+
+        List<TemplateMatchEvent> templateMatchEvents = getTemplateMatchEvents();
 
         // Actualizamos los fantasy points
         for (ContestEntry contestEntry : contestEntries) {
@@ -214,14 +229,32 @@ public class Contest implements JongoId {
         int index = 0;
         for (ContestEntry contestEntry : contestEntries) {
             contestEntry.position = index++;
-            contestEntry.prize = templateContest.getPositionPrize(contestEntry.position);
+            contestEntry.prize = getPositionPrize(contestEntry.position);
             contestEntry.updateRanking();
         }
+    }
+
+    public int getPositionPrize(int position) {
+        return (position < prizes.size()) ? prizes.get(position) : 0;
     }
 
     public void givePrizes() {
         if (contestEntries.isEmpty()) {
             return;
+        }
+
+        updateRanking();
+
+        // Si el contest tiene premios para repartir...
+        if (!prizes.isEmpty()) {
+            List<AccountOp> accounts = new ArrayList<>();
+            for (ContestEntry contestEntry : contestEntries) {
+                if (contestEntry.position < prizes.size()) {
+                    User user = User.findOne(contestEntry.userId);
+                    accounts.add(new AccountOp(contestEntry.userId, new BigDecimal(prizes.get(contestEntry.position)), user.getSeqId() + 1));
+                }
+            }
+            AccountingTranPrize.create(contestId, accounts);
         }
 
         ContestEntry winner = null;
@@ -235,18 +268,6 @@ public class Contest implements JongoId {
 
         if (winner == null)
             throw new RuntimeException("WTF 7221: givePrizes, winner == null");
-
-        // Si el contest tiene premios para repartir...
-        if (!prizes.isEmpty()) {
-            List<AccountOp> accounts = new ArrayList<>();
-            for (ContestEntry contestEntry : contestEntries) {
-                if (contestEntry.position < prizes.size()) {
-                    User user = User.findOne(contestEntry.userId);
-                    accounts.add(new AccountOp(contestEntry.userId, new BigDecimal(prizes.get(contestEntry.position)), user.getSeqId() + 1));
-                }
-            }
-            AccountingTranPrize.create(contestId, accounts);
-        }
 
         // Actualizamos las estadísticas de torneos ganados
         User userWinner = User.findOne(winner.userId);

@@ -1,6 +1,7 @@
 package actors;
 
 import akka.actor.UntypedActor;
+import model.Contest;
 import model.GlobalDate;
 import model.TemplateContest;
 import play.Logger;
@@ -33,9 +34,9 @@ public class GivePrizesActor extends UntypedActor {
     private void onTick() {
         Logger.info("Give Prizes: {}", GlobalDate.getCurrentDateString());
 
-        for (TemplateContest templateContest : TemplateContest.findHistoryNotClosed()) {
-            templateContest.givePrizes();
-            templateContest.setClosed();
+        for (Contest contest : Contest.findAllHistoryNotClosed()) {
+            contest.givePrizes();
+            contest.setClosed();
         }
     }
 }
