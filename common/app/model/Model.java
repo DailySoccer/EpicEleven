@@ -48,6 +48,7 @@ public class Model {
     static public MongoCollection accountingTransactions() { return _jongo.getCollection("accountingTransactions"); }
 
     static public MongoCollection orders() { return _jongo.getCollection("orders"); }
+    static public MongoCollection refunds() { return _jongo.getCollection("refunds"); }
     static public MongoCollection paypalResponses() { return _jongo.getCollection("paypalResponses"); }
 
     static public MongoCollection simulator() { return _jongo.getCollection("simulator"); }

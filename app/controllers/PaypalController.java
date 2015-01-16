@@ -1,11 +1,14 @@
 package controllers;
 
 import actions.AllowCors;
+import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import com.paypal.api.payments.*;
 import com.paypal.core.rest.PayPalRESTException;
 import model.*;
 import model.Order;
+import model.Refund;
 import model.paypal.PaypalIPNMessage;
 import model.paypal.PaypalPayment;
 import play.Logger;
@@ -14,6 +17,8 @@ import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
 import org.bson.types.ObjectId;
+import utils.ReturnHelper;
+
 import java.util.Map;
 
 @AllowCors.Origin
@@ -185,6 +190,18 @@ public class PaypalController extends Controller {
 
         String refererUrl = order.referer != null ? order.referer : REFERER_URL_DEFAULT;
         return redirect(refererUrl + (success ? CLIENT_SUCCESS_PATH : CLIENT_CANCEL_PATH));
+    }
+
+    @UserAuthenticated
+    public static Result withdrawFunds(int amount) {
+        User theUser = (User) ctx().args.get("User");
+
+        Refund refund = new Refund(theUser.userId, amount);
+        refund.insert();
+
+        return new ReturnHelper(ImmutableMap.of(
+                "result", "ok"
+        )).toResult();
     }
 
     public static Result verifyPayment(String paymentId) {
