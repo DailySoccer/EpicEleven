@@ -61,6 +61,7 @@ object build extends Build {
                 .settings(commonSettings:_*)
                 .settings(libraryDependencies ++= Seq(
                     javaJdbc
+                    ,javaWs
                     ,"org.mongodb" % "mongo-java-driver" % "2.12.4"
                     ,"org.jongo" % "jongo" % "1.0"
                     ,"org.jdom" % "jdom" % "2.0.2"
