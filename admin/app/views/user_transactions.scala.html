@@ -17,11 +17,11 @@
                 "data": [
                     @for((p, index) <- transactions.zipWithIndex) {
                         [
-                            "@p.transactionId",
+                            "@p.accountingTranId",
                             "@p.getTransactionType()",
                             "@p.getAccountOp(user.userId).value",
                             "@p.getAccountOp(user.userId).cachedBalance",
-                            "@GlobalDate.formatDate(p.transactionId.getDate())"
+                            "@GlobalDate.formatDate(p.accountingTranId.getDate())"
                         ] @if(index < transactions.size-1) { , }
                     }
                 ],
