@@ -312,8 +312,6 @@ public class LoginController extends Controller {
 
             // Si no es Test, entramos a través de Stormpath
             Account account = isTest? null : StormPathClient.instance().login(loginParams.email, loginParams.password);
-
-            // Si entramos con Test, debemos entrar con correo, no con username
             String email = isTest? loginParams.email.toLowerCase(): account!=null? account.getEmail().toLowerCase(): null;
 
             if (email != null) {
