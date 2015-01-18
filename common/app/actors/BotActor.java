@@ -23,11 +23,36 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+
+// TODO: Restarts, incluidos los timeouts
+//       Identificacion universal univoca
+//       Multiples bots
+//       URL de llamada al server
+//       Nums aleatorios
+//       http://en.wikipedia.org/wiki/Knapsack_problem
+//
 public class BotActor extends UntypedActor {
 
     public BotActor(int botActorId) {
         _botActorId = botActorId;
     }
+
+    private String getUrl(String suffix) {
+        return String.format("http://localhost:9000/%s", suffix);
+    }
+
+    private String getLastName() {
+        return "v1";
+    }
+
+    private String getNickName() {
+        return String.format("Bototron%04d", _botActorId);
+    }
+
+    private String getEmail() {
+        return String.format("bototron%04d@test.com", _botActorId);
+    }
+
 
     @Override public void preStart() throws Exception {
         super.preStart();
@@ -68,14 +93,6 @@ public class BotActor extends UntypedActor {
         }
     }
 
-
-    // TODO: Restarts, incluidos los timeouts
-    //       Identificacion universal univoca
-    //       Multiples bots
-    //       URL de llamada al server
-    //       Nums aleatorios
-    //       http://en.wikipedia.org/wiki/Knapsack_problem
-
     private void onTick() {
         Logger.info("BotActor onTick {}", GlobalDate.getCurrentDateString());
 
@@ -90,12 +107,10 @@ public class BotActor extends UntypedActor {
     private boolean login() {
         _user = null;
 
-        String url = "http://localhost:9000/login";
-        JsonNode jsonNode = post(url, String.format("email=%s&password=uoyeradiputs3991", getEmail()));
+        JsonNode jsonNode = post(getUrl("login"), String.format("email=%s&password=uoyeradiputs3991", getEmail()));
 
         if (jsonNode.findValue("sessionToken") != null) {
-            url = "http://localhost:9000/get_user_profile";
-            jsonNode = get(url);
+            jsonNode = get(getUrl("get_user_profile"));
             _user = fromJSON(jsonNode.toString(), new TypeReference<User>() {});
         }
 
@@ -103,16 +118,14 @@ public class BotActor extends UntypedActor {
     }
 
     private void signup() {
-        String url = "http://localhost:9000/signup";
-        JsonNode jsonNode = post(url, String.format("firstName=Bototron&lastName=%s&nickName=%s&email=%s&password=uoyeradiputs3991",
-                                                    getLastName(), getNickName(), getEmail()));
+        JsonNode jsonNode = post(getUrl("signup"), String.format("firstName=Bototron&lastName=%s&nickName=%s&email=%s&password=uoyeradiputs3991",
+                                                                 getLastName(), getNickName(), getEmail()));
 
-        Logger.info("Bototron Signup returned: {}", jsonNode.toString());
+        Logger.debug("Bototron Signup returned: {}", jsonNode.toString());
     }
 
     private void enterContest(Contest contest) {
-        String url = String.format("http://localhost:9000/get_public_contest/%s", contest.contestId);
-        JsonNode jsonNode = get(url);
+        JsonNode jsonNode = get(getUrl(String.format("get_public_contest/%s", contest.contestId)));
 
         List<TemplateSoccerPlayer> soccerPlayers = fromJSON(jsonNode.findValue("soccer_players").toString(),
                                                             new TypeReference<List<TemplateSoccerPlayer>>() {});
@@ -122,11 +135,11 @@ public class BotActor extends UntypedActor {
     }
 
     private void addContestEntry(List<TemplateSoccerPlayer> lineup, ObjectId contestId) {
-        String url = String.format("http://localhost:9000/add_contest_entry");
-
         String idList = new ObjectMapper().valueToTree(ListUtils.stringListFromObjectIdList(ListUtils.convertToIdList(lineup))).toString();
-        JsonNode jsonNode = post(url, String.format("contestId=%s&soccerTeam=%s", contestId.toString(), idList));
-        Logger.info("Bototron AddContestEntry returned: {}", jsonNode.toString());
+        JsonNode jsonNode = post(getUrl(String.format("add_contest_entry")),
+                                 String.format("contestId=%s&soccerTeam=%s", contestId.toString(), idList));
+
+        Logger.debug("Bototron AddContestEntry returned: {}", jsonNode.toString());
     }
 
     private List<TemplateSoccerPlayer> generateLineup(List<TemplateSoccerPlayer> soccerPlayers, int salaryCap) {
@@ -197,7 +210,7 @@ public class BotActor extends UntypedActor {
         return ListUtils.asList(Collections2.filter(sps, new Predicate<TemplateSoccerPlayer>() {
             @Override
             public boolean apply(@Nullable TemplateSoccerPlayer templateSoccerPlayer) {
-                return (templateSoccerPlayer != null && templateSoccerPlayer.fieldPos == fp);
+            return (templateSoccerPlayer != null && templateSoccerPlayer.fieldPos == fp);
             }
         }));
     }
@@ -206,8 +219,7 @@ public class BotActor extends UntypedActor {
         return ListUtils.asList(Collections2.filter(sps, new Predicate<TemplateSoccerPlayer>() {
             @Override
             public boolean apply(@Nullable TemplateSoccerPlayer templateSoccerPlayer) {
-                return (templateSoccerPlayer != null &&
-                        templateSoccerPlayer.salary >= salMin && templateSoccerPlayer.salary <= salMax);
+            return (templateSoccerPlayer != null && templateSoccerPlayer.salary >= salMin && templateSoccerPlayer.salary <= salMax);
             }
         }));
     }
@@ -216,15 +228,14 @@ public class BotActor extends UntypedActor {
         Collections.sort(sps, new Comparator<TemplateSoccerPlayer>() {
             @Override
             public int compare(TemplateSoccerPlayer o1, TemplateSoccerPlayer o2) {
-                return o1.fantasyPoints - o2.fantasyPoints;
+            return o1.fantasyPoints - o2.fantasyPoints;
             }
         });
     }
 
     private List<Contest> getActiveContests() {
         String url = "http://localhost:9000/get_active_contests";
-        JsonNode jsonNode = get(url);
-        return fromJSON(jsonNode.findValue("contests").toString(), new TypeReference<List<Contest>>() {});
+        return fromJSON(get(url).findValue("contests").toString(), new TypeReference<List<Contest>>() {});
     }
 
     private List<Contest> filterContestByNotEntered(List<Contest> contests) {
@@ -291,18 +302,6 @@ public class BotActor extends UntypedActor {
             Logger.debug("WTF 2229", exc);
         }
         return ret;
-    }
-
-    private String getLastName() {
-        return "v1";
-    }
-
-    private String getNickName() {
-        return String.format("Bototron%04d", _botActorId);
-    }
-
-    private String getEmail() {
-        return String.format("bototron%04d@test.com", _botActorId);
     }
 
     int _botActorId;
