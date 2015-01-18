@@ -20,7 +20,7 @@ public class TransactionsActor extends UntypedActor {
 
             case "Tick":
                 onTick();
-                getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.MINUTES), getSelf(),
+                getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
                         "Tick", getContext().dispatcher(), null);
                 break;
 

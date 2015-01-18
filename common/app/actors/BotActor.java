@@ -1,14 +1,13 @@
 package actors;
 
 import akka.actor.UntypedActor;
+import akka.japi.Procedure;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.Collections2;
 import model.*;
 import org.bson.types.ObjectId;
@@ -17,24 +16,24 @@ import play.libs.F;
 import play.libs.ws.WS;
 import play.libs.ws.WSRequestHolder;
 import play.libs.ws.WSResponse;
-import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
 import utils.ListUtils;
-import utils.ObjectIdMapper;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class BotActor extends UntypedActor {
 
-    @Override public void postRestart(Throwable reason) throws Exception {
-        Logger.debug("BotActor postRestart, reason:", reason);
-        super.postRestart(reason);
+    public BotActor(int botActorId) {
+        _botActorId = botActorId;
+    }
 
-        // Hemos muerto por algun motivo, retickeamos
-        getSelf().tell("OnTick", getSelf());
+    @Override public void preStart() throws Exception {
+        super.preStart();
+
+        // Primer tick. Nuestro bot, si se crea, se automantiene vivo
+        getSelf().tell("Tick", getSelf());
     }
 
     @Override
@@ -42,15 +41,14 @@ public class BotActor extends UntypedActor {
         switch ((String)msg) {
 
             case "Tick":
-                onTick();
+                if (_user == null) {
+                    tryLogin();
+                }
+                else {
+                    onTick();
+                }
                 getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
                                                                "Tick", getContext().dispatcher(), null);
-                break;
-
-            // En el caso del SimulatorTick no tenemos que reeschedulear el mensaje porque es el Simulator el que se
-            // encarga de drivearnos.
-            case "SimulatorTick":
-                onTick();
                 break;
 
             default:
@@ -58,6 +56,18 @@ public class BotActor extends UntypedActor {
                 break;
         }
     }
+
+    private void tryLogin() {
+        // Vemos si tenemos nuestro usuario _user adquirido, si no, lo preparamos
+        if (!login()) {
+            signup();
+
+            if (!login()) {
+                throw new RuntimeException("WTF 5466 Bototron login");
+            }
+        }
+    }
+
 
     // TODO: Restarts, incluidos los timeouts
     //       Identificacion universal univoca
@@ -67,16 +77,7 @@ public class BotActor extends UntypedActor {
     //       http://en.wikipedia.org/wiki/Knapsack_problem
 
     private void onTick() {
-        Logger.info("Bot Actor onTick {}", GlobalDate.getCurrentDateString());
-
-        // Vemos si tenemos nuestro usuario, si no, lo preparamos
-        if (!login()) {
-            signup();
-
-            if (!login()) {
-                throw new RuntimeException("WTF 5466");
-            }
-        }
+        Logger.info("BotActor onTick {}", GlobalDate.getCurrentDateString());
 
         // Vemos los concursos activos en los que no estamos ya metidos, escogemos el primero que este menos del X% lleno y nos metemos
         for (Contest contest : filterContestByNotEntered(getActiveContests())) {
@@ -106,7 +107,7 @@ public class BotActor extends UntypedActor {
         JsonNode jsonNode = post(url, String.format("firstName=Bototron&lastName=%s&nickName=%s&email=%s&password=uoyeradiputs3991",
                                                     getLastName(), getNickName(), getEmail()));
 
-        Logger.info("Signup returned: {}", jsonNode.toString());
+        Logger.info("Bototron Signup returned: {}", jsonNode.toString());
     }
 
     private void enterContest(Contest contest) {
@@ -125,7 +126,7 @@ public class BotActor extends UntypedActor {
 
         String idList = new ObjectMapper().valueToTree(ListUtils.stringListFromObjectIdList(ListUtils.convertToIdList(lineup))).toString();
         JsonNode jsonNode = post(url, String.format("contestId=%s&soccerTeam=%s", contestId.toString(), idList));
-        Logger.info("AddContestEntry returned: {}", jsonNode.toString());
+        Logger.info("Bototron AddContestEntry returned: {}", jsonNode.toString());
     }
 
     private List<TemplateSoccerPlayer> generateLineup(List<TemplateSoccerPlayer> soccerPlayers, int salaryCap) {
@@ -148,7 +149,7 @@ public class BotActor extends UntypedActor {
         lineup.add(goalkeepers.get(_rand.nextInt(goalkeepers.size() / 2) + (goalkeepers.size() / 2)));
 
         // Medios y defensas repartidos por igual, buscamos varias veces partiendo desde la media y aumentado de 100 en
-        // 100 cuanto por debajo admitimos su salario
+        // 100 por debajo
         int averageRemainingSalary = (salaryCap - calcSalaryForLineup(lineup)) / 8;
         int diff = -1;
 
@@ -156,7 +157,7 @@ public class BotActor extends UntypedActor {
             List<TemplateSoccerPlayer> tempLineup = new ArrayList<>(lineup);
 
             int maxSal = averageRemainingSalary + 1000;
-            int minSal = averageRemainingSalary - (tryCounter*100);
+            int minSal = averageRemainingSalary - ((tryCounter+1)*100);
             List<TemplateSoccerPlayer> middlesBySalary = filterBySalary(middles, minSal, maxSal);
             List<TemplateSoccerPlayer> defensesBySalary = filterBySalary(defenses, minSal, maxSal);
 
@@ -173,7 +174,7 @@ public class BotActor extends UntypedActor {
             }
 
             diff = salaryCap - calcSalaryForLineup(tempLineup);
-            Logger.debug("Count {} diff {}", tempLineup.size(), diff);
+            Logger.debug("Bototron Count {} diff {}", tempLineup.size(), diff);
 
             if (tempLineup.size() == 11 && diff >= 0) {
                 lineup = tempLineup;
@@ -297,13 +298,14 @@ public class BotActor extends UntypedActor {
     }
 
     private String getNickName() {
-        return "TODO";
+        return String.format("Bototron%04d", _botActorId);
     }
 
     private String getEmail() {
-        return "bototron0001@test.com";
+        return String.format("bototron%04d@test.com", _botActorId);
     }
 
+    int _botActorId;
     User _user;
 
     static Random _rand = new Random(System.currentTimeMillis());
