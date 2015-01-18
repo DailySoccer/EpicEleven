@@ -17,6 +17,7 @@ import play.libs.ws.WSRequestHolder;
 import play.libs.ws.WSResponse;
 import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
+import utils.ListUtils;
 import utils.ObjectIdMapper;
 
 import javax.annotation.Nullable;
@@ -56,6 +57,13 @@ public class BotActor extends UntypedActor {
         }
     }
 
+    // TODO: Restarts, incluidos los timeouts
+    //       Identificacion universal univoca
+    //       Multples bots
+    //       URL de llamada al server
+    //       Nums aleatorios
+    //       http://en.wikipedia.org/wiki/Knapsack_problem
+
     private void onTick() {
         Logger.info("Bot Actor onTick {}", GlobalDate.getCurrentDateString());
 
@@ -93,32 +101,107 @@ public class BotActor extends UntypedActor {
     private void enterContest(Contest contest) {
         String url = String.format("http://localhost:9000/get_public_contest/%s", contest.contestId);
         JsonNode jsonNode = get(url);
+
         List<TemplateSoccerPlayer> soccerPlayers = fromJSON(jsonNode.findValue("soccer_players").toString(),
                                                             new TypeReference<List<TemplateSoccerPlayer>>() {});
 
-        List<TemplateMatchEvent> matchEvents = fromJSON(jsonNode.findValue("match_events").toString(),
-                                                        new TypeReference<List<TemplateMatchEvent>>() {});
+        List<TemplateSoccerPlayer> lineup = generateLineup(soccerPlayers, contest.salaryCap);
+        /*
+        for (TemplateSoccerPlayer sp : goalkeepers) {
+            Logger.info("{} {} {}", sp.name, sp.salary, sp.fantasyPoints);
+        }
+        */
+    }
 
-        List<TemplateSoccerTeam> soccerTeams = fromJSON(jsonNode.findValue("soccer_teams").toString(),
-                                                        new TypeReference<List<TemplateSoccerTeam>>() {});
+    private List<TemplateSoccerPlayer> generateLineup(List<TemplateSoccerPlayer> soccerPlayers, int salaryCap) {
+        List<TemplateSoccerPlayer> lineup = new ArrayList<>();
 
-        Collections.sort(soccerPlayers, new Comparator<TemplateSoccerPlayer>() {
+        sortByFantasyPoints(soccerPlayers);
+
+        List<TemplateSoccerPlayer> forwards = filterByPosition(soccerPlayers, FieldPos.FORWARD);
+        List<TemplateSoccerPlayer> goalkeepers = filterByPosition(soccerPlayers, FieldPos.GOALKEEPER);
+        List<TemplateSoccerPlayer> middles = filterByPosition(soccerPlayers, FieldPos.MIDDLE);
+        List<TemplateSoccerPlayer> defenses = filterByPosition(soccerPlayers, FieldPos.DEFENSE);
+
+        // Dos delanteros entre los 8 mejores
+        for (int c = 0; c < 2; ++c) {
+            int next = _rand.nextInt(8);
+            lineup.add(forwards.get(next));
+        }
+
+        // Un portero de la mitad para abajo
+        lineup.add(goalkeepers.get(_rand.nextInt(goalkeepers.size() / 2) + (goalkeepers.size() / 2)));
+
+        // Medios y defensas repartidos por igual, buscamos varias veces partiendo desde la media y aumentado de 100 en
+        // 100 cuanto por debajo admitimos su salario
+        int averageRemainingSalary = (salaryCap - calcSalaryForLineup(lineup)) / 8;
+        int diff = -1;
+
+        for (int tryCounter = 0; tryCounter < 10; ++tryCounter) {
+            List<TemplateSoccerPlayer> tempLineup = new ArrayList<>(lineup);
+
+            int maxSal = averageRemainingSalary + 1000;
+            int minSal = averageRemainingSalary - (tryCounter*100);
+            List<TemplateSoccerPlayer> middlesBySalary = filterBySalary(middles, minSal, maxSal);
+            List<TemplateSoccerPlayer> defensesBySalary = filterBySalary(defenses, minSal, maxSal);
+
+            if (middlesBySalary.size() < 4 || defensesBySalary.size() < 4) {
+                continue;
+            }
+
+            for (int c = 0; c < 4; ++c) {
+                int next = _rand.nextInt(Math.min(8, middlesBySalary.size()));
+                tempLineup.add(middlesBySalary.get(next));
+                next = _rand.nextInt(Math.min(8, defensesBySalary.size()));
+                tempLineup.add(defensesBySalary.get(next));
+            }
+
+            diff = salaryCap - calcSalaryForLineup(tempLineup);
+            Logger.info("Count {} diff {}", tempLineup.size(), diff);
+
+            if (tempLineup.size() == 11 && diff >= 0) {
+                lineup = tempLineup;
+                break;
+            }
+        }
+
+        return lineup;
+    }
+
+    private int calcSalaryForLineup(List<TemplateSoccerPlayer> sps) {
+        int ret = 0;
+        for (TemplateSoccerPlayer sp : sps) {
+         ret += sp.salary;
+        }
+        return ret;
+    }
+
+    private List<TemplateSoccerPlayer> filterByPosition(List<TemplateSoccerPlayer> sps, final FieldPos fp) {
+        return ListUtils.asList(Collections2.filter(sps, new Predicate<TemplateSoccerPlayer>() {
+            @Override
+            public boolean apply(@Nullable TemplateSoccerPlayer templateSoccerPlayer) {
+                return (templateSoccerPlayer != null && templateSoccerPlayer.fieldPos == fp);
+            }
+        }));
+    }
+
+    private List<TemplateSoccerPlayer> filterBySalary(List<TemplateSoccerPlayer> sps, final int salMin, final int salMax) {
+        return ListUtils.asList(Collections2.filter(sps, new Predicate<TemplateSoccerPlayer>() {
+            @Override
+            public boolean apply(@Nullable TemplateSoccerPlayer templateSoccerPlayer) {
+                return (templateSoccerPlayer != null &&
+                        templateSoccerPlayer.salary >= salMin && templateSoccerPlayer.salary <= salMax);
+            }
+        }));
+    }
+
+    private void sortByFantasyPoints(List<TemplateSoccerPlayer> sps) {
+        Collections.sort(sps, new Comparator<TemplateSoccerPlayer>() {
             @Override
             public int compare(TemplateSoccerPlayer o1, TemplateSoccerPlayer o2) {
                 return o1.fantasyPoints - o2.fantasyPoints;
             }
         });
-
-        Collection<TemplateSoccerPlayer> goalkeepers = Collections2.filter(soccerPlayers, new Predicate<TemplateSoccerPlayer>() {
-            @Override
-            public boolean apply(@Nullable TemplateSoccerPlayer templateSoccerPlayer) {
-                return (templateSoccerPlayer != null && templateSoccerPlayer.fieldPos == FieldPos.GOALKEEPER);
-            }
-        });
-
-        for (TemplateSoccerPlayer sp : goalkeepers) {
-            Logger.info("{} {} {}", sp.name, sp.salary, sp.fantasyPoints);
-        }
     }
 
     private List<Contest> getActiveContests() {
@@ -181,4 +264,6 @@ public class BotActor extends UntypedActor {
     private String getEmail() {
         return "bototron0001@test.com";
     }
+
+    static Random _rand = new Random(91234);
 }
