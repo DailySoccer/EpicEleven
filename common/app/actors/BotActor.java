@@ -23,13 +23,11 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-
-// TODO: Restarts, incluidos los timeouts
 //       Identificacion universal univoca
-//       Multiples bots
 //       URL de llamada al server
 //       Nums aleatorios
 //       http://en.wikipedia.org/wiki/Knapsack_problem
+//       Solucionar el arranque/stop bajo demanda en desarrollo y produccion
 //
 public class BotActor extends UntypedActor {
 
@@ -57,7 +55,7 @@ public class BotActor extends UntypedActor {
     @Override public void preStart() throws Exception {
         super.preStart();
 
-        // Primer tick. Nuestro bot, si se crea, se automantiene vivo
+        // Primer tick. Nuestro bot se automantiene vivo
         getSelf().tell("Tick", getSelf());
     }
 
@@ -94,7 +92,7 @@ public class BotActor extends UntypedActor {
     }
 
     private void onTick() {
-        Logger.info("BotActor onTick {}", GlobalDate.getCurrentDateString());
+        Logger.info("{} onTick {}", getEmail(), GlobalDate.getCurrentDateString());
 
         // Vemos los concursos activos en los que no estamos ya metidos, escogemos el primero que este menos del X% lleno y nos metemos
         for (Contest contest : filterContestByNotEntered(getActiveContests())) {
@@ -121,7 +119,12 @@ public class BotActor extends UntypedActor {
         JsonNode jsonNode = post(getUrl("signup"), String.format("firstName=Bototron&lastName=%s&nickName=%s&email=%s&password=uoyeradiputs3991",
                                                                  getLastName(), getNickName(), getEmail()));
 
-        Logger.debug("Bototron Signup returned: {}", jsonNode.toString());
+        if (jsonNode != null) {
+            Logger.debug("Bototron Signup returned: {}", jsonNode.toString());
+        }
+        else {
+            Logger.debug("Bototron Signup error");
+        }
     }
 
     private void enterContest(Contest contest) {
@@ -139,7 +142,12 @@ public class BotActor extends UntypedActor {
         JsonNode jsonNode = post(getUrl(String.format("add_contest_entry")),
                                  String.format("contestId=%s&soccerTeam=%s", contestId.toString(), idList));
 
-        Logger.debug("Bototron AddContestEntry returned: {}", jsonNode.toString());
+        if (jsonNode != null) {
+            Logger.debug("Bototron AddContestEntry returned: {}", jsonNode.toString());
+        }
+        else {
+            Logger.debug("Bototron AddContestEntry error");
+        }
     }
 
     private List<TemplateSoccerPlayer> generateLineup(List<TemplateSoccerPlayer> soccerPlayers, int salaryCap) {
@@ -235,7 +243,16 @@ public class BotActor extends UntypedActor {
 
     private List<Contest> getActiveContests() {
         String url = "http://localhost:9000/get_active_contests";
-        return fromJSON(get(url).findValue("contests").toString(), new TypeReference<List<Contest>>() {});
+
+        JsonNode jsonNode = get(url).findValue("contests");
+
+        if (jsonNode != null) {
+            return fromJSON(jsonNode.toString(), new TypeReference<List<Contest>>() {
+            });
+        }
+        else {
+            return new ArrayList<Contest>();
+        }
     }
 
     private List<Contest> filterContestByNotEntered(List<Contest> contests) {
@@ -267,7 +284,13 @@ public class BotActor extends UntypedActor {
                     }
                 }
         );
-        return jsonPromise.get(1000, TimeUnit.MILLISECONDS);
+
+        try {
+            return jsonPromise.get(1000, TimeUnit.MILLISECONDS);
+        }
+        catch (Exception exc) {
+            return JsonNodeFactory.instance.objectNode();
+        }
     }
 
     private JsonNode get(String url) {
@@ -288,7 +311,13 @@ public class BotActor extends UntypedActor {
                     }
                 }
         );
-        return jsonPromise.get(1000, TimeUnit.MILLISECONDS);
+
+        try {
+            return jsonPromise.get(1000, TimeUnit.MILLISECONDS);
+        }
+        catch (Exception exc) {
+            return JsonNodeFactory.instance.objectNode();
+        }
     }
 
     private static <T> T fromJSON(final String json, final TypeReference<T> type) {
