@@ -6,10 +6,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Collections2;
 import model.*;
+import org.bson.types.ObjectId;
 import play.Logger;
 import play.libs.F;
 import play.libs.ws.WS;
@@ -59,7 +61,7 @@ public class BotActor extends UntypedActor {
 
     // TODO: Restarts, incluidos los timeouts
     //       Identificacion universal univoca
-    //       Multples bots
+    //       Multiples bots
     //       URL de llamada al server
     //       Nums aleatorios
     //       http://en.wikipedia.org/wiki/Knapsack_problem
@@ -76,8 +78,8 @@ public class BotActor extends UntypedActor {
             }
         }
 
-        // Vemos los concursos activos que tenemos, escogemos el primero que este menos del X% lleno y nos metemos
-        for (Contest contest : getActiveContests()) {
+        // Vemos los concursos activos en los que no estamos ya metidos, escogemos el primero que este menos del X% lleno y nos metemos
+        for (Contest contest : filterContestByNotEntered(getActiveContests())) {
             if (!contest.isFull()) {
                 enterContest(contest);
             }
@@ -85,9 +87,18 @@ public class BotActor extends UntypedActor {
     }
 
     private boolean login() {
+        _user = null;
+
         String url = "http://localhost:9000/login";
         JsonNode jsonNode = post(url, String.format("email=%s&password=uoyeradiputs3991", getEmail()));
-        return jsonNode.findPath("sessionToken") != null;
+
+        if (jsonNode.findValue("sessionToken") != null) {
+            url = "http://localhost:9000/get_user_profile";
+            jsonNode = get(url);
+            _user = fromJSON(jsonNode.toString(), new TypeReference<User>() {});
+        }
+
+        return _user != null;
     }
 
     private void signup() {
@@ -106,11 +117,15 @@ public class BotActor extends UntypedActor {
                                                             new TypeReference<List<TemplateSoccerPlayer>>() {});
 
         List<TemplateSoccerPlayer> lineup = generateLineup(soccerPlayers, contest.salaryCap);
-        /*
-        for (TemplateSoccerPlayer sp : goalkeepers) {
-            Logger.info("{} {} {}", sp.name, sp.salary, sp.fantasyPoints);
-        }
-        */
+        addContestEntry(lineup, contest.contestId);
+    }
+
+    private void addContestEntry(List<TemplateSoccerPlayer> lineup, ObjectId contestId) {
+        String url = String.format("http://localhost:9000/add_contest_entry");
+
+        String idList = new ObjectMapper().valueToTree(ListUtils.stringListFromObjectIdList(ListUtils.convertToIdList(lineup))).toString();
+        JsonNode jsonNode = post(url, String.format("contestId=%s&soccerTeam=%s", contestId.toString(), idList));
+        Logger.info("AddContestEntry returned: {}", jsonNode.toString());
     }
 
     private List<TemplateSoccerPlayer> generateLineup(List<TemplateSoccerPlayer> soccerPlayers, int salaryCap) {
@@ -125,7 +140,7 @@ public class BotActor extends UntypedActor {
 
         // Dos delanteros entre los 8 mejores
         for (int c = 0; c < 2; ++c) {
-            int next = _rand.nextInt(8);
+            int next = _rand.nextInt(Math.min(8, forwards.size()));
             lineup.add(forwards.get(next));
         }
 
@@ -146,18 +161,19 @@ public class BotActor extends UntypedActor {
             List<TemplateSoccerPlayer> defensesBySalary = filterBySalary(defenses, minSal, maxSal);
 
             if (middlesBySalary.size() < 4 || defensesBySalary.size() < 4) {
+                Logger.error("WTF 7648 Bototron: Menos de 4");
                 continue;
             }
 
             for (int c = 0; c < 4; ++c) {
                 int next = _rand.nextInt(Math.min(8, middlesBySalary.size()));
-                tempLineup.add(middlesBySalary.get(next));
+                tempLineup.add(middlesBySalary.remove(next));
                 next = _rand.nextInt(Math.min(8, defensesBySalary.size()));
-                tempLineup.add(defensesBySalary.get(next));
+                tempLineup.add(defensesBySalary.remove(next));
             }
 
             diff = salaryCap - calcSalaryForLineup(tempLineup);
-            Logger.info("Count {} diff {}", tempLineup.size(), diff);
+            Logger.debug("Count {} diff {}", tempLineup.size(), diff);
 
             if (tempLineup.size() == 11 && diff >= 0) {
                 lineup = tempLineup;
@@ -210,34 +226,57 @@ public class BotActor extends UntypedActor {
         return fromJSON(jsonNode.findValue("contests").toString(), new TypeReference<List<Contest>>() {});
     }
 
+    private List<Contest> filterContestByNotEntered(List<Contest> contests) {
+        List<Contest> ret = new ArrayList<>();
+        for (Contest contest : contests) {
+            if (!contest.containsContestEntryWithUser(_user.userId)) {
+                ret.add(contest);
+            }
+        }
+        return ret;
+    }
+
     private JsonNode post(String url, String params) {
         WSRequestHolder requestHolder = WS.url(url);
 
-        F.Promise<WSResponse> response = requestHolder.setContentType("application/x-www-form-urlencoded").post(params);
+        F.Promise<WSResponse> response = requestHolder.setContentType("application/x-www-form-urlencoded")
+                                                      .setHeader("X-Session-Token", getEmail()).post(params);
 
         F.Promise<JsonNode> jsonPromise = response.map(
                 new F.Function<WSResponse, JsonNode>() {
                     public JsonNode apply(WSResponse response) {
-                        return response.asJson();
+                        try {
+                            return response.asJson();
+                        }
+                        catch (Exception exc) {
+                            Logger.debug("El servidor devolvio Json incorrecto: {}", response.getStatusText());
+                            return JsonNodeFactory.instance.objectNode();
+                        }
                     }
                 }
         );
-        return jsonPromise.get(10000, TimeUnit.MILLISECONDS);
+        return jsonPromise.get(1000, TimeUnit.MILLISECONDS);
     }
 
     private JsonNode get(String url) {
         WSRequestHolder requestHolder = WS.url(url);
 
-        F.Promise<WSResponse> response = requestHolder.get();
+        F.Promise<WSResponse> response = requestHolder.setHeader("X-Session-Token", getEmail()).get();
 
         F.Promise<JsonNode> jsonPromise = response.map(
                 new F.Function<WSResponse, JsonNode>() {
                     public JsonNode apply(WSResponse response) {
-                        return response.asJson();
+                        try {
+                            return response.asJson();
+                        }
+                        catch (Exception exc) {
+                            Logger.debug("El servidor devolvio Json incorrecto: {}", response.getStatusText());
+                            return JsonNodeFactory.instance.objectNode();
+                        }
                     }
                 }
         );
-        return jsonPromise.get(10000, TimeUnit.MILLISECONDS);
+        return jsonPromise.get(1000, TimeUnit.MILLISECONDS);
     }
 
     private static <T> T fromJSON(final String json, final TypeReference<T> type) {
@@ -265,5 +304,7 @@ public class BotActor extends UntypedActor {
         return "bototron0001@test.com";
     }
 
-    static Random _rand = new Random(91234);
+    User _user;
+
+    static Random _rand = new Random(System.currentTimeMillis());
 }
