@@ -54,11 +54,17 @@ public class ListUtils {
     public static List<ObjectId> objectIdListFromJson(String jsonData) {
         List<ObjectId> idsList = new ArrayList<>();
 
-        JsonNode jsonNode = Json.parse(jsonData);
-        assert (jsonNode.isArray());
+        try {
+            JsonNode jsonNode = Json.parse(jsonData);
+            if (!jsonNode.isArray()) {
+                play.Logger.error("WTF 1285: !jsonNode.isArray()");
+            }
 
-        for (JsonNode aJsonNode : jsonNode) {
-            idsList.add(new ObjectId(aJsonNode.asText()));
+            for (JsonNode aJsonNode : jsonNode) {
+                idsList.add(new ObjectId(aJsonNode.asText()));
+            }
+        } catch (RuntimeException e) {
+            play.Logger.error("WTF 1286: objectIdListFromJson invalid");
         }
 
         return idsList;
