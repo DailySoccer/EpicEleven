@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 //       URL de llamada al server
 //       Solucionar el arranque/stop bajo demanda en desarrollo y produccion
+//       Pensar en el problema de que siempre se metan los mismos (de que aparezcan constantemente)
 //       http://en.wikipedia.org/wiki/Knapsack_problem
 //
 public class BotActor extends UntypedActor {
