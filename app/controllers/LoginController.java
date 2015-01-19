@@ -463,23 +463,23 @@ public class LoginController extends Controller {
             params = changeParamsForm.get();
             String originalEmail = theUser.email;
 
-            if (!params.firstName.isEmpty()) {
+            if (params.firstName != null && !params.firstName.isEmpty()) {
                 theUser.firstName = params.firstName;
                 somethingChanged = true;
             }
-            if (!params.lastName.isEmpty()) {
+            if (params.lastName != null && !params.lastName.isEmpty()) {
                 theUser.lastName = params.lastName;
                 somethingChanged = true;
             }
-            if (!params.nickName.isEmpty()) {
+            if (params.nickName != null && !params.nickName.isEmpty()) {
                 theUser.nickName = params.nickName;
                 somethingChanged = true;
             }
-            if (!params.email.isEmpty()) {
+            if (params.email != null && !params.email.isEmpty()) {
                 theUser.email = params.email.toLowerCase();
                 somethingChanged = true;
             }
-            if (!params.password.isEmpty()) {
+            if (params.password != null && !params.password.isEmpty()) {
                 somethingChanged = true;
             }
 
