@@ -72,10 +72,11 @@ object Global extends GlobalSettings {
   }
 
   override def onStart(app: Application) {
-    Logger.info("Epic Eleven has started")
+
+    val processType = if (isWorker) "Worker Process" else "Web Process"
 
     release = getRelease
-    Logger.info(s"Epic Eleven version $release")
+    Logger.info(s"Epic Eleven $processType version $release has started")
 
     model.Model.init()
     actors.DailySoccerActors.init(isWorker)

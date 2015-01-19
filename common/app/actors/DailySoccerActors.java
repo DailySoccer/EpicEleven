@@ -2,7 +2,15 @@ package actors;
 
 import akka.actor.ActorRef;
 import akka.actor.Props;
+import play.Logger;
 import play.libs.Akka;
+
+import play.api.DefaultApplication;
+import play.api.Play;
+import play.api.Mode;
+import play.api.Application;
+
+import java.io.File;
 
 public class DailySoccerActors {
 
@@ -18,8 +26,9 @@ public class DailySoccerActors {
     // El remoting en cualquier caso parece que lo vamos a necesitar, y quiza entonces sea buen momento para levantar
     // nuestro propio ActorSystem.
     //
-    static public void init(boolean bIsWorker) {
+    static public void init(boolean isWorker) {
 
+        // Aunque no seamos el worker, hay que inicializar los actores para que funcione el simulador
         final ActorRef instantiateConstestsActor = Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateConstestsActor");
         final ActorRef optaProcessorActor = Akka.system().actorOf(Props.create(OptaProcessorActor.class), "OptaProcessorActor");
         final ActorRef givePrizesActor = Akka.system().actorOf(Props.create(GivePrizesActor.class), "GivePrizesActor");
@@ -29,7 +38,7 @@ public class DailySoccerActors {
 
         bIsWorker = true;
 
-        if (bIsWorker) {
+        if (isWorker) {
             instantiateConstestsActor.tell("Tick", ActorRef.noSender());
             optaProcessorActor.tell("Tick", ActorRef.noSender());
             givePrizesActor.tell("Tick", ActorRef.noSender());
@@ -38,10 +47,17 @@ public class DailySoccerActors {
     }
 
     static public void shutdown() {
-        // Esto para todos los actores y metodos scheduleados
+
+        // Esto para todos los actores y metodos scheduleados. No es necesario mirar bIsWorker
+        // (aunque logeara "Shutdown application default Akka system.")
         Akka.system().shutdown();
 
         // Hacemos un 'join' para asegurar que no matamos el modelo estando todavia procesando
         Akka.system().awaitTermination();
+    }
+
+    static public void main(String[] args) {
+        Application application = new DefaultApplication(new File(args[0]), DailySoccerActors.class.getClassLoader(), null, Mode.Prod());
+        Play.start(application);
     }
 }
