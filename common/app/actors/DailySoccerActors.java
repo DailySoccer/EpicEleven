@@ -25,7 +25,7 @@ public class DailySoccerActors {
         final ActorRef givePrizesActor = Akka.system().actorOf(Props.create(GivePrizesActor.class), "GivePrizesActor");
         final ActorRef transactionsActor = Akka.system().actorOf(Props.create(TransactionsActor.class), "TransactionsActor");
 
-        Akka.system().actorOf(Props.create(BotParent.class), "BotParent");
+        Akka.system().actorOf(Props.create(BotParentActor.class), "BotParent");
 
         bIsWorker = true;
 

@@ -5,7 +5,7 @@ import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
 
-public class BotParent extends UntypedActor {
+public class BotParentActor extends UntypedActor {
 
     @Override public void preStart() throws Exception {
         super.preStart();

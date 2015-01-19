@@ -23,9 +23,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-//       Identificacion universal univoca
 //       URL de llamada al server
-//       Nums aleatorios
 //       http://en.wikipedia.org/wiki/Knapsack_problem
 //       Solucionar el arranque/stop bajo demanda en desarrollo y produccion
 //
@@ -40,11 +38,11 @@ public class BotActor extends UntypedActor {
     }
 
     private String getLastName() {
-        return "v1";
+        return String.format("bototron%04d v1", _botActorId);
     }
 
     private String getNickName() {
-        return String.format("Bototron%04d", _botActorId);
+        return _nickNameList[_botActorId];
     }
 
     private String getEmail() {
@@ -55,8 +53,13 @@ public class BotActor extends UntypedActor {
     @Override public void preStart() throws Exception {
         super.preStart();
 
-        // Primer tick. Nuestro bot se automantiene vivo
-        getSelf().tell("Tick", getSelf());
+        if (_botActorId < _nickNameList.length) {
+            // Primer tick. Nuestro bot se automantiene vivo
+            getSelf().tell("Tick", getSelf());
+        }
+        else {
+            Logger.debug("WTF 2967 Bototron no puede comenzar");
+        }
     }
 
     @Override
@@ -332,6 +335,40 @@ public class BotActor extends UntypedActor {
         }
         return ret;
     }
+
+    private String[] _nickNameList = {
+            "futbolboy",
+            "shrek87",
+            "meel_forever",
+            "ndricim24",
+            "Davidtolentino2009",
+            "Barca4Life",
+            "afrollama",
+            "acantley",
+            "iamkunab",
+            "King_Martha",
+            "Spamalot",
+            "Soft_member",
+            "girlDog",
+            "Evil_kitten",
+            "farquit",
+            "viagrandad",
+            "happy_sad",
+            "haveahappyday",
+            "SomethingNew",
+            "5mileys",
+            "takes2long",
+            "w8t4u",
+            "askme",
+            "Bidwell",
+            "massdebater",
+            "iluvmen",
+            "Inmate",
+            "idontknow",
+            "likme",
+            "MPmaster",
+            "Ignoramus"
+    };
 
     int _botActorId;
     User _user;
