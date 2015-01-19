@@ -2,6 +2,7 @@ package stormpath;
 
 import com.stormpath.sdk.account.Account;
 import com.stormpath.sdk.account.AccountList;
+import com.stormpath.sdk.account.AccountStatus;
 import com.stormpath.sdk.api.ApiKey;
 import com.stormpath.sdk.api.ApiKeys;
 import com.stormpath.sdk.application.Application;
@@ -87,12 +88,14 @@ public class StormPathClient {
         account.setEmail(email);
         account.setPassword(password);
 
-        //CustomData customData = account.getCustomData();
-        //customData.put("userId", userId.toString());
+        CustomData customData = account.getCustomData();
+        customData.put("Verified", false);
 
         //Aquí es donde realmente se crea el usuario (se envía a StormPath)
         try {
             _myApp.createAccount(account);
+            account.setStatus(AccountStatus.ENABLED);
+            account.save();
         }
         catch (ResourceException ex) {
             Logger.error(String.valueOf(ex.getStatus()) +"\n"+
@@ -124,7 +127,11 @@ public class StormPathClient {
 
     public F.Tuple<Integer, String> verifyAccountToken(String token) {
         try {
-            _client.getCurrentTenant().verifyAccountEmail(token);
+            Account myAccount = _client.getCurrentTenant().verifyAccountEmail(token);
+
+            CustomData customData = myAccount.getCustomData();
+            customData.put("Verified", true);
+            myAccount.save();
         }
         catch (ResourceException ex) {
             Logger.error(ex.getMessage());
