@@ -36,7 +36,7 @@ public class DailySoccerActors {
 
         Akka.system().actorOf(Props.create(BotParentActor.class), "BotParent");
 
-        bIsWorker = true;
+        isWorker = true;
 
         if (isWorker) {
             instantiateConstestsActor.tell("Tick", ActorRef.noSender());

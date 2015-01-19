@@ -98,8 +98,7 @@ public class BotActor extends UntypedActor {
         }
 
         // Vamos a asegurnos de que el profile del bot tiene los datos como queremos
-        // TODO: Revienta
-        // changeUserProfile();
+        changeUserProfile();
     }
 
     private void onTick() {
