@@ -1,7 +1,6 @@
 package actors;
 
 import akka.actor.UntypedActor;
-import akka.japi.Procedure;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,8 +23,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 //       URL de llamada al server
-//       http://en.wikipedia.org/wiki/Knapsack_problem
 //       Solucionar el arranque/stop bajo demanda en desarrollo y produccion
+//       http://en.wikipedia.org/wiki/Knapsack_problem
 //
 public class BotActor extends UntypedActor {
 
@@ -37,8 +36,12 @@ public class BotActor extends UntypedActor {
         return String.format("http://localhost:9000/%s", suffix);
     }
 
+    private String getFirstName() {
+        return "Bototron";
+    }
+
     private String getLastName() {
-        return String.format("bototron%04d v1", _botActorId);
+        return String.format("%04d v1", _botActorId);
     }
 
     private String getNickName() {
@@ -92,6 +95,10 @@ public class BotActor extends UntypedActor {
                 throw new RuntimeException("WTF 5466 Bototron login");
             }
         }
+
+        // Vamos a asegurnos de que el profile del bot tiene los datos como queremos
+        // TODO: Revienta
+        // changeUserProfile();
     }
 
     private void onTick() {
@@ -119,14 +126,26 @@ public class BotActor extends UntypedActor {
     }
 
     private void signup() {
-        JsonNode jsonNode = post(getUrl("signup"), String.format("firstName=Bototron&lastName=%s&nickName=%s&email=%s&password=uoyeradiputs3991",
-                                                                 getLastName(), getNickName(), getEmail()));
+        JsonNode jsonNode = post(getUrl("signup"), String.format("firstName=%s&lastName=%s&nickName=%s&email=%s&password=uoyeradiputs3991",
+                                                                 getFirstName(), getLastName(), getNickName(), getEmail()));
 
         if (jsonNode != null) {
             Logger.debug("Bototron Signup returned: {}", jsonNode.toString());
         }
         else {
             Logger.debug("Bototron Signup error");
+        }
+    }
+
+    private void changeUserProfile() {
+        JsonNode jsonNode = post(getUrl("change_user_profile"), String.format("firstName=%s&lastName=%s&nickName=%s&email=%s",
+                                                                 getFirstName(), getLastName(), getNickName(), getEmail()));
+
+        if (jsonNode != null) {
+            Logger.debug("Bototron changeUserProfile returned: {}", jsonNode.toString());
+        }
+        else {
+            Logger.debug("Bototron changeUserProfile error");
         }
     }
 
