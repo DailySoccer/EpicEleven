@@ -57,15 +57,19 @@ public class ContestEntryController extends Controller {
 
         User theUser = (User) ctx().args.get("User");
 
-        String contestId = "";
+        // Donde nos solicitan que quieren insertarlo
+        String contestIdRequested = "";
+
+        // Id del contest que hemos encontrado
+        ObjectId contestIdValid = null;
 
         if (!contestEntryForm.hasErrors()) {
             AddContestEntryParams params = contestEntryForm.get();
 
-            Logger.info("addContestEntry: userId: {}: contestId: {}", theUser.userId.toString(), params.contestId);
+            contestIdRequested = params.contestId;
 
-            // Obtener el contestId : ObjectId
-            Contest aContest = Contest.findOne(params.contestId);
+            // Buscar el contest : ObjectId
+            Contest aContest = Contest.findOne(contestIdRequested);
 
             // Obtener los soccerIds de los futbolistas : List<ObjectId>
             List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
@@ -84,6 +88,11 @@ public class ContestEntryController extends Controller {
                         //  dado que asumimos que simplemente es un problema "temporal"
                         errores.add(ERROR_RETRY_OP);
                     }
+                }
+
+                // Si tenemos un contest valido, registramos su ID
+                if (aContest != null) {
+                    contestIdValid = aContest.contestId;
                 }
             }
 
@@ -105,17 +114,15 @@ public class ContestEntryController extends Controller {
                     throw new RuntimeException("WTF 8639: aContest != null");
                 }
 
-                EnterContestJob enterContestJob = EnterContestJob.create(theUser.userId, aContest.contestId, idsList);
+                EnterContestJob enterContestJob = EnterContestJob.create(theUser.userId, contestIdValid, idsList);
+
+                // Al intentar aplicar el job puede que nos encontremos con algún conflicto (de última hora),
+                //  lo volvemos a intentar para poder informar del error (con los tests anteriores)
                 if (!enterContestJob.isDone()) {
                     errores.add(ERROR_RETRY_OP);
                 }
             }
 
-            if (aContest != null) {
-                contestId = aContest.contestId.toString();
-            }
-
-            // TODO: ¿Queremos informar de los distintos errores?
             for (String error : errores) {
                 contestEntryForm.reject(CONTEST_ENTRY_KEY, error);
             }
@@ -124,13 +131,22 @@ public class ContestEntryController extends Controller {
         Object result = contestEntryForm.errorsAsJson();
 
         if (!contestEntryForm.hasErrors()) {
+            // El usuario ha sido añadido en el contest que solicitó
+            //   o en otro de características semejantes (al estar lleno el anterior)
+            if (contestIdValid.equals(contestIdRequested)) {
+                Logger.info("addContestEntry: userId: {}: contestId: {}", theUser.userId.toString(), contestIdRequested);
+            }
+            else {
+                Logger.info("addContestEntry: userId: {}: contestId: {} => {}", theUser.userId.toString(), contestIdRequested, contestIdValid.toString());
+            }
+
             result = ImmutableMap.of(
                     "result", "ok",
-                    "contestId", contestId,
+                    "contestId", contestIdValid.toString(),
                     "profile", theUser.getProfile());
         }
         else {
-            Logger.error("WTF 7239: userId: {}: contestId: {}: addContestEntry: {}", theUser.userId.toString(), contestId, contestEntryForm.errorsAsJson());
+            Logger.error("WTF 7239: userId: {}: contestId: {}: addContestEntry: {}", theUser.userId.toString(), contestIdRequested, contestEntryForm.errorsAsJson());
         }
         return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
     }
