@@ -62,7 +62,7 @@ public class ContestEntryController extends Controller {
         if (!contestEntryForm.hasErrors()) {
             AddContestEntryParams params = contestEntryForm.get();
 
-            Logger.info("addContestEntry: userId: {}: contestId({}) soccerTeam({})", theUser.userId.toString(), params.contestId, params.soccerTeam);
+            Logger.info("addContestEntry: userId: {}: contestId: {}", theUser.userId.toString(), params.contestId);
 
             // Obtener el contestId : ObjectId
             Contest aContest = Contest.findOne(params.contestId);
@@ -104,12 +104,15 @@ public class ContestEntryController extends Controller {
                 if (aContest == null) {
                     throw new RuntimeException("WTF 8639: aContest != null");
                 }
-                contestId = aContest.contestId.toString();
 
                 EnterContestJob enterContestJob = EnterContestJob.create(theUser.userId, aContest.contestId, idsList);
                 if (!enterContestJob.isDone()) {
                     errores.add(ERROR_RETRY_OP);
                 }
+            }
+
+            if (aContest != null) {
+                contestId = aContest.contestId.toString();
             }
 
             // TODO: ¿Queremos informar de los distintos errores?
@@ -127,7 +130,7 @@ public class ContestEntryController extends Controller {
                     "profile", theUser.getProfile());
         }
         else {
-            Logger.error("WTF 7239: userId: {}: addContestEntry: {}", theUser.userId.toString(), contestEntryForm.errorsAsJson());
+            Logger.error("WTF 7239: userId: {}: contestId: {}: addContestEntry: {}", theUser.userId.toString(), contestId, contestEntryForm.errorsAsJson());
         }
         return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
     }
