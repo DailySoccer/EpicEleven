@@ -51,11 +51,11 @@ public class BotParentActor extends UntypedActor {
 
                 break;
 
-            case "ChildrenStarted":
+            case "GetChildrenStarted":
                 sender().tell(_childrenStarted, getSelf());
                 break;
         }
     }
 
-    boolean _childrenStarted;
+    boolean _childrenStarted = false;
 }
