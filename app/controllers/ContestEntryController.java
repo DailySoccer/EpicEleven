@@ -127,7 +127,7 @@ public class ContestEntryController extends Controller {
                     "profile", theUser.getProfile());
         }
         else {
-            Logger.error("WTF 7239: addContestEntry: {}", contestEntryForm.errorsAsJson());
+            Logger.error("WTF 7239: userId: {}: addContestEntry: {}", theUser.userId.toString(), contestEntryForm.errorsAsJson());
         }
         return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
     }
