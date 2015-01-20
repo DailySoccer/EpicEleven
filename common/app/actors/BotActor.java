@@ -109,7 +109,7 @@ public class BotActor extends UntypedActor {
     }
 
     private void onTick() {
-        Logger.info("{} onTick {}", getEmail(), GlobalDate.getCurrentDateString());
+        Logger.debug("{} onTick {}", getEmail(), GlobalDate.getCurrentDateString());
 
         // Vemos los concursos activos en los que no estamos ya metidos, escogemos el primero que este menos del X% lleno y nos metemos
         for (Contest contest : filterContestByNotEntered(getActiveContests())) {
@@ -271,9 +271,7 @@ public class BotActor extends UntypedActor {
     }
 
     private List<Contest> getActiveContests() {
-        String url = "http://localhost:9000/get_active_contests";
-
-        JsonNode jsonNode = get(url).findValue("contests");
+        JsonNode jsonNode = get(getUrl("get_active_contests")).findValue("contests");
 
         if (jsonNode != null) {
             return fromJSON(jsonNode.toString(), new TypeReference<List<Contest>>() {
