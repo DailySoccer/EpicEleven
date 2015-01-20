@@ -47,10 +47,9 @@ public class EnterContestJob extends Job {
                     if (bValid) {
                         bValid = transactionContestEntryInsert(contest, contestEntry);
 
-                        // TODO: Verificar si ya existen el número minimo de instancias
                         // Crear instancias automáticamente según se vayan llenando las anteriores
                         if (bValid && contest.isFull()) {
-                            TemplateContest.findOne(contest.templateContestId).instantiateContest(false);
+                            TemplateContest.maintainingMinimumNumberOfInstances(contest.templateContestId);
                         }
                     }
                 }
