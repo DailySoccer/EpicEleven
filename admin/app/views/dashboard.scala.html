@@ -1,4 +1,4 @@
-@(competitions_enabled : List[model.opta.OptaCompetition])
+@(competitionsEnabled : List[model.opta.OptaCompetition] )
 
 @import controllers.admin.routes._
 
@@ -67,7 +67,7 @@ function getMongo() {
 
             <a href="@DashboardController.resetDB" class="btn btn-danger">Reset DB</a>
 
-            @if(competitions_enabled.isEmpty) {
+            @if(competitionsEnabled.isEmpty) {
                 <a href="@DashboardController.initialSetup" class="btn btn-danger disabled">Initial Setup</a>
             } else {
                 <a href="@DashboardController.initialSetup" class="btn btn-danger">Initial Setup</a>
@@ -78,10 +78,10 @@ function getMongo() {
 <br/>
 <div>
     <p><a href="@OptaController.optaCompetitions" class="btn btn-primary">Select Competitions</a></p>
-    @if(competitions_enabled.isEmpty) {
+    @if(competitionsEnabled.isEmpty) {
         <span class="bg-danger text-danger" style="padding:5px">&#8999; Ninguna Competición</span>
     } else {
-        @for((p, index) <- competitions_enabled.zipWithIndex) {
+        @for((p, index) <- competitionsEnabled.zipWithIndex) {
             <p><em class="bg-success text-primary" style="margin:35px; padding:5px">&#10003; @p.competitionName/@p.seasonId</em></p>
         }
     }
