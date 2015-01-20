@@ -150,6 +150,17 @@ public class TemplateContest implements JongoId {
         return true;
     }
 
+    public static void maintainingMinimumNumberOfInstances(ObjectId templateContestId) {
+        TemplateContest templateContest = findOne(templateContestId);
+
+        // Cuantas instancias tenemos creadas?
+        long instances = Contest.countActiveNotFullFromTemplateContest(templateContestId);
+
+        for (long i=instances; i < templateContest.minInstances; i++) {
+            templateContest.instantiateContest(false);
+        }
+    }
+
     public Contest instantiateContest(boolean addMockDataUsers) {
         Contest contest = new Contest(this);
         contest.prizes = getPrizes(prizeType, maxEntries, getPrizePool());

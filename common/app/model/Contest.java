@@ -154,6 +154,11 @@ public class Contest implements JongoId {
                 .as(Contest.class));
     }
 
+    static public long countActiveNotFullFromTemplateContest(ObjectId templateContestId) {
+        return Model.contests()
+                .count("{$and: [{templateContestId: #, state: \"ACTIVE\"}, {$where: \"this.contestEntries.length < this.maxEntries\"}]}", templateContestId);
+    }
+
     static public List<Contest> findAllActiveNotFull(Class<?> projectionClass) {
         return ListUtils.asList(Model.contests()
                 .find("{$and: [{state: \"ACTIVE\"}, {$where: \"this.contestEntries.length < this.maxEntries\"}]}")
