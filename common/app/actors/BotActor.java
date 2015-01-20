@@ -305,7 +305,7 @@ public class BotActor extends UntypedActor {
                             return response.asJson();
                         }
                         catch (Exception exc) {
-                            Logger.debug("El servidor devolvio Json incorrecto: {}", response.getStatusText());
+                            Logger.debug("WTF 1280 El servidor devolvio Json incorrecto: {}", response.getStatusText());
                             return JsonNodeFactory.instance.objectNode();
                         }
                     }
@@ -332,7 +332,7 @@ public class BotActor extends UntypedActor {
                             return response.asJson();
                         }
                         catch (Exception exc) {
-                            Logger.debug("El servidor devolvio Json incorrecto: {}", response.getStatusText());
+                            Logger.debug("WTF 1279 El servidor devolvio Json incorrecto: {}", response.getStatusText());
                             return JsonNodeFactory.instance.objectNode();
                         }
                     }
