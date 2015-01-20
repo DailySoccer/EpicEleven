@@ -5,14 +5,12 @@ GET         /initial_setup                                              controll
 GET         /setmongo/:appEnv                                           controllers.admin.DashboardController.setMongoAppEnv(appEnv : String)
 GET         /getmongo                                                   controllers.admin.DashboardController.getMongoAppEnv()
 
-GET         /lobby                                                      controllers.admin.AdminController.lobby()
-
+GET         /lobby                                                      controllers.admin.LobbyController.lobby()
 
 GET         /import_teams                                               controllers.admin.ImportController.showImportTeams()
 GET         /import_teams/:competitionId                                controllers.admin.ImportController.showImportTeamsFromCompetition(competitionId : String)
 GET         /import_soccers                                             controllers.admin.ImportController.showImportSoccers()
 GET         /import_match_events                                        controllers.admin.ImportController.showImportMatchEvents()
-
 
 GET         /points_translation/create                                  controllers.admin.PointsTranslationController.resetToDefault()
 GET         /points_translations                                        controllers.admin.PointsTranslationController.index()
