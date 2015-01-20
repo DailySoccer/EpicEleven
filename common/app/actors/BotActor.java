@@ -21,6 +21,7 @@ import utils.ListUtils;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 //       Como ejecutar los bots en produccion?
 //       Pensar en el problema de que siempre se metan los mismos (de que aparezcan constantemente)
@@ -78,12 +79,17 @@ public class BotActor extends UntypedActor {
         switch ((String)msg) {
 
             case "Tick":
-                if (_user == null) {
-                    tryLogin();
+                try {
+                    if (_user == null) {
+                        tryLogin();
+                    } else {
+                        onTick();
+                    }
                 }
-                else {
-                    onTick();
+                catch (TimeoutException exc) {
+                    Logger.info("Bototron Timeout, probablemente el servidor esta saturado...");
                 }
+
                 _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
                                                                                   "Tick", getContext().dispatcher(), null);
                 break;
@@ -94,7 +100,7 @@ public class BotActor extends UntypedActor {
         }
     }
 
-    private void tryLogin() {
+    private void tryLogin() throws TimeoutException {
         // Vemos si tenemos nuestro usuario _user adquirido, si no, lo preparamos
         if (!login()) {
             signup();
@@ -108,7 +114,7 @@ public class BotActor extends UntypedActor {
         changeUserProfile();
     }
 
-    private void onTick() {
+    private void onTick() throws TimeoutException {
         Logger.debug("{} onTick {}", getEmail(), GlobalDate.getCurrentDateString());
 
         // Vemos los concursos activos en los que no estamos ya metidos, escogemos el primero que este menos del X% lleno y nos metemos
@@ -119,7 +125,7 @@ public class BotActor extends UntypedActor {
         }
     }
 
-    private boolean login() {
+    private boolean login() throws TimeoutException {
         _user = null;
 
         JsonNode jsonNode = post(getUrl("login"), String.format("email=%s&password=uoyeradiputs3991", getEmail()));
@@ -132,7 +138,8 @@ public class BotActor extends UntypedActor {
         return _user != null;
     }
 
-    private void signup() {
+
+    private void signup() throws TimeoutException {
         JsonNode jsonNode = post(getUrl("signup"), String.format("firstName=%s&lastName=%s&nickName=%s&email=%s&password=uoyeradiputs3991",
                                                                  getFirstName(), getLastName(), getNickName(), getEmail()));
 
@@ -144,7 +151,8 @@ public class BotActor extends UntypedActor {
         }
     }
 
-    private void changeUserProfile() {
+
+    private void changeUserProfile() throws TimeoutException {
         JsonNode jsonNode = post(getUrl("change_user_profile"), String.format("firstName=%s&lastName=%s&nickName=%s&email=%s",
                                                                  getFirstName(), getLastName(), getNickName(), getEmail()));
 
@@ -156,21 +164,29 @@ public class BotActor extends UntypedActor {
         }
     }
 
-    private void enterContest(Contest contest) {
-        JsonNode jsonNode = get(getUrl(String.format("get_public_contest/%s", contest.contestId)));
-        JsonNode jsonNodePlayers = jsonNode.findValue("soccer_players");
 
-        if (jsonNodePlayers == null) {
-            int a = 0;
+    private List<Contest> getActiveContests() throws TimeoutException {
+
+        List<Contest> ret = null;
+        JsonNode jsonNode = get(getUrl("get_active_contests")).findValue("contests");
+
+        if (jsonNode != null) {
+            ret = fromJSON(jsonNode.toString(), new TypeReference<List<Contest>>() { });
         }
 
-        List<TemplateSoccerPlayer> soccerPlayers = fromJSON(jsonNodePlayers.toString(), new TypeReference<List<TemplateSoccerPlayer>>() { });
+        return ret == null? new ArrayList<Contest>() : ret;
+    }
+
+    private void enterContest(Contest contest) throws TimeoutException {
+        JsonNode jsonNode = get(getUrl(String.format("get_public_contest/%s", contest.contestId))).findValue("soccer_players");
+
+        List<TemplateSoccerPlayer> soccerPlayers = fromJSON(jsonNode.toString(), new TypeReference<List<TemplateSoccerPlayer>>() { });
         List<TemplateSoccerPlayer> lineup = generateLineup(soccerPlayers, contest.salaryCap);
 
         addContestEntry(lineup, contest.contestId);
     }
 
-    private void addContestEntry(List<TemplateSoccerPlayer> lineup, ObjectId contestId) {
+    private void addContestEntry(List<TemplateSoccerPlayer> lineup, ObjectId contestId) throws TimeoutException {
         String idList = new ObjectMapper().valueToTree(ListUtils.stringListFromObjectIdList(ListUtils.convertToIdList(lineup))).toString();
         JsonNode jsonNode = post(getUrl(String.format("add_contest_entry")),
                                  String.format("contestId=%s&soccerTeam=%s", contestId.toString(), idList));
@@ -216,7 +232,6 @@ public class BotActor extends UntypedActor {
             List<TemplateSoccerPlayer> defensesBySalary = filterBySalary(defenses, minSal, maxSal);
 
             if (middlesBySalary.size() < 4 || defensesBySalary.size() < 4) {
-                Logger.error("WTF 7648 Bototron: Menos de 4");
                 continue;
             }
 
@@ -228,7 +243,6 @@ public class BotActor extends UntypedActor {
             }
 
             diff = salaryCap - calcSalaryForLineup(tempLineup);
-            Logger.debug("Bototron Count {} diff {}", tempLineup.size(), diff);
 
             if (tempLineup.size() == 11 && diff >= 0) {
                 lineup = tempLineup;
@@ -273,19 +287,6 @@ public class BotActor extends UntypedActor {
             }
         });
     }
-
-    private List<Contest> getActiveContests() {
-
-        List<Contest> ret = null;
-        JsonNode jsonNode = get(getUrl("get_active_contests")).findValue("contests");
-
-        if (jsonNode != null) {
-            ret = fromJSON(jsonNode.toString(), new TypeReference<List<Contest>>() { });
-        }
-
-        return ret == null? new ArrayList<Contest>() : ret;
-    }
-
     private List<Contest> filterContestByNotEntered(List<Contest> contests) {
         List<Contest> ret = new ArrayList<>();
 
@@ -298,7 +299,7 @@ public class BotActor extends UntypedActor {
         return ret;
     }
 
-    private JsonNode post(String url, String params) {
+    private JsonNode post(String url, String params) throws TimeoutException {
         WSRequestHolder requestHolder = WS.url(url);
 
         F.Promise<WSResponse> response = requestHolder.setContentType("application/x-www-form-urlencoded")
@@ -318,15 +319,10 @@ public class BotActor extends UntypedActor {
                 }
         );
 
-        try {
-            return jsonPromise.get(1000, TimeUnit.MILLISECONDS);
-        }
-        catch (Exception exc) {
-            return JsonNodeFactory.instance.objectNode();
-        }
+        return jsonPromise.get(1000, TimeUnit.MILLISECONDS);
     }
 
-    private JsonNode get(String url) {
+    private JsonNode get(String url) throws TimeoutException {
         WSRequestHolder requestHolder = WS.url(url);
 
         F.Promise<WSResponse> response = requestHolder.setHeader("X-Session-Token", getEmail()).get();
@@ -345,12 +341,7 @@ public class BotActor extends UntypedActor {
                 }
         );
 
-        try {
-            return jsonPromise.get(1000, TimeUnit.MILLISECONDS);
-        }
-        catch (Exception exc) {
-            return JsonNodeFactory.instance.objectNode();
-        }
+        return jsonPromise.get(1000, TimeUnit.MILLISECONDS);
     }
 
     private static <T> T fromJSON(final String json, final TypeReference<T> type) {
