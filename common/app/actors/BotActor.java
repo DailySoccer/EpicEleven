@@ -63,7 +63,8 @@ public class BotActor extends UntypedActor {
 
         if (_botActorId < _NICKNAMES.length) {
             // Primer tick. Nuestro bot se automantiene vivo
-            getSelf().tell("Tick", getSelf());
+            _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(_botActorId*500, TimeUnit.MILLISECONDS), getSelf(),
+                                                                                              "Tick", getContext().dispatcher(), null);
         }
         else {
             Logger.debug("WTF 2967 {} no puede comenzar", getFullName());
@@ -94,7 +95,7 @@ public class BotActor extends UntypedActor {
                     Logger.info("{} Timeout, probablemente el servidor esta saturado...", getFullName());
                 }
 
-                _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
+                _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(10000, TimeUnit.MILLISECONDS), getSelf(),
                                                                                   "Tick", getContext().dispatcher(), null);
                 break;
 
@@ -320,7 +321,7 @@ public class BotActor extends UntypedActor {
                 }
         );
 
-        return jsonPromise.get(1000, TimeUnit.MILLISECONDS);
+        return jsonPromise.get(5000, TimeUnit.MILLISECONDS);
     }
 
     private JsonNode get(String url) throws TimeoutException {
@@ -342,7 +343,7 @@ public class BotActor extends UntypedActor {
                 }
         );
 
-        return jsonPromise.get(1000, TimeUnit.MILLISECONDS);
+        return jsonPromise.get(5000, TimeUnit.MILLISECONDS);
     }
 
     private static <T> T fromJSON(final String json, final TypeReference<T> type) {
