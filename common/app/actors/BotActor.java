@@ -1,5 +1,6 @@
 package actors;
 
+import akka.actor.Cancellable;
 import akka.actor.UntypedActor;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -66,6 +67,13 @@ public class BotActor extends UntypedActor {
         }
     }
 
+    @Override public void postStop() {
+        if (_tickCancellable != null) {
+            _tickCancellable.cancel();
+            _tickCancellable = null;
+        }
+    }
+
     @Override
     public void onReceive(Object msg) {
         switch ((String)msg) {
@@ -77,8 +85,8 @@ public class BotActor extends UntypedActor {
                 else {
                     onTick();
                 }
-                getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
-                                                               "Tick", getContext().dispatcher(), null);
+                _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
+                                                                                  "Tick", getContext().dispatcher(), null);
                 break;
 
             default:
@@ -391,6 +399,7 @@ public class BotActor extends UntypedActor {
 
     int _botActorId;
     User _user;
+    Cancellable _tickCancellable;
 
     static Random _rand = new Random(System.currentTimeMillis());
 }
