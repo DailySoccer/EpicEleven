@@ -18,13 +18,11 @@ import play.libs.ws.WSRequestHolder;
 import play.libs.ws.WSResponse;
 import scala.concurrent.duration.Duration;
 import utils.ListUtils;
-
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-//       URL de llamada al server
-//       Solucionar el arranque/stop bajo demanda en desarrollo y produccion
+//       Como ejecutar los bots en produccion?
 //       Pensar en el problema de que siempre se metan los mismos (de que aparezcan constantemente)
 //       http://en.wikipedia.org/wiki/Knapsack_problem
 //
@@ -47,7 +45,7 @@ public class BotActor extends UntypedActor {
     }
 
     private String getNickName() {
-        return _nickNameList[_botActorId];
+        return _NICKNAMES[_botActorId];
     }
 
     private String getEmail() {
@@ -58,7 +56,7 @@ public class BotActor extends UntypedActor {
     @Override public void preStart() throws Exception {
         super.preStart();
 
-        if (_botActorId < _nickNameList.length) {
+        if (_botActorId < _NICKNAMES.length) {
             // Primer tick. Nuestro bot se automantiene vivo
             getSelf().tell("Tick", getSelf());
         }
@@ -68,6 +66,7 @@ public class BotActor extends UntypedActor {
     }
 
     @Override public void postStop() {
+        // Para evitar que nos lleguen cartas de muertos
         if (_tickCancellable != null) {
             _tickCancellable.cancel();
             _tickCancellable = null;
@@ -363,43 +362,113 @@ public class BotActor extends UntypedActor {
         return ret;
     }
 
-    private String[] _nickNameList = {
-            "futbolboy",
-            "shrek87",
-            "meel_forever",
-            "ndricim24",
-            "Davidtolentino2009",
-            "Barca4Life",
-            "afrollama",
-            "acantley",
-            "iamkunab",
-            "King_Martha",
-            "Spamalot",
-            "Soft_member",
-            "girlDog",
-            "Evil_kitten",
-            "farquit",
-            "viagrandad",
-            "happy_sad",
-            "haveahappyday",
-            "SomethingNew",
-            "5mileys",
-            "takes2long",
-            "w8t4u",
-            "askme",
-            "Bidwell",
-            "massdebater",
-            "iluvmen",
-            "Inmate",
-            "idontknow",
-            "likme",
-            "MPmaster",
-            "Ignoramus"
-    };
 
     int _botActorId;
     User _user;
     Cancellable _tickCancellable;
 
     static Random _rand = new Random(System.currentTimeMillis());
+
+    static final private String[] _NICKNAMES = {
+            "Alic1a",
+            "TheOneSeeker",
+            "golpeador",
+            "Carlos Alberto",
+            "GKclarice",
+            "SaRiTah",
+            "MigSix",
+            "VD_García",
+            "Stafilo",
+            "D10S",
+            "UkraMaster",
+            "Coachella_098",
+            "dkv_43",
+            "SilvioFuertes",
+            "LiberalMan",
+            "Chouanigma",
+            "BlackPipe",
+            "Vicator",
+            "carralero",
+            "Firecrafter",
+            "Maldini_87",
+            "Riba",
+            "pererazor6",
+            "Tsubasa10",
+            "florín",
+            "franciskañer",
+            "MyVelvetSack",
+            "VanGoghito",
+            "Minuto93",
+            "Cleren8tor",
+            "sum234",
+            "Armadillo",
+            "EstalacShoot",
+            "Pierre10",
+            "unahbombah",
+            "ASIAnK05",
+            "GoyGoy",
+            "Xanastur94",
+            "SerrA_LoveR",
+            "pitu",
+            "CaliFaith",
+            "Jirou_Nakata",
+            "BigBenBrad",
+            "terioulous_gr",
+            "Alucard6",
+            "clavoporclavo",
+            "separ54",
+            "srt_68",
+            "Peri_SE_Ray",
+            "Ix_La",
+            "genarogijón",
+            "DarkRester",
+            "EpicSalvador",
+            "777CaitSith",
+            "Milan_4ever",
+            "senpai_Nemo",
+            "AbdulMaulavi",
+            "MiguelSFW",
+            "Tat&Veb",
+            "mireia_valera",
+            "Hun_Maker",
+            "Swan_seaWIN",
+            "bichuito",
+            "shurmanKOH",
+            "SummerDevil",
+            "Trashmaker",
+            "1_Morituri_1",
+            "HienaSup",
+            "69_AriA_69",
+            "Gildrean",
+            "SirKuwait",
+            "Sessuria",
+            "NexusUnlimited",
+            "ZeeZee",
+            "BlackAndBlank",
+            "Oshkendor",
+            "Techmole",
+            "MrGalleta",
+            "Limit_Breaker",
+            "Shallow_leaf",
+            "StouterCoach",
+            "NppaGuip",
+            "Xenofly",
+            "Rivery",
+            "MeineKaiseR",
+            "Crak_O_karC",
+            "Jigeki",
+            "Ellatrixy",
+            "cocofua",
+            "MXM",
+            "Sekepo85",
+            "DaimonJack",
+            "DanteNostromo",
+            "NegaDOSX",
+            "SnuggleBehemot",
+            "Magnum",
+            "Stylus-zen",
+            "seb_lover",
+            "atleti_fan",
+            "CavalleroSebolla"
+    };
 }
