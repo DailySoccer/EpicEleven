@@ -90,44 +90,6 @@ public class ContestEntry implements JongoId {
         return contestEntries;
     }
 
-    /**
-     * Creacion de un contest entry (se añade a la base de datos)
-     * @param userId      Usuario al que pertenece el equipo
-     * @param contestId   Contest al que se apunta
-     * @param soccersIds   Lista de futbolistas con la que se apunta
-     * @return Si se ha realizado correctamente su creacion
-     */
-    public static boolean create(ObjectId userId, ObjectId contestId, List<ObjectId> soccersIds) {
-
-        boolean bRet = false;
-
-        try {
-            Contest contest = Contest.findOne(contestId);
-            if (contest != null) {
-                ContestEntry aContestEntry = new ContestEntry(userId, soccersIds);
-                contest.contestEntries.add(aContestEntry);
-
-                // Comprobamos que el contest siga ACTIVE, que el usuario no esté ya inscrito y que existan Huecos Libres
-                String query = String.format("{_id: #, state: \"ACTIVE\", contestEntries.userId: {$ne: #}, contestEntries.%s: {$exists: false}}", contest.maxEntries-1);
-                WriteResult result = Model.contests().update(query, contestId, userId)
-                        .with("{$addToSet: {contestEntries: #}}", aContestEntry);
-
-                // Comprobamos el número de documentos afectados (error == 0)
-                bRet = (result.getN() > 0);
-
-                // Crear instancias automáticamente según se vayan llenando las anteriores
-                if (bRet && contest.isFull()) {
-                    TemplateContest.findOne(contest.templateContestId).instantiateContest(false);
-                }
-            }
-        }
-        catch (MongoException exc) {
-            Logger.error("WTF 2032: ", exc);
-        }
-
-        return bRet;
-    }
-
     public static boolean update(ObjectId userId, ObjectId contestId, ObjectId contestEntryId, List<ObjectId> soccersIds) {
 
         boolean bRet = false;
