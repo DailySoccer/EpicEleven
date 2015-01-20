@@ -34,16 +34,15 @@ public class DailySoccerActors {
         final ActorRef givePrizesActor = Akka.system().actorOf(Props.create(GivePrizesActor.class), "GivePrizesActor");
         final ActorRef transactionsActor = Akka.system().actorOf(Props.create(TransactionsActor.class), "TransactionsActor");
 
-        Akka.system().actorOf(Props.create(BotParentActor.class), "BotParent");
-
-        isWorker = true;
-
         if (isWorker) {
             instantiateConstestsActor.tell("Tick", ActorRef.noSender());
             optaProcessorActor.tell("Tick", ActorRef.noSender());
             givePrizesActor.tell("Tick", ActorRef.noSender());
             transactionsActor.tell("Tick", ActorRef.noSender());
         }
+
+        // El sistema de bots solo se inicializa bajo demanda (por ejemplo, desde la zona de admin)
+        Akka.system().actorOf(Props.create(BotParentActor.class), "BotParentActor");
     }
 
     static public void shutdown() {

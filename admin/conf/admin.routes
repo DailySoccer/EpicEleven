@@ -4,6 +4,7 @@ GET         /reset_db                                                   controll
 GET         /initial_setup                                              controllers.admin.DashboardController.initialSetup()
 GET         /setmongo/:appEnv                                           controllers.admin.DashboardController.setMongoAppEnv(appEnv : String)
 GET         /getmongo                                                   controllers.admin.DashboardController.getMongoAppEnv()
+GET         /switch_bot_actors/:start                                   controllers.admin.DashboardController.switchBotActors(start : Boolean)
 
 GET         /lobby                                                      controllers.admin.LobbyController.lobby()
 
