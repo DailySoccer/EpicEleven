@@ -45,6 +45,10 @@ public class BotActor extends UntypedActor {
         return String.format("%04d v1", _botActorId);
     }
 
+    private String getFullName() {
+        return getFirstName() + " " + getLastName();
+    }
+
     private String getNickName() {
         return _NICKNAMES[_botActorId];
     }
@@ -62,7 +66,7 @@ public class BotActor extends UntypedActor {
             getSelf().tell("Tick", getSelf());
         }
         else {
-            Logger.debug("WTF 2967 Bototron no puede comenzar");
+            Logger.debug("WTF 2967 {} no puede comenzar", getFullName());
         }
     }
 
@@ -87,7 +91,7 @@ public class BotActor extends UntypedActor {
                     }
                 }
                 catch (TimeoutException exc) {
-                    Logger.info("Bototron Timeout, probablemente el servidor esta saturado...");
+                    Logger.info("{} Timeout, probablemente el servidor esta saturado...", getFullName());
                 }
 
                 _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
@@ -106,7 +110,7 @@ public class BotActor extends UntypedActor {
             signup();
 
             if (!login()) {
-                throw new RuntimeException("WTF 5466 Bototron login");
+                throw new RuntimeException(String.format("WTF 5466 %s no pudo hacer signup + login", getFullName()));
             }
         }
 
@@ -115,8 +119,6 @@ public class BotActor extends UntypedActor {
     }
 
     private void onTick() throws TimeoutException {
-        Logger.debug("{} onTick {}", getEmail(), GlobalDate.getCurrentDateString());
-
         // Vemos los concursos activos en los que no estamos ya metidos, escogemos el primero que este menos del X% lleno y nos metemos
         for (Contest contest : filterContestByNotEntered(getActiveContests())) {
             if (!contest.isFull()) {
@@ -143,11 +145,8 @@ public class BotActor extends UntypedActor {
         JsonNode jsonNode = post(getUrl("signup"), String.format("firstName=%s&lastName=%s&nickName=%s&email=%s&password=uoyeradiputs3991",
                                                                  getFirstName(), getLastName(), getNickName(), getEmail()));
 
-        if (jsonNode != null) {
-            Logger.debug("Bototron Signup returned: {}", jsonNode.toString());
-        }
-        else {
-            Logger.debug("Bototron Signup error");
+        if (jsonNode == null) {
+            Logger.error("{} signup returned empty", getFullName());
         }
     }
 
@@ -156,11 +155,8 @@ public class BotActor extends UntypedActor {
         JsonNode jsonNode = post(getUrl("change_user_profile"), String.format("firstName=%s&lastName=%s&nickName=%s&email=%s",
                                                                  getFirstName(), getLastName(), getNickName(), getEmail()));
 
-        if (jsonNode != null) {
-            Logger.debug("Bototron changeUserProfile returned: {}", jsonNode.toString());
-        }
-        else {
-            Logger.debug("Bototron changeUserProfile error");
+        if (jsonNode == null) {
+            Logger.error("{} changeUserProfile returned empty", getFullName());
         }
     }
 
@@ -173,6 +169,9 @@ public class BotActor extends UntypedActor {
         if (jsonNode != null) {
             ret = fromJSON(jsonNode.toString(), new TypeReference<List<Contest>>() { });
         }
+        else {
+            Logger.error("{} getActiveContests returned empty", getFullName());
+        }
 
         return ret == null? new ArrayList<Contest>() : ret;
     }
@@ -180,10 +179,15 @@ public class BotActor extends UntypedActor {
     private void enterContest(Contest contest) throws TimeoutException {
         JsonNode jsonNode = get(getUrl(String.format("get_public_contest/%s", contest.contestId))).findValue("soccer_players");
 
-        List<TemplateSoccerPlayer> soccerPlayers = fromJSON(jsonNode.toString(), new TypeReference<List<TemplateSoccerPlayer>>() { });
-        List<TemplateSoccerPlayer> lineup = generateLineup(soccerPlayers, contest.salaryCap);
+        if (jsonNode != null) {
+            List<TemplateSoccerPlayer> soccerPlayers = fromJSON(jsonNode.toString(), new TypeReference<List<TemplateSoccerPlayer>>() { });
+            List<TemplateSoccerPlayer> lineup = generateLineup(soccerPlayers, contest.salaryCap);
 
-        addContestEntry(lineup, contest.contestId);
+            addContestEntry(lineup, contest.contestId);
+        }
+        else {
+            Logger.error("{} enterContest returned empty", getFullName());
+        }
     }
 
     private void addContestEntry(List<TemplateSoccerPlayer> lineup, ObjectId contestId) throws TimeoutException {
@@ -191,11 +195,8 @@ public class BotActor extends UntypedActor {
         JsonNode jsonNode = post(getUrl(String.format("add_contest_entry")),
                                  String.format("contestId=%s&soccerTeam=%s", contestId.toString(), idList));
 
-        if (jsonNode != null) {
-            Logger.debug("Bototron AddContestEntry returned: {}", jsonNode.toString());
-        }
-        else {
-            Logger.debug("Bototron AddContestEntry error");
+        if (jsonNode == null) {
+            Logger.error("{} addContestEntry returned empty", getFullName());
         }
     }
 
@@ -312,7 +313,7 @@ public class BotActor extends UntypedActor {
                             return response.asJson();
                         }
                         catch (Exception exc) {
-                            Logger.debug("WTF 1280 El servidor devolvio Json incorrecto: {}", response.getStatusText());
+                            Logger.debug("WTF 1280 {} el servidor devolvio Json incorrecto: {}", getFullName(), response.getStatusText());
                             return JsonNodeFactory.instance.objectNode();
                         }
                     }
@@ -334,7 +335,7 @@ public class BotActor extends UntypedActor {
                             return response.asJson();
                         }
                         catch (Exception exc) {
-                            Logger.debug("WTF 1279 El servidor devolvio Json incorrecto: {}", response.getStatusText());
+                            Logger.debug("WTF 1279 {} el servidor devolvio Json incorrecto: {}", getFullName(), response.getStatusText());
                             return JsonNodeFactory.instance.objectNode();
                         }
                     }
