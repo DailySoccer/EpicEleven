@@ -2,6 +2,7 @@ package actors;
 
 import akka.actor.Cancellable;
 import akka.actor.UntypedActor;
+import akka.japi.Procedure;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -88,21 +89,26 @@ public class BotActor extends UntypedActor {
                     if (_user == null) {
                         tryLogin();
                     } else {
-                        onTick();
+                        getContext().become(_enterContestBerserker, false);
                     }
                 }
                 catch (TimeoutException exc) {
-                    Logger.info("{} Timeout, probablemente el servidor esta saturado...", getFullName());
+                    Logger.info("{} Timeout 1026, probablemente el servidor esta saturado...", getFullName());
                 }
 
-                _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(2000, TimeUnit.MILLISECONDS), getSelf(),
-                                                                                  "Tick", getContext().dispatcher(), null);
+                reescheduleTick();
+
                 break;
 
             default:
                 unhandled(msg);
                 break;
         }
+    }
+
+    private void reescheduleTick() {
+        _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(2000, TimeUnit.MILLISECONDS), getSelf(),
+                                                                          "Tick", getContext().dispatcher(), null);
     }
 
     private void tryLogin() throws TimeoutException {
@@ -119,14 +125,61 @@ public class BotActor extends UntypedActor {
         changeUserProfile();
     }
 
-    private void onTick() throws TimeoutException {
-        // Vemos los concursos activos en los que no estamos ya metidos, escogemos el primero que este menos del X% lleno y nos metemos
-        for (Contest contest : filterContestByNotEntered(getActiveContests())) {
-            if (!contest.isFull()) {
-                enterContest(contest);
+    Procedure<Object> _enterContestBerserker = new Procedure<Object>() {
+        @Override
+        public void apply(Object msg) {
+            switch ((String)msg) {
+                case "Tick":
+                    try {
+                        // Vemos los concursos activos en los que no estamos ya metidos, escogemos el primero que este menos del X% lleno y nos metemos
+                        for (Contest contest : filterContestByNotEntered(getActiveContests())) {
+                            if (!contest.isFull()) {
+                                enterContest(contest);
+                            }
+                        }
+                    }
+                    catch (TimeoutException exc) {
+                       Logger.info("{} Timeout 1027, probablemente el servidor esta saturado...", getFullName());
+                    }
+                    reescheduleTick();
+                    break;
+                default:
+                    unhandled(msg);
+                    break;
             }
         }
-    }
+    };
+
+    Procedure<Object> _enterContestWithRetries = new Procedure<Object>() {
+        @Override
+        public void apply(Object msg) {
+            switch ((String)msg) {
+                /*
+                case "Tick":
+                    try {
+                        // Hacemos caso a los retries y evitamos los USER_ALREADY_INCLUDED
+
+                        List<Contest> activeContests = getActiveContests();
+                        for (Contest contest : filterContestByNotEntered(activeContests)) {
+                            if (!contest.isFull()) {
+                                enterContest(contest);
+                            }
+                        }
+                    }
+                    catch (TimeoutException exc) {
+                        Logger.info("{} Timeout 1028, probablemente el servidor esta saturado...", getFullName());
+                    }
+                    reescheduleTick();
+                    break;
+                    */
+                default:
+                    unhandled(msg);
+                    break;
+            }
+        }
+    };
+
+
 
     private boolean login() throws TimeoutException {
         _user = null;
