@@ -45,11 +45,14 @@ public class EnterContestJob extends Job {
                     bValid = (contest.entryFee <= 0) || transactionPayment(contest.entryFee);
 
                     if (bValid) {
-                        bValid = transactionContestEntryInsert(contest, contestEntry);
+                        Contest contestModified = transactionInsertContestEntry(contest, contestEntry);
+                        if (contestModified != null) {
+                            bValid = true;
 
-                        // Crear instancias automáticamente según se vayan llenando las anteriores
-                        if (bValid && contest.isFull()) {
-                            TemplateContest.maintainingMinimumNumberOfInstances(contest.templateContestId);
+                            // Crear instancias automáticamente según se vayan llenando las anteriores
+                            if (contestModified.isFull()) {
+                                TemplateContest.maintainingMinimumNumberOfInstances(contest.templateContestId);
+                            }
                         }
                     }
                 }
@@ -119,17 +122,14 @@ public class EnterContestJob extends Job {
         return transactionValid;
     }
 
-    private boolean transactionContestEntryInsert(Contest contest, ContestEntry contestEntry) {
-        contest.contestEntries.add(contestEntry);
-
+    private Contest transactionInsertContestEntry(Contest contest, ContestEntry contestEntry) {
         // Insertamos el contestEntry en el contest
         //  Comprobamos que el contest siga ACTIVE, que el usuario no esté ya inscrito y que existan Huecos Libres
         String query = String.format("{_id: #, state: \"ACTIVE\", contestEntries.userId: {$ne: #}, contestEntries.%s: {$exists: false}}", contest.maxEntries - 1);
-        WriteResult result = Model.contests().update(query, contestId, userId)
-                .with("{$addToSet: {contestEntries: #}}", contestEntry);
-
-        // Comprobamos el número de documentos afectados (error == 0)
-        return (result.getN() > 0);
+        return Model.contests().findAndModify(query, contestId, userId)
+                .with("{$addToSet: {contestEntries: #}}", contestEntry)
+                .returnNew()
+                .as(Contest.class);
     }
 
     private void cancelAccountOp () {
