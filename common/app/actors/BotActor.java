@@ -3,7 +3,6 @@ package actors;
 import akka.actor.Cancellable;
 import akka.actor.UntypedActor;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -18,6 +17,7 @@ import play.libs.ws.WSRequestHolder;
 import play.libs.ws.WSResponse;
 import scala.concurrent.duration.Duration;
 import utils.ListUtils;
+
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -158,11 +158,15 @@ public class BotActor extends UntypedActor {
 
     private void enterContest(Contest contest) {
         JsonNode jsonNode = get(getUrl(String.format("get_public_contest/%s", contest.contestId)));
+        JsonNode jsonNodePlayers = jsonNode.findValue("soccer_players");
 
-        List<TemplateSoccerPlayer> soccerPlayers = fromJSON(jsonNode.findValue("soccer_players").toString(),
-                                                            new TypeReference<List<TemplateSoccerPlayer>>() {});
+        if (jsonNodePlayers == null) {
+            int a = 0;
+        }
 
+        List<TemplateSoccerPlayer> soccerPlayers = fromJSON(jsonNodePlayers.toString(), new TypeReference<List<TemplateSoccerPlayer>>() { });
         List<TemplateSoccerPlayer> lineup = generateLineup(soccerPlayers, contest.salaryCap);
+
         addContestEntry(lineup, contest.contestId);
     }
 
@@ -271,24 +275,26 @@ public class BotActor extends UntypedActor {
     }
 
     private List<Contest> getActiveContests() {
+
+        List<Contest> ret = null;
         JsonNode jsonNode = get(getUrl("get_active_contests")).findValue("contests");
 
         if (jsonNode != null) {
-            return fromJSON(jsonNode.toString(), new TypeReference<List<Contest>>() {
-            });
+            ret = fromJSON(jsonNode.toString(), new TypeReference<List<Contest>>() { });
         }
-        else {
-            return new ArrayList<Contest>();
-        }
+
+        return ret == null? new ArrayList<Contest>() : ret;
     }
 
     private List<Contest> filterContestByNotEntered(List<Contest> contests) {
         List<Contest> ret = new ArrayList<>();
+
         for (Contest contest : contests) {
             if (!contest.containsContestEntryWithUser(_user.userId)) {
                 ret.add(contest);
             }
         }
+
         return ret;
     }
 
@@ -351,9 +357,7 @@ public class BotActor extends UntypedActor {
         T ret = null;
 
         try {
-            // TODO: Ximo fixear numEntries / getNumEntries
-            ret = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                                    .readValue(json, type);
+            ret = new ObjectMapper().readValue(json, type);
         } catch (Exception exc) {
             Logger.debug("WTF 2229", exc);
         }

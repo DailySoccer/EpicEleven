@@ -32,6 +32,7 @@ public class Contest implements JongoId {
     public int getNumEntries() {
         return contestEntries.size();
     }
+    private void setNumEntries(int blah) { }    // Para poder deserializar lo que nos llega por la red sin usar FAIL_ON_UNKNOWN_PROPERTIES
 
     public int maxEntries;
 
