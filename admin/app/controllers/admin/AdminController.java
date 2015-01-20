@@ -27,19 +27,4 @@ public class AdminController extends Controller {
 
         return ok(views.html.lobby.render(contestList, templateContestMap));
     }
-
-    public static boolean isLocalMongo() {
-        return Model.isLocalMongoAppEnv();
-    }
-
-    public static Result setMongoAppEnv(String app) {
-        Model.ensureMongo(app);
-        return ok("");
-    }
-
-    public static Result getMongoAppEnv() {
-        return ok(Model.getMongoAppEnv());
-    }
-
-
 }

@@ -1,7 +1,6 @@
 @()
 
-@import controllers.admin.AdminController
-
+@import controllers.admin.DashboardController
 @import model._
 @import controllers.admin.routes._
 
@@ -57,7 +56,7 @@
 
 <a href="@TemplateContestController.newForm"><button class="btn btn-success">Add Contest</button></a>
 
-@if(AdminController.isLocalMongo()) {
+@if(DashboardController.isLocalMongo()) {
 <div style="float: right; margin-right:100px;">
     <a href="@TemplateContestController.createAll"><button class="btn btn-danger">Create All Contests</button></a>
 </div>

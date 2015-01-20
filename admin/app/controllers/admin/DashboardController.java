@@ -18,11 +18,26 @@ public class DashboardController extends Controller {
     }
 
     public static Result resetDB() {
+
         Model.resetDB();
         MockData.ensureMockDataUsers();
         MockData.ensureCompetitions();
 
         FlashMessage.success("Reset DB: OK");
+
         return index();
+    }
+
+    public static boolean isLocalMongo() {
+        return Model.isLocalMongoAppEnv();
+    }
+
+    public static Result setMongoAppEnv(String app) {
+        Model.ensureMongo(app);
+        return ok("");
+    }
+
+    public static Result getMongoAppEnv() {
+        return ok(Model.getMongoAppEnv());
     }
 }
