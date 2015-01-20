@@ -63,7 +63,7 @@ public class BotActor extends UntypedActor {
 
         if (_botActorId < _NICKNAMES.length) {
             // Primer tick. Nuestro bot se automantiene vivo
-            _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(_botActorId*500, TimeUnit.MILLISECONDS), getSelf(),
+            _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(_botActorId*150, TimeUnit.MILLISECONDS), getSelf(),
                                                                                               "Tick", getContext().dispatcher(), null);
         }
         else {
@@ -95,7 +95,7 @@ public class BotActor extends UntypedActor {
                     Logger.info("{} Timeout, probablemente el servidor esta saturado...", getFullName());
                 }
 
-                _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(10000, TimeUnit.MILLISECONDS), getSelf(),
+                _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(2000, TimeUnit.MILLISECONDS), getSelf(),
                                                                                   "Tick", getContext().dispatcher(), null);
                 break;
 
