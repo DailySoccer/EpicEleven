@@ -28,10 +28,6 @@ public class DashboardController extends Controller {
         return index();
     }
 
-    public static boolean isLocalMongo() {
-        return Model.isLocalMongoAppEnv();
-    }
-
     public static Result setMongoAppEnv(String app) {
         Model.ensureMongo(app);
         return ok("");

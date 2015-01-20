@@ -62,10 +62,7 @@ function getMongo() {
         <option value="dailysoccer">Epic Eleven</option>
     </select>
 
-    @* Hay que hacer la ruta explicita a la funcion porque si no tienes que hacer un @import controllers.admin.DashboardController
-      y esto provoca que no resuelva bien las llamadas posteriores al "router inverso": Realmente hace una llamada a la funcion
-      en los href!! *@
-    @if(controllers.admin.DashboardController.isLocalMongo()) {
+    @if(model.Model.isLocalMongoAppEnv()) {
         <div style="float: right; margin-right:100px;">
 
             <a href="@DashboardController.resetDB" class="btn btn-danger">Reset DB</a>
