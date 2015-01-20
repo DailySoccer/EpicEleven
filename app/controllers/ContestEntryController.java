@@ -62,7 +62,7 @@ public class ContestEntryController extends Controller {
         if (!contestEntryForm.hasErrors()) {
             AddContestEntryParams params = contestEntryForm.get();
 
-            Logger.info("addContestEntry: contestId({}) soccerTeam({})", params.contestId, params.soccerTeam);
+            Logger.info("addContestEntry: userId: {}: contestId({}) soccerTeam({})", theUser.userId.toString(), params.contestId, params.soccerTeam);
 
             // Obtener el contestId : ObjectId
             Contest aContest = Contest.findOne(params.contestId);
