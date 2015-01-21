@@ -47,7 +47,7 @@ public class DashboardController extends Controller {
     }
 
     static public Result switchBotActors(boolean start) {
-        Timeout timeout = new Timeout(scala.concurrent.duration.Duration.create(500, TimeUnit.MILLISECONDS));
+        Timeout timeout = new Timeout(scala.concurrent.duration.Duration.create(2000, TimeUnit.MILLISECONDS));
         ActorSelection actorRef = Akka.system().actorSelection("/user/BotParentActor");
 
         Future<Object> response = Patterns.ask(actorRef, start? "StartChildren" : "StopChildren", timeout);

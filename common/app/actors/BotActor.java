@@ -63,21 +63,8 @@ public class BotActor extends UntypedActor {
     @Override public void preStart() throws Exception {
         super.preStart();
 
-        if (_botActorId < _NICKNAMES.length) {
-            // Primer tick. Nuestro bot se automantiene vivo
-            _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(_botActorId*1000, TimeUnit.MILLISECONDS), getSelf(),
-                                                                                              "Tick", getContext().dispatcher(), null);
-        }
-        else {
-            Logger.debug("WTF 2967 {} no puede comenzar", getFullName());
-        }
-    }
-
-    @Override public void postStop() {
-        // Para evitar que nos lleguen cartas de muertos
-        if (_tickCancellable != null) {
-            _tickCancellable.cancel();
-            _tickCancellable = null;
+        if (_botActorId >= _NICKNAMES.length) {
+            throw new RuntimeException(String.format("WTF 2967 %s no puede comenzar", getFullName()));
         }
     }
 
@@ -96,20 +83,12 @@ public class BotActor extends UntypedActor {
                 catch (TimeoutException exc) {
                     Logger.info("{} Timeout 1026, probablemente el servidor esta saturado...", getFullName());
                 }
-
-                reescheduleTick(Duration.create(90, TimeUnit.SECONDS));
-
                 break;
 
             default:
                 unhandled(msg);
                 break;
         }
-    }
-
-    private void reescheduleTick(FiniteDuration duration) {
-        _tickCancellable = getContext().system().scheduler().scheduleOnce(duration, getSelf(),
-                                                                          "Tick", getContext().dispatcher(), null);
     }
 
     private void tryLogin() throws TimeoutException {
@@ -142,8 +121,8 @@ public class BotActor extends UntypedActor {
                     catch (TimeoutException exc) {
                        Logger.info("{} Timeout 1027, probablemente el servidor esta saturado...", getFullName());
                     }
-                    reescheduleTick(Duration.create(2, TimeUnit.SECONDS));
                     break;
+
                 default:
                     unhandled(msg);
                     break;
@@ -192,7 +171,7 @@ public class BotActor extends UntypedActor {
                         List<Contest> entered = new ArrayList<>();
                         List<Contest> notEntered = filterContestByNotEntered(activeContests, entered);
 
-                        // En cada tick, el bot solo entrara en 1 concurso
+                        // En cada tick el bot solo entrara en 1 concurso
                         for (Contest contest : notEntered) {
                             if (shouldEnter(contest)) {
                                 enterContest(contest);
@@ -203,8 +182,8 @@ public class BotActor extends UntypedActor {
                     catch (TimeoutException exc) {
                         Logger.info("{} Timeout 1028, probablemente el servidor esta saturado...", getFullName());
                     }
-                    reescheduleTick(Duration.create(90, TimeUnit.SECONDS));
                     break;
+
                 default:
                     unhandled(msg);
                     break;
@@ -475,7 +454,6 @@ public class BotActor extends UntypedActor {
 
     int _botActorId;
     User _user;
-    Cancellable _tickCancellable;
 
     static Random _rand = new Random(System.currentTimeMillis());
 
