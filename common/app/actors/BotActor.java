@@ -174,8 +174,16 @@ public class BotActor extends UntypedActor {
         int excessBots = contest.getNumEntries() - (contest.maxEntries - getGoalFreeSlots(contest));
 
         if (excessBots > 0) {
-            // De todos los bots que hay, yo que prioridad tengo, en que posicion estoy?
+            // Tenemos que conseguir que todos los bots esten de acuerdo en quien debe salir. Asi que usamos simplemente
+            // el orden en nuestra lista. Yo que prioridad tengo -> en que posicion estoy en la lista
             List<String> botsInContest = getBotsNicknamesInContest(contest);
+
+            // Aseguramos que la lista de los bots en el concurso esta en el mismo orden que nuestros nicknames
+            Collections.sort(botsInContest, new Comparator<String>() {
+                @Override public int compare(String o1, String o2) {
+                    return _NICKNAMES.indexOf(o1) - _NICKNAMES.indexOf(o2);
+                }
+            });
 
             if (botsInContest.indexOf(getNickName()) < excessBots) {
                 bRet = true;
@@ -207,13 +215,6 @@ public class BotActor extends UntypedActor {
                 }
             }
         }
-
-        // La devolvemos siempre ordenados en orden INVERSO segun aparecen en nuestra lista predefinida
-        Collections.sort(ret, new Comparator<String>() {
-            @Override public int compare(String o1, String o2) {
-                return _NICKNAMES.indexOf(o2) - _NICKNAMES.indexOf(o1);
-            }
-        });
 
         return ret;
     }
