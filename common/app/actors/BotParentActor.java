@@ -15,7 +15,7 @@ public class BotParentActor extends UntypedActor {
                 if (!_childrenStarted) {
                     Logger.debug("BotParentActor arrancando bots hijos");
 
-                    for (int c = 0; c < 10; ++c) {
+                    for (int c = 0; c < 30; ++c) {
                         getContext().actorOf(Props.create(BotActor.class, c), String.format("BotActor%d", c));
                     }
 

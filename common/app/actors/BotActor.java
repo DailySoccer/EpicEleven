@@ -17,6 +17,7 @@ import play.libs.ws.WS;
 import play.libs.ws.WSRequestHolder;
 import play.libs.ws.WSResponse;
 import scala.concurrent.duration.Duration;
+import scala.concurrent.duration.FiniteDuration;
 import utils.ListUtils;
 
 import javax.annotation.Nullable;
@@ -64,7 +65,7 @@ public class BotActor extends UntypedActor {
 
         if (_botActorId < _NICKNAMES.length) {
             // Primer tick. Nuestro bot se automantiene vivo
-            _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(_botActorId*150, TimeUnit.MILLISECONDS), getSelf(),
+            _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(_botActorId*1000, TimeUnit.MILLISECONDS), getSelf(),
                                                                                               "Tick", getContext().dispatcher(), null);
         }
         else {
@@ -89,14 +90,14 @@ public class BotActor extends UntypedActor {
                     if (_user == null) {
                         tryLogin();
                     } else {
-                        getContext().become(_enterContestBerserker, false);
+                        getContext().become(_production, false);
                     }
                 }
                 catch (TimeoutException exc) {
                     Logger.info("{} Timeout 1026, probablemente el servidor esta saturado...", getFullName());
                 }
 
-                reescheduleTick();
+                reescheduleTick(Duration.create(90, TimeUnit.SECONDS));
 
                 break;
 
@@ -106,8 +107,8 @@ public class BotActor extends UntypedActor {
         }
     }
 
-    private void reescheduleTick() {
-        _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(2000, TimeUnit.MILLISECONDS), getSelf(),
+    private void reescheduleTick(FiniteDuration duration) {
+        _tickCancellable = getContext().system().scheduler().scheduleOnce(duration, getSelf(),
                                                                           "Tick", getContext().dispatcher(), null);
     }
 
@@ -132,7 +133,7 @@ public class BotActor extends UntypedActor {
                 case "Tick":
                     try {
                         // Vemos los concursos activos en los que no estamos ya metidos, escogemos el primero que este menos del X% lleno y nos metemos
-                        for (Contest contest : filterContestByNotEntered(getActiveContests())) {
+                        for (Contest contest : filterContestByNotEntered(getActiveContests(), null)) {
                             if (!contest.isFull()) {
                                 enterContest(contest);
                             }
@@ -141,7 +142,7 @@ public class BotActor extends UntypedActor {
                     catch (TimeoutException exc) {
                        Logger.info("{} Timeout 1027, probablemente el servidor esta saturado...", getFullName());
                     }
-                    reescheduleTick();
+                    reescheduleTick(Duration.create(2, TimeUnit.SECONDS));
                     break;
                 default:
                     unhandled(msg);
@@ -149,6 +150,7 @@ public class BotActor extends UntypedActor {
             }
         }
     };
+
 
     Procedure<Object> _enterContestWithRetries = new Procedure<Object>() {
         @Override
@@ -180,6 +182,63 @@ public class BotActor extends UntypedActor {
     };
 
 
+    Procedure<Object> _production = new Procedure<Object>() {
+        @Override
+        public void apply(Object msg) {
+            switch ((String)msg) {
+                case "Tick":
+                    try {
+                        List<Contest> activeContests = getActiveContests();
+                        List<Contest> entered = new ArrayList<>();
+                        List<Contest> notEntered = filterContestByNotEntered(activeContests, entered);
+
+                        // En cada tick, el bot solo entrara en 1 concurso
+                        for (Contest contest : notEntered) {
+                            if (shouldEnter(contest)) {
+                                enterContest(contest);
+                                break;
+                            }
+                        }
+                    }
+                    catch (TimeoutException exc) {
+                        Logger.info("{} Timeout 1028, probablemente el servidor esta saturado...", getFullName());
+                    }
+                    reescheduleTick(Duration.create(90, TimeUnit.SECONDS));
+                    break;
+                default:
+                    unhandled(msg);
+                    break;
+            }
+        }
+    };
+
+    private boolean shouldEnter(Contest contest) {
+
+        // Para head vs head, no nos metemos nunca
+        int goalFreeSlots = 2;
+
+        // Queremos que haya una pequeña variacion en el numero de slots libres, pero tambien queremos que no haya
+        // oscilaciones, es decir, que para el mismo concurso todos los bots esten de acuerdo en cuantos slots libres
+        // hay que dejar
+        Random localRandom = new Random(contest.contestId.hashCode());
+
+        if (contest.maxEntries > 2) {
+            if (contest.maxEntries <= 5) {
+                goalFreeSlots = 2 + localRandom.nextInt(2);    // 2 o 3
+            }
+            else if (contest.maxEntries <= 10) {
+                goalFreeSlots = 2 + localRandom.nextInt(3);    // 2, 3 o 4
+            }
+            else if (contest.maxEntries <= 20) {
+                goalFreeSlots = 3 + localRandom.nextInt(4);    // 3, 4, 5 o 6
+            }
+            else {
+                goalFreeSlots = 5 + localRandom.nextInt(5);    // entre 5 y 9
+            }
+        }
+
+        return (contest.maxEntries - contest.getNumEntries()) > goalFreeSlots;
+    }
 
     private boolean login() throws TimeoutException {
         _user = null;
@@ -342,12 +401,15 @@ public class BotActor extends UntypedActor {
             }
         });
     }
-    private List<Contest> filterContestByNotEntered(List<Contest> contests) {
+    private List<Contest> filterContestByNotEntered(List<Contest> contests, List<Contest> entered) {
         List<Contest> ret = new ArrayList<>();
 
         for (Contest contest : contests) {
             if (!contest.containsContestEntryWithUser(_user.userId)) {
                 ret.add(contest);
+            }
+            else if (entered != null) {
+                entered.add(contest);
             }
         }
 
