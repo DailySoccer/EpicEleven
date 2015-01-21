@@ -57,6 +57,12 @@ public class Contest implements JongoId {
     public List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
 
     @JsonView(JsonViews.NotForClient.class)
+    public Date contestOpen;
+
+    @JsonView(JsonViews.NotForClient.class)
+    public Date contestClose;
+
+    @JsonView(JsonViews.NotForClient.class)
     public List<Object> pendingJobs;
 
     @JsonView(JsonViews.NotForClient.class)

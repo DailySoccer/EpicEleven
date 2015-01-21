@@ -1,9 +1,6 @@
 package actors;
 
-import model.Contest;
-import model.Model;
-import model.TemplateContest;
-import model.TemplateMatchEvent;
+import model.*;
 import model.jobs.*;
 import model.opta.OptaEvent;
 import model.opta.OptaProcessor;
@@ -75,7 +72,7 @@ public class OptaMatchEventChangeProcessor {
         Model.contests()
                 .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}", matchEvent.templateMatchEventId)
                 .multi()
-                .with("{$set: {state: \"LIVE\"}}");
+                .with("{$set: {state: \"LIVE\", contestOpen: #}}", GlobalDate.getCurrentDate());
     }
 
     private void actionWhenMatchEventIsFinished(TemplateMatchEvent matchEvent) {
@@ -91,7 +88,7 @@ public class OptaMatchEventChangeProcessor {
                 Model.contests()
                         .update("{templateContestId: #, state: \"LIVE\"}", templateContest.templateContestId)
                         .multi()
-                        .with("{$set: {state: \"HISTORY\"}}");
+                        .with("{$set: {state: \"HISTORY\", contestClose: #}}", GlobalDate.getCurrentDate());
             }
         }
 
