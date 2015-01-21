@@ -7,6 +7,7 @@ import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.ws.{WS, WSRequestHolder}
 import play.api.mvc.{EssentialAction, Filter, Filters}
 import play.filters.gzip.GzipFilter
+import stormpath.StormPathClient
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -80,6 +81,13 @@ object Global extends GlobalSettings {
 
     model.Model.init()
     actors.DailySoccerActors.init(isWorker)
+
+    if (StormPathClient.instance.isConnected) {
+      Logger.info("Stormpath connected properly")
+    }
+    else {
+      Logger.info( "Stormpath not connected")
+    }
   }
 
   override def onStop(app: Application) {
