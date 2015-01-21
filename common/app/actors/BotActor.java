@@ -35,7 +35,7 @@ public class BotActor extends UntypedActor {
         _botActorId = botActorId;
     }
 
-    private String getUrl(String suffix) {
+    private String composeUrl(String suffix) {
         return String.format("http://localhost:9000/%s", suffix);
     }
 
@@ -268,10 +268,10 @@ public class BotActor extends UntypedActor {
     private boolean login() throws TimeoutException {
         _user = null;
 
-        JsonNode jsonNode = post(getUrl("login"), String.format("email=%s&password=uoyeradiputs3991", getEmail()));
+        JsonNode jsonNode = post("login", String.format("email=%s&password=uoyeradiputs3991", getEmail()));
 
         if (jsonNode.findValue("sessionToken") != null) {
-            jsonNode = get(getUrl("get_user_profile"));
+            jsonNode = get("get_user_profile");
             _user = fromJSON(jsonNode.toString(), new TypeReference<User>() {});
         }
 
@@ -280,8 +280,8 @@ public class BotActor extends UntypedActor {
 
 
     private void signup() throws TimeoutException {
-        JsonNode jsonNode = post(getUrl("signup"), String.format("firstName=%s&lastName=%s&nickName=%s&email=%s&password=uoyeradiputs3991",
-                                                                 getFirstName(), getLastName(), getNickName(), getEmail()));
+        JsonNode jsonNode = post("signup", String.format("firstName=%s&lastName=%s&nickName=%s&email=%s&password=uoyeradiputs3991",
+                                                         getFirstName(), getLastName(), getNickName(), getEmail()));
 
         if (jsonNode == null) {
             Logger.error("{} signup returned empty", getFullName());
@@ -290,7 +290,7 @@ public class BotActor extends UntypedActor {
 
 
     private void changeUserProfile() throws TimeoutException {
-        JsonNode jsonNode = post(getUrl("change_user_profile"), String.format("firstName=%s&lastName=%s&nickName=%s&email=%s",
+        JsonNode jsonNode = post("change_user_profile", String.format("firstName=%s&lastName=%s&nickName=%s&email=%s",
                                                                  getFirstName(), getLastName(), getNickName(), getEmail()));
 
         if (jsonNode == null) {
@@ -302,7 +302,7 @@ public class BotActor extends UntypedActor {
     private List<Contest> getActiveContests() throws TimeoutException {
 
         List<Contest> ret = null;
-        JsonNode jsonNode = get(getUrl("get_active_contests")).findValue("contests");
+        JsonNode jsonNode = get("get_active_contests").findValue("contests");
 
         if (jsonNode != null) {
             ret = fromJSON(jsonNode.toString(), new TypeReference<List<Contest>>() { });
@@ -315,7 +315,7 @@ public class BotActor extends UntypedActor {
     }
 
     private void enterContest(Contest contest) throws TimeoutException {
-        JsonNode jsonNode = get(getUrl(String.format("get_public_contest/%s", contest.contestId))).findValue("soccer_players");
+        JsonNode jsonNode = get(String.format("get_public_contest/%s", contest.contestId)).findValue("soccer_players");
 
         if (jsonNode != null) {
             List<TemplateSoccerPlayer> soccerPlayers = fromJSON(jsonNode.toString(), new TypeReference<List<TemplateSoccerPlayer>>() { });
@@ -330,7 +330,7 @@ public class BotActor extends UntypedActor {
 
     private void addContestEntry(List<TemplateSoccerPlayer> lineup, ObjectId contestId) throws TimeoutException {
         String idList = new ObjectMapper().valueToTree(ListUtils.stringListFromObjectIdList(ListUtils.convertToIdList(lineup))).toString();
-        JsonNode jsonNode = post(getUrl(String.format("add_contest_entry")),
+        JsonNode jsonNode = post("add_contest_entry",
                                  String.format("contestId=%s&soccerTeam=%s", contestId.toString(), idList));
 
         if (jsonNode == null) {
@@ -340,7 +340,7 @@ public class BotActor extends UntypedActor {
 
     private List<UserInfo> getUsersInfoInContest(Contest contest) throws TimeoutException {
         List<UserInfo> ret;
-        JsonNode jsonNode = get(getUrl(String.format("get_contest_info/%s", contest.contestId))).findValue("users_info");
+        JsonNode jsonNode = get(String.format("get_contest_info/%s", contest.contestId)).findValue("users_info");
 
         if (jsonNode != null) {
             ret = fromJSON(jsonNode.toString(), new TypeReference<List<UserInfo>>() { });
@@ -457,7 +457,7 @@ public class BotActor extends UntypedActor {
     }
 
     private JsonNode post(String url, String params) throws TimeoutException {
-        WSRequestHolder requestHolder = WS.url(url);
+        WSRequestHolder requestHolder = WS.url(composeUrl(url));
 
         F.Promise<WSResponse> response = requestHolder.setContentType("application/x-www-form-urlencoded")
                                                       .setHeader("X-Session-Token", getEmail()).post(params);
@@ -480,7 +480,7 @@ public class BotActor extends UntypedActor {
     }
 
     private JsonNode get(String url) throws TimeoutException {
-        WSRequestHolder requestHolder = WS.url(url);
+        WSRequestHolder requestHolder = WS.url(composeUrl(url));
 
         F.Promise<WSResponse> response = requestHolder.setHeader("X-Session-Token", getEmail()).get();
 
