@@ -20,6 +20,12 @@ public class Contest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
+    @JsonView(JsonViews.NotForClient.class)
+    public Date startedAt;
+
+    @JsonView(JsonViews.NotForClient.class)
+    public Date finishedAt;
+
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public ContestState state = ContestState.OFF;
 
@@ -55,12 +61,6 @@ public class Contest implements JongoId {
 
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyLiveContests.class, JsonViews.InstanceSoccerPlayers.class})
     public List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
-
-    @JsonView(JsonViews.NotForClient.class)
-    public Date contestOpen;
-
-    @JsonView(JsonViews.NotForClient.class)
-    public Date contestClose;
 
     @JsonView(JsonViews.NotForClient.class)
     public List<Object> pendingJobs;

@@ -67,7 +67,7 @@ public class OptaMatchEventChangeProcessor {
         Model.contests()
                 .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}", matchEvent.templateMatchEventId)
                 .multi()
-                .with("{$set: {state: \"LIVE\", contestOpen: #}}", GlobalDate.getCurrentDate());
+                .with("{$set: {state: \"LIVE\", startedAt: #}}", GlobalDate.getCurrentDate());
     }
 
     private void actionWhenMatchEventIsFinished(TemplateMatchEvent matchEvent) {
@@ -83,7 +83,7 @@ public class OptaMatchEventChangeProcessor {
                 Model.contests()
                         .update("{templateContestId: #, state: \"LIVE\"}", templateContest.templateContestId)
                         .multi()
-                        .with("{$set: {state: \"HISTORY\", contestClose: #}}", GlobalDate.getCurrentDate());
+                        .with("{$set: {state: \"HISTORY\", finishedAt: #}}", GlobalDate.getCurrentDate());
             }
         }
 
