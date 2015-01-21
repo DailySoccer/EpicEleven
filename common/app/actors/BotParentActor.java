@@ -16,7 +16,7 @@ public class BotParentActor extends UntypedActor {
 
     @Override public void postStop() {
         // Para evitar que nos lleguen cartas de muertos
-        cancelTick();
+        cancelTicking();
     }
 
     @Override
@@ -32,7 +32,7 @@ public class BotParentActor extends UntypedActor {
 
                     _childrenStarted = true;
                     _currentActorIdTick = 0;
-                    getSelf().tell("Tick", getSelf());
+                    startTicking();
                 }
                 else {
                     Logger.error("WTF 1567 Recibido StartChildren a destiempo");
@@ -56,7 +56,7 @@ public class BotParentActor extends UntypedActor {
                     }
 
                     _childrenStarted = false;
-                    cancelTick();
+                    cancelTicking();
                 }
                 else {
                     Logger.error("WTF 1560 Recibido StopChildren a destiempo");
@@ -70,38 +70,61 @@ public class BotParentActor extends UntypedActor {
                 sender().tell(_childrenStarted, getSelf());
                 break;
 
-            case "Tick":
+            case "NormalTick":
                 ActorRef child = getContext().getChild(String.format("BotActor%d", _currentActorIdTick));
 
                 // Es posible que el actor este muerto temporalmente, nos lo saltamos
                 if (child != null) {
                     child.tell("Tick", getSelf());
+                }
 
-                    _currentActorIdTick++;
-                    if (_currentActorIdTick >= _NUM_BOTS) {
-                        _currentActorIdTick = 0;
-                    }
+                _currentActorIdTick++;
+                if (_currentActorIdTick >= _NUM_BOTS) {
+                    _currentActorIdTick = 0;
                 }
 
                 reescheduleTick(Duration.create(1, TimeUnit.SECONDS));
                 break;
+
+            case "AggressiveTick":
+                for (ActorRef actorRef : getContext().getChildren()) {
+                    actorRef.tell("Tick", getSelf());
+                }
+
+                reescheduleTick(Duration.create(5, TimeUnit.SECONDS));
+                break;
+
+            default:
+                unhandled(msg);
+                break;
         }
     }
 
-    private void cancelTick() {
+    private void startTicking() {
+        getSelf().tell(_currentTickMode.name(), getSelf());
+    }
+
+    private void cancelTicking() {
         if (_tickCancellable != null) {
             _tickCancellable.cancel();
             _tickCancellable = null;
         }
     }
 
-
     private void reescheduleTick(FiniteDuration duration) {
-        _tickCancellable = getContext().system().scheduler().scheduleOnce(duration, getSelf(), "Tick", getContext().dispatcher(), null);
+        _tickCancellable = getContext().system().scheduler().scheduleOnce(duration, getSelf(), _currentTickMode.name(),
+                                                                          getContext().dispatcher(), null);
     }
 
-    static final int _NUM_BOTS = 30;
 
+    static final int _NUM_BOTS = 2;
+
+    enum TickingMode {
+        NormalTick,     // En minisculas pq los vamos a usar directamente asString
+        AggressiveTick
+    };
+
+    TickingMode _currentTickMode = TickingMode.NormalTick;
     Cancellable _tickCancellable;
     int _currentActorIdTick;
     boolean _childrenStarted = false;

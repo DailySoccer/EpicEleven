@@ -63,6 +63,7 @@ public class BotActor extends UntypedActor {
     @Override public void preStart() throws Exception {
         super.preStart();
 
+        // Lanzando en preStart una excepcion nuestro supervisor no intentara volvernos a encender
         if (_botActorId >= _NICKNAMES.length) {
             throw new RuntimeException(String.format("WTF 2967 %s no puede comenzar", getFullName()));
         }
@@ -77,7 +78,7 @@ public class BotActor extends UntypedActor {
                     if (_user == null) {
                         tryLogin();
                     } else {
-                        getContext().become(_production, false);
+                        getContext().become(_enterContestBerserker, false);
                     }
                 }
                 catch (TimeoutException exc) {
