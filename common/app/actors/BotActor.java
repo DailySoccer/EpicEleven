@@ -31,8 +31,14 @@ import java.util.concurrent.TimeoutException;
 //
 public class BotActor extends UntypedActor {
 
-    public BotActor(int botActorId) {
+    public enum Personality {
+        BERSERKER,
+        PRODUCTION
+    }
+
+    public BotActor(int botActorId, Personality pers) {
         _botActorId = botActorId;
+        _personality = pers;
     }
 
     private String composeUrl(String suffix) {
@@ -78,7 +84,18 @@ public class BotActor extends UntypedActor {
                     if (_user == null) {
                         tryLogin();
                     } else {
-                        getContext().become(_production, false);
+                        Procedure<Object> selectedPersonality;
+
+                        switch (_personality) {
+                            case BERSERKER:
+                                selectedPersonality = _berserker;
+                                break;
+                            default:
+                                selectedPersonality = _production;
+                                break;
+                        }
+
+                        getContext().become(selectedPersonality, false);
                         getSelf().tell("Tick", getSender());
                     }
                 }
@@ -107,7 +124,7 @@ public class BotActor extends UntypedActor {
         changeUserProfile();
     }
 
-    Procedure<Object> _enterContestBerserker = new Procedure<Object>() {
+    Procedure<Object> _berserker = new Procedure<Object>() {
         @Override
         public void apply(Object msg) {
             switch ((String)msg) {
@@ -528,6 +545,7 @@ public class BotActor extends UntypedActor {
 
     int _botActorId;
     User _user;
+    Personality _personality;
 
     static Random _rand = new Random(System.currentTimeMillis());
 
