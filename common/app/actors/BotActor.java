@@ -185,7 +185,13 @@ public class BotActor extends UntypedActor {
                 }
             });
 
-            if (botsInContest.indexOf(getNickName()) < excessBots) {
+            int myPosition = botsInContest.indexOf(getNickName());
+
+            if (myPosition < 0) {
+                throw new RuntimeException(String.format("WTF 7999 %s no esta en el concurso %s", getFullName(), contest.contestId.toString()));
+            }
+
+            if (myPosition < excessBots) {
                 bRet = true;
             }
         }
@@ -193,8 +199,15 @@ public class BotActor extends UntypedActor {
         return bRet;
     }
 
-    private void leaveContest(Contest contest) {
+    private void leaveContest(Contest contest) throws TimeoutException {
         Logger.debug("{} leaveContest {}", getFullName(), contest.contestId);
+
+        for (ContestEntry contestEntry : contest.contestEntries) {
+            if (contestEntry.userId.equals(_user.userId)) {
+                post("cancel_contest_entry", String.format("contestEntryId=%s", contestEntry.contestEntryId));
+                break;
+            }
+        }
     }
 
     private List<String> getBotsNicknamesInContest(Contest contest) throws TimeoutException {
