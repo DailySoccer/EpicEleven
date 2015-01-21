@@ -52,7 +52,7 @@ public class BotActor extends UntypedActor {
     }
 
     private String getNickName() {
-        return _NICKNAMES[_botActorId];
+        return _NICKNAMES.get(_botActorId);
     }
 
     private String getEmail() {
@@ -64,7 +64,7 @@ public class BotActor extends UntypedActor {
         super.preStart();
 
         // Lanzando en preStart una excepcion nuestro supervisor no intentara volvernos a encender
-        if (_botActorId >= _NICKNAMES.length) {
+        if (_botActorId >= _NICKNAMES.size()) {
             throw new RuntimeException(String.format("WTF 2967 %s no puede comenzar", getFullName()));
         }
     }
@@ -78,7 +78,8 @@ public class BotActor extends UntypedActor {
                     if (_user == null) {
                         tryLogin();
                     } else {
-                        getContext().become(_enterContestBerserker, false);
+                        getContext().become(_production, false);
+                        getSelf().tell("Tick", getSender());
                     }
                 }
                 catch (TimeoutException exc) {
@@ -112,7 +113,7 @@ public class BotActor extends UntypedActor {
             switch ((String)msg) {
                 case "Tick":
                     try {
-                        // Vemos los concursos activos en los que no estamos ya metidos, escogemos el primero que este menos del X% lleno y nos metemos
+                        // Vemos los concursos activos en los que no estamos ya metidos, escogemos los que no esten llenos y nos metemos
                         for (Contest contest : filterContestByNotEntered(getActiveContests(), null)) {
                             if (!contest.isFull()) {
                                 enterContest(contest);
@@ -130,37 +131,6 @@ public class BotActor extends UntypedActor {
             }
         }
     };
-
-
-    Procedure<Object> _enterContestWithRetries = new Procedure<Object>() {
-        @Override
-        public void apply(Object msg) {
-            switch ((String)msg) {
-                /*
-                case "Tick":
-                    try {
-                        // Hacemos caso a los retries y evitamos los USER_ALREADY_INCLUDED
-
-                        List<Contest> activeContests = getActiveContests();
-                        for (Contest contest : filterContestByNotEntered(activeContests)) {
-                            if (!contest.isFull()) {
-                                enterContest(contest);
-                            }
-                        }
-                    }
-                    catch (TimeoutException exc) {
-                        Logger.info("{} Timeout 1028, probablemente el servidor esta saturado...", getFullName());
-                    }
-                    reescheduleTick();
-                    break;
-                    */
-                default:
-                    unhandled(msg);
-                    break;
-            }
-        }
-    };
-
 
     Procedure<Object> _production = new Procedure<Object>() {
         @Override
@@ -183,7 +153,7 @@ public class BotActor extends UntypedActor {
                         // Nos salimos de concursos donde ha entrado ya mas gente
                         for (Contest contest : entered) {
                             if (shouldLeave(contest)) {
-                                //leaveContest(contest);
+                                leaveContest(contest);
                             }
                         }
                     }
@@ -215,6 +185,10 @@ public class BotActor extends UntypedActor {
         return bRet;
     }
 
+    private void leaveContest(Contest contest) {
+        Logger.debug("{} leaveContest {}", getFullName(), contest.contestId);
+    }
+
     private List<String> getBotsNicknamesInContest(Contest contest) throws TimeoutException {
         List<String> ret = new ArrayList<>();
 
@@ -224,16 +198,19 @@ public class BotActor extends UntypedActor {
         for (ContestEntry contestEntry : contest.contestEntries) {
             UserInfo userInfo = findUserInfoInContestEntries(contestEntry, usersInfo);
 
-            int index = _NICKNAMES.indexOf(userInfo.nickName);
-            if (index != -1) {
-                ret.add(_NICKNAMES.get(index));
+            // Es posible que entre que pedimos get_active_contests y get_contest_info la lista haya cambiado, asi que
+            // podemos no encontrar el UserInfo de una ContestEntry. Por eso, tenemos que checkear con null
+            if (userInfo != null) {
+                int index = _NICKNAMES.indexOf(userInfo.nickName);
+                if (index != -1) {
+                    ret.add(_NICKNAMES.get(index));
+                }
             }
         }
 
-        // La devolvemos siempre ordenada segun aparecen en nuestra lista predefinida
+        // La devolvemos siempre ordenados en orden INVERSO segun aparecen en nuestra lista predefinida
         Collections.sort(ret, new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
+            @Override public int compare(String o1, String o2) {
                 return _NICKNAMES.indexOf(o2) - _NICKNAMES.indexOf(o1);
             }
         });
@@ -244,7 +221,7 @@ public class BotActor extends UntypedActor {
     private UserInfo findUserInfoInContestEntries(ContestEntry contestEntry, List<UserInfo> usersInfo) {
         UserInfo ret = null;
         for (UserInfo userInfo : usersInfo) {
-            if (userInfo.userId == contestEntry.userId) {
+            if (userInfo.userId.equals(contestEntry.userId)) {
                 ret = userInfo;
                 break;
             }
@@ -365,7 +342,7 @@ public class BotActor extends UntypedActor {
         JsonNode jsonNode = get(getUrl(String.format("get_contest_info/%s", contest.contestId))).findValue("users_info");
 
         if (jsonNode != null) {
-            ret = fromJSON(jsonNode. toString(), new TypeReference<List<UserInfo>>() { });
+            ret = fromJSON(jsonNode.toString(), new TypeReference<List<UserInfo>>() { });
         }
         else {
             Logger.error("{} enterContest returned empty", getFullName());

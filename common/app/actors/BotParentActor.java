@@ -118,7 +118,7 @@ public class BotParentActor extends UntypedActor {
     }
 
 
-    static final int _NUM_BOTS = 2;
+    static final int _NUM_BOTS = 30;
 
     enum TickingMode {
         NormalTick,     // En minisculas pq los vamos a usar directamente asString
