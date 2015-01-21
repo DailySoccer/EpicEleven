@@ -91,22 +91,7 @@ public class OptaMatchEventChangeProcessor {
     }
 
     private void cancelInvalidContests(TemplateMatchEvent matchEvent) {
-        List<Contest> invalidContests = new ArrayList<>();
-
-        // Buscar aquellos contests que únicamente tengan ninguna o una entrada de usuario
-        invalidContests.addAll(Contest.findAllActiveWithNoneOrOneEntry(matchEvent.templateMatchEventId));
-
-        // Buscar aquellos contests que incluyan el partido, que tengan un entryFee y que no estén llenos...
-        invalidContests.addAll(Contest.findAllActiveNotFullWithEntryFee(matchEvent.templateMatchEventId));
-
-        Set<ObjectId> canceled = new HashSet<>();
-        for (Contest contest: invalidContests) {
-            // Evitamos solicitar 2 veces la cancelación de un contest
-            if (canceled.contains(contest.contestId)) {
-                continue;
-            }
-            canceled.add(contest.contestId);
-
+        for (Contest contest: Contest.findAllActiveAndInvalid(matchEvent.templateMatchEventId)) {
             // Crear un job para cancelar el contest
             Job job = CancelContestJob.create(contest.contestId);
             if (!job.isDone()) {

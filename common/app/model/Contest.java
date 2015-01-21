@@ -187,6 +187,26 @@ public class Contest implements JongoId {
                 .as(Contest.class));
     }
 
+    static public List<Contest> findAllActiveAndInvalid(ObjectId templateMatchEventId) {
+        // 1. Busca aquellos contests que estén ACTIVOS e incluyan ese partido
+        // 2. Precalcula una serie de parámetros ("entries": número de entries, "entryFee": el dinero de la entrada, "notFull": si no están llenos)
+        // 3. Se queda con los contests que:
+        //      a) Tienen entryFree y no están llenos
+        //      b) Están vacíos o tienen una única entry (< 2 entries)
+        // 4. Devuelve únicamente los ids
+        return Model.contests()
+                .aggregate("{$match: { state: \"ACTIVE\", templateMatchEventIds: {$in: [#]}}}", templateMatchEventId)
+                .and("{$project: {\"entries\": {$size: \"$contestEntries\"}, entryFee: 1, notFull: { $lt: [ {$size: \"$contestEntries\"}, \"$maxEntries\"] }}}")
+                .and("{$match:" +
+                        "{$or: [" +
+                            "{$and: [{\"entryFee\": {$gt: 0}}, {notFull: true}] }," +
+                            "{entries: {$lt: 2}}" +
+                        "]}" +
+                        "}")
+                .and("{$project: {_id: 1}}")
+                .as(Contest.class);
+    }
+
     static public List<Contest> findAllHistoryNotClosed() {
         return ListUtils.asList(Model.contests().find("{state: \"HISTORY\", closed: false}").as(Contest.class));
     }
