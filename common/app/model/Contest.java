@@ -172,6 +172,14 @@ public class Contest implements JongoId {
                 .as(Contest.class));
     }
 
+    static public List<Contest> findAllActiveWithNoneOrOneEntry(ObjectId templateMatchEventId) {
+        String query = String.format("{$and: [{state: \"ACTIVE\", templateMatchEventIds: {$in:[#]}, 'contestEntries.%s': {$exists: false}}]}", 1);
+        return ListUtils.asList(Model.contests()
+                .find(query, templateMatchEventId)
+                .projection(ViewProjection.get(JsonViews.Public.class, Contest.class))
+                .as(Contest.class));
+    }
+
     static public List<Contest> findAllActiveNotFullWithEntryFee(ObjectId templateMatchEventId) {
         return ListUtils.asList(Model.contests()
                 .find("{$and: [{state: \"ACTIVE\", templateMatchEventIds: {$in:[#]}, entryFee: {$gt: 0}}, {$where: \"this.contestEntries.length < this.maxEntries\"}]}", templateMatchEventId)

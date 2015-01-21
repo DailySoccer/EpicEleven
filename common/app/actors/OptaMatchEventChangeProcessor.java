@@ -1,13 +1,16 @@
 package actors;
 
+import org.bson.types.ObjectId;
 import model.*;
 import model.jobs.*;
 import model.opta.OptaEvent;
 import model.opta.OptaProcessor;
 import play.Logger;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class OptaMatchEventChangeProcessor {
     public OptaMatchEventChangeProcessor(OptaProcessor processor) {
@@ -53,15 +56,7 @@ public class OptaMatchEventChangeProcessor {
     }
 
     private void actionWhenMatchEventIsStarted(TemplateMatchEvent matchEvent) {
-        // Buscar aquellos contests que incluyan el partido, que tengan un entryFee y que no estén llenos...
-        List<Contest> contestsNotFull = Contest.findAllActiveNotFullWithEntryFee(matchEvent.templateMatchEventId);
-        for (Contest contest: contestsNotFull) {
-            // Crear un job para cancelar el contest
-            Job job = CancelContestJob.create(contest.contestId);
-            if (!job.isDone()) {
-                Logger.error("CancelContestJob {} error", contest.contestId);
-            }
-        }
+        cancelInvalidContests(matchEvent);
 
         // Los template contests (que incluyan este match event y que esten "activos") tienen que ser marcados como "live"
         Model.templateContests()
@@ -93,6 +88,31 @@ public class OptaMatchEventChangeProcessor {
         }
 
         matchEvent.saveStats();
+    }
+
+    private void cancelInvalidContests(TemplateMatchEvent matchEvent) {
+        List<Contest> invalidContests = new ArrayList<>();
+
+        // Buscar aquellos contests que únicamente tengan ninguna o una entrada de usuario
+        invalidContests.addAll(Contest.findAllActiveWithNoneOrOneEntry(matchEvent.templateMatchEventId));
+
+        // Buscar aquellos contests que incluyan el partido, que tengan un entryFee y que no estén llenos...
+        invalidContests.addAll(Contest.findAllActiveNotFullWithEntryFee(matchEvent.templateMatchEventId));
+
+        Set<ObjectId> canceled = new HashSet<>();
+        for (Contest contest: invalidContests) {
+            // Evitamos solicitar 2 veces la cancelación de un contest
+            if (canceled.contains(contest.contestId)) {
+                continue;
+            }
+            canceled.add(contest.contestId);
+
+            // Crear un job para cancelar el contest
+            Job job = CancelContestJob.create(contest.contestId);
+            if (!job.isDone()) {
+                Logger.error("CancelContestJob {} error", contest.contestId);
+            }
+        }
     }
 
     private HashSet<String> _changedOptaMatchEventIds;
