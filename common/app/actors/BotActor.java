@@ -179,6 +179,13 @@ public class BotActor extends UntypedActor {
                                 break;
                             }
                         }
+
+                        // Nos salimos de concursos donde ha entrado ya mas gente
+                        for (Contest contest : entered) {
+                            if (shouldLeave(contest)) {
+                                //leaveContest(contest);
+                            }
+                        }
                     }
                     catch (TimeoutException exc) {
                         Logger.info("{} Timeout 1028, probablemente el servidor esta saturado...", getFullName());
@@ -192,8 +199,68 @@ public class BotActor extends UntypedActor {
         }
     };
 
-    private boolean shouldEnter(Contest contest) {
+    private boolean shouldLeave(Contest contest) throws TimeoutException {
+        boolean bRet = false;
+        int excessBots = contest.getNumEntries() - (contest.maxEntries - getGoalFreeSlots(contest));
 
+        if (excessBots > 0) {
+            // De todos los bots que hay, yo que prioridad tengo, en que posicion estoy?
+            List<String> botsInContest = getBotsNicknamesInContest(contest);
+
+            if (botsInContest.indexOf(getNickName()) < excessBots) {
+                bRet = true;
+            }
+        }
+
+        return bRet;
+    }
+
+    private List<String> getBotsNicknamesInContest(Contest contest) throws TimeoutException {
+        List<String> ret = new ArrayList<>();
+
+        // Hacemos un request al server para obtener los nicknames de los participantes
+        List<UserInfo> usersInfo = getUsersInfoInContest(contest);
+
+        for (ContestEntry contestEntry : contest.contestEntries) {
+            UserInfo userInfo = findUserInfoInContestEntries(contestEntry, usersInfo);
+
+            int index = _NICKNAMES.indexOf(userInfo.nickName);
+            if (index != -1) {
+                ret.add(_NICKNAMES.get(index));
+            }
+        }
+
+        // La devolvemos siempre ordenada segun aparecen en nuestra lista predefinida
+        Collections.sort(ret, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return _NICKNAMES.indexOf(o2) - _NICKNAMES.indexOf(o1);
+            }
+        });
+
+        return ret;
+    }
+
+    private UserInfo findUserInfoInContestEntries(ContestEntry contestEntry, List<UserInfo> usersInfo) {
+        UserInfo ret = null;
+        for (UserInfo userInfo : usersInfo) {
+            if (userInfo.userId == contestEntry.userId) {
+                ret = userInfo;
+                break;
+            }
+        }
+        return ret;
+    }
+
+    private int getNumFreeSlots(Contest contest) {
+        return contest.maxEntries - contest.getNumEntries();
+    }
+
+    private boolean shouldEnter(Contest contest) {
+        return getNumFreeSlots(contest) > getGoalFreeSlots(contest);
+    }
+
+    private int getGoalFreeSlots(Contest contest) {
         // Para head vs head, no nos metemos nunca
         int goalFreeSlots = 2;
 
@@ -217,7 +284,7 @@ public class BotActor extends UntypedActor {
             }
         }
 
-        return (contest.maxEntries - contest.getNumEntries()) > goalFreeSlots;
+        return goalFreeSlots;
     }
 
     private boolean login() throws TimeoutException {
@@ -291,6 +358,21 @@ public class BotActor extends UntypedActor {
         if (jsonNode == null) {
             Logger.error("{} addContestEntry returned empty", getFullName());
         }
+    }
+
+    private List<UserInfo> getUsersInfoInContest(Contest contest) throws TimeoutException {
+        List<UserInfo> ret;
+        JsonNode jsonNode = get(getUrl(String.format("get_contest_info/%s", contest.contestId))).findValue("users_info");
+
+        if (jsonNode != null) {
+            ret = fromJSON(jsonNode. toString(), new TypeReference<List<UserInfo>>() { });
+        }
+        else {
+            Logger.error("{} enterContest returned empty", getFullName());
+            ret = new ArrayList<>();
+        }
+
+        return ret;
     }
 
     private List<TemplateSoccerPlayer> generateLineup(List<TemplateSoccerPlayer> soccerPlayers, int salaryCap) {
@@ -458,7 +540,7 @@ public class BotActor extends UntypedActor {
 
     static Random _rand = new Random(System.currentTimeMillis());
 
-    static final private String[] _NICKNAMES = {
+    static final private List<String> _NICKNAMES = Arrays.asList(
             "Alic1a",
             "TheOneSeeker",
             "golpeador",
@@ -559,5 +641,5 @@ public class BotActor extends UntypedActor {
             "seb_lover",
             "atleti_fan",
             "CavalleroSebolla"
-    };
+    );
 }

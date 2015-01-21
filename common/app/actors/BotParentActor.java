@@ -73,7 +73,8 @@ public class BotParentActor extends UntypedActor {
             case "NormalTick":
                 ActorRef child = getContext().getChild(String.format("BotActor%d", _currentActorIdTick));
 
-                // Es posible que el actor este muerto temporalmente, nos lo saltamos
+                // Es posible que el actor este muerto (temporalmente en caso de excepcion procesando un mensaje o permanentemente
+                // si no pudo inicializar). Nos lo saltamos
                 if (child != null) {
                     child.tell("Tick", getSelf());
                 }
