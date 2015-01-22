@@ -129,8 +129,7 @@ public class BotActor extends UntypedActor {
     }
 
     void onTickBerserker() throws TimeoutException {
-        // Vemos los concursos activos en los que no estamos ya metidos, escogemos los que no esten llenos y nos metemos
-        // en todos ellos en el mismo tick, a lo berserker
+        // Vemos los concursos activos en los que no estamos ya metidos y nos metemos en todos ellos en el mismo tick, a lo berserker
         List<Contest> notEntered = filterContestByNotEntered(getActiveContests(), null);
 
         // El servidor nos puede cambiar de concurso. Vamos guardando aqui los cambios para no volver a intentar entrar
@@ -138,7 +137,7 @@ public class BotActor extends UntypedActor {
         List<String> enteredContestIds = new ArrayList<>();
 
         for (Contest contest : notEntered) {
-            if (!enteredContestIds.contains(contest.contestId.toString()) && !contest.isFull()) {
+            if (!enteredContestIds.contains(contest.contestId.toString())) {
                 String enteredContestId = enterContest(contest);
 
                 if (enteredContestId != null && !enteredContestId.equals(contest.contestId.toString())) {
@@ -370,7 +369,7 @@ public class BotActor extends UntypedActor {
             JsonNode error = jsonNode.findValue("error");
 
             if (error == null) {
-                enteredContestId = jsonNode.findValue("contestId").toString();
+                enteredContestId = jsonNode.findValue("contestId").toString().replace("\"", "");
             }
             else {
                 Logger.error("{} addContestEntry produjo en un error en el servidor {}", getFullName(), error.toString());
