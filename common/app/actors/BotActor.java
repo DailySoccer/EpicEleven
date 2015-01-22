@@ -402,58 +402,35 @@ public class BotActor extends UntypedActor {
     private List<TemplateSoccerPlayer> generateLineup(List<TemplateSoccerPlayer> soccerPlayers, int salaryCap) {
         List<TemplateSoccerPlayer> lineup = new ArrayList<>();
 
-        sortByFantasyPoints(soccerPlayers);
+        sortBySalary(soccerPlayers);
 
-        List<TemplateSoccerPlayer> forwards = filterByPosition(soccerPlayers, FieldPos.FORWARD);
-        List<TemplateSoccerPlayer> goalkeepers = filterByPosition(soccerPlayers, FieldPos.GOALKEEPER);
-        List<TemplateSoccerPlayer> middles = filterByPosition(soccerPlayers, FieldPos.MIDDLE);
-        List<TemplateSoccerPlayer> defenses = filterByPosition(soccerPlayers, FieldPos.DEFENSE);
+        int averageCappedSalary = salaryCap / 11;
+        int averagePlayerSalary = sumSalary(soccerPlayers) / soccerPlayers.size();
+        int targetSalary = Math.min(averageCappedSalary, averagePlayerSalary);
 
-        // Dos delanteros entre los 8 mejores
+        // Un portero
+        List<TemplateSoccerPlayer> goalkeepersBySalary = filterByPosition(soccerPlayers, FieldPos.GOALKEEPER);
+        lineup.add(goalkeepersBySalary.get(_rand.nextInt(goalkeepersBySalary.size())));
+
+        // Medios y defensas
+        List<TemplateSoccerPlayer> middlesBySalary = filterBySalary(filterByPosition(soccerPlayers, FieldPos.MIDDLE),
+                0, targetSalary).subList(0, 16);
+        List<TemplateSoccerPlayer> defensesBySalary = filterBySalary(filterByPosition(soccerPlayers, FieldPos.DEFENSE),
+                0, targetSalary).subList(0, 16);
+
+        for (int c = 0; c < 4; ++c) {
+            lineup.add(middlesBySalary.remove(_rand.nextInt(middlesBySalary.size())));
+            lineup.add(defensesBySalary.remove(_rand.nextInt(defensesBySalary.size())));
+        }
+
+        // Dos delanteros
+        List<TemplateSoccerPlayer> forwardsBySalary = filterBySalary(filterByPosition(soccerPlayers, FieldPos.FORWARD),
+                                                                     0, targetSalary).subList(0, 10);
+
         for (int c = 0; c < 2; ++c) {
-            int next = _rand.nextInt(Math.min(8, forwards.size()));
-            lineup.add(forwards.get(next));
+            lineup.add(forwardsBySalary.remove(_rand.nextInt(forwardsBySalary.size())));
         }
 
-        // Un portero de la mitad para abajo
-        lineup.add(goalkeepers.get(_rand.nextInt(goalkeepers.size() / 2) + (goalkeepers.size() / 2)));
-
-        // Medios y defensas repartidos por igual
-        int averageRemainingSalary = (salaryCap - sumSalary(lineup)) / 8;
-
-        List<TemplateSoccerPlayer> remainingPlayers = new ArrayList<>(middles);
-        remainingPlayers.addAll(defenses);
-        int averagePlayerSalary = sumSalary(remainingPlayers) / remainingPlayers.size();
-
-        int startingSalary = Math.min(averagePlayerSalary, averageRemainingSalary);
-        int diff = -1;
-
-        for (int tryCounter = 1; tryCounter < 10; ++tryCounter) {
-            List<TemplateSoccerPlayer> tempLineup = new ArrayList<>(lineup);
-
-            int maxSal = startingSalary;
-            int minSal = startingSalary - (tryCounter*startingSalary/10);
-            List<TemplateSoccerPlayer> middlesBySalary = filterBySalary(middles, minSal, maxSal);
-            List<TemplateSoccerPlayer> defensesBySalary = filterBySalary(defenses, minSal, maxSal);
-
-            if (middlesBySalary.size() < 4 || defensesBySalary.size() < 4) {
-                continue;
-            }
-
-            for (int c = 0; c < 4; ++c) {
-                int next = _rand.nextInt(Math.min(8, middlesBySalary.size()));
-                tempLineup.add(middlesBySalary.remove(next));
-                next = _rand.nextInt(Math.min(8, defensesBySalary.size()));
-                tempLineup.add(defensesBySalary.remove(next));
-            }
-
-            diff = salaryCap - sumSalary(tempLineup);
-
-            if (tempLineup.size() == 11 && diff >= 0) {
-                lineup = tempLineup;
-                break;
-            }
-        }
 
         return lineup;
     }
@@ -489,6 +466,15 @@ public class BotActor extends UntypedActor {
             @Override
             public int compare(TemplateSoccerPlayer o1, TemplateSoccerPlayer o2) {
             return o1.fantasyPoints - o2.fantasyPoints;
+            }
+        });
+    }
+
+    private void sortBySalary(List<TemplateSoccerPlayer> sps) {
+        Collections.sort(sps, new Comparator<TemplateSoccerPlayer>() {
+            @Override
+            public int compare(TemplateSoccerPlayer o1, TemplateSoccerPlayer o2) {
+                return o2.salary - o1.salary;
             }
         });
     }
@@ -674,3 +660,60 @@ public class BotActor extends UntypedActor {
             "CavalleroSebolla"
     );
 }
+
+
+/*
+private List<TemplateSoccerPlayer> generateLineup(List<TemplateSoccerPlayer> soccerPlayers, int salaryCap) {
+        List<TemplateSoccerPlayer> lineup = new ArrayList<>();
+
+        sortByFantasyPoints(soccerPlayers);
+
+        List<TemplateSoccerPlayer> forwards = filterByPosition(soccerPlayers, FieldPos.FORWARD);
+        List<TemplateSoccerPlayer> goalkeepers = filterByPosition(soccerPlayers, FieldPos.GOALKEEPER);
+        List<TemplateSoccerPlayer> middles = filterByPosition(soccerPlayers, FieldPos.MIDDLE);
+        List<TemplateSoccerPlayer> defenses = filterByPosition(soccerPlayers, FieldPos.DEFENSE);
+
+        // Dos delanteros entre los 8 mejores
+        for (int c = 0; c < 2; ++c) {
+            int next = _rand.nextInt(Math.min(8, forwards.size()));
+            lineup.add(forwards.get(next));
+        }
+
+        // Un portero de la mitad para abajo
+        lineup.add(goalkeepers.get(_rand.nextInt(goalkeepers.size() / 2) + (goalkeepers.size() / 2)));
+
+        // Medios y defensas repartidos por igual, buscamos varias veces partiendo desde la media y aumentado de 100 en
+        // 100 por debajo
+        int averageRemainingSalary = (salaryCap - calcSalaryForLineup(lineup)) / 8;
+        int diff = -1;
+
+        for (int tryCounter = 0; tryCounter < 10; ++tryCounter) {
+            List<TemplateSoccerPlayer> tempLineup = new ArrayList<>(lineup);
+
+            int maxSal = averageRemainingSalary + 1000;
+            int minSal = averageRemainingSalary - ((tryCounter+1)*100);
+            List<TemplateSoccerPlayer> middlesBySalary = filterBySalary(middles, minSal, maxSal);
+            List<TemplateSoccerPlayer> defensesBySalary = filterBySalary(defenses, minSal, maxSal);
+
+            if (middlesBySalary.size() < 4 || defensesBySalary.size() < 4) {
+                continue;
+            }
+
+            for (int c = 0; c < 4; ++c) {
+                int next = _rand.nextInt(Math.min(8, middlesBySalary.size()));
+                tempLineup.add(middlesBySalary.remove(next));
+                next = _rand.nextInt(Math.min(8, defensesBySalary.size()));
+                tempLineup.add(defensesBySalary.remove(next));
+            }
+
+            diff = salaryCap - calcSalaryForLineup(tempLineup);
+
+            if (tempLineup.size() == 11 && diff >= 0) {
+                lineup = tempLineup;
+                break;
+            }
+        }
+
+        return lineup;
+    }
+ */
