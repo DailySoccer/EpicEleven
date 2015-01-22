@@ -67,7 +67,9 @@ public class Job {
             state = toState;
         }
         else {
-            Logger.error("WTF 7209: updateState: {} from: {} to: {}", jobId, fromState, toState);
+            // Es posible que el estado ya haya sido cambiado por otro thread (p.ej. TransactionActor)
+            // mientras el job.apply se estaba realizando (p.ej. ContestEntryController.addContestEntry)
+            Logger.warn("updateState: {} from: {} to: {}", jobId, fromState, toState);
         }
     }
 
