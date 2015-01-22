@@ -406,26 +406,34 @@ public class BotActor extends UntypedActor {
 
         int averageCappedSalary = salaryCap / 11;
         int averagePlayerSalary = sumSalary(soccerPlayers) / soccerPlayers.size();
-        int targetSalary = Math.min(averageCappedSalary, averagePlayerSalary);
+        int targetSalary = averageCappedSalary + 1000; // Math.min(averageCappedSalary, averagePlayerSalary);
 
         // Un portero
         List<TemplateSoccerPlayer> goalkeepersBySalary = filterByPosition(soccerPlayers, FieldPos.GOALKEEPER);
         lineup.add(goalkeepersBySalary.get(_rand.nextInt(goalkeepersBySalary.size())));
 
-        // Medios y defensas
         List<TemplateSoccerPlayer> middlesBySalary = filterBySalary(filterByPosition(soccerPlayers, FieldPos.MIDDLE),
-                0, targetSalary).subList(0, 16);
+                0, targetSalary);
         List<TemplateSoccerPlayer> defensesBySalary = filterBySalary(filterByPosition(soccerPlayers, FieldPos.DEFENSE),
-                0, targetSalary).subList(0, 16);
+                0, targetSalary);
 
-        for (int c = 0; c < 4; ++c) {
-            lineup.add(middlesBySalary.remove(_rand.nextInt(middlesBySalary.size())));
-            lineup.add(defensesBySalary.remove(_rand.nextInt(defensesBySalary.size())));
+        try {
+            // Medios y defensas
+            middlesBySalary.subList(0, 8);
+            defensesBySalary.subList(0, 8);
+
+            for (int c = 0; c < 4; ++c) {
+                lineup.add(middlesBySalary.remove(_rand.nextInt(middlesBySalary.size())));
+                lineup.add(defensesBySalary.remove(_rand.nextInt(defensesBySalary.size())));
+            }
+        }
+        catch(java.lang.IndexOutOfBoundsException e) {
+            Logger.info("excepcion");
         }
 
         // Dos delanteros
         List<TemplateSoccerPlayer> forwardsBySalary = filterBySalary(filterByPosition(soccerPlayers, FieldPos.FORWARD),
-                                                                     0, targetSalary).subList(0, 10);
+                                                                     0, targetSalary).subList(0, 5);
 
         for (int c = 0; c < 2; ++c) {
             lineup.add(forwardsBySalary.remove(_rand.nextInt(forwardsBySalary.size())));
