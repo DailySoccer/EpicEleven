@@ -13,6 +13,8 @@ public class UserInfo {
 
     public int wins;
 
+    public UserInfo() {}
+
     public UserInfo(ObjectId userId, String firstName, String lastName, String nickName, int wins) {
         this.userId = userId;
         this.firstName = firstName;

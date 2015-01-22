@@ -1,0 +1,48 @@
+@(user: model.User, transactions: List[model.accounting.AccountingTran])
+
+@import model._
+@import controllers.admin.routes.DashboardController
+
+@scripts = {
+<script type="text/javascript">
+        $(document).ready( function(){
+            $('#ajax_table_id').dataTable( {
+                "columns": [
+                    { "title": "Id" },
+                    { "title": "Type" },
+                    { "title": "Value" },
+                    { "title": "Balance" },
+                    { "title": "CreatedAt" }
+                ],
+                "data": [
+                    @for((p, index) <- transactions.zipWithIndex) {
+                        [
+                            "@p.accountingTranId",
+                            "@p.getTransactionType()",
+                            "@p.getAccountOp(user.userId).value",
+                            "@p.getAccountOp(user.userId).cachedBalance",
+                            "@GlobalDate.formatDate(p.accountingTranId.getDate())"
+                        ] @if(index < transactions.size-1) { , }
+                    }
+                ],
+                stateSave: true,
+                iDisplayLength: 100,
+                "deferRender": true
+            } );
+        })
+    </script>
+}
+
+@main("Users - Admin", scripts) {
+
+<h1 class="page-header">Transaction History</h1>
+
+<div>
+    <h3>@user.nickName (@user.email)</h3>
+    <div><strong>Balance Total:</strong> @user.calculateBalance()€</div>
+</div>
+<br/>
+<div class="table-responsive">
+    <table id="ajax_table_id" class="table table-striped"></table>
+</div>
+}

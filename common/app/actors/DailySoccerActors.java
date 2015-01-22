@@ -28,14 +28,22 @@ public class DailySoccerActors {
     //
     static public void init(boolean isWorker) {
 
-        // Aunque no seamos el worker, hay que inicializar los actores para que funcione el simulador
+        // Aunque no seamos el worker, hay que inicializar los actores para que funcione el simulador. Ahora mismo en
+        // los dynos web tambien se esta haciendo esto, lo cual esta mal.
         final ActorRef instantiateConstestsActor = Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateConstestsActor");
         final ActorRef optaProcessorActor = Akka.system().actorOf(Props.create(OptaProcessorActor.class), "OptaProcessorActor");
+        final ActorRef givePrizesActor = Akka.system().actorOf(Props.create(GivePrizesActor.class), "GivePrizesActor");
+        final ActorRef transactionsActor = Akka.system().actorOf(Props.create(TransactionsActor.class), "TransactionsActor");
 
         if (isWorker) {
             instantiateConstestsActor.tell("Tick", ActorRef.noSender());
             optaProcessorActor.tell("Tick", ActorRef.noSender());
+            givePrizesActor.tell("Tick", ActorRef.noSender());
+            transactionsActor.tell("Tick", ActorRef.noSender());
         }
+
+        // El sistema de bots solo se inicializa bajo demanda (por ejemplo, desde la zona de admin)
+        Akka.system().actorOf(Props.create(BotParentActor.class), "BotParentActor");
     }
 
     static public void shutdown() {
