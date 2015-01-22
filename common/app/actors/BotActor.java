@@ -156,8 +156,7 @@ public class BotActor extends UntypedActor {
                 case "Tick":
                     try {
                         List<Contest> activeContests = getActiveContests();
-                        List<Contest> entered = new ArrayList<>();
-                        List<Contest> notEntered = filterContestByNotEntered(activeContests, entered);
+                        List<Contest> notEntered = filterContestByNotEntered(activeContests, null);
 
                         // En cada tick el bot solo entrara en 1 concurso
                         for (Contest contest : notEntered) {
@@ -168,7 +167,7 @@ public class BotActor extends UntypedActor {
                         }
 
                         // Nos salimos de concursos donde ya hay demasiada gente (u otros bots)
-                        for (Contest contest : entered) {
+                        for (Contest contest : getMyActiveContests()) {
                             if (shouldLeave(contest)) {
                                 leaveContest(contest);
                             }
@@ -186,6 +185,20 @@ public class BotActor extends UntypedActor {
         }
     };
 
+    List<Contest> getMyActiveContests() throws TimeoutException {
+        List<Contest> ret;
+        JsonNode jsonNode = get("get_my_contests").findValue("contests_0");
+
+        if (jsonNode != null) {
+            ret = fromJSON(jsonNode.toString(), new TypeReference<List<Contest>>() {});
+        }
+        else {
+            Logger.error("{} get_my_contests returned empty", getFullName());
+            ret = new ArrayList<>();
+        }
+
+        return ret;
+    }
 
     private boolean shouldLeave(Contest contest) throws TimeoutException {
         boolean bRet = false;
@@ -237,7 +250,7 @@ public class BotActor extends UntypedActor {
         for (ContestEntry contestEntry : contest.contestEntries) {
             UserInfo userInfo = findUserInfoInContestEntries(contestEntry, usersInfo);
 
-            // Es posible que entre que pedimos get_active_contests y get_contest_info la lista haya cambiado, asi que
+            // Es posible que entre que pedimos get_my_contests y get_contest_info la lista haya cambiado, asi que
             // podemos no encontrar el UserInfo de una ContestEntry. Por eso, tenemos que checkear con null
             if (userInfo != null) {
                 int index = _NICKNAMES.indexOf(userInfo.nickName);
