@@ -99,6 +99,15 @@ public class BotActor extends UntypedActor {
                 }
                 break;
 
+            case "NextPersonality":
+                List<Personality> personalities = Arrays.asList(Personality.values());
+                int nextIndex = personalities.indexOf(_personality) + 1;
+                if (nextIndex >= personalities.size()) {
+                    nextIndex = 0;
+                }
+                _personality = personalities.get(nextIndex);
+                break;
+
             default:
                 unhandled(msg);
                 break;
