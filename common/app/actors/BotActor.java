@@ -1,8 +1,6 @@
 package actors;
 
-import akka.actor.Cancellable;
 import akka.actor.UntypedActor;
-import akka.japi.Procedure;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,8 +14,6 @@ import play.libs.F;
 import play.libs.ws.WS;
 import play.libs.ws.WSRequestHolder;
 import play.libs.ws.WSResponse;
-import scala.concurrent.duration.Duration;
-import scala.concurrent.duration.FiniteDuration;
 import utils.ListUtils;
 
 import javax.annotation.Nullable;
@@ -416,16 +412,21 @@ public class BotActor extends UntypedActor {
         // Un portero de la mitad para abajo
         lineup.add(goalkeepers.get(_rand.nextInt(goalkeepers.size() / 2) + (goalkeepers.size() / 2)));
 
-        // Medios y defensas repartidos por igual, buscamos varias veces partiendo desde la media y aumentado de 100 en
-        // 100 por debajo
-        int averageRemainingSalary = (salaryCap - calcSalaryForLineup(lineup)) / 8;
+        // Medios y defensas repartidos por igual
+        int averageRemainingSalary = (salaryCap - sumSalary(lineup)) / 8;
+
+        List<TemplateSoccerPlayer> remainingPlayers = new ArrayList<>(middles);
+        remainingPlayers.addAll(defenses);
+        int averagePlayerSalary = sumSalary(remainingPlayers) / remainingPlayers.size();
+
+        int startingSalary = Math.min(averagePlayerSalary, averageRemainingSalary);
         int diff = -1;
 
-        for (int tryCounter = 0; tryCounter < 10; ++tryCounter) {
+        for (int tryCounter = 1; tryCounter < 10; ++tryCounter) {
             List<TemplateSoccerPlayer> tempLineup = new ArrayList<>(lineup);
 
-            int maxSal = averageRemainingSalary + 1000;
-            int minSal = averageRemainingSalary - ((tryCounter+1)*100);
+            int maxSal = startingSalary;
+            int minSal = startingSalary - (tryCounter*startingSalary/10);
             List<TemplateSoccerPlayer> middlesBySalary = filterBySalary(middles, minSal, maxSal);
             List<TemplateSoccerPlayer> defensesBySalary = filterBySalary(defenses, minSal, maxSal);
 
@@ -440,7 +441,7 @@ public class BotActor extends UntypedActor {
                 tempLineup.add(defensesBySalary.remove(next));
             }
 
-            diff = salaryCap - calcSalaryForLineup(tempLineup);
+            diff = salaryCap - sumSalary(tempLineup);
 
             if (tempLineup.size() == 11 && diff >= 0) {
                 lineup = tempLineup;
@@ -451,7 +452,7 @@ public class BotActor extends UntypedActor {
         return lineup;
     }
 
-    private int calcSalaryForLineup(List<TemplateSoccerPlayer> sps) {
+    private int sumSalary(List<TemplateSoccerPlayer> sps) {
         int ret = 0;
         for (TemplateSoccerPlayer sp : sps) {
          ret += sp.salary;
