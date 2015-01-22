@@ -71,7 +71,7 @@ public class BotActor extends UntypedActor {
 
         // Lanzando en preStart una excepcion nuestro supervisor no intentara volvernos a encender
         if (_botActorId >= _NICKNAMES.size()) {
-            throw new RuntimeException(String.format("WTF 2967 %s no puede comenzar", getFullName()));
+            throw new RuntimeException("WTF 2967 Bototron no puede comenzar por falta de _NICKNAMES");
         }
     }
 
@@ -167,7 +167,7 @@ public class BotActor extends UntypedActor {
                             }
                         }
 
-                        // Nos salimos de concursos donde ha entrado ya mas gente
+                        // Nos salimos de concursos donde ya hay demasiada gente (u otros bots)
                         for (Contest contest : entered) {
                             if (shouldLeave(contest)) {
                                 leaveContest(contest);
@@ -185,6 +185,7 @@ public class BotActor extends UntypedActor {
             }
         }
     };
+
 
     private boolean shouldLeave(Contest contest) throws TimeoutException {
         boolean bRet = false;
