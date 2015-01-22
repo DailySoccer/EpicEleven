@@ -343,7 +343,13 @@ public class BotActor extends UntypedActor {
             List<TemplateSoccerPlayer> soccerPlayers = fromJSON(jsonNode.toString(), new TypeReference<List<TemplateSoccerPlayer>>() { });
             List<TemplateSoccerPlayer> lineup = generateLineup(soccerPlayers, contest.salaryCap);
 
-            enteredContestId = addContestEntry(lineup, contest.contestId);
+            // Verificar que se haya generado un lineup correcto
+            if (lineup.size() == 11) {
+                enteredContestId = addContestEntry(lineup, contest.contestId);
+            }
+            else {
+                Logger.error("WTF 3561: {} enterContest: lineup invalid: {} players", getFullName(), lineup.size());
+            }
         }
         else {
             Logger.error("{} enterContest returned empty", getFullName());
@@ -356,7 +362,7 @@ public class BotActor extends UntypedActor {
 
         String idList = new ObjectMapper().valueToTree(ListUtils.stringListFromObjectIdList(ListUtils.convertToIdList(lineup))).toString();
         JsonNode jsonNode = post("add_contest_entry",
-                                 String.format("contestId=%s&soccerTeam=%s", contestId.toString(), idList));
+                String.format("contestId=%s&soccerTeam=%s", contestId.toString(), idList));
 
         // Nosotros podemos pedir un contestId, pero el servidor puede elegir meternos en otro
         String enteredContestId = null;
@@ -486,6 +492,7 @@ public class BotActor extends UntypedActor {
             }
         });
     }
+
     private List<Contest> filterContestByNotEntered(List<Contest> contests, List<Contest> entered) {
         List<Contest> ret = new ArrayList<>();
 
