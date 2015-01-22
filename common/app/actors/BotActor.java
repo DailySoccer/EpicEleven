@@ -361,8 +361,7 @@ public class BotActor extends UntypedActor {
     private String addContestEntry(List<TemplateSoccerPlayer> lineup, ObjectId contestId) throws TimeoutException {
 
         String idList = new ObjectMapper().valueToTree(ListUtils.stringListFromObjectIdList(ListUtils.convertToIdList(lineup))).toString();
-        JsonNode jsonNode = post("add_contest_entry",
-                String.format("contestId=%s&soccerTeam=%s", contestId.toString(), idList));
+        JsonNode jsonNode = post("add_contest_entry", String.format("contestId=%s&soccerTeam=%s", contestId.toString(), idList));
 
         // Nosotros podemos pedir un contestId, pero el servidor puede elegir meternos en otro
         String enteredContestId = null;
@@ -404,41 +403,21 @@ public class BotActor extends UntypedActor {
 
         sortBySalary(soccerPlayers);
 
-        int averageCappedSalary = salaryCap / 11;
-        int averagePlayerSalary = sumSalary(soccerPlayers) / soccerPlayers.size();
-        int targetSalary = averageCappedSalary + 1000; // Math.min(averageCappedSalary, averagePlayerSalary);
+        List<TemplateSoccerPlayer> goalkeepers = filterByPosition(soccerPlayers, FieldPos.GOALKEEPER);
+        lineup.add(goalkeepers.get(0));
 
-        // Un portero
-        List<TemplateSoccerPlayer> goalkeepersBySalary = filterByPosition(soccerPlayers, FieldPos.GOALKEEPER);
-        lineup.add(goalkeepersBySalary.get(_rand.nextInt(goalkeepersBySalary.size())));
+        List<TemplateSoccerPlayer> middles = filterByPosition(soccerPlayers, FieldPos.MIDDLE);
+        List<TemplateSoccerPlayer> defenses = filterByPosition(soccerPlayers, FieldPos.DEFENSE);
 
-        List<TemplateSoccerPlayer> middlesBySalary = filterBySalary(filterByPosition(soccerPlayers, FieldPos.MIDDLE),
-                0, targetSalary);
-        List<TemplateSoccerPlayer> defensesBySalary = filterBySalary(filterByPosition(soccerPlayers, FieldPos.DEFENSE),
-                0, targetSalary);
-
-        try {
-            // Medios y defensas
-            middlesBySalary.subList(0, 8);
-            defensesBySalary.subList(0, 8);
-
-            for (int c = 0; c < 4; ++c) {
-                lineup.add(middlesBySalary.remove(_rand.nextInt(middlesBySalary.size())));
-                lineup.add(defensesBySalary.remove(_rand.nextInt(defensesBySalary.size())));
-            }
-        }
-        catch(java.lang.IndexOutOfBoundsException e) {
-            Logger.info("excepcion");
+        for (int c = 0; c < 4; ++c) {
+            lineup.add(middles.get(c));
+            lineup.add(defenses.get(c));
         }
 
-        // Dos delanteros
-        List<TemplateSoccerPlayer> forwardsBySalary = filterBySalary(filterByPosition(soccerPlayers, FieldPos.FORWARD),
-                                                                     0, targetSalary).subList(0, 5);
-
+        List<TemplateSoccerPlayer> forwards = filterByPosition(soccerPlayers, FieldPos.FORWARD);
         for (int c = 0; c < 2; ++c) {
-            lineup.add(forwardsBySalary.remove(_rand.nextInt(forwardsBySalary.size())));
+            lineup.add(forwards.get(c));
         }
-
 
         return lineup;
     }
@@ -482,7 +461,7 @@ public class BotActor extends UntypedActor {
         Collections.sort(sps, new Comparator<TemplateSoccerPlayer>() {
             @Override
             public int compare(TemplateSoccerPlayer o1, TemplateSoccerPlayer o2) {
-                return o2.salary - o1.salary;
+                return o1.salary - o2.salary;
             }
         });
     }
@@ -725,3 +704,40 @@ private List<TemplateSoccerPlayer> generateLineup(List<TemplateSoccerPlayer> soc
         return lineup;
     }
  */
+/*
+    private List<TemplateSoccerPlayer> generateLineup(List<TemplateSoccerPlayer> soccerPlayers, int salaryCap) {
+        List<TemplateSoccerPlayer> lineup = new ArrayList<>();
+
+        sortBySalary(soccerPlayers);
+
+        int averageCappedSalary = salaryCap / 11;
+        int averagePlayerSalary = sumSalary(soccerPlayers) / soccerPlayers.size();
+        int targetSalary = Math.min(averageCappedSalary, averagePlayerSalary);
+
+        // Un portero
+        List<TemplateSoccerPlayer> goalkeepersBySalary = filterByPosition(soccerPlayers, FieldPos.GOALKEEPER);
+        lineup.add(goalkeepersBySalary.get(_rand.nextInt(goalkeepersBySalary.size())));
+
+        // Medios y defensas
+        List<TemplateSoccerPlayer> middlesBySalary = filterBySalary(filterByPosition(soccerPlayers, FieldPos.MIDDLE),
+                0, targetSalary).subList(0, 16);
+        List<TemplateSoccerPlayer> defensesBySalary = filterBySalary(filterByPosition(soccerPlayers, FieldPos.DEFENSE),
+                0, targetSalary).subList(0, 16);
+
+        for (int c = 0; c < 4; ++c) {
+            lineup.add(middlesBySalary.remove(_rand.nextInt(middlesBySalary.size())));
+            lineup.add(defensesBySalary.remove(_rand.nextInt(defensesBySalary.size())));
+        }
+
+        // Dos delanteros
+        List<TemplateSoccerPlayer> forwardsBySalary = filterBySalary(filterByPosition(soccerPlayers, FieldPos.FORWARD),
+                0, targetSalary).subList(0, 10);
+
+        for (int c = 0; c < 2; ++c) {
+            lineup.add(forwardsBySalary.remove(_rand.nextInt(forwardsBySalary.size())));
+        }
+
+
+        return lineup;
+    }
+*/
