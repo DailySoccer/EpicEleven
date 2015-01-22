@@ -84,19 +84,14 @@ public class BotActor extends UntypedActor {
                     if (_user == null) {
                         tryLogin();
                     } else {
-                        Procedure<Object> selectedPersonality;
-
                         switch (_personality) {
                             case BERSERKER:
-                                selectedPersonality = _berserker;
+                                onTickBerserker();
                                 break;
                             default:
-                                selectedPersonality = _production;
+                                onTickProduction();
                                 break;
                         }
-
-                        getContext().become(selectedPersonality, false);
-                        getSelf().tell("Tick", getSender());
                     }
                 }
                 catch (TimeoutException exc) {
@@ -124,66 +119,35 @@ public class BotActor extends UntypedActor {
         changeUserProfile();
     }
 
-    Procedure<Object> _berserker = new Procedure<Object>() {
-        @Override
-        public void apply(Object msg) {
-            switch ((String)msg) {
-                case "Tick":
-                    try {
-                        // Vemos los concursos activos en los que no estamos ya metidos, escogemos los que no esten llenos y nos metemos
-                        for (Contest contest : filterContestByNotEntered(getActiveContests(), null)) {
-                            if (!contest.isFull()) {
-                                enterContest(contest);
-                            }
-                        }
-                    }
-                    catch (TimeoutException exc) {
-                       Logger.info("{} Timeout 1027, probablemente el servidor esta saturado...", getFullName());
-                    }
-                    break;
-
-                default:
-                    unhandled(msg);
-                    break;
+    void onTickBerserker() throws TimeoutException {
+        // Vemos los concursos activos en los que no estamos ya metidos, escogemos los que no esten llenos y nos metemos
+        // en todos ellos en el mismo tick, a lo berserker
+        for (Contest contest : filterContestByNotEntered(getActiveContests(), null)) {
+            if (!contest.isFull()) {
+                enterContest(contest);
             }
         }
-    };
+    }
 
-    Procedure<Object> _production = new Procedure<Object>() {
-        @Override
-        public void apply(Object msg) {
-            switch ((String)msg) {
-                case "Tick":
-                    try {
-                        List<Contest> activeContests = getActiveContests();
-                        List<Contest> notEntered = filterContestByNotEntered(activeContests, null);
+    void onTickProduction() throws TimeoutException {
+        List<Contest> activeContests = getActiveContests();
+        List<Contest> notEntered = filterContestByNotEntered(activeContests, null);
 
-                        // En cada tick el bot solo entrara en 1 concurso
-                        for (Contest contest : notEntered) {
-                            if (shouldEnter(contest)) {
-                                enterContest(contest);
-                                break;
-                            }
-                        }
-
-                        // Nos salimos de concursos donde ya hay demasiada gente (u otros bots)
-                        for (Contest contest : getMyActiveContests()) {
-                            if (shouldLeave(contest)) {
-                                leaveContest(contest);
-                            }
-                        }
-                    }
-                    catch (TimeoutException exc) {
-                        Logger.info("{} Timeout 1028, probablemente el servidor esta saturado...", getFullName());
-                    }
-                    break;
-
-                default:
-                    unhandled(msg);
-                    break;
+        // En cada tick el bot solo entrara en 1 concurso
+        for (Contest contest : notEntered) {
+            if (shouldEnter(contest)) {
+                enterContest(contest);
+                break;
             }
         }
-    };
+
+        // Nos salimos de concursos donde ya hay demasiada gente (u otros bots)
+        for (Contest contest : getMyActiveContests()) {
+            if (shouldLeave(contest)) {
+                leaveContest(contest);
+            }
+        }
+    }
 
     List<Contest> getMyActiveContests() throws TimeoutException {
         List<Contest> ret;
