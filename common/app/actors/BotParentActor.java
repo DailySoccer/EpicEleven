@@ -26,7 +26,7 @@ public class BotParentActor extends UntypedActor {
                     Logger.debug("BotParentActor arrancando bots hijos");
 
                     for (int c = 0; c < _NUM_BOTS; ++c) {
-                        getContext().actorOf(Props.create(BotActor.class, c, BotActor.Personality.BERSERKER), String.format("BotActor%d", c));
+                        getContext().actorOf(Props.create(BotActor.class, c, _startingPersonality), String.format("BotActor%d", c));
                     }
 
                     _childrenStarted = true;
@@ -150,6 +150,7 @@ public class BotParentActor extends UntypedActor {
     Cancellable _tickCancellable;
     int _currentActorIdTick;
 
-    boolean _cyclePersonalities = false;
+    BotActor.Personality _startingPersonality = BotActor.Personality.BERSERKER;
+    boolean _cyclePersonalities = true;
     Cancellable _cycleCancellable;
 }
