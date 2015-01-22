@@ -131,16 +131,25 @@ public class BotActor extends UntypedActor {
     void onTickBerserker() throws TimeoutException {
         // Vemos los concursos activos en los que no estamos ya metidos, escogemos los que no esten llenos y nos metemos
         // en todos ellos en el mismo tick, a lo berserker
-        for (Contest contest : filterContestByNotEntered(getActiveContests(), null)) {
-            if (!contest.isFull()) {
-                enterContest(contest);
+        List<Contest> notEntered = filterContestByNotEntered(getActiveContests(), null);
+
+        // El servidor nos puede cambiar de concurso. Vamos guardando aqui los cambios para no volver a intentar entrar
+        // durante el bucle
+        List<String> enteredContestIds = new ArrayList<>();
+
+        for (Contest contest : notEntered) {
+            if (!enteredContestIds.contains(contest.contestId.toString()) && !contest.isFull()) {
+                String enteredContestId = enterContest(contest);
+
+                if (enteredContestId != null && !enteredContestId.equals(contest.contestId.toString())) {
+                    enteredContestIds.add(enteredContestId);
+                }
             }
         }
     }
 
     void onTickProduction() throws TimeoutException {
-        List<Contest> activeContests = getActiveContests();
-        List<Contest> notEntered = filterContestByNotEntered(activeContests, null);
+        List<Contest> notEntered = filterContestByNotEntered(getActiveContests(), null);
 
         // En cada tick el bot solo entrara en 1 concurso
         for (Contest contest : notEntered) {
@@ -331,28 +340,47 @@ public class BotActor extends UntypedActor {
         return ret == null? new ArrayList<Contest>() : ret;
     }
 
-    private void enterContest(Contest contest) throws TimeoutException {
+    private String enterContest(Contest contest) throws TimeoutException {
         JsonNode jsonNode = get(String.format("get_public_contest/%s", contest.contestId)).findValue("soccer_players");
+        String enteredContestId = null;
 
         if (jsonNode != null) {
             List<TemplateSoccerPlayer> soccerPlayers = fromJSON(jsonNode.toString(), new TypeReference<List<TemplateSoccerPlayer>>() { });
             List<TemplateSoccerPlayer> lineup = generateLineup(soccerPlayers, contest.salaryCap);
 
-            addContestEntry(lineup, contest.contestId);
+            enteredContestId = addContestEntry(lineup, contest.contestId);
         }
         else {
             Logger.error("{} enterContest returned empty", getFullName());
         }
+
+        return enteredContestId;
     }
 
-    private void addContestEntry(List<TemplateSoccerPlayer> lineup, ObjectId contestId) throws TimeoutException {
+    private String addContestEntry(List<TemplateSoccerPlayer> lineup, ObjectId contestId) throws TimeoutException {
+
         String idList = new ObjectMapper().valueToTree(ListUtils.stringListFromObjectIdList(ListUtils.convertToIdList(lineup))).toString();
         JsonNode jsonNode = post("add_contest_entry",
                                  String.format("contestId=%s&soccerTeam=%s", contestId.toString(), idList));
 
-        if (jsonNode == null) {
+        // Nosotros podemos pedir un contestId, pero el servidor puede elegir meternos en otro
+        String enteredContestId = null;
+
+        if (jsonNode != null) {
+            JsonNode error = jsonNode.findValue("error");
+
+            if (error == null) {
+                enteredContestId = jsonNode.findValue("contestId").toString();
+            }
+            else {
+                Logger.error("{} addContestEntry produjo en un error en el servidor {}", getFullName(), error.toString());
+            }
+        }
+        else {
             Logger.error("{} addContestEntry returned empty", getFullName());
         }
+
+        return enteredContestId;
     }
 
     private List<UserInfo> getUsersInfoInContest(Contest contest) throws TimeoutException {
