@@ -10,6 +10,7 @@ import play.Logger;
 import scala.concurrent.duration.Duration;
 import utils.ListUtils;
 
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -51,16 +52,17 @@ public class TransactionsActor extends UntypedActor {
         }
 
         final int MINUTES_THRESHOLD = 1;
+        final Date dateThreshold = new DateTime(GlobalDate.getCurrentDate()).minusMinutes(MINUTES_THRESHOLD).toDate();
 
-        for (Job job: Job.findByStateAndLastModified(Job.JobState.TODO, new DateTime().minusMinutes(MINUTES_THRESHOLD).toDate())) {
+        for (Job job: Job.findByStateAndLastModified(Job.JobState.TODO, dateThreshold)) {
             job.continueProcessing();
         }
 
-        for (Job job: Job.findByStateAndLastModified(Job.JobState.PROCESSING, new DateTime().minusMinutes(MINUTES_THRESHOLD).toDate())) {
+        for (Job job: Job.findByStateAndLastModified(Job.JobState.PROCESSING, dateThreshold)) {
             job.continueProcessing();
         }
 
-        for (Job job: Job.findByStateAndLastModified(Job.JobState.CANCELING, new DateTime().minusMinutes(MINUTES_THRESHOLD).toDate())) {
+        for (Job job: Job.findByStateAndLastModified(Job.JobState.CANCELING, dateThreshold)) {
             job.continueProcessing();
         }
     }}
