@@ -70,6 +70,8 @@ public class BotActor extends UntypedActor {
         if (_botActorId >= _NICKNAMES.size()) {
             throw new RuntimeException("WTF 2967 Bototron no puede comenzar por falta de _NICKNAMES");
         }
+
+        _numTicks = 0;
     }
 
     @Override
@@ -121,6 +123,9 @@ public class BotActor extends UntypedActor {
                 catch (TimeoutException exc) {
                     Logger.info("{} Timeout 1026, probablemente el servidor esta saturado...", getFullName());
                 }
+
+                _numTicks++;
+
                 break;
 
             default:
@@ -168,8 +173,9 @@ public class BotActor extends UntypedActor {
         int diffContests = 0;
 
         // En cada tick el bot solo entrara en 1 concurso, siempre que no superemos ya la media de concursos entrados
-        // por nuestros hermanos. Con esto conseguimos que todos los bots entren en el mismo num de concursos (+-1)
-        if (myActiveContests.size() <= averageEnteredContests) {
+        // por nuestros hermanos. Con esto conseguimos que todos los bots entren en el mismo num de concursos (+-1).
+        // Ademas, esperamos al menos 2 ticks para dar tiempo al average a estar bien calculado.
+        if (myActiveContests.size() <= averageEnteredContests && _numTicks > 2) {
             for (Contest contest : notEntered) {
                 if (shouldEnter(contest)) {
                     if (enterContest(contest) != null) {    // Si conseguimos entrar...
@@ -604,6 +610,7 @@ public class BotActor extends UntypedActor {
     int _botActorId;
     User _user;
     Personality _personality;
+    int _numTicks;
 
     static Random _rand = new Random(System.currentTimeMillis());
 
