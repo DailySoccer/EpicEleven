@@ -40,7 +40,7 @@ public class User {
 	}
 
     public UserInfo info() {
-        return new UserInfo(userId, firstName, lastName, nickName, wins);
+        return new UserInfo(userId, nickName, wins);
     }
 
     public User getProfile() {
