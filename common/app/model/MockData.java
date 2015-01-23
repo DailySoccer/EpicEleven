@@ -68,8 +68,8 @@ public final class MockData {
             forwards.addAll(filterSoccerPlayersFromFieldPos(soccerPlayers, FieldPos.FORWARD));
         }
 
-        // Todos los usuarios excepto el "Test"
-        List<User> users = ListUtils.asList(Model.users().find("{email: {$regex: #}, nickName: {$ne: 'Test'}}", "@test.com").as(User.class));
+        // Todos los usuarios excepto el "Test" y los "Bots"
+        List<User> users = ListUtils.asList(Model.users().find("{email: {$regex: #}, nickName: {$ne: 'Test'}, firstName: {$ne: 'Bototron'}}", "@test.com").as(User.class));
         for (int i=0; i<size && i<users.size(); i++) {
             User user = users.get(i);
 
