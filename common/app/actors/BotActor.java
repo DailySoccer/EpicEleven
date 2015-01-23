@@ -1,5 +1,6 @@
 package actors;
 
+import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,8 +23,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 //       Como ejecutar los bots en produccion?
-//       Pensar en el problema de que siempre se metan los mismos (de que aparezcan constantemente)
-//       http://en.wikipedia.org/wiki/Knapsack_problem
+//       Sacar todos los bots cuando queda menos de X tiempo para empezar (poco a poco)
+//       Si queremos que puedan realmente jugar en concursos: http://en.wikipedia.org/wiki/Knapsack_problem
 //
 public class BotActor extends UntypedActor {
 
@@ -73,8 +74,35 @@ public class BotActor extends UntypedActor {
 
     @Override
     public void onReceive(Object msg) {
-        switch ((String)msg) {
 
+        if (msg instanceof BotMsg) {
+            onReceive((BotMsg) msg);
+        } else {
+            onReceive((String) msg);
+        }
+    }
+
+    private void onReceive(String msg) {
+
+        switch (msg) {
+            case "NextPersonality":
+                List<Personality> personalities = Arrays.asList(Personality.values());
+                int nextIndex = personalities.indexOf(_personality) + 1;
+                if (nextIndex >= personalities.size()) {
+                    nextIndex = 0;
+                }
+                _personality = personalities.get(nextIndex);
+                break;
+
+            default:
+                unhandled(msg);
+                break;
+        }
+    }
+
+    private void onReceive(BotMsg msg) {
+
+        switch (msg.msg) {
             case "Tick":
                 try {
                     if (_user == null) {
@@ -85,7 +113,7 @@ public class BotActor extends UntypedActor {
                                 onTickBerserker();
                                 break;
                             default:
-                                onTickProduction();
+                                onTickProduction((float)msg.param);
                                 break;
                         }
                     }
@@ -93,15 +121,6 @@ public class BotActor extends UntypedActor {
                 catch (TimeoutException exc) {
                     Logger.info("{} Timeout 1026, probablemente el servidor esta saturado...", getFullName());
                 }
-                break;
-
-            case "NextPersonality":
-                List<Personality> personalities = Arrays.asList(Personality.values());
-                int nextIndex = personalities.indexOf(_personality) + 1;
-                if (nextIndex >= personalities.size()) {
-                    nextIndex = 0;
-                }
-                _personality = personalities.get(nextIndex);
                 break;
 
             default:
@@ -143,23 +162,42 @@ public class BotActor extends UntypedActor {
         }
     }
 
-    void onTickProduction() throws TimeoutException {
+    void onTickProduction(float averageEnteredContests) throws TimeoutException {
         List<Contest> notEntered = filterContestByNotEntered(getActiveContests(), null);
+        List<Contest> myActiveContests = getMyActiveContests();
+        int diffContests = 0;
 
-        // En cada tick el bot solo entrara en 1 concurso
-        for (Contest contest : notEntered) {
-            if (shouldEnter(contest)) {
-                enterContest(contest);
-                break;
+        // En cada tick el bot solo entrara en 1 concurso, siempre que no superemos ya la media de concursos entrados
+        // por nuestros hermanos. Con esto conseguimos que todos los bots entren en el mismo num de concursos (+-1)
+        if (myActiveContests.size() <= averageEnteredContests) {
+            for (Contest contest : notEntered) {
+                if (shouldEnter(contest)) {
+                    if (enterContest(contest) != null) {    // Si conseguimos entrar...
+                        diffContests++;
+                    }
+                    break;
+                }
             }
         }
 
         // Nos salimos de concursos donde ya hay demasiada gente (u otros bots)
-        for (Contest contest : getMyActiveContests()) {
+        for (Contest contest : myActiveContests) {
             if (shouldLeave(contest)) {
                 leaveContest(contest);
+                diffContests--;
             }
         }
+
+        // Comunicamos a nuestro padre en cuantos concursos estamos ahora mismo
+        getSender().tell(new BotMsg("CurrentEnteredContests", _user.userId.toString(), myActiveContests.size() + diffContests), getSelf());
+    }
+
+    public static class BotMsg {
+        public String msg;
+        public String userId;
+        public Object param;
+
+        public BotMsg(String m, String u, Object p) { msg = m; userId = u; param = p; }
     }
 
     List<Contest> getMyActiveContests() throws TimeoutException {

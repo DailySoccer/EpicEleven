@@ -9,9 +9,16 @@ import play.Logger;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class BotParentActor extends UntypedActor {
+
+    @Override public void preStart() {
+        _enteredContests = new HashMap<>();
+        _averageEnteredContests = 0;
+    }
 
     @Override public void postStop() {
         // Para evitar que nos lleguen cartas de muertos
@@ -20,7 +27,18 @@ public class BotParentActor extends UntypedActor {
 
     @Override
     public void onReceive(Object msg) {
-        switch ((String) msg) {
+
+        if (msg instanceof BotActor.BotMsg) {
+            onReceive((BotActor.BotMsg)msg);
+        }
+        else {
+            onReceive((String)msg);
+        }
+    }
+
+    private void onReceive(String msg) {
+
+        switch (msg) {
             case "StartChildren":
                 if (!_childrenStarted) {
                     Logger.debug("BotParentActor arrancando bots hijos");
@@ -55,6 +73,9 @@ public class BotParentActor extends UntypedActor {
                     }
 
                     _childrenStarted = false;
+                    _enteredContests.clear();
+                    _averageEnteredContests = 0;
+
                     cancelTicking();
                 }
                 else {
@@ -75,7 +96,7 @@ public class BotParentActor extends UntypedActor {
                 // Es posible que el actor este muerto (temporalmente en caso de excepcion procesando un mensaje o permanentemente
                 // si no pudo inicializar). Nos lo saltamos
                 if (child != null) {
-                    child.tell("Tick", getSelf());
+                    child.tell(new BotActor.BotMsg("Tick", null, _averageEnteredContests), getSelf());
                 }
 
                 _currentActorIdTick++;
@@ -88,7 +109,7 @@ public class BotParentActor extends UntypedActor {
 
             case "AggressiveTick":
                 for (ActorRef actorRef : getContext().getChildren()) {
-                    actorRef.tell("Tick", getSelf());
+                    actorRef.tell(new BotActor.BotMsg("Tick", null, _averageEnteredContests), getSelf());
                 }
 
                 reescheduleTick(Duration.create(5, TimeUnit.SECONDS));
@@ -106,6 +127,28 @@ public class BotParentActor extends UntypedActor {
                 unhandled(msg);
                 break;
         }
+    }
+
+    private void onReceive(BotActor.BotMsg msg) {
+
+        switch (msg.msg) {
+            case "CurrentEnteredContests":
+                _enteredContests.put(msg.userId, (Integer)(msg.param));
+                recalcAverageEnteredContests();
+                break;
+
+            default:
+                unhandled(msg);
+                break;
+        }
+    }
+
+    private void recalcAverageEnteredContests() {
+        int sum = 0;
+        for (Map.Entry<String, Integer> entry : _enteredContests.entrySet()) {
+            sum += entry.getValue();
+        }
+        _averageEnteredContests = (float)sum / (float)_enteredContests.size();
     }
 
     private void startTicking() {
@@ -146,11 +189,14 @@ public class BotParentActor extends UntypedActor {
 
     boolean _childrenStarted = false;
 
-    TickingMode _currentTickMode = TickingMode.NormalTick;
+    TickingMode _currentTickMode = TickingMode.AggressiveTick;
     Cancellable _tickCancellable;
     int _currentActorIdTick;
 
-    BotActor.Personality _startingPersonality = BotActor.Personality.BERSERKER;
-    boolean _cyclePersonalities = true;
+    BotActor.Personality _startingPersonality = BotActor.Personality.PRODUCTION;
+    boolean _cyclePersonalities = false;
     Cancellable _cycleCancellable;
+
+    HashMap<String, Integer> _enteredContests;
+    float _averageEnteredContests;
 }
