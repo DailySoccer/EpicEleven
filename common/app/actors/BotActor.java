@@ -340,7 +340,13 @@ public class BotActor extends UntypedActor {
         String enteredContestId = null;
 
         if (jsonNode != null) {
+            // Debemos hacer to.do nuestro proceso con los datos de salario, equipo, etc que vienen en los Instances y no en los Templates.
+            List<InstanceSoccerPlayer> instanceSoccerPlayers = contest.instanceSoccerPlayers;
             List<TemplateSoccerPlayer> soccerPlayers = fromJSON(jsonNode.toString(), new TypeReference<List<TemplateSoccerPlayer>>() { });
+
+            // Simplemente "parcheamos" los templates con los datos de los instances
+            copyInstancesToTemplates(instanceSoccerPlayers, soccerPlayers);
+
             List<TemplateSoccerPlayer> lineup = generateLineup(soccerPlayers, contest.salaryCap);
 
             // Verificar que se haya generado un lineup correcto
@@ -420,6 +426,25 @@ public class BotActor extends UntypedActor {
         }
 
         return lineup;
+    }
+
+    void copyInstancesToTemplates(List<InstanceSoccerPlayer> instanceSoccerPlayers, List<TemplateSoccerPlayer> soccerPlayers) {
+        for (InstanceSoccerPlayer ins : instanceSoccerPlayers) {
+            boolean bFound = false;
+            for (TemplateSoccerPlayer sp : soccerPlayers) {
+                if (sp.templateSoccerPlayerId.equals(ins.templateSoccerPlayerId)) {
+                    sp.salary = ins.salary;
+                    sp.fieldPos = ins.fieldPos;
+                    sp.templateTeamId = ins.templateSoccerTeamId;
+
+                    bFound = true;
+                    break;
+                }
+            }
+            if (!bFound) {
+                throw new RuntimeException("WTF 6556 Hemos encontrado un InstanceSoccerPlayer sin TemplateSoccerPlayer");
+            }
+        }
     }
 
     private int sumSalary(List<TemplateSoccerPlayer> sps) {
