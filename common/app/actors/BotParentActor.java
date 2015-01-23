@@ -9,6 +9,8 @@ import play.Logger;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class BotParentActor extends UntypedActor {
@@ -20,17 +22,21 @@ public class BotParentActor extends UntypedActor {
 
     @Override
     public void onReceive(Object msg) {
-        switch ((String) msg) {
+
+        if (msg instanceof BotActor.BotMsg) {
+            onReceive((BotActor.BotMsg)msg);
+        }
+        else {
+            onReceive((String)msg);
+        }
+    }
+
+    private void onReceive(String msg) {
+
+        switch (msg) {
             case "StartChildren":
                 if (!_childrenStarted) {
                     Logger.debug("BotParentActor arrancando bots hijos");
-
-                    for (int c = 0; c < _NUM_BOTS; ++c) {
-                        getContext().actorOf(Props.create(BotActor.class, c, _startingPersonality), String.format("BotActor%d", c));
-                    }
-
-                    _childrenStarted = true;
-                    _currentActorIdTick = 0;
                     startTicking();
                 }
                 else {
@@ -44,17 +50,6 @@ public class BotParentActor extends UntypedActor {
             case "StopChildren":
                 if (_childrenStarted) {
                     Logger.debug("BotParentActor parando bots hijos");
-
-                    // Since stopping an actor is asynchronous, you cannot immediately reuse the name of the child you just stopped;
-                    // this will result in an InvalidActorNameException. Instead, watch the terminating actor and create its
-                    // replacement in response to the Terminated message which will eventually arrive.
-                    // gracefulStop is useful if you need to wait for termination.
-                    // http://doc.akka.io/docs/akka/2.3.8/java/untyped-actors.html
-                    for (ActorRef child : getContext().getChildren()) {
-                        getContext().stop(child);
-                    }
-
-                    _childrenStarted = false;
                     cancelTicking();
                 }
                 else {
@@ -75,7 +70,7 @@ public class BotParentActor extends UntypedActor {
                 // Es posible que el actor este muerto (temporalmente en caso de excepcion procesando un mensaje o permanentemente
                 // si no pudo inicializar). Nos lo saltamos
                 if (child != null) {
-                    child.tell("Tick", getSelf());
+                    child.tell(new BotActor.BotMsg("Tick", null, _averageEnteredContests), getSelf());
                 }
 
                 _currentActorIdTick++;
@@ -88,7 +83,7 @@ public class BotParentActor extends UntypedActor {
 
             case "AggressiveTick":
                 for (ActorRef actorRef : getContext().getChildren()) {
-                    actorRef.tell("Tick", getSelf());
+                    actorRef.tell(new BotActor.BotMsg("Tick", null, _averageEnteredContests), getSelf());
                 }
 
                 reescheduleTick(Duration.create(5, TimeUnit.SECONDS));
@@ -108,12 +103,57 @@ public class BotParentActor extends UntypedActor {
         }
     }
 
+    private void onReceive(BotActor.BotMsg msg) {
+
+        switch (msg.msg) {
+            case "CurrentEnteredContests":
+                _botEnteredContests.put(msg.userId, (Integer) (msg.param));
+                recalcAverageEnteredContests();
+                break;
+
+            default:
+                unhandled(msg);
+                break;
+        }
+    }
+
+    private void recalcAverageEnteredContests() {
+        int sum = 0;
+        for (Map.Entry<String, Integer> entry : _botEnteredContests.entrySet()) {
+            sum += entry.getValue();
+        }
+        _averageEnteredContests = (float)sum / (float) _botEnteredContests.size();
+    }
+
     private void startTicking() {
+
+        for (int c = 0; c < _NUM_BOTS; ++c) {
+            getContext().actorOf(Props.create(BotActor.class, c, _startingPersonality), String.format("BotActor%d", c));
+        }
+
+        _childrenStarted = true;
+        _currentActorIdTick = 0;
+
+        _botEnteredContests = new HashMap<>();
+        _averageEnteredContests = 0;
+
         getSelf().tell(_currentTickMode.name(), getSelf());
         reescheduleCyclePersonalities(Duration.create(60, TimeUnit.SECONDS));
     }
 
     private void cancelTicking() {
+
+        // Since stopping an actor is asynchronous, you cannot immediately reuse the name of the child you just stopped;
+        // this will result in an InvalidActorNameException. Instead, watch the terminating actor and create its
+        // replacement in response to the Terminated message which will eventually arrive.
+        // gracefulStop is useful if you need to wait for termination.
+        // http://doc.akka.io/docs/akka/2.3.8/java/untyped-actors.html
+        for (ActorRef child : getContext().getChildren()) {
+            getContext().stop(child);
+        }
+
+        _childrenStarted = false;
+
         if (_tickCancellable != null) {
             _tickCancellable.cancel();
             _tickCancellable = null;
@@ -150,7 +190,10 @@ public class BotParentActor extends UntypedActor {
     Cancellable _tickCancellable;
     int _currentActorIdTick;
 
-    BotActor.Personality _startingPersonality = BotActor.Personality.BERSERKER;
-    boolean _cyclePersonalities = true;
+    BotActor.Personality _startingPersonality = BotActor.Personality.PRODUCTION;
+    boolean _cyclePersonalities = false;
     Cancellable _cycleCancellable;
+
+    HashMap<String, Integer> _botEnteredContests;
+    float _averageEnteredContests;
 }
