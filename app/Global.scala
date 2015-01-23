@@ -1,3 +1,4 @@
+import model.emailing.MessageSend
 import play.Logger
 import play.api.Play.current
 import play.api._
@@ -65,6 +66,9 @@ object Global extends GlobalSettings {
     if (StormPathClient.instance.isConnected) {
       Logger.info("Stormpath CONNECTED")
     }
+
+    //MessageSend.test()
+
   }
 
 
