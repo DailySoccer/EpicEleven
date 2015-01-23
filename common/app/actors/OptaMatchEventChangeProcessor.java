@@ -67,7 +67,7 @@ public class OptaMatchEventChangeProcessor {
         Model.contests()
                 .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"," +
                         "$or: [" +
-                        "  {entryFee: {$eq: 0}, $where: \"this.contestEntries.length > 1\"}," +
+                        "  {entryFee: {$eq: 0}, \"contestEntries.1\": {$exists: true}}," +
                         "  {$where: \"this.contestEntries.length == this.maxEntries\"}" +
                         "]}", matchEvent.templateMatchEventId)
                 .multi()
