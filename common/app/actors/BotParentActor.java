@@ -15,11 +15,6 @@ import java.util.concurrent.TimeUnit;
 
 public class BotParentActor extends UntypedActor {
 
-    @Override public void preStart() {
-        _enteredContests = new HashMap<>();
-        _averageEnteredContests = 0;
-    }
-
     @Override public void postStop() {
         // Para evitar que nos lleguen cartas de muertos
         cancelTicking();
@@ -49,6 +44,10 @@ public class BotParentActor extends UntypedActor {
 
                     _childrenStarted = true;
                     _currentActorIdTick = 0;
+
+                    _botEnteredContests = new HashMap<>();
+                    _averageEnteredContests = 0;
+
                     startTicking();
                 }
                 else {
@@ -73,8 +72,6 @@ public class BotParentActor extends UntypedActor {
                     }
 
                     _childrenStarted = false;
-                    _enteredContests.clear();
-                    _averageEnteredContests = 0;
 
                     cancelTicking();
                 }
@@ -133,7 +130,7 @@ public class BotParentActor extends UntypedActor {
 
         switch (msg.msg) {
             case "CurrentEnteredContests":
-                _enteredContests.put(msg.userId, (Integer)(msg.param));
+                _botEnteredContests.put(msg.userId, (Integer) (msg.param));
                 recalcAverageEnteredContests();
                 break;
 
@@ -145,10 +142,10 @@ public class BotParentActor extends UntypedActor {
 
     private void recalcAverageEnteredContests() {
         int sum = 0;
-        for (Map.Entry<String, Integer> entry : _enteredContests.entrySet()) {
+        for (Map.Entry<String, Integer> entry : _botEnteredContests.entrySet()) {
             sum += entry.getValue();
         }
-        _averageEnteredContests = (float)sum / (float)_enteredContests.size();
+        _averageEnteredContests = (float)sum / (float) _botEnteredContests.size();
     }
 
     private void startTicking() {
@@ -197,6 +194,6 @@ public class BotParentActor extends UntypedActor {
     boolean _cyclePersonalities = false;
     Cancellable _cycleCancellable;
 
-    HashMap<String, Integer> _enteredContests;
+    HashMap<String, Integer> _botEnteredContests;
     float _averageEnteredContests;
 }
