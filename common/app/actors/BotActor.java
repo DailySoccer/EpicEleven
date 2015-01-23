@@ -305,7 +305,7 @@ public class BotActor extends UntypedActor {
                                                          getFirstName(), getLastName(), getNickName(), getEmail()));
 
         if (jsonNode == null) {
-            Logger.error("{} signup returned empty", getFullName());
+            Logger.error("WTF 4005 {} signup returned empty", getFullName());
         }
     }
 
@@ -315,7 +315,7 @@ public class BotActor extends UntypedActor {
                                                                  getFirstName(), getLastName(), getNickName(), getEmail()));
 
         if (jsonNode == null) {
-            Logger.error("{} changeUserProfile returned empty", getFullName());
+            Logger.error("WTF 4002 {} changeUserProfile returned empty", getFullName());
         }
     }
 
@@ -329,7 +329,7 @@ public class BotActor extends UntypedActor {
             ret = fromJSON(jsonNode.toString(), new TypeReference<List<Contest>>() { });
         }
         else {
-            Logger.error("{} getActiveContests returned empty", getFullName());
+            Logger.error("WTF 4001 {} getActiveContests returned empty", getFullName());
         }
 
         return ret == null? new ArrayList<Contest>() : ret;
@@ -358,7 +358,7 @@ public class BotActor extends UntypedActor {
             }
         }
         else {
-            Logger.error("{} enterContest returned empty", getFullName());
+            Logger.error("WTF 4000 {} enterContest returned empty", getFullName());
         }
 
         return enteredContestId;
@@ -379,11 +379,11 @@ public class BotActor extends UntypedActor {
                 enteredContestId = jsonNode.findValue("contestId").toString().replace("\"", "");
             }
             else {
-                Logger.error("{} addContestEntry produjo en un error en el servidor {}", getFullName(), error.toString());
+                Logger.error("WTF 4006 {} addContestEntry produjo en un error en el servidor {}", getFullName(), error.toString());
             }
         }
         else {
-            Logger.error("{} addContestEntry returned empty", getFullName());
+            Logger.error("WTF 4007 {} addContestEntry returned empty", getFullName());
         }
 
         return enteredContestId;
@@ -397,7 +397,7 @@ public class BotActor extends UntypedActor {
             ret = fromJSON(jsonNode.toString(), new TypeReference<List<UserInfo>>() { });
         }
         else {
-            Logger.error("{} enterContest returned empty", getFullName());
+            Logger.error("WTF 4008 {} enterContest returned empty", getFullName());
             ret = new ArrayList<>();
         }
 
@@ -729,40 +729,3 @@ private List<TemplateSoccerPlayer> generateLineup(List<TemplateSoccerPlayer> soc
         return lineup;
     }
  */
-/*
-    private List<TemplateSoccerPlayer> generateLineup(List<TemplateSoccerPlayer> soccerPlayers, int salaryCap) {
-        List<TemplateSoccerPlayer> lineup = new ArrayList<>();
-
-        sortBySalary(soccerPlayers);
-
-        int averageCappedSalary = salaryCap / 11;
-        int averagePlayerSalary = sumSalary(soccerPlayers) / soccerPlayers.size();
-        int targetSalary = Math.min(averageCappedSalary, averagePlayerSalary);
-
-        // Un portero
-        List<TemplateSoccerPlayer> goalkeepersBySalary = filterByPosition(soccerPlayers, FieldPos.GOALKEEPER);
-        lineup.add(goalkeepersBySalary.get(_rand.nextInt(goalkeepersBySalary.size())));
-
-        // Medios y defensas
-        List<TemplateSoccerPlayer> middlesBySalary = filterBySalary(filterByPosition(soccerPlayers, FieldPos.MIDDLE),
-                0, targetSalary).subList(0, 16);
-        List<TemplateSoccerPlayer> defensesBySalary = filterBySalary(filterByPosition(soccerPlayers, FieldPos.DEFENSE),
-                0, targetSalary).subList(0, 16);
-
-        for (int c = 0; c < 4; ++c) {
-            lineup.add(middlesBySalary.remove(_rand.nextInt(middlesBySalary.size())));
-            lineup.add(defensesBySalary.remove(_rand.nextInt(defensesBySalary.size())));
-        }
-
-        // Dos delanteros
-        List<TemplateSoccerPlayer> forwardsBySalary = filterBySalary(filterByPosition(soccerPlayers, FieldPos.FORWARD),
-                0, targetSalary).subList(0, 10);
-
-        for (int c = 0; c < 2; ++c) {
-            lineup.add(forwardsBySalary.remove(_rand.nextInt(forwardsBySalary.size())));
-        }
-
-
-        return lineup;
-    }
-*/
