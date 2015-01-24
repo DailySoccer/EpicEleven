@@ -165,6 +165,13 @@ public class Contest implements JongoId {
                 .count("{$and: [{templateContestId: #, state: \"ACTIVE\"}, {$where: \"this.contestEntries.length < this.maxEntries\"}]}", templateContestId);
     }
 
+    static public List<Contest> findAllActiveFromTemplateMatchEvent(ObjectId templateMatchEventId) {
+        return ListUtils.asList(Model.contests()
+                .find("{state: \"ACTIVE\", templateMatchEventIds: {$in:[#]}}", templateMatchEventId)
+                .projection(ViewProjection.get(JsonViews.Public.class, Contest.class))
+                .as(Contest.class));
+    }
+
     static public List<Contest> findAllActiveNotFull(Class<?> projectionClass) {
         return ListUtils.asList(Model.contests()
                 .find("{$and: [{state: \"ACTIVE\"}, {$where: \"this.contestEntries.length < this.maxEntries\"}]}")

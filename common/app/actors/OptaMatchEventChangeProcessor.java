@@ -56,18 +56,31 @@ public class OptaMatchEventChangeProcessor {
     }
 
     private void actionWhenMatchEventIsStarted(TemplateMatchEvent matchEvent) {
-        cancelInvalidContests(matchEvent);
-
         // Los template contests (que incluyan este match event y que esten "activos") tienen que ser marcados como "live"
         Model.templateContests()
                 .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}", matchEvent.templateMatchEventId)
                 .multi()
                 .with("{$set: {state: \"LIVE\"}}");
 
+        // Los Contests válidos pasarán a "live"
+        // Válido = (Sin cuota de entrada AND entries > 1) OR Llenos
         Model.contests()
-                .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}", matchEvent.templateMatchEventId)
+                .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"," +
+                        "$or: [" +
+                        "  {entryFee: {$eq: 0}, \"contestEntries.1\": {$exists: true}}," +
+                        "  {$where: \"this.contestEntries.length == this.maxEntries\"}" +
+                        "]}", matchEvent.templateMatchEventId)
                 .multi()
                 .with("{$set: {state: \"LIVE\", startedAt: #}}", GlobalDate.getCurrentDate());
+
+        // Cancelamos aquellos contests que aún permanezcan activos
+        //  deben ser los inválidos, dado que en la query anterior se han cambiado de estado a los válidos
+        for (Contest contest: Contest.findAllActiveFromTemplateMatchEvent(matchEvent.templateMatchEventId)) {
+            Job job = CancelContestJob.create(contest.contestId);
+            if (!job.isDone()) {
+                Logger.error("CancelContestJob {} error", contest.contestId);
+            }
+        }
     }
 
     private void actionWhenMatchEventIsFinished(TemplateMatchEvent matchEvent) {
@@ -88,16 +101,6 @@ public class OptaMatchEventChangeProcessor {
         }
 
         matchEvent.saveStats();
-    }
-
-    private void cancelInvalidContests(TemplateMatchEvent matchEvent) {
-        for (Contest contest: Contest.findAllActiveAndInvalid(matchEvent.templateMatchEventId)) {
-            // Crear un job para cancelar el contest
-            Job job = CancelContestJob.create(contest.contestId);
-            if (!job.isDone()) {
-                Logger.error("CancelContestJob {} error", contest.contestId);
-            }
-        }
     }
 
     private HashSet<String> _changedOptaMatchEventIds;
