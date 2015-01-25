@@ -2,6 +2,7 @@ package actors;
 
 import akka.actor.ActorRef;
 import akka.actor.Props;
+import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -47,19 +48,23 @@ public class DailySoccerActors {
         // El sistema de bots solo se inicializa bajo demanda (por ejemplo, desde la zona de admin)
         Akka.system().actorOf(Props.create(BotParentActor.class), "BotParentActor");
 
-        final String QUEUE_NAME = "Command_And_Control";
+        final String QUEUE_NAME = "BotsControl";
+        final String EXCHANGE_NAME = "";    // Default exchange
 
         try {
             String connectionUri = play.Play.application().configuration().getString("rabbitmq", "amqp://guest:guest@localhost");
 
             ConnectionFactory factory = new ConnectionFactory();
+            //factory.setAutomaticRecoveryEnabled(true);
             factory.setUri(connectionUri);
             Connection connection = factory.newConnection();
             Channel channel = connection.createChannel();
 
-            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-            String message = "Hello world!";
-            channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
+            channel.queueDeclare(QUEUE_NAME, false /* durable */, false /* exclusive */, false  /* autodelete */, null);
+            channel.queuePurge(QUEUE_NAME);
+
+            String message = "StartChildren";
+            channel.basicPublish(EXCHANGE_NAME, QUEUE_NAME, null, message.getBytes());
 
             channel.close();
             connection.close();
@@ -72,7 +77,7 @@ public class DailySoccerActors {
     static public void shutdown() {
 
         // Esto para todos los actores y metodos scheduleados. No es necesario mirar bIsWorker
-        // (aunque logeara "Shutdown application default Akka system.")
+        // (aunque logeara "Shutdown application default Akka system.". Y si no has hecho el init, lo inicializa ahora!)
         Akka.system().shutdown();
 
         // Hacemos un 'join' para asegurar que no matamos el modelo estando todavia procesando

@@ -5,17 +5,65 @@ import akka.actor.ActorRef;
 import akka.actor.Cancellable;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
+import com.rabbitmq.client.*;
 import play.Logger;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class BotParentActor extends UntypedActor {
 
+    @Override public void preStart() {
+        final String QUEUE_NAME = "BotsControl";
+        final String EXCHANGE_NAME = "";    // Default exchange
+
+        try {
+            String connectionUri = play.Play.application().configuration().getString("rabbitmq", "amqp://guest:guest@localhost");
+
+            ConnectionFactory factory = new ConnectionFactory();
+            factory.setUri(connectionUri);
+
+            _connection = factory.newConnection();
+            final Channel channel = _connection.createChannel();
+            channel.queueDeclare(QUEUE_NAME, false /* durable */, false /* exclusive */, false  /* autodelete */, null);
+
+            channel.basicConsume(QUEUE_NAME, false /* autoAck */, "BotParentActorTag", new DefaultConsumer(channel) {
+                @Override
+                public void handleDelivery(String consumerTag,
+                                           Envelope envelope,
+                                           AMQP.BasicProperties properties,
+                                           byte[] body) throws IOException
+                {
+                    String routingKey = envelope.getRoutingKey();
+                    long deliveryTag = envelope.getDeliveryTag();
+
+                    String msgString = new String(body);
+                    Logger.debug("BotParentActor recibio mensaje desde RabbitMq, RoutingKey {}, DeliveryTag {}, Message {}", routingKey, deliveryTag, msgString);
+
+                    getSelf().tell(msgString, getSelf());
+
+                    channel.basicAck(deliveryTag, false);
+                }
+            });
+        }
+        catch (Exception exc) {
+            Logger.debug("RabbitMQ no pudo conectar", exc);
+        }
+    }
+
     @Override public void postStop() {
+
+        try {
+            _connection.close();
+        }
+        catch (Exception exc) {
+            Logger.debug("WTF 6699 RabbitMQ no pudo cerrar", exc);
+        }
+
         // Para evitar que nos lleguen cartas de muertos
         cancelTicking();
     }
@@ -26,8 +74,11 @@ public class BotParentActor extends UntypedActor {
         if (msg instanceof BotActor.BotMsg) {
             onReceive((BotActor.BotMsg)msg);
         }
-        else {
+        else if (msg instanceof String) {
             onReceive((String)msg);
+        }
+        else {
+            unhandled(msg);
         }
     }
 
@@ -196,4 +247,6 @@ public class BotParentActor extends UntypedActor {
 
     HashMap<String, Integer> _botEnteredContests;
     float _averageEnteredContests;
+
+    Connection _connection;
 }
