@@ -18,20 +18,13 @@ import java.util.concurrent.TimeUnit;
 public class BotParentActor extends UntypedActor {
 
     @Override public void preStart() {
-        final String QUEUE_NAME = "BotsControl";
+        final String QUEUE_NAME = "BotParentActor";
         final String EXCHANGE_NAME = "";    // Default exchange
 
         try {
-            String connectionUri = play.Play.application().configuration().getString("rabbitmq", "amqp://guest:guest@localhost");
+            _rabbitMQChannel = DailySoccerActors.getRabbitMQConnection().createChannel();
 
-            ConnectionFactory factory = new ConnectionFactory();
-            factory.setUri(connectionUri);
-
-            _connection = factory.newConnection();
-            final Channel channel = _connection.createChannel();
-            channel.queueDeclare(QUEUE_NAME, false /* durable */, false /* exclusive */, false  /* autodelete */, null);
-
-            channel.basicConsume(QUEUE_NAME, false /* autoAck */, "BotParentActorTag", new DefaultConsumer(channel) {
+            _rabbitMQChannel.basicConsume(QUEUE_NAME, false /* autoAck */, "BotParentActorTag", new DefaultConsumer(_rabbitMQChannel) {
                 @Override
                 public void handleDelivery(String consumerTag,
                                            Envelope envelope,
@@ -42,28 +35,20 @@ public class BotParentActor extends UntypedActor {
                     long deliveryTag = envelope.getDeliveryTag();
 
                     String msgString = new String(body);
-                    Logger.debug("BotParentActor recibio mensaje desde RabbitMq, RoutingKey {}, DeliveryTag {}, Message {}", routingKey, deliveryTag, msgString);
+                    Logger.debug("BotParentActor recibio mensaje desde RabbitMq, RoutingKey {}, Message {}", routingKey, deliveryTag, msgString);
 
                     getSelf().tell(msgString, getSelf());
 
-                    channel.basicAck(deliveryTag, false);
+                    _rabbitMQChannel.basicAck(deliveryTag, false);
                 }
             });
         }
         catch (Exception exc) {
-            Logger.debug("RabbitMQ no pudo conectar", exc);
+            Logger.debug("BotParentActor no pudo inicializar RabbitMQ", exc);
         }
     }
 
     @Override public void postStop() {
-
-        try {
-            _connection.close();
-        }
-        catch (Exception exc) {
-            Logger.debug("WTF 6699 RabbitMQ no pudo cerrar", exc);
-        }
-
         // Para evitar que nos lleguen cartas de muertos
         cancelTicking();
     }
@@ -248,5 +233,5 @@ public class BotParentActor extends UntypedActor {
     HashMap<String, Integer> _botEnteredContests;
     float _averageEnteredContests;
 
-    Connection _connection;
+    Channel _rabbitMQChannel;
 }
