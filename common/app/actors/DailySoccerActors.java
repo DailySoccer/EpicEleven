@@ -2,13 +2,15 @@ package actors;
 
 import akka.actor.ActorRef;
 import akka.actor.Props;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import play.Logger;
-import play.libs.Akka;
-
-import play.api.DefaultApplication;
-import play.api.Play;
-import play.api.Mode;
 import play.api.Application;
+import play.api.DefaultApplication;
+import play.api.Mode;
+import play.api.Play;
+import play.libs.Akka;
 
 import java.io.File;
 
@@ -44,6 +46,27 @@ public class DailySoccerActors {
 
         // El sistema de bots solo se inicializa bajo demanda (por ejemplo, desde la zona de admin)
         Akka.system().actorOf(Props.create(BotParentActor.class), "BotParentActor");
+
+        final String QUEUE_NAME = "Command_And_Control";
+
+        try {
+            String connectionUri = play.Play.application().configuration().getString("rabbitmq", "amqp://guest:guest@localhost");
+
+            ConnectionFactory factory = new ConnectionFactory();
+            factory.setUri(connectionUri);
+            Connection connection = factory.newConnection();
+            Channel channel = connection.createChannel();
+
+            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+            String message = "Hello world!";
+            channel.basicPublish("", QUEUE_NAME, null, message.getBytes());
+
+            channel.close();
+            connection.close();
+        }
+        catch (Exception exc) {
+            Logger.debug("RabbitMQ no pudo conectar", exc);
+        }
     }
 
     static public void shutdown() {

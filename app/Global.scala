@@ -17,9 +17,9 @@ object Global extends GlobalSettings {
 
   def isWorker: Boolean = { scala.util.Properties.propOrNull("config.isworker") == "true" }
 
-  var release = "devel" // Will be set with getRelease if in production
+  var release = "devel" // Will be set onStart to the Heroku deploy version when we are in production
 
-  def getRelease:String = {
+  def readReleaseVersion : String = {
     var version = "devel"
 
     try {
@@ -36,8 +36,9 @@ object Global extends GlobalSettings {
 
         version = Await.result(futureResponse, 10 seconds)
       }
-    } catch {
-      case e: Exception => Logger.error("WTF 7932: ", e)
+    }
+    catch {
+      case e: Exception => Logger.error("WTF 7932 Error durante la inicializacion de la version", e)
     }
 
     version
@@ -76,7 +77,7 @@ object Global extends GlobalSettings {
 
     val processType = if (isWorker) "Worker Process" else "Web Process"
 
-    release = getRelease
+    release = readReleaseVersion
     Logger.info(s"Epic Eleven $processType version $release has started")
 
     model.Model.init()

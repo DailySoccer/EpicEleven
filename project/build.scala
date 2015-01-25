@@ -72,6 +72,7 @@ object build extends Build {
                     ,"org.flywaydb" % "flyway-core" % "3.1"
                     ,"com.paypal.sdk" % "paypal-core" % "1.6.6"
                     ,"com.paypal.sdk" % "rest-api-sdk" % "0.12.2" intransitive()
+                    ,"com.rabbitmq" % "amqp-client" % "3.4.3"
                   ))
                 .settings(resourceDirectory in Assets := baseDirectory.value / "app")
                 .enablePlugins(PlayJava)
