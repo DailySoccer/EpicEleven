@@ -1,6 +1,5 @@
 package actors;
 
-import akka.actor.Actor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import com.rabbitmq.client.*;
@@ -10,6 +9,7 @@ import play.api.DefaultApplication;
 import play.api.Mode;
 import play.api.Play;
 import play.libs.Akka;
+import utils.InstanceRole;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,21 +25,21 @@ public class DailySoccerActors {
         return _instance;
     }
 
-    public void init(String instanceRole) {
+    public void init(InstanceRole instanceRole) {
 
         switch (instanceRole) {
-            case "DEVELOPMENT_ROLE":
+            case DEVELOPMENT_ROLE:
                 initRabbitMQ();
                 createActors();
                 bindActorsToQueues();
                 break;
-            case "WORKER_ROLE":
+            case WORKER_ROLE:
                 initRabbitMQ();
                 createActors();
                 bindActorsToQueues();
                 tickActors();
                 break;
-            case "WEB_ROLE":
+            case WEB_ROLE:
                 break;
             default:
                 throw new RuntimeException("WTF 5550 instanceRole desconocido");

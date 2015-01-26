@@ -12,6 +12,7 @@ import org.jongo.MongoCollection;
 import org.jongo.marshall.jackson.JacksonMapper;
 import play.Logger;
 import play.Play;
+import utils.InstanceRole;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -67,11 +68,11 @@ public class Model {
     static public void setTargetEnvironment(TargetEnvironment env) {
 
         // Solo se puede cambiar el environment al que atacamos en maquinas de desarrollo, claro
-        if (!_instanceRole.equals("DEVELOPMENT_ROLE")) {
+        if (_instanceRole != InstanceRole.DEVELOPMENT_ROLE) {
             throw new RuntimeException("WTF 5771 are you nuts?");
         }
 
-        // Cambiar el ataque del modelo a un environment distinto de momento significa reinicializar mongo solamente
+        // Cambiar el ataque del modelo a un environment distinto significa reinicializar mongo solamente *de momento*
         if (initMongo(readMongoUriForEnvironment(env))) {
             _targetEnvironment = env;   // Ahora ya estamos en el environment solicitado
         }
@@ -81,7 +82,7 @@ public class Model {
         return TargetEnvironment.LOCALHOST == _targetEnvironment;
     }
 
-    static public void init(String instanceRole) {
+    static public void init(InstanceRole instanceRole) {
         _instanceRole = instanceRole;
         _targetEnvironment = TargetEnvironment.LOCALHOST;   // En produccion no tiene significado puesto que no se puede cambiar
 
@@ -308,7 +309,7 @@ public class Model {
     }
 
     static private TargetEnvironment _targetEnvironment;
-    static private String _instanceRole;
+    static private InstanceRole _instanceRole;
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/
     static private MongoClient _mongoClient;
