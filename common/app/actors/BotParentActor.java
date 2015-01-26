@@ -17,37 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 public class BotParentActor extends UntypedActor {
 
-    @Override public void preStart() {
-        final String QUEUE_NAME = "BotParentActor";
-        final String EXCHANGE_NAME = "";    // Default exchange
-
-        try {
-            _rabbitMQChannel = DailySoccerActors.getRabbitMQConnection().createChannel();
-
-            _rabbitMQChannel.basicConsume(QUEUE_NAME, false /* autoAck */, "BotParentActorTag", new DefaultConsumer(_rabbitMQChannel) {
-                @Override
-                public void handleDelivery(String consumerTag,
-                                           Envelope envelope,
-                                           AMQP.BasicProperties properties,
-                                           byte[] body) throws IOException
-                {
-                    String routingKey = envelope.getRoutingKey();
-                    long deliveryTag = envelope.getDeliveryTag();
-
-                    String msgString = new String(body);
-                    Logger.debug("BotParentActor recibio mensaje desde RabbitMq, RoutingKey {}, Message {}", routingKey, deliveryTag, msgString);
-
-                    getSelf().tell(msgString, getSelf());
-
-                    _rabbitMQChannel.basicAck(deliveryTag, false);
-                }
-            });
-        }
-        catch (Exception exc) {
-            Logger.debug("BotParentActor no pudo inicializar RabbitMQ", exc);
-        }
-    }
-
     @Override public void postStop() {
         // Para evitar que nos lleguen cartas de muertos
         cancelTicking();

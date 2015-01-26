@@ -1,11 +1,9 @@
 package actors;
 
+import akka.actor.Actor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.*;
 import play.Logger;
 import play.api.Application;
 import play.api.DefaultApplication;
@@ -14,10 +12,20 @@ import play.api.Play;
 import play.libs.Akka;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DailySoccerActors {
 
-    static public void init(String instanceRole) {
+    static public DailySoccerActors instance() {
+        if (_instance == null) {
+            _instance = new DailySoccerActors();
+        }
+        return _instance;
+    }
+
+    public void init(String instanceRole) {
 
         switch (instanceRole) {
             case "DEVELOPMENT_ROLE":
@@ -33,62 +41,95 @@ public class DailySoccerActors {
         }
     }
 
-    static void initDevelopmentRole() {
-        Akka.system().actorOf(Props.create(OptaProcessorActor.class), "OptaProcessorActor");
-        Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateConstestsActor");
-        Akka.system().actorOf(Props.create(GivePrizesActor.class), "GivePrizesActor");
-        Akka.system().actorOf(Props.create(TransactionsActor.class), "TransactionsActor");
-        Akka.system().actorOf(Props.create(BotParentActor.class), "BotParentActor");
+    private void initDevelopmentRole() {
+
+        tryInitRabbitMQDevelopment();
+        createActors();
+        bindActorsToQueues();
     }
 
-    static void initWorkerRole() {
+    private void initWorkerRole() {
 
-        initRabbitMQ();
+        initRabbitMQProduction();
+        createActors();
+        bindActorsToQueues();
 
-        final ActorRef optaProcessorActor = Akka.system().actorOf(Props.create(OptaProcessorActor.class), "OptaProcessorActor");
-        final ActorRef instantiateConstestsActor = Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateConstestsActor");
-        final ActorRef givePrizesActor = Akka.system().actorOf(Props.create(GivePrizesActor.class), "GivePrizesActor");
-        final ActorRef transactionsActor = Akka.system().actorOf(Props.create(TransactionsActor.class), "TransactionsActor");
-
-        instantiateConstestsActor.tell("Tick", ActorRef.noSender());
-        optaProcessorActor.tell("Tick", ActorRef.noSender());
-        givePrizesActor.tell("Tick", ActorRef.noSender());
-        transactionsActor.tell("Tick", ActorRef.noSender());
-
-        // El sistema de bots solo se tickea bajo demanda (por ejemplo, desde la zona de admin)
-        Akka.system().actorOf(Props.create(BotParentActor.class), "BotParentActor");
+        // Lanzamos el primer tick. El sistema de bots ignorara el mensaje, solo se inicializa bajo demanda
+        for (ActorRef actorRef : _actors.values()) {
+            actorRef.tell("Tick", ActorRef.noSender());
+        }
     }
 
-    static private void initRabbitMQ() {
-        final String QUEUE_NAME = "BotParentActor";
-        final String EXCHANGE_NAME = "";    // Default exchange
+    private void createActors() {
+        _actors.put("OptaProcessorActor", Akka.system().actorOf(Props.create(OptaProcessorActor.class), "OptaProcessorActor"));
+        _actors.put("InstantiateConstestsActor", Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateConstestsActor"));
+        _actors.put("GivePrizesActor", Akka.system().actorOf(Props.create(GivePrizesActor.class), "GivePrizesActor"));
+        _actors.put("TransactionsActor", Akka.system().actorOf(Props.create(TransactionsActor.class), "TransactionsActor"));
+        _actors.put("BotParentActor", Akka.system().actorOf(Props.create(BotParentActor.class), "BotParentActor"));
+    }
+
+    private void bindActorsToQueues() {
+
+        if (_connection == null) {
+            return;
+        }
 
         try {
-            String connectionUri = play.Play.application().configuration().getString("rabbitmq", "amqp://guest:guest@localhost");
+            for (Map.Entry<String, ActorRef> entry : _actors.entrySet()) {
 
-            ConnectionFactory factory = new ConnectionFactory();
-            //factory.setAutomaticRecoveryEnabled(true);
-            factory.setUri(connectionUri);
-            _connection = factory.newConnection();
+                final String queueName = entry.getKey();
+                final ActorRef actorRef = entry.getValue();
 
-            Channel channel = _connection.createChannel();
-
-            channel.queueDeclare(QUEUE_NAME, false /* durable */, false /* exclusive */, false  /* autodelete */, null);
-            channel.queuePurge(QUEUE_NAME);
-
-            String message = "StartChildren";
-            channel.basicPublish(EXCHANGE_NAME, QUEUE_NAME, null, message.getBytes());
+                _channel.basicConsume(queueName, true /* autoAck */, queueName + "Tag", new DefaultConsumer(_channel) {
+                    @Override
+                    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                        String routingKey = envelope.getRoutingKey();
+                        String msgString = new String(body);
+                        Logger.debug("DailySoccerActors RabbitMQ Message, RoutingKey {}, Message {}", routingKey, msgString);
+                        actorRef.tell(msgString, ActorRef.noSender());
+                    }
+                });
+            }
         }
         catch (Exception exc) {
-            Logger.debug("RabbitMQ no pudo conectar", exc);
+            Logger.error("WTF 9688 DailySoccerActors no pudo inicializar el consumer de mensajes RabbitMQ", exc);
         }
     }
 
-    static public Connection getRabbitMQConnection() {
-        return _connection;
+    private void tryInitRabbitMQDevelopment() {
+        try {
+            ConnectionFactory factory = new ConnectionFactory();
+            factory.setUri("amqp://guest:guest@localhost");
+            _connection = factory.newConnection();
+            _channel = _connection.createChannel();
+        }
+        catch (Exception exc) {
+            Logger.warn("DailySoccerActors no pudo inicializar RabbitMQ en modo development. rabbitmp-server esta apagado");
+        }
     }
 
-    static public void shutdown() {
+    private void initRabbitMQProduction() {
+        try {
+            String connectionUri = play.Play.application().configuration().getString("rabbitmq");
+
+            ConnectionFactory factory = new ConnectionFactory();
+            factory.setUri(connectionUri);
+            _connection = factory.newConnection();
+            _channel = _connection.createChannel();
+
+
+            // channel.queueDeclare(QUEUE_NAME, false /* durable */, false /* exclusive */, false  /* autodelete */, null);
+            // channel.queuePurge(QUEUE_NAME);
+
+            // String message = "StartChildren";
+            // channel.basicPublish(_EXCHANGE_NAME, QUEUE_NAME, null, message.getBytes());
+        }
+        catch (Exception exc) {
+            Logger.error("WTF 9111 DailySoccerActors no pudo inicializar RabbitMQ", exc);
+        }
+    }
+
+    public void shutdown() {
 
         try {
             _connection.close();
@@ -110,5 +151,11 @@ public class DailySoccerActors {
         Play.start(application);
     }
 
-    static Connection _connection;
+    Connection _connection;
+    Channel _channel;
+
+    HashMap<String, ActorRef> _actors = new HashMap<>();          // Todos los actores que creamos, hasheados por nombre
+
+    static DailySoccerActors _instance;
+    final static String _EXCHANGE_NAME = "";    // Default exchange
 }

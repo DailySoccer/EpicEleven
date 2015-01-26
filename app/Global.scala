@@ -54,20 +54,18 @@ object Global extends GlobalSettings {
     Logger.info(s"Epic Eleven $instanceRole, version $releaseVersion has started")
 
     model.Model.init()
-    actors.DailySoccerActors.init(false)
+    actors.DailySoccerActors.instance().init(instanceRole)
 
+    // Es aqui donde se llama a la inicializacion de Stormpath a traves del constructor
     if (StormPathClient.instance.isConnected) {
-      Logger.info("Stormpath connected properly")
-    }
-    else {
-      Logger.info( "Stormpath not connected")
+      Logger.info("Stormpath CONNECTED")
     }
   }
 
   override def onStop(app: Application) {
     Logger.info("Epic Eleven shutdown...")
 
-    actors.DailySoccerActors.shutdown()
+    actors.DailySoccerActors.instance().shutdown()
     model.Model.shutdown()
   }
 
