@@ -29,10 +29,15 @@ public class DailySoccerActors {
 
         switch (instanceRole) {
             case "DEVELOPMENT_ROLE":
-                initDevelopmentRole();
+                initRabbitMQ();
+                createActors();
+                bindActorsToQueues();
                 break;
             case "WORKER_ROLE":
-                initWorkerRole();
+                initRabbitMQ();
+                createActors();
+                bindActorsToQueues();
+                tickActors();
                 break;
             case "WEB_ROLE":
                 break;
@@ -41,20 +46,8 @@ public class DailySoccerActors {
         }
     }
 
-    private void initDevelopmentRole() {
-
-        tryInitRabbitMQDevelopment();
-        createActors();
-        bindActorsToQueues();
-    }
-
-    private void initWorkerRole() {
-
-        initRabbitMQProduction();
-        createActors();
-        bindActorsToQueues();
-
-        // Lanzamos el primer tick. El sistema de bots ignorara el mensaje, solo se inicializa bajo demanda
+    private void tickActors() {
+        // El sistema de bots ignorara el mensaje (no conoce el mensaje "Tick), solo se inicializa bajo demanda
         for (ActorRef actorRef : _actors.values()) {
             actorRef.tell("Tick", ActorRef.noSender());
         }
@@ -70,6 +63,7 @@ public class DailySoccerActors {
 
     private void bindActorsToQueues() {
 
+        // Soportamos que rabbitmq-server este apagado
         if (_connection == null) {
             return;
         }
@@ -98,21 +92,9 @@ public class DailySoccerActors {
         }
     }
 
-    private void tryInitRabbitMQDevelopment() {
+    private void initRabbitMQ() {
         try {
-            ConnectionFactory factory = new ConnectionFactory();
-            factory.setUri("amqp://guest:guest@localhost");
-            _connection = factory.newConnection();
-            _channel = _connection.createChannel();
-        }
-        catch (Exception exc) {
-            Logger.warn("DailySoccerActors no pudo inicializar RabbitMQ en modo development. rabbitmp-server esta apagado");
-        }
-    }
-
-    private void initRabbitMQProduction() {
-        try {
-            String connectionUri = play.Play.application().configuration().getString("rabbitmq");
+            String connectionUri = play.Play.application().configuration().getString("rabbitmq", "amqp://guest:guest@localhost");
 
             ConnectionFactory factory = new ConnectionFactory();
             factory.setUri(connectionUri);
@@ -120,7 +102,7 @@ public class DailySoccerActors {
             _channel = _connection.createChannel();
         }
         catch (Exception exc) {
-            Logger.error("WTF 9111 DailySoccerActors no pudo inicializar RabbitMQ", exc);
+            Logger.warn("DailySoccerActors no pudo inicializar RabbitMQ");
         }
     }
 
