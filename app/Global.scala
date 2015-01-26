@@ -67,7 +67,7 @@ object Global extends GlobalSettings {
       Logger.info("Stormpath CONNECTED")
     }
 
-    //MessageSend.test()
+    //MessageSend.send("Fede", "fedefede@mailinator.com", "Hola", "<h3>Hola desde Epic Eleven</h3>.")
 
   }
 

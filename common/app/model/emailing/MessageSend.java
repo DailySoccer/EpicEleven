@@ -1,504 +1,215 @@
 package model.emailing;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import play.Logger;
+import play.libs.F;
+import play.libs.ws.WS;
+import play.libs.ws.WSResponse;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class MessageSend {
 
-    private static class MandrillMessageRequest {
+    public static class MandrillMessageRequest {
 
-        public MandrillMessage getMessage() {
-            return message;
+        public String key = play.Play.application().configuration().getString("mandrill_key");
+        public MandrillMessage message;
+        public Boolean async;
+
+        @JsonProperty("ip_pool")
+        public String ipPool;
+
+        @JsonProperty("send_at")
+        public String sendAt;
+
+
+        public F.Promise<Boolean> sendCall() {
+            String url = "/messages/send.json";
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                return WS.url(_mandrillUrl+url).post(mapper.writeValueAsString(this)).map(
+                        new F.Function<WSResponse, Boolean>() {
+                            public Boolean apply(WSResponse response) {
+                                if (response.getStatus() == 200) {
+                                    Logger.info("Mandrill Response:" + response.asJson().toString());
+                                }
+                                else {
+                                    Logger.error("Mandrill Response:" + response.asJson().toString());
+                                }
+                                return response.getStatus() == 200;
+                            }
+                        }
+                );
+
+            } catch (Exception e) {
+                Logger.error("WTF 5112");
+            }
+            return null;
         }
 
-        public void setMessage(MandrillMessage message) {
-            this.message = message;
-        }
 
-        public Boolean getAsync() {
-            return async;
-        }
-
-        public void setAsync(Boolean async) {
-            this.async = async;
-        }
-
-        public String getIpPool() {
-            return ip_pool;
-        }
-
-        public void setIpPool(String ip_pool) {
-            this.ip_pool = ip_pool;
-        }
-
-        public String getSendAt() {
-            return send_at;
-        }
-
-        public void setSendAt(String send_at) {
-            this.send_at = send_at;
-        }
-
-        private String key = play.Play.application().configuration().getString("mandrill_key");
-        private MandrillMessage message;
-        private Boolean async;
-        private String ip_pool;
-        private String send_at;
+        private final String _mandrillUrl = "https://mandrillapp.com/api/1.0";
     }
 
-    private static class MandrillMessage {
+    public static class MandrillMessage {
 
         public static class Recipient {
-
-            private String name;
-            private Type type = Type.TO;
-
             public enum Type {
-                TO, BCC, CC
+                TO  ("to"),
+                BCC ("bcc"),
+                CC  ("cc");
+
+                private String key;
+
+                Type(String key) {
+                   this.key = key;
+                }
+
+                @JsonValue
+                public String getKey() {
+                    return key;
+                }
             }
-
-            private String email;
-
-            public String getEmail() {
-                return email;
-            }
-
-            public void setEmail(String email) {
-                this.email = email;
-            }
-
-            public String getName() {
-                return name;
-            }
-
-            public void setName(String name) {
-                this.name = name;
-            }
-
-            public Type getType() {
-                return type;
-            }
-
-            public void setType(Type type) {
-                this.type = type;
-            }
-
-
+            public String name;
+            public Type type = Type.TO;
+            public String email;
         }
 
         public static class MessageContent {
-
-            private String name, type, content;
-            private Boolean binary;
-
-            public String getName() {
-                return name;
-            }
-
-            public void setName(String name) {
-                this.name = name;
-            }
-
-            public String getType() {
-                return type;
-            }
-
-            public void setType(String type) {
-                this.type = type;
-            }
-
-            public String getContent() {
-                return content;
-            }
-
-            public void setContent(String content) {
-                this.content = content;
-            }
-
-            public Boolean getBinary() {
-                return binary;
-            }
-
-            public void setBinary(Boolean binary) {
-                this.binary = binary;
-            }
-
+            public String name, type, content;
+            public Boolean binary;
         }
 
         public static class MergeVarBucket {
-
-            private String rcpt;
-            private MergeVar[] vars;
-
-
-            public MergeVar[] getVars() {
-                return vars;
-            }
-
-            public void setVars(MergeVar[] vars) {
-                this.vars = vars;
-            }
-
-            public String getRcpt() {
-                return rcpt;
-            }
-
-            public void setRcpt(String rcpt) {
-                this.rcpt = rcpt;
-            }
-
+            public String rcpt;
+            public MergeVar[] vars;
         }
 
         public static class MergeVar {
-
-            private String name, content;
-
-            public String getName() {
-                return name;
-            }
-
-            public void setName(String name) {
-                this.name = name;
-            }
-
-            public String getContent() {
-                return content;
-            }
-
-            public void setContent(String content) {
-                this.content = content;
-            }
-
+            public String name, content;
         }
 
         public static class RecipientMetadata {
-
-            private String rcpt;
-            private Map<String,String> values;
-
-            public String getRcpt() {
-                return rcpt;
-            }
-
-            public void setRcpt(String rcpt) {
-                this.rcpt = rcpt;
-            }
-
-            public Map<String, String> getValues() {
-                return values;
-            }
-
-            public void setValues(Map<String, String> values) {
-                this.values = values;
-            }
-
+            public String rcpt;
+            public Map<String,String> values;
         }
 
+        public String subject, html, text;
+        public List<Recipient> to;
+        public Map<String,String> headers;
+        public Boolean important;
+        public Boolean merge;
+        public List<String> tags;
+        public String subaccount;
+        public List<MessageContent> attachments;
+        public List<MessageContent> images;
+        public Map<String,String> metadata;
 
-        public String getSubject() {
-            return subject;
-        }
+        @JsonProperty("from_email")
+        public String  fromEmail;
 
-        public void setSubject(String subject) {
-            this.subject = subject;
-        }
+        @JsonProperty("from_name")
+        public String  fromName;
 
-        public String getHtml() {
-            return html;
-        }
+        @JsonProperty("track_opens")
+        public Boolean trackOpens;
 
-        public void setHtml(String html) {
-            this.html = html;
-        }
+        @JsonProperty("track_clicks")
+        public Boolean trackClicks;
 
-        public String getText() {
-            return text;
-        }
+        @JsonProperty("auto_text")
+        public Boolean autoText;
 
-        public void setText(String text) {
-            this.text = text;
-        }
+        @JsonProperty("auto_html")
+        public Boolean autoHtml;
 
-        public String getFromEmail() {
-            return from_email;
-        }
+        @JsonProperty("inline_css")
+        public Boolean inlineCss;
 
-        public void setFromEmail(String from_email) {
-            this.from_email = from_email;
-        }
+        @JsonProperty("url_strip_qs")
+        public Boolean urlStripQs;
 
-        public String getFromName() {
-            return from_name;
-        }
+        @JsonProperty("preserve_recipients")
+        public Boolean preserveRecipients;
 
-        public void setFromName(String from_name) {
-            this.from_name = from_name;
-        }
+        @JsonProperty("view_content_link")
+        public Boolean viewContentLink;
 
-        public List<Recipient> getTo() {
-            return to;
-        }
+        @JsonProperty("bcc_address")
+        public String bccAddress;
 
-        public void setTo(List<Recipient> to) {
-            this.to = to;
-        }
+        @JsonProperty("tracking_domain")
+        public String trackingDomain;
 
-        public Map<String, String> getHeaders() {
-            return headers;
-        }
+        @JsonProperty("signing_domain")
+        public String signingDomain;
 
-        public void setHeaders(Map<String, String> headers) {
-            this.headers = headers;
-        }
+        @JsonProperty("return_path_domain")
+        public String returnPathDomain;
 
-        public Boolean getImportant() {
-            return important;
-        }
+        @JsonProperty("global_merge_vars")
+        public List<MergeVar> globalMergeVars;
 
-        public void setImportant(Boolean important) {
-            this.important = important;
-        }
+        @JsonProperty("merge_vars")
+        public List<MergeVarBucket> mergeVars;
 
-        public Boolean getTrackOpens() {
-            return track_opens;
-        }
+        @JsonProperty("google_analytics_domains")
+        public List<String> googleAnalyticsDomains;
 
-        public void setTrackOpens(Boolean track_opens) {
-            this.track_opens = track_opens;
-        }
+        @JsonProperty("google_analytics_campaign")
+        public String googleAnalyticsCampaign;
 
-        public Boolean getTrackClicks() {
-            return track_clicks;
-        }
+        @JsonProperty("recipient_metadata")
+        public List<RecipientMetadata> recipientMetadata;
 
-        public void setTrackClicks(Boolean track_clicks) {
-            this.track_clicks = track_clicks;
-        }
-
-        public Boolean getAutoText() {
-            return auto_text;
-        }
-
-        public void setAutoText(Boolean auto_text) {
-            this.auto_text = auto_text;
-        }
-
-        public Boolean getAutoHtml() {
-            return auto_html;
-        }
-
-        public void setAutoHtml(Boolean auto_html) {
-            this.auto_html = auto_html;
-        }
-
-        public Boolean getInlineCss() {
-            return inline_css;
-        }
-
-        public void setInlineCss(Boolean inline_css) {
-            this.inline_css = inline_css;
-        }
-
-        public Boolean getUrlStripQs() {
-            return url_strip_qs;
-        }
-
-        public void setUrlStripQs(Boolean url_strip_qs) {
-            this.url_strip_qs = url_strip_qs;
-        }
-
-        public Boolean getPreserveRecipients() {
-            return preserve_recipients;
-        }
-
-        public void setPreserveRecipients(Boolean preserve_recipients) {
-            this.preserve_recipients = preserve_recipients;
-        }
-
-        public Boolean getViewContentLink() {
-            return view_content_link;
-        }
-
-        public void setViewContentLink(Boolean view_content_link) {
-            this.view_content_link = view_content_link;
-        }
-
-        public String getBccAddress() {
-            return bcc_address;
-        }
-
-        public void setBccAddress(String bcc_address) {
-            this.bcc_address = bcc_address;
-        }
-
-        public String getTrackingDomain() {
-            return tracking_domain;
-        }
-
-        public void setTrackingDomain(String tracking_domain) {
-            this.tracking_domain = tracking_domain;
-        }
-
-        public String getSigningDomain() {
-            return signing_domain;
-        }
-
-        public void setSigningDomain(String signing_domain) {
-            this.signing_domain = signing_domain;
-        }
-
-        public String getReturnPathDomain() {
-            return return_path_domain;
-        }
-
-        public void setReturnPathDomain(String return_path_domain) {
-            this.return_path_domain = return_path_domain;
-        }
-
-        public Boolean getMerge() {
-            return merge;
-        }
-
-        public void setMerge(Boolean merge) {
-            this.merge = merge;
-        }
-
-        public List<MergeVar> getGlobalMergeVars() {
-            return global_merge_vars;
-        }
-
-        public void setGlobalMergeVars(List<MergeVar> global_merge_vars) {
-            this.global_merge_vars = global_merge_vars;
-        }
-
-        public List<MergeVarBucket> getMergeVars() {
-            return merge_vars;
-        }
-
-        public void setMergeVars(List<MergeVarBucket> merge_vars) {
-            this.merge_vars = merge_vars;
-        }
-
-        public List<String> getTags() {
-            return tags;
-        }
-
-        public void setTags(List<String> tags) {
-            this.tags = tags;
-        }
-
-        public String getSubaccount() {
-            return subaccount;
-        }
-
-        public void setSubaccount(String subaccount) {
-            this.subaccount = subaccount;
-        }
-
-        public List<String> getGoogleAnalyticsDomains() {
-            return google_analytics_domains;
-        }
-
-        public void setGoogleAnalyticsDomains(List<String> google_analytics_domains) {
-            this.google_analytics_domains = google_analytics_domains;
-        }
-
-        public String getGoogleAnalyticsCampaign() {
-            return google_analytics_campaign;
-        }
-
-        public void setGoogleAnalyticsCampaign(String google_analytics_campaign) {
-            this.google_analytics_campaign = google_analytics_campaign;
-        }
-
-        public Map<String, String> getMetadata() {
-            return metadata;
-        }
-
-        public void setMetadata(Map<String, String> metadata) {
-            this.metadata = metadata;
-        }
-
-        public List<RecipientMetadata> getRecipientMetadata() {
-            return recipient_metadata;
-        }
-
-        public void setRecipientMetadata(List<RecipientMetadata> recipient_metadata) {
-            this.recipient_metadata = recipient_metadata;
-        }
-
-        public List<MessageContent> getAttachments() {
-            return attachments;
-        }
-
-        public void setAttachments(List<MessageContent> attachments) {
-            this.attachments = attachments;
-        }
-
-        public List<MessageContent> getImages() {
-            return images;
-        }
-
-        public void setImages(List<MessageContent> images) {
-            this.images = images;
-        }
-
-        private String subject, html, text, from_email, from_name;
-        private List<Recipient> to;
-        private Map<String,String> headers;
-        private Boolean important, track_opens, track_clicks, auto_text, auto_html,
-                inline_css, url_strip_qs, preserve_recipients, view_content_link;
-        private String bcc_address, tracking_domain, signing_domain,
-                return_path_domain;
-        private Boolean merge;
-        private List<MergeVar> global_merge_vars;
-        private List<MergeVarBucket> merge_vars;
-        private List<String> tags;
-        private String subaccount;
-        private List<String> google_analytics_domains;
-        private String google_analytics_campaign;
-        private Map<String,String> metadata;
-        private List<RecipientMetadata> recipient_metadata;
-        private List<MessageContent> attachments;
-        private List<MessageContent> images;
     }
 
-    public static void test() {
+    public static void send(String recipientName, String recipientEmail, String subject, String html) {
+        Map<String, String> recipient = new HashMap<>();
+        recipient.put(recipientEmail, recipientName);
+        send(recipient, subject, html);
+    }
+
+
+    public static void send(Map<String, String> recipients, String subject, String html) {
+        ArrayList<MandrillMessage.Recipient> to = new ArrayList<>();
+        for (String asdf : recipients.keySet()) {
+            MandrillMessage.Recipient fulano = new MandrillMessage.Recipient();
+            fulano.email = asdf;
+            fulano.name = recipients.get(asdf);
+            to.add(fulano);
+        }
 
         MandrillMessage message = new MandrillMessage();
-        message.setSubaccount("Algo");
+        message.to = to;
+        message.fromEmail = "support@epiceleven.com";
+        message.fromName = "Epic Eleven";
 
-        ArrayList<MandrillMessage.Recipient> to = new ArrayList<>();
+        message.html = html;
+        message.subject = subject;
 
-        MandrillMessage.Recipient fulano = new MandrillMessage.Recipient();
-        fulano.setEmail("fulano@mailinator.com");
-        fulano.setType(MandrillMessage.Recipient.Type.BCC);
-        fulano.setName("Fulanito");
-
-        to.add(fulano);
-
-        message.setTo(to);
+        message.trackClicks = true;
+        message.trackOpens = true;
 
         MandrillMessageRequest messageRequest = new MandrillMessageRequest();
-        messageRequest.setAsync(false);
-        messageRequest.setIpPool("Main Pool");
-        messageRequest.setMessage(message);
-
+        messageRequest.message = message;
+        messageRequest.async = false;
+        messageRequest.ipPool = "Main Pool";
 
         ObjectMapper mapper = new ObjectMapper();
         try {
             Logger.info(mapper.writeValueAsString(messageRequest));
+            Logger.info(String.valueOf(messageRequest.sendCall()));
         } catch (JsonProcessingException e) {
             Logger.error("WTF 9205");
         }
-
     }
-
 
 
 }
