@@ -1,5 +1,7 @@
 package controllers.admin;
 
+import akka.actor.Actor;
+import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
@@ -50,14 +52,7 @@ public class DashboardController extends Controller {
         Timeout timeout = new Timeout(scala.concurrent.duration.Duration.create(2000, TimeUnit.MILLISECONDS));
         ActorSelection actorRef = Akka.system().actorSelection("/user/BotParentActor");
 
-        Future<Object> response = Patterns.ask(actorRef, start? "StartChildren" : "StopChildren", timeout);
-
-        try {
-            Await.result(response, timeout.duration());
-        }
-        catch(Exception e) {
-            Logger.error("WTF 5120 switchBotActors Timeout");
-        }
+        actorRef.tell(start ? "StartChildren" : "StopChildren", ActorRef.noSender());
 
         return redirect(routes.DashboardController.index());
     }

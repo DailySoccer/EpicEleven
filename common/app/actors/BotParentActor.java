@@ -47,9 +47,6 @@ public class BotParentActor extends UntypedActor {
                 else {
                     Logger.error("WTF 1567 Recibido StartChildren a destiempo");
                 }
-
-                sender().tell(_childrenStarted, getSelf());
-
                 break;
 
             case "StopChildren":
@@ -60,8 +57,6 @@ public class BotParentActor extends UntypedActor {
                 else {
                     Logger.error("WTF 1560 Recibido StopChildren a destiempo");
                 }
-
-                sender().tell(_childrenStarted, getSelf());
 
                 break;
 
