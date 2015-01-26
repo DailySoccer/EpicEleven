@@ -5,6 +5,7 @@ GET         /initial_setup                                              controll
 GET         /set_target_environment/:appEnv                             controllers.admin.DashboardController.setTargetEnvironment(appEnv : String)
 GET         /get_target_environment                                     controllers.admin.DashboardController.getTargetEnvironment()
 GET         /switch_bot_actors/:start                                   controllers.admin.DashboardController.switchBotActors(start : Boolean)
+GET         /add_money_to_bots/:amount                                  controllers.admin.DashboardController.addMoneyToBots(amount : Integer)
 
 GET         /lobby                                                      controllers.admin.LobbyController.lobby()
 
