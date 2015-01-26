@@ -15,38 +15,12 @@ import scala.concurrent.{Await, Future}
 // http://www.playframework.com/documentation/2.2.x/ScalaGlobal
 object Global extends GlobalSettings {
 
-  def isWorker: Boolean = { scala.util.Properties.propOrNull("config.isworker") == "true" }
-
-  var release = "devel" // Will be set onStart to the Heroku deploy version when we are in production
-
-  def readReleaseVersion : String = {
-    var version = "devel"
-
-    try {
-      val herokuKey = Play.current.configuration.getString("heroku_key").orNull
-      val herokuApp = Play.current.configuration.getString("heroku_app").orNull
-
-      if (herokuKey != null) {
-        val url = f"https://api.heroku.com/apps/$herokuApp%s/releases"
-        val holder: WSRequestHolder = WS.url(url).withHeaders(("Authorization", f"Bearer $herokuKey%s"))
-
-        val futureResponse: Future[String] = holder.get().map {
-          response => (response.json \\ "name").last.as[String]
-        }
-
-        version = Await.result(futureResponse, 10 seconds)
-      }
-    }
-    catch {
-      case e: Exception => Logger.error("WTF 7932 Error durante la inicializacion de la version", e)
-    }
-
-    version
-  }
+  var releaseVersion = "devel"           // Will be set onStart to the Heroku deploy version when we are in production
+  var instanceRole = "DEVELOPMENT_ROLE"  // Role of this machine (DEVELOPMENT_ROLE, WEB_ROLE, OPTAPROCESSOR_ROLE, BOTS_ROLE...)
 
   val releaseFilter = Filter { (nextFilter, requestHeader) =>
     nextFilter(requestHeader).map { result =>
-      result.withHeaders("Release-Version" -> release)
+      result.withHeaders("Release-Version" -> releaseVersion)
     }
   }
 
@@ -75,13 +49,12 @@ object Global extends GlobalSettings {
 
   override def onStart(app: Application) {
 
-    val processType = if (isWorker) "Worker Process" else "Web Process"
-
-    release = readReleaseVersion
-    Logger.info(s"Epic Eleven $processType version $release has started")
+    instanceRole = readInstanceRole
+    releaseVersion = readReleaseVersion
+    Logger.info(s"Epic Eleven $instanceRole, version $releaseVersion has started")
 
     model.Model.init()
-    actors.DailySoccerActors.init(isWorker)
+    actors.DailySoccerActors.init(false)
 
     if (StormPathClient.instance.isConnected) {
       Logger.info("Stormpath connected properly")
@@ -103,5 +76,37 @@ object Global extends GlobalSettings {
     // de settear bien el CORS para que el browser no se niegue a decirle al cliente lo que esta pasando realmente
     Future.successful(InternalServerError("Internal Server Error").withHeaders("Access-Control-Allow-Origin" -> "*"))
   }
+
+  private def readInstanceRole: String = {
+    val temp = scala.util.Properties.propOrNull("config.instanceRole")
+
+    if (temp == null) instanceRole else temp
+  }
+
+  private def readReleaseVersion : String = {
+    var version = "devel"
+
+    try {
+      val herokuKey = Play.current.configuration.getString("heroku_key").orNull
+      val herokuApp = Play.current.configuration.getString("heroku_app").orNull
+
+      if (herokuKey != null) {
+        val url = f"https://api.heroku.com/apps/$herokuApp%s/releases"
+        val holder: WSRequestHolder = WS.url(url).withHeaders(("Authorization", f"Bearer $herokuKey%s"))
+
+        val futureResponse: Future[String] = holder.get().map {
+          response => (response.json \\ "name").last.as[String]
+        }
+
+        version = Await.result(futureResponse, 10 seconds)
+      }
+    }
+    catch {
+      case e: Exception => Logger.error("WTF 7932 Error durante la inicializacion de la version", e)
+    }
+
+    version
+  }
+
 }
 
