@@ -503,7 +503,6 @@ public class LoginController extends Controller {
                 somethingChanged = true;
             }
 
-
             if (somethingChanged) {
                 Map<Integer, String> stormpathErrors = changeStormpathProfile(theUser, params, somethingChanged, originalEmail);
 
@@ -520,7 +519,6 @@ public class LoginController extends Controller {
                     if (stormpathErrors.containsKey(2007)) {
                         allErrors.put("password", "La contraseña es demasiado corta.");
                     }
-
                 }
 
                 if (allErrors.isEmpty()) {
@@ -533,7 +531,6 @@ public class LoginController extends Controller {
                     result = changeParamsForm.errorsAsJson();
                 }
             }
-
         }
         else {
             result = changeParamsForm.errorsAsJson();
@@ -548,7 +545,7 @@ public class LoginController extends Controller {
         StormPathClient stormPathClient = StormPathClient.instance();
         Map<Integer, String> allErrors = new HashMap<>();
 
-        if (!originalEmail.endsWith("test.com")) {
+        if (!originalEmail.endsWith("test.com") && stormPathClient.isConnected()) {
             if (somethingChanged) {
                 F.Tuple<Integer, String> profErrors = stormPathClient.changeUserProfile(originalEmail, theUser.firstName, theUser.lastName, theUser.nickName, theUser.email);
                 allErrors.put(profErrors._1, profErrors._2);
