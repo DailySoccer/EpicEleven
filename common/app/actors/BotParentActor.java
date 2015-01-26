@@ -186,7 +186,7 @@ public class BotParentActor extends UntypedActor {
 
     boolean _childrenStarted = false;
 
-    TickingMode _currentTickMode = TickingMode.AggressiveTick;
+    TickingMode _currentTickMode = TickingMode.NormalTick;
     Cancellable _tickCancellable;
     int _currentActorIdTick;
 
@@ -196,6 +196,4 @@ public class BotParentActor extends UntypedActor {
 
     HashMap<String, Integer> _botEnteredContests;
     float _averageEnteredContests;
-
-    Channel _rabbitMQChannel;
 }
