@@ -109,7 +109,9 @@ public class DailySoccerActors {
     public void shutdown() {
 
         try {
-            _connection.close();
+            if (_connection != null) {
+                _connection.close();
+            }
         }
         catch (Exception exc) {
             Logger.debug("WTF 6699 RabbitMQ no pudo cerrar", exc);
