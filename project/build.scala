@@ -85,8 +85,8 @@ object build extends Build {
                     ,filters
                     ,javaJdbc
                     ,javaWs
-                    ,"com.stormpath.sdk" % "stormpath-sdk-api" % "1.0.RC2"
-                    ,"com.stormpath.sdk" % "stormpath-sdk-httpclient" % "1.0.RC2"
+                    ,"com.stormpath.sdk" % "stormpath-sdk-api" % "1.0.RC3"
+                    ,"com.stormpath.sdk" % "stormpath-sdk-httpclient" % "1.0.RC3"
                     ,"com.paypal.sdk" % "paypal-core" % "1.6.6"
                     ,"com.paypal.sdk" % "rest-api-sdk" % "0.12.2" intransitive()
                   ))

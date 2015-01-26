@@ -186,7 +186,7 @@ public class BotParentActor extends UntypedActor {
 
     boolean _childrenStarted = false;
 
-    TickingMode _currentTickMode = TickingMode.NormalTick;
+    TickingMode _currentTickMode = TickingMode.AggressiveTick;
     Cancellable _tickCancellable;
     int _currentActorIdTick;
 

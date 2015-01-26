@@ -10,6 +10,7 @@ import com.stormpath.sdk.application.Applications;
 import com.stormpath.sdk.authc.AuthenticationRequest;
 import com.stormpath.sdk.authc.AuthenticationResult;
 import com.stormpath.sdk.authc.UsernamePasswordRequest;
+import com.stormpath.sdk.cache.Caches;
 import com.stormpath.sdk.client.Client;
 import com.stormpath.sdk.client.Clients;
 import com.stormpath.sdk.directory.CustomData;
@@ -50,7 +51,8 @@ public class StormPathClient {
 
         if (apiKey != null) {
             try {
-                _client = Clients.builder().setApiKey(apiKey).build();
+                _client = Clients.builder().setApiKey(apiKey)
+                                           .setCacheManager(Caches.newDisabledCacheManager()).build();
 
                 Tenant _tenant = _client.getCurrentTenant();
 
