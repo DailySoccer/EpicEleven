@@ -215,8 +215,8 @@ public class LoginController extends Controller {
                     error = new F.Tuple<>(mongoError, "");
                 }
             }
-
         }
+
         return error==null? new HashMap<String, String>(): translateError(error);
         //return translateError(registerError);
     }
@@ -308,10 +308,13 @@ public class LoginController extends Controller {
         if (!loginParamsForm.hasErrors()) {
             LoginParams loginParams = loginParamsForm.get();
 
+            // Si Stormpath no esta conectado, siempre es test
             boolean isTest = loginParams.email.endsWith("@test.com") || !StormPathClient.instance().isConnected();
 
             // Si no es Test, entramos a través de Stormpath
             Account account = isTest? null : StormPathClient.instance().login(loginParams.email, loginParams.password);
+
+            // El email sera el de Stormpath si hemos podido obtener la cuenta o directamente el q nos dan si es test
             String email = isTest? loginParams.email.toLowerCase(): account!=null? account.getEmail().toLowerCase(): null;
 
             if (email != null) {

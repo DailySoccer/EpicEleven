@@ -11,6 +11,7 @@ import com.google.common.collect.Collections2;
 import model.*;
 import org.bson.types.ObjectId;
 import play.Logger;
+import play.Play;
 import play.libs.F;
 import play.libs.ws.WS;
 import play.libs.ws.WSRequestHolder;
@@ -22,7 +23,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-//       Como ejecutar los bots en produccion?
 //       Sacar todos los bots cuando queda menos de X tiempo para empezar (poco a poco)
 //       Si queremos que puedan realmente jugar en concursos: http://en.wikipedia.org/wiki/Knapsack_problem
 //
@@ -33,13 +33,24 @@ public class BotActor extends UntypedActor {
         PRODUCTION
     }
 
+
+    public static class BotMsg {
+        public String msg;
+        public String userId;
+        public Object param;
+
+        public BotMsg(String m, String u, Object p) { msg = m; userId = u; param = p; }
+    }
+
+
     public BotActor(int botActorId, Personality pers) {
         _botActorId = botActorId;
         _personality = pers;
+        _targetUrl = Play.application().configuration().getString("botActor.targetUrl");
     }
 
     private String composeUrl(String suffix) {
-        return String.format("http://localhost:9000/%s", suffix);
+        return String.format("%s/%s", _targetUrl, suffix);
     }
 
     private String getFirstName() {
@@ -59,7 +70,7 @@ public class BotActor extends UntypedActor {
     }
 
     private String getEmail() {
-        return String.format("bototron%04d@test.com", _botActorId);
+        return String.format("bototron%04d@bototron.com", _botActorId);
     }
 
 
@@ -198,14 +209,6 @@ public class BotActor extends UntypedActor {
         getSender().tell(new BotMsg("CurrentEnteredContests", _user.userId.toString(), myActiveContests.size() + diffContests), getSelf());
     }
 
-    public static class BotMsg {
-        public String msg;
-        public String userId;
-        public Object param;
-
-        public BotMsg(String m, String u, Object p) { msg = m; userId = u; param = p; }
-    }
-
     List<Contest> getMyActiveContests() throws TimeoutException {
         List<Contest> ret;
         JsonNode jsonNode = get("get_my_contests").findValue("contests_0");
@@ -331,11 +334,14 @@ public class BotActor extends UntypedActor {
     }
 
     private boolean login() throws TimeoutException {
+
         _user = null;
 
         JsonNode jsonNode = post("login", String.format("email=%s&password=uoyeradiputs3991", getEmail()));
 
-        if (jsonNode.findValue("sessionToken") != null) {
+        _sessionToken = extractStringValue(jsonNode, "sessionToken");
+
+        if (_sessionToken != null) {
             jsonNode = get("get_user_profile");
             _user = fromJSON(jsonNode.toString(), new TypeReference<User>() {});
         }
@@ -343,13 +349,15 @@ public class BotActor extends UntypedActor {
         return _user != null;
     }
 
-
     private void signup() throws TimeoutException {
         JsonNode jsonNode = post("signup", String.format("firstName=%s&lastName=%s&nickName=%s&email=%s&password=uoyeradiputs3991",
                                                          getFirstName(), getLastName(), getNickName(), getEmail()));
 
         if (jsonNode == null) {
             Logger.error("WTF 4005 {} signup returned empty", getFullName());
+        }
+        else {
+            Logger.debug("Signup: {}", jsonNode.toString());
         }
     }
 
@@ -420,7 +428,7 @@ public class BotActor extends UntypedActor {
             JsonNode error = jsonNode.findValue("error");
 
             if (error == null) {
-                enteredContestId = jsonNode.findValue("contestId").toString().replace("\"", "");
+                enteredContestId = extractStringValue(jsonNode, "contestId");
             }
             else {
                 Logger.error("WTF 4006 {} addContestEntry produjo en un error en el servidor {}", getFullName(), error.toString());
@@ -554,7 +562,7 @@ public class BotActor extends UntypedActor {
         WSRequestHolder requestHolder = WS.url(composeUrl(url));
 
         F.Promise<WSResponse> response = requestHolder.setContentType("application/x-www-form-urlencoded")
-                                                      .setHeader("X-Session-Token", getEmail()).post(params);
+                                                      .setHeader("X-Session-Token", _sessionToken).post(params);
 
         F.Promise<JsonNode> jsonPromise = response.map(
                 new F.Function<WSResponse, JsonNode>() {
@@ -576,7 +584,7 @@ public class BotActor extends UntypedActor {
     private JsonNode get(String url) throws TimeoutException {
         WSRequestHolder requestHolder = WS.url(composeUrl(url));
 
-        F.Promise<WSResponse> response = requestHolder.setHeader("X-Session-Token", getEmail()).get();
+        F.Promise<WSResponse> response = requestHolder.setHeader("X-Session-Token", _sessionToken).get();
 
         F.Promise<JsonNode> jsonPromise = response.map(
                 new F.Function<WSResponse, JsonNode>() {
@@ -606,11 +614,27 @@ public class BotActor extends UntypedActor {
         return ret;
     }
 
+    // Cuando el servidor nos devuelve una String, lo hace envuelta en comillas, tenemos que quitarlas
+    private String extractStringValue(JsonNode jsonNode, String key) {
+
+        String ret = null;
+        JsonNode val = jsonNode.findValue(key);
+
+        if (val != null) {
+            ret = val.toString().replace("\"", "");
+        }
+
+        return ret;
+    }
+
 
     int _botActorId;
     User _user;
     Personality _personality;
     int _numTicks;
+    String _sessionToken;
+
+    String _targetUrl;
 
     static Random _rand = new Random(System.currentTimeMillis());
 

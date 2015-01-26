@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
@@ -28,7 +29,7 @@ public class DashboardController extends Controller {
 
     static public Result resetDB() {
 
-        Model.resetDB();
+        Model.resetMongoDB();
         MockData.ensureMockDataUsers();
         MockData.ensureCompetitions();
 
@@ -37,27 +38,20 @@ public class DashboardController extends Controller {
         return index();
     }
 
-    static public Result setMongoAppEnv(String app) {
-        Model.ensureMongo(app);
+    static public Result setTargetEnvironment(String env) {
+        Model.setTargetEnvironment(Model.TargetEnvironment.valueOf(env));
         return ok("");
     }
 
-    static public Result getMongoAppEnv() {
-        return ok(Model.getMongoAppEnv());
+    static public Result getTargetEnvironment() {
+        return ok(Model.getTargetEnvironment().toString());
     }
 
     static public Result switchBotActors(boolean start) {
         Timeout timeout = new Timeout(scala.concurrent.duration.Duration.create(2000, TimeUnit.MILLISECONDS));
         ActorSelection actorRef = Akka.system().actorSelection("/user/BotParentActor");
 
-        Future<Object> response = Patterns.ask(actorRef, start? "StartChildren" : "StopChildren", timeout);
-
-        try {
-            Await.result(response, timeout.duration());
-        }
-        catch(Exception e) {
-            Logger.error("WTF 5120 switchBotActors Timeout");
-        }
+        actorRef.tell(start ? "StartChildren" : "StopChildren", ActorRef.noSender());
 
         return redirect(routes.DashboardController.index());
     }

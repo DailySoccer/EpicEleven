@@ -5,10 +5,12 @@ import akka.actor.ActorRef;
 import akka.actor.Cancellable;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
+import com.rabbitmq.client.*;
 import play.Logger;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -26,8 +28,11 @@ public class BotParentActor extends UntypedActor {
         if (msg instanceof BotActor.BotMsg) {
             onReceive((BotActor.BotMsg)msg);
         }
-        else {
+        else if (msg instanceof String) {
             onReceive((String)msg);
+        }
+        else {
+            unhandled(msg);
         }
     }
 
@@ -36,27 +41,22 @@ public class BotParentActor extends UntypedActor {
         switch (msg) {
             case "StartChildren":
                 if (!_childrenStarted) {
-                    Logger.debug("BotParentActor arrancando bots hijos");
+                    Logger.debug("BotParentActor arrancando {} bots hijos", _NUM_BOTS);
                     startTicking();
                 }
                 else {
                     Logger.error("WTF 1567 Recibido StartChildren a destiempo");
                 }
-
-                sender().tell(_childrenStarted, getSelf());
-
                 break;
 
             case "StopChildren":
                 if (_childrenStarted) {
-                    Logger.debug("BotParentActor parando bots hijos");
+                    Logger.debug("BotParentActor parando {} bots hijos", _NUM_BOTS);
                     cancelTicking();
                 }
                 else {
                     Logger.error("WTF 1560 Recibido StopChildren a destiempo");
                 }
-
-                sender().tell(_childrenStarted, getSelf());
 
                 break;
 
@@ -196,4 +196,6 @@ public class BotParentActor extends UntypedActor {
 
     HashMap<String, Integer> _botEnteredContests;
     float _averageEnteredContests;
+
+    Channel _rabbitMQChannel;
 }

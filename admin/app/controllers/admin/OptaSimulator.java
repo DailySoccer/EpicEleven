@@ -117,7 +117,7 @@ public class OptaSimulator implements Runnable {
     public void reset() {
         pause();
 
-        Model.resetDB();
+        Model.resetMongoDB();
         MockData.ensureMockDataUsers();
         MockData.ensureCompetitions();
 

@@ -12,6 +12,7 @@ import org.jongo.MongoCollection;
 import org.jongo.marshall.jackson.JacksonMapper;
 import play.Logger;
 import play.Play;
+import utils.InstanceRole;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,6 +21,12 @@ import java.util.List;
 
 
 public class Model {
+
+    static public enum TargetEnvironment {
+        LOCALHOST,
+        STAGING,
+        PRODUCTION
+    }
 
     static public MongoCollection opsLog() { return _jongo.getCollection("opsLog"); }
 
@@ -53,14 +60,38 @@ public class Model {
 
     static public MongoCollection simulator() { return _jongo.getCollection("simulator"); }
 
-    static public void init() {
 
-        ensureMongo(_LOCAL_HOST_MONGO_APP_ENV);
-        ensurePostgresDB();
+    static public TargetEnvironment getTargetEnvironment() {
+        return _targetEnvironment;
     }
 
-    static public void ensureMongo(String appEnv) {
-        String mongodbUri = getMongoUriForApp(appEnv);
+    static public void setTargetEnvironment(TargetEnvironment env) {
+
+        // Solo se puede cambiar el environment al que atacamos en maquinas de desarrollo, claro
+        if (_instanceRole != InstanceRole.DEVELOPMENT_ROLE) {
+            throw new RuntimeException("WTF 5771 are you nuts?");
+        }
+
+        // Cambiar el ataque del modelo a un environment distinto significa reinicializar mongo solamente *de momento*
+        if (initMongo(readMongoUriForEnvironment(env))) {
+            _targetEnvironment = env;   // Ahora ya estamos en el environment solicitado
+        }
+    }
+
+    static public boolean isLocalHostTargetEnvironment() {
+        return TargetEnvironment.LOCALHOST == _targetEnvironment;
+    }
+
+    static public void init(InstanceRole instanceRole) {
+        _instanceRole = instanceRole;
+        _targetEnvironment = TargetEnvironment.LOCALHOST;   // En produccion no tiene significado puesto que no se puede cambiar
+
+        initMongo(readMongoUriForEnvironment(_targetEnvironment));
+        initPostgresDB();
+    }
+
+    static private boolean initMongo(String mongodbUri) {
+        boolean bSuccess = false;
         MongoClientURI mongoClientURI = new MongoClientURI(mongodbUri);
 
         Logger.info("The MongoDB is {}/{}", mongoClientURI.getHosts(), mongoClientURI.getDatabase());
@@ -76,19 +107,20 @@ public class Model {
                     .build();
             _jongo = new Jongo(_mongoDB, mapper);
 
-            // Let's make sure our DB has the neccesary collections and indexes
-            ensureDB(_mongoDB);
+            // Make sure our DB has the neccesary collections and indexes
+            ensureMongoDB(_mongoDB);
 
-            // Ahora ya estamos en el environment solicitado
-            _mongoAppEnv = appEnv;
+            bSuccess = true;
         }
         catch (Exception exc) {
             Logger.error("Error initializating MongoDB {}/{}: {}", mongoClientURI.getHosts(),
                                                                    mongoClientURI.getDatabase(), exc.toString());
         }
+
+        return bSuccess;
     }
 
-    private static void ensurePostgresDB() {
+    private static void initPostgresDB() {
 
         Logger.info("Ejecutando migraciones Flyway.");
 
@@ -110,20 +142,16 @@ public class Model {
         }
     }
 
-    static public String getMongoAppEnv(){
-        return _mongoAppEnv;
-    }
+    static private String readMongoUriForEnvironment(TargetEnvironment appEnv) {
 
-    static public boolean isLocalMongoAppEnv() {
-        return _LOCAL_HOST_MONGO_APP_ENV.equals(getMongoAppEnv());
-    }
-
-    static private String getMongoUriForApp(String appEnv) {
         String ret = Play.application().configuration().getString("mongodb.uri");
 
-        if (!appEnv.equals(_LOCAL_HOST_MONGO_APP_ENV)) {
+        if (appEnv != TargetEnvironment.LOCALHOST) {
+
+            String herokuAppName = (appEnv == TargetEnvironment.STAGING)? "dailysoccer" : "dailysoccer-staging";
+
             try {
-                ret = readLineFromInputStream(Runtime.getRuntime().exec("heroku config:get MONGOHQ_URL -a " + appEnv));
+                ret = readLineFromInputStream(Runtime.getRuntime().exec("heroku config:get MONGOHQ_URL -a " + herokuAppName));
             }
             catch (IOException e) {
                 Logger.error("WTF 8266 Sin permisos, o sin heroku instalado. Falling back to local.");
@@ -151,20 +179,20 @@ public class Model {
         }
     }
 
-    static public void resetDB() {
-        dropDB(_mongoDB);
-        ensureDB(_mongoDB);
+    static public void resetMongoDB() {
+        dropMongoDB(_mongoDB);
+        ensureMongoDB(_mongoDB);
 
         PointsTranslation.createDefault();
         TemplateSoccerTeam.createInvalidTeam();
     }
 
     static public void fullDropMongoDB() {
-        dropDB(_mongoDB);
+        dropMongoDB(_mongoDB);
         _mongoDB.getCollection("system.users").drop();
     }
 
-    static private void dropDB(DB theMongoDB) {
+    static private void dropMongoDB(DB theMongoDB) {
 
         for (String collection : theMongoDB.getCollectionNames()) {
             if (!collection.contains("system.")) {
@@ -174,7 +202,7 @@ public class Model {
         }
     }
 
-    static private void ensureDB(DB theMongoDB) {
+    static private void ensureMongoDB(DB theMongoDB) {
         ensureUsersDB(theMongoDB);
         ensureOptaDB(theMongoDB);
         ensureContestsDB(theMongoDB);
@@ -280,9 +308,8 @@ public class Model {
         return collection.find(String.format("{%s: {$in: #}}", fieldId), objectIds);
     }
 
-
-    static private final String _LOCAL_HOST_MONGO_APP_ENV = "localhost";
-    static private String _mongoAppEnv;
+    static private TargetEnvironment _targetEnvironment;
+    static private InstanceRole _instanceRole;
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/
     static private MongoClient _mongoClient;
