@@ -52,7 +52,8 @@ public class StormPathClient {
         if (apiKey != null) {
             try {
                 _client = Clients.builder().setApiKey(apiKey)
-                                           .setCacheManager(Caches.newDisabledCacheManager()).build();
+                                           .setCacheManager(Caches.newDisabledCacheManager())
+                                           .build();
 
                 Tenant _tenant = _client.getCurrentTenant();
 
