@@ -555,7 +555,7 @@ public class LoginController extends Controller {
                 allErrors.put(profErrors._1, profErrors._2);
             }
 
-            if (params.password.length() > 0) {
+            if (params.password != null && params.password.length() > 0) {
                 F.Tuple<Integer, String> upErrors = stormPathClient.updatePassword(originalEmail, params.password);
                 allErrors.put(upErrors._1, upErrors._2);
             }

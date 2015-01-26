@@ -356,9 +356,6 @@ public class BotActor extends UntypedActor {
         if (jsonNode == null) {
             Logger.error("WTF 4005 {} signup returned empty", getFullName());
         }
-        else {
-            Logger.debug("Signup: {}", jsonNode.toString());
-        }
     }
 
 
