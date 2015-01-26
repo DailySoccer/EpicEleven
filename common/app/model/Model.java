@@ -148,7 +148,7 @@ public class Model {
 
         if (appEnv != TargetEnvironment.LOCALHOST) {
 
-            String herokuAppName = (appEnv == TargetEnvironment.STAGING)? "dailysoccer" : "dailysoccer-staging";
+            String herokuAppName = (appEnv == TargetEnvironment.PRODUCTION)? "dailysoccer" : "dailysoccer-staging";
 
             try {
                 ret = readLineFromInputStream(Runtime.getRuntime().exec("heroku config:get MONGOHQ_URL -a " + herokuAppName));
