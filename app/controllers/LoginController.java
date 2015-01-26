@@ -137,7 +137,7 @@ public class LoginController extends Controller {
                 theUser = User.findByEmail(account.getEmail().toLowerCase());
 
                 if (theUser == null) {
-                    Logger.debug("Creamos el usuario porque no esta en nuestra DB y sí en Stormpath: {}", account.getEmail());
+                    Logger.debug("Creamos el usuario al no estar en nuestra DB pero si en Stormpath: {}", account.getEmail());
 
                     theUser = new User(account.getGivenName(), account.getSurname(), account.getGivenName(), account.getEmail().toLowerCase());
                     Model.users().insert(theUser);
@@ -149,7 +149,6 @@ public class LoginController extends Controller {
             } else {
                 returnHelper.setKO(translateError(error));
             }
-
         }
 
         return returnHelper.toResult();
@@ -324,7 +323,7 @@ public class LoginController extends Controller {
                 if (theUser == null) {
                     // Si el usuario tiene cuenta en StormPath, pero no existe en nuestra BD, lo creamos en nuestra BD
                     if (account != null) {
-                        Logger.debug("Creamos el usuario porque no esta en nuestra DB pero si en Stormpath: {}", account.getEmail());
+                        Logger.debug("Creamos el usuario al no estar en nuestra DB pero si en Stormpath: {}", account.getEmail());
 
                         theUser = new User(account.getGivenName(), account.getSurname(), account.getUsername(), account.getEmail().toLowerCase());
 
@@ -365,7 +364,7 @@ public class LoginController extends Controller {
                 theUser = User.findByEmail(account.getEmail().toLowerCase());
 
                 if (theUser == null) {
-                    Logger.debug("Creamos el usuario porque no esta en nuestra DB y sí en Stormpath: {}", account.getEmail());
+                    Logger.debug("Creamos el usuario al no estar en nuestra DB pero si en Stormpath: {}", account.getEmail());
 
                     theUser = new User(account.getGivenName(), account.getSurname(), getOrSetNickname(account), account.getEmail().toLowerCase());
                     Model.users().insert(theUser);
