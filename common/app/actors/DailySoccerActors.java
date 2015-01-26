@@ -80,6 +80,8 @@ public class DailySoccerActors {
                 final String queueName = entry.getKey();
                 final ActorRef actorRef = entry.getValue();
 
+                // autodelete: If set, the queue is deleted when all consumers have finished using it.
+                _channel.queueDeclare(queueName, false /* durable */, false /* exclusive */, true  /* autodelete */, null);
                 _channel.basicConsume(queueName, true /* autoAck */, queueName + "Tag", new DefaultConsumer(_channel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
@@ -116,13 +118,6 @@ public class DailySoccerActors {
             factory.setUri(connectionUri);
             _connection = factory.newConnection();
             _channel = _connection.createChannel();
-
-
-            // channel.queueDeclare(QUEUE_NAME, false /* durable */, false /* exclusive */, false  /* autodelete */, null);
-            // channel.queuePurge(QUEUE_NAME);
-
-            // String message = "StartChildren";
-            // channel.basicPublish(_EXCHANGE_NAME, QUEUE_NAME, null, message.getBytes());
         }
         catch (Exception exc) {
             Logger.error("WTF 9111 DailySoccerActors no pudo inicializar RabbitMQ", exc);
