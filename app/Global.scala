@@ -53,7 +53,7 @@ object Global extends GlobalSettings {
     releaseVersion = readReleaseVersion
     Logger.info(s"Epic Eleven $instanceRole, version $releaseVersion has started")
 
-    model.Model.init()
+    model.Model.init(instanceRole)
     actors.DailySoccerActors.instance().init(instanceRole)
 
     // Es aqui donde se llama a la inicializacion de Stormpath a traves del constructor

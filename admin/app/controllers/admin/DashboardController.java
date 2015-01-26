@@ -1,6 +1,5 @@
 package controllers.admin;
 
-import akka.actor.Actor;
 import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.pattern.Patterns;
@@ -30,7 +29,7 @@ public class DashboardController extends Controller {
 
     static public Result resetDB() {
 
-        Model.resetDB();
+        Model.resetMongoDB();
         MockData.ensureMockDataUsers();
         MockData.ensureCompetitions();
 
@@ -39,13 +38,13 @@ public class DashboardController extends Controller {
         return index();
     }
 
-    static public Result setMongoAppEnv(String app) {
-        Model.ensureMongo(app);
+    static public Result setTargetEnvironment(String env) {
+        Model.setTargetEnvironment(Model.TargetEnvironment.valueOf(env));
         return ok("");
     }
 
-    static public Result getMongoAppEnv() {
-        return ok(Model.getMongoAppEnv());
+    static public Result getTargetEnvironment() {
+        return ok(Model.getTargetEnvironment().toString());
     }
 
     static public Result switchBotActors(boolean start) {

@@ -22,7 +22,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-//       Como ejecutar los bots en produccion?
 //       Sacar todos los bots cuando queda menos de X tiempo para empezar (poco a poco)
 //       Si queremos que puedan realmente jugar en concursos: http://en.wikipedia.org/wiki/Knapsack_problem
 //
@@ -32,6 +31,16 @@ public class BotActor extends UntypedActor {
         BERSERKER,
         PRODUCTION
     }
+
+
+    public static class BotMsg {
+        public String msg;
+        public String userId;
+        public Object param;
+
+        public BotMsg(String m, String u, Object p) { msg = m; userId = u; param = p; }
+    }
+
 
     public BotActor(int botActorId, Personality pers) {
         _botActorId = botActorId;
@@ -196,14 +205,6 @@ public class BotActor extends UntypedActor {
 
         // Comunicamos a nuestro padre en cuantos concursos estamos ahora mismo
         getSender().tell(new BotMsg("CurrentEnteredContests", _user.userId.toString(), myActiveContests.size() + diffContests), getSelf());
-    }
-
-    public static class BotMsg {
-        public String msg;
-        public String userId;
-        public Object param;
-
-        public BotMsg(String m, String u, Object p) { msg = m; userId = u; param = p; }
     }
 
     List<Contest> getMyActiveContests() throws TimeoutException {
