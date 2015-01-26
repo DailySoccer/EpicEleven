@@ -37,8 +37,6 @@ public class StormPathClient {
         try {
             if (Play.isDev()) {
                 apiKey = ApiKeys.builder().setFileLocation("./conf/apiKey.properties").build();
-
-
             }
             else {
                 apiKey = ApiKeys.builder().setId(Play.application().configuration().getString("stormpath.id"))
@@ -68,14 +66,13 @@ public class StormPathClient {
                     _myApp = _client.instantiate(Application.class);
 
                     _myApp.setName(APPLICATION_NAME); //must be unique among your other apps
-                    _myApp = _client.createApplication(
-                            Applications.newCreateRequestFor(_myApp).createDirectory().build());
+                    _myApp = _client.createApplication(Applications.newCreateRequestFor(_myApp).createDirectory().build());
                 }
                 _connected = _myApp != null;
 
             }
             catch (Exception e) {
-                Logger.warn("WTF SINGULARIDAD ENCONTRADA: 232");
+                Logger.error("WTF 2322 SINGULARIDAD ENCONTRADA");
             }
 
         }
