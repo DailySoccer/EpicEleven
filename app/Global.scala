@@ -1,14 +1,14 @@
 import play.Logger
 import play.api.Play.current
 import play.api._
-import play.api.mvc._
-import play.api.mvc.Results._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.ws.{WS, WSRequestHolder}
 import play.api.mvc.{EssentialAction, Filter, Filters}
 import play.filters.gzip.GzipFilter
 import stormpath.StormPathClient
 import utils.InstanceRole
+import play.api.mvc._
+import play.api.mvc.Results._
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
