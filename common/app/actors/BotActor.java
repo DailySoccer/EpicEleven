@@ -334,18 +334,20 @@ public class BotActor extends UntypedActor {
     }
 
     private boolean login() throws TimeoutException {
+
         _user = null;
 
         JsonNode jsonNode = post("login", String.format("email=%s&password=uoyeradiputs3991", getEmail()));
 
-        if (jsonNode.findValue("sessionToken") != null) {
+        _sessionToken = extractStringValue(jsonNode, "sessionToken");
+
+        if (_sessionToken != null) {
             jsonNode = get("get_user_profile");
             _user = fromJSON(jsonNode.toString(), new TypeReference<User>() {});
         }
 
         return _user != null;
     }
-
 
     private void signup() throws TimeoutException {
         JsonNode jsonNode = post("signup", String.format("firstName=%s&lastName=%s&nickName=%s&email=%s&password=uoyeradiputs3991",
@@ -423,7 +425,7 @@ public class BotActor extends UntypedActor {
             JsonNode error = jsonNode.findValue("error");
 
             if (error == null) {
-                enteredContestId = jsonNode.findValue("contestId").toString().replace("\"", "");
+                enteredContestId = extractStringValue(jsonNode, "contestId");
             }
             else {
                 Logger.error("WTF 4006 {} addContestEntry produjo en un error en el servidor {}", getFullName(), error.toString());
@@ -557,7 +559,7 @@ public class BotActor extends UntypedActor {
         WSRequestHolder requestHolder = WS.url(composeUrl(url));
 
         F.Promise<WSResponse> response = requestHolder.setContentType("application/x-www-form-urlencoded")
-                                                      .setHeader("X-Session-Token", getEmail()).post(params);
+                                                      .setHeader("X-Session-Token", _sessionToken).post(params);
 
         F.Promise<JsonNode> jsonPromise = response.map(
                 new F.Function<WSResponse, JsonNode>() {
@@ -579,7 +581,7 @@ public class BotActor extends UntypedActor {
     private JsonNode get(String url) throws TimeoutException {
         WSRequestHolder requestHolder = WS.url(composeUrl(url));
 
-        F.Promise<WSResponse> response = requestHolder.setHeader("X-Session-Token", getEmail()).get();
+        F.Promise<WSResponse> response = requestHolder.setHeader("X-Session-Token", _sessionToken).get();
 
         F.Promise<JsonNode> jsonPromise = response.map(
                 new F.Function<WSResponse, JsonNode>() {
@@ -609,11 +611,17 @@ public class BotActor extends UntypedActor {
         return ret;
     }
 
+    // Cuando el servidor nos devuelve una String, lo hace envuelta en comillas, tenemos que quitarlas
+    private String extractStringValue(JsonNode jsonNode, String key) {
+        return jsonNode.findValue(key).toString().replace("\"", "");
+    }
+
 
     int _botActorId;
     User _user;
     Personality _personality;
     int _numTicks;
+    String _sessionToken;
 
     String _targetUrl;
 

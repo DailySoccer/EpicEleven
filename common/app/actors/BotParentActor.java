@@ -41,7 +41,7 @@ public class BotParentActor extends UntypedActor {
         switch (msg) {
             case "StartChildren":
                 if (!_childrenStarted) {
-                    Logger.debug("BotParentActor arrancando bots hijos");
+                    Logger.debug("BotParentActor arrancando {} bots hijos", _NUM_BOTS);
                     startTicking();
                 }
                 else {
@@ -51,7 +51,7 @@ public class BotParentActor extends UntypedActor {
 
             case "StopChildren":
                 if (_childrenStarted) {
-                    Logger.debug("BotParentActor parando bots hijos");
+                    Logger.debug("BotParentActor parando {} bots hijos", _NUM_BOTS);
                     cancelTicking();
                 }
                 else {
