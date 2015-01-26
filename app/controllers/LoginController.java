@@ -12,6 +12,7 @@ import model.GlobalDate;
 import model.Model;
 import model.Session;
 import model.User;
+import model.accounting.AccountingTran;
 import stormpath.StormPathClient;
 import play.Logger;
 import play.Play;
@@ -25,7 +26,9 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ReturnHelper;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static play.data.Form.form;
@@ -212,8 +215,8 @@ public class LoginController extends Controller {
                     error = new F.Tuple<>(mongoError, "");
                 }
             }
-
         }
+
         return error==null? new HashMap<String, String>(): translateError(error);
         //return translateError(registerError);
     }
@@ -305,12 +308,13 @@ public class LoginController extends Controller {
         if (!loginParamsForm.hasErrors()) {
             LoginParams loginParams = loginParamsForm.get();
 
+            // Si Stormpath no esta conectado, siempre es test
             boolean isTest = loginParams.email.endsWith("@test.com") || !StormPathClient.instance().isConnected();
 
             // Si no es Test, entramos a través de Stormpath
             Account account = isTest? null : StormPathClient.instance().login(loginParams.email, loginParams.password);
 
-            // Si entramos con Test, debemos entrar con correo, no con username
+            // El email sera el de Stormpath si hemos podido obtener la cuenta o directamente el q nos dan si es test
             String email = isTest? loginParams.email.toLowerCase(): account!=null? account.getEmail().toLowerCase(): null;
 
             if (email != null) {
@@ -435,7 +439,24 @@ public class LoginController extends Controller {
 
     @UserAuthenticated
     public static Result getUserProfile() {
-        return new ReturnHelper(ctx().args.get("User")).toResult();
+        return new ReturnHelper(((User)ctx().args.get("User")).getProfile()).toResult();
+    }
+
+    @UserAuthenticated
+    public static Result getTransactionHistory() {
+        User theUser = (User)ctx().args.get("User");
+
+        List<Map<String, String>> transactions = new ArrayList<>();
+
+        List<AccountingTran> accountingTrans = AccountingTran.findAllFromUserId(theUser.userId);
+        for (AccountingTran op : accountingTrans) {
+            Map<String, String> accountInfo = op.getAccountInfo(theUser.userId);
+            if (!accountInfo.isEmpty()) {
+                transactions.add(accountInfo);
+            }
+        }
+
+        return new ReturnHelper(ImmutableMap.of("transactions", transactions)).toResult();
     }
 
     public static class ChangeParams {

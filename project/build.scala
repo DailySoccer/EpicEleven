@@ -34,7 +34,7 @@ object build extends Build {
 
     println("Removing admin.Routes from conf/backend.routes")
 
-    val fileName = "conf/backend.routes";
+    val fileName = "conf/backend.routes"
     val inLines  = Source.fromFile(fileName).getLines().toList
     val outLines = inLines.filter(line => {!line.contains("admin.Routes")}).toList
 
@@ -61,6 +61,7 @@ object build extends Build {
                 .settings(commonSettings:_*)
                 .settings(libraryDependencies ++= Seq(
                     javaJdbc
+                    ,javaWs
                     ,"org.mongodb" % "mongo-java-driver" % "2.12.4"
                     ,"org.jongo" % "jongo" % "1.0"
                     ,"org.jdom" % "jdom" % "2.0.2"
@@ -69,6 +70,9 @@ object build extends Build {
                     ,"org.jooq" % "jooq" % "3.5.0"
                     ,"org.jooq" % "jooq-meta" % "3.5.0"
                     ,"org.flywaydb" % "flyway-core" % "3.1"
+                    ,"com.paypal.sdk" % "paypal-core" % "1.6.6"
+                    ,"com.paypal.sdk" % "rest-api-sdk" % "0.12.2" intransitive()
+                    ,"com.rabbitmq" % "amqp-client" % "3.4.3"
                   ))
                 .settings(resourceDirectory in Assets := baseDirectory.value / "app")
                 .enablePlugins(PlayJava)
@@ -83,6 +87,8 @@ object build extends Build {
                     ,javaWs
                     ,"com.stormpath.sdk" % "stormpath-sdk-api" % "1.0.RC2"
                     ,"com.stormpath.sdk" % "stormpath-sdk-httpclient" % "1.0.RC2"
+                    ,"com.paypal.sdk" % "paypal-core" % "1.6.6"
+                    ,"com.paypal.sdk" % "rest-api-sdk" % "0.12.2" intransitive()
                   ))
                  .enablePlugins(PlayJava)
                  .aggregate(common)

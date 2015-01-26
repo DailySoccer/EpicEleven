@@ -142,7 +142,7 @@ public class OptaProcessorActor extends UntypedActor {
         }
         catch (Exception e) {
             // Punto de recuperacion 1. Al saltar una excepcion no habremos cambiado _nextDocMsg == null y por lo tanto reintentaremos.
-            // Nota: Prodriamos dejarlo fallar y que se produjera un restart del actor. Para ello, lo primero sera cambiar
+            // Nota: Podriamos dejarlo fallar y que se produjera un restart del actor. Para ello, lo primero sera cambiar
             //       la estrategia de inicializacion, puesto que en un restart nadie esta poniendo en accion el Tick.
             Logger.error("WTF 1533", e);
         }

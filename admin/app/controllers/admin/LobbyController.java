@@ -10,7 +10,7 @@ import play.mvc.Result;
 import java.util.HashMap;
 import java.util.List;
 
-public class AdminController extends Controller {
+public class LobbyController extends Controller {
 
     public static Result lobby() {
         // Obtenemos la lista de TemplateContests activos
@@ -27,19 +27,5 @@ public class AdminController extends Controller {
 
         return ok(views.html.lobby.render(contestList, templateContestMap));
     }
-
-    public static boolean isLocalMongo() {
-        return Model.isLocalMongoAppEnv();
-    }
-
-    public static Result setMongoAppEnv(String app) {
-        Model.ensureMongo(app);
-        return ok("");
-    }
-
-    public static Result getMongoAppEnv() {
-        return ok(Model.getMongoAppEnv());
-    }
-
 
 }

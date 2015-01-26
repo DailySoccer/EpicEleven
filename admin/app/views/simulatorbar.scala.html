@@ -1,11 +1,10 @@
 @import controllers.admin.SimulatorController
 @import controllers.admin.SnapshotController
-@import controllers.admin.AdminController
 
 @import controllers.admin.routes
 
 
-@if(AdminController.isLocalMongo()) {
+@if(model.Model.isLocalHostTargetEnvironment()) {
 <div class="navbar navbar-fixed-bottom" style="background: #ededed; border-top: 1px solid #ccc">
     <div class="container-fluid">
         <div class="navbar-collapse collapse">

@@ -1,15 +1,13 @@
-@(competitions_enabled : List[model.opta.OptaCompetition])
-
-@import controllers.admin.AdminController
+@(competitions_enabled : List[model.opta.OptaCompetition], botActorsStarted : Boolean)
 
 @import controllers.admin.routes._
+
 
 @scripts = {
 <script type="text/javascript" charset="utf-8">
 
 $(document).ready(function() {
     getMongo();
-
 });
 
 function setOverlay() {
@@ -34,7 +32,7 @@ function setMongo() {
         var new_mongo = $('#mongo-conn').val();
         setOverlay();
         var another_temp = $.ajax({
-                        url: "/admin/setmongo/"+new_mongo,
+                        url: "/admin/set_target_environment/"+new_mongo,
                         success: function (result) {
                             location.reload();
                         }
@@ -43,7 +41,7 @@ function setMongo() {
 
 function getMongo() {
     var temp = $.ajax({
-                    url: "/admin/getmongo",
+                    url: "/admin/get_target_environment",
                     success: function (result) {
                         $('#mongo-conn option[value="'+result+'"]').prop('selected', true);
                     }
@@ -59,23 +57,27 @@ function getMongo() {
 
 <div>
     <select id="mongo-conn" onchange="setMongo()" class="form-control" style="width: inherit; display: inline-block;">
-        <option value="localhost">Localhost</option>
-        <option value="dailysoccer-staging">Staging</option>
-        <option value="dailysoccer">Epic Eleven</option>
+        <option value="LOCALHOST">Localhost</option>
+        <option value="STAGING">Staging</option>
+        <option value="PRODUCTION">Epic Eleven</option>
     </select>
 
-    @if(AdminController.isLocalMongo()) {
-    <div style="float: right; margin-right:100px;">
-        <a href="@DashboardController.resetDB" class="btn btn-danger">Reset DB</a>
-        @if(competitions_enabled.isEmpty) {
-            <a href="@DashboardController.initialSetup" class="btn btn-danger disabled">Initial Setup</a>
-        } else {
-            <a href="@DashboardController.initialSetup" class="btn btn-danger">Initial Setup</a>
-        }
-    </div>
+    @if(model.Model.isLocalHostTargetEnvironment()) {
+        <div style="float: right; margin-right:100px;">
+
+            <a href="@DashboardController.resetDB" class="btn btn-danger">Reset DB</a>
+
+            @if(competitions_enabled.isEmpty) {
+                <a href="@DashboardController.initialSetup" class="btn btn-danger disabled">Initial Setup</a>
+            } else {
+                <a href="@DashboardController.initialSetup" class="btn btn-danger">Initial Setup</a>
+            }
+        </div>
     }
 </div>
+
 <br/>
+
 <div>
     <p><a href="@OptaController.optaCompetitions" class="btn btn-primary">Select Competitions</a></p>
     @if(competitions_enabled.isEmpty) {
@@ -86,17 +88,30 @@ function getMongo() {
         }
     }
 </div>
+
 <br/>
+
 <div>
-    <p><a class="btn btn-primary" href="@ExcelController.index" title="Excel Import/Export">
+    <a class="btn btn-primary" href="@ExcelController.index" title="Excel Import/Export">
         Salaries Import/Export
-    </a></p>
-    <a href="@ImportController.showImportTeams" class="btn btn-warning">Opta Import Log</a>
+    </a>
 </div>
 
 <br/>
+
+<div>
+    <a href="@ImportController.showImportTeams" class="btn btn-primary">Opta Import Log</a>
+</div>
+
 <br/>
 
-
-
+@if(model.Model.isLocalHostTargetEnvironment()) {
+    <div>
+    @if(botActorsStarted) {
+        <a href="@DashboardController.switchBotActors(false)" class="btn btn-primary">Stop Bots</a>
+    } else {
+        <a href="@DashboardController.switchBotActors(true)" class="btn btn-warning">Start Bots</a>
+    }
+    </div>
+}
 }

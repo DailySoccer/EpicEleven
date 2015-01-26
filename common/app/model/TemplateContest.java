@@ -7,8 +7,6 @@ import com.mongodb.WriteResult;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
-import play.Play;
-import utils.BatchWriteOperation;
 import utils.ListUtils;
 
 import java.util.ArrayList;
@@ -91,7 +89,6 @@ public class TemplateContest implements JongoId {
     public boolean isLive()     { return (state == ContestState.LIVE); }
     public boolean isHistory()  { return (state == ContestState.HISTORY); }
 
-
     public List<TemplateMatchEvent> getTemplateMatchEvents() {
         return TemplateMatchEvent.findAll(templateMatchEventIds);
     }
@@ -151,6 +148,17 @@ public class TemplateContest implements JongoId {
         }
 
         return true;
+    }
+
+    public static void maintainingMinimumNumberOfInstances(ObjectId templateContestId) {
+        TemplateContest templateContest = findOne(templateContestId);
+
+        // Cuantas instancias tenemos creadas?
+        long instances = Contest.countActiveNotFullFromTemplateContest(templateContestId);
+
+        for (long i=instances; i < templateContest.minInstances; i++) {
+            templateContest.instantiateContest(false);
+        }
     }
 
     public Contest instantiateContest(boolean addMockDataUsers) {
@@ -230,27 +238,6 @@ public class TemplateContest implements JongoId {
 
     public static boolean isFinished(String templateContestId) {
         return findOne(new ObjectId(templateContestId)).isFinished();
-    }
-
-    public void givePrizes() {
-        List<Contest> contests = Contest.findAllFromTemplateContest(templateContestId);
-        List<TemplateMatchEvent> templateMatchEvents = getTemplateMatchEvents();
-
-        // Actualizamos los rankings de cada contest
-        BatchWriteOperation bulkOperation = new BatchWriteOperation(Model.contests().getDBCollection().initializeOrderedBulkOperation());
-         for (Contest contest : contests) {
-            contest.updateRanking(bulkOperation, this, templateMatchEvents);
-        }
-        bulkOperation.execute();
-
-        // Damos los premios según la posición en el Ranking
-        for (Contest contest : contests) {
-            contest.givePrizes();
-        }
-    }
-
-    public int getPositionPrize(int position) {
-        return (position < prizes.size()) ? prizes.get(position) : 0;
     }
 
     private int getPrizePool() {

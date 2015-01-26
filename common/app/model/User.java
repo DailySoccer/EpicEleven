@@ -1,10 +1,12 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import model.accounting.AccountOp;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import utils.ListUtils;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -19,6 +21,9 @@ public class User {
 	public String email;
 
     public int wins;
+
+    // TODO: De momento no es realmente un "cache", siempre lo recalculamos
+    public BigDecimal cachedBalance;
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
@@ -35,7 +40,12 @@ public class User {
 	}
 
     public UserInfo info() {
-        return new UserInfo(userId, firstName, lastName, nickName, wins);
+        return new UserInfo(userId, nickName, wins);
+    }
+
+    public User getProfile() {
+        cachedBalance = calculateBalance();
+        return this;
     }
 
     /**
@@ -51,9 +61,7 @@ public class User {
     }
 
     static public User findByName(String username) {
-        //User aUser = null;
         return Model.users().findOne("{nickName: #}", username).as(User.class);
-        //return aUser;
     }
 
     static public User findOne(ObjectId userId) {
@@ -74,6 +82,10 @@ public class User {
         return Model.users().findOne("{email: #}", email).as(User.class);
     }
 
+    static public void updateBalance(ObjectId userId, BigDecimal balance) {
+        Model.users().update(userId).with("{$set: {cachedBalance: #}}", balance.doubleValue());
+    }
+
     public void updateStats() {
         // Buscamos los contests en los que hayamos participado y ganado (position = 0)
         int contestsGanados = (int) Model.contests().count(
@@ -84,5 +96,36 @@ public class User {
                     "}" +
                 "}}", userId);
         Model.users().update(userId).with("{$set: {wins: #}}", contestsGanados);
+    }
+
+    public Integer getSeqId() {
+        return User.getSeqId(userId);
+    }
+
+    public BigDecimal calculateBalance() {
+        return User.calculateBalance(userId);
+    }
+
+    static public Integer getSeqId(ObjectId userId) {
+        List<AccountOp> account = Model.accountingTransactions()
+                .aggregate("{$match: { \"accountOps.accountId\": #}}", userId)
+                .and("{$unwind: \"$accountOps\"}")
+                .and("{$match: {\"accountOps.accountId\": #}}", userId)
+                .and("{$project: { \"accountOps.seqId\": 1 }}")
+                .and("{$sort: { \"accountOps.seqId\": -1 }}")
+                .and("{$limit: 1}")
+                .and("{$group: {_id: \"seqId\", accountId: { $first: \"$accountOps.accountId\" }, seqId: { $first: \"$accountOps.seqId\" }}}")
+                .as(AccountOp.class);
+        return (!account.isEmpty() && account.get(0).seqId != null) ? account.get(0).seqId : 0;
+    }
+
+    static public BigDecimal calculateBalance(ObjectId userId) {
+        List<AccountOp> account = Model.accountingTransactions()
+                .aggregate("{$match: { \"accountOps.accountId\": #, state: \"VALID\"}}", userId)
+                .and("{$unwind: \"$accountOps\"}")
+                .and("{$match: {\"accountOps.accountId\": #}}", userId)
+                .and("{$group: {_id: \"value\", accountId: { $first: \"$accountOps.accountId\" }, value: { $sum: \"$accountOps.value\" }}}")
+                .as(AccountOp.class);
+        return (!account.isEmpty()) ? account.get(0).value : new BigDecimal(0);
     }
 }
