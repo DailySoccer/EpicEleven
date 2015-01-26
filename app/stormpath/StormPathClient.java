@@ -10,6 +10,7 @@ import com.stormpath.sdk.application.Applications;
 import com.stormpath.sdk.authc.AuthenticationRequest;
 import com.stormpath.sdk.authc.AuthenticationResult;
 import com.stormpath.sdk.authc.UsernamePasswordRequest;
+import com.stormpath.sdk.cache.Caches;
 import com.stormpath.sdk.client.Client;
 import com.stormpath.sdk.client.Clients;
 import com.stormpath.sdk.directory.CustomData;
@@ -37,8 +38,6 @@ public class StormPathClient {
         try {
             if (Play.isDev()) {
                 apiKey = ApiKeys.builder().setFileLocation("./conf/apiKey.properties").build();
-
-
             }
             else {
                 apiKey = ApiKeys.builder().setId(Play.application().configuration().getString("stormpath.id"))
@@ -52,7 +51,9 @@ public class StormPathClient {
 
         if (apiKey != null) {
             try {
-                _client = Clients.builder().setApiKey(apiKey).build();
+                _client = Clients.builder().setApiKey(apiKey)
+                                           .setCacheManager(Caches.newDisabledCacheManager())
+                                           .build();
 
                 Tenant _tenant = _client.getCurrentTenant();
 
@@ -68,14 +69,13 @@ public class StormPathClient {
                     _myApp = _client.instantiate(Application.class);
 
                     _myApp.setName(APPLICATION_NAME); //must be unique among your other apps
-                    _myApp = _client.createApplication(
-                            Applications.newCreateRequestFor(_myApp).createDirectory().build());
+                    _myApp = _client.createApplication(Applications.newCreateRequestFor(_myApp).createDirectory().build());
                 }
                 _connected = _myApp != null;
 
             }
             catch (Exception e) {
-                Logger.warn("WTF SINGULARIDAD ENCONTRADA: 232");
+                Logger.error("WTF 2322 Excepcion durante la inicializacion de Stormpath", e);
             }
 
         }
@@ -102,10 +102,7 @@ public class StormPathClient {
             _myApp.createAccount(account);
         }
         catch (ResourceException ex) {
-            Logger.error(String.valueOf(ex.getStatus()) +"\n"+
-                         String.valueOf(ex.getCode()) +"\n"+
-                         ex.getMessage() +"\n"+
-                         ex.getMoreInfo());
+            Logger.error(ex.getMessage());
 
             return new F.Tuple<>(ex.getCode(), ex.getMessage());
 
@@ -119,10 +116,7 @@ public class StormPathClient {
             _myApp.sendPasswordResetEmail(email);
         }
         catch (ResourceException ex) {
-            Logger.error(String.valueOf(ex.getStatus()) +"\n"+
-                         String.valueOf(ex.getCode()) +"\n"+
-                         ex.getMessage() +"\n"+
-                         ex.getMoreInfo());
+            Logger.error(ex.getMessage());
 
             return new F.Tuple<>(ex.getCode(), ex.getMessage());
         }
@@ -134,8 +128,7 @@ public class StormPathClient {
             _myApp.verifyPasswordResetToken(token);
         }
         catch (ResourceException ex) {
-            Logger.error(ex.getMessage() +"\n"+
-                         ex.getMoreInfo());
+            Logger.error(ex.getMessage());
 
             return new F.Tuple<>(ex.getCode(), ex.getMessage());
         }
@@ -148,8 +141,7 @@ public class StormPathClient {
             account = _myApp.resetPassword(token, password);
         }
         catch (ResourceException ex) {
-            Logger.error(ex.getMessage() +"\n"+
-                         ex.getMoreInfo());
+            Logger.error(ex.getMessage());
 
             return new F.Tuple<>(null, new F.Tuple<>(ex.getCode(), ex.getMessage()));
         }
@@ -166,14 +158,12 @@ public class StormPathClient {
             return result.getAccount();
         }
         catch (ResourceException ex) {
-            Logger.error(ex.getMessage() +"\n"+
-                         ex.getMoreInfo());
+            Logger.error(ex.getMessage());
         }
         return null;
     }
 
     public Account login(String usernameOrEmail, String rawPassword){
-        Logger.debug("Entrando en Stormpath Login");
         //Create an authentication request using the credentials
         AuthenticationRequest request = new UsernamePasswordRequest(usernameOrEmail, rawPassword);
 
@@ -189,8 +179,7 @@ public class StormPathClient {
             }
             else {
                 // Will output: "Invalid username or password."
-                Logger.error(ex.getMessage() +"\n"+
-                             ex.getMoreInfo());
+                Logger.error(ex.getMessage());
             }
 
         }
@@ -222,8 +211,7 @@ public class StormPathClient {
                     usersAccount.save();
                 } catch (ResourceException ex) {
                     // Will output: "Invalid username or password."
-                    Logger.error(ex.getMessage() +"\n"+
-                                 ex.getMoreInfo());
+                    Logger.error(ex.getMessage());
 
                     return new F.Tuple<>(ex.getCode(), ex.getMessage());
                 }
@@ -253,8 +241,7 @@ public class StormPathClient {
             }
             catch (ResourceException ex) {
                 // Will output: "Invalid username or password."
-                Logger.error(ex.getMessage() +"\n"+
-                             ex.getMoreInfo());
+                Logger.error(ex.getMessage());
 
                 return new F.Tuple<>(ex.getCode(), ex.getMessage());
             }
@@ -272,15 +259,14 @@ public class StormPathClient {
 
     public static StormPathClient instance() {
         if (_instance == null) {
-            Logger.debug("Creando nuevo StormpathClient");
             _instance = new StormPathClient();
-            Logger.debug("Creado StormpathClient");
         }
         return _instance;
     }
 
     Client _client;
     Application _myApp;
-    static StormPathClient _instance;
     boolean _connected = false;
+
+    static StormPathClient _instance;
 }
