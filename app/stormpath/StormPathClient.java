@@ -51,26 +51,33 @@ public class StormPathClient {
         }
 
         if (apiKey != null) {
-            _client = Clients.builder().setApiKey(apiKey).build();
+            try {
+                _client = Clients.builder().setApiKey(apiKey).build();
 
-            Tenant _tenant = _client.getCurrentTenant();
+                Tenant _tenant = _client.getCurrentTenant();
 
-            ApplicationList applications = _tenant.getApplications();
+                ApplicationList applications = _tenant.getApplications();
 
-            for (Application app : applications) {
-                if (app.getName().equals(APPLICATION_NAME)) {
-                    _myApp = app;
+                for (Application app : applications) {
+                    if (app.getName().equals(APPLICATION_NAME)) {
+                        _myApp = app;
+                    }
                 }
+
+                if (_myApp == null) {
+                    _myApp = _client.instantiate(Application.class);
+
+                    _myApp.setName(APPLICATION_NAME); //must be unique among your other apps
+                    _myApp = _client.createApplication(
+                            Applications.newCreateRequestFor(_myApp).createDirectory().build());
+                }
+                _connected = _myApp != null;
+
+            }
+            catch (Exception e) {
+                Logger.warn("WTF SINGULARIDAD ENCONTRADA: 232");
             }
 
-            if (_myApp == null) {
-                _myApp = _client.instantiate(Application.class);
-
-                _myApp.setName(APPLICATION_NAME); //must be unique among your other apps
-                _myApp = _client.createApplication(
-                        Applications.newCreateRequestFor(_myApp).createDirectory().build());
-            }
-            _connected = _myApp!=null;
         }
     }
 
@@ -166,6 +173,7 @@ public class StormPathClient {
     }
 
     public Account login(String usernameOrEmail, String rawPassword){
+        Logger.debug("Entrando en Stormpath Login");
         //Create an authentication request using the credentials
         AuthenticationRequest request = new UsernamePasswordRequest(usernameOrEmail, rawPassword);
 
@@ -264,7 +272,9 @@ public class StormPathClient {
 
     public static StormPathClient instance() {
         if (_instance == null) {
+            Logger.debug("Creando nuevo StormpathClient");
             _instance = new StormPathClient();
+            Logger.debug("Creado StormpathClient");
         }
         return _instance;
     }
