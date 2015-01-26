@@ -70,7 +70,7 @@ public class BotActor extends UntypedActor {
     }
 
     private String getEmail() {
-        return String.format("bototron%04d@test.com", _botActorId);
+        return String.format("bototron%04d@bototron.com", _botActorId);
     }
 
 
@@ -356,6 +356,9 @@ public class BotActor extends UntypedActor {
         if (jsonNode == null) {
             Logger.error("WTF 4005 {} signup returned empty", getFullName());
         }
+        else {
+            Logger.debug("Signup: {}", jsonNode.toString());
+        }
     }
 
 
@@ -613,7 +616,15 @@ public class BotActor extends UntypedActor {
 
     // Cuando el servidor nos devuelve una String, lo hace envuelta en comillas, tenemos que quitarlas
     private String extractStringValue(JsonNode jsonNode, String key) {
-        return jsonNode.findValue(key).toString().replace("\"", "");
+
+        String ret = null;
+        JsonNode val = jsonNode.findValue(key);
+
+        if (val != null) {
+            ret = val.toString().replace("\"", "");
+        }
+
+        return ret;
     }
 
 
