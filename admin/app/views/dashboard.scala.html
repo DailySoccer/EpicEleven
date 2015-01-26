@@ -6,6 +6,8 @@
 @scripts = {
 <script type="text/javascript" charset="utf-8">
 
+var moneySelected = 5;
+
 $(document).ready(function() {
     getMongo();
 });
@@ -47,6 +49,17 @@ function getMongo() {
                     }
                 });
 }
+
+function addMoney(amount) {
+    console.log("addMoney: " + amount);
+
+    var temp = $.ajax({
+                    url: "/admin/add_money_to_bots/"+amount,
+                    success: function (result) {
+                    }
+                });
+}
+
 </script>
 }
 
@@ -91,27 +104,32 @@ function getMongo() {
 
 <br/>
 
-<div>
+<p>
     <a class="btn btn-primary" href="@ExcelController.index" title="Excel Import/Export">
         Salaries Import/Export
     </a>
-</div>
+</p>
 
-<br/>
-
-<div>
+<p>
     <a href="@ImportController.showImportTeams" class="btn btn-primary">Opta Import Log</a>
-</div>
+</p>
 
-<br/>
+<hr/>
 
 @if(model.Model.isLocalHostTargetEnvironment()) {
-    <div>
+    <p>
     @if(botActorsStarted) {
         <a href="@DashboardController.switchBotActors(false)" class="btn btn-primary">Stop Bots</a>
     } else {
         <a href="@DashboardController.switchBotActors(true)" class="btn btn-warning">Start Bots</a>
     }
-    </div>
+    </p>
+    <select id="money-list" onchange="moneySelected = $('#money-list').val()" class="form-control" style="width: 130px; display: inline-block;">
+        <option value="5" selected="true">5€</option>
+        <option value="10">10€</option>
+        <option value="1000">1000€</option>
+    </select>
+    <button id="add-money" type="button" onclick="addMoney(moneySelected)" class="btn btn-primary" style="position:relative;">Añadir Fondos a Bots</button>
 }
+
 }

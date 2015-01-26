@@ -6,6 +6,9 @@ import akka.pattern.Patterns;
 import akka.util.Timeout;
 import model.MockData;
 import model.Model;
+import model.User;
+import model.accounting.AccountOp;
+import model.accounting.AccountingTran;
 import model.opta.OptaCompetition;
 import play.Logger;
 import play.libs.Akka;
@@ -14,6 +17,9 @@ import play.mvc.Result;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class DashboardController extends Controller {
@@ -54,6 +60,20 @@ public class DashboardController extends Controller {
         actorRef.tell(start ? "StartChildren" : "StopChildren", ActorRef.noSender());
 
         return redirect(routes.DashboardController.index());
+    }
+
+    static public Result addMoneyToBots(Integer amount) {
+        List<AccountOp> accountOps = new ArrayList<>();
+        for (User bot : User.findBots()) {
+            accountOps.add(new AccountOp(bot.userId, new BigDecimal(amount), bot.getSeqId() + 1));
+        }
+
+        if (!accountOps.isEmpty()) {
+            AccountingTran accountingTran = new AccountingTran(AccountingTran.TransactionType.MONEY);
+            accountingTran.accountOps = accountOps;
+            accountingTran.insertAndCommit();
+        }
+        return ok("");
     }
 
     static private boolean isBotActorsStarted() {

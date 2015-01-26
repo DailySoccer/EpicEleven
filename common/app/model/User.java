@@ -82,6 +82,10 @@ public class User {
         return Model.users().findOne("{email: #}", email).as(User.class);
     }
 
+    static public List<User> findBots() {
+        return ListUtils.asList(Model.users().find("{email: {$regex: \"@bototron.com\"}, firstName: \"Bototron\"}").as(User.class));
+    }
+
     static public void updateBalance(ObjectId userId, BigDecimal balance) {
         Model.users().update(userId).with("{$set: {cachedBalance: #}}", balance.doubleValue());
     }

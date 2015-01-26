@@ -21,7 +21,7 @@ public class TransactionsActor extends UntypedActor {
 
             case "Tick":
                 onTick();
-                getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
+                getContext().system().scheduler().scheduleOnce(Duration.create(30, TimeUnit.SECONDS), getSelf(),
                         "Tick", getContext().dispatcher(), null);
                 break;
 
@@ -38,7 +38,7 @@ public class TransactionsActor extends UntypedActor {
     }
 
     private void onTick() {
-        Logger.info("Transactions: {}", GlobalDate.getCurrentDateString());
+        Logger.debug("Transactions: {}", GlobalDate.getCurrentDateString());
 
         /*
         *   Una transacción pasará de Uncommitted a Committed cuando verifique que todas las anteriores transacciones

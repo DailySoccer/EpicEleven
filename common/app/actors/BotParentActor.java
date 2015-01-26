@@ -196,6 +196,4 @@ public class BotParentActor extends UntypedActor {
 
     HashMap<String, Integer> _botEnteredContests;
     float _averageEnteredContests;
-
-    Channel _rabbitMQChannel;
 }

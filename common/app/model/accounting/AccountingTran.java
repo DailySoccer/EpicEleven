@@ -22,7 +22,8 @@ public class AccountingTran {
         ENTER_CONTEST,
         CANCEL_CONTEST_ENTRY,
         CANCEL_CONTEST,
-        REFUND
+        REFUND,
+        MONEY
     }
 
     public enum TransactionProc {
