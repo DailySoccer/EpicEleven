@@ -555,7 +555,7 @@ public class BotActor extends UntypedActor {
         return ret;
     }
 
-    private JsonNode post(String url, String params) throws TimeoutException {
+    private JsonNode post(final String url, String params) throws TimeoutException {
         WSRequestHolder requestHolder = WS.url(composeUrl(url));
 
         F.Promise<WSResponse> response = requestHolder.setContentType("application/x-www-form-urlencoded")
@@ -568,7 +568,7 @@ public class BotActor extends UntypedActor {
                             return response.asJson();
                         }
                         catch (Exception exc) {
-                            Logger.debug("WTF 1280 {} el servidor devolvio Json incorrecto: {}", getFullName(), response.getStatusText());
+                            Logger.debug("WTF 1280 {} el servidor devolvio Json incorrecto: {}, {}", getFullName(), url, response.getStatusText());
                             return JsonNodeFactory.instance.objectNode();
                         }
                     }
