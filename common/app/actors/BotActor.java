@@ -150,13 +150,14 @@ public class BotActor extends UntypedActor {
         if (!login()) {
             signup();
 
-            if (!login()) {
-                throw new RuntimeException(String.format("WTF 5466 %s no pudo hacer signup + login", getFullName()));
+            if (login()) {
+                // Vamos a asegurnos de que el profile del bot tiene los datos como queremos
+                changeUserProfile();
+            }
+            else {
+                Logger.error("WTF 5466 {} no pudo hacer signup + login", getFullName());
             }
         }
-
-        // Vamos a asegurnos de que el profile del bot tiene los datos como queremos
-        changeUserProfile();
     }
 
     void onTickBerserker() throws TimeoutException {
