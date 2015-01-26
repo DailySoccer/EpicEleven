@@ -11,6 +11,7 @@ import com.google.common.collect.Collections2;
 import model.*;
 import org.bson.types.ObjectId;
 import play.Logger;
+import play.Play;
 import play.libs.F;
 import play.libs.ws.WS;
 import play.libs.ws.WSRequestHolder;
@@ -45,10 +46,11 @@ public class BotActor extends UntypedActor {
     public BotActor(int botActorId, Personality pers) {
         _botActorId = botActorId;
         _personality = pers;
+        _targetUrl = Play.application().configuration().getString("botActor.targetUrl");
     }
 
     private String composeUrl(String suffix) {
-        return String.format("http://localhost:9000/%s", suffix);
+        return String.format("%s/%s", _targetUrl, suffix);
     }
 
     private String getFirstName() {
@@ -612,6 +614,8 @@ public class BotActor extends UntypedActor {
     User _user;
     Personality _personality;
     int _numTicks;
+
+    String _targetUrl;
 
     static Random _rand = new Random(System.currentTimeMillis());
 
