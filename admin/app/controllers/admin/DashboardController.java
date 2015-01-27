@@ -69,7 +69,7 @@ public class DashboardController extends Controller {
         }
 
         if (!accountOps.isEmpty()) {
-            AccountingTran accountingTran = new AccountingTran(AccountingTran.TransactionType.MONEY);
+            AccountingTran accountingTran = new AccountingTran(AccountingTran.TransactionType.FREE_MONEY);
             accountingTran.accountOps = accountOps;
             accountingTran.insertAndCommit();
         }
