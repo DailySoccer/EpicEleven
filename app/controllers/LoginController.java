@@ -200,10 +200,10 @@ public class LoginController extends Controller {
                 } catch (DuplicateKeyException exc) {
                     int mongoError = 0; //"Hubo un problema en la creación de tu usuario");
                     if (exc.getMessage().contains("email")) {
-                        mongoError = 2; //"Ya existe una cuenta con ese nombre de usuario. Elige uno diferente."
+                        mongoError = 2; //"Ya existe una cuenta con ese email. Indica otro email."
                     }
                     else if (exc.getMessage().contains("nickName")) {
-                        mongoError = 1; //"Ya existe una cuenta con ese email. Indica otro email."
+                        mongoError = 1; //"Ya existe una cuenta con ese nombre de usuario. Elige uno diferente."
                     }
                     Logger.error("createUser: ", exc);
                     error = new F.Tuple<>(mongoError, "");
