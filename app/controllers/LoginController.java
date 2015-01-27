@@ -137,10 +137,8 @@ public class LoginController extends Controller {
                 theUser = User.findByEmail(account.getEmail().toLowerCase());
 
                 if (theUser == null) {
-                    Logger.debug("Creamos el usuario al no estar en nuestra DB pero si en Stormpath: {}", account.getEmail());
-
-                    theUser = new User(account.getGivenName(), account.getSurname(), account.getGivenName(), account.getEmail().toLowerCase());
-                    Model.users().insert(theUser);
+                    theUser = new User(account.getGivenName(), account.getSurname(), account.getUsername(), account.getEmail().toLowerCase());
+                    insertUser(theUser);
                 }
             }
 
@@ -323,11 +321,8 @@ public class LoginController extends Controller {
                 if (theUser == null) {
                     // Si el usuario tiene cuenta en StormPath, pero no existe en nuestra BD, lo creamos en nuestra BD
                     if (account != null) {
-                        Logger.debug("Creamos el usuario al no estar en nuestra DB pero si en Stormpath: {}", account.getEmail());
-
                         theUser = new User(account.getGivenName(), account.getSurname(), account.getUsername(), account.getEmail().toLowerCase());
-
-                        Model.users().insert(theUser);
+                        insertUser(theUser);
                     }
                     // Si el usuario no tiene cuenta en Stormpath ni lo encontramos en nuestra BD -> Reject
                     else {
@@ -364,10 +359,8 @@ public class LoginController extends Controller {
                 theUser = User.findByEmail(account.getEmail().toLowerCase());
 
                 if (theUser == null) {
-                    Logger.debug("Creamos el usuario al no estar en nuestra DB pero si en Stormpath: {}", account.getEmail());
-
                     theUser = new User(account.getGivenName(), account.getSurname(), getOrSetNickname(account), account.getEmail().toLowerCase());
-                    Model.users().insert(theUser);
+                    insertUser(theUser);
                 }
 
                 setSession(returnHelper, theUser);
@@ -560,4 +553,8 @@ public class LoginController extends Controller {
     }
 
 
+    private static void insertUser(User theUser) {
+        Logger.debug("Creamos el usuario al no estar en nuestra DB pero si en Stormpath: {}", theUser.email);
+        Model.users().insert(theUser);
+    }
 }
