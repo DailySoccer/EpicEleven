@@ -5,7 +5,7 @@ import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
-import com.mongodb.MongoException;
+import com.mongodb.DuplicateKeyException;
 import com.stormpath.sdk.account.Account;
 import com.stormpath.sdk.directory.CustomData;
 import model.GlobalDate;
@@ -13,7 +13,6 @@ import model.Model;
 import model.Session;
 import model.User;
 import model.accounting.AccountingTran;
-import stormpath.StormPathClient;
 import play.Logger;
 import play.Play;
 import play.data.Form;
@@ -24,6 +23,7 @@ import play.libs.Crypto;
 import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
+import stormpath.StormPathClient;
 import utils.ReturnHelper;
 
 import java.util.ArrayList;
@@ -197,19 +197,17 @@ public class LoginController extends Controller {
                 try {
                     Model.users().insert(new User(theParams.firstName, theParams.lastName, theParams.nickName,
                             theParams.email.toLowerCase()));
-                } catch (MongoException exc) {
-                    int mongoError = 0; //new F.Tuple<>(0, "Hubo un problema en la creación de tu usuario");
-                    User user = model.User.findByName(theParams.nickName);
-                    if (user != null) {
-                        mongoError += 1;
-                        //error = new F.Tuple<>(1, "Ya existe una cuenta con ese nombre de usuario. Elige uno diferente.");
+                } catch (DuplicateKeyException exc) {
+                    int mongoError = 0; //"Hubo un problema en la creación de tu usuario");
+                    if (exc.getMessage().contains("email")) {
+                        mongoError = 2; //"Ya existe una cuenta con ese nombre de usuario. Elige uno diferente."
                     }
-                    user = model.User.findByEmail(theParams.email.toLowerCase());
-                    if (user != null) {
-                        mongoError += 2; //"Ya existe una cuenta con ese email. Indica otro email."
+                    else if (exc.getMessage().contains("nickName")) {
+                        mongoError = 1; //"Ya existe una cuenta con ese email. Indica otro email."
                     }
                     Logger.error("createUser: ", exc);
                     error = new F.Tuple<>(mongoError, "");
+
                 }
             }
         }
