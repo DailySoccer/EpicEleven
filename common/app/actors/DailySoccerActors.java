@@ -46,7 +46,7 @@ public class DailySoccerActors {
 
         if (env == TargetEnvironment.LOCALHOST) {
             // Obviamente asumimos que: 1.- LOCALHOST es el primer env desde el que se inicializa 2.- Quien nos llama
-            // aqui se ocupa de no pasarnos nos veces seguidas el mismo env
+            // aqui se ocupa de no pasarnos dos veces seguidas el mismo env
             closeRabbitMq();
             initDevelopmentRole(env);
         }
@@ -67,7 +67,8 @@ public class DailySoccerActors {
             try {
                 scala.concurrent.Future<Boolean> stopped = akka.pattern.Patterns.gracefulStop(actorRef, Duration.create(10, TimeUnit.SECONDS), PoisonPill.getInstance());
                 Await.result(stopped, Duration.create(11, TimeUnit.SECONDS));
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 Logger.error("WTF 2211 The actor {} wasn't stopped within 10 seconds", actorRef.path().name());
             }
         }
