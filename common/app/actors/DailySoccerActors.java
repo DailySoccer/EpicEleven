@@ -2,6 +2,7 @@ package actors;
 
 import akka.actor.ActorRef;
 import akka.actor.Props;
+import akka.pattern.AskTimeoutException;
 import com.rabbitmq.client.*;
 import play.Logger;
 import play.api.Application;
@@ -10,40 +11,69 @@ import play.api.Mode;
 import play.api.Play;
 import play.libs.Akka;
 import utils.InstanceRole;
+import utils.ProcessExec;
+import utils.TargetEnvironment;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public class DailySoccerActors {
 
-    static public DailySoccerActors instance() {
-        if (_instance == null) {
-            _instance = new DailySoccerActors();
-        }
-        return _instance;
-    }
-
-    public void init(InstanceRole instanceRole) {
+    public DailySoccerActors(InstanceRole instanceRole) {
 
         switch (instanceRole) {
             case DEVELOPMENT_ROLE:
-                initRabbitMQ();
-                createActors();
-                bindActorsToQueues();
+                initDevelopmentRole(TargetEnvironment.LOCALHOST);
                 break;
             case WORKER_ROLE:
-                initRabbitMQ();
-                createActors();
-                bindActorsToQueues();
-                tickActors();
+                initWorkerRole();
                 break;
             case WEB_ROLE:
                 break;
             default:
                 throw new RuntimeException("WTF 5550 instanceRole desconocido");
         }
+    }
+
+    public void setTargetEnvironment(TargetEnvironment env) {
+
+        for (ActorRef actorRef : _actors.values()) {
+            
+        }
+
+        initDevelopmentRole(env);
+    }
+
+    private void initDevelopmentRole(TargetEnvironment env) {
+        initRabbitMQ(env);
+        createActors();
+        bindActorsToQueues();
+    }
+
+    private void initWorkerRole() {
+        initRabbitMQ(TargetEnvironment.LOCALHOST); // LOCALHOST equivale a decirle "no intentes leer de heroku"
+        createActors();
+        bindActorsToQueues();
+        tickActors();
+    }
+
+    private String readRabbitMQUriForEnvironment(TargetEnvironment env) {
+        String ret = play.Play.application().configuration().getString("rabbitmq");
+
+        if (env != TargetEnvironment.LOCALHOST) {
+            try {
+                ret = ProcessExec.exec("heroku config:get CLOUDAMQP_URL -a " + env.herokuAppName);
+            }
+            catch (IOException e) {
+                Logger.error("WTF 8900 Sin permisos, o sin heroku instalado. Falling back to local.");
+            }
+        }
+
+        return ret;
     }
 
     private void tickActors() {
@@ -92,12 +122,11 @@ public class DailySoccerActors {
         }
     }
 
-    private void initRabbitMQ() {
+    private void initRabbitMQ(TargetEnvironment env) {
         try {
-            String connectionUri = play.Play.application().configuration().getString("rabbitmq", "amqp://guest:guest@localhost");
-
             ConnectionFactory factory = new ConnectionFactory();
-            factory.setUri(connectionUri);
+            factory.setUri(readRabbitMQUriForEnvironment(env));
+
             _connection = factory.newConnection();
             _channel = _connection.createChannel();
         }
@@ -111,14 +140,15 @@ public class DailySoccerActors {
         try {
             if (_connection != null) {
                 _connection.close();
+                _connection = null;
             }
         }
         catch (Exception exc) {
             Logger.debug("WTF 6699 RabbitMQ no pudo cerrar", exc);
         }
 
-        // Esto para todos los actores y metodos scheduleados. No es necesario mirar bIsWorker
-        // (aunque logeara "Shutdown application default Akka system.". Y si no has hecho el init, lo inicializa ahora!)
+        // Esto para todos los actores y metodos scheduleados.
+        // Logeara "Shutdown application default Akka system.". Y si no has hecho el init, lo inicializa ahora!
         Akka.system().shutdown();
 
         // Hacemos un 'join' para asegurar que no matamos el modelo estando todavia procesando
@@ -135,6 +165,5 @@ public class DailySoccerActors {
 
     HashMap<String, ActorRef> _actors = new HashMap<>();          // Todos los actores que creamos, hasheados por nombre
 
-    static DailySoccerActors _instance;
     final static String _EXCHANGE_NAME = "";    // Default exchange
 }

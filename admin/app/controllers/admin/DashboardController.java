@@ -6,6 +6,7 @@ import akka.pattern.Patterns;
 import akka.util.Timeout;
 import model.MockData;
 import model.Model;
+import utils.TargetEnvironment;
 import model.User;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
@@ -45,7 +46,7 @@ public class DashboardController extends Controller {
     }
 
     static public Result setTargetEnvironment(String env) {
-        Model.setTargetEnvironment(Model.TargetEnvironment.valueOf(env));
+        Model.setTargetEnvironment(TargetEnvironment.valueOf(env));
         return ok("");
     }
 
