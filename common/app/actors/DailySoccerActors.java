@@ -3,7 +3,8 @@ package actors;
 import akka.actor.ActorRef;
 import akka.actor.PoisonPill;
 import akka.actor.Props;
-import akka.pattern.AskTimeoutException;
+import akka.pattern.Patterns;
+import akka.util.Timeout;
 import com.rabbitmq.client.*;
 import play.Logger;
 import play.api.Application;
@@ -21,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 public class DailySoccerActors {
@@ -44,6 +44,17 @@ public class DailySoccerActors {
 
     public void setTargetEnvironment(TargetEnvironment env) {
 
+        // Paramos los actores locales (si los hubiera), para no liar
+        stopActors();
+
+        // Si hubiera conexion a un rabbitmq anterior, la matamos
+        closeRabbitMq();
+
+        // Iniciamos la nueva conexion al nuevo environment
+        initRabbitMQ(env);
+    }
+
+    private void stopActors() {
         for (ActorRef actorRef : _actors.values()) {
             try {
                 scala.concurrent.Future<Boolean> stopped = akka.pattern.Patterns.gracefulStop(actorRef, Duration.create(10, TimeUnit.SECONDS), PoisonPill.getInstance());
@@ -53,8 +64,52 @@ public class DailySoccerActors {
             }
         }
         _actors.clear();
+    }
 
-        initDevelopmentRole(env);
+    public void tellToActor(String actorName, Object message) {
+
+        // Damos preferencia a funcionar a traves del conejo encolador
+        if (_connection != null) {
+            try {
+                _channel.basicPublish(_EXCHANGE_NAME, actorName /* QueueName */, null, message.toString().getBytes());
+            }
+            catch (Exception exc) {
+                Logger.error("WTF 3344 {}, {}", actorName, message.toString(), exc);
+            }
+        }
+        // Pero si no hubiera conejo, mandamos el mensaje directamente (asumimos que estamos en TargetEnvironment.LOCALHOST)
+        else {
+            if (!_actors.containsKey(actorName)) {
+                throw new RuntimeException(String.format("WTF 7777 El actor %s no existe", actorName));
+            }
+
+            _actors.get(actorName).tell(message, ActorRef.noSender());
+        }
+    }
+
+    public Object tellToActorAwaitResult(String actorName, Object message) {
+        Object ret = null;
+
+        if (_connection != null) {
+            // TODO... RPC
+        }
+        else {
+            if (!_actors.containsKey(actorName)) {
+                throw new RuntimeException(String.format("WTF 7778 El actor %s no existe", actorName));
+            }
+
+            Timeout timeout = new Timeout(scala.concurrent.duration.Duration.create(5, TimeUnit.SECONDS));
+            scala.concurrent.Future<Object> response = Patterns.ask(_actors.get(actorName), message, timeout);
+
+            try {
+                ret = Await.result(response, timeout.duration());
+            }
+            catch (Exception exc) {
+                Logger.error("WTF 5222 DailySoccerActors excepcion esperando resultado de mensaje {}, actor {}", message, actorName, exc);
+            }
+        }
+
+        return ret;
     }
 
     private void initDevelopmentRole(TargetEnvironment env) {
@@ -86,7 +141,6 @@ public class DailySoccerActors {
     }
 
     private void tickActors() {
-        // El sistema de bots ignorara el mensaje (no conoce el mensaje "Tick), solo se inicializa bajo demanda
         for (ActorRef actorRef : _actors.values()) {
             actorRef.tell("Tick", ActorRef.noSender());
         }
@@ -146,15 +200,7 @@ public class DailySoccerActors {
 
     public void shutdown() {
 
-        try {
-            if (_connection != null) {
-                _connection.close();
-                _connection = null;
-            }
-        }
-        catch (Exception exc) {
-            Logger.debug("WTF 6699 RabbitMQ no pudo cerrar", exc);
-        }
+        closeRabbitMq();
 
         // Esto para todos los actores y metodos scheduleados.
         // Logeara "Shutdown application default Akka system.". Y si no has hecho el init, lo inicializa ahora!
@@ -162,6 +208,28 @@ public class DailySoccerActors {
 
         // Hacemos un 'join' para asegurar que no matamos el modelo estando todavia procesando
         Akka.system().awaitTermination();
+    }
+
+    private void closeRabbitMq() {
+        try {
+            if (_channel != null) {
+                _channel.close();
+                _channel = null;
+            }
+        }
+        catch (Exception exc) {
+            Logger.debug("WTF 6699 RabbitMQ Channel no pudo cerrar", exc);
+        }
+
+        try {
+            if (_connection != null) {
+                _connection.close();
+                _connection = null;
+            }
+        }
+        catch (Exception exc) {
+            Logger.debug("WTF 6699 RabbitMQ Connection no pudo cerrar", exc);
+        }
     }
 
     static public void main(String[] args) {

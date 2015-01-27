@@ -67,15 +67,23 @@ public class Model {
             throw new RuntimeException("WTF 5771 are you nuts?");
         }
 
-        // Cambiar el ataque del modelo a un environment distinto significa reinicializar mongo solamente *de momento*
+        // Cambiar el ataque del modelo a un environment distinto significa reinicializar mongo y rabbitmq
         if (initMongo(readMongoUriForEnvironment(env))) {
             _actors.setTargetEnvironment(env);
-            _targetEnvironment = env;   // Ahora ya estamos en el environment solicitado
+
+            // Ahora ya estamos en el environment solicitado. Todo: Hay que detectar errores tambien en los actores y
+            // restaurar la conexion a mongo anterior
+            _targetEnvironment = env;
         }
     }
 
     static public boolean isLocalHostTargetEnvironment() {
         return TargetEnvironment.LOCALHOST == _targetEnvironment;
+    }
+
+    // Desde fuera se necesita acceder al gestor de actores para poder mandar mensajes desde el UI de administracion
+    static public DailySoccerActors getDailySoccerActors() {
+        return _actors;
     }
 
     static public void init(InstanceRole instanceRole) {
