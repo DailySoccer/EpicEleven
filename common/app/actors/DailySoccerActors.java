@@ -1,6 +1,7 @@
 package actors;
 
 import akka.actor.ActorRef;
+import akka.actor.PoisonPill;
 import akka.actor.Props;
 import akka.pattern.AskTimeoutException;
 import com.rabbitmq.client.*;
@@ -10,6 +11,8 @@ import play.api.DefaultApplication;
 import play.api.Mode;
 import play.api.Play;
 import play.libs.Akka;
+import scala.concurrent.Await;
+import scala.concurrent.duration.Duration;
 import utils.InstanceRole;
 import utils.ProcessExec;
 import utils.TargetEnvironment;
@@ -42,8 +45,14 @@ public class DailySoccerActors {
     public void setTargetEnvironment(TargetEnvironment env) {
 
         for (ActorRef actorRef : _actors.values()) {
-            
+            try {
+                scala.concurrent.Future<Boolean> stopped = akka.pattern.Patterns.gracefulStop(actorRef, Duration.create(10, TimeUnit.SECONDS), PoisonPill.getInstance());
+                Await.result(stopped, Duration.create(11, TimeUnit.SECONDS));
+            } catch (Exception e) {
+                Logger.error("WTF 2211 The actor {} wasn't stopped within 10 seconds", actorRef.path().name());
+            }
         }
+        _actors.clear();
 
         initDevelopmentRole(env);
     }

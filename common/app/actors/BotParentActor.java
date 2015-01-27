@@ -1,16 +1,13 @@
 package actors;
 
 
-import akka.actor.ActorRef;
-import akka.actor.Cancellable;
-import akka.actor.Props;
-import akka.actor.UntypedActor;
-import com.rabbitmq.client.*;
+import akka.actor.*;
+import akka.pattern.AskTimeoutException;
 import play.Logger;
+import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -53,6 +50,7 @@ public class BotParentActor extends UntypedActor {
                 if (_childrenStarted) {
                     Logger.debug("BotParentActor parando {} bots hijos", _NUM_BOTS);
                     cancelTicking();
+                    Logger.debug("BotParentActor {} hijos parados", _NUM_BOTS);
                 }
                 else {
                     Logger.error("WTF 1560 Recibido StopChildren a destiempo");
@@ -148,8 +146,13 @@ public class BotParentActor extends UntypedActor {
         // replacement in response to the Terminated message which will eventually arrive.
         // gracefulStop is useful if you need to wait for termination.
         // http://doc.akka.io/docs/akka/2.3.8/java/untyped-actors.html
-        for (ActorRef child : getContext().getChildren()) {
-            getContext().stop(child);
+        for (ActorRef actorRef : getContext().getChildren()) {
+            try {
+                scala.concurrent.Future<Boolean> stopped = akka.pattern.Patterns.gracefulStop(actorRef, Duration.create(5, TimeUnit.SECONDS), PoisonPill.getInstance());
+                Await.result(stopped, Duration.create(6, TimeUnit.SECONDS));
+            } catch (Exception e) {
+                Logger.error("WTF 2211 The actor wasn't stopped within 5 seconds");
+            }
         }
 
         _childrenStarted = false;
