@@ -1,8 +1,6 @@
 package actors;
 
-
 import akka.actor.*;
-import akka.pattern.AskTimeoutException;
 import play.Logger;
 import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
@@ -182,7 +180,7 @@ public class BotParentActor extends UntypedActor {
     static final int _NUM_BOTS = 30;
 
     enum TickingMode {
-        NormalTick,     // En minisculas pq los vamos a usar directamente asString
+        NormalTick,     // En minusculas pq los vamos a usar directamente asString
         AggressiveTick
     };
 

@@ -62,6 +62,11 @@ public class Model {
 
     static public void setTargetEnvironment(TargetEnvironment env) {
 
+        if (env == _targetEnvironment) {
+            Logger.error("WTF 5772 no me gusta que me repitan las cosas");
+            return;
+        }
+
         // Solo se puede cambiar el environment al que atacamos en maquinas de desarrollo, claro
         if (_instanceRole != InstanceRole.DEVELOPMENT_ROLE) {
             throw new RuntimeException("WTF 5771 are you nuts?");

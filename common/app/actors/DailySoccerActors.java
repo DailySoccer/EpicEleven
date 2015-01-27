@@ -44,14 +44,22 @@ public class DailySoccerActors {
 
     public void setTargetEnvironment(TargetEnvironment env) {
 
-        // Paramos los actores locales (si los hubiera), para no liar
-        stopActors();
+        if (env == TargetEnvironment.LOCALHOST) {
+            // Obviamente asumimos que: 1.- LOCALHOST es el primer env desde el que se inicializa 2.- Quien nos llama
+            // aqui se ocupa de no pasarnos nos veces seguidas el mismo env
+            closeRabbitMq();
+            initDevelopmentRole(env);
+        }
+        else {
+            // Paramos los actores locales (si los hubiera), para no liar
+            stopActors();
 
-        // Si hubiera conexion a un rabbitmq anterior, la matamos
-        closeRabbitMq();
+            // Si hubiera conexion a un rabbitmq anterior, la matamos
+            closeRabbitMq();
 
-        // Iniciamos la nueva conexion al nuevo environment
-        initRabbitMQ(env);
+            // Iniciamos la nueva conexion al nuevo environment
+            initRabbitMQ(env);
+        }
     }
 
     private void stopActors() {

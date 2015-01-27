@@ -77,7 +77,7 @@ public class DashboardController extends Controller {
         }
         else {
             boolean isStarted = (boolean)ret;
-            return new F.Tuple(isStarted, isStarted? "Stop Actors" : "Start Actors");
+            return new F.Tuple<>(isStarted, isStarted? "Stop Actors" : "Start Actors");
         }
     }
 }
