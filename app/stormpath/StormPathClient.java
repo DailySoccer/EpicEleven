@@ -4,16 +4,14 @@ import com.stormpath.sdk.account.Account;
 import com.stormpath.sdk.account.AccountList;
 import com.stormpath.sdk.api.ApiKey;
 import com.stormpath.sdk.api.ApiKeys;
-import com.stormpath.sdk.application.Application;
-import com.stormpath.sdk.application.ApplicationList;
-import com.stormpath.sdk.application.Applications;
+import com.stormpath.sdk.application.*;
 import com.stormpath.sdk.authc.AuthenticationRequest;
 import com.stormpath.sdk.authc.AuthenticationResult;
 import com.stormpath.sdk.authc.UsernamePasswordRequest;
 import com.stormpath.sdk.cache.Caches;
 import com.stormpath.sdk.client.Client;
 import com.stormpath.sdk.client.Clients;
-import com.stormpath.sdk.directory.CustomData;
+import com.stormpath.sdk.directory.*;
 import com.stormpath.sdk.provider.ProviderAccountRequest;
 import com.stormpath.sdk.provider.ProviderAccountResult;
 import com.stormpath.sdk.provider.Providers;
@@ -31,9 +29,10 @@ public class StormPathClient {
 
     private static final String APPLICATION_NAME = "EpicEleven";
 
-    public StormPathClient() {
+    public StormPathClient(boolean isProduction) {
 
         ApiKey apiKey = null;
+        currentDirectory = isProduction? StormpathDirectory.PRODUCTION: StormpathDirectory.STAGING;
 
         try {
             if (Play.isDev()) {
@@ -71,7 +70,33 @@ public class StormPathClient {
                     _myApp.setName(APPLICATION_NAME); //must be unique among your other apps
                     _myApp = _client.createApplication(Applications.newCreateRequestFor(_myApp).createDirectory().build());
                 }
-                _connected = _myApp != null;
+
+
+                DirectoryList directoryList = _tenant.getDirectories(Directories.where(Directories.name().eqIgnoreCase(currentDirectory.name)));
+                for (Directory dir: directoryList) {
+                    if (dir.getName().equalsIgnoreCase(currentDirectory.name)) {
+                        _myDirectory = dir;
+                        Logger.info("Stormpath: Found dir: "+currentDirectory.name);
+                        break;
+                    }
+                }
+
+                if (_myDirectory == null) {
+                    _myDirectory = _client.instantiate(Directory.class).setName(currentDirectory.name)
+                            .setDescription(currentDirectory.description);
+                    _tenant.createDirectory(_myDirectory);
+                    Logger.info("Stormpath: Creating dir: "+currentDirectory.name);
+                }
+
+
+                _connected = _myApp != null && _myDirectory != null;
+
+                AccountStoreMappingList mappings = _myApp.getAccountStoreMappings();
+                for (AccountStoreMapping mapping: mappings) {
+                    if (mapping.getAccountStore().getHref().endsWith(currentDirectory.accountStoreId)) {
+                        _myAccountStore = mapping.getAccountStore();
+                    }
+                }
 
             }
             catch (Exception e) {
@@ -99,7 +124,7 @@ public class StormPathClient {
 
         //Aquí es donde realmente se crea el usuario (se envía a StormPath)
         try {
-            _myApp.createAccount(account);
+            _myDirectory.createAccount(account);
         }
         catch (ResourceException ex) {
             Logger.error(ex.getMessage());
@@ -165,7 +190,7 @@ public class StormPathClient {
 
     public Account login(String usernameOrEmail, String rawPassword){
         //Create an authentication request using the credentials
-        AuthenticationRequest request = new UsernamePasswordRequest(usernameOrEmail, rawPassword);
+        AuthenticationRequest request = new UsernamePasswordRequest(usernameOrEmail, rawPassword, _myAccountStore);
 
         //Now let's authenticate the account with the application:
         try {
@@ -190,7 +215,7 @@ public class StormPathClient {
 
         Map<String, Object> queryParams = new HashMap<>();
         queryParams.put("email", userEmail);
-        AccountList accounts = _myApp.getAccounts(queryParams);
+        AccountList accounts = _myDirectory.getAccounts(queryParams);
 
         Account usersAccount = null;
         for (Account account: accounts) {
@@ -227,7 +252,7 @@ public class StormPathClient {
 
         Map<String, Object> queryParams = new HashMap<>();
         queryParams.put("email", userEmail);
-        AccountList accounts = _myApp.getAccounts(queryParams);
+        AccountList accounts = _myDirectory.getAccounts(queryParams);
 
         Account usersAccount = null;
         for (Account account: accounts) {
@@ -257,16 +282,40 @@ public class StormPathClient {
     }
 
 
-    public static StormPathClient instance() {
+    public static StormPathClient instance(boolean isProduction) {
         if (_instance == null) {
-            _instance = new StormPathClient();
+            _instance = new StormPathClient(isProduction);
         }
         return _instance;
     }
 
+    public static StormPathClient instance() {
+        return _instance;
+    }
+
+    private enum StormpathDirectory {
+        STAGING ("Staging Directory", "Directory for Testing purposes", "6lQ40xohPzA6pVDRsgvcbv"),
+        PRODUCTION ("EpicEleven Directory", "Main Epic Eleven Directory", "3AHd93zqqqEX5DPV21nSWe");
+
+        public final String name;
+        public final String description;
+        public final String accountStoreId;
+
+        StormpathDirectory(String n, String desc, String accountStId) {
+            name = n;
+            description = desc;
+            accountStoreId = accountStId;
+        }
+    }
+
     Client _client;
     Application _myApp;
+    Directory _myDirectory;
+    AccountStore _myAccountStore;
+
     boolean _connected = false;
+
+    StormpathDirectory currentDirectory;
 
     static StormPathClient _instance;
 }

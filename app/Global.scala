@@ -22,6 +22,12 @@ object Global extends GlobalSettings {
   // Role of this machine (DEVELOPMENT_ROLE, WEB_ROLE, OPTAPROCESSOR_ROLE, BOTS_ROLE...)
   var instanceRole = InstanceRole.DEVELOPMENT_ROLE
 
+  def isProduction: Boolean = { (Play.current.configuration.getString("config.resource") != None) &&
+    Play.current.configuration.getString("config.resource").get.equals("production.conf") }
+
+  def isStaging: Boolean = { (Play.current.configuration.getString("config.resource") != None) &&
+      Play.current.configuration.getString("config.resource").get.equals("staging.conf") }
+
 
   val releaseFilter = Filter { (nextFilter, requestHeader) =>
     nextFilter(requestHeader).map { result =>
@@ -56,7 +62,6 @@ object Global extends GlobalSettings {
 
 
   override def onStart(app: Application) {
-
     instanceRole = readInstanceRole
     releaseVersion = readReleaseVersion
     Logger.info(s"Epic Eleven $instanceRole, version $releaseVersion has started")
@@ -64,7 +69,7 @@ object Global extends GlobalSettings {
     model.Model.init(instanceRole)
 
     // Es aqui donde se llama a la inicializacion de Stormpath a traves del constructor
-    if (StormPathClient.instance.isConnected) {
+    if (StormPathClient.instance(isProduction).isConnected) {
       Logger.info("Stormpath CONNECTED")
     }
   }
