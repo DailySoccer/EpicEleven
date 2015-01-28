@@ -147,12 +147,18 @@ public class DailySoccerActors {
                 _channel.basicPublish(_EXCHANGE_NAME, actorName /* QueueName */, props, message.toString().getBytes());
 
                 // ... Y esperamos a que nos llegue la respuesta. Tenemos que esperar a que nos llegue el correlationId correcto
-                while (true) {
+                int timeToWait = 5000;
+                while (timeToWait > 0) {
                     QueueingConsumer.Delivery delivery = _consumer.nextDelivery();
                     if (delivery.getProperties().getCorrelationId().equals(corrId)) {
                         response = deserialize(delivery.getBody());
                         break;
                     }
+                    Thread.sleep(100);
+                    timeToWait -= 100;
+                }
+                if (timeToWait <= 0) {
+                    Logger.error("WTF 8877 No se recibio respuesta del actor por RPC, actor {}, msg {}", actorName, message.toString());
                 }
             }
             catch (Exception exc) {
