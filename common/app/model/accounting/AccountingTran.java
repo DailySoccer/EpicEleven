@@ -3,16 +3,14 @@ package model.accounting;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import model.GlobalDate;
 import model.Model;
 import org.jongo.marshall.jackson.oid.Id;
 import org.bson.types.ObjectId;
 import utils.ListUtils;
 import utils.ObjectIdMapper;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS,property="_class")
 public class AccountingTran {
@@ -44,12 +42,15 @@ public class AccountingTran {
     public TransactionType type;
     public List<AccountOp> accountOps = new ArrayList<>();
 
+    public Date createdAt;
+
     public AccountingTran() {}
 
     public AccountingTran(TransactionType type) {
         this.proc = TransactionProc.UNCOMMITTED;
         this.state = TransactionState.VALID;
         this.type = type;
+        this.createdAt = GlobalDate.getCurrentDate();
     }
 
     public TransactionType getTransactionType() {
@@ -63,7 +64,7 @@ public class AccountingTran {
         if (op != null) {
             info.put("type", type.name());
             info.put("value", op.value.toString());
-            info.put("createdAt", Long.toString(accountingTranId.getDate().getTime()));
+            info.put("createdAt", String.valueOf(createdAt.getTime()));
         }
 
         return info;
