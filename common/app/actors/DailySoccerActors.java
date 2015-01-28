@@ -75,7 +75,7 @@ public class DailySoccerActors {
         }
         else {
             // Paramos los actores locales (si los hubiera), para no liar
-            stopActors();
+            stopLocalActors();
 
             // Si hubiera conexion a un rabbitmq anterior, la matamos
             closeRabbitMq();
@@ -85,7 +85,7 @@ public class DailySoccerActors {
         }
     }
 
-    private void stopActors() {
+    private void stopLocalActors() {
         for (ActorRef actorRef : _actors.values()) {
             try {
                 scala.concurrent.Future<Boolean> stopped = akka.pattern.Patterns.gracefulStop(actorRef, Duration.create(10, TimeUnit.SECONDS), PoisonPill.getInstance());
