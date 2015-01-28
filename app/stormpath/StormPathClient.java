@@ -29,10 +29,10 @@ public class StormPathClient {
 
     private static final String APPLICATION_NAME = "EpicEleven";
 
-    public StormPathClient(boolean isProduction) {
+    public StormPathClient() {
 
         ApiKey apiKey = null;
-        currentDirectory = isProduction? StormpathDirectory.PRODUCTION: StormpathDirectory.STAGING;
+        currentDirectory = StormpathDirectory.valueOf(Play.application().configuration().getString("stormpath.directory"));
 
         try {
             if (Play.isDev()) {
@@ -282,14 +282,10 @@ public class StormPathClient {
     }
 
 
-    public static StormPathClient instance(boolean isProduction) {
-        if (_instance == null) {
-            _instance = new StormPathClient(isProduction);
-        }
-        return _instance;
-    }
-
     public static StormPathClient instance() {
+        if (_instance == null) {
+            _instance = new StormPathClient();
+        }
         return _instance;
     }
 
