@@ -19,6 +19,7 @@ import scala.concurrent.duration.Duration;
 import utils.InstanceRole;
 import utils.ProcessExec;
 import utils.TargetEnvironment;
+
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,10 +37,32 @@ public class DailySoccerActors {
                 initWorkerRole();
                 break;
             case WEB_ROLE:
+                // En produccion no queremos nada de actores en las maquinas web, pero en staging lo necesitamos para
+                // que la zona de administracion y el simulador puedan ejecutarse en el propio entorno
+                if (isStaging()) {
+                    initDevelopmentRole(TargetEnvironment.LOCALHOST);
+                }
                 break;
             default:
                 throw new RuntimeException("WTF 5550 instanceRole desconocido");
         }
+    }
+
+    private void initDevelopmentRole(TargetEnvironment env) {
+        initRabbitMQ(env);
+        createActors();
+        bindActorsToQueues();
+    }
+
+    private void initWorkerRole() {
+        initRabbitMQ(TargetEnvironment.LOCALHOST); // LOCALHOST equivale a decirle "no intentes leer de heroku"
+        createActors();
+        bindActorsToQueues();
+        tickActors();
+    }
+
+    private boolean isStaging() {
+        return play.Play.application().configuration().getString("config.resource").equals("staging.conf");
     }
 
     public void setTargetEnvironment(TargetEnvironment env) {
@@ -153,19 +176,6 @@ public class DailySoccerActors {
         }
 
         return response;
-    }
-
-    private void initDevelopmentRole(TargetEnvironment env) {
-        initRabbitMQ(env);
-        createActors();
-        bindActorsToQueues();
-    }
-
-    private void initWorkerRole() {
-        initRabbitMQ(TargetEnvironment.LOCALHOST); // LOCALHOST equivale a decirle "no intentes leer de heroku"
-        createActors();
-        bindActorsToQueues();
-        tickActors();
     }
 
     private String readRabbitMQUriForEnvironment(TargetEnvironment env) {
