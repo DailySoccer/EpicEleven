@@ -1,30 +1,25 @@
 package controllers.admin;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSelection;
-import akka.pattern.Patterns;
-import akka.util.Timeout;
 import model.MockData;
 import model.Model;
 import model.User;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.opta.OptaCompetition;
-import play.Logger;
-import play.libs.Akka;
+import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
-import scala.concurrent.Await;
-import scala.concurrent.Future;
+import utils.TargetEnvironment;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class DashboardController extends Controller {
     public static Result index() {
-        return ok(views.html.dashboard.render(OptaCompetition.findAllActive(), isBotActorsStarted()));
+        F.Tuple<Boolean, String> status = getBotsStatus();
+
+        return ok(views.html.dashboard.render(OptaCompetition.findAllActive(), status._1, status._2));
     }
 
     static public Result initialSetup() {
@@ -45,7 +40,7 @@ public class DashboardController extends Controller {
     }
 
     static public Result setTargetEnvironment(String env) {
-        Model.setTargetEnvironment(Model.TargetEnvironment.valueOf(env));
+        Model.setTargetEnvironment(TargetEnvironment.valueOf(env));
         return ok("");
     }
 
@@ -54,10 +49,8 @@ public class DashboardController extends Controller {
     }
 
     static public Result switchBotActors(boolean start) {
-        Timeout timeout = new Timeout(scala.concurrent.duration.Duration.create(2000, TimeUnit.MILLISECONDS));
-        ActorSelection actorRef = Akka.system().actorSelection("/user/BotParentActor");
 
-        actorRef.tell(start ? "StartChildren" : "StopChildren", ActorRef.noSender());
+        Model.getDailySoccerActors().tellToActor("BotParentActor", start ? "StartChildren" : "StopChildren");
 
         return redirect(routes.DashboardController.index());
     }
@@ -76,21 +69,15 @@ public class DashboardController extends Controller {
         return ok("");
     }
 
-    static private boolean isBotActorsStarted() {
-        Timeout timeout = new Timeout(scala.concurrent.duration.Duration.create(500, TimeUnit.MILLISECONDS));
-        ActorSelection actorRef = Akka.system().actorSelection("/user/BotParentActor");
+    static private F.Tuple<Boolean, String> getBotsStatus() {
+        Object ret = Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "GetChildrenStarted");
 
-        Future<Object> response = Patterns.ask(actorRef, "GetChildrenStarted", timeout);
-
-        boolean bRet = false;
-
-        try {
-            bRet = (boolean)Await.result(response, timeout.duration());
+        if (ret == null) {
+            return new F.Tuple<>(false, "Unknown (TODO RPC)");
         }
-        catch(Exception e) {
-            Logger.error("WTF 5120 isBotActorsStarted Timeout");
+        else {
+            boolean isStarted = (boolean)ret;
+            return new F.Tuple<>(isStarted, isStarted? "Stop Actors" : "Start Actors");
         }
-
-        return bRet;
     }
 }

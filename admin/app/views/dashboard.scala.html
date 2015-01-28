@@ -1,4 +1,4 @@
-@(competitions_enabled : List[model.opta.OptaCompetition], botActorsStarted : Boolean)
+@(competitions_enabled : List[model.opta.OptaCompetition], botActorsStarted : Boolean, botActorsText : String)
 
 @import controllers.admin.routes._
 
@@ -116,20 +116,19 @@ function addMoney(amount) {
 
 <hr/>
 
-@if(model.Model.isLocalHostTargetEnvironment()) {
-    <p>
-    @if(botActorsStarted) {
-        <a href="@DashboardController.switchBotActors(false)" class="btn btn-primary">Stop Bots</a>
-    } else {
-        <a href="@DashboardController.switchBotActors(true)" class="btn btn-warning">Start Bots</a>
-    }
-    </p>
-    <select id="money-list" onchange="moneySelected = $('#money-list').val()" class="form-control" style="width: 130px; display: inline-block;">
-        <option value="5" selected="true">5€</option>
-        <option value="10">10€</option>
-        <option value="1000">1000€</option>
-    </select>
-    <button id="add-money" type="button" onclick="addMoney(moneySelected)" class="btn btn-primary" style="position:relative;">Añadir Fondos a Bots</button>
+
+<p>
+@if(botActorsStarted) {
+    <a href="@DashboardController.switchBotActors(false)" class="btn btn-primary">@botActorsText</a>
+} else {
+    <a href="@DashboardController.switchBotActors(true)" class="btn btn-warning">@botActorsText</a>
 }
+</p>
+<select id="money-list" onchange="moneySelected = $('#money-list').val()" class="form-control" style="width: 130px; display: inline-block;">
+    <option value="5" selected="true">5€</option>
+    <option value="10">10€</option>
+    <option value="1000">1000€</option>
+</select>
+<button id="add-money" type="button" onclick="addMoney(moneySelected)" class="btn btn-primary" style="position:relative;">Añadir Fondos a Bots</button>
 
 }

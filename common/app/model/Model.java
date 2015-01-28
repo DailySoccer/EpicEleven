@@ -1,5 +1,6 @@
 package model;
 
+import actors.DailySoccerActors;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.mongodb.*;
 import org.bson.types.ObjectId;
@@ -13,20 +14,14 @@ import org.jongo.marshall.jackson.JacksonMapper;
 import play.Logger;
 import play.Play;
 import utils.InstanceRole;
+import utils.ProcessExec;
+import utils.TargetEnvironment;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
 
 
 public class Model {
-
-    static public enum TargetEnvironment {
-        LOCALHOST,
-        STAGING,
-        PRODUCTION
-    }
 
     static public MongoCollection opsLog() { return _jongo.getCollection("opsLog"); }
 
@@ -67,19 +62,33 @@ public class Model {
 
     static public void setTargetEnvironment(TargetEnvironment env) {
 
+        if (env == _targetEnvironment) {
+            Logger.error("WTF 5772 no me gusta que me repitan las cosas");
+            return;
+        }
+
         // Solo se puede cambiar el environment al que atacamos en maquinas de desarrollo, claro
         if (_instanceRole != InstanceRole.DEVELOPMENT_ROLE) {
             throw new RuntimeException("WTF 5771 are you nuts?");
         }
 
-        // Cambiar el ataque del modelo a un environment distinto significa reinicializar mongo solamente *de momento*
+        // Cambiar el ataque del modelo a un environment distinto significa reinicializar mongo y rabbitmq
         if (initMongo(readMongoUriForEnvironment(env))) {
-            _targetEnvironment = env;   // Ahora ya estamos en el environment solicitado
+            _actors.setTargetEnvironment(env);
+
+            // Ahora ya estamos en el environment solicitado. Todo: Hay que detectar errores tambien en los actores y
+            // restaurar la conexion a mongo anterior
+            _targetEnvironment = env;
         }
     }
 
     static public boolean isLocalHostTargetEnvironment() {
         return TargetEnvironment.LOCALHOST == _targetEnvironment;
+    }
+
+    // Desde fuera se necesita acceder al gestor de actores para poder mandar mensajes desde el UI de administracion
+    static public DailySoccerActors getDailySoccerActors() {
+        return _actors;
     }
 
     static public void init(InstanceRole instanceRole) {
@@ -88,6 +97,21 @@ public class Model {
 
         initMongo(readMongoUriForEnvironment(_targetEnvironment));
         initPostgresDB();
+
+        _actors = new DailySoccerActors(_instanceRole);
+    }
+
+    static public void shutdown() {
+
+        if (_actors != null) {
+            _actors.shutdown();
+            _actors = null;
+        }
+
+        if (_mongoClient != null) {
+            _mongoClient.close();
+            _mongoClient = null;
+        }
     }
 
     static private boolean initMongo(String mongodbUri) {
@@ -142,16 +166,13 @@ public class Model {
         }
     }
 
-    static private String readMongoUriForEnvironment(TargetEnvironment appEnv) {
+    static private String readMongoUriForEnvironment(TargetEnvironment env) {
 
         String ret = Play.application().configuration().getString("mongodb.uri");
 
-        if (appEnv != TargetEnvironment.LOCALHOST) {
-
-            String herokuAppName = (appEnv == TargetEnvironment.PRODUCTION)? "dailysoccer" : "dailysoccer-staging";
-
+        if (env != TargetEnvironment.LOCALHOST) {
             try {
-                ret = readLineFromInputStream(Runtime.getRuntime().exec("heroku config:get MONGOHQ_URL -a " + herokuAppName));
+                ret = ProcessExec.exec("heroku config:get MONGOHQ_URL -a " + env.herokuAppName);
             }
             catch (IOException e) {
                 Logger.error("WTF 8266 Sin permisos, o sin heroku instalado. Falling back to local.");
@@ -159,24 +180,6 @@ public class Model {
         }
 
         return ret;
-    }
-
-    static private String readLineFromInputStream(Process p) throws IOException {
-        String line;
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
-            line = reader.readLine();
-            Logger.info(line);
-        }
-
-        return line;
-    }
-
-    static public void shutdown() {
-        if (_mongoClient != null) {
-            _mongoClient.close();
-            _mongoClient = null;
-        }
     }
 
     static public void resetMongoDB() {
@@ -320,4 +323,7 @@ public class Model {
 
     // Jongo is thread safe too: https://groups.google.com/forum/#!topic/jongo-user/KwukXi5Vm7c
     static private Jongo _jongo;
+
+    // Mantenemos aqui nuestro unico DailySoccerActors para asegurar que tiene el mismo ciclo de vida que nosotros
+    static private DailySoccerActors _actors;
 }
