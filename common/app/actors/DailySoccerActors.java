@@ -38,7 +38,9 @@ public class DailySoccerActors {
                 break;
             case WEB_ROLE:
                 // En produccion no queremos nada de actores en las maquinas web, pero en staging lo necesitamos para
-                // que la zona de administracion y el simulador puedan ejecutarse en el propio entorno
+                // que la zona de administracion y el simulador puedan ejecutarse en el propio entorno.
+                // La zona de administracion es la unica ahora mismo que manda mensajes a actores (tellToActor*) desde
+                // una accion web.
                 if (isStaging()) {
                     initDevelopmentRole(TargetEnvironment.LOCALHOST);
                 }
@@ -125,15 +127,7 @@ public class DailySoccerActors {
 
         if (_connection != null) {
             try {
-                // Cola con nombre aleatorio por la que tienen que responder los actores. El consumer tiene el mismo
-                // exacto ciclo de vida que la cola
-                if (_callbackQueueName == null) {
-                    _callbackQueueName = _channel.queueDeclare().getQueue();
-
-                    // https://www.rabbitmq.com/tutorials/tutorial-six-java.html
-                    _consumer = new QueueingConsumer(_channel);
-                    _channel.basicConsume(_callbackQueueName, true /* autoAck */, _consumer);
-                }
+                ensureCallbackQueue();
 
                 String corrId = java.util.UUID.randomUUID().toString();
 
@@ -182,6 +176,22 @@ public class DailySoccerActors {
         }
 
         return response;
+    }
+
+    private void ensureCallbackQueue() throws IOException {
+        // Cola con nombre aleatorio por la que tienen que responder los actores.
+        if (_callbackQueueName == null) {
+
+            if (_consumer != null) {
+                throw new RuntimeException("WTF 8811 El consumer tiene el mismo exacto ciclo de vida que la cola");
+            }
+
+            _callbackQueueName = _channel.queueDeclare().getQueue();
+
+            // https://www.rabbitmq.com/tutorials/tutorial-six-java.html
+            _consumer = new QueueingConsumer(_channel);
+            _channel.basicConsume(_callbackQueueName, true /* autoAck */, _consumer);
+        }
     }
 
     private String readRabbitMQUriForEnvironment(TargetEnvironment env) {

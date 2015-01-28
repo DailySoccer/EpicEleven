@@ -76,8 +76,7 @@ public class Model {
         if (initMongo(readMongoUriForEnvironment(env))) {
             _actors.setTargetEnvironment(env);
 
-            // Ahora ya estamos en el environment solicitado. Todo: Hay que detectar errores tambien en los actores y
-            // restaurar la conexion a mongo anterior
+            // Ahora ya estamos en el environment solicitado
             _targetEnvironment = env;
         }
     }
