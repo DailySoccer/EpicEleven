@@ -1,0 +1,20 @@
+@(username: String, contests: List[model.Contest], contestCount: Int)
+
+@if(contestCount>1) {
+<div>¡@contestCount torneos empiezan en una hora!</div>
+} else {
+<div>¡El torneo empieza en una hora!</div>
+}
+
+<div>
+    @if(contestCount>1) {
+    Los siguientes torneos comenzarán en una hora:
+    } else {
+    El siguiente torneo comenzará en una hora:
+    }
+    <ul>
+        @for(p <- contests) {
+        <li>@p.translatedName (@p.getNumEntries apuntados de @p.maxEntries)</li>
+        }
+    </ul>
+</div>

@@ -49,6 +49,8 @@ public class Model {
     static public MongoCollection jobs() { return _jongo.getCollection("jobs"); }
     static public MongoCollection accountingTransactions() { return _jongo.getCollection("accountingTransactions"); }
 
+    static public MongoCollection notifications() {return _jongo.getCollection("orders");}
+
     static public MongoCollection orders() { return _jongo.getCollection("orders"); }
     static public MongoCollection refunds() { return _jongo.getCollection("refunds"); }
     static public MongoCollection paypalResponses() { return _jongo.getCollection("paypalResponses"); }
@@ -209,6 +211,7 @@ public class Model {
         ensureOptaDB(theMongoDB);
         ensureContestsDB(theMongoDB);
         ensureTransactionsDB(theMongoDB);
+        ensureNotificationsDB(theMongoDB);
     }
 
     static private void ensureUsersDB(DB theMongoDB) {
@@ -296,6 +299,13 @@ public class Model {
         if (!theMongoDB.collectionExists("accountingTransactions")) {
             DBCollection accountingTransactions = theMongoDB.createCollection("accountingTransactions", new BasicDBObject());
              accountingTransactions.createIndex(new BasicDBObject("accountOps.accountId", 1).append("accountOps.seqId", 1), new BasicDBObject("unique", true));
+        }
+    }
+
+    static private void ensureNotificationsDB(DB theMongoDB) {
+        if (!theMongoDB.collectionExists("notifications")) {
+            DBCollection notifications = theMongoDB.createCollection("notifications", new BasicDBObject());
+            notifications.createIndex(new BasicDBObject("userId", 1));
         }
     }
 
