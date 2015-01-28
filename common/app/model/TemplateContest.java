@@ -33,9 +33,6 @@ public class TemplateContest implements JongoId {
     public int entryFee;
     public PrizeType prizeType;
 
-    @JsonView(JsonViews.Extended.class)
-    public List<Integer> prizes;
-
     public Date startDate;
 
     public String optaCompetitionId;
@@ -163,7 +160,6 @@ public class TemplateContest implements JongoId {
 
     public Contest instantiateContest(boolean addMockDataUsers) {
         Contest contest = new Contest(this);
-        contest.prizes = getPrizes(prizeType, maxEntries, getPrizePool());
         contest.state = ContestState.ACTIVE;
 
         // TODO: <MockData> Cuándo activar o no esta "funcionalidad"
@@ -189,10 +185,6 @@ public class TemplateContest implements JongoId {
         for (long i=instances; i < minInstances; i++) {
             instantiateContest(mockDataUsers);
         }
-
-        // Incluir los premios del torneo (ya no se podrá cambiar la forma de calcularlo)
-        prizes = getPrizes(prizeType, maxEntries, getPrizePool());
-        Model.templateContests().update(templateContestId).with("{$set: {prizes: #}}", prizes);
 
         // Cuando hemos acabado de instanciar nuestras dependencias, nos ponemos en activo
         Model.templateContests().update("{_id: #, state: \"OFF\"}", templateContestId).with("{$set: {state: \"ACTIVE\", instanceSoccerPlayers:#}}", instanceSoccerPlayers);
@@ -238,56 +230,5 @@ public class TemplateContest implements JongoId {
 
     public static boolean isFinished(String templateContestId) {
         return findOne(new ObjectId(templateContestId)).isFinished();
-    }
-
-    private int getPrizePool() {
-        return (int)((maxEntries * entryFee) * 0.90f);
-    }
-
-    static private List<Integer> getPrizes(PrizeType prizeType, int maxEntries, int prizePool) {
-        List<Integer> prizes = new ArrayList<>();
-
-        if      (prizeType.equals(PrizeType.FREE)) {
-
-        }
-        else if (prizeType.equals(PrizeType.WINNER_TAKES_ALL)) {
-            prizes.add(prizePool);
-        }
-        else if (prizeType.equals(PrizeType.TOP_3_GET_PRIZES)) {
-            prizes.add((int) (prizePool * 0.5f));
-            prizes.add((int) (prizePool * 0.3f));
-            prizes.add((int) (prizePool * 0.2));
-        }
-        else if (prizeType.equals(PrizeType.TOP_THIRD_GET_PRIZES)) {
-            // A cuantos repartiremos premios?
-            int third = maxEntries / 3;
-
-            // Para hacer el reparto proporcional asignaremos puntos inversamente a la posición
-            // Más puntos cuanto más baja su posición. Para repartir a "n" usuarios: 1º = (n) pts / 2º = (n-1) pts / 3º = (n-2) pts / ... / nº = 1 pts
-
-            // Averiguar los puntos totales a repartir para saber cuánto vale el punto: n * (n+1) / 2  (suma el valor de "n" numeros)
-            int totalPoints = third * (third + 1) / 2;
-            int prizeByPoint = prizePool / totalPoints;
-
-            // A cada posición le damos el premio (sus puntos se corresponden con su posición "invertida": p.ej. para repartir a 6 usuarios: el 1º tiene 6 puntos, el 2º tiene 5 puntos, etc)
-            int totalPrize = prizePool;
-            for (int i = third; i > 0; i--) {
-                int prize = prizeByPoint * i;
-                prizes.add(prize);
-                totalPrize -= prize;
-            }
-            // Si queda algo, ¿se lo damos al primero?
-            if (totalPrize > 0) {
-                prizes.set(0, prizes.get(0) + totalPrize);
-            }
-        }
-        else if (prizeType.equals(PrizeType.FIFTY_FIFTY)) {
-            int mid = maxEntries / 2;
-            for (int i = 0; i < mid; i++) {
-                prizes.add(prizePool / mid);
-            }
-        }
-
-        return prizes;
     }
 }

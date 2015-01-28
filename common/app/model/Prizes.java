@@ -19,6 +19,22 @@ public class Prizes {
         this.values = values;
     }
 
+    public Integer getValue(int position) {
+        Integer ret = 0;
+        if (prizeType.equals(PrizeType.FREE)) {
+        }
+        else if (prizeType.equals(PrizeType.WINNER_TAKES_ALL)) {
+            ret = (position == 0) ? values.get(0) : 0;
+        }
+        else if (prizeType.equals(PrizeType.FIFTY_FIFTY)) {
+            ret = (position < (maxEntries / 2)) ? values.get(0) : 0;
+        }
+        else {
+            ret = (position < values.size()) ? values.get(position) : 0;
+        }
+        return ret;
+    }
+
     public static Prizes findOne(Contest contest) {
         return findOne(contest.prizeType, contest.maxEntries, contest.getPrizePool());
     }
