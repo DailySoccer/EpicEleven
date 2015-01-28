@@ -5,7 +5,9 @@ import akka.actor.PoisonPill;
 import akka.actor.Props;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
+import com.paypal.core.codec.binary.Base64;
 import com.rabbitmq.client.*;
+import com.rabbitmq.client.AMQP.BasicProperties;
 import play.Logger;
 import play.api.Application;
 import play.api.DefaultApplication;
@@ -17,9 +19,7 @@ import scala.concurrent.duration.Duration;
 import utils.InstanceRole;
 import utils.ProcessExec;
 import utils.TargetEnvironment;
-
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -80,6 +80,7 @@ public class DailySoccerActors {
         // Damos preferencia a funcionar a traves del conejo encolador
         if (_connection != null) {
             try {
+                // Enviamos y no esperamos respuesta, fire and forget
                 _channel.basicPublish(_EXCHANGE_NAME, actorName /* QueueName */, null, message.toString().getBytes());
             }
             catch (Exception exc) {
@@ -97,28 +98,61 @@ public class DailySoccerActors {
     }
 
     public Object tellToActorAwaitResult(String actorName, Object message) {
-        Object ret = null;
+        Object response = null;
 
         if (_connection != null) {
-            // TODO... RPC
+            try {
+                // Cola con nombre aleatorio por la que tienen que responder los actores. El consumer tiene el mismo
+                // exacto ciclo de vida que la cola
+                if (_callbackQueueName == null) {
+                    _callbackQueueName = _channel.queueDeclare().getQueue();
+
+                    // https://www.rabbitmq.com/tutorials/tutorial-six-java.html
+                    _consumer = new QueueingConsumer(_channel);
+                    _channel.basicConsume(_callbackQueueName, true /* autoAck */, _consumer);
+                }
+
+                String corrId = java.util.UUID.randomUUID().toString();
+
+                BasicProperties props = new BasicProperties
+                                                .Builder()
+                                                .correlationId(corrId)
+                                                .replyTo(_callbackQueueName)
+                                                .build();
+
+                // Mandamos el mensaje...
+                _channel.basicPublish(_EXCHANGE_NAME, actorName /* QueueName */, props, message.toString().getBytes());
+
+                // ... Y esperamos a que nos llegue la respuesta. Tenemos que esperar a que nos llegue el correlationId correcto
+                while (true) {
+                    QueueingConsumer.Delivery delivery = _consumer.nextDelivery();
+                    if (delivery.getProperties().getCorrelationId().equals(corrId)) {
+                        response = deserialize(delivery.getBody());
+                        break;
+                    }
+                }
+            }
+            catch (Exception exc) {
+                Logger.error("WTF 3374 {}, {}", actorName, message.toString(), exc);
+            }
         }
         else {
             if (!_actors.containsKey(actorName)) {
                 throw new RuntimeException(String.format("WTF 7778 El actor %s no existe", actorName));
             }
 
-            Timeout timeout = new Timeout(scala.concurrent.duration.Duration.create(5, TimeUnit.SECONDS));
-            scala.concurrent.Future<Object> response = Patterns.ask(_actors.get(actorName), message, timeout);
+            Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
+            scala.concurrent.Future<Object> responseFuture = Patterns.ask(_actors.get(actorName), message, timeout);
 
             try {
-                ret = Await.result(response, timeout.duration());
+                response = Await.result(responseFuture, timeout.duration());
             }
             catch (Exception exc) {
                 Logger.error("WTF 5222 DailySoccerActors excepcion esperando resultado de mensaje {}, actor {}", message, actorName, exc);
             }
         }
 
-        return ret;
+        return response;
     }
 
     private void initDevelopmentRole(TargetEnvironment env) {
@@ -180,11 +214,36 @@ public class DailySoccerActors {
                 _channel.queueDeclare(queueName, false /* durable */, false /* exclusive */, true  /* autodelete */, null);
                 _channel.basicConsume(queueName, true /* autoAck */, queueName + "Tag", new DefaultConsumer(_channel) {
                     @Override
-                    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body) throws IOException {
+                    public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties props, byte[] body) throws IOException {
                         String routingKey = envelope.getRoutingKey();
                         String msgString = new String(body);
+                        String correlationId = props.getCorrelationId();
+
                         Logger.debug("DailySoccerActors RabbitMQ Message, RoutingKey {}, Message {}", routingKey, msgString);
-                        actorRef.tell(msgString, ActorRef.noSender());
+
+                        try {
+                            // Si hay un correlationId es que el cliente espera respuesta por parte del actor
+                            if (correlationId != null) {
+                                Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
+                                scala.concurrent.Future<Object> response = Patterns.ask(actorRef, msgString, timeout);
+
+                                Object ret = Await.result(response, timeout.duration());
+
+                                BasicProperties replyProps = new BasicProperties
+                                                                    .Builder()
+                                                                    .correlationId(correlationId)
+                                                                    .build();
+
+                                _channel.basicPublish(_EXCHANGE_NAME, props.getReplyTo(), replyProps, serialize(ret));
+                            }
+                            else {
+                                // Si no hay correlationId, podemos hacer fire and forget
+                                actorRef.tell(msgString, ActorRef.noSender());
+                            }
+                        }
+                        catch (Exception exc) {
+                            Logger.error("WTF 5222 DailySoccerActors mensaje {}, actor {}", msgString, queueName, exc);
+                        }
                     }
                 });
             }
@@ -194,6 +253,36 @@ public class DailySoccerActors {
         }
     }
 
+    private byte[] serialize(Object obj) {
+        byte[] serializedObject = null;
+
+        try {
+            ByteArrayOutputStream bo = new ByteArrayOutputStream();
+            ObjectOutputStream so = new ObjectOutputStream(bo);
+            so.writeObject(obj);
+            so.flush();
+            serializedObject = Base64.encodeBase64(bo.toByteArray());
+        }
+        catch (Exception e) {
+            Logger.error("WTF 3222 Error serializando objeto {}", obj.toString());
+        }
+
+        return serializedObject;
+    }
+
+    private Object deserialize(byte[] src) {
+        Object ret = null;
+        try {
+            ByteArrayInputStream bi = new ByteArrayInputStream(Base64.decodeBase64(src));
+            ObjectInputStream si = new ObjectInputStream(bi);
+            ret = si.readObject();
+        }
+        catch (Exception e) {
+            Logger.error("WTF 3222 Error deserializando objeto {}", new String(src));
+        }
+        return ret;
+    }
+
     private void initRabbitMQ(TargetEnvironment env) {
         try {
             ConnectionFactory factory = new ConnectionFactory();
@@ -201,6 +290,8 @@ public class DailySoccerActors {
 
             _connection = factory.newConnection();
             _channel = _connection.createChannel();
+
+            Logger.debug("RabbitMQ inicializado en TargetEnvironment.{}", env.toString());
         }
         catch (Exception exc) {
             Logger.warn("DailySoccerActors no pudo inicializar RabbitMQ");
@@ -220,6 +311,10 @@ public class DailySoccerActors {
     }
 
     private void closeRabbitMq() {
+
+        _callbackQueueName = null;
+        _consumer = null;
+
         try {
             if (_channel != null) {
                 _channel.close();
@@ -248,6 +343,8 @@ public class DailySoccerActors {
 
     Connection _connection;
     Channel _channel;
+    String _callbackQueueName;
+    QueueingConsumer _consumer;
 
     HashMap<String, ActorRef> _actors = new HashMap<>();          // Todos los actores que creamos, hasheados por nombre
 
