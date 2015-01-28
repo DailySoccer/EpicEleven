@@ -50,13 +50,11 @@ function getMongo() {
                 });
 }
 
-function addMoney(amount) {
+function addMoney(target, amount) {
     console.log("addMoney: " + amount);
 
     var temp = $.ajax({
-                    url: "/admin/add_money_to_bots/"+amount,
-                    success: function (result) {
-                    }
+                    url: "/admin/add_money_to_"+target+"/"+amount
                 });
 }
 
@@ -129,6 +127,7 @@ function addMoney(amount) {
     <option value="10">10€</option>
     <option value="1000">1000€</option>
 </select>
-<button id="add-money" type="button" onclick="addMoney(moneySelected)" class="btn btn-primary" style="position:relative;">Añadir Fondos a Bots</button>
+<button id="add-money-bots" type="button" onclick="addMoney('bots', moneySelected)" class="btn btn-primary" style="position:relative;">Añadir Fondos a Bots</button>
+<button id="add-money-tests" type="button" onclick="addMoney('tests', moneySelected)" class="btn btn-primary" style="position:relative;">Añadir Fondos a Tests</button>
 
 }

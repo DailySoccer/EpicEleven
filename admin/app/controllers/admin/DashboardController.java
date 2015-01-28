@@ -54,8 +54,18 @@ public class DashboardController extends Controller {
     }
 
     static public Result addMoneyToBots(Integer amount) {
+        addMoney(User.findBots(), amount);
+        return ok("");
+    }
+
+    static public Result addMoneyToTests(Integer amount) {
+        addMoney(User.findTests(), amount);
+        return ok("");
+    }
+
+    static private void addMoney(List<User> users, Integer amount) {
         List<AccountOp> accountOps = new ArrayList<>();
-        for (User bot : User.findBots()) {
+        for (User bot : users) {
             accountOps.add(new AccountOp(bot.userId, new BigDecimal(amount), bot.getSeqId() + 1));
         }
 
@@ -64,7 +74,6 @@ public class DashboardController extends Controller {
             accountingTran.accountOps = accountOps;
             accountingTran.insertAndCommit();
         }
-        return ok("");
     }
 
     static private boolean getBotActorsStarted() {

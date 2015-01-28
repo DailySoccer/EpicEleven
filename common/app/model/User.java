@@ -82,6 +82,10 @@ public class User {
         return Model.users().findOne("{email: #}", email).as(User.class);
     }
 
+    static public List<User> findTests() {
+        return ListUtils.asList(Model.users().find("{email: {$regex: \"@test.com\"}, nickName: {$ne: 'Test'}}").as(User.class));
+    }
+
     static public List<User> findBots() {
         return ListUtils.asList(Model.users().find("{email: {$regex: \"@bototron.com\"}, firstName: \"Bototron\"}").as(User.class));
     }
