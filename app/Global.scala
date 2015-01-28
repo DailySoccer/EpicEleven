@@ -66,9 +66,6 @@ object Global extends GlobalSettings {
     if (StormPathClient.instance.isConnected) {
       Logger.info("Stormpath CONNECTED")
     }
-
-    //MessageSend.send("Fede", "fedefede@mailinator.com", "Hola", "<h3>Hola desde Epic Eleven</h3>.")
-
   }
 
 

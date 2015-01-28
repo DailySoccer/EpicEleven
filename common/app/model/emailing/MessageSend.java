@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import play.Logger;
-import play.libs.F;
 import play.libs.ws.WS;
 import play.libs.ws.WSResponse;
 
@@ -13,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class MessageSend {
 
@@ -29,28 +29,16 @@ public class MessageSend {
         public String sendAt;
 
 
-        public F.Promise<Boolean> sendCall() {
+        public boolean sendCall() throws JsonProcessingException {
             String url = "/messages/send.json";
-            try {
-                ObjectMapper mapper = new ObjectMapper();
-                return WS.url(_mandrillUrl+url).post(mapper.writeValueAsString(this)).map(
-                        new F.Function<WSResponse, Boolean>() {
-                            public Boolean apply(WSResponse response) {
-                                if (response.getStatus() == 200) {
-                                    Logger.info("Mandrill Response:" + response.asJson().toString());
-                                }
-                                else {
-                                    Logger.error("Mandrill Response:" + response.asJson().toString());
-                                }
-                                return response.getStatus() == 200;
-                            }
-                        }
-                );
-
-            } catch (Exception e) {
-                Logger.error("WTF 5112");
+            WSResponse response = WS.url(_mandrillUrl + url).post(new ObjectMapper().writeValueAsString(this)).get(5000, TimeUnit.MILLISECONDS);
+            if (response.getStatus() == 200) {
+                Logger.info("Mandrill Response:" + response.asJson().toString());
             }
-            return null;
+            else {
+                Logger.error("Mandrill Response:" + response.asJson().toString());
+            }
+            return response.getStatus() == 200; //You can consider any non-200 HTTP response code an error - the returned data will contain more detailed information
         }
 
 
@@ -170,19 +158,22 @@ public class MessageSend {
 
     }
 
-    public static void send(String recipientName, String recipientEmail, String subject, String html) {
+    public static boolean send(String recipientName, String recipientEmail, String subject, String html) {
         Map<String, String> recipient = new HashMap<>();
         recipient.put(recipientEmail, recipientName);
-        send(recipient, subject, html);
+        return send(recipient, subject, html);
     }
 
 
-    public static void send(Map<String, String> recipients, String subject, String html) {
+    public static boolean send(Map<String, String> recipients, String subject, String html) {
+        /**
+         * recipients: Mapa con clave email, contenido nombre del destinatario.
+         */
         ArrayList<MandrillMessage.Recipient> to = new ArrayList<>();
-        for (String asdf : recipients.keySet()) {
+        for (String recipientsKey : recipients.keySet()) {
             MandrillMessage.Recipient fulano = new MandrillMessage.Recipient();
-            fulano.email = asdf;
-            fulano.name = recipients.get(asdf);
+            fulano.email = recipientsKey;
+            fulano.name = recipients.get(recipientsKey);
             to.add(fulano);
         }
 
@@ -202,13 +193,12 @@ public class MessageSend {
         messageRequest.async = false;
         messageRequest.ipPool = "Main Pool";
 
-        ObjectMapper mapper = new ObjectMapper();
         try {
-            Logger.info(mapper.writeValueAsString(messageRequest));
-            Logger.info(String.valueOf(messageRequest.sendCall()));
+            return messageRequest.sendCall();
         } catch (JsonProcessingException e) {
             Logger.error("WTF 9205");
         }
+        return false;
     }
 
 
