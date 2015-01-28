@@ -72,7 +72,7 @@ public class Prizes {
 
         for (List<Contest> contests : elements) {
             for (Contest contest : contests) {
-                String key = contest.prizeType.toString() + contest.maxEntries + contest.getPrizePool();
+                String key = getKeyFromContest(contest);
                 if (!prizesIncluded.contains(key)) {
                     prizesIncluded.add(key);
 
@@ -82,5 +82,9 @@ public class Prizes {
         }
 
         return prizes;
+    }
+
+    private static String getKeyFromContest(Contest contest) {
+        return contest.prizeType.toString() + "_" + contest.maxEntries + "_" + contest.getPrizePool();
     }
 }
