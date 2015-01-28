@@ -285,6 +285,10 @@ public class Contest implements JongoId {
         return (position < prizes.size()) ? prizes.get(position) : 0;
     }
 
+    public int getPrizePool() {
+        return (int)((maxEntries * entryFee) * 0.90f);
+    }
+
     public void givePrizes() {
         if (contestEntries.isEmpty()) {
             return;

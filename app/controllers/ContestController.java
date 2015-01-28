@@ -12,10 +12,7 @@ import utils.ListUtils;
 import utils.ReturnHelper;
 import utils.ReturnHelperWithAttach;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @AllowCors.Origin
 public class ContestController extends Controller {
@@ -63,6 +60,7 @@ public class ContestController extends Controller {
                 playersInContests.add(instance.templateSoccerPlayerId);
             }
         }
+
         List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests.iterator()));
 
         return new ReturnHelperWithAttach()
@@ -72,6 +70,7 @@ public class ContestController extends Controller {
                 .attachObject("match_events", liveMatchEvents, JsonViews.FullContest.class)
                 .attachObject("soccer_teams", teams, JsonViews.Public.class)
                 .attachObject("soccer_players", players, JsonViews.Public.class)
+                .attachObject("prizes_list", Prizes.findAllByContests(myLiveContests, myHistoryContests), JsonViews.Public.class)
                 .toResult();
     }
 
@@ -101,11 +100,14 @@ public class ContestController extends Controller {
         }
         List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContestEntries.iterator()));
 
-        return new ReturnHelper(ImmutableMap.of("contest", contest,
-                "users_info", usersInfoInContest,
-                "match_events", matchEvents,
-                "soccer_teams", teams,
-                "soccer_players", players))
+        return new ReturnHelper(ImmutableMap.builder()
+                .put("contest", contest)
+                .put("users_info", usersInfoInContest)
+                .put("match_events", matchEvents)
+                .put("soccer_teams", teams)
+                .put("soccer_players", players)
+                .put("prizes", Prizes.findOne(contest))
+                .build())
                 .toResult(JsonViews.FullContest.class);
     }
 
@@ -169,10 +171,13 @@ public class ContestController extends Controller {
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
         List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
 
-        return new ReturnHelper(ImmutableMap.of("contest", contest,
+        return new ReturnHelper(ImmutableMap.of(
+                "contest", contest,
                 "users_info", usersInfoInContest,
                 "match_events", matchEvents,
-                "soccer_teams", teams)).toResult(JsonViews.ContestInfo.class);
+                "soccer_teams", teams,
+                "prizes", Prizes.findOne(contest)))
+                .toResult(JsonViews.ContestInfo.class);
     }
     
     public static Result getPublicContest(String contestId) {
