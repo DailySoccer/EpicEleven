@@ -17,9 +17,7 @@ import java.util.List;
 
 public class DashboardController extends Controller {
     public static Result index() {
-        F.Tuple<Boolean, String> status = getBotsStatus();
-
-        return ok(views.html.dashboard.render(OptaCompetition.findAllActive(), status._1, status._2));
+        return ok(views.html.dashboard.render(OptaCompetition.findAllActive(), getBotActorsStarted()));
     }
 
     static public Result initialSetup() {
@@ -69,15 +67,7 @@ public class DashboardController extends Controller {
         return ok("");
     }
 
-    static private F.Tuple<Boolean, String> getBotsStatus() {
-        Object ret = Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "GetChildrenStarted");
-
-        if (ret == null) {
-            return new F.Tuple<>(false, "Unknown (TODO RPC)");
-        }
-        else {
-            boolean isStarted = (boolean)ret;
-            return new F.Tuple<>(isStarted, isStarted? "Stop Actors" : "Start Actors");
-        }
+    static private boolean getBotActorsStarted() {
+        return (Boolean)Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "GetChildrenStarted");
     }
 }
