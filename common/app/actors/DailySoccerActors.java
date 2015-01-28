@@ -75,7 +75,7 @@ public class DailySoccerActors {
         }
         else {
             // Paramos los actores locales (si los hubiera), para no liar
-            stopActors();
+            stopLocalActors();
 
             // Si hubiera conexion a un rabbitmq anterior, la matamos
             closeRabbitMq();
@@ -85,8 +85,8 @@ public class DailySoccerActors {
         }
     }
 
-    private void stopActors() {
-        for (ActorRef actorRef : _actors.values()) {
+    private void stopLocalActors() {
+        for (ActorRef actorRef : _localActors.values()) {
             try {
                 scala.concurrent.Future<Boolean> stopped = akka.pattern.Patterns.gracefulStop(actorRef, Duration.create(10, TimeUnit.SECONDS), PoisonPill.getInstance());
                 Await.result(stopped, Duration.create(11, TimeUnit.SECONDS));
@@ -95,7 +95,7 @@ public class DailySoccerActors {
                 Logger.error("WTF 2211 The actor {} wasn't stopped within 10 seconds", actorRef.path().name());
             }
         }
-        _actors.clear();
+        _localActors.clear();
     }
 
     public void tellToActor(String actorName, Object message) {
@@ -112,11 +112,11 @@ public class DailySoccerActors {
         }
         // Pero si no hubiera conejo, mandamos el mensaje directamente (asumimos que estamos en TargetEnvironment.LOCALHOST)
         else {
-            if (!_actors.containsKey(actorName)) {
+            if (!_localActors.containsKey(actorName)) {
                 throw new RuntimeException(String.format("WTF 7777 El actor %s no existe", actorName));
             }
 
-            _actors.get(actorName).tell(message, ActorRef.noSender());
+            _localActors.get(actorName).tell(message, ActorRef.noSender());
         }
     }
 
@@ -166,12 +166,12 @@ public class DailySoccerActors {
             }
         }
         else {
-            if (!_actors.containsKey(actorName)) {
+            if (!_localActors.containsKey(actorName)) {
                 throw new RuntimeException(String.format("WTF 7778 El actor %s no existe", actorName));
             }
 
             Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
-            scala.concurrent.Future<Object> responseFuture = Patterns.ask(_actors.get(actorName), message, timeout);
+            scala.concurrent.Future<Object> responseFuture = Patterns.ask(_localActors.get(actorName), message, timeout);
 
             try {
                 response = Await.result(responseFuture, timeout.duration());
@@ -200,17 +200,17 @@ public class DailySoccerActors {
     }
 
     private void tickActors() {
-        for (ActorRef actorRef : _actors.values()) {
+        for (ActorRef actorRef : _localActors.values()) {
             actorRef.tell("Tick", ActorRef.noSender());
         }
     }
 
     private void createActors() {
-        _actors.put("OptaProcessorActor", Akka.system().actorOf(Props.create(OptaProcessorActor.class), "OptaProcessorActor"));
-        _actors.put("InstantiateConstestsActor", Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateConstestsActor"));
-        _actors.put("GivePrizesActor", Akka.system().actorOf(Props.create(GivePrizesActor.class), "GivePrizesActor"));
-        _actors.put("TransactionsActor", Akka.system().actorOf(Props.create(TransactionsActor.class), "TransactionsActor"));
-        _actors.put("BotParentActor", Akka.system().actorOf(Props.create(BotParentActor.class), "BotParentActor"));
+        _localActors.put("OptaProcessorActor", Akka.system().actorOf(Props.create(OptaProcessorActor.class), "OptaProcessorActor"));
+        _localActors.put("InstantiateConstestsActor", Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateConstestsActor"));
+        _localActors.put("GivePrizesActor", Akka.system().actorOf(Props.create(GivePrizesActor.class), "GivePrizesActor"));
+        _localActors.put("TransactionsActor", Akka.system().actorOf(Props.create(TransactionsActor.class), "TransactionsActor"));
+        _localActors.put("BotParentActor", Akka.system().actorOf(Props.create(BotParentActor.class), "BotParentActor"));
     }
 
     private void bindActorsToQueues() {
@@ -221,7 +221,7 @@ public class DailySoccerActors {
         }
 
         try {
-            for (Map.Entry<String, ActorRef> entry : _actors.entrySet()) {
+            for (Map.Entry<String, ActorRef> entry : _localActors.entrySet()) {
 
                 final String queueName = entry.getKey();
                 final ActorRef actorRef = entry.getValue();
@@ -362,7 +362,7 @@ public class DailySoccerActors {
     String _callbackQueueName;
     QueueingConsumer _consumer;
 
-    HashMap<String, ActorRef> _actors = new HashMap<>();          // Todos los actores que creamos, hasheados por nombre
+    HashMap<String, ActorRef> _localActors = new HashMap<>();          // Todos los actores que creamos, hasheados por nombre
 
     final static String _EXCHANGE_NAME = "";    // Default exchange
 }
