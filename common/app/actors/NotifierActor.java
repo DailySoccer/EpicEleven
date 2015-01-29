@@ -5,7 +5,9 @@ import model.Contest;
 import model.ContestEntry;
 import model.GlobalDate;
 import model.User;
-import model.emailing.MessageSend;
+import model.notification.MessageSend;
+import model.notification.Notification.Topic;
+import model.notification.Notification;
 import play.Logger;
 import play.twirl.api.Html;
 import scala.concurrent.duration.Duration;
@@ -17,7 +19,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
-public class TimeToContestsActor extends UntypedActor {
+public class NotifierActor extends UntypedActor {
 
     public void onReceive(Object msg) {
 
@@ -42,20 +44,26 @@ public class TimeToContestsActor extends UntypedActor {
     }
 
     private void onTick() {
-        Logger.debug("TimeToContestsActor: {}", GlobalDate.getCurrentDateString());
+        Logger.debug("NotifierActor: {}", GlobalDate.getCurrentDateString());
 
+        notifyContestStartsInOneHour();
+        //All the rest of things to notify in each tick
+
+    }
+
+
+    private void notifyContestStartsInOneHour() {
         List<Contest> nextContests = Contest.findAllStartingInXhours(1);
 
         Map<User, ArrayList<Contest>> nextUsersContests = getUsersForContests(nextContests);
 
         for (User user: nextUsersContests.keySet()) {
-            Html html = views.html.remaining.render(user.nickName, nextUsersContests.get(user), nextUsersContests.get(user).size() );
-            Logger.debug(html.toString());
-            MessageSend.send(user.nickName, user.email, nextUsersContests.get(user).size()+" concursos por empezar!", html.toString());
+            MessageSend.notifyIfNotYetNotified(user, Topic.CONTEST_NEXT_HOUR,
+                    nextUsersContests.get(user).size() + " concursos por empezar!",
+                    views.html.remaining.render(user.nickName, nextUsersContests.get(user), nextUsersContests.get(user).size() ));
         }
-
-
     }
+
 
     private Map<User, ArrayList<Contest>> getUsersForContests(List<Contest> nextContests) {
         Map<User, ArrayList<Contest>> usersContestsMap = new HashMap<>();

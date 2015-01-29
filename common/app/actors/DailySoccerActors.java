@@ -221,7 +221,7 @@ public class DailySoccerActors {
         _localActors.put("CloseContestsActor", Akka.system().actorOf(Props.create(CloseContestsActor.class), "CloseContestsActor"));
         _localActors.put("TransactionsActor", Akka.system().actorOf(Props.create(TransactionsActor.class), "TransactionsActor"));
         _localActors.put("BotParentActor", Akka.system().actorOf(Props.create(BotParentActor.class), "BotParentActor"));
-        _localActors.put("TimeToContestsActor", Akka.system().actorOf(Props.create(TimeToContestsActor.class), "TimeToContestsActor"));
+        _localActors.put("NotifierActor", Akka.system().actorOf(Props.create(NotifierActor.class), "NotifierActor"));
     }
 
     private void bindActorsToQueues() {

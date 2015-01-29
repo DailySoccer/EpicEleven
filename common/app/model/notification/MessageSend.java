@@ -1,12 +1,14 @@
-package model.emailing;
+package model.notification;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import model.User;
 import play.Logger;
 import play.libs.ws.WS;
 import play.libs.ws.WSResponse;
+import play.twirl.api.Html;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -201,5 +203,15 @@ public class MessageSend {
         return false;
     }
 
+
+
+    public static void notifyIfNotYetNotified(User user, Notification.Topic topic, String subject, Html htmlContent) {
+        if (Notification.isNotSent(topic, htmlContent.toString(), user.userId)) {
+            Notification notification = new Notification(topic, htmlContent.toString(), user.userId);
+            if (send(user.nickName, user.email, subject, htmlContent.toString())) {
+                notification.markSent();
+            }
+        }
+    }
 
 }

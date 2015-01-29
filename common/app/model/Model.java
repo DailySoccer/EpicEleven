@@ -49,7 +49,7 @@ public class Model {
     static public MongoCollection jobs() { return _jongo.getCollection("jobs"); }
     static public MongoCollection accountingTransactions() { return _jongo.getCollection("accountingTransactions"); }
 
-    static public MongoCollection notifications() {return _jongo.getCollection("orders");}
+    static public MongoCollection notifications() {return _jongo.getCollection("notifications");}
 
     static public MongoCollection orders() { return _jongo.getCollection("orders"); }
     static public MongoCollection refunds() { return _jongo.getCollection("refunds"); }
@@ -305,6 +305,9 @@ public class Model {
     static private void ensureNotificationsDB(DB theMongoDB) {
         if (!theMongoDB.collectionExists("notifications")) {
             DBCollection notifications = theMongoDB.createCollection("notifications", new BasicDBObject());
+            notifications.createIndex(new BasicDBObject("topic", 1));
+            notifications.createIndex(new BasicDBObject("reason", 1));
+            notifications.createIndex(new BasicDBObject("state", 1));
             notifications.createIndex(new BasicDBObject("userId", 1));
         }
     }

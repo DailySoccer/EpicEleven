@@ -1,4 +1,4 @@
-import model.emailing.MessageSend
+import model.notification.MessageSend
 import play.Logger
 import play.api.Play.current
 import play.api._
