@@ -304,27 +304,37 @@ public class BotActor extends UntypedActor {
     }
 
     private int getGoalFreeSlots(Contest contest) {
-        // Para head vs head, no nos metemos nunca
-        int goalFreeSlots = 2;
+        int goalFreeSlots = -1;
 
         // Queremos que haya una pequeña variacion en el numero de slots libres, pero tambien queremos que no haya
         // oscilaciones, es decir, que para el mismo concurso todos los bots esten de acuerdo en cuantos slots libres
         // hay que dejar
         Random localRandom = new Random(contest.contestId.hashCode());
 
-        if (contest.maxEntries > 2) {
-            if (contest.maxEntries <= 5) {
-                goalFreeSlots = 2 + localRandom.nextInt(2);    // 2 o 3
-            }
-            else if (contest.maxEntries <= 10) {
-                goalFreeSlots = 2 + localRandom.nextInt(3);    // 2, 3 o 4
-            }
-            else if (contest.maxEntries <= 20) {
-                goalFreeSlots = 3 + localRandom.nextInt(4);    // 3, 4, 5 o 6
+        if (contest.maxEntries <= 2) {
+            // Vamos a entrar solo en un 33% de los 1vs1 a ver que tal queda
+            if (localRandom.nextInt(3) == 0) {
+                goalFreeSlots = 1;
             }
             else {
-                goalFreeSlots = 5 + localRandom.nextInt(5);    // entre 5 y 9
+                goalFreeSlots = 2;
             }
+        }
+        else if (contest.maxEntries <= 5) {
+            goalFreeSlots = 2 + localRandom.nextInt(2);    // 2 o 3
+        }
+        else if (contest.maxEntries <= 10) {
+            goalFreeSlots = 2 + localRandom.nextInt(3);    // 2, 3 o 4
+        }
+        else if (contest.maxEntries <= 20) {
+            goalFreeSlots = 3 + localRandom.nextInt(4);    // 3, 4, 5 o 6
+        }
+        else {
+            goalFreeSlots = 5 + localRandom.nextInt(5);    // entre 5 y 9
+        }
+
+        if (goalFreeSlots == -1) { // Sanity check
+            throw new RuntimeException("WTF 4491");
         }
 
         return goalFreeSlots;
