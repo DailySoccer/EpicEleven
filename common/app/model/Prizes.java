@@ -7,16 +7,18 @@ public class Prizes {
     public PrizeType prizeType;
     public int maxEntries;
     public int entryFee;
+    public List<Float> multipliers = new ArrayList<>();
     public List<Integer> values = new ArrayList<>();
 
     private Prizes() {
     }
 
-    private Prizes(PrizeType prizeType, int maxEntries, int entryFee, List<Integer> values) {
+    private Prizes(PrizeType prizeType, int maxEntries, int entryFee) {
         this.prizeType = prizeType;
         this.maxEntries = maxEntries;
         this.entryFee = entryFee;
-        this.values = values;
+        this.multipliers = getMultipliers(prizeType, maxEntries);
+        this.values = getPrizesApplyingMultipliers(getPrizePool(maxEntries, entryFee), multipliers);
     }
 
     public Integer getValue(int position) {
@@ -55,11 +57,7 @@ public class Prizes {
     }
 
     public static Prizes findOne(PrizeType prizeType, int maxEntries, int entryFee) {
-        List<Integer> prizes = new ArrayList<>();
-
-        int prizePool = getPrizePool(maxEntries, entryFee);
-        prizes.addAll(getPrizesApplyingMultipliers(prizePool, getMultipliers(prizeType, maxEntries)));
-        return new Prizes(prizeType, maxEntries, prizePool, prizes);
+        return new Prizes(prizeType, maxEntries, entryFee);
     }
 
     public static List<Prizes> findAllByContests(List<Contest>... elements) {
@@ -169,11 +167,13 @@ public class Prizes {
                     }
                 }
 
-                prizes.add((int) premio);
-                resto -= premio;
+                if (((int) premio) > 0) {
+                    prizes.add((int) premio);
+                    resto -= premio;
+                }
             }
         }
-        else {
+        else if (multipliers.size() > 0) {
             prizes.add((int) (multipliers.get(0) * prizePool));
         }
 
