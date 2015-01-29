@@ -6,16 +6,16 @@ import com.google.common.collect.ImmutableList;
 public class Prizes {
     public PrizeType prizeType;
     public int maxEntries;
-    public int prizePool;
+    public int entryFee;
     public List<Integer> values = new ArrayList<>();
 
     private Prizes() {
     }
 
-    private Prizes(PrizeType prizeType, int maxEntries, int prizePool, List<Integer> values) {
+    private Prizes(PrizeType prizeType, int maxEntries, int entryFee, List<Integer> values) {
         this.prizeType = prizeType;
         this.maxEntries = maxEntries;
-        this.prizePool = prizePool;
+        this.entryFee = entryFee;
         this.values = values;
     }
 
@@ -35,12 +35,29 @@ public class Prizes {
         return ret;
     }
 
-    public static Prizes findOne(Contest contest) {
-        return findOne(contest.prizeType, contest.maxEntries, contest.getPrizePool());
+    public List<Integer> getAllValues() {
+        List<Integer> ret = new ArrayList<>();
+
+        if (prizeType == PrizeType.FIFTY_FIFTY) {
+            for (int i=0; i<maxEntries / 2; i++) {
+                ret.add(values.get(0));
+            }
+        }
+        else {
+            ret = values;
+        }
+
+        return ret;
     }
 
-    public static Prizes findOne(PrizeType prizeType, int maxEntries, int prizePool) {
+    public static Prizes findOne(Contest contest) {
+        return findOne(contest.prizeType, contest.maxEntries, contest.entryFee);
+    }
+
+    public static Prizes findOne(PrizeType prizeType, int maxEntries, int entryFee) {
         List<Integer> prizes = new ArrayList<>();
+
+        int prizePool = getPrizePool(maxEntries, entryFee);
 
         if (prizeType.equals(PrizeType.FREE)) {
 
@@ -57,22 +74,32 @@ public class Prizes {
 
             // Averiguar los puntos totales a repartir para saber cuánto vale el punto: n * (n+1) / 2  (suma el valor de "n" numeros)
             int totalPoints = third * (third + 1) / 2;
-            int prizeByPoint = prizePool / totalPoints;
+            if (totalPoints > 0) {
+                int prizeByPoint = prizePool / totalPoints;
 
-            // A cada posición le damos el premio (sus puntos se corresponden con su posición "invertida": p.ej. para repartir a 6 usuarios: el 1º tiene 6 puntos, el 2º tiene 5 puntos, etc)
-            int totalPrize = prizePool;
-            for (int i = third; i > 0; i--) {
-                int prize = prizeByPoint * i;
-                prizes.add(prize);
-                totalPrize -= prize;
+                // A cada posición le damos el premio (sus puntos se corresponden con su posición "invertida": p.ej. para repartir a 6 usuarios: el 1º tiene 6 puntos, el 2º tiene 5 puntos, etc)
+                int totalPrize = prizePool;
+                for (int i = third; i > 0; i--) {
+                    int prize = prizeByPoint * i;
+                    prizes.add(prize);
+                    totalPrize -= prize;
+                }
+                // Si queda algo, ¿se lo damos al primero?
+                if (totalPrize > 0) {
+                    prizes.set(0, prizes.get(0) + totalPrize);
+                }
             }
-            // Si queda algo, ¿se lo damos al primero?
-            if (totalPrize > 0) {
-                prizes.set(0, prizes.get(0) + totalPrize);
+            else {
+                prizes.add(0);
             }
         } else if (prizeType.equals(PrizeType.FIFTY_FIFTY)) {
             int mid = maxEntries / 2;
-            prizes.add(prizePool / mid);
+            if (mid > 0) {
+                prizes.add(prizePool / mid);
+            }
+            else {
+                prizes.add(0);
+            }
         }
 
         return new Prizes(prizeType, maxEntries, prizePool, prizes);
@@ -98,7 +125,7 @@ public class Prizes {
     }
 
     private static String getKeyFromContest(Contest contest) {
-        return contest.prizeType.toString() + "_" + contest.maxEntries + "_" + contest.getPrizePool();
+        return contest.prizeType.toString() + "_" + contest.maxEntries + "_" + contest.entryFee;
     }
 
     static private List<Integer> getPrizesApplyingMultipliers(int prizePool, List<Float> multipliers) {
@@ -123,6 +150,10 @@ public class Prizes {
         }
 
         return prizes;
+    }
+
+    static int getPrizePool(int maxEntries, int entryFee) {
+        return (int)((maxEntries * entryFee) * 0.90f);
     }
 }
 
