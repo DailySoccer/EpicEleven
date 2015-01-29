@@ -77,14 +77,26 @@
             $.ajax({
                 url: "/admin/template_contest/get_prizes/"+prizeType+"/"+maxEntries+"/"+entryFee,
                 success: function (result) {
-                    var prizes = "";
                     var total = 0;
+                    var head = "<table width='300'><caption>"
+                                // +"TABLA DE PREMIOS (" + (maxEntries * entryFee * 0.90).toFixed(2) + "€)"
+                                +"</caption><thead><tr>"
+                                + "<th>Position</th>"
+                                + "<th>Prize</th>"
+                                + "</tr></thead>";
+                    var body = "<tbody>";
                     jQuery.each(result, function(index, value) {
-                        prizes += (index+1) + "º: " + value + "€<br/>";
+                        body += "<tr><td>"+(index+1)+"º</td>";
+                        body += "<td>"+value+"€</td></tr>";
                         total += value;
                     });
-                    prizes += "<br/>Total: " + total + "€";
-                    $("#prizes").html(prizes);
+                    body += "</tbody>";
+                    var footer = "<tfoot><tr>";
+                    footer += "<td>Total</td>";
+                    footer += "<td>"+total+"€</td>";
+                    footer += "</tr></tfoot>";
+                    var end = "</table>";
+                    $("#prizes").html(head+body+footer+end);
                 }
             });
         }
@@ -178,7 +190,6 @@
             </form>
 
             <h4>TABLA DE PREMIOS <span id="prize-pool"></span></h4>
-            <br/>
             <div id="prizes"></div>
         </div>
 
