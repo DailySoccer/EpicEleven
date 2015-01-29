@@ -1,30 +1,23 @@
 package controllers.admin;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSelection;
-import akka.pattern.Patterns;
-import akka.util.Timeout;
 import model.MockData;
 import model.Model;
 import model.User;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.opta.OptaCompetition;
-import play.Logger;
-import play.libs.Akka;
+import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
-import scala.concurrent.Await;
-import scala.concurrent.Future;
+import utils.TargetEnvironment;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class DashboardController extends Controller {
     public static Result index() {
-        return ok(views.html.dashboard.render(OptaCompetition.findAllActive(), isBotActorsStarted()));
+        return ok(views.html.dashboard.render(OptaCompetition.findAllActive(), getBotActorsStarted()));
     }
 
     static public Result initialSetup() {
@@ -45,7 +38,7 @@ public class DashboardController extends Controller {
     }
 
     static public Result setTargetEnvironment(String env) {
-        Model.setTargetEnvironment(Model.TargetEnvironment.valueOf(env));
+        Model.setTargetEnvironment(TargetEnvironment.valueOf(env));
         return ok("");
     }
 
@@ -54,43 +47,36 @@ public class DashboardController extends Controller {
     }
 
     static public Result switchBotActors(boolean start) {
-        Timeout timeout = new Timeout(scala.concurrent.duration.Duration.create(2000, TimeUnit.MILLISECONDS));
-        ActorSelection actorRef = Akka.system().actorSelection("/user/BotParentActor");
 
-        actorRef.tell(start ? "StartChildren" : "StopChildren", ActorRef.noSender());
+        Model.getDailySoccerActors().tellToActor("BotParentActor", start ? "StartChildren" : "StopChildren");
 
         return redirect(routes.DashboardController.index());
     }
 
     static public Result addMoneyToBots(Integer amount) {
+        addMoney(User.findBots(), amount);
+        return ok("");
+    }
+
+    static public Result addMoneyToTests(Integer amount) {
+        addMoney(User.findTests(), amount);
+        return ok("");
+    }
+
+    static private void addMoney(List<User> users, Integer amount) {
         List<AccountOp> accountOps = new ArrayList<>();
-        for (User bot : User.findBots()) {
+        for (User bot : users) {
             accountOps.add(new AccountOp(bot.userId, new BigDecimal(amount), bot.getSeqId() + 1));
         }
 
         if (!accountOps.isEmpty()) {
-            AccountingTran accountingTran = new AccountingTran(AccountingTran.TransactionType.MONEY);
+            AccountingTran accountingTran = new AccountingTran(AccountingTran.TransactionType.FREE_MONEY);
             accountingTran.accountOps = accountOps;
             accountingTran.insertAndCommit();
         }
-        return ok("");
     }
 
-    static private boolean isBotActorsStarted() {
-        Timeout timeout = new Timeout(scala.concurrent.duration.Duration.create(500, TimeUnit.MILLISECONDS));
-        ActorSelection actorRef = Akka.system().actorSelection("/user/BotParentActor");
-
-        Future<Object> response = Patterns.ask(actorRef, "GetChildrenStarted", timeout);
-
-        boolean bRet = false;
-
-        try {
-            bRet = (boolean)Await.result(response, timeout.duration());
-        }
-        catch(Exception e) {
-            Logger.error("WTF 5120 isBotActorsStarted Timeout");
-        }
-
-        return bRet;
+    static private boolean getBotActorsStarted() {
+        return (Boolean)Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "GetChildrenStarted");
     }
 }

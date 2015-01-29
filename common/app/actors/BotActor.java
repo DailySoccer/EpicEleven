@@ -1,13 +1,10 @@
 package actors;
 
-import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import model.*;
 import org.bson.types.ObjectId;
 import play.Logger;
@@ -18,7 +15,6 @@ import play.libs.ws.WSRequestHolder;
 import play.libs.ws.WSResponse;
 import utils.ListUtils;
 
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -46,7 +42,7 @@ public class BotActor extends UntypedActor {
     public BotActor(int botActorId, Personality pers) {
         _botActorId = botActorId;
         _personality = pers;
-        _targetUrl = Play.application().configuration().getString("botActor.targetUrl");
+        _targetUrl = Play.application().configuration().getString("botSystem.targetUrl");
     }
 
     private String composeUrl(String suffix) {
@@ -308,27 +304,37 @@ public class BotActor extends UntypedActor {
     }
 
     private int getGoalFreeSlots(Contest contest) {
-        // Para head vs head, no nos metemos nunca
-        int goalFreeSlots = 2;
+        int goalFreeSlots = -1;
 
         // Queremos que haya una pequeña variacion en el numero de slots libres, pero tambien queremos que no haya
         // oscilaciones, es decir, que para el mismo concurso todos los bots esten de acuerdo en cuantos slots libres
         // hay que dejar
         Random localRandom = new Random(contest.contestId.hashCode());
 
-        if (contest.maxEntries > 2) {
-            if (contest.maxEntries <= 5) {
-                goalFreeSlots = 2 + localRandom.nextInt(2);    // 2 o 3
-            }
-            else if (contest.maxEntries <= 10) {
-                goalFreeSlots = 2 + localRandom.nextInt(3);    // 2, 3 o 4
-            }
-            else if (contest.maxEntries <= 20) {
-                goalFreeSlots = 3 + localRandom.nextInt(4);    // 3, 4, 5 o 6
+        if (contest.maxEntries <= 2) {
+            // Vamos a entrar solo en un 33% de los 1vs1 a ver que tal queda
+            if (localRandom.nextInt(3) == 0) {
+                goalFreeSlots = 1;
             }
             else {
-                goalFreeSlots = 5 + localRandom.nextInt(5);    // entre 5 y 9
+                goalFreeSlots = 2;
             }
+        }
+        else if (contest.maxEntries <= 5) {
+            goalFreeSlots = 2 + localRandom.nextInt(2);    // 2 o 3
+        }
+        else if (contest.maxEntries <= 10) {
+            goalFreeSlots = 2 + localRandom.nextInt(3);    // 2, 3 o 4
+        }
+        else if (contest.maxEntries <= 20) {
+            goalFreeSlots = 3 + localRandom.nextInt(7);    // entre 3 y 9
+        }
+        else {
+            goalFreeSlots = 5 + localRandom.nextInt(8);    // entre 5 y 12
+        }
+
+        if (goalFreeSlots == -1) { // Sanity check
+            throw new RuntimeException("WTF 4491");
         }
 
         return goalFreeSlots;
@@ -369,7 +375,6 @@ public class BotActor extends UntypedActor {
         }
     }
 
-
     private List<Contest> getActiveContests() throws TimeoutException {
 
         List<Contest> ret = null;
@@ -397,14 +402,20 @@ public class BotActor extends UntypedActor {
             // Simplemente "parcheamos" los templates con los datos de los instances
             copyInstancesToTemplates(instanceSoccerPlayers, soccerPlayers);
 
-            List<TemplateSoccerPlayer> lineup = generateLineup(soccerPlayers, contest.salaryCap);
+            List<TemplateSoccerPlayer> lineup = GenerateLineup.quickAndDirty(soccerPlayers, contest.salaryCap);
 
             // Verificar que se haya generado un lineup correcto
-            if (lineup.size() == 11) {
+            if (lineup.size() != 11 || GenerateLineup.sumSalary(lineup) > contest.salaryCap) {
+                Logger.warn("{} tuvo que recurrir a sillyWay, {} contestId, {} players, {} salary", getFullName(), contest.contestId, lineup.size(), GenerateLineup.sumSalary(lineup));
+                lineup = GenerateLineup.sillyWay(soccerPlayers, contest.salaryCap);
+            }
+
+            if (lineup.size() == 11 && GenerateLineup.sumSalary(lineup) <= contest.salaryCap) {
+                Logger.info("{} va a entrar en {} contestId, {} diffSalary", getFullName(), contest.contestId, contest.salaryCap - GenerateLineup.sumSalary(lineup));
                 enteredContestId = addContestEntry(lineup, contest.contestId);
             }
             else {
-                Logger.error("WTF 3561: {} enterContest: lineup invalid: {} players", getFullName(), lineup.size());
+                Logger.error("WTF 3561 {}, {} contestId, {} players, {} salary", getFullName(), contest.contestId, lineup.size(), GenerateLineup.sumSalary(lineup));
             }
         }
         else {
@@ -454,30 +465,6 @@ public class BotActor extends UntypedActor {
         return ret;
     }
 
-    private List<TemplateSoccerPlayer> generateLineup(List<TemplateSoccerPlayer> soccerPlayers, int salaryCap) {
-        List<TemplateSoccerPlayer> lineup = new ArrayList<>();
-
-        sortBySalary(soccerPlayers);
-
-        List<TemplateSoccerPlayer> goalkeepers = filterByPosition(soccerPlayers, FieldPos.GOALKEEPER);
-        lineup.add(goalkeepers.get(0));
-
-        List<TemplateSoccerPlayer> middles = filterByPosition(soccerPlayers, FieldPos.MIDDLE);
-        List<TemplateSoccerPlayer> defenses = filterByPosition(soccerPlayers, FieldPos.DEFENSE);
-
-        for (int c = 0; c < 4; ++c) {
-            lineup.add(middles.get(c));
-            lineup.add(defenses.get(c));
-        }
-
-        List<TemplateSoccerPlayer> forwards = filterByPosition(soccerPlayers, FieldPos.FORWARD);
-        for (int c = 0; c < 2; ++c) {
-            lineup.add(forwards.get(c));
-        }
-
-        return lineup;
-    }
-
     void copyInstancesToTemplates(List<InstanceSoccerPlayer> instanceSoccerPlayers, List<TemplateSoccerPlayer> soccerPlayers) {
         for (InstanceSoccerPlayer ins : instanceSoccerPlayers) {
             boolean bFound = false;
@@ -495,50 +482,6 @@ public class BotActor extends UntypedActor {
                 throw new RuntimeException("WTF 6556 Hemos encontrado un InstanceSoccerPlayer sin TemplateSoccerPlayer");
             }
         }
-    }
-
-    private int sumSalary(List<TemplateSoccerPlayer> sps) {
-        int ret = 0;
-        for (TemplateSoccerPlayer sp : sps) {
-         ret += sp.salary;
-        }
-        return ret;
-    }
-
-    private List<TemplateSoccerPlayer> filterByPosition(List<TemplateSoccerPlayer> sps, final FieldPos fp) {
-        return ListUtils.asList(Collections2.filter(sps, new Predicate<TemplateSoccerPlayer>() {
-            @Override
-            public boolean apply(@Nullable TemplateSoccerPlayer templateSoccerPlayer) {
-            return (templateSoccerPlayer != null && templateSoccerPlayer.fieldPos == fp);
-            }
-        }));
-    }
-
-    private List<TemplateSoccerPlayer> filterBySalary(List<TemplateSoccerPlayer> sps, final int salMin, final int salMax) {
-        return ListUtils.asList(Collections2.filter(sps, new Predicate<TemplateSoccerPlayer>() {
-            @Override
-            public boolean apply(@Nullable TemplateSoccerPlayer templateSoccerPlayer) {
-            return (templateSoccerPlayer != null && templateSoccerPlayer.salary >= salMin && templateSoccerPlayer.salary <= salMax);
-            }
-        }));
-    }
-
-    private void sortByFantasyPoints(List<TemplateSoccerPlayer> sps) {
-        Collections.sort(sps, new Comparator<TemplateSoccerPlayer>() {
-            @Override
-            public int compare(TemplateSoccerPlayer o1, TemplateSoccerPlayer o2) {
-            return o1.fantasyPoints - o2.fantasyPoints;
-            }
-        });
-    }
-
-    private void sortBySalary(List<TemplateSoccerPlayer> sps) {
-        Collections.sort(sps, new Comparator<TemplateSoccerPlayer>() {
-            @Override
-            public int compare(TemplateSoccerPlayer o1, TemplateSoccerPlayer o2) {
-                return o1.salary - o2.salary;
-            }
-        });
     }
 
     private List<Contest> filterContestByNotEntered(List<Contest> contests, List<Contest> entered) {
@@ -633,8 +576,6 @@ public class BotActor extends UntypedActor {
     String _sessionToken;
 
     String _targetUrl;
-
-    static Random _rand = new Random(System.currentTimeMillis());
 
     static final private List<String> _NICKNAMES = Arrays.asList(
             "Alic1a",
@@ -739,60 +680,3 @@ public class BotActor extends UntypedActor {
             "CavalleroSebolla"
     );
 }
-
-
-/*
-private List<TemplateSoccerPlayer> generateLineup(List<TemplateSoccerPlayer> soccerPlayers, int salaryCap) {
-        List<TemplateSoccerPlayer> lineup = new ArrayList<>();
-
-        sortByFantasyPoints(soccerPlayers);
-
-        List<TemplateSoccerPlayer> forwards = filterByPosition(soccerPlayers, FieldPos.FORWARD);
-        List<TemplateSoccerPlayer> goalkeepers = filterByPosition(soccerPlayers, FieldPos.GOALKEEPER);
-        List<TemplateSoccerPlayer> middles = filterByPosition(soccerPlayers, FieldPos.MIDDLE);
-        List<TemplateSoccerPlayer> defenses = filterByPosition(soccerPlayers, FieldPos.DEFENSE);
-
-        // Dos delanteros entre los 8 mejores
-        for (int c = 0; c < 2; ++c) {
-            int next = _rand.nextInt(Math.min(8, forwards.size()));
-            lineup.add(forwards.get(next));
-        }
-
-        // Un portero de la mitad para abajo
-        lineup.add(goalkeepers.get(_rand.nextInt(goalkeepers.size() / 2) + (goalkeepers.size() / 2)));
-
-        // Medios y defensas repartidos por igual, buscamos varias veces partiendo desde la media y aumentado de 100 en
-        // 100 por debajo
-        int averageRemainingSalary = (salaryCap - calcSalaryForLineup(lineup)) / 8;
-        int diff = -1;
-
-        for (int tryCounter = 0; tryCounter < 10; ++tryCounter) {
-            List<TemplateSoccerPlayer> tempLineup = new ArrayList<>(lineup);
-
-            int maxSal = averageRemainingSalary + 1000;
-            int minSal = averageRemainingSalary - ((tryCounter+1)*100);
-            List<TemplateSoccerPlayer> middlesBySalary = filterBySalary(middles, minSal, maxSal);
-            List<TemplateSoccerPlayer> defensesBySalary = filterBySalary(defenses, minSal, maxSal);
-
-            if (middlesBySalary.size() < 4 || defensesBySalary.size() < 4) {
-                continue;
-            }
-
-            for (int c = 0; c < 4; ++c) {
-                int next = _rand.nextInt(Math.min(8, middlesBySalary.size()));
-                tempLineup.add(middlesBySalary.remove(next));
-                next = _rand.nextInt(Math.min(8, defensesBySalary.size()));
-                tempLineup.add(defensesBySalary.remove(next));
-            }
-
-            diff = salaryCap - calcSalaryForLineup(tempLineup);
-
-            if (tempLineup.size() == 11 && diff >= 0) {
-                lineup = tempLineup;
-                break;
-            }
-        }
-
-        return lineup;
-    }
- */

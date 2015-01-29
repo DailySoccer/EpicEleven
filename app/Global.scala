@@ -22,7 +22,6 @@ object Global extends GlobalSettings {
   // Role of this machine (DEVELOPMENT_ROLE, WEB_ROLE, OPTAPROCESSOR_ROLE, BOTS_ROLE...)
   var instanceRole = InstanceRole.DEVELOPMENT_ROLE
 
-
   val releaseFilter = Filter { (nextFilter, requestHeader) =>
     nextFilter(requestHeader).map { result =>
       result.withHeaders("Release-Version" -> releaseVersion)
@@ -56,13 +55,11 @@ object Global extends GlobalSettings {
 
 
   override def onStart(app: Application) {
-
     instanceRole = readInstanceRole
     releaseVersion = readReleaseVersion
     Logger.info(s"Epic Eleven $instanceRole, version $releaseVersion has started")
 
     model.Model.init(instanceRole)
-    actors.DailySoccerActors.instance().init(instanceRole)
 
     // Es aqui donde se llama a la inicializacion de Stormpath a traves del constructor
     if (StormPathClient.instance.isConnected) {
@@ -74,7 +71,6 @@ object Global extends GlobalSettings {
   override def onStop(app: Application) {
     Logger.info("Epic Eleven shutdown...")
 
-    actors.DailySoccerActors.instance().shutdown()
     model.Model.shutdown()
   }
 
