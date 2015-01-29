@@ -58,50 +58,7 @@ public class Prizes {
         List<Integer> prizes = new ArrayList<>();
 
         int prizePool = getPrizePool(maxEntries, entryFee);
-
-        if (prizeType.equals(PrizeType.FREE)) {
-
-        } else if (prizeType.equals(PrizeType.WINNER_TAKES_ALL)) {
-            prizes.add(prizePool);
-        } else if (prizeType.equals(PrizeType.TOP_3_GET_PRIZES)) {
-            prizes.addAll(getPrizesApplyingMultipliers(prizePool, ImmutableList.of(0.5f, 0.3f, 0.2f)));
-        } else if (prizeType.equals(PrizeType.TOP_THIRD_GET_PRIZES)) {
-            // A cuantos repartiremos premios?
-            int third = maxEntries / 3;
-
-            // Para hacer el reparto proporcional asignaremos puntos inversamente a la posición
-            // Más puntos cuanto más baja su posición. Para repartir a "n" usuarios: 1º = (n) pts / 2º = (n-1) pts / 3º = (n-2) pts / ... / nº = 1 pts
-
-            // Averiguar los puntos totales a repartir para saber cuánto vale el punto: n * (n+1) / 2  (suma el valor de "n" numeros)
-            int totalPoints = third * (third + 1) / 2;
-            if (totalPoints > 0) {
-                int prizeByPoint = prizePool / totalPoints;
-
-                // A cada posición le damos el premio (sus puntos se corresponden con su posición "invertida": p.ej. para repartir a 6 usuarios: el 1º tiene 6 puntos, el 2º tiene 5 puntos, etc)
-                int totalPrize = prizePool;
-                for (int i = third; i > 0; i--) {
-                    int prize = prizeByPoint * i;
-                    prizes.add(prize);
-                    totalPrize -= prize;
-                }
-                // Si queda algo, ¿se lo damos al primero?
-                if (totalPrize > 0) {
-                    prizes.set(0, prizes.get(0) + totalPrize);
-                }
-            }
-            else {
-                prizes.add(0);
-            }
-        } else if (prizeType.equals(PrizeType.FIFTY_FIFTY)) {
-            int mid = maxEntries / 2;
-            if (mid > 0) {
-                prizes.add(prizePool / mid);
-            }
-            else {
-                prizes.add(0);
-            }
-        }
-
+        prizes.addAll(getPrizesApplyingMultipliers(prizePool, getMultipliers(prizeType, maxEntries)));
         return new Prizes(prizeType, maxEntries, prizePool, prizes);
     }
 
@@ -128,25 +85,96 @@ public class Prizes {
         return contest.prizeType.toString() + "_" + contest.maxEntries + "_" + contest.entryFee;
     }
 
+    static private List<Float> getMultipliers(PrizeType prizeType, int maxEntries) {
+        List<Float> multipliers = new ArrayList<>();
+
+        if (prizeType == PrizeType.WINNER_TAKES_ALL) {
+            multipliers.add(1f);
+        }
+        else if (prizeType == PrizeType.TOP_3_GET_PRIZES) {
+            switch(maxEntries) {
+                case 3: multipliers = ImmutableList.of(0.62963f, 0.37037f); break;
+                case 4: multipliers = ImmutableList.of(0.44444f,0.33333f,0.22222f); break;
+                case 5: multipliers = ImmutableList.of(0.44444f,0.33333f,0.22222f); break;
+                case 6: multipliers = ImmutableList.of(0.48148f,0.31481f,0.2037f); break;
+                case 7: multipliers = ImmutableList.of(0.50794f,0.31746f,0.1746f); break;
+                case 8: multipliers = ImmutableList.of(0.5f,0.30556f,0.19444f); break;
+                case 9: multipliers = ImmutableList.of(0.49383f,0.30864f,0.19753f); break;
+                case 10: multipliers = ImmutableList.of(0.5f,0.3f,0.2f); break;
+                case 11: multipliers = ImmutableList.of(0.50505f,0.30303f,0.19192f); break;
+                case 12: multipliers = ImmutableList.of(0.5f,0.2963f,0.2037f); break;
+                case 13: multipliers = ImmutableList.of(0.50427f,0.2906f,0.20513f); break;
+                case 14: multipliers = ImmutableList.of(0.50794f,0.28571f,0.20635f); break;
+                case 15: multipliers = ImmutableList.of(0.5037f,0.28889f,0.20741f); break;
+                case 16: multipliers = ImmutableList.of(0.50694f,0.28472f,0.20833f); break;
+                case 17: multipliers = ImmutableList.of(0.5098f,0.28758f,0.20261f); break;
+                case 18: multipliers = ImmutableList.of(0.50617f,0.2963f,0.19753f); break;
+                case 19: multipliers = ImmutableList.of(0.50292f,0.30409f,0.19298f); break;
+                case 20: multipliers = ImmutableList.of(0.5f,0.31111f,0.18889f); break;
+
+                default:
+                    multipliers = ImmutableList.of(0.5f,0.3f,0.2f);
+            }
+        }
+        else if (prizeType == PrizeType.TOP_THIRD_GET_PRIZES) {
+            switch (maxEntries) {
+                case 3: multipliers = ImmutableList.of(1f); break;
+                case 4: multipliers = ImmutableList.of(0.72222f,0.27778f); break;
+                case 5: multipliers = ImmutableList.of(0.68889f,0.31111f); break;
+                case 6: multipliers = ImmutableList.of(0.66667f,0.33333f); break;
+                case 7: multipliers = ImmutableList.of(0.65079f,0.34921f); break;
+                case 8: multipliers = ImmutableList.of(0.5f,0.30556f,0.19444f); break;
+                case 9: multipliers = ImmutableList.of(0.49383f,0.30864f,0.19753f); break;
+                case 10: multipliers = ImmutableList.of(0.5f,0.3f,0.2f); break;
+                case 11: multipliers = ImmutableList.of(0.45455f,0.28283f,0.16162f,0.10101f); break;
+                case 12: multipliers = ImmutableList.of(0.44444f,0.27778f,0.16667f,0.11111f); break;
+                case 13: multipliers = ImmutableList.of(0.4359f,0.2735f,0.17094f,0.11966f); break;
+                case 14: multipliers = ImmutableList.of(0.37302f,0.22222f,0.18254f,0.14286f,0.07937f); break;
+                case 15: multipliers = ImmutableList.of(0.37037f,0.22222f,0.18519f,0.14074f,0.08148f); break;
+                case 16: multipliers = ImmutableList.of(0.36806f,0.22222f,0.1875f,0.13889f,0.08333f); break;
+                case 17: multipliers = ImmutableList.of(0.3268f,0.21569f,0.1634f,0.13072f,0.09804f,0.06536f); break;
+                case 18: multipliers = ImmutableList.of(0.33333f,0.22222f,0.16049f,0.12963f,0.09259f,0.06173f); break;
+                case 19: multipliers = ImmutableList.of(0.33333f,0.22222f,0.15789f,0.12865f,0.09357f,0.06433f); break;
+                case 20: multipliers = ImmutableList.of(0.33333f,0.22222f,0.15556f,0.12222f,0.1f,0.06667f); break;
+
+                default:
+                    multipliers = ImmutableList.of(0f);
+            }
+        }
+        else if (prizeType == PrizeType.FIFTY_FIFTY) {
+            float mid = maxEntries / 2;
+            if (mid > 0f) {
+                multipliers  = ImmutableList.of(1f / mid);
+            }
+        }
+
+        return multipliers;
+    }
+
     static private List<Integer> getPrizesApplyingMultipliers(int prizePool, List<Float> multipliers) {
         List<Integer> prizes = new ArrayList<>();
 
-        float resto = prizePool;
-        for (int i=0; i<multipliers.size(); i++) {
-            float premio = multipliers.get(i) * prizePool;
-            // premio = Math.round(premio * 2) * 0.5f;
-            premio = Math.round(premio+0.5f);
-            if (premio > resto) {
-                premio = resto;
-            }
-            if (i == multipliers.size() - 1) {
-                if (resto > premio) {
+        if (multipliers.size() > 1) {
+            float resto = prizePool;
+            for (int i = 0; i < multipliers.size(); i++) {
+                float premio = multipliers.get(i) * prizePool;
+                // premio = Math.round(premio * 2) * 0.5f;
+                premio = Math.round(premio + 0.5f);
+                if (premio > resto) {
                     premio = resto;
                 }
-            }
+                if (i == multipliers.size() - 1) {
+                    if (resto > premio) {
+                        premio = resto;
+                    }
+                }
 
-            prizes.add((int)premio);
-            resto -= premio;
+                prizes.add((int) premio);
+                resto -= premio;
+            }
+        }
+        else {
+            prizes.add((int) (multipliers.get(0) * prizePool));
         }
 
         return prizes;
