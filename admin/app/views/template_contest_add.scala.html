@@ -78,9 +78,12 @@
                 url: "/admin/template_contest/get_prizes/"+prizeType+"/"+maxEntries+"/"+entryFee,
                 success: function (result) {
                     var prizes = "";
+                    var total = 0;
                     jQuery.each(result, function(index, value) {
                         prizes += (index+1) + "º: " + value + "€<br/>";
+                        total += value;
                     });
+                    prizes += "<br/>Total: " + total + "€";
                     $("#prizes").html(prizes);
                 }
             });
