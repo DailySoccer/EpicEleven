@@ -215,7 +215,7 @@ public class Contest implements JongoId {
     }
 
     static public List<Contest> findAllHistoryNotClosed() {
-        return ListUtils.asList(Model.contests().find("{state: \"HISTORY\", closed: false}").as(Contest.class));
+        return ListUtils.asList(Model.contests().find("{state: \"HISTORY\", $or: [{closed: {$exists: false}}, {closed: false}]}").as(Contest.class));
     }
 
     static public List<Contest> findAllMyActive(ObjectId userId, Class<?> projectionClass) {
