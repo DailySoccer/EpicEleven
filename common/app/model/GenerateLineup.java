@@ -59,10 +59,10 @@ public class GenerateLineup {
         int averageRemainingSalary = (salaryCap - sumSalary(lineup)) / 8;
         int diff = -1;
 
-        for (int tryCounter = 0; tryCounter < 10; ++tryCounter) {
+        for (int tryCounter = 0; tryCounter < 20; ++tryCounter) {
             List<TemplateSoccerPlayer> tempLineup = new ArrayList<>(lineup);
 
-            int maxSal = averageRemainingSalary + 1000;
+            int maxSal = averageRemainingSalary + 500;
             int minSal = averageRemainingSalary - ((tryCounter+1)*100);
             List<TemplateSoccerPlayer> middlesBySalary = filterBySalary(middles, minSal, maxSal);
             List<TemplateSoccerPlayer> defensesBySalary = filterBySalary(defenses, minSal, maxSal);
@@ -90,7 +90,7 @@ public class GenerateLineup {
     }
 
 
-    static private int sumSalary(List<TemplateSoccerPlayer> sps) {
+    static public int sumSalary(List<TemplateSoccerPlayer> sps) {
         int ret = 0;
         for (TemplateSoccerPlayer sp : sps) {
             ret += sp.salary;

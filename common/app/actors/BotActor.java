@@ -327,10 +327,10 @@ public class BotActor extends UntypedActor {
             goalFreeSlots = 2 + localRandom.nextInt(3);    // 2, 3 o 4
         }
         else if (contest.maxEntries <= 20) {
-            goalFreeSlots = 3 + localRandom.nextInt(4);    // 3, 4, 5 o 6
+            goalFreeSlots = 3 + localRandom.nextInt(7);    // entre 3 y 9
         }
         else {
-            goalFreeSlots = 5 + localRandom.nextInt(5);    // entre 5 y 9
+            goalFreeSlots = 5 + localRandom.nextInt(8);    // entre 5 y 12
         }
 
         if (goalFreeSlots == -1) { // Sanity check
@@ -405,11 +405,17 @@ public class BotActor extends UntypedActor {
             List<TemplateSoccerPlayer> lineup = GenerateLineup.quickAndDirty(soccerPlayers, contest.salaryCap);
 
             // Verificar que se haya generado un lineup correcto
-            if (lineup.size() == 11) {
+            if (lineup.size() != 11 || GenerateLineup.sumSalary(lineup) > contest.salaryCap) {
+                Logger.warn("{} tuvo que recurrir a sillyWay, {} contestId, {} players, {} salary", getFullName(), contest.contestId, lineup.size(), GenerateLineup.sumSalary(lineup));
+                lineup = GenerateLineup.sillyWay(soccerPlayers, contest.salaryCap);
+            }
+
+            if (lineup.size() == 11 && GenerateLineup.sumSalary(lineup) <= contest.salaryCap) {
+                Logger.info("{} va a entrar en {} contestId, {} diffSalary", getFullName(), contest.contestId, contest.salaryCap - GenerateLineup.sumSalary(lineup));
                 enteredContestId = addContestEntry(lineup, contest.contestId);
             }
             else {
-                Logger.error("WTF 3561: {} enterContest: lineup invalid: {} players", getFullName(), lineup.size());
+                Logger.error("WTF 3561 {}, {} contestId, {} players, {} salary", getFullName(), contest.contestId, lineup.size(), GenerateLineup.sumSalary(lineup));
             }
         }
         else {
