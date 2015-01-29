@@ -28,11 +28,14 @@ import java.util.Map;
 public class StormPathClient {
 
     private static final String APPLICATION_NAME = "EpicEleven";
+    private static final String DIRECTORY_NAME = Play.application().configuration().getString("stormpath.currentDirectory.name");
+    private static final String DIRECTORY_DESCRIPTION = Play.application().configuration().getString("stormpath.currentDirectory.description");
+    private static final String DIRECTORY_ACCOUNT_STORE_ID = Play.application().configuration().getString("stormpath.currentDirectory.accountStoreId");
+
 
     public StormPathClient() {
 
         ApiKey apiKey = null;
-        currentDirectory = StormpathDirectory.valueOf(Play.application().configuration().getString("stormpath.directory"));
 
         try {
             if (Play.isDev()) {
@@ -72,20 +75,20 @@ public class StormPathClient {
                 }
 
 
-                DirectoryList directoryList = _tenant.getDirectories(Directories.where(Directories.name().eqIgnoreCase(currentDirectory.name)));
+                DirectoryList directoryList = _tenant.getDirectories(Directories.where(Directories.name().eqIgnoreCase(DIRECTORY_NAME)));
                 for (Directory dir: directoryList) {
-                    if (dir.getName().equalsIgnoreCase(currentDirectory.name)) {
+                    if (dir.getName().equalsIgnoreCase(DIRECTORY_NAME)) {
                         _myDirectory = dir;
-                        Logger.info("Stormpath: Found dir: "+currentDirectory.name);
+                        Logger.info("Stormpath: Found dir: "+DIRECTORY_NAME);
                         break;
                     }
                 }
 
                 if (_myDirectory == null) {
-                    _myDirectory = _client.instantiate(Directory.class).setName(currentDirectory.name)
-                            .setDescription(currentDirectory.description);
+                    _myDirectory = _client.instantiate(Directory.class).setName(DIRECTORY_NAME)
+                            .setDescription(DIRECTORY_DESCRIPTION);
                     _tenant.createDirectory(_myDirectory);
-                    Logger.info("Stormpath: Creating dir: "+currentDirectory.name);
+                    Logger.info("Stormpath: Creating dir: "+DIRECTORY_NAME);
                 }
 
 
@@ -93,7 +96,7 @@ public class StormPathClient {
 
                 AccountStoreMappingList mappings = _myApp.getAccountStoreMappings();
                 for (AccountStoreMapping mapping: mappings) {
-                    if (mapping.getAccountStore().getHref().endsWith(currentDirectory.accountStoreId)) {
+                    if (mapping.getAccountStore().getHref().endsWith(DIRECTORY_ACCOUNT_STORE_ID)) {
                         _myAccountStore = mapping.getAccountStore();
                     }
                 }
@@ -289,20 +292,6 @@ public class StormPathClient {
         return _instance;
     }
 
-    private enum StormpathDirectory {
-        STAGING ("Staging Directory", "Directory for Testing purposes", "6lQ40xohPzA6pVDRsgvcbv"),
-        PRODUCTION ("EpicEleven Directory", "Main Epic Eleven Directory", "3AHd93zqqqEX5DPV21nSWe");
-
-        public final String name;
-        public final String description;
-        public final String accountStoreId;
-
-        StormpathDirectory(String n, String desc, String accountStId) {
-            name = n;
-            description = desc;
-            accountStoreId = accountStId;
-        }
-    }
 
     Client _client;
     Application _myApp;
@@ -310,8 +299,6 @@ public class StormPathClient {
     AccountStore _myAccountStore;
 
     boolean _connected = false;
-
-    StormpathDirectory currentDirectory;
 
     static StormPathClient _instance;
 }
