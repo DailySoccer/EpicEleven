@@ -2,6 +2,7 @@ package actors;
 
 import akka.actor.*;
 import play.Logger;
+import play.Play;
 import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
 import scala.concurrent.duration.FiniteDuration;
@@ -15,6 +16,15 @@ public class BotParentActor extends UntypedActor {
     @Override public void postStop() {
         // Para evitar que nos lleguen cartas de muertos
         cancelTicking();
+    }
+
+    private void readConfig() {
+        _numBots = Play.application().configuration().getInt("botSystem.numBots");
+        _tickInterval = Duration.create(Play.application().configuration().getInt("botSystem.tickInterval"), TimeUnit.MILLISECONDS);
+        _tickMode = TickingMode.valueOf(Play.application().configuration().getString("botSystem.tickMode"));
+        _personality = BotActor.Personality.valueOf(Play.application().configuration().getString("botSystem.personality"));
+        _cyclePersonalities = Play.application().configuration().getBoolean("botSystem.cyclePersonalities");
+        _cyclePersonalitiesInterval = Duration.create(Play.application().configuration().getInt("botSystem.cyclePersonalitiesInterval"), TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -35,8 +45,11 @@ public class BotParentActor extends UntypedActor {
 
         switch (msg) {
             case "StartChildren":
+
+                readConfig();
+
                 if (!_childrenStarted) {
-                    Logger.debug("BotParentActor arrancando {} bots hijos", _NUM_BOTS);
+                    Logger.debug("BotParentActor arrancando {} bots hijos", _numBots);
                     startTicking();
                 }
                 else {
@@ -46,9 +59,9 @@ public class BotParentActor extends UntypedActor {
 
             case "StopChildren":
                 if (_childrenStarted) {
-                    Logger.debug("BotParentActor parando {} bots hijos", _NUM_BOTS);
+                    Logger.debug("BotParentActor parando {} bots hijos", _numBots);
                     cancelTicking();
-                    Logger.debug("BotParentActor {} hijos parados", _NUM_BOTS);
+                    Logger.debug("BotParentActor {} hijos parados", _numBots);
                 }
                 else {
                     Logger.error("WTF 1560 Recibido StopChildren a destiempo");
@@ -60,7 +73,7 @@ public class BotParentActor extends UntypedActor {
                 sender().tell(_childrenStarted, getSelf());
                 break;
 
-            case "NormalTick":
+            case "NORMAL_TICK":
                 ActorRef child = getContext().getChild(String.format("BotActor%d", _currentActorIdTick));
 
                 // Es posible que el actor este muerto (temporalmente en caso de excepcion procesando un mensaje o permanentemente
@@ -70,19 +83,19 @@ public class BotParentActor extends UntypedActor {
                 }
 
                 _currentActorIdTick++;
-                if (_currentActorIdTick >= _NUM_BOTS) {
+                if (_currentActorIdTick >= _numBots) {
                     _currentActorIdTick = 0;
                 }
 
-                reescheduleTick(Duration.create(1, TimeUnit.SECONDS));
+                reescheduleTick();
                 break;
 
-            case "AggressiveTick":
+            case "AGGRESSIVE_TICK":
                 for (ActorRef actorRef : getContext().getChildren()) {
                     actorRef.tell(new BotActor.BotMsg("Tick", null, _averageEnteredContests), getSelf());
                 }
 
-                reescheduleTick(Duration.create(5, TimeUnit.SECONDS));
+                reescheduleTick();
                 break;
 
             case "NextPersonality":
@@ -90,7 +103,7 @@ public class BotParentActor extends UntypedActor {
                     actorRef.tell("NextPersonality", getSelf());
                 }
 
-                reescheduleCyclePersonalities(Duration.create(60, TimeUnit.SECONDS));
+                reescheduleCyclePersonalities();
                 break;
 
             default:
@@ -123,8 +136,8 @@ public class BotParentActor extends UntypedActor {
 
     private void startTicking() {
 
-        for (int c = 0; c < _NUM_BOTS; ++c) {
-            getContext().actorOf(Props.create(BotActor.class, c, _startingPersonality), String.format("BotActor%d", c));
+        for (int c = 0; c < _numBots; ++c) {
+            getContext().actorOf(Props.create(BotActor.class, c, _personality), String.format("BotActor%d", c));
         }
 
         _childrenStarted = true;
@@ -133,8 +146,8 @@ public class BotParentActor extends UntypedActor {
         _botEnteredContests = new HashMap<>();
         _averageEnteredContests = 0;
 
-        getSelf().tell(_currentTickMode.name(), getSelf());
-        reescheduleCyclePersonalities(Duration.create(60, TimeUnit.SECONDS));
+        getSelf().tell(_tickMode.name(), getSelf());
+        reescheduleCyclePersonalities();
     }
 
     private void cancelTicking() {
@@ -165,34 +178,34 @@ public class BotParentActor extends UntypedActor {
         }
     }
 
-    private void reescheduleCyclePersonalities(FiniteDuration duration) {
+    private void reescheduleCyclePersonalities() {
         if (_cyclePersonalities) {
-            _cycleCancellable = getContext().system().scheduler().scheduleOnce(duration, getSelf(), "NextPersonality",
+            _cycleCancellable = getContext().system().scheduler().scheduleOnce(_cyclePersonalitiesInterval, getSelf(), "NextPersonality",
                                                                                getContext().dispatcher(), null);
         }
     }
 
-    private void reescheduleTick(FiniteDuration duration) {
-        _tickCancellable = getContext().system().scheduler().scheduleOnce(duration, getSelf(), _currentTickMode.name(),
+    private void reescheduleTick() {
+        _tickCancellable = getContext().system().scheduler().scheduleOnce(_tickInterval, getSelf(), _tickMode.name(),
                                                                           getContext().dispatcher(), null);
     }
 
-    static final int _NUM_BOTS = 30;
-
     enum TickingMode {
-        NormalTick,     // En minusculas pq los vamos a usar directamente asString
-        AggressiveTick
+        NORMAL_TICK,
+        AGGRESSIVE_TICK
     };
 
-
     boolean _childrenStarted = false;
+    int _numBots = 30;
 
-    TickingMode _currentTickMode = TickingMode.NormalTick;
+    TickingMode _tickMode = TickingMode.NORMAL_TICK;
+    FiniteDuration _tickInterval = Duration.create(1, TimeUnit.SECONDS);
     Cancellable _tickCancellable;
     int _currentActorIdTick;
 
-    BotActor.Personality _startingPersonality = BotActor.Personality.PRODUCTION;
+    BotActor.Personality _personality = BotActor.Personality.PRODUCTION;
     boolean _cyclePersonalities = false;
+    FiniteDuration _cyclePersonalitiesInterval = Duration.create(60, TimeUnit.SECONDS);
     Cancellable _cycleCancellable;
 
     HashMap<String, Integer> _botEnteredContests;
