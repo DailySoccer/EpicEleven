@@ -7,7 +7,7 @@ public class Prizes {
     public PrizeType prizeType;
     public int maxEntries;
     public int entryFee;
-    public List<Float> multipliers = new ArrayList<>();
+    // public List<Float> multipliers = new ArrayList<>();
     public List<Integer> values = new ArrayList<>();
 
     private Prizes() {
@@ -17,8 +17,8 @@ public class Prizes {
         this.prizeType = prizeType;
         this.maxEntries = maxEntries;
         this.entryFee = entryFee;
-        this.multipliers = getMultipliers(prizeType, maxEntries);
-        this.values = getPrizesApplyingMultipliers(getPrizePool(maxEntries, entryFee), multipliers);
+        // this.multipliers = getMultipliers(prizeType, maxEntries);
+        this.values = getPrizesApplyingMultipliers(getPrizePool(maxEntries, entryFee), getMultipliers(prizeType, maxEntries));
     }
 
     public Integer getValue(int position) {
