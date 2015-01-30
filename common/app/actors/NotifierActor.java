@@ -7,9 +7,7 @@ import model.GlobalDate;
 import model.User;
 import model.notification.MessageSend;
 import model.notification.Notification.Topic;
-import model.notification.Notification;
 import play.Logger;
-import play.twirl.api.Html;
 import scala.concurrent.duration.Duration;
 
 import java.util.ArrayList;
@@ -53,7 +51,7 @@ public class NotifierActor extends UntypedActor {
 
 
     private void notifyContestStartsInOneHour() {
-        List<Contest> nextContests = Contest.findAllStartingInXhours(1);
+        List<Contest> nextContests = Contest.findAllStartingInOneHourOrLess();
 
         Map<User, ArrayList<Contest>> nextUsersContests = getUsersForContests(nextContests);
 
