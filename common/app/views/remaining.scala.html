@@ -8,13 +8,15 @@
 
 <div>
     @if(contestCount>1) {
-    Los siguientes torneos comenzarán en una hora:
+    Los siguientes torneos, en los cuales participas, comenzarán en una hora:
     } else {
-    El siguiente torneo comenzará en una hora:
+    El siguiente torneo, en el que participas, comenzará en una hora:
     }
     <ul>
         @for(p <- contests) {
         <li>@p.translatedName (@p.getNumEntries apuntados de @p.maxEntries)</li>
         }
     </ul>
+
+
 </div>
