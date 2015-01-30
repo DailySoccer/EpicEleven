@@ -6,6 +6,7 @@ import model.User;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.opta.OptaCompetition;
+import play.Logger;
 import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -54,12 +55,16 @@ public class DashboardController extends Controller {
     }
 
     static public Result addMoneyToBots(Integer amount) {
+        Logger.info("Ejecutando addMoneyToBots...");
         addMoney(User.findBots(), amount);
+        FlashMessage.success("addMoneyToBots OK");
         return ok("");
     }
 
     static public Result addMoneyToTests(Integer amount) {
+        Logger.info("Ejecutando addMoneyToTests...");
         addMoney(User.findTests(), amount);
+        Logger.info("addMoneyToTests OK");
         return ok("");
     }
 
