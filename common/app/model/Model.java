@@ -295,9 +295,7 @@ public class Model {
     static private void ensureTransactionsDB(DB theMongoDB) {
         if (!theMongoDB.collectionExists("accountingTransactions")) {
             DBCollection accountingTransactions = theMongoDB.createCollection("accountingTransactions", new BasicDBObject());
-            // TODO: Fix temporal! https://app.asana.com/0/11259274658600/25520164343219
-            // accountingTransactions.createIndex(new BasicDBObject("accountOps.accountId", 1).append("accountOps.seqId", 1), new BasicDBObject("unique", true));
-            accountingTransactions.createIndex(new BasicDBObject("accountOps.accountId", 1).append("accountOps.seqId", 1));
+             accountingTransactions.createIndex(new BasicDBObject("accountOps.accountId", 1).append("accountOps.seqId", 1), new BasicDBObject("unique", true));
         }
     }
 
