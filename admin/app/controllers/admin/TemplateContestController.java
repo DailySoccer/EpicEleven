@@ -11,6 +11,7 @@ import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.PaginationData;
+import utils.ReturnHelper;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -309,5 +310,10 @@ public class TemplateContestController extends Controller {
         // Logger.info("MockData: Template Contest: {} ({})", templateContest.templateMatchEventIds, GlobalDate.formatDate(startDate));
 
         Model.templateContests().insert(templateContest);
+    }
+
+    public static Result getPrizes(String prizeType, Integer maxEntries, Integer entryFee) {
+        Prizes prizes = Prizes.findOne(PrizeType.valueOf(prizeType), maxEntries, entryFee);
+        return new ReturnHelper(prizes.getAllValues()).toResult();
     }
 }

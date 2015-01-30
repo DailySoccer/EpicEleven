@@ -49,9 +49,6 @@ public class Contest implements JongoId {
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public PrizeType prizeType;
 
-    @JsonView(value={JsonViews.ContestInfo.class, JsonViews.Extended.class})
-    public List<Integer> prizes;
-
     public Date startDate;
 
     public String optaCompetitionId;
@@ -78,7 +75,6 @@ public class Contest implements JongoId {
         salaryCap = template.salaryCap;
         entryFee = template.entryFee;
         prizeType = template.prizeType;
-        prizes = template.prizes;
         startDate = template.startDate;
         optaCompetitionId = template.optaCompetitionId;
         templateMatchEventIds = template.templateMatchEventIds;
@@ -259,7 +255,7 @@ public class Contest implements JongoId {
         return contains;
     }
 
-    private void updateRanking() {
+    private void updateRanking(Prizes prizes) {
         if (contestEntries.isEmpty()) {
             return;
         }
@@ -274,15 +270,12 @@ public class Contest implements JongoId {
         Collections.sort (contestEntries, new ContestEntryComparable());
         // Actualizamos sus "posiciones"
         int index = 0;
+
         for (ContestEntry contestEntry : contestEntries) {
             contestEntry.position = index++;
-            contestEntry.prize = getPositionPrize(contestEntry.position);
+            contestEntry.prize = prizes.getValue(contestEntry.position);
             contestEntry.updateRanking();
         }
-    }
-
-    public int getPositionPrize(int position) {
-        return (position < prizes.size()) ? prizes.get(position) : 0;
     }
 
     public void givePrizes() {
@@ -290,15 +283,18 @@ public class Contest implements JongoId {
             return;
         }
 
-        updateRanking();
+        Prizes prizes = Prizes.findOne(this);
+
+        updateRanking(prizes);
 
         // Si el contest tiene premios para repartir...
-        if (!prizes.isEmpty()) {
+        if (!prizeType.equals(PrizeType.FREE)) {
             List<AccountOp> accounts = new ArrayList<>();
             for (ContestEntry contestEntry : contestEntries) {
-                if (contestEntry.position < prizes.size()) {
+                Integer prize = prizes.getValue(contestEntry.position);
+                if (prize > 0) {
                     User user = User.findOne(contestEntry.userId);
-                    accounts.add(new AccountOp(contestEntry.userId, new BigDecimal(prizes.get(contestEntry.position)), user.getSeqId() + 1));
+                    accounts.add(new AccountOp(contestEntry.userId, new BigDecimal(prize), user.getSeqId() + 1));
                 }
             }
             AccountingTranPrize.create(contestId, accounts);

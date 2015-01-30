@@ -65,8 +65,58 @@
 </div>
 }
 
+@scripts = {
+<script type="text/javascript">
 
-@main("Template Contest - Admin") {
+        function updatePrizes() {
+            var maxEntries = $('#maxEntries').val();
+            var entryFee = $('#entryFee').val();
+            var prizeType = $('#prizeType').val();
+
+            $("#prize-pool").text("("+(maxEntries * entryFee * 0.90).toFixed(2) + "€)");
+            $.ajax({
+                url: "/admin/template_contest/get_prizes/"+prizeType+"/"+maxEntries+"/"+entryFee,
+                success: function (result) {
+                    var total = 0;
+                    var head = "<table width='300'><caption>"
+                                // +"TABLA DE PREMIOS (" + (maxEntries * entryFee * 0.90).toFixed(2) + "€)"
+                                +"</caption><thead><tr>"
+                                + "<th>Position</th>"
+                                + "<th>Prize</th>"
+                                + "</tr></thead>";
+                    var body = "<tbody>";
+                    jQuery.each(result, function(index, value) {
+                        body += "<tr><td>"+(index+1)+"º</td>";
+                        body += "<td>"+value+"€</td></tr>";
+                        total += value;
+                    });
+                    body += "</tbody>";
+                    var footer = "<tfoot><tr>";
+                    footer += "<td>Total</td>";
+                    footer += "<td>"+total+"€</td>";
+                    footer += "</tr></tfoot>";
+                    var end = "</table>";
+                    $("#prizes").html(head+body+footer+end);
+                }
+            });
+        }
+
+        $(document).ready( function(){
+            $('#maxEntries').change(function(){
+                updatePrizes();
+            });
+            $('#entryFee').change(function(){
+                updatePrizes();
+            });
+            $('#prizeType').change(function(){
+                updatePrizes();
+            });
+        })
+
+    </script>
+}
+
+@main("Template Contest - Admin", scripts) {
 
 <h1 class="page-header">Template Contest</h1>
 
@@ -138,6 +188,9 @@
             )
 
             </form>
+
+            <h4>TABLA DE PREMIOS <span id="prize-pool"></span></h4>
+            <div id="prizes"></div>
         </div>
 
         <div class="col-md-5">
