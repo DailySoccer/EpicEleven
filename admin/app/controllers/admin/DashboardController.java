@@ -57,7 +57,7 @@ public class DashboardController extends Controller {
     static public Result addMoneyToBots(Integer amount) {
         Logger.info("Ejecutando addMoneyToBots...");
         addMoney(User.findBots(), amount);
-        FlashMessage.success("addMoneyToBots OK");
+        Logger.info("addMoneyToBots OK");
         return ok("");
     }
 
