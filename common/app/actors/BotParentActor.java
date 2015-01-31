@@ -13,9 +13,16 @@ import java.util.concurrent.TimeUnit;
 
 public class BotParentActor extends UntypedActor {
 
+    public enum ChildrenState {
+        STARTED,
+        PAUSED,
+        STOPPED
+    }
+
     @Override public void postStop() {
         // Para evitar que nos lleguen cartas de muertos
         cancelTicking();
+        stopActors();
     }
 
     private void readConfig() {
@@ -41,36 +48,57 @@ public class BotParentActor extends UntypedActor {
         }
     }
 
+    private void startChildren() {
+        Logger.debug("BotParentActor arrancando {} bots hijos", _numBots);
+        readConfig();
+        createActors();
+        startTicking();
+        Logger.debug("BotParentActor {} hijos arrancados", _numBots);
+    }
+
+    private void stopChildren() {
+        Logger.debug("BotParentActor parando {} bots hijos", _numBots);
+        cancelTicking();
+        stopActors();
+        Logger.debug("BotParentActor {} hijos parados", _numBots);
+    }
+
     private void onReceive(String msg) {
 
         switch (msg) {
-            case "StartChildren":
-
-                readConfig();
-
+            case "StartStop":
                 if (!_childrenStarted) {
-                    Logger.debug("BotParentActor arrancando {} bots hijos", _numBots);
-                    startTicking();
+                    startChildren();
                 }
                 else {
-                    Logger.error("WTF 1567 Recibido StartChildren a destiempo");
+                    stopChildren();
                 }
+
+                sender().tell(getCurrentChildrenState(), getSelf());
                 break;
 
-            case "StopChildren":
+            case "PauseResume":
                 if (_childrenStarted) {
-                    Logger.debug("BotParentActor parando {} bots hijos", _numBots);
-                    cancelTicking();
-                    Logger.debug("BotParentActor {} hijos parados", _numBots);
+                    if (_tickCancellable != null) {
+                        Logger.debug("BotParentActor pausando hijos");
+                        cancelTicking();
+                        Logger.debug("BotParentActor hijos pausados");
+                    }
+                    else {
+                        Logger.debug("BotParentActor resumiendo hijos");
+                        startTicking();
+                        Logger.debug("BotParentActor hijos resumidos");
+                    }
                 }
                 else {
-                    Logger.error("WTF 1560 Recibido StopChildren a destiempo");
+                    Logger.error("WTF 1561 Recibido Pause a destiempo");
                 }
 
+                sender().tell(getCurrentChildrenState(), getSelf());
                 break;
 
-            case "GetChildrenStarted":
-                sender().tell(_childrenStarted, getSelf());
+            case "GetChildrenState":
+                sender().tell(getCurrentChildrenState(), getSelf());
                 break;
 
             case "NORMAL_TICK":
@@ -112,6 +140,16 @@ public class BotParentActor extends UntypedActor {
         }
     }
 
+    private ChildrenState getCurrentChildrenState() {
+        ChildrenState currentState = ChildrenState.STOPPED;
+
+        if (_childrenStarted) {
+            currentState = (_tickCancellable == null)? ChildrenState.PAUSED : ChildrenState.STARTED;
+        }
+
+        return currentState;
+    }
+
     private void onReceive(BotActor.BotMsg msg) {
 
         switch (msg.msg) {
@@ -134,8 +172,8 @@ public class BotParentActor extends UntypedActor {
         _averageEnteredContests = (float)sum / (float) _botEnteredContests.size();
     }
 
-    private void startTicking() {
 
+    private void createActors() {
         for (int c = 0; c < _numBots; ++c) {
             getContext().actorOf(Props.create(BotActor.class, c, _personality), String.format("BotActor%d", c));
         }
@@ -145,13 +183,10 @@ public class BotParentActor extends UntypedActor {
 
         _botEnteredContests = new HashMap<>();
         _averageEnteredContests = 0;
-
-        getSelf().tell(_tickMode.name(), getSelf());
-        reescheduleCyclePersonalities();
     }
 
-    private void cancelTicking() {
 
+    private void stopActors() {
         // Since stopping an actor is asynchronous, you cannot immediately reuse the name of the child you just stopped;
         // this will result in an InvalidActorNameException. Instead, watch the terminating actor and create its
         // replacement in response to the Terminated message which will eventually arrive.
@@ -167,6 +202,17 @@ public class BotParentActor extends UntypedActor {
         }
 
         _childrenStarted = false;
+    }
+
+    private void startTicking() {
+        // Primer tick inmediato...
+        getSelf().tell(_tickMode.name(), getSelf());
+
+        // ...en la personalidad que hubiera configurada
+        reescheduleCyclePersonalities();
+    }
+
+    private void cancelTicking() {
 
         if (_tickCancellable != null) {
             _tickCancellable.cancel();
