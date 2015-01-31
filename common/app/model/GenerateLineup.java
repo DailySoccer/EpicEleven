@@ -48,7 +48,7 @@ public class GenerateLineup {
         // Dos delanteros entre los 8 mejores
         for (int c = 0; c < 2; ++c) {
             int next = _rand.nextInt(Math.min(8, forwards.size()));
-            lineup.add(forwards.get(next));
+            lineup.add(forwards.remove(next));
         }
 
         // Un portero de la mitad para abajo
