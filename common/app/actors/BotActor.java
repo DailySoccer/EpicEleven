@@ -84,14 +84,19 @@ public class BotActor extends UntypedActor {
     @Override
     public void onReceive(Object msg) {
 
-        if (msg instanceof BotMsg) {
-            onReceive((BotMsg) msg);
-        } else {
-            onReceive((String) msg);
+        try {
+            if (msg instanceof BotMsg) {
+                onReceive((BotMsg) msg);
+            } else {
+                onReceive((String) msg);
+            }
+        }
+        catch (TimeoutException exc) {
+            Logger.info("{} Timeout 1026, probablemente el servidor esta saturado...", getFullName());
         }
     }
 
-    private void onReceive(String msg) {
+    private void onReceive(String msg) throws TimeoutException {
 
         switch (msg) {
             case "NextPersonality":
@@ -103,36 +108,35 @@ public class BotActor extends UntypedActor {
                 _personality = personalities.get(nextIndex);
                 break;
 
+
+            case "LeaveAllContests":
+                leaveAllContests();
+                break;
+
             default:
                 unhandled(msg);
                 break;
         }
     }
 
-    private void onReceive(BotMsg msg) {
+    private void onReceive(BotMsg msg) throws TimeoutException {
 
         switch (msg.msg) {
             case "Tick":
-                try {
-                    if (_user == null) {
-                        tryLogin();
-                    } else {
-                        switch (_personality) {
-                            case BERSERKER:
-                                onTickBerserker();
-                                break;
-                            default:
-                                onTickProduction((float)msg.param);
-                                break;
-                        }
+                if (_user == null) {
+                    tryLogin();
+                }
+                else {
+                    switch (_personality) {
+                        case BERSERKER:
+                            onTickBerserker();
+                            break;
+                        default:
+                            onTickProduction((float)msg.param);
+                            break;
                     }
                 }
-                catch (TimeoutException exc) {
-                    Logger.info("{} Timeout 1026, probablemente el servidor esta saturado...", getFullName());
-                }
-
                 _numTicks++;
-
                 break;
 
             default:
@@ -204,6 +208,17 @@ public class BotActor extends UntypedActor {
 
         // Comunicamos a nuestro padre en cuantos concursos estamos ahora mismo
         getSender().tell(new BotMsg("CurrentEnteredContests", _user.userId.toString(), myActiveContests.size() + diffContests), getSelf());
+    }
+
+    private void leaveAllContests() throws TimeoutException {
+        if (_user == null) {
+            Logger.error("WTF 8811 {} se llamo a leaveAllContests sin haber hecho login", getFullName());
+            return;
+        }
+
+        for (Contest contest : getMyActiveContests()) {
+            leaveContest(contest);
+        }
     }
 
     List<Contest> getMyActiveContests() throws TimeoutException {

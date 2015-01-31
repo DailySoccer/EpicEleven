@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import actors.BotParentActor;
 import model.MockData;
 import model.Model;
 import model.User;
@@ -18,7 +19,7 @@ import java.util.List;
 
 public class DashboardController extends Controller {
     public static Result index() {
-        return ok(views.html.dashboard.render(OptaCompetition.findAllActive(), getBotActorsStarted()));
+        return ok(views.html.dashboard.render(OptaCompetition.findAllActive(), getBotsState()));
     }
 
     static public Result initialSetup() {
@@ -47,10 +48,18 @@ public class DashboardController extends Controller {
         return ok(Model.getTargetEnvironment().toString());
     }
 
-    static public Result switchBotActors(boolean start) {
+    static public Result startStopBotActors() {
+        Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "StartStop");
+        return redirect(routes.DashboardController.index());
+    }
 
-        Model.getDailySoccerActors().tellToActor("BotParentActor", start ? "StartChildren" : "StopChildren");
+    static public Result pauseResumeBotActors() {
+        Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "PauseResume");
+        return redirect(routes.DashboardController.index());
+    }
 
+    static public Result stampedeBotActors() {
+        Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "Stampede");
         return redirect(routes.DashboardController.index());
     }
 
@@ -81,7 +90,7 @@ public class DashboardController extends Controller {
         }
     }
 
-    static private boolean getBotActorsStarted() {
-        return (Boolean)Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "GetChildrenStarted");
+    static private BotParentActor.ChildrenState getBotsState() {
+        return (BotParentActor.ChildrenState)Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "GetChildrenState");
     }
 }

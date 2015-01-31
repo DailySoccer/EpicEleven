@@ -32,13 +32,11 @@ public class GenerateLineup {
         return lineup;
     }
 
-    // Una intento rapido de hacerlo un poco mejor. Por ejemplo en el mundial no funciona pq no puede encontrar
-    // futbolistas que satisfagan las condiciones. Sin embargo, en los concursos actuales de La Liga/Premier, hasta ahora
-    // siempre ha encontrado
+    // Una intento rapido de hacerlo un poco mejor.
     static public List<TemplateSoccerPlayer> quickAndDirty(List<TemplateSoccerPlayer> soccerPlayers, int salaryCap) {
         List<TemplateSoccerPlayer> lineup = new ArrayList<>();
 
-        sortByFantasyPoints(soccerPlayers);
+        sortByFantasyPoints(soccerPlayers, true);
 
         List<TemplateSoccerPlayer> forwards = filterByPosition(soccerPlayers, FieldPos.FORWARD);
         List<TemplateSoccerPlayer> goalkeepers = filterByPosition(soccerPlayers, FieldPos.GOALKEEPER);
@@ -47,46 +45,32 @@ public class GenerateLineup {
 
         // Dos delanteros entre los 8 mejores
         for (int c = 0; c < 2; ++c) {
-            int next = _rand.nextInt(Math.min(8, forwards.size()));
-            lineup.add(forwards.get(next));
+            lineup.add(forwards.remove(_rand.nextInt(Math.min(8, forwards.size()))));
         }
 
         // Un portero de la mitad para abajo
         lineup.add(goalkeepers.get(_rand.nextInt(goalkeepers.size() / 2) + (goalkeepers.size() / 2)));
 
-        // Medios y defensas repartidos por igual, buscamos varias veces partiendo desde la media y aumentado de 100 en
-        // 100 por debajo
-        int averageRemainingSalary = (salaryCap - sumSalary(lineup)) / 8;
-        int diff = -1;
-
-        for (int tryCounter = 0; tryCounter < 20; ++tryCounter) {
-            List<TemplateSoccerPlayer> tempLineup = new ArrayList<>(lineup);
-
-            int maxSal = averageRemainingSalary + 500;
-            int minSal = averageRemainingSalary - ((tryCounter+1)*100);
-            List<TemplateSoccerPlayer> middlesBySalary = filterBySalary(middles, minSal, maxSal);
-            List<TemplateSoccerPlayer> defensesBySalary = filterBySalary(defenses, minSal, maxSal);
-
-            if (middlesBySalary.size() < 4 || defensesBySalary.size() < 4) {
-                continue;
-            }
-
-            for (int c = 0; c < 4; ++c) {
-                int next = _rand.nextInt(Math.min(8, middlesBySalary.size()));
-                tempLineup.add(middlesBySalary.remove(next));
-                next = _rand.nextInt(Math.min(8, defensesBySalary.size()));
-                tempLineup.add(defensesBySalary.remove(next));
-            }
-
-            diff = salaryCap - sumSalary(tempLineup);
-
-            if (tempLineup.size() == 11 && diff >= 0) {
-                lineup = tempLineup;
-                break;
-            }
-        }
+        // 4 y 4 cogidos al azar entre los mejores sin pasarnos del salario medio restante
+        selectSoccerPlayers(lineup, middles, 4, salaryCap);
+        selectSoccerPlayers(lineup, defenses, 4, salaryCap);
 
         return lineup;
+    }
+
+
+    static private void selectSoccerPlayers(List<TemplateSoccerPlayer> lineup, List<TemplateSoccerPlayer> from, int howMany, int salaryCap) {
+        for (int c = 0; c < howMany; ++c) {
+            int averageRemainingSalary = (salaryCap - sumSalary(lineup)) / (11 - lineup.size());
+
+            List<TemplateSoccerPlayer> filtered = filterBySalary(from, 0, averageRemainingSalary);
+            sortByFantasyPoints(filtered, true);
+
+            // Entre los 8 mejores... esto podia ser un parametro para ajustar mas, por ejemplo dependiendo del numero de maxEntries
+            TemplateSoccerPlayer selected = filtered.get(_rand.nextInt(Math.min(8, filtered.size())));
+            lineup.add(selected);
+            from.remove(selected);
+        }
     }
 
 
@@ -116,13 +100,23 @@ public class GenerateLineup {
         }));
     }
 
-    static private void sortByFantasyPoints(List<TemplateSoccerPlayer> sps) {
-        Collections.sort(sps, new Comparator<TemplateSoccerPlayer>() {
-            @Override
-            public int compare(TemplateSoccerPlayer o1, TemplateSoccerPlayer o2) {
-                return o1.fantasyPoints - o2.fantasyPoints;
-            }
-        });
+    static private void sortByFantasyPoints(List<TemplateSoccerPlayer> sps, boolean desc) {
+        if (desc) {
+            Collections.sort(sps, new Comparator<TemplateSoccerPlayer>() {
+                @Override
+                public int compare(TemplateSoccerPlayer o1, TemplateSoccerPlayer o2) {
+                    return o2.fantasyPoints - o1.fantasyPoints;
+                }
+            });
+        }
+        else {
+            Collections.sort(sps, new Comparator<TemplateSoccerPlayer>() {
+                @Override
+                public int compare(TemplateSoccerPlayer o1, TemplateSoccerPlayer o2) {
+                    return o1.fantasyPoints - o2.fantasyPoints;
+                }
+            });
+        }
     }
 
     static private void sortBySalary(List<TemplateSoccerPlayer> sps) {
