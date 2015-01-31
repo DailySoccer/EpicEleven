@@ -58,6 +58,11 @@ public class DashboardController extends Controller {
         return redirect(routes.DashboardController.index());
     }
 
+    static public Result stampedeBotActors() {
+        Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "Stampede");
+        return redirect(routes.DashboardController.index());
+    }
+
     static public Result addMoneyToBots(Integer amount) {
         Logger.info("Ejecutando addMoneyToBots...");
         addMoney(User.findBots(), amount);

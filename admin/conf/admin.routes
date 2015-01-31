@@ -6,6 +6,7 @@ GET         /set_target_environment/:appEnv                                     
 GET         /get_target_environment                                              controllers.admin.DashboardController.getTargetEnvironment()
 GET         /start_stop_bot_actors                                               controllers.admin.DashboardController.startStopBotActors()
 GET         /pause_resume_bot_actors                                             controllers.admin.DashboardController.pauseResumeBotActors()
+GET         /stampede_bot_actors                                                 controllers.admin.DashboardController.stampedeBotActors()
 GET         /add_money_to_bots/:amount                                           controllers.admin.DashboardController.addMoneyToBots(amount : Integer)
 GET         /add_money_to_tests/:amount                                          controllers.admin.DashboardController.addMoneyToTests(amount : Integer)
 

@@ -91,13 +91,24 @@ public class BotParentActor extends UntypedActor {
                     }
                 }
                 else {
-                    Logger.error("WTF 1561 Recibido Pause a destiempo");
+                    Logger.error("WTF 1561 Recibido PauseResume a destiempo");
                 }
 
                 sender().tell(getCurrentChildrenState(), getSelf());
                 break;
 
             case "GetChildrenState":
+                sender().tell(getCurrentChildrenState(), getSelf());
+                break;
+
+            case "Stampede":
+                Logger.debug("BotParentActor Stampede!");
+                for (ActorRef actorRef : getContext().getChildren()) {
+                    actorRef.tell("LeaveAllContests", getSelf());
+                    cancelTicking();
+                }
+                Logger.debug("BotParentActor Stampede end");
+
                 sender().tell(getCurrentChildrenState(), getSelf());
                 break;
 
