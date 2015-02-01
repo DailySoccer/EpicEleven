@@ -39,12 +39,10 @@ public class Notification {
     public Notification(Topic topic, String reason, ObjectId recipientId) {
         this.state = State.READY;
         this.topic = topic;
-        this.reason = digest(reason);
+        this.reason = getDigest(reason);
         this.userId = recipientId;
         this.createdAt = GlobalDate.getCurrentDate();
-        Model.notifications().insert(this);
     }
-
 
     public void markSent() {
         state = State.SENT;
@@ -52,16 +50,11 @@ public class Notification {
         Model.notifications().update(this.notificationId).with(this);
     }
 
-    public boolean isSent() {
-        return state == State.SENT;
-    }
-
     public static boolean isNotSent(Topic topic, String reason, ObjectId recipientId) {
-        return null == Model.notifications().findOne("{topic: #, reason: #, userId: #, state: \"SENT\" }", topic, digest(reason), recipientId).as(Notification.class);
+        return null == Model.notifications().findOne("{topic: #, reason: #, userId: #, state: \"SENT\" }", topic, getDigest(reason), recipientId).as(Notification.class);
     }
 
-
-    public static String digest(String original) {
+    private static String getDigest(String original) {
         MessageDigest md = null;
         String result = null;
         try {

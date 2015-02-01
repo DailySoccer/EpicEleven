@@ -144,8 +144,8 @@ public class Contest implements JongoId {
         return ListUtils.asList(Model.contests().find("{templateContestId: #, state: { $ne: \"CANCELED\" }}", templateContestId).as(Contest.class));
     }
 
-    static public List<Contest> findAllStartingInOneHourOrLess() {
-        DateTime oneHourInFuture = new DateTime(GlobalDate.getCurrentDate()).plusHours(1);
+    static public List<Contest> findAllStartingIn(int hours) {
+        DateTime oneHourInFuture = new DateTime(GlobalDate.getCurrentDate()).plusHours(hours);
         return ListUtils.asList(Model.contests()
                 .find("{startDate: {$gt: #, $lte: # }}", GlobalDate.getCurrentDate(), oneHourInFuture.toDate())
                 .as(Contest.class));

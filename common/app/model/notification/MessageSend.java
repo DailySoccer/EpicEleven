@@ -33,18 +33,18 @@ public class MessageSend {
 
         public boolean sendCall() throws JsonProcessingException {
             String url = "/messages/send.json";
-            WSResponse response = WS.url(_mandrillUrl + url).post(new ObjectMapper().writeValueAsString(this)).get(5000, TimeUnit.MILLISECONDS);
+            WSResponse response = WS.url(_MANDRILL_URL + url).post(new ObjectMapper().writeValueAsString(this)).get(5000, TimeUnit.MILLISECONDS);
+
             if (response.getStatus() == 200) {
                 Logger.info("Mandrill Response:" + response.asJson().toString());
             }
             else {
                 Logger.error("Mandrill Response:" + response.asJson().toString());
             }
-            return response.getStatus() == 200; //You can consider any non-200 HTTP response code an error - the returned data will contain more detailed information
+            return response.getStatus() == 200; // You can consider any non-200 HTTP response code an error - the returned data will contain more detailed information
         }
 
-
-        private final String _mandrillUrl = "https://mandrillapp.com/api/1.0";
+        private final String _MANDRILL_URL = "https://mandrillapp.com/api/1.0";
     }
 
     public static class MandrillMessage {
@@ -197,7 +197,8 @@ public class MessageSend {
 
         try {
             return messageRequest.sendCall();
-        } catch (JsonProcessingException e) {
+        }
+        catch (JsonProcessingException e) {
             Logger.error("WTF 9205");
         }
         return false;
@@ -205,10 +206,10 @@ public class MessageSend {
 
 
 
-    public static void notifyIfNotYetNotified(User user, Notification.Topic topic, String subject, Html htmlContent) {
-        if (Notification.isNotSent(topic, htmlContent.toString(), user.userId)) {
-            Notification notification = new Notification(topic, htmlContent.toString(), user.userId);
-            if (send(user.nickName, user.email, subject, htmlContent.toString())) {
+    public static void notifyIfNotYetNotified(User user, Notification.Topic topic, String subject, String htmlContent) {
+        if (Notification.isNotSent(topic, htmlContent, user.userId)) {
+            Notification notification = new Notification(topic, htmlContent, user.userId);
+            if (send(user.nickName, user.email, subject, htmlContent)) {
                 notification.markSent();
             }
         }

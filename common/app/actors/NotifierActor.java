@@ -29,8 +29,6 @@ public class NotifierActor extends UntypedActor {
                                                                "Tick", getContext().dispatcher(), null);
                 break;
 
-            // En el caso del SimulatorTick no tenemos que reeschedulear el mensaje porque es el Simulator el que se
-            // encarga de drivearnos.
             case "SimulatorTick":
                 onTick();
                 break;
@@ -45,20 +43,19 @@ public class NotifierActor extends UntypedActor {
         Logger.debug("NotifierActor: {}", GlobalDate.getCurrentDateString());
 
         notifyContestStartsInOneHour();
-        //All the rest of things to notify in each tick
-
+        // All the rest of things to notify in each tick
     }
 
 
     private void notifyContestStartsInOneHour() {
-        List<Contest> nextContests = Contest.findAllStartingInOneHourOrLess();
+        List<Contest> nextContests = Contest.findAllStartingIn(1);
 
         Map<User, ArrayList<Contest>> nextUsersContests = getUsersForContests(nextContests);
 
         for (User user: nextUsersContests.keySet()) {
             MessageSend.notifyIfNotYetNotified(user, Topic.CONTEST_NEXT_HOUR,
-                    nextUsersContests.get(user).size() + " concursos por empezar!",
-                    views.html.remaining.render(user.nickName, nextUsersContests.get(user), nextUsersContests.get(user).size() ));
+                    nextUsersContests.get(user).size() + " concursos van a comenzar!",
+                    views.html.email_contest_start.render(user.nickName, nextUsersContests.get(user), nextUsersContests.get(user).size()).toString());
         }
     }
 
