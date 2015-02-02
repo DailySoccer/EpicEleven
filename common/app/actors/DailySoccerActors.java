@@ -317,7 +317,7 @@ public class DailySoccerActors {
             _connection = factory.newConnection();
             _channel = _connection.createChannel();
 
-            Logger.debug("RabbitMQ inicializado en TargetEnvironment.{}", env.toString());
+            Logger.info("RabbitMQ inicializado en TargetEnvironment.{}", env.toString());
         }
         catch (Exception exc) {
             Logger.warn("DailySoccerActors no pudo inicializar RabbitMQ");
@@ -348,7 +348,7 @@ public class DailySoccerActors {
             }
         }
         catch (Exception exc) {
-            Logger.debug("WTF 6699 RabbitMQ Channel no pudo cerrar", exc);
+            Logger.error("WTF 6699 RabbitMQ Channel no pudo cerrar", exc);
         }
 
         try {
@@ -358,7 +358,7 @@ public class DailySoccerActors {
             }
         }
         catch (Exception exc) {
-            Logger.debug("WTF 6699 RabbitMQ Connection no pudo cerrar", exc);
+            Logger.error("WTF 6699 RabbitMQ Connection no pudo cerrar", exc);
         }
     }
 
