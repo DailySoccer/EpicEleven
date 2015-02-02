@@ -7,7 +7,7 @@ import play.Logger;
 import scala.concurrent.duration.Duration;
 import java.util.concurrent.TimeUnit;
 
-public class GivePrizesActor extends UntypedActor {
+public class CloseContestsActor extends UntypedActor {
     public void onReceive(Object msg) {
 
         switch ((String)msg) {
@@ -31,7 +31,7 @@ public class GivePrizesActor extends UntypedActor {
     }
 
     private void onTick() {
-        Logger.info("Give Prizes: {}", GlobalDate.getCurrentDateString());
+        Logger.info("CloseContestsActor: {}", GlobalDate.getCurrentDateString());
 
         for (Contest contest : Contest.findAllHistoryNotClosed()) {
             contest.closeContest();
