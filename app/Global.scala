@@ -41,7 +41,7 @@ object Global extends GlobalSettings {
 
       // Quitamos los logs que vienen de la descarga de Assets y de la zona de admin
       if (!requestHeader.tags(Routes.ROUTE_CONTROLLER).contains("Assets") && !requestHeader.tags(Routes.ROUTE_CONTROLLER).contains("admin")) {
-        Logger.info(requestHeader.tags(Routes.ROUTE_ACTION_METHOD) + s" took ${requestTime}ms")
+        Logger.debug(requestHeader.tags(Routes.ROUTE_ACTION_METHOD) + s" took ${requestTime}ms")
       }
 
       result.withHeaders("Request-Time" -> requestTime.toString)

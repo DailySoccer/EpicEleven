@@ -100,6 +100,8 @@ public class BotActor extends UntypedActor {
 
         switch (msg) {
             case "NextPersonality":
+                Logger.debug("{} va a cambiar de personalidad, current personality {}", getFullName(), _personality.toString());
+
                 List<Personality> personalities = Arrays.asList(Personality.values());
                 int nextIndex = personalities.indexOf(_personality) + 1;
                 if (nextIndex >= personalities.size()) {
@@ -123,6 +125,8 @@ public class BotActor extends UntypedActor {
 
         switch (msg.msg) {
             case "Tick":
+                Logger.debug("{} va a procesar el tick {}", getFullName(), _numTicks);
+
                 if (_user == null) {
                     tryLogin();
                 }
@@ -150,13 +154,14 @@ public class BotActor extends UntypedActor {
         if (!login()) {
             signup();
 
-            if (login()) {
-                // Vamos a asegurnos de que el profile del bot tiene los datos como queremos
-                changeUserProfile();
-            }
-            else {
+            if (!login()) {
                 Logger.error("WTF 5466 {} no pudo hacer signup + login", getFullName());
             }
+        }
+
+        // Si hemos podido hacer login, vamos a asegurnos de que el profile del bot tiene los datos como queremos
+        if (_user != null) {
+            changeUserProfile();
         }
     }
 
@@ -211,6 +216,8 @@ public class BotActor extends UntypedActor {
     }
 
     private void leaveAllContests() throws TimeoutException {
+        Logger.debug("{} va a salir de todos los concursos", getFullName());
+
         if (_user == null) {
             Logger.error("WTF 8811 {} se llamo a leaveAllContests sin haber hecho login", getFullName());
             return;
@@ -222,6 +229,8 @@ public class BotActor extends UntypedActor {
     }
 
     List<Contest> getMyActiveContests() throws TimeoutException {
+        Logger.debug("{} va a pedir sus getMyActiveContests", getFullName());
+
         List<Contest> ret;
         JsonNode jsonNode = get("get_my_contests").findValue("contests_0");
 
@@ -356,6 +365,7 @@ public class BotActor extends UntypedActor {
     }
 
     private boolean login() throws TimeoutException {
+        Logger.debug("{} va a intentar hacer login", getFullName());
 
         _user = null;
 
@@ -372,6 +382,8 @@ public class BotActor extends UntypedActor {
     }
 
     private void signup() throws TimeoutException {
+        Logger.debug("{} va a intentar hacer signup", getFullName());
+
         JsonNode jsonNode = post("signup", String.format("firstName=%s&lastName=%s&nickName=%s&email=%s&password=uoyeradiputs3991",
                                                          getFirstName(), getLastName(), getNickName(), getEmail()));
 
@@ -382,6 +394,8 @@ public class BotActor extends UntypedActor {
 
 
     private void changeUserProfile() throws TimeoutException {
+        Logger.debug("{} va a intentar hacer changeUserProfile", getFullName());
+
         JsonNode jsonNode = post("change_user_profile", String.format("firstName=%s&lastName=%s&nickName=%s&email=%s",
                                                                  getFirstName(), getLastName(), getNickName(), getEmail()));
 
@@ -391,6 +405,7 @@ public class BotActor extends UntypedActor {
     }
 
     private List<Contest> getActiveContests() throws TimeoutException {
+        Logger.debug("{} va pedir getActiveContests", getFullName());
 
         List<Contest> ret = null;
         JsonNode jsonNode = get("get_active_contests").findValue("contests");
@@ -406,6 +421,8 @@ public class BotActor extends UntypedActor {
     }
 
     private String enterContest(Contest contest) throws TimeoutException {
+        Logger.debug("{} va a hacer un enterContest", getFullName());
+
         JsonNode jsonNode = get(String.format("get_public_contest/%s", contest.contestId)).findValue("soccer_players");
         String enteredContestId = null;
 
@@ -426,7 +443,7 @@ public class BotActor extends UntypedActor {
             }
 
             if (lineup.size() == 11 && GenerateLineup.sumSalary(lineup) <= contest.salaryCap) {
-                Logger.info("{} va a entrar en {} contestId, {} diffSalary", getFullName(), contest.contestId, contest.salaryCap - GenerateLineup.sumSalary(lineup));
+                Logger.debug("{} va a entrar en {} contestId, {} diffSalary", getFullName(), contest.contestId, contest.salaryCap - GenerateLineup.sumSalary(lineup));
                 enteredContestId = addContestEntry(lineup, contest.contestId);
             }
             else {
@@ -466,6 +483,8 @@ public class BotActor extends UntypedActor {
     }
 
     private List<UserInfo> getUsersInfoInContest(Contest contest) throws TimeoutException {
+        Logger.debug("{} va a hacer un getContestInfo", getFullName());
+
         List<UserInfo> ret;
         JsonNode jsonNode = get(String.format("get_contest_info/%s", contest.contestId)).findValue("users_info");
 
