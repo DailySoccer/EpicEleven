@@ -5,7 +5,7 @@ import model.Contest;
 import model.ContestEntry;
 import model.GlobalDate;
 import model.User;
-import model.notification.MessageSend;
+import model.notification.MessageTemplateSend;
 import model.notification.Notification.Topic;
 import play.Logger;
 import scala.concurrent.duration.Duration;
@@ -52,11 +52,30 @@ public class NotifierActor extends UntypedActor {
 
         Map<User, ArrayList<Contest>> nextUsersContests = getUsersForContests(nextContests);
 
+        List<MessageTemplateSend.MandrillMessage.MergeVarBucket> mergeVars = new ArrayList<>();
+
         for (User user: nextUsersContests.keySet()) {
-            MessageSend.notifyIfNotYetNotified(user, Topic.CONTEST_NEXT_HOUR,
-                    nextUsersContests.get(user).size() + " concursos van a comenzar!",
-                    views.html.email_contest_start.render(user.nickName, nextUsersContests.get(user), nextUsersContests.get(user).size()).toString());
+            MessageTemplateSend.MergeVar name = new MessageTemplateSend.MergeVar();
+            MessageTemplateSend.MergeVar contests = new MessageTemplateSend.MergeVar();
+
+            name.name = "NICKNAME";
+            name.content = user.nickName;
+
+            contests.name = "TORNEOS";
+            contests.content =  views.html.email_contest_start_template.render(nextUsersContests.get(user)).toString();
+
+            MessageTemplateSend.MandrillMessage.MergeVarBucket mvb = new MessageTemplateSend.MandrillMessage.MergeVarBucket();
+            mvb.rcpt = user.email;
+            mvb.vars = new ArrayList<>();
+
+            mvb.vars.add(name);
+            mvb.vars.add(contests);
+
+            mergeVars.add(new MessageTemplateSend.MandrillMessage.MergeVarBucket());
         }
+
+        MessageTemplateSend.notifyIfNotYetNotified(nextUsersContests.keySet(), "torneoporempezar", Topic.CONTEST_NEXT_HOUR, "En Epic Eleven tienes concursos por comenzar", mergeVars);
+
     }
 
 

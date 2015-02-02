@@ -5,21 +5,30 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.User;
+import org.bson.types.ObjectId;
+import org.joda.time.DateTime;
 import play.Logger;
 import play.libs.ws.WS;
 import play.libs.ws.WSResponse;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-public class MessageSend {
+public class MessageTemplateSend {
+
+    public static class MergeVar {
+        public String name, content;
+    }
 
     public static class MandrillMessageRequest {
 
         public String key = play.Play.application().configuration().getString("mandrill_key");
+
+        @JsonProperty("template_name")
+        public String templateName;
+
+        @JsonProperty("template_content")
+        public MergeVar[] templateContent;
         public MandrillMessage message;
         public Boolean async;
 
@@ -78,10 +87,6 @@ public class MessageSend {
         public static class MergeVarBucket {
             public String rcpt;
             public List<MergeVar> vars;
-        }
-
-        public static class MergeVar {
-            public String name, content;
         }
 
         public static class RecipientMetadata {
@@ -159,21 +164,23 @@ public class MessageSend {
 
     }
 
+    /*
     public static boolean send(String recipientName, String recipientEmail, String subject, String html) {
         Map<String, String> recipient = new HashMap<>();
         recipient.put(recipientEmail, recipientName);
         return send(recipient, subject, html);
     }
+    */
 
 
-    public static boolean send(Map<String, String> recipients, String subject, String html) {
+    public static boolean send(Map<String, String> recipients, String templateName, String subject, List<MandrillMessage.MergeVarBucket> mergeVars) {
         /**
          * recipients: Mapa con clave email, contenido nombre del destinatario.
          */
         ArrayList<MandrillMessage.Recipient> to = new ArrayList<>();
         for (String recipientsKey : recipients.keySet()) {
             MandrillMessage.Recipient fulano = new MandrillMessage.Recipient();
-            fulano.email = recipientsKey;
+            fulano.email = recipientsKey.replace("test.com", "mailinator.com");
             fulano.name = recipients.get(recipientsKey);
             to.add(fulano);
         }
@@ -183,7 +190,9 @@ public class MessageSend {
         message.fromEmail = "support@epiceleven.com";
         message.fromName = "Epic Eleven";
 
-        message.html = html;
+        message.mergeVars = mergeVars;
+
+        //message.html = html;
         message.subject = subject;
 
         message.trackClicks = true;
@@ -193,6 +202,7 @@ public class MessageSend {
         messageRequest.message = message;
         messageRequest.async = false;
         messageRequest.ipPool = "Main Pool";
+        messageRequest.templateName = templateName;
 
         try {
             return messageRequest.sendCall();
@@ -205,13 +215,31 @@ public class MessageSend {
 
 
 
-    public static void notifyIfNotYetNotified(User user, Notification.Topic topic, String subject, String htmlContent) {
-        if (Notification.isNotSent(topic, htmlContent, user.userId)) {
-            Notification notification = new Notification(topic, htmlContent, user.userId);
-            if (send(user.nickName, user.email, subject, htmlContent)) {
+    public static void notifyIfNotYetNotified(Set<User> users, String templateName, Notification.Topic topic, String subject,
+                                              List<MandrillMessage.MergeVarBucket> mergeVars, Map<String,String> reasonPerEmail) {
+        Map<String, String> recipients = new HashMap<>();
+        List<Notification> notifications = new ArrayList<>();
+
+        ArrayList<ObjectId> userIdsNotified = new ArrayList<>();
+        for (Notification notification : Notification.sentToList(topic, subject+today) ) {
+            userIdsNotified.add(notification.userId);
+        }
+
+        for (User user : users) {
+            if (!userIdsNotified.contains(user.userId)) {
+                recipients.put(user.email, user.nickName);
+                notifications.add(new Notification(topic, subject+today, user.userId));
+            }
+        }
+
+        if (send(recipients, templateName, subject, mergeVars)) {
+            for (Notification notification: notifications) {
                 notification.markSent();
             }
         }
+
+
+
     }
 
 }
