@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.User;
 import org.bson.types.ObjectId;
-import org.joda.time.DateTime;
 import play.Logger;
 import play.libs.ws.WS;
 import play.libs.ws.WSResponse;
@@ -215,22 +214,22 @@ public class MessageTemplateSend {
 
 
 
-    public static void notifyIfNotYetNotified(Set<User> users, String templateName, Notification.Topic topic, String subject,
-                                              List<MandrillMessage.MergeVarBucket> mergeVars, Map<String,String> reasonPerEmail) {
+    public static void notifyIfNotYetNotified(String templateName, Notification.Topic topic, String subject,
+                                              List<MandrillMessage.MergeVarBucket> mergeVars, Map<User,String> reasonPerUser) {
         Map<String, String> recipients = new HashMap<>();
         List<Notification> notifications = new ArrayList<>();
 
         ArrayList<ObjectId> userIdsNotified = new ArrayList<>();
-        for (Notification notification : Notification.sentToList(topic, subject+today) ) {
-            userIdsNotified.add(notification.userId);
-        }
 
-        for (User user : users) {
-            if (!userIdsNotified.contains(user.userId)) {
+
+        for (User user: reasonPerUser.keySet()) {
+            if (Notification.isNotSent(topic, reasonPerUser.get(user), user.userId)) {
+                Notification notification = new Notification(topic, reasonPerUser.get(user), user.userId);
                 recipients.put(user.email, user.nickName);
-                notifications.add(new Notification(topic, subject+today, user.userId));
+                notifications.add(new Notification(topic, reasonPerUser.get(user), user.userId));
             }
         }
+
 
         if (send(recipients, templateName, subject, mergeVars)) {
             for (Notification notification: notifications) {

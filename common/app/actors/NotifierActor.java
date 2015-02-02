@@ -10,10 +10,7 @@ import model.notification.Notification.Topic;
 import play.Logger;
 import scala.concurrent.duration.Duration;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -53,8 +50,26 @@ public class NotifierActor extends UntypedActor {
         Map<User, ArrayList<Contest>> nextUsersContests = getUsersForContests(nextContests);
 
         List<MessageTemplateSend.MandrillMessage.MergeVarBucket> mergeVars = new ArrayList<>();
+        Map<User, String> reasonsPerEmail = new HashMap<>();
 
         for (User user: nextUsersContests.keySet()) {
+
+            ArrayList<Contest> thisUsersContests = nextUsersContests.get(user);
+
+            Collections.sort(thisUsersContests, new Comparator<Contest>() {
+               @Override
+                public int compare(Contest contest1, Contest contest2) {
+                   return contest1.contestId.compareTo(contest2.contestId);
+               }
+            });
+
+            String sortedContestsString = "";
+            for (Contest contest : thisUsersContests) {
+                sortedContestsString = sortedContestsString.concat(contest.contestId.toString());
+            }
+            reasonsPerEmail.put(user, sortedContestsString);
+
+
             MessageTemplateSend.MergeVar name = new MessageTemplateSend.MergeVar();
             MessageTemplateSend.MergeVar contests = new MessageTemplateSend.MergeVar();
 
@@ -62,10 +77,10 @@ public class NotifierActor extends UntypedActor {
             name.content = user.nickName;
 
             contests.name = "TORNEOS";
-            contests.content =  views.html.email_contest_start_template.render(nextUsersContests.get(user)).toString();
+            contests.content =  views.html.email_contest_start_template.render(thisUsersContests).toString();
 
             MessageTemplateSend.MandrillMessage.MergeVarBucket mvb = new MessageTemplateSend.MandrillMessage.MergeVarBucket();
-            mvb.rcpt = user.email;
+            mvb.rcpt = user.email.replace("test.com", "mailinator.com");
             mvb.vars = new ArrayList<>();
 
             mvb.vars.add(name);
@@ -74,7 +89,7 @@ public class NotifierActor extends UntypedActor {
             mergeVars.add(new MessageTemplateSend.MandrillMessage.MergeVarBucket());
         }
 
-        MessageTemplateSend.notifyIfNotYetNotified(nextUsersContests.keySet(), "torneoporempezar", Topic.CONTEST_NEXT_HOUR, "En Epic Eleven tienes concursos por comenzar", mergeVars);
+        MessageTemplateSend.notifyIfNotYetNotified("torneoporempezar", Topic.CONTEST_NEXT_HOUR, "En Epic Eleven tienes concursos por comenzar", mergeVars, reasonsPerEmail);
 
     }
 
