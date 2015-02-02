@@ -3,7 +3,6 @@ package actors;
 import akka.actor.UntypedActor;
 import model.Contest;
 import model.GlobalDate;
-import model.TemplateContest;
 import play.Logger;
 import scala.concurrent.duration.Duration;
 import java.util.concurrent.TimeUnit;
@@ -35,8 +34,7 @@ public class GivePrizesActor extends UntypedActor {
         Logger.info("Give Prizes: {}", GlobalDate.getCurrentDateString());
 
         for (Contest contest : Contest.findAllHistoryNotClosed()) {
-            contest.givePrizes();
-            contest.setClosed();
+            contest.closeContest();
         }
     }
 }
