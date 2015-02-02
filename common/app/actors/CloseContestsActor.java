@@ -31,7 +31,7 @@ public class CloseContestsActor extends UntypedActor {
     }
 
     private void onTick() {
-        Logger.info("CloseContestsActor: {}", GlobalDate.getCurrentDateString());
+        Logger.debug("CloseContestsActor: {}", GlobalDate.getCurrentDateString());
 
         for (Contest contest : Contest.findAllHistoryNotClosed()) {
             contest.closeContest();
