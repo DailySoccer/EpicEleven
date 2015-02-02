@@ -47,7 +47,7 @@ public class Notification {
     public void markSent() {
         state = State.SENT;
         dateSent = GlobalDate.getCurrentDate();
-        Model.notifications().update(this.notificationId).with(this);
+        Model.notifications().insert(this);
     }
 
     public static boolean isNotSent(Topic topic, String reason, ObjectId recipientId) {
