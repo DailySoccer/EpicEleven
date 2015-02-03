@@ -85,6 +85,7 @@ GET         /is_paused_simulator                                                
 GET         /current_date_simulator                                              controllers.admin.SimulatorController.currentDate()
 GET         /simulator_speed/:speed                                              controllers.admin.SimulatorController.setSpeed(speed : Int)
 GET         /simulator_speed                                                     controllers.admin.SimulatorController.getSpeed()
+GET         /is_simulator_activated                                              controllers.admin.SimulatorController.isSimulatorActivated()
 
 GET         /simulator                                                           controllers.admin.SnapshotController.index()
 GET         /snapshot                                                            controllers.admin.SnapshotController.snapshot()
@@ -106,8 +107,6 @@ GET         /test_current_date                                                  
 GET         /test_initial_setup                                                  controllers.admin.TestController.initialSetup()
 GET         /create_contests/:mockIndex                                          controllers.admin.TestController.createContests(mockIndex: Int)
 
-# Informar al webclient si el simulator esta activado (requiere Json)
-GET         /is_simulator_activated                                              controllers.admin.SimulatorController.isSimulatorActivated()
 
 # WIP
 GET         /excel                                                               controllers.admin.ExcelController.index()
