@@ -209,7 +209,7 @@ public class OptaProcessorActor extends UntypedActor {
         String competitionId = resultSet.getString("competition_id");
         String gameId = resultSet.getString("game_id");
 
-        Logger.info("OptaProcessorActor: {}, {}, {}, {}/{}", feedType, name, GlobalDate.formatDate(created_at), seasonId, competitionId);
+        Logger.debug("OptaProcessorActor: {}, {}, {}, {}/{}", feedType, name, GlobalDate.formatDate(created_at), seasonId, competitionId);
 
         processor.processOptaDBInput(feedType, name, competitionId, seasonId, gameId, sqlxml);
         new OptaImporter(processor).process();

@@ -162,7 +162,6 @@ public class TemplateContest implements JongoId {
         Contest contest = new Contest(this);
         contest.state = ContestState.ACTIVE;
 
-        // TODO: <MockData> Cuándo activar o no esta "funcionalidad"
         if (addMockDataUsers) {
             MockData.addContestEntries(contest, contest.maxEntries - 1);
         }

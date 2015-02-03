@@ -38,7 +38,7 @@ public class TransactionsActor extends UntypedActor {
     }
 
     private void onTick() {
-        Logger.debug("Transactions: {}", GlobalDate.getCurrentDateString());
+        Logger.debug("TransactionsActor: {}", GlobalDate.getCurrentDateString());
 
         /*
         *   Una transacción pasará de Uncommitted a Committed cuando verifique que todas las anteriores transacciones
