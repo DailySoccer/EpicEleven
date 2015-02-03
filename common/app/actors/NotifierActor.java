@@ -80,13 +80,13 @@ public class NotifierActor extends UntypedActor {
             contests.content =  views.html.email_contest_start_template.render(thisUsersContests).toString();
 
             MessageTemplateSend.MandrillMessage.MergeVarBucket mvb = new MessageTemplateSend.MandrillMessage.MergeVarBucket();
-            mvb.rcpt = user.email.replace("test.com", "mailinator.com");
+            mvb.rcpt = user.email;
             mvb.vars = new ArrayList<>();
 
             mvb.vars.add(name);
             mvb.vars.add(contests);
 
-            mergeVars.add(new MessageTemplateSend.MandrillMessage.MergeVarBucket());
+            mergeVars.add(mvb);
         }
 
         MessageTemplateSend.notifyIfNotYetNotified("torneoporempezar", Topic.CONTEST_NEXT_HOUR, "En Epic Eleven tienes concursos por comenzar", mergeVars, reasonsPerEmail);

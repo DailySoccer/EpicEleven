@@ -5,12 +5,14 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.User;
-import org.bson.types.ObjectId;
 import play.Logger;
 import play.libs.ws.WS;
 import play.libs.ws.WSResponse;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class MessageTemplateSend {
@@ -39,7 +41,7 @@ public class MessageTemplateSend {
 
 
         public boolean sendCall() throws JsonProcessingException {
-            String url = "/messages/send.json";
+            String url = "/messages/send-template.json";
             WSResponse response = WS.url(_MANDRILL_URL + url).post(new ObjectMapper().writeValueAsString(this)).get(5000, TimeUnit.MILLISECONDS);
 
             if (response.getStatus() == 200) {
@@ -179,7 +181,7 @@ public class MessageTemplateSend {
         ArrayList<MandrillMessage.Recipient> to = new ArrayList<>();
         for (String recipientsKey : recipients.keySet()) {
             MandrillMessage.Recipient fulano = new MandrillMessage.Recipient();
-            fulano.email = recipientsKey.replace("test.com", "mailinator.com");
+            fulano.email = recipientsKey;
             fulano.name = recipients.get(recipientsKey);
             to.add(fulano);
         }
@@ -219,19 +221,15 @@ public class MessageTemplateSend {
         Map<String, String> recipients = new HashMap<>();
         List<Notification> notifications = new ArrayList<>();
 
-        ArrayList<ObjectId> userIdsNotified = new ArrayList<>();
-
-
         for (User user: reasonPerUser.keySet()) {
             if (Notification.isNotSent(topic, reasonPerUser.get(user), user.userId)) {
-                Notification notification = new Notification(topic, reasonPerUser.get(user), user.userId);
                 recipients.put(user.email, user.nickName);
                 notifications.add(new Notification(topic, reasonPerUser.get(user), user.userId));
             }
         }
 
 
-        if (send(recipients, templateName, subject, mergeVars)) {
+        if (recipients.size() > 0 && send(recipients, templateName, subject, mergeVars)) {
             for (Notification notification: notifications) {
                 notification.markSent();
             }
