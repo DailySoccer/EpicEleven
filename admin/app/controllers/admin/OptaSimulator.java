@@ -74,7 +74,7 @@ public class OptaSimulator implements Runnable {
         _paused = true;
         updateDate(_state.simulationDate);
 
-        sendToOptaProcessor("SimulatorStart");
+        sendToOptaProcessor("SimulatorInit");
     }
 
     private void sendToOptaProcessor(String msg) {

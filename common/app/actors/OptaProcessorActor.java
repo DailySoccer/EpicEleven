@@ -52,14 +52,14 @@ public class OptaProcessorActor extends UntypedActor {
             getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
                                                            "Tick", getContext().dispatcher(), null);
         }
-        else if (message.equals("SimulatorStart")) {
+        else if (message.equals("SimulatorInit")) {
             // Nos transformamos en un procesador de ticks de simulacion. El tick del simulador tiene la logica cambiada
             // respecto al normal: Primero procesa, luego asegura el siguiente. Lo hacemos asi pq el simulador necesita
             // saber en to.do momento la fecha del siguiente documento, para poder avanzar el tiempo hacia el.
             getContext().become(_simulator, false);
 
             // Y nos volvemos a mandar el mensaje para hacer el reset
-            getSelf().tell("SimulatorStart", getSender());
+            getSelf().tell("SimulatorInit", getSender());
         }
         else {
             unhandled(message);
@@ -71,7 +71,7 @@ public class OptaProcessorActor extends UntypedActor {
 
         @Override public void apply(Object message) {
 
-            if (message.equals("SimulatorStart")) {
+            if (message.equals("SimulatorInit")) {
                 // Puede ser el N-esimo Start, reseteamos nuestro acceso a la DB
                 closeConnection();
 

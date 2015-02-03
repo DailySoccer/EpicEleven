@@ -143,7 +143,7 @@ public class DailySoccerActors {
                 // ... Y esperamos a que nos llegue la respuesta. Tenemos que esperar a que nos llegue el correlationId correcto
                 int timeToWait = 5000;
                 while (timeToWait > 0) {
-                    QueueingConsumer.Delivery delivery = _consumer.nextDelivery();
+                    QueueingConsumer.Delivery delivery = _consumer.nextDelivery();  // TODO: Esto consume el mensaje?!
                     if (delivery.getProperties().getCorrelationId().equals(corrId)) {
                         response = deserialize(delivery.getBody());
                         break;
