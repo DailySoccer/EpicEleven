@@ -2,6 +2,7 @@ package controllers.admin;
 
 import com.google.common.collect.ImmutableMap;
 import model.GlobalDate;
+import model.Model;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import play.data.Form;
@@ -19,38 +20,56 @@ public class SimulatorController extends Controller {
 
     public static Result switchSimulator() {
 
+        /*
         if (OptaSimulator.isCreated())
             OptaSimulator.shutdown();
         else
             OptaSimulator.init();
+         */
+
+        Model.getDailySoccerActors().tellToActor("SimulatorActor", "InitShutdown");
 
         return ok();
     }
     public static Result start() {
+
+        Model.getDailySoccerActors().tellToActor("SimulatorActor", "StartStop");
+
+        /*
         if (OptaSimulator.isCreated()) {
             OptaSimulator.instance().start();
         }
+        */
         return ok();
     }
 
     public static Result pause() {
+
+        Model.getDailySoccerActors().tellToActor("SimulatorActor", "StartStop");
+
+        /*
         if (OptaSimulator.isCreated()) {
             OptaSimulator.instance().pause();
         }
+        */
         return ok();
     }
 
     public static Result nextStep() {
+        /*
         if (OptaSimulator.isCreated()) {
             OptaSimulator.instance().nextStep(OptaSimulator.MAX_SPEED);
         }
+        */
         return ok();
     }
 
     public static Result reset() {
+        /*
         if (OptaSimulator.isCreated()) {
             OptaSimulator.instance().reset();
         }
+        */
         return ok();
     }
 
@@ -84,6 +103,7 @@ public class SimulatorController extends Controller {
 
     public static String getNextStop() {
 
+        /*
         if (isSimulatorCreated()) {
             Date nextStopDate = OptaSimulator.instance().getNextStop();
 
@@ -91,20 +111,24 @@ public class SimulatorController extends Controller {
                 return GlobalDate.formatDate(nextStopDate);
             }
         }
+        */
 
         return "";
     }
 
     public static String getNextStepDesc() {
-        return isSimulatorCreated()? OptaSimulator.instance().getNextStepDesc() : "";
+        //return isSimulatorCreated()? OptaSimulator.instance().getNextStepDesc() : "";
+        return "";
     }
 
     public static boolean isSimulatorPaused() {
-        return !isSimulatorCreated() || OptaSimulator.instance().isPaused();
+        //return !isSimulatorCreated() || OptaSimulator.instance().isPaused();
+        return false;
     }
 
     public static boolean isSimulatorCreated() {
-        return OptaSimulator.isCreated();
+        //return OptaSimulator.isCreated();
+        return true;
     }
 
     public static Result isSimulatorActivated() {

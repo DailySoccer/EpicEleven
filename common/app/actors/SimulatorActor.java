@@ -1,10 +1,14 @@
 package actors;
 
+import akka.actor.ActorRef;
 import akka.actor.Cancellable;
 import akka.actor.UntypedActor;
 import model.GlobalDate;
 import model.Model;
 import model.opta.OptaXmlUtils;
+import org.joda.time.DateTime;
+import play.Logger;
+import play.libs.Akka;
 import scala.concurrent.duration.Duration;
 
 import java.util.Date;
@@ -82,7 +86,35 @@ public class SimulatorActor extends UntypedActor {
     }
 
     private void onTick() {
+        Logger.debug("SimulatorActor: {}", GlobalDate.getCurrentDate());
 
+        // Es posible que nos encolen una parada mientras procesabamos el Tick (porque a su vez encolamos otro tick)
+        if (_state == null) {
+            return;
+        }
+
+        if (_state.speedFactor != MAX_SPEED) {
+            int virtualElapsedTime = TICK_PERIOD * _state.speedFactor;
+
+            updateDate(new DateTime(_state.simulationDate).plusMillis(virtualElapsedTime).toDate());
+
+            reescheduleTick();
+        }
+        else {
+            // Apuntamos la GlobalDate exactamente a la del siguiente documento
+            OptaProcessorActor.NextDocMsg nextdocMsg = (OptaProcessorActor.NextDocMsg)Model.getDailySoccerActors()
+                                                        .tellToActorAwaitResult("OptaProcessorActor", "GetNextDoc");
+            updateDate(nextdocMsg.date);
+
+            // Encolamos un mensaje para ejecucion inmediata!
+            getSelf().tell("Tick", getSelf());
+        }
+
+        // El orden de entrega de estos mensajes no esta garantizado, como debe de ser. 
+        Model.getDailySoccerActors().tellToActor("OptaProcessorActor", "SimulatorTick");
+        Model.getDailySoccerActors().tellToActor("InstantiateConstestsActor", "SimulatorTick");
+        Model.getDailySoccerActors().tellToActor("CloseContestsActor", "SimulatorTick");
+        Model.getDailySoccerActors().tellToActor("TransactionsActor", "SimulatorTick");
     }
 
     private void updateDate(Date currentDate) {
@@ -93,6 +125,7 @@ public class SimulatorActor extends UntypedActor {
     }
 
     private void saveStateToDB() {
+        // Unico punto donde grabamos nuestro estado a la DB
         Model.simulator().update("{stateId: #}", _state.stateId).upsert().with(_state);
     }
 
@@ -112,12 +145,14 @@ public class SimulatorActor extends UntypedActor {
     }
 
     private void reescheduleTick() {
-        _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(), "Tick",
+        _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(TICK_PERIOD, TimeUnit.MILLISECONDS), getSelf(), "Tick",
                                                                           getContext().dispatcher(), null);
     }
 
     SimulatorState _state;
     Cancellable _tickCancellable;
+
+    static final int TICK_PERIOD = 1000;   // Milliseconds
 
     static private class SimulatorState {
         public String  stateId = "--SimulatorState--";

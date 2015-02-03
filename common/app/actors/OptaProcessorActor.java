@@ -41,67 +41,77 @@ public class OptaProcessorActor extends UntypedActor {
 
     public void onReceive(Object message) {
 
-        if (message.equals("Tick")) {
-            // Reciclamos memoria (podriamos probar a dejar el cache y reciclar cada cierto tiempo...)
-            _optaProcessor = new OptaProcessor();
+        switch ((String)message) {
+            case "Tick":
+                // Reciclamos memoria (podriamos probar a dejar el cache y reciclar cada cierto tiempo...)
+                _optaProcessor = new OptaProcessor();
 
-            ensureNextDocument(REGULAR_DOCUMENTS_PER_QUERY);
-            processNextDocument();
+                ensureNextDocument(REGULAR_DOCUMENTS_PER_QUERY);
+                processNextDocument();
 
-            // Reeschudeleamos una llamada a nosotros mismos para el siguiente Tick
-            getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
-                                                           "Tick", getContext().dispatcher(), null);
-        }
-        else if (message.equals("SimulatorInit")) {
-            // Nos transformamos en un procesador de ticks de simulacion. El tick del simulador tiene la logica cambiada
-            // respecto al normal: Primero procesa, luego asegura el siguiente. Lo hacemos asi pq el simulador necesita
-            // saber en to.do momento la fecha del siguiente documento, para poder avanzar el tiempo hacia el.
-            getContext().become(_simulator, false);
+                // Reeschudeleamos una llamada a nosotros mismos para el siguiente Tick
+                getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
+                                                               "Tick", getContext().dispatcher(), null);
+                break;
 
-            // Y nos volvemos a mandar el mensaje para hacer el reset
-            getSelf().tell("SimulatorInit", getSender());
-        }
-        else {
-            unhandled(message);
+            case "SimulatorInit":
+                // Nos transformamos en un procesador de ticks de simulacion. El tick del simulador tiene la logica cambiada
+                // respecto al normal: Primero procesa, luego asegura el siguiente. Lo hacemos asi pq el simulador necesita
+                // saber en to.do momento la fecha del siguiente documento, para poder avanzar el tiempo hacia el.
+                getContext().become(_simulator, false);
+
+                // Y nos volvemos a mandar el mensaje para hacer el reset
+                getSelf().tell("SimulatorInit", getSender());
+                break;
+
+            default:
+                unhandled(message);
+                break;
         }
     }
 
     // Nuestro onReceive cuando somos un servicio para el simulador
     Procedure<Object> _simulator = new Procedure<Object>() {
-
         @Override public void apply(Object message) {
 
-            if (message.equals("SimulatorInit")) {
-                // Puede ser el N-esimo Start, reseteamos nuestro acceso a la DB
-                closeConnection();
+            switch ((String)message) {
+                case "SimulatorInit":
+                    // Puede ser el N-esimo Start, reseteamos nuestro acceso a la DB
+                    closeConnection();
 
-                // Para el simulador usamos 1 optaprocesor que nunca reciclamos
-                _optaProcessor = new OptaProcessor();
+                    // Para el simulador usamos 1 optaprocesor que nunca reciclamos
+                    _optaProcessor = new OptaProcessor();
 
-                // Ensuramos el siguiente, somos asi de amables
-                ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
+                    // Ensuramos el siguiente, somos asi de amables
+                    ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
 
-                // Mandamos de vuelta la info del siguiente doc que procesaremos al llamar a SimulatorTick
-                sender().tell(_nextDocMsg, getSelf());
-            }
-            else if (message.equals("SimulatorTick")) {
-                processNextDocument();
-                ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
+                    // Mandamos de vuelta la info del siguiente doc que procesaremos al llamar a SimulatorTick
+                    sender().tell(_nextDocMsg, getSelf());
+                    break;
 
-                sender().tell(_nextDocMsg, getSelf());
-            }
-            else if (message.equals("SimulatorShutdown")) {
-                getContext().unbecome();
-            }
-            else if (message.equals("Tick")) {
-                getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
-                                                                               "Tick", getContext().dispatcher(), null);
-            }
-            else {
-                unhandled(message);
+                case "SimulatorTick":
+                    processNextDocument();
+                    ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
+
+                    sender().tell(_nextDocMsg, getSelf());
+                    break;
+
+                case "SimulatorShutdown":
+                    getContext().unbecome();
+                    break;
+
+                case "Tick":
+                    getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
+                                                                   "Tick", getContext().dispatcher(), null);
+                    break;
+
+                default:
+                    unhandled(message);
+                    break;
             }
         }
     };
+
 
     private static void resetIsProcessing() {
         Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with("{$set: {isProcessing: false}}");
