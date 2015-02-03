@@ -16,6 +16,10 @@ public class SimulatorActor extends UntypedActor {
 
     static public final int MAX_SPEED = -1;
 
+    @Override public void postStop() {
+        shutdown();
+    }
+
     @Override public void onReceive(Object msg) {
 
         switch ((String)msg) {
@@ -27,7 +31,7 @@ public class SimulatorActor extends UntypedActor {
                     shutdown();
                 }
                 break;
-            case "Tick":
+            case "SimulatorTick":
                 onTick();
                 break;
 
@@ -72,15 +76,13 @@ public class SimulatorActor extends UntypedActor {
             }
         }
 
-        // Siempre comenzamos pausados
-        // _paused = true;
-        startTicking(); // Temp
-
         // Nos ponemos en la fecha y grabamos el estado
         updateDate(_state.simulationDate);
 
         // Ponemos al OptaProcessorActor en el modo que nos interesa
         Model.getDailySoccerActors().tellToActor("OptaProcessorActor", "SimulatorInit");
+
+        startTicking();
     }
 
     private void onTick() {
@@ -102,10 +104,14 @@ public class SimulatorActor extends UntypedActor {
             // Apuntamos la GlobalDate exactamente a la del siguiente documento
             OptaProcessorActor.NextDocMsg nextdocMsg = (OptaProcessorActor.NextDocMsg)Model.getDailySoccerActors()
                                                         .tellToActorAwaitResult("OptaProcessorActor", "GetNextDoc");
-            updateDate(nextdocMsg.date);
+
+            // Si al OptaProcessorActor no le ha dado tiempo a cargar el siguiente documento, simplemente esperamos al siguiente tick
+            if (nextdocMsg.isNotNull()) {
+                updateDate(nextdocMsg.date);
+            }
 
             // Encolamos el siguiente tick para ejecucion inmediata!
-            getSelf().tell("Tick", getSelf());
+            getSelf().tell("SimulatorTick", getSelf());
         }
 
         // El orden de entrega de estos mensajes no esta garantizado, como debe de ser.
@@ -143,7 +149,7 @@ public class SimulatorActor extends UntypedActor {
     }
 
     private void reescheduleTick() {
-        _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(TICK_PERIOD, TimeUnit.MILLISECONDS), getSelf(), "Tick",
+        _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(TICK_PERIOD, TimeUnit.MILLISECONDS), getSelf(), "SimulatorTick",
                                                                           getContext().dispatcher(), null);
     }
 

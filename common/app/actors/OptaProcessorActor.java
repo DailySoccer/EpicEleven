@@ -1,7 +1,6 @@
 package actors;
 
 import akka.actor.UntypedActor;
-import akka.japi.Procedure;
 import model.GlobalDate;
 import model.Model;
 import model.opta.OptaImporter;
@@ -36,7 +35,7 @@ public class OptaProcessorActor extends UntypedActor {
     @Override public void postStop() {
         Logger.debug("OptaProcessorActor postStop");
 
-        closeConnection();
+        shutdown();
     }
 
     public void onReceive(Object message) {
@@ -55,13 +54,32 @@ public class OptaProcessorActor extends UntypedActor {
                 break;
 
             case "SimulatorInit":
-                // Nos transformamos en un procesador de ticks de simulacion. El tick del simulador tiene la logica cambiada
-                // respecto al normal: Primero procesa, luego asegura el siguiente. Lo hacemos asi pq el simulador necesita
-                // saber en to.do momento la fecha del siguiente documento, para poder avanzar el tiempo hacia el.
-                getContext().become(_simulator, false);
+                // Puede ser el N-esimo Start, reseteamos nuestro acceso a la DB
+                shutdown();
 
-                // Y nos volvemos a mandar el mensaje para hacer el reset
-                getSelf().tell("SimulatorInit", getSender());
+                // Para el simulador usamos 1 optaprocesor que nunca reciclamos
+                _optaProcessor = new OptaProcessor();
+
+                // Ensuramos el siguiente, somos asi de amables
+                ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
+
+                break;
+
+            case "SimulatorShutdown":
+                shutdown();
+                break;
+
+            case "SimulatorTick":
+                ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
+                processNextDocument();
+
+                // Durante el simulador dejamos el siguiente documento siempre precargado listo para la llamada a GetNextDoc
+                ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
+
+                break;
+
+            case "GetNextDoc":
+                sender().tell(_nextDocMsg, self());
                 break;
 
             default:
@@ -69,49 +87,6 @@ public class OptaProcessorActor extends UntypedActor {
                 break;
         }
     }
-
-    // Nuestro onReceive cuando somos un servicio para el simulador
-    Procedure<Object> _simulator = new Procedure<Object>() {
-        @Override public void apply(Object message) {
-
-            switch ((String)message) {
-                case "SimulatorInit":
-                    // Puede ser el N-esimo Start, reseteamos nuestro acceso a la DB
-                    closeConnection();
-
-                    // Para el simulador usamos 1 optaprocesor que nunca reciclamos
-                    _optaProcessor = new OptaProcessor();
-
-                    // Ensuramos el siguiente, somos asi de amables
-                    ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
-
-                    // Mandamos de vuelta la info del siguiente doc que procesaremos al llamar a SimulatorTick
-                    sender().tell(_nextDocMsg, getSelf());
-                    break;
-
-                case "SimulatorTick":
-                    processNextDocument();
-                    ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
-
-                    sender().tell(_nextDocMsg, getSelf());
-                    break;
-
-                case "SimulatorShutdown":
-                    getContext().unbecome();
-                    break;
-
-                case "Tick":
-                    getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
-                                                                   "Tick", getContext().dispatcher(), null);
-                    break;
-
-                default:
-                    unhandled(message);
-                    break;
-            }
-        }
-    };
-
 
     private static void resetIsProcessing() {
         Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with("{$set: {isProcessing: false}}");
@@ -146,7 +121,7 @@ public class OptaProcessorActor extends UntypedActor {
                 queryNextResultSet(documentsPerQuery);
 
                 if (!readNextDocument()) {
-                    closeConnection();
+                    shutdown();
                 }
             }
         }
@@ -253,13 +228,14 @@ public class OptaProcessorActor extends UntypedActor {
         _connection = DB.getConnection();
     }
 
-    private void closeConnection() {
+    private void shutdown() {
         DbUtils.closeQuietly(_connection, _stmt, _optaResultSet);
 
         _connection = null;
         _stmt = null;
         _optaResultSet = null;
 
+        _optaProcessor = null;
         _nextDocMsg = NextDocMsg.Null();
     }
 
@@ -269,8 +245,8 @@ public class OptaProcessorActor extends UntypedActor {
     Connection _connection;
     ResultSet _optaResultSet;
     Statement _stmt;
-    OptaProcessor _optaProcessor;
 
+    OptaProcessor _optaProcessor;
     NextDocMsg _nextDocMsg;
 
 

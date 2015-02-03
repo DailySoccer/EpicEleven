@@ -171,7 +171,7 @@ public class DailySoccerActors {
                 response = Await.result(responseFuture, timeout.duration());
             }
             catch (Exception exc) {
-                Logger.error("WTF 5222 DailySoccerActors excepcion esperando resultado de mensaje {}, actor {}", message, actorName, exc);
+                Logger.error("WTF 5222 {}, esperando resultado de mensaje {}, actor {}", exc.getMessage(), message, actorName);
             }
         }
 
