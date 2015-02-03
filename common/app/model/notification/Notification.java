@@ -46,6 +46,15 @@ public class Notification {
         return null == Model.notifications().findOne("{topic: #, reason: #, userId: #}", topic, getDigest(reason), recipientId).as(Notification.class);
     }
 
+    public static Notification getNotification(Topic topic, ObjectId recipientId) {
+        return Model.notifications().findOne("{topic: #, userId: #}", topic, recipientId).as(Notification.class);
+    }
+
+    public void updateNotification(String reason) {
+        this.reason = reason;
+        Model.notifications().update("{notificationId: #}", this.notificationId).upsert().with(this);
+    }
+
     public static List<Notification> sentToList(Topic topic, String reason) {
         return ListUtils.asList(Model.notifications().find("{topic: #, reason: #}", topic, getDigest(reason)).as(Notification.class));
     }

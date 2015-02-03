@@ -6,6 +6,7 @@ import model.ContestEntry;
 import model.GlobalDate;
 import model.User;
 import model.notification.MessageTemplateSend;
+import model.notification.Notification;
 import model.notification.Notification.Topic;
 import org.bson.types.ObjectId;
 import play.Logger;
@@ -49,7 +50,7 @@ public class NotificationActor extends UntypedActor {
         List<Contest> nextContests = Contest.findAllStartingIn(1);
 
         Map<ObjectId, ArrayList<Contest>> nextUsersContests = getUsersForContests(nextContests);
-        Map<ObjectId, User> nextUsersToNotify = getUsersInNextContests(nextContests);
+        Map<String, String> recipients = new HashMap<>();
 
         List<MessageTemplateSend.MandrillMessage.MergeVarBucket> mergeVars = new ArrayList<>();
         Map<ObjectId, String> reasonsPerEmail = new HashMap<>();
@@ -57,24 +58,36 @@ public class NotificationActor extends UntypedActor {
         for (ObjectId userId: nextUsersContests.keySet()) {
 
             ArrayList<Contest> thisUsersContests = nextUsersContests.get(userId);
+            ArrayList<Contest> notifiableContests = new ArrayList<>();
 
-            Collections.sort(thisUsersContests, new Comparator<Contest>() {
-               @Override
-                public int compare(Contest contest1, Contest contest2) {
-                   return contest1.contestId.compareTo(contest2.contestId);
-               }
-            });
 
-            String sortedContestsString = "";
+            Notification lastNotification = Notification.getNotification(Topic.CONTEST_NEXT_HOUR, userId);
+
+            Date lastNotified =  (lastNotification!= null)? GlobalDate.parseDate(lastNotification.reason, "UTC") : new Date(0L);
+            Date lastContestDate = lastNotified;
+
+
             for (Contest contest : thisUsersContests) {
-                sortedContestsString = sortedContestsString.concat(contest.contestId.toString());
+                if (contest.startDate.after(lastNotified)) {
+                    notifiableContests.add(contest);
+                    if (contest.startDate.after(lastContestDate)) {
+                        lastContestDate = contest.startDate;
+                    }
+                }
             }
-            reasonsPerEmail.put(userId, sortedContestsString);
 
-            mergeVars.add(prepareMergeVarBucket(nextUsersToNotify.get(userId), thisUsersContests));
+
+            if (notifiableContests.size() > 0) {
+                User currentUserToNotify = User.findOne(userId);
+                recipients.put(currentUserToNotify.email, currentUserToNotify.nickName);
+                reasonsPerEmail.put(userId, GlobalDate.formatDate(lastContestDate));
+                mergeVars.add(prepareMergeVarBucket(currentUserToNotify, notifiableContests));
+            }
+
+
         }
 
-        MessageTemplateSend.notifyIfNotYetNotified(_contestStartingTemplateName, Topic.CONTEST_NEXT_HOUR, "En Epic Eleven tienes concursos por comenzar", mergeVars, reasonsPerEmail, nextUsersToNotify);
+        MessageTemplateSend.notifyUpdating(_contestStartingTemplateName, Topic.CONTEST_NEXT_HOUR, "En Epic Eleven tienes concursos por comenzar", mergeVars, reasonsPerEmail, recipients);
 
     }
 
@@ -96,23 +109,6 @@ public class NotificationActor extends UntypedActor {
         mvb.vars.add(contests);
 
         return mvb;
-    }
-
-
-    private Map<ObjectId, User> getUsersInNextContests(List<Contest> nextContests) {
-        Map<ObjectId, User> usersMap = new HashMap<>();
-
-        for (Contest contest : nextContests) {
-            for (ContestEntry contestEntry : contest.contestEntries) {
-
-                if (!usersMap.containsKey(contestEntry.userId)) {
-                    usersMap.put(contestEntry.userId, User.findOne(contestEntry.userId));
-                }
-
-            }
-
-        }
-        return usersMap;
     }
 
 
