@@ -1,6 +1,5 @@
 package actors;
 
-import akka.actor.ActorRef;
 import akka.actor.Cancellable;
 import akka.actor.UntypedActor;
 import model.GlobalDate;
@@ -8,7 +7,6 @@ import model.Model;
 import model.opta.OptaXmlUtils;
 import org.joda.time.DateTime;
 import play.Logger;
-import play.libs.Akka;
 import scala.concurrent.duration.Duration;
 
 import java.util.Date;
@@ -88,7 +86,7 @@ public class SimulatorActor extends UntypedActor {
     private void onTick() {
         Logger.debug("SimulatorActor: {}", GlobalDate.getCurrentDate());
 
-        // Es posible que nos encolen una parada mientras procesabamos el Tick (porque a su vez encolamos otro tick)
+        // Es posible que nos encolen un Shutdown mientras procesabamos el Tick, donde a su vez encolamos otro tick
         if (_state == null) {
             return;
         }
@@ -106,11 +104,11 @@ public class SimulatorActor extends UntypedActor {
                                                         .tellToActorAwaitResult("OptaProcessorActor", "GetNextDoc");
             updateDate(nextdocMsg.date);
 
-            // Encolamos un mensaje para ejecucion inmediata!
+            // Encolamos el siguiente tick para ejecucion inmediata!
             getSelf().tell("Tick", getSelf());
         }
 
-        // El orden de entrega de estos mensajes no esta garantizado, como debe de ser. 
+        // El orden de entrega de estos mensajes no esta garantizado, como debe de ser.
         Model.getDailySoccerActors().tellToActor("OptaProcessorActor", "SimulatorTick");
         Model.getDailySoccerActors().tellToActor("InstantiateConstestsActor", "SimulatorTick");
         Model.getDailySoccerActors().tellToActor("CloseContestsActor", "SimulatorTick");
