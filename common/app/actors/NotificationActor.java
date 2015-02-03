@@ -7,6 +7,7 @@ import model.GlobalDate;
 import model.User;
 import model.notification.MessageTemplateSend;
 import model.notification.Notification.Topic;
+import org.bson.types.ObjectId;
 import play.Logger;
 import scala.concurrent.duration.Duration;
 
@@ -47,14 +48,15 @@ public class NotificationActor extends UntypedActor {
     private void notifyContestStartsInOneHour() {
         List<Contest> nextContests = Contest.findAllStartingIn(1);
 
-        Map<User, ArrayList<Contest>> nextUsersContests = getUsersForContests(nextContests);
+        Map<ObjectId, ArrayList<Contest>> nextUsersContests = getUsersForContests(nextContests);
+        Map<ObjectId, User> nextUsersToNotify = getUsersInNextContests(nextContests);
 
         List<MessageTemplateSend.MandrillMessage.MergeVarBucket> mergeVars = new ArrayList<>();
-        Map<User, String> reasonsPerEmail = new HashMap<>();
+        Map<ObjectId, String> reasonsPerEmail = new HashMap<>();
 
-        for (User user: nextUsersContests.keySet()) {
+        for (ObjectId userId: nextUsersContests.keySet()) {
 
-            ArrayList<Contest> thisUsersContests = nextUsersContests.get(user);
+            ArrayList<Contest> thisUsersContests = nextUsersContests.get(userId);
 
             Collections.sort(thisUsersContests, new Comparator<Contest>() {
                @Override
@@ -67,12 +69,12 @@ public class NotificationActor extends UntypedActor {
             for (Contest contest : thisUsersContests) {
                 sortedContestsString = sortedContestsString.concat(contest.contestId.toString());
             }
-            reasonsPerEmail.put(user, sortedContestsString);
+            reasonsPerEmail.put(userId, sortedContestsString);
 
-            mergeVars.add(prepareMergeVarBucket(user, thisUsersContests));
+            mergeVars.add(prepareMergeVarBucket(nextUsersToNotify.get(userId), thisUsersContests));
         }
 
-        MessageTemplateSend.notifyIfNotYetNotified(_contestStartingTemplateName, Topic.CONTEST_NEXT_HOUR, "En Epic Eleven tienes concursos por comenzar", mergeVars, reasonsPerEmail);
+        MessageTemplateSend.notifyIfNotYetNotified(_contestStartingTemplateName, Topic.CONTEST_NEXT_HOUR, "En Epic Eleven tienes concursos por comenzar", mergeVars, reasonsPerEmail, nextUsersToNotify);
 
     }
 
@@ -97,19 +99,35 @@ public class NotificationActor extends UntypedActor {
     }
 
 
-    private Map<User, ArrayList<Contest>> getUsersForContests(List<Contest> nextContests) {
-        Map<User, ArrayList<Contest>> usersContestsMap = new HashMap<>();
+    private Map<ObjectId, User> getUsersInNextContests(List<Contest> nextContests) {
+        Map<ObjectId, User> usersMap = new HashMap<>();
 
         for (Contest contest : nextContests) {
             for (ContestEntry contestEntry : contest.contestEntries) {
-                User user = User.findOne(contestEntry.userId);
 
-                ArrayList<Contest> thisUsersContests = usersContestsMap.containsKey(user)?
-                    usersContestsMap.get(user) : new ArrayList<Contest>();
+                if (!usersMap.containsKey(contestEntry.userId)) {
+                    usersMap.put(contestEntry.userId, User.findOne(contestEntry.userId));
+                }
+
+            }
+
+        }
+        return usersMap;
+    }
+
+
+    private Map<ObjectId, ArrayList<Contest>> getUsersForContests(List<Contest> nextContests) {
+        Map<ObjectId, ArrayList<Contest>> usersContestsMap = new HashMap<>();
+
+        for (Contest contest : nextContests) {
+            for (ContestEntry contestEntry : contest.contestEntries) {
+
+                ArrayList<Contest> thisUsersContests = usersContestsMap.containsKey(contestEntry.userId)?
+                    usersContestsMap.get(contestEntry.userId) : new ArrayList<Contest>();
 
                 thisUsersContests.add(contest);
 
-                usersContestsMap.put(user, thisUsersContests);
+                usersContestsMap.put(contestEntry.userId, thisUsersContests);
             }
 
         }

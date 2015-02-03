@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import model.User;
+import org.bson.types.ObjectId;
 import play.Logger;
 import play.libs.ws.WS;
 import play.libs.ws.WSResponse;
@@ -217,14 +218,16 @@ public class MessageTemplateSend {
 
 
     public static void notifyIfNotYetNotified(String templateName, Notification.Topic topic, String subject,
-                                              List<MandrillMessage.MergeVarBucket> mergeVars, Map<User,String> reasonPerUser) {
+                                              List<MandrillMessage.MergeVarBucket> mergeVars, Map<ObjectId,String> reasonPerUser,
+                                              Map<ObjectId,User> usersToNotify ) {
         Map<String, String> recipients = new HashMap<>();
         List<Notification> notifications = new ArrayList<>();
 
-        for (User user: reasonPerUser.keySet()) {
-            if (Notification.isNotSent(topic, reasonPerUser.get(user), user.userId)) {
+        for (ObjectId userId: reasonPerUser.keySet()) {
+            if (Notification.isNotSent(topic, reasonPerUser.get(userId), userId)) {
+                User user = usersToNotify.get(userId);
                 recipients.put(user.email, user.nickName);
-                notifications.add(new Notification(topic, reasonPerUser.get(user), user.userId));
+                notifications.add(new Notification(topic, reasonPerUser.get(userId), userId));
             }
         }
 
