@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
-public class NotifierActor extends UntypedActor {
+public class NotificationActor extends UntypedActor {
 
     public void onReceive(Object msg) {
 
@@ -37,7 +37,7 @@ public class NotifierActor extends UntypedActor {
     }
 
     private void onTick() {
-        Logger.debug("NotifierActor: {}", GlobalDate.getCurrentDateString());
+        Logger.debug("NotificationActor: {}", GlobalDate.getCurrentDateString());
 
         notifyContestStartsInOneHour();
         // All the rest of things to notify in each tick
@@ -69,28 +69,31 @@ public class NotifierActor extends UntypedActor {
             }
             reasonsPerEmail.put(user, sortedContestsString);
 
-
-            MessageTemplateSend.MergeVar name = new MessageTemplateSend.MergeVar();
-            MessageTemplateSend.MergeVar contests = new MessageTemplateSend.MergeVar();
-
-            name.name = "NICKNAME";
-            name.content = user.nickName;
-
-            contests.name = "TORNEOS";
-            contests.content =  views.html.email_contest_start_template.render(thisUsersContests).toString();
-
-            MessageTemplateSend.MandrillMessage.MergeVarBucket mvb = new MessageTemplateSend.MandrillMessage.MergeVarBucket();
-            mvb.rcpt = user.email;
-            mvb.vars = new ArrayList<>();
-
-            mvb.vars.add(name);
-            mvb.vars.add(contests);
-
-            mergeVars.add(mvb);
+            mergeVars.add(prepareMergeVarBucket(user, thisUsersContests));
         }
 
-        MessageTemplateSend.notifyIfNotYetNotified("torneoporempezar", Topic.CONTEST_NEXT_HOUR, "En Epic Eleven tienes concursos por comenzar", mergeVars, reasonsPerEmail);
+        MessageTemplateSend.notifyIfNotYetNotified(_contestStartingTemplateName, Topic.CONTEST_NEXT_HOUR, "En Epic Eleven tienes concursos por comenzar", mergeVars, reasonsPerEmail);
 
+    }
+
+    private MessageTemplateSend.MandrillMessage.MergeVarBucket prepareMergeVarBucket(User user, ArrayList<Contest> thisUsersContests) {
+        MessageTemplateSend.MergeVar name = new MessageTemplateSend.MergeVar();
+        MessageTemplateSend.MergeVar contests = new MessageTemplateSend.MergeVar();
+
+        name.name = "NICKNAME";
+        name.content = user.nickName;
+
+        contests.name = "TORNEOS";
+        contests.content =  views.html.email_contest_start_template.render(thisUsersContests).toString();
+
+        MessageTemplateSend.MandrillMessage.MergeVarBucket mvb = new MessageTemplateSend.MandrillMessage.MergeVarBucket();
+        mvb.rcpt = user.email;
+        mvb.vars = new ArrayList<>();
+
+        mvb.vars.add(name);
+        mvb.vars.add(contests);
+
+        return mvb;
     }
 
 
@@ -112,4 +115,6 @@ public class NotifierActor extends UntypedActor {
         }
         return usersContestsMap;
     }
+
+    private final String _contestStartingTemplateName = "torneoporempezar";
 }
