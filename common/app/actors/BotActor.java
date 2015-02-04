@@ -423,13 +423,16 @@ public class BotActor extends UntypedActor {
     private String enterContest(Contest contest) throws TimeoutException {
         Logger.debug("{} va a hacer un enterContest", getFullName());
 
-        JsonNode jsonNode = get(String.format("get_public_contest/%s", contest.contestId)).findValue("soccer_players");
+        JsonNode jsonNode = get(String.format("get_public_contest/%s", contest.contestId));
+        JsonNode jsonNodeContest = jsonNode.findValue("contest");
+        JsonNode jsonNodeSoccerPlayers = jsonNode.findValue("soccer_players");
         String enteredContestId = null;
 
-        if (jsonNode != null) {
+        if (jsonNodeContest != null && jsonNodeSoccerPlayers != null) {
             // Debemos hacer to.do nuestro proceso con los datos de salario, equipo, etc que vienen en los Instances y no en los Templates.
-            List<InstanceSoccerPlayer> instanceSoccerPlayers = contest.instanceSoccerPlayers;
-            List<TemplateSoccerPlayer> soccerPlayers = fromJSON(jsonNode.toString(), new TypeReference<List<TemplateSoccerPlayer>>() { });
+            // Los instances los obtenemos de la query "get_public_contest" (dado que el contest que recibimos no lo incluye, al obtenerse de una query "active_contests")
+            List<InstanceSoccerPlayer> instanceSoccerPlayers = fromJSON(jsonNodeContest.toString(), new TypeReference<Contest>() { }).instanceSoccerPlayers;
+            List<TemplateSoccerPlayer> soccerPlayers = fromJSON(jsonNodeSoccerPlayers.toString(), new TypeReference<List<TemplateSoccerPlayer>>() { });
 
             // Simplemente "parcheamos" los templates con los datos de los instances
             copyInstancesToTemplates(instanceSoccerPlayers, soccerPlayers);
