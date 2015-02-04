@@ -49,8 +49,8 @@ public class SimulatorController extends Controller {
         return ok();
     }
 
-    public static Result setSpeed(int simSpeed) {
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", "SetSpeedFactor");
+    public static Result setSpeed(int speedFactor) {
+        Model.getDailySoccerActors().tellToActor("SimulatorActor", new SimulatorActor.SpeedFactorMsg(speedFactor));
         return ok();
     }
 

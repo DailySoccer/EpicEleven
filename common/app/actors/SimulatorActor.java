@@ -26,6 +26,8 @@ public class SimulatorActor extends UntypedActor {
 
     static public class SpeedFactorMsg {
         public int speedFactor;
+
+        public SpeedFactorMsg(int s) { speedFactor = s; }
     }
 
     @Override public void postStop() {
