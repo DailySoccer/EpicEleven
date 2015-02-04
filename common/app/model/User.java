@@ -3,10 +3,12 @@ package model;
 import com.fasterxml.jackson.annotation.JsonView;
 import model.accounting.AccountOp;
 import org.bson.types.ObjectId;
+import org.joda.money.CurrencyUnit;
 import org.jongo.marshall.jackson.oid.Id;
 import utils.ListUtils;
 
 import java.math.BigDecimal;
+import org.joda.money.Money;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -23,7 +25,7 @@ public class User {
     public int wins;
 
     // TODO: De momento no es realmente un "cache", siempre lo recalculamos
-    public BigDecimal cachedBalance;
+    public Money cachedBalance;
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
@@ -90,8 +92,8 @@ public class User {
         return ListUtils.asList(Model.users().find("{email: {$regex: \"@bototron.com\"}, firstName: \"Bototron\"}").as(User.class));
     }
 
-    static public void updateBalance(ObjectId userId, BigDecimal balance) {
-        Model.users().update(userId).with("{$set: {cachedBalance: #}}", balance.doubleValue());
+    static public void updateBalance(ObjectId userId, Money balance) {
+        Model.users().update(userId).with("{$set: {cachedBalance: #}}", balance);
     }
 
     public void updateStats() {
@@ -110,7 +112,7 @@ public class User {
         return User.getSeqId(userId);
     }
 
-    public BigDecimal calculateBalance() {
+    public Money calculateBalance() {
         return User.calculateBalance(userId);
     }
 
@@ -127,13 +129,13 @@ public class User {
         return (!account.isEmpty() && account.get(0).seqId != null) ? account.get(0).seqId : 0;
     }
 
-    static public BigDecimal calculateBalance(ObjectId userId) {
+    static public Money calculateBalance(ObjectId userId) {
         List<AccountOp> account = Model.accountingTransactions()
                 .aggregate("{$match: { \"accountOps.accountId\": #, state: \"VALID\"}}", userId)
                 .and("{$unwind: \"$accountOps\"}")
                 .and("{$match: {\"accountOps.accountId\": #}}", userId)
                 .and("{$group: {_id: \"value\", accountId: { $first: \"$accountOps.accountId\" }, value: { $sum: \"$accountOps.value\" }}}")
                 .as(AccountOp.class);
-        return (!account.isEmpty()) ? account.get(0).value : new BigDecimal(0);
+        return (!account.isEmpty()) ? account.get(0).value : Money.zero(CurrencyUnit.EUR);
     }
 }

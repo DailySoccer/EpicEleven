@@ -2,6 +2,7 @@ package controllers.admin;
 
 import model.*;
 import org.bson.types.ObjectId;
+import org.joda.money.Money;
 import org.joda.time.DateTime;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
@@ -25,7 +26,7 @@ public class TemplateContestForm {
     @Constraints.Required
     public int salaryCap;
     @Constraints.Required
-    public int entryFee;
+    public Money entryFee;
     @Constraints.Required
     public PrizeType prizeType;
 

@@ -6,6 +6,7 @@ import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
+import org.joda.money.Money;
 import play.Logger;
 import utils.ListUtils;
 
@@ -30,7 +31,7 @@ public class TemplateContest implements JongoId {
     public int maxEntries;
 
     public int salaryCap;
-    public int entryFee;
+    public Money entryFee;
     public PrizeType prizeType;
 
     public Date startDate;
@@ -52,7 +53,7 @@ public class TemplateContest implements JongoId {
     public TemplateContest() { }
 
     public TemplateContest(String name, int minInstances, int maxEntries, int salaryCap,
-                            int entryFee, PrizeType prizeType, Date activationAt,
+                            Money entryFee, PrizeType prizeType, Date activationAt,
                             List<String> templateMatchEvents) {
 
         this.name = name;

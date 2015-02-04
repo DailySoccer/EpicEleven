@@ -6,6 +6,8 @@ import model.User;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.opta.OptaCompetition;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -73,7 +75,7 @@ public class DashboardController extends Controller {
     static private void addMoney(List<User> users, Integer amount) {
         List<AccountOp> accountOps = new ArrayList<>();
         for (User bot : users) {
-            accountOps.add(new AccountOp(bot.userId, new BigDecimal(amount), bot.getSeqId() + 1));
+            accountOps.add(new AccountOp(bot.userId, Money.of(CurrencyUnit.EUR, amount), bot.getSeqId() + 1));
         }
 
         if (!accountOps.isEmpty()) {

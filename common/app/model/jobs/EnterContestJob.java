@@ -8,6 +8,7 @@ import model.accounting.*;
 import org.bson.types.ObjectId;
 
 import java.math.BigDecimal;
+import org.joda.money.Money;
 import java.util.List;
 
 public class EnterContestJob extends Job {
@@ -42,7 +43,7 @@ public class EnterContestJob extends Job {
                 if (contestEntry == null) {
                     contestEntry = createContestEntry();
 
-                    bValid = (contest.entryFee <= 0) || transactionPayment(contest.entryFee);
+                    bValid = contest.entryFee.isNegativeOrZero() || transactionPayment(contest.entryFee);
 
                     if (bValid) {
                         Contest contestModified = transactionInsertContestEntry(contest, contestEntry);
@@ -96,7 +97,7 @@ public class EnterContestJob extends Job {
         }
     }
 
-    private boolean transactionPayment(int entryFee) {
+    private boolean transactionPayment(Money entryFee) {
         boolean transactionValid = false;
 
         // Registramos el seqId, de tal forma que si se produce una alteracion en el número de operaciones
@@ -104,12 +105,12 @@ public class EnterContestJob extends Job {
         Integer seqId = User.getSeqId(userId) + 1;
 
         // El usuario tiene dinero suficiente?
-        BigDecimal userBalance = User.calculateBalance(userId);
-        if (userBalance.compareTo(new BigDecimal(entryFee)) >= 0) {
+        Money userBalance = User.calculateBalance(userId);
+        if (userBalance.compareTo(entryFee) >= 0) {
             try {
                 // Registrar el pago
                 AccountingTran accountingTran = AccountingTranEnterContest.create(contestId, contestEntryId, ImmutableList.of(
-                        new AccountOp(userId, new BigDecimal(-entryFee), seqId)
+                        new AccountOp(userId, entryFee.negated(), seqId)
                 ));
 
                 transactionValid = (accountingTran != null);
@@ -146,7 +147,7 @@ public class EnterContestJob extends Job {
 
                 // Generamos la operación de cancelación (ingresarle dinero)
                 AccountingTranCancelContestEntry.create(contestId, contestEntryId, ImmutableList.of(
-                        new AccountOp(userId, new BigDecimal(contest.entryFee), seqId)
+                        new AccountOp(userId, contest.entryFee, seqId)
                 ));
             }
         }

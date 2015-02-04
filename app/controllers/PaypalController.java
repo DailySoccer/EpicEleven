@@ -11,6 +11,7 @@ import model.Order;
 import model.Refund;
 import model.paypal.PaypalIPNMessage;
 import model.paypal.PaypalPayment;
+import org.joda.money.CurrencyUnit;
 import play.Logger;
 import play.data.Form;
 import play.mvc.BodyParser;
@@ -18,6 +19,8 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import org.bson.types.ObjectId;
 import utils.ReturnHelper;
+import org.joda.money.Money;
+
 
 import java.util.Map;
 
@@ -63,7 +66,7 @@ public class PaypalController extends Controller {
             ObjectId orderId = new ObjectId();
 
             // Producto que quiere comprar
-            Product product = new Product("Payment", amount);
+            Product product = new Product("Payment", Money.of(CurrencyUnit.EUR, amount));
 
             // Creamos la solicitud de pago (le proporcionamos el identificador del pedido para referencias posteriores)
             Payment payment = PaypalPayment.instance().createPayment(orderId, product);
@@ -196,7 +199,7 @@ public class PaypalController extends Controller {
     public static Result withdrawFunds(int amount) {
         User theUser = (User) ctx().args.get("User");
 
-        Refund refund = new Refund(theUser.userId, amount);
+        Refund refund = new Refund(theUser.userId, Money.of(CurrencyUnit.EUR, amount));
         refund.insert();
 
         return new ReturnHelper(ImmutableMap.of(

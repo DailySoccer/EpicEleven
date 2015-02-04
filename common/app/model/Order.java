@@ -5,6 +5,7 @@ import model.accounting.AccountOp;
 import model.accounting.AccountingTranOrder;
 import org.jongo.marshall.jackson.oid.Id;
 import org.bson.types.ObjectId;
+import org.joda.money.Money;
 
 import java.math.BigDecimal;
 
@@ -62,7 +63,7 @@ public class Order {
 
     public void setCompleted() {
         AccountingTranOrder.create(orderId, paymentId, ImmutableList.of(
-                new AccountOp(userId, new BigDecimal(product.price), User.getSeqId(userId) + 1)
+                new AccountOp(userId, product.price, User.getSeqId(userId) + 1)
         ));
 
         this.state = State.COMPLETED;

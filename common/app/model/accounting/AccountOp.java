@@ -4,17 +4,20 @@ import model.Model;
 import model.User;
 import org.bson.types.ObjectId;
 import java.math.BigDecimal;
+
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import java.util.List;
 
 public class AccountOp {
     public ObjectId accountId;          // Identificador del "account" (actualmente corresponde a un userId)
-    public BigDecimal value;            // Cantidad a modificar el balance
+    public Money value;                 // Cantidad a modificar el balance
     public Integer seqId;               // Secuencia de operaciones de un "account" determinado
-    public BigDecimal cachedBalance;    // El balance del "account" (en el momento que se hizo el "commit")
+    public Money cachedBalance;         // El balance del "account" (en el momento que se hizo el "commit")
 
     public AccountOp() {}
 
-    public AccountOp(ObjectId accountId, BigDecimal value, Integer seqId) {
+    public AccountOp(ObjectId accountId, Money value, Integer seqId) {
         this.accountId = accountId;
         this.value = value;
         this.seqId = seqId;
@@ -29,17 +32,17 @@ public class AccountOp {
 
     public void updateBalance() {
         // Obtenemos el balance del anterior COMMIT
-        BigDecimal lastBalance = getLastBalance().add(value);
+        Money lastBalance = getLastBalance().plus(value);
         // Actualizamos el cachedBalance del "account"
-        Model.accountingTransactions().update("{ accountOps: { $elemMatch: {accountId: #, seqId: #} } }", accountId, seqId).with("{$set: {\"accountOps.$.cachedBalance\": #}}", lastBalance.doubleValue());
+        Model.accountingTransactions().update("{ accountOps: { $elemMatch: {accountId: #, seqId: #} } }", accountId, seqId).with("{$set: {\"accountOps.$.cachedBalance\": #}}", lastBalance);
         // Actualizamos el user
         User.updateBalance(accountId, lastBalance);
     }
 
-    public BigDecimal getLastBalance() {
+    public Money getLastBalance() {
         // Si es el primer seqId no existe ninguno anterior
         if (seqId == 1) {
-            return new BigDecimal(0);
+            return Money.zero(CurrencyUnit.EUR);
         }
 
         // TODO: ¿necesitamos comprobar que el commit es del "seqId" inmediatamente anterior?
@@ -53,6 +56,6 @@ public class AccountOp {
                 .and("{$group: {_id: \"balance\", accountId: { $first: \"$accountOps.accountId\" }, cachedBalance: { $first: \"$accountOps.cachedBalance\" }}}")
                 .as(AccountOp.class);
 
-        return (!accountOp.isEmpty()) ? accountOp.get(0).cachedBalance : new BigDecimal(0);
+        return (!accountOp.isEmpty()) ? accountOp.get(0).cachedBalance : Money.zero(CurrencyUnit.EUR);
     }
 }

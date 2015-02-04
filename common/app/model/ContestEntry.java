@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 import org.bson.types.ObjectId;
+import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
@@ -26,7 +27,7 @@ public class ContestEntry implements JongoId {
     public int position = -1;
 
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
-    public int prize;
+    public Money prize;
 
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
     public int fantasyPoints;

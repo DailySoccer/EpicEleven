@@ -9,6 +9,7 @@ import model.User;
 import model.accounting.*;
 import org.bson.types.ObjectId;
 import play.Logger;
+import org.joda.money.Money;
 
 import java.math.BigDecimal;
 
@@ -52,7 +53,7 @@ public class CancelContestEntryJob extends Job {
             //  el que gestione la devolución del pago
             if (bValid) {
                 // Realizamos la gestión del payment
-                bValid = (contest.entryFee <= 0) || transactionReturnPayment(contest.entryFee);
+                bValid = contest.entryFee.isNegativeOrZero() || transactionReturnPayment(contest.entryFee);
 
                 if (!bValid)
                     throw new RuntimeException("WTF 131313: CancelContestEntry invalid");
@@ -99,10 +100,10 @@ public class CancelContestEntryJob extends Job {
         return transactionValid;
     }
 
-    private boolean transactionReturnPayment(int entryFee) {
+    private boolean transactionReturnPayment(Money entryFee) {
         // Crear la transacción de Abandonar un Contest
         AccountingTran accountingTran = AccountingTranCancelContestEntry.create(contestId, contestEntryId, ImmutableList.of(
-                new AccountOp(userId, new BigDecimal(entryFee), User.getSeqId(userId) + 1)
+                new AccountOp(userId, entryFee, User.getSeqId(userId) + 1)
         ));
         return accountingTran != null;
     }

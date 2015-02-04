@@ -7,7 +7,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
+import org.joda.money.CurrencyUnit;
 import org.jongo.marshall.jackson.oid.Id;
+import org.joda.money.Money;
 import java.math.BigDecimal;
 
 import utils.ListUtils;
@@ -48,7 +50,7 @@ public class Contest implements JongoId {
     public int salaryCap;
 
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
-    public int entryFee;
+    public Money entryFee;
 
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public PrizeType prizeType;
@@ -302,7 +304,7 @@ public class Contest implements JongoId {
                 .replaceAll("%MaxEntries", Integer.toString(maxEntries))
                 .replaceAll("%SalaryCap", Integer.toString(new Double(salaryCap / 1000).intValue()))
                 .replaceAll("%PrizeType", prizeType.name())
-                .replaceAll("%EntryFee", Integer.toString(entryFee))
+                .replaceAll("%EntryFee", entryFee.toString())
                 .replaceAll("%MockUsers", ""));
     }
 
@@ -310,13 +312,11 @@ public class Contest implements JongoId {
         // Si el contest tiene premios para repartir...
         if (!prizeType.equals(PrizeType.FREE)) {
             List<AccountOp> accounts = new ArrayList<>();
-
             for (ContestEntry contestEntry : contestEntries) {
-                Integer prize = prizes.getValue(contestEntry.position);
-
-                if (prize > 0) {
+                Money prize = prizes.getValue(contestEntry.position);
+                if (prize.isGreaterThan(Money.zero(CurrencyUnit.EUR))) {
                     User user = User.findOne(contestEntry.userId);
-                    accounts.add(new AccountOp(contestEntry.userId, new BigDecimal(prize), user.getSeqId() + 1));
+                    accounts.add(new AccountOp(contestEntry.userId, prize, user.getSeqId() + 1));
                 }
             }
 
