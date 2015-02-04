@@ -31,8 +31,22 @@ public class SimulatorActor extends UntypedActor {
                     shutdown();
                 }
                 break;
+
             case "SimulatorTick":
                 onTick();
+                break;
+
+            case "PauseResume":
+                if (_state == null) {
+                    Logger.error("WTF 7733 Recibido PauseResume sin haber inicializado");
+                } else {
+                    pauseResume();
+                }
+                break;
+
+            case "GetSimulatorState":
+                // Si no estamos inicializados, SimulatorState.isNull() == true;
+                sender().tell(new SimulatorState(_state), self());
                 break;
 
             default:
@@ -42,13 +56,26 @@ public class SimulatorActor extends UntypedActor {
     }
 
     private void shutdown() {
+        Logger.debug("SimulatorActor: Shutdown {}", GlobalDate.getCurrentDate());
         cancelTicking();
         _state = null;
         GlobalDate.setFakeDate(null);
         Model.getDailySoccerActors().tellToActor("OptaProcessorActor", "SimulatorShutdown");
     }
 
+    private void pauseResume() {
+        if (_state.isPaused) {
+            _state.isPaused = false;
+            getSelf().tell("SimulatorTick", getSelf());
+        }
+        else {
+            _state.isPaused = true;
+            cancelTicking();
+        }
+    }
+
     private void init() {
+        Logger.debug("SimulatorActor: initialization at {}", GlobalDate.getCurrentDate());
 
         Date lastProcessedDate = OptaProcessorActor.getLastProcessedDate(); // TODO: Llamada tellToActorAwaitResult
 
@@ -76,38 +103,42 @@ public class SimulatorActor extends UntypedActor {
             }
         }
 
+        // Siempre arrancamos pausados
+        _state.isPaused = true;
+
         // Nos ponemos en la fecha y grabamos el estado
-        updateDate(_state.simulationDate);
+        updateDateAndSaveState(_state.simulationDate);
 
         // Ponemos al OptaProcessorActor en el modo que nos interesa
         Model.getDailySoccerActors().tellToActor("OptaProcessorActor", "SimulatorInit");
 
-        startTicking();
+        Logger.debug("SimulatorActor: initialized, the current date is {}", GlobalDate.getCurrentDate());
     }
 
     private void onTick() {
         Logger.debug("SimulatorActor: {}", GlobalDate.getCurrentDate());
 
-        // Es posible que nos encolen un Shutdown mientras procesabamos el Tick, donde a su vez encolamos otro tick
-        if (_state == null) {
+        // Es posible que nos encolen un Shutdown o un PauseResume mientras procesabamos el Tick, donde al final (unas
+        // lineas mas abajo) encolamos el siguiente tick. Por lo tanto, nos puede llegar un Tick despues de un Shutdown/PauseResume
+        if (_state == null || _state.isPaused) {
             return;
         }
 
         if (_state.speedFactor != MAX_SPEED) {
             int virtualElapsedTime = TICK_PERIOD * _state.speedFactor;
 
-            updateDate(new DateTime(_state.simulationDate).plusMillis(virtualElapsedTime).toDate());
+            updateDateAndSaveState(new DateTime(_state.simulationDate).plusMillis(virtualElapsedTime).toDate());
 
             reescheduleTick();
         }
         else {
             // Apuntamos la GlobalDate exactamente a la del siguiente documento
-            OptaProcessorActor.NextDocMsg nextdocMsg = (OptaProcessorActor.NextDocMsg)Model.getDailySoccerActors()
+            OptaProcessorActor.NextDoc nextdocMsg = (OptaProcessorActor.NextDoc)Model.getDailySoccerActors()
                                                         .tellToActorAwaitResult("OptaProcessorActor", "GetNextDoc");
 
             // Si al OptaProcessorActor no le ha dado tiempo a cargar el siguiente documento, simplemente esperamos al siguiente tick
             if (nextdocMsg.isNotNull()) {
-                updateDate(nextdocMsg.date);
+                updateDateAndSaveState(nextdocMsg.date);
             }
 
             // Encolamos el siguiente tick para ejecucion inmediata!
@@ -121,7 +152,7 @@ public class SimulatorActor extends UntypedActor {
         Model.getDailySoccerActors().tellToActor("TransactionsActor", "SimulatorTick");
     }
 
-    private void updateDate(Date currentDate) {
+    private void updateDateAndSaveState(Date currentDate) {
         _state.simulationDate = currentDate;
         saveStateToDB();
 
@@ -133,6 +164,7 @@ public class SimulatorActor extends UntypedActor {
         Model.simulator().update("{stateId: #}", _state.stateId).upsert().with(_state);
     }
 
+    /*
     private void startTicking() {
         if (_tickCancellable != null) {
             throw new RuntimeException("WTF 8722");
@@ -140,6 +172,7 @@ public class SimulatorActor extends UntypedActor {
 
         reescheduleTick();
     }
+    */
 
     private void cancelTicking() {
         if (_tickCancellable != null) {
@@ -158,12 +191,28 @@ public class SimulatorActor extends UntypedActor {
 
     static final int TICK_PERIOD = 1000;   // Milliseconds
 
-    static private class SimulatorState {
-        public String  stateId = "--SimulatorState--";
-        public Date    pauseDate;
+    static public class SimulatorState {
+        static final String UNIQUE_ID = "--SimulatorState--";
+
+        public String  stateId = UNIQUE_ID;
         public Date    simulationDate;
+        public Date    pauseDate;
+        public boolean isPaused;
         public int     speedFactor = MAX_SPEED;
 
         public SimulatorState() {}
+        public SimulatorState(SimulatorState o) {
+            if (o != null) {
+                this.stateId = o.stateId;
+                this.pauseDate = o.pauseDate;
+                this.isPaused = o.isPaused;
+                this.simulationDate = o.simulationDate;
+                this.speedFactor = o.speedFactor;
+            }
+        }
+
+        // Como no podemos mandar un mensaje null, lo marcamos asi
+        public boolean isNull() { return simulationDate == null; }
+        public boolean isNotNull() { return simulationDate != null; }
     }
 }

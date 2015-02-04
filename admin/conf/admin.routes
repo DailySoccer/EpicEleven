@@ -72,11 +72,10 @@ GET         /opta_events                                                        
 GET         /opta_events/ajax                                                    controllers.admin.OptaController.optaEventsAjax()
 GET         /opta_events/update                                                  controllers.admin.OptaController.updateOptaEvents()
 
-GET         /switch_simulator                                                    controllers.admin.SimulatorController.switchSimulator()
-GET         /start_simulator                                                     controllers.admin.SimulatorController.start()
+GET         /init_shutdown_simulator                                             controllers.admin.SimulatorController.initShutdown()
+GET         /pause_resume_simulator                                              controllers.admin.SimulatorController.pauseResume()
 GET         /reset_simulator                                                     controllers.admin.SimulatorController.reset()
 GET         /nextstep_simulator                                                  controllers.admin.SimulatorController.nextStep()
-GET         /pause_simulator                                                     controllers.admin.SimulatorController.pause()
 POST        /goto_date_simulator                                                 controllers.admin.SimulatorController.gotoDate()
 GET         /next_step_desc_simulator                                            controllers.admin.SimulatorController.nextStepDescription()
 GET         /next_stop_simulator                                                 controllers.admin.SimulatorController.nextStop()

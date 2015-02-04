@@ -84,7 +84,7 @@ public class OptaSimulator implements Runnable {
         Future<Object> response = Patterns.ask(actorRef, msg, timeout);
 
         try {
-            _nextDocMsg = (OptaProcessorActor.NextDocMsg)Await.result(response, timeout.duration());
+            _nextDocMsg = (OptaProcessorActor.NextDoc)Await.result(response, timeout.duration());
         }
         catch(Exception e) {
             Logger.error("WTF 5620 sendToOptaProcessor Timeout");
@@ -237,7 +237,7 @@ public class OptaSimulator implements Runnable {
     volatile boolean _paused;
     volatile boolean _stopSignal;
 
-    OptaProcessorActor.NextDocMsg _nextDocMsg;
+    OptaProcessorActor.NextDoc _nextDocMsg;
     OptaSimulatorState _state;
 
     static OptaSimulator _instance;

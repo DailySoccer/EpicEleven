@@ -22,7 +22,7 @@ public class OptaProcessorActor extends UntypedActor {
         // Es posible que se parara justo cuando estaba en isProcessing == true
         resetIsProcessing();
 
-        _nextDocMsg = NextDocMsg.Null();
+        _nextDoc = NextDoc.Null();
     }
 
     // postRestart y preStart se llaman en el nuevo actor (despues de la reinicializacion, claro).
@@ -79,7 +79,7 @@ public class OptaProcessorActor extends UntypedActor {
                 break;
 
             case "GetNextDoc":
-                sender().tell(_nextDocMsg, self());
+                sender().tell(_nextDoc, self());
                 break;
 
             default:
@@ -106,9 +106,9 @@ public class OptaProcessorActor extends UntypedActor {
 
     private void ensureNextDocument(int documentsPerQuery) {
 
-        // Somos una ensure, si el siguiente documento ya esta cargado simplemente retornamos. _nextDocMsg se pone
+        // Somos una ensure, si el siguiente documento ya esta cargado simplemente retornamos. _nextDoc se pone
         // a null en processNextDocument, a la espera de que se ordene asegurar el siguiente
-        if (_nextDocMsg.isNotNull())
+        if (_nextDoc.isNotNull())
             return;
 
         ensureConnection();
@@ -126,7 +126,7 @@ public class OptaProcessorActor extends UntypedActor {
             }
         }
         catch (Exception e) {
-            // Punto de recuperacion 1. Al saltar una excepcion no habremos cambiado _nextDocMsg == null y por lo tanto reintentaremos.
+            // Punto de recuperacion 1. Al saltar una excepcion no habremos cambiado _nextDoc == null y por lo tanto reintentaremos.
             // Nota: Podriamos dejarlo fallar y que se produjera un restart del actor. Para ello, lo primero sera cambiar
             //       la estrategia de inicializacion, puesto que en un restart nadie esta poniendo en accion el Tick.
             Logger.error("WTF 1533", e);
@@ -136,28 +136,28 @@ public class OptaProcessorActor extends UntypedActor {
     private boolean readNextDocument() throws SQLException {
 
         // Cuando vamos a leer el siguiente documento, el anterior no puede estar sin procesar.
-        if (_nextDocMsg.isNotNull())
+        if (_nextDoc.isNotNull())
             throw new RuntimeException("WTF 5820");
 
         if (_optaResultSet.next()) {
-            _nextDocMsg = new NextDocMsg(new Date(_optaResultSet.getTimestamp("created_at").getTime()), _optaResultSet.getInt(1));
+            _nextDoc = new NextDoc(new Date(_optaResultSet.getTimestamp("created_at").getTime()), _optaResultSet.getInt(1));
         }
 
-        return _nextDocMsg.isNotNull();
+        return _nextDoc.isNotNull();
     }
 
     private void processNextDocument() {
 
         // Es posible que ensureNextDocument haya fallado
-        if (_nextDocMsg.isNull())
+        if (_nextDoc.isNull())
             return;
 
         try {
             processCurrentDocumentInResultSet(_optaResultSet, _optaProcessor);
-            _nextDocMsg = NextDocMsg.Null();
+            _nextDoc = NextDoc.Null();
         }
         catch (Exception e) {
-            // Punto de recuperacion 2. Al saltar una excepcion, no ponemos _nextDocMsg a null y por lo tanto reintentaremos
+            // Punto de recuperacion 2. Al saltar una excepcion, no ponemos _nextDoc a null y por lo tanto reintentaremos
             Logger.error("WTF 7817", e);
 
             // Aseguramos que podemos reintentar
@@ -236,7 +236,7 @@ public class OptaProcessorActor extends UntypedActor {
         _optaResultSet = null;
 
         _optaProcessor = null;
-        _nextDocMsg = NextDocMsg.Null();
+        _nextDoc = NextDoc.Null();
     }
 
     final int SIMULATOR_DOCUMENTS_PER_QUERY = 500;
@@ -247,7 +247,7 @@ public class OptaProcessorActor extends UntypedActor {
     Statement _stmt;
 
     OptaProcessor _optaProcessor;
-    NextDocMsg _nextDocMsg;
+    NextDoc _nextDoc;
 
 
     static private class OptaProcessorState {
@@ -262,16 +262,16 @@ public class OptaProcessorActor extends UntypedActor {
         }
     }
 
-    static public class NextDocMsg {
+    static public class NextDoc {
         final public Date date;
         final public int id;
 
-        public NextDocMsg(Date d, int i) { date = d; id = i; }
+        public NextDoc(Date d, int i) { date = d; id = i; }
 
         // Como no podemos mandar un mensaje null, lo marcamos asi
         public boolean isNull() { return date == null; }
         public boolean isNotNull() { return date != null; }
 
-        static NextDocMsg Null() { return new NextDocMsg(null, -1); }
+        static NextDoc Null() { return new NextDoc(null, -1); }
     }
 }

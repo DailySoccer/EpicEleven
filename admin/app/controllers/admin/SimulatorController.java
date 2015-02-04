@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import actors.SimulatorActor;
 import com.google.common.collect.ImmutableMap;
 import model.GlobalDate;
 import model.Model;
@@ -10,6 +11,7 @@ import play.data.format.Formats;
 import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.twirl.api.Html;
 import utils.ReturnHelper;
 
 import java.util.Date;
@@ -18,40 +20,23 @@ import static play.data.Form.form;
 
 public class SimulatorController extends Controller {
 
-    public static Result switchSimulator() {
+    public static Html simulatorBar() {
+        SimulatorActor.SimulatorState state = (SimulatorActor.SimulatorState)Model.getDailySoccerActors()
+                                              .tellToActorAwaitResult("SimulatorActor", "GetSimulatorState");
 
-        /*
-        if (OptaSimulator.isCreated())
-            OptaSimulator.shutdown();
-        else
-            OptaSimulator.init();
-         */
+        return views.html.simulatorbar.render(state.isNotNull(), state.isPaused, state.simulationDate, state.pauseDate, "TODO");
+    }
+
+    public static Result initShutdown() {
 
         Model.getDailySoccerActors().tellToActor("SimulatorActor", "InitShutdown");
 
         return ok();
     }
-    public static Result start() {
+    public static Result pauseResume() {
 
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", "StartStop");
+        Model.getDailySoccerActors().tellToActor("SimulatorActor", "PauseResume");
 
-        /*
-        if (OptaSimulator.isCreated()) {
-            OptaSimulator.instance().start();
-        }
-        */
-        return ok();
-    }
-
-    public static Result pause() {
-
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", "StartStop");
-
-        /*
-        if (OptaSimulator.isCreated()) {
-            OptaSimulator.instance().pause();
-        }
-        */
         return ok();
     }
 
