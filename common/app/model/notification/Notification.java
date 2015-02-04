@@ -52,7 +52,8 @@ public class Notification {
 
     public void updateNotification(String reason) {
         this.reason = reason;
-        Model.notifications().update("{notificationId: #}", this.notificationId).upsert().with(this);
+        dateSent = GlobalDate.getCurrentDate();
+        Model.notifications().update("{topic: #, userId: #}", topic, userId).upsert().with(this);
     }
 
     public static List<Notification> sentToList(Topic topic, String reason) {
