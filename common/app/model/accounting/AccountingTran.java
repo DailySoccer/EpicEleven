@@ -62,6 +62,7 @@ public class AccountingTran {
 
         AccountOp op = getAccountOp(accountId);
         if (op != null) {
+            info.put("accountingTranId", accountingTranId.toString());
             info.put("type", type.name());
             info.put("value", op.value.toString());
             info.put("createdAt", String.valueOf(createdAt.getTime()));
