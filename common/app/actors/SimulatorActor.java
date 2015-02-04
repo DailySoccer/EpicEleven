@@ -62,11 +62,15 @@ public class SimulatorActor extends UntypedActor {
                 break;
 
             case "SimulatorTick":
-                onSimulatorTick();
+                onSimulatorTick(false);
                 break;
 
             case "PauseResume":
                 pauseResume();
+                break;
+
+            case "NextStep":
+                onSimulatorTick(true);
                 break;
 
             case "Reset":
@@ -173,8 +177,7 @@ public class SimulatorActor extends UntypedActor {
         Logger.debug("SimulatorActor: initialized, the current date is {}", GlobalDate.getCurrentDate());
     }
 
-    private boolean breakOnPause() {
-        boolean bBreak = false;
+    private boolean refreshPause() {
 
         if (_state.pauseDate != null && _state.pauseDate.before(_state.simulationDate)) {
             Logger.debug("SimulatorActor: pausing at requested date {}", _state.pauseDate);
@@ -183,20 +186,22 @@ public class SimulatorActor extends UntypedActor {
 
             _state.pauseDate = null;
             updateDateAndSaveState(_state.simulationDate);
-
-            bBreak = true;
         }
 
-        return bBreak;
+        return _state.isPaused;
     }
 
-    private void onSimulatorTick() {
+    private void onSimulatorTick(boolean onlyNextStep) {
         Logger.debug("SimulatorActor: tick at {}", GlobalDate.getCurrentDate());
 
         // Es posible que nos encolen un Shutdown o un PauseResume mientras procesabamos el Tick, donde al final (unas
         // lineas mas abajo) encolamos el siguiente tick. Por lo tanto, nos puede llegar un Tick despues de un Shutdown/Pause.
-        // Miramos ademas si tenemos que parar debido a que hemos sobrepasado la fecha de pausa.
-        if (_state == null || _state.isPaused || breakOnPause()) {
+        if (_state == null) {
+            return;
+        }
+
+        // Cuando nos piden que hagamos solo un paso, ignoramos las pausas
+        if (!onlyNextStep && refreshPause()) {
             return;
         }
 
@@ -205,20 +210,24 @@ public class SimulatorActor extends UntypedActor {
 
             updateDateAndSaveState(new DateTime(_state.simulationDate).plusMillis(virtualElapsedTime).toDate());
 
-            reescheduleTick();
+            if (!onlyNextStep) {
+                reescheduleTick();
+            }
         }
         else {
             // Apuntamos la GlobalDate exactamente a la del siguiente documento
             OptaProcessorActor.NextDoc nextdocMsg = (OptaProcessorActor.NextDoc)Model.getDailySoccerActors()
-                                                        .tellToActorAwaitResult("OptaProcessorActor", "GetNextDoc");
+                    .tellToActorAwaitResult("OptaProcessorActor", "GetNextDoc");
 
             // Si al OptaProcessorActor no le ha dado tiempo a cargar el siguiente documento, simplemente esperamos al siguiente tick
             if (nextdocMsg.isNotNull()) {
                 updateDateAndSaveState(nextdocMsg.date);
             }
 
-            // Encolamos el siguiente tick para ejecucion inmediata!
-            getSelf().tell("SimulatorTick", getSelf());
+            if (!onlyNextStep) {
+                // Encolamos el siguiente tick para ejecucion inmediata!
+                getSelf().tell("SimulatorTick", getSelf());
+            }
         }
 
         // El orden de entrega de estos mensajes no esta garantizado, como debe de ser.
