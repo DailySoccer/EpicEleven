@@ -54,9 +54,20 @@ public class SimulatorController extends Controller {
         return ok();
     }
 
+    public static Result gotoDate() {
+        GotoSimParams params = form(GotoSimParams.class).bindFromRequest().get();
+
+        //OptaSimulator.instance().gotoDate(new DateTime(params.date).withZoneRetainFields(DateTimeZone.UTC).toDate());
+        return ok();
+    }
+
+
     public static Result getSimulatorState() {
+        // Puesto que se llamara tambien desde el cliente en un dominio distinto, tenemos que poner el CORS
+        response().setHeader("Access-Control-Allow-Origin", "*");
+
         SimulatorActor.SimulatorState state = (SimulatorActor.SimulatorState)Model.getDailySoccerActors()
-                                                .tellToActorAwaitResult("SimulatorActor", "GetSimulatorState");
+                                               .tellToActorAwaitResult("SimulatorActor", "GetSimulatorState");
 
         return new ReturnHelper(state).toResult();
     }
@@ -65,21 +76,5 @@ public class SimulatorController extends Controller {
         @Constraints.Required
         @Formats.DateTime (pattern = "yyyy-MM-dd'T'HH:mm")
         public Date date;
-    }
-
-    public static Result gotoDate() {
-
-        Form<GotoSimParams> gotoForm = form(GotoSimParams.class).bindFromRequest();
-
-        GotoSimParams params = gotoForm.get();
-        OptaSimulator.instance().gotoDate(new DateTime(params.date).withZoneRetainFields(DateTimeZone.UTC).toDate());
-
-        return ok();
-    }
-
-    public static Result isSimulatorActivated() {
-        // Puesto que se llamara desde el cliente en un dominio distinto, tenemos que poner el CORS
-        response().setHeader("Access-Control-Allow-Origin", "*");
-        return new ReturnHelper(ImmutableMap.of("simulator_activated", OptaSimulator.isCreated())).toResult();
     }
 }

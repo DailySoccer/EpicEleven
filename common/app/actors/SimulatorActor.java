@@ -4,6 +4,7 @@ import akka.actor.Cancellable;
 import akka.actor.UntypedActor;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import model.GlobalDate;
+import model.MockData;
 import model.Model;
 import model.opta.OptaXmlUtils;
 import org.joda.time.DateTime;
@@ -43,6 +44,14 @@ public class SimulatorActor extends UntypedActor {
                 } else {
                     pauseResume();
                 }
+                break;
+
+            case "Reset":
+                shutdown();
+                Model.resetMongoDB();
+                MockData.ensureMockDataUsers();
+                MockData.ensureCompetitions();
+                init();
                 break;
 
             case "GetSimulatorState":
