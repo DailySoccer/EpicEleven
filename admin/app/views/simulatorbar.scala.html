@@ -1,4 +1,4 @@
-@(isCreated:Boolean, isPaused:Boolean, currentDate:String, pauseDate:String, speedFactor:Int)
+@(isInit:Boolean, isPaused:Boolean, currentDate:String, pauseDate:String, speedFactor:Int)
 
 @import controllers.admin.routes
 
@@ -13,7 +13,7 @@
             </ul>
 
             <a class="btn btn-primary ajax switch" href="@routes.SimulatorController.initShutdown">
-                @if(isCreated) {
+                @if(isInit) {
                     On
                 } else {
                     Off
@@ -56,7 +56,7 @@
 
     $(document).ready(function() {
         // Lo pintamos la primera vez desde el cliente por ejemplo para settear correctamente el speedFactor
-        repaintInterface(@isCreated, @isPaused, "@currentDate", "@pauseDate", @speedFactor);
+        repaintInterface(@isInit, @isPaused, "@currentDate", "@pauseDate", @speedFactor);
 
         window.setInterval(refreshStateFromServer, 200);
     });
@@ -66,18 +66,18 @@
             dataType: "json",
             url: "/admin/get_simulator_state",
             success: function (result) {
-                repaintInterface(result.simulationDate != null, result.isPaused, result.currentDateFormatted, result.pauseDateFormatted, result.speedFactor);
+                repaintInterface(result.init, result.isPaused, result.currentDateFormatted, result.pauseDateFormatted, result.speedFactor);
             }});
     }
 
 
-    function repaintInterface(is_created, is_paused, current_date, pause_date, speed_factor) {
+    function repaintInterface(is_init, is_paused, current_date, pause_date, speed_factor) {
 
         $("#time").text(current_date);
         $("#nextStop").text(pause_date);
         $('#sim-speed option[value="'+ speed_factor +'"]').prop('selected', true);
 
-        if (is_created) {
+        if (is_init) {
 
             $(".switch").text("Off");
             $(".btn-sim").removeClass("disabled");

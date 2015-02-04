@@ -24,7 +24,7 @@ public class SimulatorController extends Controller {
         SimulatorActor.SimulatorState state = (SimulatorActor.SimulatorState)Model.getDailySoccerActors()
                                               .tellToActorAwaitResult("SimulatorActor", "GetSimulatorState");
 
-        return views.html.simulatorbar.render(state.isNotNull(), state.isPaused,
+        return views.html.simulatorbar.render(state.isInit(), state.isPaused,
                                               state.getCurrentDateFormatted(),
                                               state.getPauseDateFormatted(),
                                               state.speedFactor);

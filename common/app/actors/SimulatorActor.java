@@ -214,6 +214,9 @@ public class SimulatorActor extends UntypedActor {
         }
 
         @JsonSerialize
+        public boolean isInit() { return simulationDate != null; }
+
+        @JsonSerialize
         public Date   getCurrentDate() { return GlobalDate.getCurrentDate(); }
 
         @JsonSerialize
@@ -222,9 +225,5 @@ public class SimulatorActor extends UntypedActor {
         public String getSimulationDateFormatted() { return (simulationDate != null)? GlobalDate.formatDate(simulationDate) : ""; }
         @JsonSerialize
         public String getPauseDateFormatted() { return (pauseDate != null)? GlobalDate.formatDate(pauseDate) : ""; }
-
-        // Como no podemos mandar un mensaje null, lo marcamos asi
-        public boolean isNull() { return simulationDate == null; }
-        public boolean isNotNull() { return simulationDate != null; }
     }
 }
