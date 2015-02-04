@@ -57,7 +57,9 @@ public class SimulatorController extends Controller {
     public static Result gotoDate() {
         GotoSimParams params = form(GotoSimParams.class).bindFromRequest().get();
 
-        //OptaSimulator.instance().gotoDate(new DateTime(params.date).withZoneRetainFields(DateTimeZone.UTC).toDate());
+        Date date = new DateTime(params.date).withZoneRetainFields(DateTimeZone.UTC).toDate();
+        Model.getDailySoccerActors().tellToActor("SimulatorActor", new SimulatorActor.GotoDateMsg(date));
+
         return ok();
     }
 

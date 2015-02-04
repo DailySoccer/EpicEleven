@@ -52,14 +52,14 @@ public class DailySoccerActors {
 
     private void initDevelopmentRole(TargetEnvironment env) {
         initRabbitMQ(env);
-        createActors();
-        bindActorsToQueues();
+        createLocalActors();
+        bindLocalActorsToQueues();
     }
 
     private void initWorkerRole() {
         initRabbitMQ(TargetEnvironment.LOCALHOST); // LOCALHOST equivale a decirle "no intentes leer de heroku"
-        createActors();
-        bindActorsToQueues();
+        createLocalActors();
+        bindLocalActorsToQueues();
         tickActors();
     }
 
@@ -76,7 +76,9 @@ public class DailySoccerActors {
             initDevelopmentRole(env);
         }
         else {
-            // Paramos los actores locales (si los hubiera), para no liar
+            // Paramos los actores locales (si los hubiera), para no liar. Evitamos bugs como que un actor local
+            // tuviera un tick pendiente de ejecutar, lo ejecute con la conexion ya cambiada y de repente mande un
+            // mensaje al sistema remoto! (por ejemplo, SimulatorController.Reset :) )
             stopLocalActors();
 
             // Si hubiera conexion a un rabbitmq anterior, la matamos
@@ -85,6 +87,12 @@ public class DailySoccerActors {
             // Iniciamos la nueva conexion al nuevo environment
             initRabbitMQ(env);
         }
+    }
+
+    public void restartLocalActors() {
+        stopLocalActors();
+        createLocalActors();
+        bindLocalActorsToQueues();
     }
 
     private void stopLocalActors() {
@@ -183,7 +191,7 @@ public class DailySoccerActors {
         if (_callbackQueueName == null) {
 
             if (_consumer != null) {
-                throw new RuntimeException("WTF 8811 El consumer tiene el mismo exacto ciclo de vida que la cola");
+                throw new RuntimeException("WTF 8811 El consumer tiene que tener el mismo exacto ciclo de vida que la cola");
             }
 
             _callbackQueueName = _channel.queueDeclare().getQueue();
@@ -215,7 +223,7 @@ public class DailySoccerActors {
         }
     }
 
-    private void createActors() {
+    private void createLocalActors() {
         _localActors.put("OptaProcessorActor", Akka.system().actorOf(Props.create(OptaProcessorActor.class), "OptaProcessorActor"));
         _localActors.put("InstantiateConstestsActor", Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateConstestsActor"));
         _localActors.put("CloseContestsActor", Akka.system().actorOf(Props.create(CloseContestsActor.class), "CloseContestsActor"));
@@ -224,7 +232,7 @@ public class DailySoccerActors {
         _localActors.put("SimulatorActor", Akka.system().actorOf(Props.create(SimulatorActor.class), "SimulatorActor"));
     }
 
-    private void bindActorsToQueues() {
+    private void bindLocalActorsToQueues() {
 
         // Soportamos que rabbitmq-server este apagado
         if (_connection == null) {

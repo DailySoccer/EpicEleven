@@ -18,13 +18,38 @@ public class SimulatorActor extends UntypedActor {
 
     static public final int MAX_SPEED = -1;
 
+    static public class GotoDateMsg {
+        public Date date;
+
+        public GotoDateMsg(Date d) { date = d; }
+    }
+
+    static public class SpeedFactorMsg {
+        public int speedFactor;
+    }
+
     @Override public void postStop() {
         shutdown();
     }
 
     @Override public void onReceive(Object msg) {
+        if (msg instanceof String) {
+            onReceive((String)msg);
+        }
+        else if (msg instanceof GotoDateMsg) {
+            gotoDate(((GotoDateMsg)msg).date);
+        }
+        else if (msg instanceof SpeedFactorMsg) {
+            setSpeedFactor(((SpeedFactorMsg) msg).speedFactor);
+        }
+        else {
+            unhandled(msg);
+        }
+    }
 
-        switch ((String)msg) {
+    private void onReceive(String msg) {
+
+        switch (msg) {
             case "InitShutdown":
                 if (_state == null) {
                     init();
@@ -39,11 +64,7 @@ public class SimulatorActor extends UntypedActor {
                 break;
 
             case "PauseResume":
-                if (_state == null) {
-                    Logger.error("WTF 7733 Recibido PauseResume sin haber inicializado");
-                } else {
-                    pauseResume();
-                }
+                pauseResume();
                 break;
 
             case "Reset":
@@ -55,8 +76,7 @@ public class SimulatorActor extends UntypedActor {
                 break;
 
             case "GetSimulatorState":
-                // Si no estamos inicializados, SimulatorState.isNull() == true; La currentDate siempre sera la correcta
-                // refrescada ahora mismo
+                // Si no estamos inicializados, SimulatorState.isInit() == false;
                 sender().tell(new SimulatorState(_state), self());
                 break;
 
@@ -74,14 +94,43 @@ public class SimulatorActor extends UntypedActor {
     }
 
     private void pauseResume() {
+        if (_state == null) {
+           init();
+        }
+
         if (_state.isPaused) {
-            _state.isPaused = false;
-            getSelf().tell("SimulatorTick", getSelf());
+            resume();
         }
         else {
-            _state.isPaused = true;
-            cancelTicking();
+            pause();
         }
+    }
+
+    private void gotoDate(Date date) {
+        if (_state == null) {
+            init();
+        }
+
+        _state.pauseDate = date;
+        resume();
+    }
+
+    private void pause() {
+        Logger.debug("SimulatorActor: pausing at {}", GlobalDate.getCurrentDate());
+
+        _state.isPaused = true;
+        cancelTicking();
+    }
+
+    private void resume() {
+        Logger.debug("SimulatorActor: resuming at {}", GlobalDate.getCurrentDate());
+
+        _state.isPaused = false;
+        getSelf().tell("SimulatorTick", getSelf());
+    }
+
+    private void setSpeedFactor(int speedFactor) {
+        _state.speedFactor = speedFactor;
     }
 
     private void init() {
@@ -108,7 +157,7 @@ public class SimulatorActor extends UntypedActor {
             }
 
             // Tenemos registrada una fecha antigua de pausa?
-            if (_state.pauseDate != null && !_state.simulationDate.before(_state.pauseDate)) {
+            if (_state.pauseDate != null && _state.pauseDate.before(_state.simulationDate)) {
                 _state.pauseDate = null;
             }
         }
@@ -116,18 +165,36 @@ public class SimulatorActor extends UntypedActor {
         // Siempre arrancamos pausados
         _state.isPaused = true;
 
-        // Nos ponemos en la fecha y grabamos el estado
+        // Grabamos a la DB
         updateDateAndSaveState(_state.simulationDate);
 
         Logger.debug("SimulatorActor: initialized, the current date is {}", GlobalDate.getCurrentDate());
     }
 
+    private boolean breakOnPause() {
+        boolean bBreak = false;
+
+        if (_state.pauseDate != null && _state.pauseDate.before(_state.simulationDate)) {
+            Logger.debug("SimulatorActor: pausing at requested date {}", _state.pauseDate);
+
+            pause();
+
+            _state.pauseDate = null;
+            updateDateAndSaveState(_state.simulationDate);
+
+            bBreak = true;
+        }
+
+        return bBreak;
+    }
+
     private void onSimulatorTick() {
-        Logger.debug("SimulatorActor: {}", GlobalDate.getCurrentDate());
+        Logger.debug("SimulatorActor: tick at {}", GlobalDate.getCurrentDate());
 
         // Es posible que nos encolen un Shutdown o un PauseResume mientras procesabamos el Tick, donde al final (unas
-        // lineas mas abajo) encolamos el siguiente tick. Por lo tanto, nos puede llegar un Tick despues de un Shutdown/PauseResume
-        if (_state == null || _state.isPaused) {
+        // lineas mas abajo) encolamos el siguiente tick. Por lo tanto, nos puede llegar un Tick despues de un Shutdown/Pause.
+        // Miramos ademas si tenemos que parar debido a que hemos sobrepasado la fecha de pausa.
+        if (_state == null || _state.isPaused || breakOnPause()) {
             return;
         }
 
@@ -160,26 +227,13 @@ public class SimulatorActor extends UntypedActor {
     }
 
     private void updateDateAndSaveState(Date currentDate) {
-        GlobalDate.setFakeDate(_state.simulationDate);
 
         _state.simulationDate = currentDate;
-        saveStateToDB();
-    }
+        GlobalDate.setFakeDate(_state.simulationDate);
 
-    private void saveStateToDB() {
         // Unico punto donde grabamos nuestro estado a la DB
         Model.simulator().update("{stateId: #}", _state.stateId).upsert().with(_state);
     }
-
-    /*
-    private void startTicking() {
-        if (_tickCancellable != null) {
-            throw new RuntimeException("WTF 8722");
-        }
-
-        reescheduleTick();
-    }
-    */
 
     private void cancelTicking() {
         if (_tickCancellable != null) {

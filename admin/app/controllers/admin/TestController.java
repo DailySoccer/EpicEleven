@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import actors.SimulatorActor;
 import model.GlobalDate;
 import model.Model;
 import model.PrizeType;
@@ -16,34 +17,21 @@ import java.util.Date;
 public class TestController extends Controller {
 
     static public Result start() {
-        if (!OptaSimulator.isCreated())
-            OptaSimulator.init();
-
-        OptaSimulator.instance().reset();
+        Model.getDailySoccerActors().tellToActor("SimulatorActor", "Reset");
         return ok("OK");
     }
 
 
     static public Result gotoDateTest(int year, int month, int day, int hour, int minute) {
-
-        if (!OptaSimulator.isCreated())
-            OptaSimulator.init();
-
         Date myDate = new DateTime(year, month, day, hour, minute, DateTimeZone.UTC).toDate();
-
-        OptaSimulator.instance().gotoDate(myDate);
-
+        Model.getDailySoccerActors().tellToActor("SimulatorActor", new SimulatorActor.GotoDateMsg(myDate));
         return ok("OK");
     }
 
 
     static public Result gotoDate(Long timestamp) {
         Date date = new Date(timestamp);
-
-        if (!OptaSimulator.isCreated())
-            OptaSimulator.init();
-
-        OptaSimulator.instance().gotoDate(date);
+        Model.getDailySoccerActors().tellToActor("SimulatorActor", new SimulatorActor.GotoDateMsg(date));
         return ok("OK");
     }
 

@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import model.Model;
 import model.Snapshot;
 import play.Logger;
 import play.mvc.Controller;
@@ -15,11 +16,8 @@ public class SnapshotController extends Controller {
     }
 
     public static Result loadSnapshot() {
-        if (OptaSimulator.isCreated()) {
-            OptaSimulator.shutdown();
-        }
+        Model.getDailySoccerActors().restartLocalActors();
         Snapshot.instance().load();
-        OptaSimulator.init();
 
         return redirect(routes.SnapshotController.index());
     }

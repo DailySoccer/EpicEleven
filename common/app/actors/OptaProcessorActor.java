@@ -67,7 +67,7 @@ public class OptaProcessorActor extends UntypedActor {
                 break;
 
             case "GetNextDoc":
-                if (_nextDoc == null) {
+                if (_nextDoc.isNull()) {
                     ensureNextDocument(REGULAR_DOCUMENTS_PER_QUERY);
                 }
                 sender().tell(_nextDoc, self());
