@@ -5,64 +5,6 @@
 @scripts = {
 <script type="text/javascript">
 
-        function isInteger(n) {
-            var valid = /^-?[0-9]+$/;
-            return valid.test(n) && !isNaN(parseInt(n)) && isFinite(n) && (n % 1 === 0);
-        }
-
-        function isSalaryValid(value) {
-            return isInteger(value);
-        }
-
-        function changeSalary(element) {
-            var id = element.attr("data-player-id")
-            var value = element.html();
-            if (isSalaryValid(value)) {
-                $.ajax({
-                    url: "/admin/template_soccer_player/"+id+"/salary/"+value,
-                    success: function(result) {
-                        element.effect( "highlight", {}, 1000 );
-                    },
-                    error: function(result) {
-                        element.effect( "highlight", {color:"#FF0000"}, 1000 );
-                    }
-                });
-                return true;
-            }
-            else {
-                window.alert("Número Entero inválido: " + value);
-                return false;
-            }
-        }
-
-
-
-        function registerToEdit() {
-            $(".edit-salary")
-                .off()
-                .attr("contenteditable", @canEditSalaries)
-                .keypress(function(e) {
-                    if(event.which == 13 || event.which == 9) {
-                        event.preventDefault();
-                        if (isSalaryValid($(this).html())) {
-                            var focusables = $(".edit-salary");
-                            var next = focusables.eq(focusables.index(this)+1);
-                            if (next.length) {
-                                next.focus();
-                            }
-                            else {
-                                // Si no hay ningún elemento siguiente (es el último), cambiamos el salario aqui
-                                changeSalary($(this));
-                            }
-                        }
-                    }
-                })
-                .blur(function() {
-                    // Cambiamos el salario al perder el foco
-                    changeSalary($(this));
-                });
-        }
-
         $(document).ready( function(){
             $('#ajax_table_id').dataTable( {
               "columns": [
@@ -82,10 +24,7 @@
               "bServerSide": true,
               "bJQueryUI": true,
               "sPaginationType": "full_numbers",
-              "sAjaxSource": "/admin/template_soccer_players/ajax",
-              "fnDrawCallback": function( oSettings ) {
-                registerToEdit();
-              }
+              "sAjaxSource": "/admin/template_soccer_players/ajax"
             });
         })
 
@@ -95,14 +34,6 @@
 @main("Template Soccer Players - Admin", scripts) {
 
 <h1 class="page-header">Template Soccer Players</h1>
-
-<div class="btn-group" style="display:inline-block;">
-@if(canEditSalaries) {
-    <a href="@TemplateSoccerPlayerController.index" class="btn btn-with-symbol btn-warning stop">Edit Salaries</a>
-} else {
-    <a href="@TemplateSoccerPlayerController.editSalaries" class="btn btn-with-symbol btn-success play">Edit Salaries</a>
-}
-</div>
 
 <h2 class="sub-header"></h2>
 <div class="table-responsive">

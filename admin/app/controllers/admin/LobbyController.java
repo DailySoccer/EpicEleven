@@ -1,7 +1,6 @@
 package controllers.admin;
 
 import model.Contest;
-import model.Model;
 import model.TemplateContest;
 import org.bson.types.ObjectId;
 import play.mvc.Controller;
