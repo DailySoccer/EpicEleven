@@ -51,34 +51,25 @@ public class OptaProcessorActor extends UntypedActor {
                 // Reeschudeleamos una llamada a nosotros mismos para el siguiente Tick
                 getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
                                                                "Tick", getContext().dispatcher(), null);
-                break;
 
-            case "SimulatorInit":
-                // Puede ser el N-esimo Start, reseteamos nuestro acceso a la DB
-                shutdown();
-
-                // Para el simulador usamos 1 optaprocesor que nunca reciclamos
-                _optaProcessor = new OptaProcessor();
-
-                // Ensuramos el siguiente, somos asi de amables
-                ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
-
-                break;
-
-            case "SimulatorShutdown":
-                shutdown();
+                // Aseguramos que oscilamos bien entre el Tick y el SimulatorTick
+                _optaProcessor = null;
                 break;
 
             case "SimulatorTick":
+                // Para el simulador usamos 1 optaprocesor que nunca reciclamos (pq por dentro cachea)
+                if (_optaProcessor == null) {
+                    _optaProcessor = new OptaProcessor();
+                }
                 ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
                 processNextDocument();
-
-                // Durante el simulador dejamos el siguiente documento siempre precargado listo para la llamada a GetNextDoc
-                ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
 
                 break;
 
             case "GetNextDoc":
+                if (_nextDoc == null) {
+                    ensureNextDocument(REGULAR_DOCUMENTS_PER_QUERY);
+                }
                 sender().tell(_nextDoc, self());
                 break;
 

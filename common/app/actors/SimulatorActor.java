@@ -71,7 +71,6 @@ public class SimulatorActor extends UntypedActor {
         cancelTicking();
         _state = null;
         GlobalDate.setFakeDate(null);
-        Model.getDailySoccerActors().tellToActor("OptaProcessorActor", "SimulatorShutdown");
     }
 
     private void pauseResume() {
@@ -119,9 +118,6 @@ public class SimulatorActor extends UntypedActor {
 
         // Nos ponemos en la fecha y grabamos el estado
         updateDateAndSaveState(_state.simulationDate);
-
-        // Ponemos al OptaProcessorActor en el modo que nos interesa
-        Model.getDailySoccerActors().tellToActor("OptaProcessorActor", "SimulatorInit");
 
         Logger.debug("SimulatorActor: initialized, the current date is {}", GlobalDate.getCurrentDate());
     }
