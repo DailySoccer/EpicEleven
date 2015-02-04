@@ -77,14 +77,9 @@ GET         /pause_resume_simulator                                             
 GET         /reset_simulator                                                     controllers.admin.SimulatorController.reset()
 GET         /nextstep_simulator                                                  controllers.admin.SimulatorController.nextStep()
 POST        /goto_date_simulator                                                 controllers.admin.SimulatorController.gotoDate()
-GET         /next_step_desc_simulator                                            controllers.admin.SimulatorController.nextStepDescription()
-GET         /next_stop_simulator                                                 controllers.admin.SimulatorController.nextStop()
-GET         /is_created_simulator                                                controllers.admin.SimulatorController.isCreated()
-GET         /is_paused_simulator                                                 controllers.admin.SimulatorController.isPaused()
-GET         /current_date_simulator                                              controllers.admin.SimulatorController.currentDate()
 GET         /simulator_speed/:speed                                              controllers.admin.SimulatorController.setSpeed(speed : Int)
-GET         /simulator_speed                                                     controllers.admin.SimulatorController.getSpeed()
-GET         /is_simulator_activated                                              controllers.admin.SimulatorController.isSimulatorActivated()
+GET         /get_simulator_state                                                 controllers.admin.SimulatorController.getSimulatorState()
+
 
 GET         /snapshots                                                           controllers.admin.SnapshotController.index()
 GET         /save_snapshot                                                       controllers.admin.SnapshotController.saveSnapshot()

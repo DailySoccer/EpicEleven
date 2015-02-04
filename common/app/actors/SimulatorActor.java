@@ -2,6 +2,7 @@ package actors;
 
 import akka.actor.Cancellable;
 import akka.actor.UntypedActor;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import model.GlobalDate;
 import model.Model;
 import model.opta.OptaXmlUtils;
@@ -33,7 +34,7 @@ public class SimulatorActor extends UntypedActor {
                 break;
 
             case "SimulatorTick":
-                onTick();
+                onSimulatorTick();
                 break;
 
             case "PauseResume":
@@ -45,7 +46,8 @@ public class SimulatorActor extends UntypedActor {
                 break;
 
             case "GetSimulatorState":
-                // Si no estamos inicializados, SimulatorState.isNull() == true;
+                // Si no estamos inicializados, SimulatorState.isNull() == true; La currentDate siempre sera la correcta
+                // refrescada ahora mismo
                 sender().tell(new SimulatorState(_state), self());
                 break;
 
@@ -115,7 +117,7 @@ public class SimulatorActor extends UntypedActor {
         Logger.debug("SimulatorActor: initialized, the current date is {}", GlobalDate.getCurrentDate());
     }
 
-    private void onTick() {
+    private void onSimulatorTick() {
         Logger.debug("SimulatorActor: {}", GlobalDate.getCurrentDate());
 
         // Es posible que nos encolen un Shutdown o un PauseResume mientras procesabamos el Tick, donde al final (unas
@@ -153,10 +155,10 @@ public class SimulatorActor extends UntypedActor {
     }
 
     private void updateDateAndSaveState(Date currentDate) {
+        GlobalDate.setFakeDate(_state.simulationDate);
+
         _state.simulationDate = currentDate;
         saveStateToDB();
-
-        GlobalDate.setFakeDate(_state.simulationDate);
     }
 
     private void saveStateToDB() {
@@ -200,16 +202,26 @@ public class SimulatorActor extends UntypedActor {
         public boolean isPaused;
         public int     speedFactor = MAX_SPEED;
 
-        public SimulatorState() {}
+        public SimulatorState() { }
         public SimulatorState(SimulatorState o) {
             if (o != null) {
                 this.stateId = o.stateId;
+                this.simulationDate = o.simulationDate;
                 this.pauseDate = o.pauseDate;
                 this.isPaused = o.isPaused;
-                this.simulationDate = o.simulationDate;
                 this.speedFactor = o.speedFactor;
             }
         }
+
+        @JsonSerialize
+        public Date   getCurrentDate() { return GlobalDate.getCurrentDate(); }
+
+        @JsonSerialize
+        public String getCurrentDateFormatted() { return GlobalDate.getCurrentDateString(); }
+        @JsonSerialize
+        public String getSimulationDateFormatted() { return (simulationDate != null)? GlobalDate.formatDate(simulationDate) : ""; }
+        @JsonSerialize
+        public String getPauseDateFormatted() { return (pauseDate != null)? GlobalDate.formatDate(pauseDate) : ""; }
 
         // Como no podemos mandar un mensaje null, lo marcamos asi
         public boolean isNull() { return simulationDate == null; }

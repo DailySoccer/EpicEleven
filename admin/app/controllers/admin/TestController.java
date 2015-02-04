@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import model.GlobalDate;
 import model.Model;
 import model.PrizeType;
 import model.TemplateContest;
@@ -52,7 +53,7 @@ public class TestController extends Controller {
     }
 
     static public Result getCurrentDate() {
-        return ok(SimulatorController.getCurrentDate());
+        return ok(GlobalDate.getCurrentDateString());
     }
 
     static public Result createContests(int mockIndex){
