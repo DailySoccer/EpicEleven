@@ -2,8 +2,6 @@ package model;
 
 import com.google.common.collect.ImmutableList;
 import model.accounting.AccountOp;
-import model.accounting.AccountingTran;
-import model.accounting.AccountingTranEnterContest;
 import model.accounting.AccountingTranRefund;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
