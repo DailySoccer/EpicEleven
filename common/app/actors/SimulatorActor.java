@@ -2,7 +2,6 @@ package actors;
 
 import akka.actor.Cancellable;
 import akka.actor.UntypedActor;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import model.GlobalDate;
 import model.MockData;
 import model.Model;
@@ -16,20 +15,6 @@ import java.util.concurrent.TimeUnit;
 
 public class SimulatorActor extends UntypedActor {
 
-    static public final int MAX_SPEED = -1;
-
-    static public class GotoDateMsg {
-        public Date date;
-
-        public GotoDateMsg(Date d) { date = d; }
-    }
-
-    static public class SpeedFactorMsg {
-        public int speedFactor;
-
-        public SpeedFactorMsg(int s) { speedFactor = s; }
-    }
-
     @Override public void postStop() {
         shutdown();
     }
@@ -38,14 +23,25 @@ public class SimulatorActor extends UntypedActor {
         if (msg instanceof String) {
             onReceive((String)msg);
         }
-        else if (msg instanceof GotoDateMsg) {
-            gotoDate(((GotoDateMsg)msg).date);
-        }
-        else if (msg instanceof SpeedFactorMsg) {
-            setSpeedFactor(((SpeedFactorMsg) msg).speedFactor);
+        else if (msg instanceof DynamicMsg) {
+            onReceive((DynamicMsg)msg);
         }
         else {
             unhandled(msg);
+        }
+    }
+
+    private void onReceive(DynamicMsg msg) {
+        switch (msg.msg) {
+            case "GotoDate":
+                gotoDate((Date)msg.params);
+                break;
+            case "SetSpeedFactor":
+                setSpeedFactor((int)msg.params);
+                break;
+            default:
+                unhandled(msg);
+                break;
         }
     }
 
@@ -82,8 +78,9 @@ public class SimulatorActor extends UntypedActor {
                 break;
 
             case "GetSimulatorState":
-                // Si no estamos inicializados, SimulatorState.isInit() == false;
-                sender().tell(new SimulatorState(_state), self());
+                // Si no estamos inicializados, SimulatorState.isInit() == false; Para asegurar la immutabilidad, hacemos
+                // una copia del SimulatorState. Seria mejor sin embargo hacer la propia clase immutable.
+                sender().tell(new DynamicMsg("ReturnSimulatorState", new SimulatorState(_state)), self());
                 break;
 
             default:
@@ -142,7 +139,8 @@ public class SimulatorActor extends UntypedActor {
     private void init() {
         Logger.debug("SimulatorActor: initialization at {}", GlobalDate.getCurrentDate());
 
-        Date lastProcessedDate = OptaProcessorActor.getLastProcessedDate(); // TODO: Llamada tellToActorAwaitResult
+        Date lastProcessedDate = (Date)((DynamicMsg)Model.getDailySoccerActors()
+                                                    .tellToActorAwaitResult("OptaProcessorActor", "GetLastProcessedDate")).params;
 
         _state = Model.simulator().findOne().as(SimulatorState.class);
 
@@ -205,7 +203,7 @@ public class SimulatorActor extends UntypedActor {
             return;
         }
 
-        if (_state.speedFactor != MAX_SPEED) {
+        if (_state.speedFactor != SimulatorState.MAX_SPEED) {
             int virtualElapsedTime = TICK_PERIOD * _state.speedFactor;
 
             updateDateAndSaveState(new DateTime(_state.simulationDate).plusMillis(virtualElapsedTime).toDate());
@@ -217,7 +215,7 @@ public class SimulatorActor extends UntypedActor {
         else {
             // Apuntamos la GlobalDate exactamente a la del siguiente documento
             OptaProcessorActor.NextDoc nextdocMsg = (OptaProcessorActor.NextDoc)Model.getDailySoccerActors()
-                    .tellToActorAwaitResult("OptaProcessorActor", "GetNextDoc");
+                                                    .tellToActorAwaitResult("OptaProcessorActor", "GetNextDoc");
 
             // Si al OptaProcessorActor no le ha dado tiempo a cargar el siguiente documento, simplemente esperamos al siguiente tick
             if (nextdocMsg.isNotNull()) {
@@ -262,38 +260,4 @@ public class SimulatorActor extends UntypedActor {
     Cancellable _tickCancellable;
 
     static final int TICK_PERIOD = 1000;   // Milliseconds
-
-    static public class SimulatorState {
-        static final String UNIQUE_ID = "--SimulatorState--";
-
-        public String  stateId = UNIQUE_ID;
-        public Date    simulationDate;
-        public Date    pauseDate;
-        public boolean isPaused;
-        public int     speedFactor = MAX_SPEED;
-
-        public SimulatorState() { }
-        public SimulatorState(SimulatorState o) {
-            if (o != null) {
-                this.stateId = o.stateId;
-                this.simulationDate = o.simulationDate;
-                this.pauseDate = o.pauseDate;
-                this.isPaused = o.isPaused;
-                this.speedFactor = o.speedFactor;
-            }
-        }
-
-        @JsonSerialize
-        public boolean isInit() { return simulationDate != null; }
-
-        @JsonSerialize
-        public Date   getCurrentDate() { return GlobalDate.getCurrentDate(); }
-
-        @JsonSerialize
-        public String getCurrentDateFormatted() { return GlobalDate.getCurrentDateString(); }
-        @JsonSerialize
-        public String getSimulationDateFormatted() { return (simulationDate != null)? GlobalDate.formatDate(simulationDate) : ""; }
-        @JsonSerialize
-        public String getPauseDateFormatted() { return (pauseDate != null)? GlobalDate.formatDate(pauseDate) : ""; }
-    }
 }

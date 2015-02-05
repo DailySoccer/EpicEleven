@@ -44,7 +44,6 @@ public class Model {
     static public MongoCollection optaMatchEvents() { return _jongo.getCollection("optaMatchEvents"); }
     static public MongoCollection optaMatchEventStats() { return _jongo.getCollection("optaMatchEventStats"); }
     static public MongoCollection pointsTranslation() { return _jongo.getCollection("pointsTranslation"); }
-    static public MongoCollection optaProcessor()     { return _jongo.getCollection("optaProcessor"); }
 
     static public MongoCollection jobs() { return _jongo.getCollection("jobs"); }
     static public MongoCollection accountingTransactions() { return _jongo.getCollection("accountingTransactions"); }
@@ -53,6 +52,7 @@ public class Model {
     static public MongoCollection refunds() { return _jongo.getCollection("refunds"); }
     static public MongoCollection paypalResponses() { return _jongo.getCollection("paypalResponses"); }
 
+    static public MongoCollection optaProcessor()  { return _jongo.getCollection("optaProcessor"); }
     static public MongoCollection simulator() { return _jongo.getCollection("simulator"); }
 
 

@@ -73,6 +73,10 @@ public class OptaProcessorActor extends UntypedActor {
                 sender().tell(_nextDoc, self());
                 break;
 
+            case "GetLastProcessedDate":
+                sender().tell(new DynamicMsg("ReturnLastProcessedDate", getLastProcessedDate()), self());
+                break;
+
             default:
                 unhandled(message);
                 break;
@@ -84,7 +88,7 @@ public class OptaProcessorActor extends UntypedActor {
     }
 
 
-    public static Date getLastProcessedDate() {
+    private Date getLastProcessedDate() {
         OptaProcessorState state = OptaProcessorState.findOne();
 
         if (state != null && state.lastProcessedDate != null) {

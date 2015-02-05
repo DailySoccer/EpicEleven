@@ -5,6 +5,8 @@ import akka.actor.PoisonPill;
 import akka.actor.Props;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.paypal.core.codec.binary.Base64;
 import com.rabbitmq.client.*;
 import com.rabbitmq.client.AMQP.BasicProperties;
@@ -16,9 +18,7 @@ import play.api.Play;
 import play.libs.Akka;
 import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
-import utils.InstanceRole;
-import utils.ProcessExec;
-import utils.TargetEnvironment;
+import utils.*;
 
 import java.io.*;
 import java.util.HashMap;
@@ -289,6 +289,7 @@ public class DailySoccerActors {
     }
 
     private byte[] serialize(Object obj) {
+        /*
         byte[] serializedObject = null;
 
         try {
@@ -299,13 +300,26 @@ public class DailySoccerActors {
             serializedObject = Base64.encodeBase64(bo.toByteArray());
         }
         catch (Exception e) {
-            Logger.error("WTF 3222 Error serializando objeto {}", obj.toString());
+            Logger.error("WTF 3222 Error serializando objeto {}", obj.toString(), e);
+        }
+        */
+
+
+        String json = null;
+
+        try {
+            json = new ObjectMapper().writeValueAsString(obj);
+        }
+        catch (Exception e) {
+            Logger.error("WTF 3222 Error serializando objeto {}", obj.toString(), e);
         }
 
-        return serializedObject;
+        return json.getBytes();
+
     }
 
     private Object deserialize(byte[] src) {
+        /*
         Object ret = null;
         try {
             ByteArrayInputStream bi = new ByteArrayInputStream(Base64.decodeBase64(src));
@@ -313,8 +327,12 @@ public class DailySoccerActors {
             ret = si.readObject();
         }
         catch (Exception e) {
-            Logger.error("WTF 3222 Error deserializando objeto {}", new String(src));
+            Logger.error("WTF 3222 Error deserializando objeto {}", new String(src), e);
         }
+        */
+
+        Object ret = JsonUtils.fromJSON(new String(src), new TypeReference<Object>() { });
+
         return ret;
     }
 

@@ -1,12 +1,10 @@
 package controllers.admin;
 
-import actors.SimulatorActor;
-import com.google.common.collect.ImmutableMap;
-import model.GlobalDate;
+import actors.DynamicMsg;
+import actors.SimulatorState;
 import model.Model;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import play.data.Form;
 import play.data.format.Formats;
 import play.data.validation.Constraints;
 import play.mvc.Controller;
@@ -21,8 +19,7 @@ import static play.data.Form.form;
 public class SimulatorController extends Controller {
 
     public static Html simulatorBar() {
-        SimulatorActor.SimulatorState state = (SimulatorActor.SimulatorState)Model.getDailySoccerActors()
-                                              .tellToActorAwaitResult("SimulatorActor", "GetSimulatorState");
+        SimulatorState state = (SimulatorState)((DynamicMsg)Model.getDailySoccerActors().tellToActorAwaitResult("SimulatorActor", "GetSimulatorState")).params;
 
         return views.html.simulatorbar.render(state.isInit(), state.isPaused,
                                               state.getCurrentDateFormatted(),
@@ -50,7 +47,7 @@ public class SimulatorController extends Controller {
     }
 
     public static Result setSpeed(int speedFactor) {
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", new SimulatorActor.SpeedFactorMsg(speedFactor));
+        Model.getDailySoccerActors().tellToActor("SimulatorActor", new DynamicMsg("SetSpeedFactor", speedFactor));
         return ok();
     }
 
@@ -58,7 +55,7 @@ public class SimulatorController extends Controller {
         GotoSimParams params = form(GotoSimParams.class).bindFromRequest().get();
 
         Date date = new DateTime(params.date).withZoneRetainFields(DateTimeZone.UTC).toDate();
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", new SimulatorActor.GotoDateMsg(date));
+        Model.getDailySoccerActors().tellToActor("SimulatorActor", new DynamicMsg("GotoDate", date));
 
         return ok();
     }
@@ -68,8 +65,7 @@ public class SimulatorController extends Controller {
         // Puesto que se llamara tambien desde el cliente en un dominio distinto, tenemos que poner el CORS
         response().setHeader("Access-Control-Allow-Origin", "*");
 
-        SimulatorActor.SimulatorState state = (SimulatorActor.SimulatorState)Model.getDailySoccerActors()
-                                               .tellToActorAwaitResult("SimulatorActor", "GetSimulatorState");
+        SimulatorState state = (SimulatorState)((DynamicMsg)Model.getDailySoccerActors().tellToActorAwaitResult("SimulatorActor", "GetSimulatorState")).params;
 
         return new ReturnHelper(state).toResult();
     }
