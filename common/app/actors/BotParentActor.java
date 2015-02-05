@@ -250,7 +250,7 @@ public class BotParentActor extends UntypedActor {
     enum TickingMode {
         NORMAL_TICK,
         AGGRESSIVE_TICK
-    };
+    }
 
     boolean _childrenStarted = false;
     int _numBots = 30;

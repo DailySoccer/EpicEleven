@@ -465,7 +465,7 @@ public class LoginController extends Controller {
         User theUser = (User)ctx().args.get("User");
         Form<ChangeParams> changeParamsForm = form(ChangeParams.class).bindFromRequest();
         ChangeParams params;
-        Object result = theUser;
+        Object result = theUser.getProfile();
         Map<String, String> allErrors = new HashMap<>();
 
         boolean somethingChanged = false;

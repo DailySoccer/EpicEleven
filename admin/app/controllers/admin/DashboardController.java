@@ -8,7 +8,6 @@ import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.opta.OptaCompetition;
 import play.Logger;
-import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.TargetEnvironment;
