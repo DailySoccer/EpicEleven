@@ -1,6 +1,7 @@
 package actors;
 
 import akka.actor.UntypedActor;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import model.GlobalDate;
 import model.Model;
 import model.opta.OptaImporter;
@@ -258,10 +259,10 @@ public class OptaProcessorActor extends UntypedActor {
     }
 
     static public class NextDoc {
-        final public Date date;
         final public int id;
+        final public Date date;
 
-        public NextDoc(Date d, int i) { date = d; id = i; }
+        public NextDoc(@JsonProperty("date") Date d, @JsonProperty("id") int i) { date = d; id = i; }
 
         // Como no podemos mandar un mensaje null, lo marcamos asi
         public boolean isNull() { return date == null; }

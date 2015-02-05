@@ -11,7 +11,7 @@ public class SimulatorState {
     static final String UNIQUE_ID = "--SimulatorState--";
 
     public String  stateId = UNIQUE_ID;
-    public Date simulationDate;
+    public Date    simulationDate;
     public Date    pauseDate;
     public boolean isPaused;
     public int     speedFactor = MAX_SPEED;

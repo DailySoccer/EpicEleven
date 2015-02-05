@@ -6,6 +6,8 @@ import akka.actor.Props;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationConfig;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.paypal.core.codec.binary.Base64;
 import com.rabbitmq.client.*;
@@ -156,6 +158,9 @@ public class DailySoccerActors {
                         response = deserialize(delivery.getBody());
                         break;
                     }
+                    else {
+                        Logger.error("WTF 5555 Ver que pasa en este caso");
+                    }
                     Thread.sleep(100);
                     timeToWait -= 100;
                 }
@@ -289,51 +294,41 @@ public class DailySoccerActors {
     }
 
     private byte[] serialize(Object obj) {
-        /*
-        byte[] serializedObject = null;
 
-        try {
-            ByteArrayOutputStream bo = new ByteArrayOutputStream();
-            ObjectOutputStream so = new ObjectOutputStream(bo);
-            so.writeObject(obj);
-            so.flush();
-            serializedObject = Base64.encodeBase64(bo.toByteArray());
-        }
-        catch (Exception e) {
-            Logger.error("WTF 3222 Error serializando objeto {}", obj.toString(), e);
-        }
-        */
-
-
+        // Usamos un sobre para asegurar que soportamos cualquier tipo de dato. DynamicMsg tiene su params anotado para
+        // que Jackson incluya el nombre de la clase y por lo tanto la pueda deserializar al otro lado del cable.
+        DynamicMsg envelope = new DynamicMsg("Envelope", obj);
         String json = null;
 
         try {
-            json = new ObjectMapper().writeValueAsString(obj);
+            json = new ObjectMapper().writeValueAsString(envelope);
         }
         catch (Exception e) {
             Logger.error("WTF 3222 Error serializando objeto {}", obj.toString(), e);
         }
 
         return json.getBytes();
-
     }
 
     private Object deserialize(byte[] src) {
-        /*
-        Object ret = null;
+
+        DynamicMsg ret = null;
+
         try {
-            ByteArrayInputStream bi = new ByteArrayInputStream(Base64.decodeBase64(src));
-            ObjectInputStream si = new ObjectInputStream(bi);
-            ret = si.readObject();
-        }
-        catch (Exception e) {
-            Logger.error("WTF 3222 Error deserializando objeto {}", new String(src), e);
-        }
-        */
+            // Permitimos fallar en Unknow Properties pq nuestros mensajes entre actores pueden tener getters sin setters
+            ret = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                                    .readValue(new String(src), new TypeReference<DynamicMsg>() {
+                                    });
 
-        Object ret = JsonUtils.fromJSON(new String(src), new TypeReference<Object>() { });
+            if (!ret.msg.equals("Envelope")) {
+                Logger.error("WTF 9991");
+            }
+        }
+        catch (Exception exc) {
+            Logger.error("WTF 2229 Error deserializando", exc);
+        }
 
-        return ret;
+        return ret.params;
     }
 
     private void initRabbitMQ(TargetEnvironment env) {
