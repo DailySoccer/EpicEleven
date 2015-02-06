@@ -57,12 +57,7 @@ public class NotificationActor extends UntypedActor {
 
         List<Notification> notifications = new ArrayList<>();
 
-        int i = 0;
         for (ObjectId userId: nextUsersContests.keySet()) {
-            if (++i>2) {
-                break;
-            }
-
             ArrayList<Contest> thisUsersContests = nextUsersContests.get(userId);
             ArrayList<Contest> notifiableContests = new ArrayList<>();
 

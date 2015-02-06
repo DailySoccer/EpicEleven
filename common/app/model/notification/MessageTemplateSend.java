@@ -43,10 +43,10 @@ public class MessageTemplateSend {
             WSResponse response = WS.url(_MANDRILL_URL + url).post(new ObjectMapper().writeValueAsString(this)).get(5000, TimeUnit.MILLISECONDS);
 
             if (response.getStatus() == 200) {
-                Logger.info("Mandrill Response:" + response.asJson().toString());
+                Logger.debug("Mandrill Response OK:" + response.asJson().toString());
             }
             else {
-                Logger.error("Mandrill Response:" + response.asJson().toString());
+                Logger.error("Mandrill Rejected:" + response.asJson().toString());
             }
             return response.getStatus() == 200; // You can consider any non-200 HTTP response code an error - the returned data will contain more detailed information
         }
@@ -162,14 +162,6 @@ public class MessageTemplateSend {
         public List<RecipientMetadata> recipientMetadata;
 
     }
-
-    /*
-    public static boolean send(String recipientName, String recipientEmail, String subject, String html) {
-        Map<String, String> recipient = new HashMap<>();
-        recipient.put(recipientEmail, recipientName);
-        return send(recipient, subject, html);
-    }
-    */
 
 
     public static boolean send(Map<String, String> recipients, String templateName, String subject, List<MandrillMessage.MergeVarBucket> mergeVars) {
