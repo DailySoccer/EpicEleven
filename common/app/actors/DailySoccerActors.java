@@ -6,10 +6,8 @@ import akka.actor.Props;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.paypal.core.codec.binary.Base64;
 import com.rabbitmq.client.*;
 import com.rabbitmq.client.AMQP.BasicProperties;
 import play.Logger;
@@ -115,8 +113,12 @@ public class DailySoccerActors {
         // Damos preferencia a funcionar a traves del conejo encolador
         if (_connection != null) {
             try {
+                Logger.trace("20 tellToActor {}, {}", actorName, message);
+
                 // Enviamos y no esperamos respuesta, fire and forget
-                _channel.basicPublish(_EXCHANGE_NAME, actorName /* QueueName */, null, message.toString().getBytes());
+                _directChannel.basicPublish(_EXCHANGE_NAME, actorName /* QueueName */, null, serialize(message));
+
+                Logger.trace("21 tellToActor {}, {}", actorName, message);
             }
             catch (Exception exc) {
                 Logger.error("WTF 3344 {}, {}", actorName, message.toString(), exc);
@@ -137,36 +139,46 @@ public class DailySoccerActors {
 
         if (_connection != null) {
             try {
-                ensureCallbackQueue();
+                Logger.trace("0 telltoActorAwaitResult {}, {}", actorName, message);
 
+                // Una cola para cada llamada. El correlationId NO es para multiplexar, sino simplemente para soportar
+                // un caso oscuro cuando el servidor se reinicia (leer el tutorial sobre RPC). Si usaramos la misma cola,
+                // habria que hacer un NACK para que el mensaje vuelva a la cola cuando no lo reconocemos.
+                String callbackQueueName = _directChannel.queueDeclare().getQueue();
                 String corrId = java.util.UUID.randomUUID().toString();
 
                 BasicProperties props = new BasicProperties
                                                 .Builder()
                                                 .correlationId(corrId)
-                                                .replyTo(_callbackQueueName)
+                                                .replyTo(callbackQueueName)
                                                 .build();
 
                 // Mandamos el mensaje...
-                _channel.basicPublish(_EXCHANGE_NAME, actorName /* QueueName */, props, message.toString().getBytes());
+                _directChannel.basicPublish(_EXCHANGE_NAME, actorName /* QueueName */, props, serialize(message));
 
-                // ... Y esperamos a que nos llegue la respuesta. Tenemos que esperar a que nos llegue el correlationId correcto
-                int timeToWait = 5000;
-                while (timeToWait > 0) {
-                    QueueingConsumer.Delivery delivery = _consumer.nextDelivery();  // TODO: Esto consume el mensaje?!
+                // Consume el mensaje de la cola. Es por ello por lo que no podemos usar la misma cola siempre.
+                QueueingConsumer consumer = new QueueingConsumer(_directChannel);
+                _directChannel.basicConsume(callbackQueueName, false, consumer);
+
+                QueueingConsumer.Delivery delivery = consumer.nextDelivery(5000);
+
+                if (delivery != null) {
+                    _directChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
+
+                    // Tenemos que verificar que el correlationId es el mismo que mandamos
                     if (delivery.getProperties().getCorrelationId().equals(corrId)) {
                         response = deserialize(delivery.getBody());
-                        break;
                     }
                     else {
-                        Logger.error("WTF 5555 Ver que pasa en este caso");
+                        Logger.error("WTF 2020");
                     }
-                    Thread.sleep(100);
-                    timeToWait -= 100;
                 }
-                if (timeToWait <= 0) {
-                    Logger.error("WTF 8877 No se recibio respuesta del actor por RPC, actor {}, msg {}", actorName, message.toString());
+                else {
+                    Logger.error("WTF 2021");
                 }
+                _directChannel.queueDelete(callbackQueueName);
+
+                Logger.trace("5 telltoActorAwaitResult {}, {}", actorName, message);
             }
             catch (Exception exc) {
                 Logger.error("WTF 3374 {}, {}", actorName, message.toString(), exc);
@@ -189,22 +201,6 @@ public class DailySoccerActors {
         }
 
         return response;
-    }
-
-    private void ensureCallbackQueue() throws IOException {
-        // Cola con nombre aleatorio por la que tienen que responder los actores.
-        if (_callbackQueueName == null) {
-
-            if (_consumer != null) {
-                throw new RuntimeException("WTF 8811 El consumer tiene que tener el mismo exacto ciclo de vida que la cola");
-            }
-
-            _callbackQueueName = _channel.queueDeclare().getQueue();
-
-            // https://www.rabbitmq.com/tutorials/tutorial-six-java.html
-            _consumer = new QueueingConsumer(_channel);
-            _channel.basicConsume(_callbackQueueName, true /* autoAck */, _consumer);
-        }
     }
 
     private String readRabbitMQUriForEnvironment(TargetEnvironment env) {
@@ -247,43 +243,53 @@ public class DailySoccerActors {
         try {
             for (Map.Entry<String, ActorRef> entry : _localActors.entrySet()) {
 
+                final Channel returnChannel = _connection.createChannel();
+                _returnChannels.put(entry.getKey(), returnChannel);
+
                 final String queueName = entry.getKey();
                 final ActorRef actorRef = entry.getValue();
 
                 // autodelete: If set, the queue is deleted when all consumers have finished using it.
-                _channel.queueDeclare(queueName, false /* durable */, false /* exclusive */, true  /* autodelete */, null);
-                _channel.basicConsume(queueName, true /* autoAck */, queueName + "Tag", new DefaultConsumer(_channel) {
+                returnChannel.queueDeclare(queueName, false /* durable */, false /* exclusive */, true  /* autodelete */, null);
+                returnChannel.basicConsume(queueName, false /* autoAck */, queueName + "Tag", new DefaultConsumer(returnChannel) {
                     @Override
                     public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties props, byte[] body) throws IOException {
-                        String routingKey = envelope.getRoutingKey();
-                        String msgString = new String(body);
                         String correlationId = props.getCorrelationId();
 
-                        Logger.debug("DailySoccerActors RabbitMQ Message, RoutingKey {}, Message {}", routingKey, msgString);
+                        Logger.trace("1000 handleDelivery {}, {}", envelope.getRoutingKey(), new String(body));
 
                         try {
                             // Si hay un correlationId es que el cliente espera respuesta por parte del actor
                             if (correlationId != null) {
                                 Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
-                                scala.concurrent.Future<Object> response = Patterns.ask(actorRef, msgString, timeout);
+                                scala.concurrent.Future<Object> response = Patterns.ask(actorRef, deserialize(body), timeout);
 
+                                Logger.trace("1001 handleDelivery {}, mensaje {}", queueName, new String(body));
                                 Object ret = Await.result(response, timeout.duration());
+                                Logger.trace("1002 handleDelivery {}, mensaje {}", queueName, new String(body));
 
                                 BasicProperties replyProps = new BasicProperties
-                                                                    .Builder()
-                                                                    .correlationId(correlationId)
-                                                                    .build();
+                                        .Builder()
+                                        .correlationId(correlationId)
+                                        .build();
 
-                                _channel.basicPublish(_EXCHANGE_NAME, props.getReplyTo(), replyProps, serialize(ret));
+                                returnChannel.basicPublish(_EXCHANGE_NAME, props.getReplyTo(), replyProps, serialize(ret));
+
+                                Logger.trace("1003 handleDelivery {}, {}", envelope.getRoutingKey(), ret.toString());
                             }
                             else {
+                                Logger.trace("2000 handleDelivery SYNC {}, {}", queueName, new String(body));
+
                                 // Si no hay correlationId, podemos hacer fire and forget
-                                actorRef.tell(msgString, ActorRef.noSender());
+                                actorRef.tell(deserialize(body), ActorRef.noSender());
+
+                                Logger.trace("2001 handleDelivery SYNC {}, {}", queueName, new String(body));
                             }
+                        } catch (Exception exc) {
+                            Logger.error("WTF 5222 DailySoccerActors mensaje {}, actor {}", new String(body), queueName, exc);
                         }
-                        catch (Exception exc) {
-                            Logger.error("WTF 5222 DailySoccerActors mensaje {}, actor {}", msgString, queueName, exc);
-                        }
+
+                        returnChannel.basicAck(envelope.getDeliveryTag(), false);
                     }
                 });
             }
@@ -320,6 +326,8 @@ public class DailySoccerActors {
                                     .readValue(new String(src), new TypeReference<DynamicMsg>() {
                                     });
 
+            Logger.trace("deserialize {}", new String(src));
+
             if (!ret.msg.equals("Envelope")) {
                 Logger.error("WTF 9991");
             }
@@ -337,12 +345,22 @@ public class DailySoccerActors {
             factory.setUri(readRabbitMQUriForEnvironment(env));
 
             _connection = factory.newConnection();
-            _channel = _connection.createChannel();
+            _directChannel = _connection.createChannel();
 
-            Logger.info("RabbitMQ inicializado en TargetEnvironment.{}", env.toString());
+            _connection.addBlockedListener(new BlockedListener() {
+                public void handleBlocked(String reason) throws IOException {
+                    Logger.debug("RabbitMq: Connection is now blocked");
+                }
+
+                public void handleUnblocked() throws IOException {
+                    Logger.debug("RabbitMq: Connection is now unblocked");
+                }
+            });
+
+            Logger.info("RabbitMq inicializado en TargetEnvironment.{}", env.toString());
         }
         catch (Exception exc) {
-            Logger.warn("DailySoccerActors no pudo inicializar RabbitMQ");
+            Logger.warn("DailySoccerActors no pudo inicializar RabbitMq");
         }
     }
 
@@ -360,17 +378,19 @@ public class DailySoccerActors {
 
     private void closeRabbitMq() {
 
-        _callbackQueueName = null;
-        _consumer = null;
-
         try {
-            if (_channel != null) {
-                _channel.close();
-                _channel = null;
+            for (Channel channel : _returnChannels.values()) {
+                channel.close();
+            }
+            _returnChannels.clear();
+
+            if (_directChannel != null) {
+                _directChannel.close();
+                _directChannel = null;
             }
         }
         catch (Exception exc) {
-            Logger.error("WTF 6699 RabbitMQ Channel no pudo cerrar", exc);
+            Logger.error("WTF 6699 RabbitMq exception cerrando canales", exc);
         }
 
         try {
@@ -380,7 +400,7 @@ public class DailySoccerActors {
             }
         }
         catch (Exception exc) {
-            Logger.error("WTF 6699 RabbitMQ Connection no pudo cerrar", exc);
+            Logger.error("WTF 6699 RabbitMq Connection no pudo cerrar", exc);
         }
     }
 
@@ -390,11 +410,10 @@ public class DailySoccerActors {
     }
 
     Connection _connection;
-    Channel _channel;
-    String _callbackQueueName;
-    QueueingConsumer _consumer;
+    Channel _directChannel;
 
-    HashMap<String, ActorRef> _localActors = new HashMap<>();          // Todos los actores que creamos, hasheados por nombre
+    HashMap<String, ActorRef> _localActors = new HashMap<>();           // Todos los actores que creamos, hasheados por nombre
+    HashMap<String, Channel> _returnChannels = new HashMap<>();         // 1 canal por actor. 1 dia buscando un deadlock.
 
     final static String _EXCHANGE_NAME = "";    // Default exchange
 }
