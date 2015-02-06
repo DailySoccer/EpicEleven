@@ -37,9 +37,7 @@ public class DailySoccerActors {
                 initWorkerRole();
                 break;
             case WEB_ROLE:
-                // De momento solo lo necesitamos para el admin en staging, pero tambien querremos en el futuro mandar
-                // tareas (mirror de operaciones en posgres por ejemplo) a nuestros actores
-                initRabbitMQ(TargetEnvironment.LOCALHOST);
+                initWebRole();
                 break;
             default:
                 throw new RuntimeException("WTF 5550 instanceRole desconocido");
@@ -57,6 +55,12 @@ public class DailySoccerActors {
         createLocalActors();
         bindLocalActorsToQueues();
         tickActors();
+    }
+
+    private void initWebRole() {
+        // De momento solo lo necesitamos para el admin en staging, pero tambien querremos en el futuro mandar
+        // tareas (mirror de operaciones en posgres por ejemplo) a nuestros actores
+        initRabbitMQ(TargetEnvironment.LOCALHOST);
     }
 
     public void setTargetEnvironment(TargetEnvironment env) {
@@ -277,7 +281,8 @@ public class DailySoccerActors {
 
                                 Logger.trace("2001 handleDelivery SYNC {}, {}", queueName, new String(body));
                             }
-                        } catch (Exception exc) {
+                        }
+                        catch (Exception exc) {
                             Logger.error("WTF 5222 DailySoccerActors mensaje {}, actor {}", new String(body), queueName, exc);
                         }
 
@@ -293,9 +298,9 @@ public class DailySoccerActors {
 
     private byte[] serialize(Object obj) {
 
-        // Usamos un sobre para asegurar que soportamos cualquier tipo de dato. DynamicMsg tiene su params anotado para
+        // Usamos un sobre para asegurar que soportamos cualquier tipo de dato. MessageEnvelope tiene su params anotado para
         // que Jackson incluya el nombre de la clase y por lo tanto la pueda deserializar al otro lado del cable.
-        DynamicMsg envelope = new DynamicMsg("Envelope", obj);
+        MessageEnvelope envelope = new MessageEnvelope("Envelope", obj);
         String json = null;
 
         try {
@@ -310,12 +315,12 @@ public class DailySoccerActors {
 
     private Object deserialize(byte[] src) {
 
-        DynamicMsg ret = null;
+        MessageEnvelope ret = null;
 
         try {
             // Permitimos fallar en Unknow Properties pq nuestros mensajes entre actores pueden tener getters sin setters
             ret = new ObjectMapper().disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                                    .readValue(new String(src), new TypeReference<DynamicMsg>() {
+                                    .readValue(new String(src), new TypeReference<MessageEnvelope>() {
                                     });
 
             Logger.trace("deserialize {}", new String(src));

@@ -75,7 +75,7 @@ public class OptaProcessorActor extends UntypedActor {
                 break;
 
             case "GetLastProcessedDate":
-                sender().tell(new DynamicMsg("ReturnLastProcessedDate", getLastProcessedDate()), self());
+                sender().tell(new MessageEnvelope("ReturnLastProcessedDate", getLastProcessedDate()), self());
                 break;
 
             default:

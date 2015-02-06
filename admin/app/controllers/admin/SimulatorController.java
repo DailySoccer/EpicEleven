@@ -1,6 +1,6 @@
 package controllers.admin;
 
-import actors.DynamicMsg;
+import actors.MessageEnvelope;
 import actors.SimulatorState;
 import model.Model;
 import org.joda.time.DateTime;
@@ -19,7 +19,7 @@ import static play.data.Form.form;
 public class SimulatorController extends Controller {
 
     public static Html simulatorBar() {
-        SimulatorState state = (SimulatorState)((DynamicMsg)Model.getDailySoccerActors().tellToActorAwaitResult("SimulatorActor", "GetSimulatorState")).params;
+        SimulatorState state = (SimulatorState)((MessageEnvelope)Model.getDailySoccerActors().tellToActorAwaitResult("SimulatorActor", "GetSimulatorState")).params;
 
         return views.html.simulatorbar.render(state.isInit(), state.isPaused,
                                               state.getCurrentDateFormatted(),
@@ -47,7 +47,7 @@ public class SimulatorController extends Controller {
     }
 
     public static Result setSpeed(int speedFactor) {
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", new DynamicMsg("SetSpeedFactor", speedFactor));
+        Model.getDailySoccerActors().tellToActor("SimulatorActor", new MessageEnvelope("SetSpeedFactor", speedFactor));
         return ok();
     }
 
@@ -55,7 +55,7 @@ public class SimulatorController extends Controller {
         GotoSimParams params = form(GotoSimParams.class).bindFromRequest().get();
 
         Date date = new DateTime(params.date).withZoneRetainFields(DateTimeZone.UTC).toDate();
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", new DynamicMsg("GotoDate", date));
+        Model.getDailySoccerActors().tellToActor("SimulatorActor", new MessageEnvelope("GotoDate", date));
 
         return ok();
     }
@@ -65,7 +65,7 @@ public class SimulatorController extends Controller {
         // Puesto que se llamara tambien desde el cliente en un dominio distinto, tenemos que poner el CORS
         response().setHeader("Access-Control-Allow-Origin", "*");
 
-        SimulatorState state = (SimulatorState)((DynamicMsg)Model.getDailySoccerActors().tellToActorAwaitResult("SimulatorActor", "GetSimulatorState")).params;
+        SimulatorState state = (SimulatorState)((MessageEnvelope)Model.getDailySoccerActors().tellToActorAwaitResult("SimulatorActor", "GetSimulatorState")).params;
 
         return new ReturnHelper(state).toResult();
     }

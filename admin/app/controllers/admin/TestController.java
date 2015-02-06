@@ -1,7 +1,6 @@
 package controllers.admin;
 
-import actors.DynamicMsg;
-import actors.SimulatorActor;
+import actors.MessageEnvelope;
 import model.GlobalDate;
 import model.Model;
 import model.PrizeType;
@@ -25,14 +24,14 @@ public class TestController extends Controller {
 
     static public Result gotoDateTest(int year, int month, int day, int hour, int minute) {
         Date myDate = new DateTime(year, month, day, hour, minute, DateTimeZone.UTC).toDate();
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", new DynamicMsg("GotoDate", myDate));
+        Model.getDailySoccerActors().tellToActor("SimulatorActor", new MessageEnvelope("GotoDate", myDate));
         return ok("OK");
     }
 
 
     static public Result gotoDate(Long timestamp) {
         Date myDate = new Date(timestamp);
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", new DynamicMsg("GotoDate", myDate));
+        Model.getDailySoccerActors().tellToActor("SimulatorActor", new MessageEnvelope("GotoDate", myDate));
         return ok("OK");
     }
 

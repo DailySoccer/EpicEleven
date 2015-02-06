@@ -23,15 +23,15 @@ public class SimulatorActor extends UntypedActor {
         if (msg instanceof String) {
             onReceive((String)msg);
         }
-        else if (msg instanceof DynamicMsg) {
-            onReceive((DynamicMsg)msg);
+        else if (msg instanceof MessageEnvelope) {
+            onReceive((MessageEnvelope)msg);
         }
         else {
             unhandled(msg);
         }
     }
 
-    private void onReceive(DynamicMsg msg) {
+    private void onReceive(MessageEnvelope msg) {
         switch (msg.msg) {
             case "GotoDate":
                 gotoDate((Date)msg.params);
@@ -80,7 +80,7 @@ public class SimulatorActor extends UntypedActor {
             case "GetSimulatorState":
                 // Si no estamos inicializados, SimulatorState.isInit() == false; Para asegurar la immutabilidad, hacemos
                 // una copia del SimulatorState. Seria mejor sin embargo hacer la propia clase immutable.
-                sender().tell(new DynamicMsg("ReturnSimulatorState", new SimulatorState(_state)), self());
+                sender().tell(new MessageEnvelope("ReturnSimulatorState", new SimulatorState(_state)), self());
                 break;
 
             default:
@@ -139,7 +139,7 @@ public class SimulatorActor extends UntypedActor {
     private void init() {
         Logger.debug("SimulatorActor: initialization at {}", GlobalDate.getCurrentDate());
 
-        Date lastProcessedDate = (Date)((DynamicMsg)Model.getDailySoccerActors()
+        Date lastProcessedDate = (Date)((MessageEnvelope)Model.getDailySoccerActors()
                                                     .tellToActorAwaitResult("OptaProcessorActor", "GetLastProcessedDate")).params;
 
         _state = Model.simulator().findOne().as(SimulatorState.class);
