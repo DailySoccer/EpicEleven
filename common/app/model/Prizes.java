@@ -166,7 +166,7 @@ public class Prizes {
 
                 if (premio.isPositiveOrZero()) {
                     prizes.add(premio);
-                    resto.minus(premio);
+                    resto = resto.minus(premio);
                 }
             }
         }
