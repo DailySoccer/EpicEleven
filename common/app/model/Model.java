@@ -2,10 +2,12 @@ package model;
 
 import actors.Actors;
 import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.mongodb.*;
 import org.bson.types.ObjectId;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
+import org.joda.money.Money;
 import org.jongo.Find;
 import org.jongo.Jongo;
 import org.jongo.Mapper;
@@ -125,11 +127,17 @@ public class Model {
             _mongoClient = new MongoClient(mongoClientURI);
             _mongoDB = _mongoClient.getDB(mongoClientURI.getDatabase());
 
+            SimpleModule module = new SimpleModule();
+            module.addDeserializer(Money.class, new JacksonJodaMoney.MoneyDeserializer());
+            module.addSerializer(Money.class, new JacksonJodaMoney.MoneySerializer());
+
             Mapper mapper = new JacksonMapper.Builder()
                     .disable(MapperFeature.AUTO_DETECT_GETTERS)
                     .disable(MapperFeature.AUTO_DETECT_IS_GETTERS)
                     .disable(MapperFeature.AUTO_DETECT_SETTERS)
+                    .registerModule(module)
                     .build();
+
             _jongo = new Jongo(_mongoDB, mapper);
 
             // Make sure our DB has the neccesary collections and indexes
