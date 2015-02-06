@@ -91,7 +91,7 @@ public class SimulatorActor extends UntypedActor {
     }
 
     private void shutdown() {
-        Logger.debug("SimulatorActor: Shutdown {}", GlobalDate.getCurrentDate());
+        Logger.debug("SimulatorActor: Shutdown {}", GlobalDate.getCurrentDateString());
         cancelTicking();
         _state = null;
         GlobalDate.setFakeDate(null);
@@ -120,14 +120,14 @@ public class SimulatorActor extends UntypedActor {
     }
 
     private void pause() {
-        Logger.debug("SimulatorActor: pausing at {}", GlobalDate.getCurrentDate());
+        Logger.debug("SimulatorActor: pausing at {}", GlobalDate.getCurrentDateString());
 
         _state.isPaused = true;
         cancelTicking();
     }
 
     private void resume() {
-        Logger.debug("SimulatorActor: resuming at {}", GlobalDate.getCurrentDate());
+        Logger.debug("SimulatorActor: resuming at {}", GlobalDate.getCurrentDateString());
 
         _state.isPaused = false;
         getSelf().tell("SimulatorTick", getSelf());
@@ -138,7 +138,7 @@ public class SimulatorActor extends UntypedActor {
     }
 
     private void init() {
-        Logger.debug("SimulatorActor: initialization at {}", GlobalDate.getCurrentDate());
+        Logger.debug("SimulatorActor: initialization at {}", GlobalDate.getCurrentDateString());
 
         Date lastProcessedDate = (Date)((MessageEnvelope)Model.getDailySoccerActors()
                                                     .tellToActorAwaitResult("OptaProcessorActor", "GetLastProcessedDate")).params;
@@ -173,13 +173,13 @@ public class SimulatorActor extends UntypedActor {
         // Grabamos a la DB
         updateDateAndSaveState(_state.simulationDate);
 
-        Logger.debug("SimulatorActor: initialized, the current date is {}", GlobalDate.getCurrentDate());
+        Logger.debug("SimulatorActor: initialized, the current date is {}", GlobalDate.getCurrentDateString());
     }
 
     private boolean refreshPause() {
 
         if (_state.pauseDate != null && _state.pauseDate.before(_state.simulationDate)) {
-            Logger.debug("SimulatorActor: pausing at requested date {}", _state.pauseDate);
+            Logger.debug("SimulatorActor: pausing at requested date {}", GlobalDate.formatDate(_state.pauseDate));
 
             pause();
 
@@ -191,7 +191,7 @@ public class SimulatorActor extends UntypedActor {
     }
 
     private void onSimulatorTick(boolean onlyNextStep) {
-        Logger.debug("SimulatorActor: tick at {}", GlobalDate.getCurrentDate());
+        Logger.debug("SimulatorActor: tick at {}", GlobalDate.getCurrentDateString());
 
         // Es posible que nos encolen un Shutdown o un PauseResume mientras procesabamos el Tick, donde al final (unas
         // lineas mas abajo) encolamos el siguiente tick. Por lo tanto, nos puede llegar un Tick despues de un Shutdown/Pause.
@@ -201,6 +201,7 @@ public class SimulatorActor extends UntypedActor {
 
         // Cuando nos piden que hagamos solo un paso, ignoramos las pausas
         if (!onlyNextStep && refreshPause()) {
+            Logger.debug("Exiting at pause {}", GlobalDate.getCurrentDateString());
             return;
         }
 
@@ -217,6 +218,8 @@ public class SimulatorActor extends UntypedActor {
             // Apuntamos la GlobalDate exactamente a la del siguiente documento
             OptaProcessorActor.NextDoc nextdocMsg = (OptaProcessorActor.NextDoc)Model.getDailySoccerActors()
                                                     .tellToActorAwaitResult("OptaProcessorActor", "GetNextDoc");
+
+            Logger.debug("SimulatorActor: en el tick at {} avanzamos a {}", GlobalDate.getCurrentDateString(), GlobalDate.formatDate(nextdocMsg.date));
 
             // Si al OptaProcessorActor no le ha dado tiempo a cargar el siguiente documento, simplemente esperamos al siguiente tick
             if (nextdocMsg.isNotNull()) {
