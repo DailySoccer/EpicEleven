@@ -1,16 +1,12 @@
 package actors;
 
-import org.bson.types.ObjectId;
 import model.*;
 import model.jobs.*;
 import model.opta.OptaEvent;
 import model.opta.OptaProcessor;
 import play.Logger;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 public class OptaMatchEventChangeProcessor {
     public OptaMatchEventChangeProcessor(OptaProcessor processor) {
