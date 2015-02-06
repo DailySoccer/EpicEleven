@@ -75,6 +75,7 @@ public class SimulatorActor extends UntypedActor {
                 MockData.ensureMockDataUsers();
                 MockData.ensureCompetitions();
                 init();
+                sender().tell("ResetOk", self());
                 break;
 
             case "GetSimulatorState":

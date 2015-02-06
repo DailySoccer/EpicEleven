@@ -17,7 +17,7 @@ import java.util.Date;
 public class TestController extends Controller {
 
     static public Result start() {
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", "Reset");
+        Model.getDailySoccerActors().tellToActorAwaitResult("SimulatorActor", "Reset");
         return ok("OK");
     }
 
