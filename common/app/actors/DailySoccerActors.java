@@ -37,13 +37,9 @@ public class DailySoccerActors {
                 initWorkerRole();
                 break;
             case WEB_ROLE:
-                // En produccion no queremos nada de actores en las maquinas web, pero en staging lo necesitamos para
-                // que la zona de administracion y el simulador puedan ejecutarse en el propio entorno.
-                // La zona de administracion es la unica ahora mismo que manda mensajes a actores (tellToActor*) desde
-                // una accion web.
-                if (isStaging()) {
-                    initDevelopmentRole(TargetEnvironment.LOCALHOST);
-                }
+                // De momento solo lo necesitamos para el admin en staging, pero tambien querremos en el futuro mandar
+                // tareas (mirror de operaciones en posgres por ejemplo) a nuestros actores
+                initRabbitMQ(TargetEnvironment.LOCALHOST);
                 break;
             default:
                 throw new RuntimeException("WTF 5550 instanceRole desconocido");
@@ -61,10 +57,6 @@ public class DailySoccerActors {
         createLocalActors();
         bindLocalActorsToQueues();
         tickActors();
-    }
-
-    private boolean isStaging() {
-        return play.Play.application().configuration().getString("config.resource").equals("staging.conf");
     }
 
     public void setTargetEnvironment(TargetEnvironment env) {
