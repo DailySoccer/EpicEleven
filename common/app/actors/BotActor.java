@@ -4,9 +4,11 @@ import akka.actor.UntypedActor;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import model.*;
 import org.bson.types.ObjectId;
+import org.joda.money.Money;
 import play.Logger;
 import play.Play;
 import play.libs.F;
@@ -14,6 +16,7 @@ import play.libs.ws.WS;
 import play.libs.ws.WSRequestHolder;
 import play.libs.ws.WSResponse;
 import utils.JsonUtils;
+import utils.JacksonJodaMoney;
 import utils.ListUtils;
 
 import java.util.*;
@@ -463,7 +466,7 @@ public class BotActor extends UntypedActor {
 
     private String addContestEntry(List<TemplateSoccerPlayer> lineup, ObjectId contestId) throws TimeoutException {
 
-        String idList = new ObjectMapper().valueToTree(ListUtils.stringListFromObjectIdList(ListUtils.convertToIdList(lineup))).toString();
+        String idList = getObjectMapper().valueToTree(ListUtils.stringListFromObjectIdList(ListUtils.convertToIdList(lineup))).toString();
         JsonNode jsonNode = post("add_contest_entry", String.format("contestId=%s&soccerTeam=%s", contestId.toString(), idList));
 
         // Nosotros podemos pedir un contestId, pero el servidor puede elegir meternos en otro
@@ -582,6 +585,19 @@ public class BotActor extends UntypedActor {
         return jsonPromise.get(5000, TimeUnit.MILLISECONDS);
     }
 
+    static ObjectMapper getObjectMapper() {
+        if (objectMapper == null) {
+            SimpleModule module = new SimpleModule();
+            module.addDeserializer(Money.class, new JacksonJodaMoney.MoneyDeserializer());
+            module.addSerializer(Money.class, new JacksonJodaMoney.MoneySerializer());
+
+            objectMapper = new ObjectMapper();
+            objectMapper.registerModule(module);
+        }
+        return objectMapper;
+    }
+
+    static ObjectMapper objectMapper;
 
     int _botActorId;
     User _user;

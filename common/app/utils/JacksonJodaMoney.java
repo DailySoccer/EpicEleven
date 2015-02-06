@@ -1,7 +1,8 @@
-package model;
+package utils;
 
 import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
+import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 
 import java.io.IOException;
@@ -17,7 +18,12 @@ public class JacksonJodaMoney {
     public static class MoneyDeserializer extends JsonDeserializer<Money> {
         @Override
         public Money deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
-            return Money.parse(jsonParser.readValueAs(String.class));
+            try {
+                return Money.parse(jsonParser.readValueAs(String.class));
+            }
+            catch (Exception e) {
+                return Money.zero(CurrencyUnit.EUR);
+            }
         }
     }
 }

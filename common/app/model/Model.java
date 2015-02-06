@@ -16,6 +16,7 @@ import org.jongo.marshall.jackson.JacksonMapper;
 import play.Logger;
 import play.Play;
 import utils.InstanceRole;
+import utils.JacksonJodaMoney;
 import utils.ProcessExec;
 import utils.TargetEnvironment;
 
