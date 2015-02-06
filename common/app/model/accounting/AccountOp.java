@@ -34,7 +34,7 @@ public class AccountOp {
         // Obtenemos el balance del anterior COMMIT
         Money lastBalance = getLastBalance().plus(value);
         // Actualizamos el cachedBalance del "account"
-        Model.accountingTransactions().update("{ accountOps: { $elemMatch: {accountId: #, seqId: #} } }", accountId, seqId).with("{$set: {\"accountOps.$.cachedBalance\": #}}", lastBalance);
+        Model.accountingTransactions().update("{ accountOps: { $elemMatch: {accountId: #, seqId: #} } }", accountId, seqId).with("{$set: {\"accountOps.$.cachedBalance\": #}}", lastBalance.toString());
         // Actualizamos el user
         User.updateBalance(accountId, lastBalance);
     }
