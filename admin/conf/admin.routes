@@ -90,9 +90,9 @@ GET         /refresher_in_progress                                              
 GET         /last_date                                                           controllers.admin.RefresherController.lastDate()
 
 # Test Driven Routes
-GET         /test_goto/:year/:month/:day/:hour/:minute                           controllers.admin.TestController.gotoDateTest(year: Int, month: Int, day: Int, hour: Int, minute: Int)
+GET         /test_goto/:year/:month/:day/:hour/:minute/:second                   controllers.admin.TestController.gotoDate(year: Int, month: Int, day: Int, hour: Int, minute: Int, second:Int)
 GET         /test_start                                                          controllers.admin.TestController.start()
-GET         /test_goto_timestamp/:timestamp                                      controllers.admin.TestController.gotoDate(timestamp : Long)
+GET         /test_goto_timestamp/:timestamp                                      controllers.admin.TestController.gotoDateTimestamp(timestamp : Long)
 GET         /test_current_date                                                   controllers.admin.TestController.getCurrentDate()
 
 GET         /test_initial_setup                                                  controllers.admin.TestController.initialSetup()
