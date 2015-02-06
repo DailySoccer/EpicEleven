@@ -9,6 +9,7 @@ import model.notification.MessageTemplateSend;
 import model.notification.Notification;
 import model.notification.Notification.Topic;
 import org.bson.types.ObjectId;
+import org.joda.time.DateTime;
 import play.Logger;
 import scala.concurrent.duration.Duration;
 
@@ -53,26 +54,25 @@ public class NotificationActor extends UntypedActor {
         Map<String, String> recipients = new HashMap<>();
 
         List<MessageTemplateSend.MandrillMessage.MergeVarBucket> mergeVars = new ArrayList<>();
-        Map<ObjectId, String> reasonsPerEmail = new HashMap<>();
 
+        List<Notification> notifications = new ArrayList<>();
+
+        int i = 0;
         for (ObjectId userId: nextUsersContests.keySet()) {
+            if (++i>2) {
+                break;
+            }
 
             ArrayList<Contest> thisUsersContests = nextUsersContests.get(userId);
             ArrayList<Contest> notifiableContests = new ArrayList<>();
 
+            Notification lastNotification = Notification.getLastNotification(Topic.CONTEST_NEXT_HOUR, userId);
 
-            Notification lastNotification = Notification.getNotification(Topic.CONTEST_NEXT_HOUR, userId);
-
-            Date lastNotified =  (lastNotification!= null)? GlobalDate.parseDate(lastNotification.reason, "UTC") : new Date(0L);
-            Date lastContestDate = lastNotified;
-
+            DateTime nextNotifiableDate =  (lastNotification!= null)? new DateTime(lastNotification.createdAt).plusHours(1) : new DateTime(0L);
 
             for (Contest contest : thisUsersContests) {
-                if (contest.startDate.after(lastNotified)) {
+                if (nextNotifiableDate.isBefore(new DateTime(contest.startDate))) {
                     notifiableContests.add(contest);
-                    if (contest.startDate.after(lastContestDate)) {
-                        lastContestDate = contest.startDate;
-                    }
                 }
             }
 
@@ -80,14 +80,16 @@ public class NotificationActor extends UntypedActor {
             if (notifiableContests.size() > 0) {
                 User currentUserToNotify = User.findOne(userId);
                 recipients.put(currentUserToNotify.email, currentUserToNotify.nickName);
-                reasonsPerEmail.put(userId, GlobalDate.formatDate(lastContestDate));
                 mergeVars.add(prepareMergeVarBucket(currentUserToNotify, notifiableContests));
+                notifications.add(new Notification(Topic.CONTEST_NEXT_HOUR, null, userId));
             }
-
-
         }
 
-        MessageTemplateSend.notifyUpdating(_contestStartingTemplateName, Topic.CONTEST_NEXT_HOUR, "En Epic Eleven tienes concursos por comenzar", mergeVars, reasonsPerEmail, recipients);
+        if (recipients.size() > 0 && MessageTemplateSend.send(recipients, _contestStartingTemplateName, "En Epic Eleven tienes concursos por comenzar", mergeVars)) {
+            for (Notification notification: notifications) {
+                notification.markSent();
+            }
+        }
 
     }
 

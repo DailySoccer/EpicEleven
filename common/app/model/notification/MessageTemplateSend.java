@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.bson.types.ObjectId;
 import play.Logger;
 import play.libs.ws.WS;
 import play.libs.ws.WSResponse;
@@ -28,7 +27,7 @@ public class MessageTemplateSend {
         public String templateName;
 
         @JsonProperty("template_content")
-        public MergeVar[] templateContent;
+        public List<MergeVar> templateContent;
         public MandrillMessage message;
         public Boolean async;
 
@@ -192,7 +191,6 @@ public class MessageTemplateSend {
 
         message.mergeVars = mergeVars;
 
-        //message.html = html;
         message.subject = subject;
 
         message.trackClicks = true;
@@ -211,44 +209,6 @@ public class MessageTemplateSend {
             Logger.error("WTF 9205");
         }
         return false;
-    }
-
-
-
-    public static void notify(String templateName, Notification.Topic topic, String subject,
-                              List<MandrillMessage.MergeVarBucket> mergeVars, Map<ObjectId, String> reasonPerUser,
-                              Map<String, String> recipients) {
-        List<Notification> notifications = new ArrayList<>();
-
-        for (ObjectId userId: reasonPerUser.keySet()) {
-            notifications.add(new Notification(topic, reasonPerUser.get(userId), userId));
-        }
-
-        if (recipients.size() > 0 && send(recipients, templateName, subject, mergeVars)) {
-            for (Notification notification: notifications) {
-                notification.markSent();
-            }
-        }
-
-    }
-
-
-    public static void notifyUpdating(String templateName, Notification.Topic topic, String subject,
-                              List<MandrillMessage.MergeVarBucket> mergeVars, Map<ObjectId, String> reasonPerUser,
-                              Map<String, String> recipients) {
-        List<Notification> notifications = new ArrayList<>();
-
-        for (ObjectId userId: reasonPerUser.keySet()) {
-            Notification lastNotification = Notification.getNotification(topic, userId);
-            notifications.add(lastNotification!=null? lastNotification: new Notification(topic, reasonPerUser.get(userId), userId));
-        }
-
-        if (recipients.size() > 0 && send(recipients, templateName, subject, mergeVars)) {
-            for (Notification notification: notifications) {
-                notification.updateNotification(reasonPerUser.get(notification.userId));
-            }
-        }
-
     }
 
 
