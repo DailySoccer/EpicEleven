@@ -86,9 +86,10 @@
                                 + "</tr></thead>";
                     var body = "<tbody>";
                     jQuery.each(result, function(index, value) {
+                        var amount = Number(value.split(" ")[1]);
                         body += "<tr><td>"+(index+1)+"º</td>";
-                        body += "<td>"+value+"€</td></tr>";
-                        total += value;
+                        body += "<td>"+amount+"€</td></tr>";
+                        total += amount;
                     });
                     body += "</tbody>";
                     var footer = "<tfoot><tr>";
