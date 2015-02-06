@@ -18,11 +18,13 @@ public class JacksonJodaMoney {
     public static class MoneyDeserializer extends JsonDeserializer<Money> {
         @Override
         public Money deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+            String value = jsonParser.readValueAs(String.class);
             try {
-                return Money.parse(jsonParser.readValueAs(String.class));
+                return Money.parse(value);
             }
-            catch (Exception e) {
-                return Money.zero(CurrencyUnit.EUR);
+            catch (IllegalArgumentException e) {
+                // Versión antigua: Expresa el dinero como "Int32" o "Double"
+                return Money.of(CurrencyUnit.EUR, Double.parseDouble(value));
             }
         }
     }
