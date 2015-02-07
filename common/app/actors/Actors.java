@@ -87,6 +87,8 @@ public class Actors {
 
     public void restartActors() {
 
+        Logger.debug("Restarting Actors");
+
         if (_connection != null) {
             tell("OptaProcessorActor", "PoisonPill");
             tell("InstantiateContestsActor", "PoisonPill");
@@ -99,6 +101,8 @@ public class Actors {
             createLocalActors();
             bindLocalActorsToQueues();
         }
+
+        Logger.debug("Actors restarted");
     }
 
     private void stopLocalActors() {

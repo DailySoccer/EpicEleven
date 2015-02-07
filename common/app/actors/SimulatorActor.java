@@ -105,6 +105,10 @@ public class SimulatorActor extends UntypedActor {
             init();
         }
 
+        if (new DateTime(date).isBefore(new DateTime(_state.simulationDate))) {
+            return;
+        }
+
         _state.pauseDate = date;
         resume();
     }
@@ -188,7 +192,7 @@ public class SimulatorActor extends UntypedActor {
         Model.actors().tell("TransactionsActor", "SimulatorTick");
         Model.actors().tell("OptaProcessorActor", "SimulatorTick");
 
-        if (!_state.isPaused) {
+        if (!_state.isPaused && !onlyNextStep) {
             reescheduleTick();
         }
     }
