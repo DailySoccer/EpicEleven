@@ -85,10 +85,20 @@ public class Actors {
         }
     }
 
-    public void restartLocalActors() {
-        stopLocalActors();
-        createLocalActors();
-        bindLocalActorsToQueues();
+    public void restartActors() {
+
+        if (_connection != null) {
+            tell("OptaProcessorActor", "PoisonPill");
+            tell("InstantiateContestsActor", "PoisonPill");
+            tell("CloseContestsActor", "PoisonPill");
+            tell("TransactionsActor", "PoisonPill");
+            tell("BotParentActor", "PoisonPill");
+            tell("SimulatorActor", "PoisonPill");
+        } else {
+            stopLocalActors();
+            createLocalActors();
+            bindLocalActorsToQueues();
+        }
     }
 
     private void stopLocalActors() {

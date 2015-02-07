@@ -182,7 +182,7 @@ public class Model {
     }
 
     static public void reset(boolean forSnapshot) {
-        _actors.restartLocalActors();
+        _actors.restartActors();
 
         dropMongoDB(forSnapshot);
 
