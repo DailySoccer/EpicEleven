@@ -28,13 +28,8 @@ public class DashboardController extends Controller {
     }
 
     static public Result resetDB() {
-
-        Model.resetMongoDB();
-        MockData.ensureMockDataUsers();
-        MockData.ensureCompetitions();
-
+        Model.reset(true);
         FlashMessage.success("Reset DB: OK");
-
         return index();
     }
 

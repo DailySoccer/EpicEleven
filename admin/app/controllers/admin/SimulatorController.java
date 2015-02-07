@@ -42,7 +42,8 @@ public class SimulatorController extends Controller {
     }
 
     public static Result reset() {
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", "Reset");
+        Model.reset(true);
+        Model.getDailySoccerActors().tellToActor("SimulatorActor", "InitShutdown");
         return ok();
     }
 

@@ -131,7 +131,7 @@ public class Model {
             _jongo = new Jongo(_mongoDB, mapper);
 
             // Make sure our DB has the neccesary collections and indexes
-            ensureMongoDB(_mongoDB);
+            ensureMongoDB();
 
             bSuccess = true;
         }
@@ -181,34 +181,44 @@ public class Model {
         return ret;
     }
 
-    static public void resetMongoDB() {
-        dropMongoDB(_mongoDB);
-        ensureMongoDB(_mongoDB);
+    static public void reset(boolean withMockData) {
+        _actors.restartLocalActors();
+
+        dropMongoDB(true);
+        ensureMongoDB();
 
         PointsTranslation.createDefault();
         TemplateSoccerTeam.createInvalidTeam();
-    }
 
-    static public void fullDropMongoDB() {
-        dropMongoDB(_mongoDB);
-        _mongoDB.getCollection("system.users").drop();
-    }
-
-    static private void dropMongoDB(DB theMongoDB) {
-
-        for (String collection : theMongoDB.getCollectionNames()) {
-            if (!collection.contains("system.")) {
-                Logger.debug("About to delete collection: {}", collection);
-                theMongoDB.getCollection(collection).drop();
-            }
+        if (withMockData) {
+            MockData.ensureMockDataUsers();
+            MockData.ensureCompetitions();
         }
     }
 
-    static private void ensureMongoDB(DB theMongoDB) {
-        ensureUsersDB(theMongoDB);
-        ensureOptaDB(theMongoDB);
-        ensureContestsDB(theMongoDB);
-        ensureTransactionsDB(theMongoDB);
+    static public void dropMongoDB(boolean keepSystemCollections) {
+
+        for (String collName : _mongoDB.getCollectionNames()) {
+            if (keepSystemCollections) {
+                if (!collName.contains("system.")) {
+                    _mongoDB.getCollection(collName).drop();
+                }
+            }
+            else {
+                _mongoDB.getCollection(collName).drop();
+            }
+
+            Logger.debug("Collection {} dropped", collName);
+        }
+
+        Logger.debug("All collections dropped");
+    }
+
+    static private void ensureMongoDB() {
+        ensureUsersDB(_mongoDB);
+        ensureOptaDB(_mongoDB);
+        ensureContestsDB(_mongoDB);
+        ensureTransactionsDB(_mongoDB);
     }
 
     static private void ensureUsersDB(DB theMongoDB) {
