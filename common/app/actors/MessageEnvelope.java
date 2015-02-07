@@ -13,11 +13,11 @@ import java.io.Serializable;
 // Para tipos basicos, no hace falta.
 //
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property = "type")
-public class MessageEnvelope implements Serializable {
-    public String msg;
+public class MessageEnvelope {
+    final public String msg;
 
     @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.WRAPPER_OBJECT)
-    public Object params;
+    final public Object params;
 
     public MessageEnvelope(@JsonProperty("msg") String m, @JsonProperty("params") Object p) { msg = m; params = p; }
 
