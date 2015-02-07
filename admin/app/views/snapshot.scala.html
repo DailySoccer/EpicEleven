@@ -7,11 +7,11 @@
 
 @main("Snapshots - Admin") {
 
-<h1 class="page-header">Snapshots</h1>
+    <h1 class="page-header">Snapshots</h1>
     <div><strong>Last Snapshot</strong> (@SnapshotController.getSnapshotName()):</div>
     <br/>
     <div class="btn-group">
-        <a class="btn btn-primary" href="@routes.SnapshotController.loadSnapshot" title="Load snapshot.">
+        <a class="btn btn-primary" href="@routes.SnapshotController.loadSnapshot" onclick="onLoadSnapshotClick()" title="Load snapshot.">
             Load Snapshot
         </a>
         <a class="btn btn-primary" href="@routes.SnapshotController.saveSnapshot" title="Save snapshot.">
@@ -27,4 +27,14 @@
             Restore Snapshot from Disk
         </a>
     </div>
+
+    <script>
+        // Para evitar que llegue un get_simulator_state mientras se esta haciendo la carga del snapshot
+        function onLoadSnapshotClick() {
+            if (simulatorBarInterval !== null) {
+                window.clearInterval(simulatorBarInterval);
+                window.location.reload();
+            }
+        }
+    </script>
 }

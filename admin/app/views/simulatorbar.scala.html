@@ -54,11 +54,13 @@
 
 <script type="text/javascript" charset="utf-8">
 
+    var simulatorBarInterval = null;
+
     $(document).ready(function() {
         // Lo pintamos la primera vez desde el cliente por ejemplo para settear correctamente el speedFactor
         repaintInterface(@isInit, @isPaused, "@currentDate", "@pauseDate", @speedFactor);
 
-        window.setInterval(refreshStateFromServer, 200);
+        simulatorBarInterval = window.setInterval(refreshStateFromServer, 200);
     });
 
     function refreshStateFromServer() {
