@@ -130,7 +130,7 @@ public class DailySoccerActors {
         }
     }
 
-    public Object tellToActorAwaitResult(String actorName, Object message) {
+    public <T> T tellToActorAwaitResult(String actorName, Object message) {
         Object response = null;
 
         if (_connection != null) {
@@ -196,7 +196,7 @@ public class DailySoccerActors {
             }
         }
 
-        return response;
+        return (T)response;
     }
 
     private String readRabbitMQUriForEnvironment(TargetEnvironment env) {

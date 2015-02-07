@@ -196,6 +196,7 @@ public class SimulatorActor extends UntypedActor {
 
     private void advanceOrPause(Date toDate) {
 
+        // getNextDate retorna null cuando pasamos del ultimo documento
         if (toDate == null) {
             return;
         }
@@ -222,10 +223,7 @@ public class SimulatorActor extends UntypedActor {
             ret = new DateTime(_state.simulationDate).plusMillis(TICK_PERIOD * _state.speedFactor).toDate();
         }
         else {
-            OptaProcessorActor.NextDoc nextdocMsg = (OptaProcessorActor.NextDoc)Model.getDailySoccerActors()
-                    .tellToActorAwaitResult("OptaProcessorActor", "GetNextDoc");
-
-            ret = nextdocMsg.date;
+            ret = (Date)((MessageEnvelope)Model.getDailySoccerActors().tellToActorAwaitResult("OptaProcessorActor", "GetNextDoc")).params;
         }
 
         return ret;

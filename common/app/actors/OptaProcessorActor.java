@@ -23,7 +23,7 @@ public class OptaProcessorActor extends UntypedActor {
         // Es posible que se parara justo cuando estaba en isProcessing == true
         resetIsProcessing();
 
-        _nextDoc = NextDoc.Null();
+        _nextDocDate = null;
     }
 
     // postRestart y preStart se llaman en el nuevo actor (despues de la reinicializacion, claro).
@@ -68,10 +68,10 @@ public class OptaProcessorActor extends UntypedActor {
                 break;
 
             case "GetNextDoc":
-                if (_nextDoc.isNull()) {
+                if (_nextDocDate == null) {
                     ensureNextDocument(REGULAR_DOCUMENTS_PER_QUERY);
                 }
-                sender().tell(_nextDoc, self());
+                sender().tell(new MessageEnvelope("ReturnGetNextDoc", _nextDocDate), self());
                 break;
 
             case "GetLastProcessedDate":
@@ -104,7 +104,7 @@ public class OptaProcessorActor extends UntypedActor {
 
         // Somos una ensure, si el siguiente documento ya esta cargado simplemente retornamos. _nextDoc se pone
         // a null en processNextDocument, a la espera de que se ordene asegurar el siguiente
-        if (_nextDoc.isNotNull())
+        if (_nextDocDate != null)
             return;
 
         ensureConnection();
@@ -132,25 +132,25 @@ public class OptaProcessorActor extends UntypedActor {
     private boolean readNextDocument() throws SQLException {
 
         // Cuando vamos a leer el siguiente documento, el anterior no puede estar sin procesar.
-        if (_nextDoc.isNotNull())
+        if (_nextDocDate != null)
             throw new RuntimeException("WTF 5820");
 
         if (_optaResultSet.next()) {
-            _nextDoc = new NextDoc(new Date(_optaResultSet.getTimestamp("created_at").getTime()), _optaResultSet.getInt(1));
+            _nextDocDate = new Date(_optaResultSet.getTimestamp("created_at").getTime());
         }
 
-        return _nextDoc.isNotNull();
+        return _nextDocDate != null;
     }
 
     private void processNextDocument() {
 
         // Es posible que ensureNextDocument haya fallado
-        if (_nextDoc.isNull())
+        if (_nextDocDate == null)
             return;
 
         try {
             processCurrentDocumentInResultSet(_optaResultSet, _optaProcessor);
-            _nextDoc = NextDoc.Null();
+            _nextDocDate = null;
         }
         catch (Exception e) {
             // Punto de recuperacion 2. Al saltar una excepcion, no ponemos _nextDoc a null y por lo tanto reintentaremos
@@ -232,7 +232,7 @@ public class OptaProcessorActor extends UntypedActor {
         _optaResultSet = null;
 
         _optaProcessor = null;
-        _nextDoc = NextDoc.Null();
+        _nextDocDate = null;
     }
 
     final int SIMULATOR_DOCUMENTS_PER_QUERY = 500;
@@ -243,7 +243,7 @@ public class OptaProcessorActor extends UntypedActor {
     Statement _stmt;
 
     OptaProcessor _optaProcessor;
-    NextDoc _nextDoc;
+    Date _nextDocDate;
 
 
     static private class OptaProcessorState {
@@ -256,18 +256,5 @@ public class OptaProcessorActor extends UntypedActor {
         static public OptaProcessorState findOne() {
             return Model.optaProcessor().findOne("{stateId: #}", OptaProcessorState.UNIQUE_ID).as(OptaProcessorState.class);
         }
-    }
-
-    static public class NextDoc {
-        final public int id;
-        final public Date date;
-
-        public NextDoc(@JsonProperty("date") Date d, @JsonProperty("id") int i) { date = d; id = i; }
-
-        // Como no podemos mandar un mensaje null, lo marcamos asi
-        public boolean isNull() { return date == null; }
-        public boolean isNotNull() { return date != null; }
-
-        static NextDoc Null() { return new NextDoc(null, -1); }
     }
 }
