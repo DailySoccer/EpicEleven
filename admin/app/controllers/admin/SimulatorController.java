@@ -66,9 +66,18 @@ public class SimulatorController extends Controller {
         // Puesto que se llamara tambien desde el cliente en un dominio distinto, tenemos que poner el CORS
         response().setHeader("Access-Control-Allow-Origin", "*");
 
-        SimulatorState state = (SimulatorState)((MessageEnvelope)Model.actors().tellAndAwait("SimulatorActor", "GetSimulatorState")).params;
+        try {
+            MessageEnvelope envelope = Model.actors().tellAndAwait("SimulatorActor", "GetSimulatorState");
 
-        return new ReturnHelper(state).toResult();
+            if (envelope != null) {
+                return new ReturnHelper((envelope.params)).toResult();
+            }
+        }
+        // Absorbemos silenciosamente pq por ejemplo al cambiar de TargetEnvironment se sigue llamando aqui y durante
+        // la inicializacion de los actores no estamos preparados para llamar a tellAndWait
+        catch (Exception e) {}
+
+        return badRequest();
     }
 
     public static class GotoSimParams {

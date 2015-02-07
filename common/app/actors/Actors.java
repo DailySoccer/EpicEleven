@@ -190,7 +190,10 @@ public class Actors {
 
                 Logger.trace("5 tellAndAwait {}, {}", actorName, message);
             }
-            catch (Exception exc) {
+            catch (InterruptedException exc) {
+                Logger.error("WTF 3174 {}, {}", actorName, message.toString(), exc);
+            }
+            catch (IOException exc) {
                 Logger.error("WTF 3374 {}, {}", actorName, message.toString(), exc);
             }
         }
