@@ -25,9 +25,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class DailySoccerActors {
+public class Actors {
 
-    public DailySoccerActors(InstanceRole instanceRole) {
+    public Actors(InstanceRole instanceRole) {
 
         switch (instanceRole) {
             case DEVELOPMENT_ROLE:
@@ -104,17 +104,17 @@ public class DailySoccerActors {
         _localActors.clear();
     }
 
-    public void tellToActor(String actorName, Object message) {
+    public void tell(String actorName, Object message) {
 
         // Damos preferencia a funcionar a traves del conejo encolador
         if (_connection != null) {
             try {
-                Logger.trace("20 tellToActor {}, {}", actorName, message);
+                Logger.trace("20 tell {}, {}", actorName, message);
 
                 // Enviamos y no esperamos respuesta, fire and forget
                 _directChannel.basicPublish(_EXCHANGE_NAME, actorName /* QueueName */, null, serialize(message));
 
-                Logger.trace("21 tellToActor {}, {}", actorName, message);
+                Logger.trace("21 tell {}, {}", actorName, message);
             }
             catch (Exception exc) {
                 Logger.error("WTF 3344 {}, {}", actorName, message.toString(), exc);
@@ -130,12 +130,12 @@ public class DailySoccerActors {
         }
     }
 
-    public <T> T tellToActorAwaitResult(String actorName, Object message) {
+    public <T> T tellAndAwait(String actorName, Object message) {
         Object response = null;
 
         if (_connection != null) {
             try {
-                Logger.trace("0 telltoActorAwaitResult {}, {}", actorName, message);
+                Logger.trace("0 tellAndAwait {}, {}", actorName, message);
 
                 // Una cola para cada llamada. El correlationId NO es para multiplexar, sino simplemente para soportar
                 // un caso oscuro cuando el servidor se reinicia (leer el tutorial sobre RPC). Si usaramos la misma cola,
@@ -174,7 +174,7 @@ public class DailySoccerActors {
                 }
                 _directChannel.queueDelete(callbackQueueName);
 
-                Logger.trace("5 telltoActorAwaitResult {}, {}", actorName, message);
+                Logger.trace("5 tellAndAwait {}, {}", actorName, message);
             }
             catch (Exception exc) {
                 Logger.error("WTF 3374 {}, {}", actorName, message.toString(), exc);
@@ -196,7 +196,7 @@ public class DailySoccerActors {
             }
         }
 
-        return (T)response;
+        return uncheckedCast(response);
     }
 
     private String readRabbitMQUriForEnvironment(TargetEnvironment env) {
@@ -283,7 +283,7 @@ public class DailySoccerActors {
                             }
                         }
                         catch (Exception exc) {
-                            Logger.error("WTF 5222 DailySoccerActors mensaje {}, actor {}", new String(body), queueName, exc);
+                            Logger.error("WTF 5222 Actors mensaje {}, actor {}", new String(body), queueName, exc);
                         }
 
                         returnChannel.basicAck(envelope.getDeliveryTag(), false);
@@ -292,7 +292,7 @@ public class DailySoccerActors {
             }
         }
         catch (Exception exc) {
-            Logger.error("WTF 9688 DailySoccerActors no pudo inicializar el consumer de mensajes RabbitMQ", exc);
+            Logger.error("WTF 9688 Actors no pudo inicializar el consumer de mensajes RabbitMQ", exc);
         }
     }
 
@@ -357,7 +357,7 @@ public class DailySoccerActors {
             Logger.info("RabbitMq inicializado en TargetEnvironment.{}", env.toString());
         }
         catch (Exception exc) {
-            Logger.warn("DailySoccerActors no pudo inicializar RabbitMq");
+            Logger.warn("Actors no pudo inicializar RabbitMq");
         }
     }
 
@@ -401,10 +401,20 @@ public class DailySoccerActors {
         }
     }
 
+
     static public void main(String[] args) {
-        Application application = new DefaultApplication(new File(args[0]), DailySoccerActors.class.getClassLoader(), null, Mode.Prod());
+        Application application = new DefaultApplication(new File(args[0]), Actors.class.getClassLoader(), null, Mode.Prod());
         Play.start(application);
     }
+
+    /**
+     * Helps to avoid using {@code @SuppressWarnings({"unchecked"})} when casting to a generic type.
+     */
+    @SuppressWarnings({"unchecked"})
+    public static <T> T uncheckedCast(Object obj) {
+        return (T) obj;
+    }
+
 
     Connection _connection;
     Channel _directChannel;

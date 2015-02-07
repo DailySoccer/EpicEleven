@@ -24,14 +24,14 @@ public class TestController extends Controller {
 
     static public Result gotoDate(int year, int month, int day, int hour, int minute, int second) {
         Date myDate = new DateTime(year, month, day, hour, minute, second, DateTimeZone.UTC).toDate();
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", new MessageEnvelope("GotoDate", myDate));
+        Model.actors().tell("SimulatorActor", new MessageEnvelope("GotoDate", myDate));
         return ok("OK");
     }
 
 
     static public Result gotoDateTimestamp(Long timestamp) {
         Date myDate = new Date(timestamp);
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", new MessageEnvelope("GotoDate", myDate));
+        Model.actors().tell("SimulatorActor", new MessageEnvelope("GotoDate", myDate));
         return ok("OK");
     }
 

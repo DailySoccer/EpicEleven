@@ -1,7 +1,6 @@
 package controllers.admin;
 
 import actors.BotParentActor;
-import model.MockData;
 import model.Model;
 import model.User;
 import model.accounting.AccountOp;
@@ -43,17 +42,17 @@ public class DashboardController extends Controller {
     }
 
     static public Result startStopBotActors() {
-        Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "StartStop");
+        Model.actors().tellAndAwait("BotParentActor", "StartStop");
         return redirect(routes.DashboardController.index());
     }
 
     static public Result pauseResumeBotActors() {
-        Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "PauseResume");
+        Model.actors().tellAndAwait("BotParentActor", "PauseResume");
         return redirect(routes.DashboardController.index());
     }
 
     static public Result stampedeBotActors() {
-        Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "Stampede");
+        Model.actors().tellAndAwait("BotParentActor", "Stampede");
         return redirect(routes.DashboardController.index());
     }
 
@@ -85,6 +84,6 @@ public class DashboardController extends Controller {
     }
 
     static private BotParentActor.ChildrenState getBotsState() {
-        return Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "GetChildrenState");
+        return Model.actors().tellAndAwait("BotParentActor", "GetChildrenState");
     }
 }

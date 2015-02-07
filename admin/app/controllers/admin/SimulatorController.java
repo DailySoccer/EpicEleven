@@ -19,7 +19,7 @@ import static play.data.Form.form;
 public class SimulatorController extends Controller {
 
     public static Html simulatorBar() {
-        SimulatorState state = (SimulatorState)((MessageEnvelope)Model.getDailySoccerActors().tellToActorAwaitResult("SimulatorActor", "GetSimulatorState")).params;
+        SimulatorState state = (SimulatorState)((MessageEnvelope)Model.actors().tellAndAwait("SimulatorActor", "GetSimulatorState")).params;
 
         return views.html.simulatorbar.render(state.isInit(), state.isPaused,
                                               state.getCurrentDateFormatted(),
@@ -28,27 +28,27 @@ public class SimulatorController extends Controller {
     }
 
     public static Result initShutdown() {
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", "InitShutdown");
+        Model.actors().tell("SimulatorActor", "InitShutdown");
         return ok();
     }
     public static Result pauseResume() {
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", "PauseResume");
+        Model.actors().tell("SimulatorActor", "PauseResume");
         return ok();
     }
 
     public static Result nextStep() {
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", "NextStep");
+        Model.actors().tell("SimulatorActor", "NextStep");
         return ok();
     }
 
     public static Result reset() {
         Model.reset(false);
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", "InitShutdown");
+        Model.actors().tell("SimulatorActor", "InitShutdown");
         return ok();
     }
 
     public static Result setSpeed(int speedFactor) {
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", new MessageEnvelope("SetSpeedFactor", speedFactor));
+        Model.actors().tell("SimulatorActor", new MessageEnvelope("SetSpeedFactor", speedFactor));
         return ok();
     }
 
@@ -56,7 +56,7 @@ public class SimulatorController extends Controller {
         GotoSimParams params = form(GotoSimParams.class).bindFromRequest().get();
 
         Date date = new DateTime(params.date).withZoneRetainFields(DateTimeZone.UTC).toDate();
-        Model.getDailySoccerActors().tellToActor("SimulatorActor", new MessageEnvelope("GotoDate", date));
+        Model.actors().tell("SimulatorActor", new MessageEnvelope("GotoDate", date));
 
         return ok();
     }
@@ -66,7 +66,7 @@ public class SimulatorController extends Controller {
         // Puesto que se llamara tambien desde el cliente en un dominio distinto, tenemos que poner el CORS
         response().setHeader("Access-Control-Allow-Origin", "*");
 
-        SimulatorState state = (SimulatorState)((MessageEnvelope)Model.getDailySoccerActors().tellToActorAwaitResult("SimulatorActor", "GetSimulatorState")).params;
+        SimulatorState state = (SimulatorState)((MessageEnvelope)Model.actors().tellAndAwait("SimulatorActor", "GetSimulatorState")).params;
 
         return new ReturnHelper(state).toResult();
     }

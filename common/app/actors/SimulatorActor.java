@@ -3,7 +3,6 @@ package actors;
 import akka.actor.Cancellable;
 import akka.actor.UntypedActor;
 import model.GlobalDate;
-import model.MockData;
 import model.Model;
 import model.opta.OptaXmlUtils;
 import org.joda.time.DateTime;
@@ -131,8 +130,8 @@ public class SimulatorActor extends UntypedActor {
     private void init() {
         Logger.debug("SimulatorActor: initialization at {}", GlobalDate.getCurrentDateString());
 
-        Date lastProcessedDate = (Date)((MessageEnvelope)Model.getDailySoccerActors()
-                                                    .tellToActorAwaitResult("OptaProcessorActor", "GetLastProcessedDate")).params;
+        Date lastProcessedDate = (Date)((MessageEnvelope)Model.actors()
+                                                    .tellAndAwait("OptaProcessorActor", "GetLastProcessedDate")).params;
 
         _state = Model.simulator().findOne().as(SimulatorState.class);
 
@@ -184,10 +183,10 @@ public class SimulatorActor extends UntypedActor {
         advanceOrPause(getNextDate());
 
         // El orden de entrega de estos mensajes no esta garantizado, como debe de ser.
-        Model.getDailySoccerActors().tellToActor("InstantiateContestsActor", "SimulatorTick");
-        Model.getDailySoccerActors().tellToActor("CloseContestsActor", "SimulatorTick");
-        Model.getDailySoccerActors().tellToActor("TransactionsActor", "SimulatorTick");
-        Model.getDailySoccerActors().tellToActor("OptaProcessorActor", "SimulatorTick");
+        Model.actors().tell("InstantiateContestsActor", "SimulatorTick");
+        Model.actors().tell("CloseContestsActor", "SimulatorTick");
+        Model.actors().tell("TransactionsActor", "SimulatorTick");
+        Model.actors().tell("OptaProcessorActor", "SimulatorTick");
 
         if (!_state.isPaused) {
             reescheduleTick();
@@ -223,7 +222,7 @@ public class SimulatorActor extends UntypedActor {
             ret = new DateTime(_state.simulationDate).plusMillis(TICK_PERIOD * _state.speedFactor).toDate();
         }
         else {
-            ret = (Date)((MessageEnvelope)Model.getDailySoccerActors().tellToActorAwaitResult("OptaProcessorActor", "GetNextDoc")).params;
+            ret = (Date)((MessageEnvelope)Model.actors().tellAndAwait("OptaProcessorActor", "GetNextDoc")).params;
         }
 
         return ret;

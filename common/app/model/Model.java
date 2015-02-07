@@ -1,6 +1,6 @@
 package model;
 
-import actors.DailySoccerActors;
+import actors.Actors;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.mongodb.*;
 import org.bson.types.ObjectId;
@@ -86,7 +86,7 @@ public class Model {
     }
 
     // Desde fuera se necesita acceder al gestor de actores para poder mandar mensajes desde el UI de administracion
-    static public DailySoccerActors getDailySoccerActors() {
+    static public Actors actors() {
         return _actors;
     }
 
@@ -97,7 +97,7 @@ public class Model {
         initMongo(readMongoUriForEnvironment(_targetEnvironment));
         initPostgresDB();
 
-        _actors = new DailySoccerActors(_instanceRole);
+        _actors = new Actors(_instanceRole);
     }
 
     static public void shutdown() {
@@ -334,6 +334,6 @@ public class Model {
     // Jongo is thread safe too: https://groups.google.com/forum/#!topic/jongo-user/KwukXi5Vm7c
     static private Jongo _jongo;
 
-    // Mantenemos aqui nuestro unico DailySoccerActors para asegurar que tiene el mismo ciclo de vida que nosotros
-    static private DailySoccerActors _actors;
+    // Mantenemos aqui nuestro unico Actors para asegurar que tiene el mismo ciclo de vida que nosotros
+    static private Actors _actors;
 }
