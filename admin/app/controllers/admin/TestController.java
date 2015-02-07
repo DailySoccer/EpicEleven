@@ -17,7 +17,7 @@ import java.util.Date;
 public class TestController extends Controller {
 
     static public Result start() {
-        Model.reset(true);
+        Model.reset(false);
         return ok("OK");
     }
 

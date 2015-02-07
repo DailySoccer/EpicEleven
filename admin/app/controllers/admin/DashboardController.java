@@ -28,7 +28,7 @@ public class DashboardController extends Controller {
     }
 
     static public Result resetDB() {
-        Model.reset(true);
+        Model.reset(false);
         FlashMessage.success("Reset DB: OK");
         return index();
     }
@@ -85,6 +85,6 @@ public class DashboardController extends Controller {
     }
 
     static private BotParentActor.ChildrenState getBotsState() {
-        return (BotParentActor.ChildrenState)Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "GetChildrenState");
+        return Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "GetChildrenState");
     }
 }

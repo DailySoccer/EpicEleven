@@ -181,26 +181,27 @@ public class Model {
         return ret;
     }
 
-    static public void reset(boolean withMockData) {
+    static public void reset(boolean forSnapshot) {
         _actors.restartLocalActors();
 
-        dropMongoDB(true);
-        ensureMongoDB();
+        dropMongoDB(forSnapshot);
 
-        PointsTranslation.createDefault();
-        TemplateSoccerTeam.createInvalidTeam();
+        if (!forSnapshot) {
+            ensureMongoDB();
 
-        if (withMockData) {
+            PointsTranslation.createDefault();
+            TemplateSoccerTeam.createInvalidTeam();
+
             MockData.ensureMockDataUsers();
             MockData.ensureCompetitions();
         }
     }
 
-    static public void dropMongoDB(boolean keepSystemCollections) {
+    static private void dropMongoDB(boolean dropSystemUsers) {
 
         for (String collName : _mongoDB.getCollectionNames()) {
-            if (keepSystemCollections) {
-                if (!collName.contains("system.")) {
+            if (collName.startsWith("system.")) {
+                if (collName.equals("system.users") && dropSystemUsers) {
                     _mongoDB.getCollection(collName).drop();
                 }
             }

@@ -16,7 +16,6 @@ public class SnapshotController extends Controller {
     }
 
     public static Result loadSnapshot() {
-        Model.getDailySoccerActors().restartLocalActors();
         Snapshot.instance().load();
 
         return redirect(routes.SnapshotController.index());
