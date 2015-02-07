@@ -41,8 +41,6 @@ public class OptaProcessorActor extends UntypedActor {
 
     public void onReceive(Object message) {
 
-        Logger.debug("OptaProcessorActor message {} at {}", message, GlobalDate.getCurrentDateString());
-
         switch ((String)message) {
             case "Tick":
                 // Reciclamos memoria (podriamos probar a dejar el cache y reciclar cada cierto tiempo...)

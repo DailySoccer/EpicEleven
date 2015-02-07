@@ -222,7 +222,7 @@ public class DailySoccerActors {
 
     private void createLocalActors() {
         _localActors.put("OptaProcessorActor", Akka.system().actorOf(Props.create(OptaProcessorActor.class), "OptaProcessorActor"));
-        _localActors.put("InstantiateConstestsActor", Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateConstestsActor"));
+        _localActors.put("InstantiateContestsActor", Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateContestsActor"));
         _localActors.put("CloseContestsActor", Akka.system().actorOf(Props.create(CloseContestsActor.class), "CloseContestsActor"));
         _localActors.put("TransactionsActor", Akka.system().actorOf(Props.create(TransactionsActor.class), "TransactionsActor"));
         _localActors.put("BotParentActor", Akka.system().actorOf(Props.create(BotParentActor.class), "BotParentActor"));

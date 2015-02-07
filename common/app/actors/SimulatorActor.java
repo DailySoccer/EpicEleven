@@ -69,15 +69,6 @@ public class SimulatorActor extends UntypedActor {
                 onSimulatorTick(true);
                 break;
 
-            case "Reset":
-                shutdown();
-                Model.resetMongoDB();
-                MockData.ensureMockDataUsers();
-                MockData.ensureCompetitions();
-                init();
-                sender().tell("ResetOk", self());
-                break;
-
             case "GetSimulatorState":
                 // Si no estamos inicializados, SimulatorState.isInit() == false; Para asegurar la immutabilidad, hacemos
                 // una copia del SimulatorState. Seria mejor sin embargo hacer la propia clase immutable.
@@ -161,8 +152,8 @@ public class SimulatorActor extends UntypedActor {
                 _state.simulationDate = lastProcessedDate;
             }
 
-            // Tenemos registrada una fecha antigua de pausa?
-            if (_state.pauseDate != null && _state.pauseDate.before(_state.simulationDate)) {
+            // Tenemos registrada una fecha antigua de pausa? La olvidamos...
+            if (isPastPauseDate(_state.simulationDate)) {
                 _state.pauseDate = null;
             }
         }
@@ -176,67 +167,68 @@ public class SimulatorActor extends UntypedActor {
         Logger.debug("SimulatorActor: initialized, the current date is {}", GlobalDate.getCurrentDateString());
     }
 
-    private boolean refreshPause() {
-
-        if (_state.pauseDate != null && _state.pauseDate.before(_state.simulationDate)) {
-            Logger.debug("SimulatorActor: pausing at requested date {}", GlobalDate.formatDate(_state.pauseDate));
-
-            pause();
-
-            _state.pauseDate = null;
-            updateDateAndSaveState(_state.simulationDate);
-        }
-
-        return _state.isPaused;
+    private boolean isPastPauseDate(Date date) {
+        return _state.pauseDate != null &&
+               new DateTime(date).isAfter(new DateTime(_state.pauseDate));
     }
 
     private void onSimulatorTick(boolean onlyNextStep) {
-        Logger.debug("SimulatorActor: tick at {}", GlobalDate.getCurrentDateString());
-
         // Es posible que nos encolen un Shutdown o un PauseResume mientras procesabamos el Tick, donde al final (unas
         // lineas mas abajo) encolamos el siguiente tick. Por lo tanto, nos puede llegar un Tick despues de un Shutdown/Pause.
         if (_state == null) {
             return;
         }
 
-        // Cuando nos piden que hagamos solo un paso, ignoramos las pausas
-        if (!onlyNextStep && refreshPause()) {
-            Logger.debug("Exiting at pause {}", GlobalDate.getCurrentDateString());
+        Logger.debug("SimulatorActor: tick at {}", GlobalDate.getCurrentDateString());
+
+        advanceOrPause(getNextDate());
+
+        // El orden de entrega de estos mensajes no esta garantizado, como debe de ser.
+        Model.getDailySoccerActors().tellToActor("InstantiateContestsActor", "SimulatorTick");
+        Model.getDailySoccerActors().tellToActor("CloseContestsActor", "SimulatorTick");
+        Model.getDailySoccerActors().tellToActor("TransactionsActor", "SimulatorTick");
+        Model.getDailySoccerActors().tellToActor("OptaProcessorActor", "SimulatorTick");
+
+        if (!_state.isPaused) {
+            reescheduleTick();
+        }
+    }
+
+    private void advanceOrPause(Date toDate) {
+
+        if (toDate == null) {
             return;
         }
 
-        if (_state.speedFactor != SimulatorState.MAX_SPEED) {
-            int virtualElapsedTime = TICK_PERIOD * _state.speedFactor;
+        // Nos pilla la fecha de pausa antes de la fecha a la que nos gustaria saltar?
+        if (isPastPauseDate(toDate)) {
+            // Si... Saltamos justo a la fecha de pausa
+            Date finalDate = _state.pauseDate;
+            _state.pauseDate = null;
 
-            updateDateAndSaveState(new DateTime(_state.simulationDate).plusMillis(virtualElapsedTime).toDate());
-
-            if (!onlyNextStep) {
-                reescheduleTick();
-            }
+            updateDateAndSaveState(finalDate);
+            pause();
         }
         else {
-            // Apuntamos la GlobalDate exactamente a la del siguiente documento
+            // No... Podemos saltar a la fecha destino directamente
+            updateDateAndSaveState(toDate);
+        }
+    }
+
+    private Date getNextDate() {
+        Date ret;
+
+        if (_state.speedFactor != SimulatorState.MAX_SPEED) {
+            ret = new DateTime(_state.simulationDate).plusMillis(TICK_PERIOD * _state.speedFactor).toDate();
+        }
+        else {
             OptaProcessorActor.NextDoc nextdocMsg = (OptaProcessorActor.NextDoc)Model.getDailySoccerActors()
-                                                    .tellToActorAwaitResult("OptaProcessorActor", "GetNextDoc");
+                    .tellToActorAwaitResult("OptaProcessorActor", "GetNextDoc");
 
-            Logger.debug("SimulatorActor: en el tick at {} avanzamos a {}", GlobalDate.getCurrentDateString(), GlobalDate.formatDate(nextdocMsg.date));
-
-            // Si al OptaProcessorActor no le ha dado tiempo a cargar el siguiente documento, simplemente esperamos al siguiente tick
-            if (nextdocMsg.isNotNull()) {
-                updateDateAndSaveState(nextdocMsg.date);
-            }
-
-            if (!onlyNextStep) {
-                // Encolamos el siguiente tick para ejecucion inmediata!
-                getSelf().tell("SimulatorTick", getSelf());
-            }
+            ret = nextdocMsg.date;
         }
 
-        // El orden de entrega de estos mensajes no esta garantizado, como debe de ser.
-        Model.getDailySoccerActors().tellToActor("OptaProcessorActor", "SimulatorTick");
-        Model.getDailySoccerActors().tellToActor("InstantiateConstestsActor", "SimulatorTick");
-        Model.getDailySoccerActors().tellToActor("CloseContestsActor", "SimulatorTick");
-        Model.getDailySoccerActors().tellToActor("TransactionsActor", "SimulatorTick");
+        return ret;
     }
 
     private void updateDateAndSaveState(Date currentDate) {
@@ -256,8 +248,16 @@ public class SimulatorActor extends UntypedActor {
     }
 
     private void reescheduleTick() {
-        _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(TICK_PERIOD, TimeUnit.MILLISECONDS), getSelf(), "SimulatorTick",
-                                                                          getContext().dispatcher(), null);
+
+        if (_state.speedFactor != SimulatorState.MAX_SPEED) {
+            _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(TICK_PERIOD, TimeUnit.MILLISECONDS),
+                                                                              getSelf(), "SimulatorTick",
+                                                                              getContext().dispatcher(), null);
+        }
+        else {
+            // Encolamos el siguiente tick para ejecucion inmediata!
+            getSelf().tell("SimulatorTick", getSelf());
+        }
     }
 
     SimulatorState _state;
