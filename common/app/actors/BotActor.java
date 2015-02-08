@@ -13,6 +13,7 @@ import play.libs.F;
 import play.libs.ws.WS;
 import play.libs.ws.WSRequestHolder;
 import play.libs.ws.WSResponse;
+import utils.JsonUtils;
 import utils.ListUtils;
 
 import java.util.*;
@@ -235,7 +236,7 @@ public class BotActor extends UntypedActor {
         JsonNode jsonNode = get("get_my_contests").findValue("contests_0");
 
         if (jsonNode != null) {
-            ret = fromJSON(jsonNode.toString(), new TypeReference<List<Contest>>() {});
+            ret = JsonUtils.fromJSON(jsonNode.toString(), new TypeReference<List<Contest>>() { });
         }
         else {
             Logger.error("{} get_my_contests returned empty", getFullName());
@@ -371,11 +372,11 @@ public class BotActor extends UntypedActor {
 
         JsonNode jsonNode = post("login", String.format("email=%s&password=uoyeradiputs3991", getEmail()));
 
-        _sessionToken = extractStringValue(jsonNode, "sessionToken");
+        _sessionToken = JsonUtils.extractStringValue(jsonNode, "sessionToken");
 
         if (_sessionToken != null) {
             jsonNode = get("get_user_profile");
-            _user = fromJSON(jsonNode.toString(), new TypeReference<User>() {});
+            _user = JsonUtils.fromJSON(jsonNode.toString(), new TypeReference<User>() { });
         }
 
         return _user != null;
@@ -411,7 +412,7 @@ public class BotActor extends UntypedActor {
         JsonNode jsonNode = get("get_active_contests").findValue("contests");
 
         if (jsonNode != null) {
-            ret = fromJSON(jsonNode.toString(), new TypeReference<List<Contest>>() { });
+            ret = JsonUtils.fromJSON(jsonNode.toString(), new TypeReference<List<Contest>>() { });
         }
         else {
             Logger.error("WTF 4001 {} getActiveContests returned empty", getFullName());
@@ -431,8 +432,8 @@ public class BotActor extends UntypedActor {
         if (jsonNodeContest != null && jsonNodeSoccerPlayers != null) {
             // Debemos hacer to.do nuestro proceso con los datos de salario, equipo, etc que vienen en los Instances y no en los Templates.
             // Los instances los obtenemos de la query "get_public_contest" (dado que el contest que recibimos no lo incluye, al obtenerse de una query "active_contests")
-            List<InstanceSoccerPlayer> instanceSoccerPlayers = fromJSON(jsonNodeContest.toString(), new TypeReference<Contest>() { }).instanceSoccerPlayers;
-            List<TemplateSoccerPlayer> soccerPlayers = fromJSON(jsonNodeSoccerPlayers.toString(), new TypeReference<List<TemplateSoccerPlayer>>() { });
+            List<InstanceSoccerPlayer> instanceSoccerPlayers =  JsonUtils.fromJSON(jsonNodeContest.toString(), new TypeReference<Contest>() { }).instanceSoccerPlayers;
+            List<TemplateSoccerPlayer> soccerPlayers = JsonUtils.fromJSON(jsonNodeSoccerPlayers.toString(), new TypeReference<List<TemplateSoccerPlayer>>() { });
 
             // Simplemente "parcheamos" los templates con los datos de los instances
             copyInstancesToTemplates(instanceSoccerPlayers, soccerPlayers);
@@ -472,7 +473,7 @@ public class BotActor extends UntypedActor {
             JsonNode error = jsonNode.findValue("error");
 
             if (error == null) {
-                enteredContestId = extractStringValue(jsonNode, "contestId");
+                enteredContestId = JsonUtils.extractStringValue(jsonNode, "contestId");
             }
             else {
                 Logger.error("WTF 4006 {} addContestEntry produjo en un error en el servidor {}", getFullName(), error.toString());
@@ -492,7 +493,7 @@ public class BotActor extends UntypedActor {
         JsonNode jsonNode = get(String.format("get_contest_info/%s", contest.contestId)).findValue("users_info");
 
         if (jsonNode != null) {
-            ret = fromJSON(jsonNode.toString(), new TypeReference<List<UserInfo>>() { });
+            ret = JsonUtils.fromJSON(jsonNode.toString(), new TypeReference<List<UserInfo>>() { });
         }
         else {
             Logger.error("WTF 4008 {} enterContest returned empty", getFullName());
@@ -579,30 +580,6 @@ public class BotActor extends UntypedActor {
         );
 
         return jsonPromise.get(5000, TimeUnit.MILLISECONDS);
-    }
-
-    private static <T> T fromJSON(final String json, final TypeReference<T> type) {
-        T ret = null;
-
-        try {
-            ret = new ObjectMapper().readValue(json, type);
-        } catch (Exception exc) {
-            Logger.debug("WTF 2229", exc);
-        }
-        return ret;
-    }
-
-    // Cuando el servidor nos devuelve una String, lo hace envuelta en comillas, tenemos que quitarlas
-    private String extractStringValue(JsonNode jsonNode, String key) {
-
-        String ret = null;
-        JsonNode val = jsonNode.findValue(key);
-
-        if (val != null) {
-            ret = val.toString().replace("\"", "");
-        }
-
-        return ret;
     }
 
 

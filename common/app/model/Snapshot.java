@@ -41,7 +41,8 @@ public class Snapshot {
                                      append("fromdb", "snapshot").
                                      append("todb",   "dailySoccerDB");
 
-        Model.fullDropMongoDB();
+        Model.reset(true);
+
         CommandResult a = _mongoDBAdmin.command(copyOp);
         if (a.getErrorMessage() != null) {
             Logger.error(a.getErrorMessage());
@@ -57,7 +58,8 @@ public class Snapshot {
                                      append("fromdb", "dailySoccerDB").
                                      append("todb", "snapshot");
 
-        dropSnapshotDB();
+        _mongoDBSnapshot.dropDatabase();
+
         CommandResult a = _mongoDBAdmin.command(copyOp);
         if (a.getErrorMessage() != null) {
             Logger.error(a.getErrorMessage());
@@ -81,9 +83,6 @@ public class Snapshot {
         }
     }
 
-    static private void dropSnapshotDB() {
-        _mongoDBSnapshot.dropDatabase();
-    }
 
     static private MongoCollection collection() {
         return (_jongoSnapshot != null) ? _jongoSnapshot.getCollection(snapshotDBName) : null;
