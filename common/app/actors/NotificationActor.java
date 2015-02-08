@@ -51,7 +51,7 @@ public class NotificationActor extends UntypedActor {
         List<Contest> nextContests = Contest.findAllStartingIn(1);
 
         Map<ObjectId, ArrayList<Contest>> nextUsersContests = getUsersForContests(nextContests);
-        Map<String, String> recipients = new HashMap<>();
+        List<User> recipients = new ArrayList<>();
 
         List<MessageTemplateSend.MandrillMessage.MergeVarBucket> mergeVars = new ArrayList<>();
 
@@ -73,7 +73,7 @@ public class NotificationActor extends UntypedActor {
 
             if (notifiableContests.size() > 0) {
                 User currentUserToNotify = User.findOne(userId);
-                recipients.put(currentUserToNotify.email, currentUserToNotify.nickName);
+                recipients.add(currentUserToNotify);
                 mergeVars.add(prepareMergeVarBucket(currentUserToNotify, notifiableContests));
                 notifications.add(new Notification(Topic.CONTEST_NEXT_HOUR, null, userId));
             }

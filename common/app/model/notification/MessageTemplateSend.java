@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import model.User;
 import play.Logger;
 import play.libs.ws.WS;
 import play.libs.ws.WSResponse;
@@ -164,15 +165,15 @@ public class MessageTemplateSend {
     }
 
 
-    public static boolean send(Map<String, String> recipients, String templateName, String subject, List<MandrillMessage.MergeVarBucket> mergeVars) {
+    public static boolean send(List<User> recipients, String templateName, String subject, List<MandrillMessage.MergeVarBucket> mergeVars) {
         /**
          * recipients: Mapa con clave email, contenido nombre del destinatario.
          */
         ArrayList<MandrillMessage.Recipient> to = new ArrayList<>();
-        for (String recipientsKey : recipients.keySet()) {
+        for (User user : recipients) {
             MandrillMessage.Recipient fulano = new MandrillMessage.Recipient();
-            fulano.email = recipientsKey;
-            fulano.name = recipients.get(recipientsKey);
+            fulano.email = user.email;
+            fulano.name = user.nickName;
             to.add(fulano);
         }
 
