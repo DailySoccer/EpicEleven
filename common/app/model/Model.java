@@ -200,7 +200,7 @@ public class Model {
     static private void dropMongoDB(boolean dropSystemUsers) {
 
         for (String collName : _mongoDB.getCollectionNames()) {
-            if (collName.startsWith("system.")) {
+            if (collName.contains("system.")) {
                 if (collName.equals("system.users") && dropSystemUsers) {
                     _mongoDB.getCollection(collName).drop();
                 }
