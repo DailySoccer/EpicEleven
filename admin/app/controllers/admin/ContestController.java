@@ -5,7 +5,6 @@ import model.Contest;
 import model.Model;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utils.PaginationData;
 
 import java.util.List;
 

@@ -57,20 +57,19 @@ public class NotificationActor extends UntypedActor {
 
         List<Notification> notifications = new ArrayList<>();
 
-        for (ObjectId userId: nextUsersContests.keySet()) {
+        for (ObjectId userId : nextUsersContests.keySet()) {
             ArrayList<Contest> thisUsersContests = nextUsersContests.get(userId);
             ArrayList<Contest> notifiableContests = new ArrayList<>();
 
             Notification lastNotification = Notification.getLastNotification(Topic.CONTEST_NEXT_HOUR, userId);
 
-            DateTime nextNotifiableDate =  (lastNotification!= null)? new DateTime(lastNotification.createdAt).plusHours(1) : new DateTime(0L);
+            DateTime nextNotifiableDate = (lastNotification!= null)? new DateTime(lastNotification.createdAt).plusHours(1) : new DateTime(0L);
 
             for (Contest contest : thisUsersContests) {
                 if (nextNotifiableDate.isBefore(new DateTime(contest.startDate))) {
                     notifiableContests.add(contest);
                 }
             }
-
 
             if (notifiableContests.size() > 0) {
                 User currentUserToNotify = User.findOne(userId);
@@ -80,14 +79,17 @@ public class NotificationActor extends UntypedActor {
             }
         }
 
-        if (recipients.size() > 0 && MessageTemplateSend.send(recipients, _contestStartingTemplateName, "En Epic Eleven tienes concursos por comenzar", mergeVars)) {
-            for (Notification notification: notifications) {
-                notification.markSent();
+        if (recipients.size() > 0) {
+            boolean sent = MessageTemplateSend.send(recipients, _contestStartingTemplateName, "En Epic Eleven tienes concursos por comenzar", mergeVars);
+
+            if (sent) {
+                for (Notification notification : notifications) {
+                    notification.markSent();
+                }
             }
         }
-
     }
-
+    
     private MessageTemplateSend.MandrillMessage.MergeVarBucket prepareMergeVarBucket(User user, ArrayList<Contest> thisUsersContests) {
         MessageTemplateSend.MergeVar name = new MessageTemplateSend.MergeVar();
         MessageTemplateSend.MergeVar contests = new MessageTemplateSend.MergeVar();

@@ -7,7 +7,6 @@ import model.opta.OptaEvent;
 import org.bson.types.ObjectId;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utils.PaginationData;
 
 import java.util.ArrayList;
 import java.util.List;
