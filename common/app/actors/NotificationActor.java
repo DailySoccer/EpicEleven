@@ -13,7 +13,10 @@ import org.joda.time.DateTime;
 import play.Logger;
 import scala.concurrent.duration.Duration;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 
@@ -43,29 +46,25 @@ public class NotificationActor extends UntypedActor {
         Logger.debug("NotificationActor: {}", GlobalDate.getCurrentDateString());
 
         notifyContestStartsInOneHour();
-        // All the rest of things to notify in each tick
     }
 
 
     private void notifyContestStartsInOneHour() {
         List<Contest> nextContests = Contest.findAllStartingIn(1);
 
-        Map<ObjectId, ArrayList<Contest>> nextUsersContests = getUsersForContests(nextContests);
         List<User> recipients = new ArrayList<>();
-
         List<MessageTemplateSend.MandrillMessage.MergeVarBucket> mergeVars = new ArrayList<>();
 
         List<Notification> notifications = new ArrayList<>();
 
-        for (ObjectId userId : nextUsersContests.keySet()) {
-            ArrayList<Contest> thisUsersContests = nextUsersContests.get(userId);
-            ArrayList<Contest> notifiableContests = new ArrayList<>();
+        for (Map.Entry<ObjectId, ArrayList<Contest>> entry : getUsersForContests(nextContests).entrySet()) {
+            ObjectId userId = entry.getKey();
 
             Notification lastNotification = Notification.getLastNotification(Topic.CONTEST_NEXT_HOUR, userId);
-
             DateTime nextNotifiableDate = (lastNotification!= null)? new DateTime(lastNotification.createdAt).plusHours(1) : new DateTime(0L);
 
-            for (Contest contest : thisUsersContests) {
+            ArrayList<Contest> notifiableContests = new ArrayList<>();
+            for (Contest contest : entry.getValue()) {
                 if (nextNotifiableDate.isBefore(new DateTime(contest.startDate))) {
                     notifiableContests.add(contest);
                 }
@@ -76,6 +75,8 @@ public class NotificationActor extends UntypedActor {
                 recipients.add(currentUserToNotify);
                 mergeVars.add(prepareMergeVarBucket(currentUserToNotify, notifiableContests));
                 notifications.add(new Notification(Topic.CONTEST_NEXT_HOUR, null, userId));
+
+                Logger.debug("Sending notification {} to user {}, {} contests", Topic.CONTEST_NEXT_HOUR.toString(), currentUserToNotify.email, notifiableContests.size());
             }
         }
 
@@ -84,8 +85,10 @@ public class NotificationActor extends UntypedActor {
 
             if (sent) {
                 for (Notification notification : notifications) {
-                    notification.markSent();
+                    notification.insertAsSent();
                 }
+
+                Logger.debug("Notification {} sent to {} users", Topic.CONTEST_NEXT_HOUR.toString(), recipients.size());
             }
         }
     }

@@ -32,13 +32,9 @@ public class Notification {
         this.createdAt = GlobalDate.getCurrentDate();
     }
 
-    public void markSent() {
+    public void insertAsSent() {
         dateSent = GlobalDate.getCurrentDate();
         Model.notifications().insert(this);
-    }
-
-    public static boolean isNotSent(Topic topic, String reason, ObjectId recipientId) {
-        return null == Model.notifications().findOne("{topic: #, reason: #, userId: #}", topic, getDigest(reason), recipientId).as(Notification.class);
     }
 
     public static Notification getLastNotification(Topic topic, ObjectId recipientId) {
