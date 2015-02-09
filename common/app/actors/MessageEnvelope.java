@@ -6,11 +6,12 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
 
 //
-// Para pasar un mensaje desde/hacia el sistema de actores que no sea de un tipo basico (String, int, List<>...) hace
-// falta usar esta clase. Su mision es incluir el tipo del mensaje incrustado as a WRAPPER_OBJECT para poderlo mandar
-// a traves de RabbitMq y que el serializador pueda deserializarlo.
+// Usamos esta clase cuando para comunicar actores queremos un mensaje con parametros, para que no nos haga falta definir
+// una clase por cada mensaje que haya.
 //
-// Para tipos basicos, no hace falta.
+// Incluimos el tipo del mensaje incrustado as a WRAPPER_OBJECT para poderlo mandarlo mandar a traves de RabbitMq y que
+// el serializador pueda deserializarlo.
+//
 //
 @JsonTypeInfo(use=JsonTypeInfo.Id.CLASS, include= JsonTypeInfo.As.PROPERTY, property = "type")
 public class MessageEnvelope {

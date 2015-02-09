@@ -19,7 +19,7 @@ import static play.data.Form.form;
 public class SimulatorController extends Controller {
 
     public static Html simulatorBar() {
-        SimulatorState state = (SimulatorState)((MessageEnvelope)Model.actors().tellAndAwait("SimulatorActor", "GetSimulatorState")).params;
+        SimulatorState state = Model.actors().tellAndAwait("SimulatorActor", "GetSimulatorState");
 
         return views.html.simulatorbar.render(state.isInit(), state.isPaused,
                                               state.getCurrentDateFormatted(),
@@ -66,18 +66,16 @@ public class SimulatorController extends Controller {
         // Puesto que se llamara tambien desde el cliente en un dominio distinto, tenemos que poner el CORS
         response().setHeader("Access-Control-Allow-Origin", "*");
 
-        try {
-            MessageEnvelope envelope = Model.actors().tellAndAwait("SimulatorActor", "GetSimulatorState");
+        SimulatorState ret = null;
 
-            if (envelope != null) {
-                return new ReturnHelper((envelope.params)).toResult();
-            }
+        try {
+            ret = Model.actors().tellAndAwait("SimulatorActor", "GetSimulatorState");
         }
         // Absorbemos silenciosamente pq por ejemplo al cambiar de TargetEnvironment se sigue llamando aqui y durante
         // la inicializacion de los actores no estamos preparados para llamar a tellAndWait
         catch (Exception e) {}
 
-        return badRequest();
+        return new ReturnHelper(ret).toResult();
     }
 
     public static class GotoSimParams {

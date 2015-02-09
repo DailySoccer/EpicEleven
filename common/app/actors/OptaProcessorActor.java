@@ -71,11 +71,11 @@ public class OptaProcessorActor extends UntypedActor {
                 if (_nextDocDate == null) {
                     ensureNextDocument(REGULAR_DOCUMENTS_PER_QUERY);
                 }
-                sender().tell(new MessageEnvelope("ReturnGetNextDoc", _nextDocDate), self());
+                sender().tell(getNextDocDate(), self());
                 break;
 
             case "GetLastProcessedDate":
-                sender().tell(new MessageEnvelope("ReturnLastProcessedDate", getLastProcessedDate()), self());
+                sender().tell(getLastProcessedDate(), self());
                 break;
 
             default:
@@ -88,6 +88,10 @@ public class OptaProcessorActor extends UntypedActor {
         Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with("{$set: {isProcessing: false}}");
     }
 
+    private Date getNextDocDate() {
+        // Por el sistema de mensajes no se puede pasar null, asi que usamos 0L para señalar que no tenemos siguiente fecha
+        return (_nextDocDate != null)? _nextDocDate : new Date(0L);
+    }
 
     private Date getLastProcessedDate() {
         OptaProcessorState state = OptaProcessorState.findOne();

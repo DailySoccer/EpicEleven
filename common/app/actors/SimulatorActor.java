@@ -71,7 +71,7 @@ public class SimulatorActor extends UntypedActor {
             case "GetSimulatorState":
                 // Si no estamos inicializados, SimulatorState.isInit() == false; Para asegurar la immutabilidad, hacemos
                 // una copia del SimulatorState. Seria mejor sin embargo hacer la propia clase immutable.
-                sender().tell(new MessageEnvelope("ReturnSimulatorState", new SimulatorState(_state)), self());
+                sender().tell(new SimulatorState(_state), self());
                 break;
 
             default:
@@ -134,8 +134,7 @@ public class SimulatorActor extends UntypedActor {
     private void init() {
         Logger.debug("SimulatorActor: initialization at {}", GlobalDate.getCurrentDateString());
 
-        Date lastProcessedDate = (Date)((MessageEnvelope)Model.actors()
-                                                    .tellAndAwait("OptaProcessorActor", "GetLastProcessedDate")).params;
+        Date lastProcessedDate = Model.actors().tellAndAwait("OptaProcessorActor", "GetLastProcessedDate");
 
         _state = Model.simulator().findOne().as(SimulatorState.class);
 
@@ -199,7 +198,7 @@ public class SimulatorActor extends UntypedActor {
 
     private void advanceOrPause(Date toDate) {
 
-        // getNextDate retorna null cuando pasamos del ultimo documento
+        // getNextDate retorna null cuando no hay siguiente documento
         if (toDate == null) {
             return;
         }
@@ -226,7 +225,11 @@ public class SimulatorActor extends UntypedActor {
             ret = new DateTime(_state.simulationDate).plusMillis(TICK_PERIOD * _state.speedFactor).toDate();
         }
         else {
-            ret = (Date)((MessageEnvelope)Model.actors().tellAndAwait("OptaProcessorActor", "GetNextDoc")).params;
+            ret = Model.actors().tellAndAwait("OptaProcessorActor", "GetNextDoc");
+
+            if (ret.compareTo(new Date(0L)) == 0) {
+                ret = null;
+            }
         }
 
         return ret;
