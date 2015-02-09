@@ -1,35 +1,32 @@
-@import controllers.admin.SimulatorController
-@import controllers.admin.SnapshotController
-@import controllers.admin.AdminController
+@(isInit:Boolean, isPaused:Boolean, currentDate:String, pauseDate:String, speedFactor:Int)
 
 @import controllers.admin.routes
 
-
-@if(AdminController.isLocalMongo()) {
 <div class="navbar navbar-fixed-bottom" style="background: #ededed; border-top: 1px solid #ccc">
     <div class="container-fluid">
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
                 <li>
-                    <div style="margin-top: 5px;"><a>Current Date:<span style="font-weight:700; margin-left: 0.50em;" id="time">@SimulatorController.getCurrentDate()</span></a></div>
-                    <div><a><span>Next Stop:</span><span style="font-weight:700;margin-left: 0.50em;position: absolute; right: 0px;" id="nextStop">@SimulatorController.getNextStop()</span></a></div>
+                    <div style="margin-top: 5px;"><a>Current Date:<span style="font-weight:700; margin-left: 0.50em;" id="time">@currentDate</span></a></div>
+                    <div><a><span>Next Stop:</span><span style="font-weight:700;margin-left: 0.50em;position: absolute; right: 0px;" id="nextStop">@pauseDate</span></a></div>
                 </li>
-                <li><a>Next File Id:<span style="font-weight:700;margin-left: 0.20em;" id="nextStepDesc">@SimulatorController.getNextStepDesc()</span></a></li>
             </ul>
 
-            @if(SimulatorController.isSimulatorCreated()) {
-                <a class="btn btn-primary ajax switch" href="@routes.SimulatorController.switchSimulator">Off</a>
-            } else {
-                <a class="btn btn-primary ajax switch" href="@routes.SimulatorController.switchSimulator">On</a>
-            }
+            <a class="btn btn-primary ajax switch" href="@routes.SimulatorController.initShutdown">
+                @if(isInit) {
+                    On
+                } else {
+                    Off
+                }
+            </a>
 
             <div class="btn-group" style="display:inline-block;">
 
-                @if(SimulatorController.isSimulatorPaused()) {
-                    <a class="btn btn-sim btn-primary ajax play" href="@routes.SimulatorController.start"
+                @if(isPaused) {
+                    <a class="btn btn-sim btn-primary ajax play" href="@routes.SimulatorController.pauseResume"
                        title="Starts the simulator at the beginning of time (the first date sent by Opta) or resumes execution from the current date.">Start</a>
                 } else {
-                    <a class="btn btn-sim btn-primary ajax pause" href="@routes.SimulatorController.pause">Pause</a>
+                    <a class="btn btn-sim btn-primary ajax pause" href="@routes.SimulatorController.pauseResume">Pause</a>
                 }
 
                 <a class="btn btn-sim btn-primary ajax forward" href="@routes.SimulatorController.nextStep"
@@ -44,7 +41,7 @@
                 <input type="datetime-local" value="2014-06-14T00:00" id="date-pause" name="date" class="form-control" style="display:inline-block">
             }
             <button id="date-pause-ok" name="date-pause-ok" type="button" class="btn btn-sim btn-primary fforward" style="position:relative;">Go to Date</button>
-            <select id="sim-speed" onchange="changeSpeed()" class="form-control" style="width: inherit; display: inline-block;">
+            <select id="sim-speed" onchange="changeSpeed()" class="form-control" style="width: inherit; display: inline-block;" >
                 <option value="-1">Max Speed</option>
                 <option value="3600">1 hour per second</option>
                 <option value="60">1 minute per second</option>
@@ -56,144 +53,107 @@
 </div>
 
 <script type="text/javascript" charset="utf-8">
-        var is_paused = "@SimulatorController.isSimulatorPaused()";
-        var is_created = "@SimulatorController.isSimulatorCreated()";
 
-        $(document).ready(function() {
-            getSpeed();
-            repaintButtons();
+    $(document).ready(function() {
+        // Lo pintamos la primera vez desde el cliente por ejemplo para settear correctamente el speedFactor
+        repaintInterface(@isInit, @isPaused, "@currentDate", "@pauseDate", @speedFactor);
 
-            window.setInterval(checkReload, 200);
-        });
+        window.setInterval(refreshStateFromServer, 200);
+    });
 
-        function changeSpeed() {
-            var new_speed = $('#sim-speed').val();
-            var another_temp = $.ajax({
-                            url: "/admin/simulator_speed/"+new_speed
-                        });
-        }
-
-        function getSpeed() {
-            var temp = $.ajax({
-                            url: "/admin/simulator_speed",
-                            success: function (result) {
-                                $('#sim-speed option[value="'+result+'"]').prop('selected', true);
-                            }
-                        });
-        }
+    function refreshStateFromServer() {
+        $.ajax({
+            dataType: "json",
+            url: "/admin/get_simulator_state",
+            success: function (result) {
+                repaintInterface(result.init, result.isPaused, result.currentDateFormatted, result.pauseDateFormatted, result.speedFactor);
+            }});
+    }
 
 
+    function repaintInterface(is_init, is_paused, current_date, pause_date, speed_factor) {
 
-        function repaintButtons() {
-            if (is_created == "true") {
-                $(".switch").text("Off")
-                $(".btn-sim").removeClass("disabled");
-                $("#sim-speed").prop("disabled", false);
-                
+        $("#time").text(current_date);
+        $("#nextStop").text(pause_date);
+        $('#sim-speed option[value="'+ speed_factor +'"]').prop('selected', true);
 
-                if (is_paused == "false") {
-                    $(".btn-sim.play").attr("href", "/admin/pause_simulator");
-                    $(".btn-sim.play").text("Pause");
-                    $(".btn-sim.play").addClass("pause");
+        if (is_init) {
 
-                    $(".btn-sim.pause").removeClass("play");
+            $(".switch").text("Off");
+            $(".btn-sim").removeClass("disabled");
+            $("#sim-speed").prop("disabled", false);
 
-                    $(".btn-sim.forward").addClass("disabled");
-                    $(".btn-sim.forward").text("Next step");
+            if (is_paused) {
+                $(".btn-sim.pause").attr("href", "@routes.SimulatorController.pauseResume");
+                $(".btn-sim.pause").text("Play");
+                $(".btn-sim.pause").addClass("play");
 
-                    $(".btn-sim.fforward").addClass("disabled");
+                $(".btn-sim.play").removeClass("pause");
 
-                    $(".btn-sim").removeClass("btn-primary");
-                    $(".btn-sim").addClass("btn-success");
-                }
-                else {
-                    $(".btn-sim.pause").attr("href", "/admin/start_simulator");
-                    $(".btn-sim.pause").text("Play");
-                    $(".btn-sim.pause").addClass("play");
+                $(".btn-sim.forward").removeClass("disabled");
+                $(".btn-sim.forward").text("Next step");
 
-                    $(".btn-sim.play").removeClass("pause");
-
-                    $(".btn-sim.forward").removeClass("disabled");
-                    $(".btn-sim.forward").text("Next step");
-
-                    $(".btn-sim.fforward").removeClass("disabled");
-
-                    $(".btn-sim").removeClass("btn-success");
-                    $(".btn-sim").addClass("btn-primary");
-                }
-            }
-            else {
-                $(".switch").text("On")
-                $(".btn-sim").addClass("disabled");
+                $(".btn-sim.fforward").removeClass("disabled");
 
                 $(".btn-sim").removeClass("btn-success");
                 $(".btn-sim").addClass("btn-primary");
-                $("#sim-speed").prop("disabled", true);
+            }
+            else {
+                $(".btn-sim.play").attr("href", "@routes.SimulatorController.pauseResume");
+                $(".btn-sim.play").text("Pause");
+                $(".btn-sim.play").addClass("pause");
+
+                $(".btn-sim.pause").removeClass("play");
+
+                $(".btn-sim.forward").addClass("disabled");
+                $(".btn-sim.forward").text("Next step");
+
+                $(".btn-sim.fforward").addClass("disabled");
+
+                $(".btn-sim").removeClass("btn-primary");
+                $(".btn-sim").addClass("btn-success");
             }
         }
+        else {
+            $(".switch").text("On");
+            $(".btn-sim").addClass("disabled");
 
-        function updateFields() {
-            $("#time").load("/admin/current_date_simulator");
-            $("#nextStepDesc").load("/admin/next_step_desc_simulator");
-            $("#nextStop").load("/admin/next_stop_simulator");
-
-            getSpeed();
+            $(".btn-sim").removeClass("btn-success");
+            $(".btn-sim").addClass("btn-primary");
+            $("#sim-speed").prop("disabled", true);
         }
+    }
 
-        function checkReload() {
 
-            updateFields();
+    function changeSpeed() {
+        var new_speed = $('#sim-speed').val();
+        var another_temp = $.ajax({ url: "/admin/simulator_speed/" + new_speed });
+    }
 
-            var temp =  $.ajax({
-                url: "/admin/is_created_simulator",
-                success: function(result) {
+    $('.ajax').on('click', function(e) {
+        $(this).addClass('active');
+        e.preventDefault();
+        var myself = $(this);
+        $.ajax({
+             url: $(this).attr('href'),
+             complete: function(result) {
+                myself.removeClass('active');
+             }
+        });
+    });
 
-                    if (result !== is_created) {
-                        is_created = result;
-                        repaintButtons();
-                    }
-
-                    if (is_created) {
-                        var another_temp = $.ajax({
-                            url: "/admin/is_paused_simulator",
-                            success: function(result) {
-
-                                if (result !== is_paused) {
-                                    is_paused = result;
-                                    repaintButtons();
-                                }
-                            }
-                        });
-                    }
-                }
-            });
-        }
-
-        $('.ajax').on('click', function(e) {
-            $(this).addClass('active');
-            e.preventDefault();
-            var myself = $(this);
-            $.ajax({
-                 url: $(this).attr('href'),
-                 complete: function(result) {
-                    myself.removeClass('active');
-                 }
-            });
+    $('#date-pause-ok').click(function(){
+        var form = $('#date-pause-form');
+        $.ajax({
+          type: form.attr('method'),
+          url: form.attr('action'),
+          data: form.serialize()
+        }).done(function() {
+          // Optionally alert the user of success here...
+        }).fail(function() {
+          // Optionally alert the user of an error here...
         });
 
-        $('#date-pause-ok').click(function(){
-            var form = $('#date-pause-form');
-            $.ajax({
-              type: form.attr('method'),
-              url: form.attr('action'),
-              data: form.serialize()
-            }).done(function() {
-              // Optionally alert the user of success here...
-            }).fail(function() {
-              // Optionally alert the user of an error here...
-            });
-
-        });
+    });
 
 </script>
-}

@@ -1,5 +1,7 @@
 package controllers.admin;
 
+import actors.MessageEnvelope;
+import model.GlobalDate;
 import model.Model;
 import model.PrizeType;
 import model.TemplateContest;
@@ -15,34 +17,21 @@ import java.util.Date;
 public class TestController extends Controller {
 
     static public Result start() {
-        if (!OptaSimulator.isCreated())
-            OptaSimulator.init();
-
-        OptaSimulator.instance().reset();
+        Model.reset(false);
         return ok("OK");
     }
 
 
-    static public Result gotoDateTest(int year, int month, int day, int hour, int minute) {
-
-        if (!OptaSimulator.isCreated())
-            OptaSimulator.init();
-
-        Date myDate = new DateTime(year, month, day, hour, minute, DateTimeZone.UTC).toDate();
-
-        OptaSimulator.instance().gotoDate(myDate);
-
+    static public Result gotoDate(int year, int month, int day, int hour, int minute, int second) {
+        Date myDate = new DateTime(year, month, day, hour, minute, second, DateTimeZone.UTC).toDate();
+        Model.actors().tell("SimulatorActor", new MessageEnvelope("GotoDate", myDate));
         return ok("OK");
     }
 
 
-    static public Result gotoDate(Long timestamp) {
-        Date date = new Date(timestamp);
-
-        if (!OptaSimulator.isCreated())
-            OptaSimulator.init();
-
-        OptaSimulator.instance().gotoDate(date);
+    static public Result gotoDateTimestamp(Long timestamp) {
+        Date myDate = new Date(timestamp);
+        Model.actors().tell("SimulatorActor", new MessageEnvelope("GotoDate", myDate));
         return ok("OK");
     }
 
@@ -52,7 +41,7 @@ public class TestController extends Controller {
     }
 
     static public Result getCurrentDate() {
-        return ok(SimulatorController.getCurrentDate());
+        return ok(GlobalDate.getCurrentDateString());
     }
 
     static public Result createContests(int mockIndex){

@@ -35,7 +35,7 @@ public class InstantiateContestsActor extends UntypedActor {
     }
 
     private void onTick() {
-        Logger.info("InstantiateContestsActor: {}", GlobalDate.getCurrentDateString());
+        Logger.debug("InstantiateContestsActor: {}", GlobalDate.getCurrentDateString());
 
         List<TemplateContest> templateContestsOff = TemplateContest.findAllByActivationAt(GlobalDate.getCurrentDate());
 

@@ -45,6 +45,7 @@ public class TemplateSoccerPlayer implements JongoId {
         }
         return numPlayed;
     }
+    private void setPlayedMatches(int blah) { }    // Para poder deserializar lo que nos llega por la red sin usar FAIL_ON_UNKNOWN_PROPERTIES
 
     public TemplateSoccerPlayer() { }
 

@@ -5,15 +5,14 @@ import com.stormpath.sdk.account.AccountList;
 import com.stormpath.sdk.account.AccountStatus;
 import com.stormpath.sdk.api.ApiKey;
 import com.stormpath.sdk.api.ApiKeys;
-import com.stormpath.sdk.application.Application;
-import com.stormpath.sdk.application.ApplicationList;
-import com.stormpath.sdk.application.Applications;
+import com.stormpath.sdk.application.*;
 import com.stormpath.sdk.authc.AuthenticationRequest;
 import com.stormpath.sdk.authc.AuthenticationResult;
 import com.stormpath.sdk.authc.UsernamePasswordRequest;
+import com.stormpath.sdk.cache.Caches;
 import com.stormpath.sdk.client.Client;
 import com.stormpath.sdk.client.Clients;
-import com.stormpath.sdk.directory.CustomData;
+import com.stormpath.sdk.directory.*;
 import com.stormpath.sdk.provider.ProviderAccountRequest;
 import com.stormpath.sdk.provider.ProviderAccountResult;
 import com.stormpath.sdk.provider.Providers;
@@ -30,6 +29,10 @@ import java.util.Map;
 public class StormPathClient {
 
     private static final String APPLICATION_NAME = "EpicEleven";
+    private static final String DIRECTORY_NAME = Play.application().configuration().getString("stormpath.currentDirectory.name");
+    private static final String DIRECTORY_DESCRIPTION = Play.application().configuration().getString("stormpath.currentDirectory.description");
+    private static final String DIRECTORY_ACCOUNT_STORE_ID = Play.application().configuration().getString("stormpath.currentDirectory.accountStoreId");
+
 
     public StormPathClient() {
 
@@ -38,8 +41,6 @@ public class StormPathClient {
         try {
             if (Play.isDev()) {
                 apiKey = ApiKeys.builder().setFileLocation("./conf/apiKey.properties").build();
-
-
             }
             else {
                 apiKey = ApiKeys.builder().setId(Play.application().configuration().getString("stormpath.id"))
@@ -48,30 +49,64 @@ public class StormPathClient {
             }
         }
         catch (Exception e) {
-            Logger.error("Stormpath DISCONNECTED");
+            Logger.warn("Stormpath DISCONNECTED");
         }
 
         if (apiKey != null) {
-            _client = Clients.builder().setApiKey(apiKey).build();
+            try {
+                _client = Clients.builder().setApiKey(apiKey)
+                                           .setCacheManager(Caches.newDisabledCacheManager())
+                                           .build();
 
-            Tenant _tenant = _client.getCurrentTenant();
+                Tenant _tenant = _client.getCurrentTenant();
 
-            ApplicationList applications = _tenant.getApplications();
+                ApplicationList applications = _tenant.getApplications();
 
-            for (Application app : applications) {
-                if (app.getName().equals(APPLICATION_NAME)) {
-                    _myApp = app;
+                for (Application app : applications) {
+                    if (app.getName().equals(APPLICATION_NAME)) {
+                        _myApp = app;
+                    }
                 }
+
+                if (_myApp == null) {
+                    _myApp = _client.instantiate(Application.class);
+
+                    _myApp.setName(APPLICATION_NAME); //must be unique among your other apps
+                    _myApp = _client.createApplication(Applications.newCreateRequestFor(_myApp).createDirectory().build());
+                }
+
+
+                DirectoryList directoryList = _tenant.getDirectories(Directories.where(Directories.name().eqIgnoreCase(DIRECTORY_NAME)));
+                for (Directory dir: directoryList) {
+                    if (dir.getName().equalsIgnoreCase(DIRECTORY_NAME)) {
+                        _myDirectory = dir;
+                        Logger.info("Stormpath: Found dir: "+DIRECTORY_NAME);
+                        break;
+                    }
+                }
+
+                if (_myDirectory == null) {
+                    _myDirectory = _client.instantiate(Directory.class).setName(DIRECTORY_NAME)
+                            .setDescription(DIRECTORY_DESCRIPTION);
+                    _tenant.createDirectory(_myDirectory);
+                    Logger.info("Stormpath: Creating dir: "+DIRECTORY_NAME);
+                }
+
+
+                _connected = _myApp != null && _myDirectory != null;
+
+                AccountStoreMappingList mappings = _myApp.getAccountStoreMappings();
+                for (AccountStoreMapping mapping: mappings) {
+                    if (mapping.getAccountStore().getHref().endsWith(DIRECTORY_ACCOUNT_STORE_ID)) {
+                        _myAccountStore = mapping.getAccountStore();
+                    }
+                }
+
+            }
+            catch (Exception e) {
+                Logger.error("WTF 2322 Excepcion durante la inicializacion de Stormpath", e);
             }
 
-            if (_myApp == null) {
-                _myApp = _client.instantiate(Application.class);
-
-                _myApp.setName(APPLICATION_NAME); //must be unique among your other apps
-                _myApp = _client.createApplication(
-                        Applications.newCreateRequestFor(_myApp).createDirectory().build());
-            }
-            _connected = _myApp!=null;
         }
     }
 
@@ -98,10 +133,7 @@ public class StormPathClient {
             account.save();
         }
         catch (ResourceException ex) {
-            Logger.error(String.valueOf(ex.getStatus()) +"\n"+
-                         String.valueOf(ex.getCode()) +"\n"+
-                         ex.getMessage() +"\n"+
-                         ex.getMoreInfo());
+            Logger.error(ex.getMessage());
 
             return new F.Tuple<>(ex.getCode(), ex.getMessage());
 
@@ -115,10 +147,7 @@ public class StormPathClient {
             _myApp.sendPasswordResetEmail(email);
         }
         catch (ResourceException ex) {
-            Logger.error(String.valueOf(ex.getStatus()) +"\n"+
-                         String.valueOf(ex.getCode()) +"\n"+
-                         ex.getMessage() +"\n"+
-                         ex.getMoreInfo());
+            Logger.error(ex.getMessage());
 
             return new F.Tuple<>(ex.getCode(), ex.getMessage());
         }
@@ -147,8 +176,7 @@ public class StormPathClient {
             _myApp.verifyPasswordResetToken(token);
         }
         catch (ResourceException ex) {
-            Logger.error(ex.getMessage() +"\n"+
-                         ex.getMoreInfo());
+            Logger.error(ex.getMessage());
 
             return new F.Tuple<>(ex.getCode(), ex.getMessage());
         }
@@ -161,8 +189,7 @@ public class StormPathClient {
             account = _myApp.resetPassword(token, password);
         }
         catch (ResourceException ex) {
-            Logger.error(ex.getMessage() +"\n"+
-                         ex.getMoreInfo());
+            Logger.error(ex.getMessage());
 
             return new F.Tuple<>(null, new F.Tuple<>(ex.getCode(), ex.getMessage()));
         }
@@ -179,15 +206,14 @@ public class StormPathClient {
             return result.getAccount();
         }
         catch (ResourceException ex) {
-            Logger.error(ex.getMessage() +"\n"+
-                         ex.getMoreInfo());
+            Logger.error(ex.getMessage());
         }
         return null;
     }
 
     public Account login(String usernameOrEmail, String rawPassword){
         //Create an authentication request using the credentials
-        AuthenticationRequest request = new UsernamePasswordRequest(usernameOrEmail, rawPassword);
+        AuthenticationRequest request = new UsernamePasswordRequest(usernameOrEmail, rawPassword, _myAccountStore);
 
         //Now let's authenticate the account with the application:
         try {
@@ -201,8 +227,7 @@ public class StormPathClient {
             }
             else {
                 // Will output: "Invalid username or password."
-                Logger.error(ex.getMessage() +"\n"+
-                             ex.getMoreInfo());
+                Logger.error(ex.getMessage());
             }
 
         }
@@ -213,7 +238,7 @@ public class StormPathClient {
 
         Map<String, Object> queryParams = new HashMap<>();
         queryParams.put("email", userEmail);
-        AccountList accounts = _myApp.getAccounts(queryParams);
+        AccountList accounts = _myDirectory.getAccounts(queryParams);
 
         Account usersAccount = null;
         for (Account account: accounts) {
@@ -234,8 +259,7 @@ public class StormPathClient {
                     usersAccount.save();
                 } catch (ResourceException ex) {
                     // Will output: "Invalid username or password."
-                    Logger.error(ex.getMessage() +"\n"+
-                                 ex.getMoreInfo());
+                    Logger.error(ex.getMessage());
 
                     return new F.Tuple<>(ex.getCode(), ex.getMessage());
                 }
@@ -251,7 +275,7 @@ public class StormPathClient {
 
         Map<String, Object> queryParams = new HashMap<>();
         queryParams.put("email", userEmail);
-        AccountList accounts = _myApp.getAccounts(queryParams);
+        AccountList accounts = _myDirectory.getAccounts(queryParams);
 
         Account usersAccount = null;
         for (Account account: accounts) {
@@ -265,8 +289,7 @@ public class StormPathClient {
             }
             catch (ResourceException ex) {
                 // Will output: "Invalid username or password."
-                Logger.error(ex.getMessage() +"\n"+
-                             ex.getMoreInfo());
+                Logger.error(ex.getMessage());
 
                 return new F.Tuple<>(ex.getCode(), ex.getMessage());
             }
@@ -289,8 +312,13 @@ public class StormPathClient {
         return _instance;
     }
 
+
     Client _client;
     Application _myApp;
-    static StormPathClient _instance;
+    Directory _myDirectory;
+    AccountStore _myAccountStore;
+
     boolean _connected = false;
+
+    static StormPathClient _instance;
 }

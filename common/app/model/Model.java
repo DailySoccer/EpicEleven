@@ -1,5 +1,6 @@
 package model;
 
+import actors.Actors;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.mongodb.*;
 import org.bson.types.ObjectId;
@@ -12,10 +13,11 @@ import org.jongo.MongoCollection;
 import org.jongo.marshall.jackson.JacksonMapper;
 import play.Logger;
 import play.Play;
+import utils.InstanceRole;
+import utils.ProcessExec;
+import utils.TargetEnvironment;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.List;
 
 
@@ -42,18 +44,79 @@ public class Model {
     static public MongoCollection optaMatchEvents() { return _jongo.getCollection("optaMatchEvents"); }
     static public MongoCollection optaMatchEventStats() { return _jongo.getCollection("optaMatchEventStats"); }
     static public MongoCollection pointsTranslation() { return _jongo.getCollection("pointsTranslation"); }
-    static public MongoCollection optaProcessor()     { return _jongo.getCollection("optaProcessor"); }
 
+    static public MongoCollection jobs() { return _jongo.getCollection("jobs"); }
+    static public MongoCollection accountingTransactions() { return _jongo.getCollection("accountingTransactions"); }
+
+    static public MongoCollection notifications() {return _jongo.getCollection("notifications");}
+
+    static public MongoCollection orders() { return _jongo.getCollection("orders"); }
+    static public MongoCollection refunds() { return _jongo.getCollection("refunds"); }
+    static public MongoCollection paypalResponses() { return _jongo.getCollection("paypalResponses"); }
+
+    static public MongoCollection optaProcessor()  { return _jongo.getCollection("optaProcessor"); }
     static public MongoCollection simulator() { return _jongo.getCollection("simulator"); }
 
-    static public void init() {
 
-        ensureMongo(_LOCAL_HOST_MONGO_APP_ENV);
-        ensurePostgresDB();
+    static public TargetEnvironment getTargetEnvironment() {
+        return _targetEnvironment;
     }
 
-    static public void ensureMongo(String appEnv) {
-        String mongodbUri = getMongoUriForApp(appEnv);
+    static public void setTargetEnvironment(TargetEnvironment env) {
+
+        if (env == _targetEnvironment) {
+            Logger.error("WTF 5772 no me gusta que me repitan las cosas");
+            return;
+        }
+
+        // Solo se puede cambiar el environment al que atacamos en maquinas de desarrollo, claro
+        if (_instanceRole != InstanceRole.DEVELOPMENT_ROLE) {
+            throw new RuntimeException("WTF 5771 are you nuts?");
+        }
+
+        // Cambiar el ataque del modelo a un environment distinto significa reinicializar mongo y rabbitmq
+        if (initMongo(readMongoUriForEnvironment(env))) {
+            _actors.setTargetEnvironment(env);
+
+            // Ahora ya estamos en el environment solicitado
+            _targetEnvironment = env;
+        }
+    }
+
+    static public boolean isLocalHostTargetEnvironment() {
+        return TargetEnvironment.LOCALHOST == _targetEnvironment;
+    }
+
+    // Desde fuera se necesita acceder al gestor de actores para poder mandar mensajes desde el UI de administracion
+    static public Actors actors() {
+        return _actors;
+    }
+
+    static public void init(InstanceRole instanceRole) {
+        _instanceRole = instanceRole;
+        _targetEnvironment = TargetEnvironment.LOCALHOST;   // En produccion no tiene significado puesto que no se puede cambiar
+
+        initMongo(readMongoUriForEnvironment(_targetEnvironment));
+        initPostgresDB();
+
+        _actors = new Actors(_instanceRole);
+    }
+
+    static public void shutdown() {
+
+        if (_actors != null) {
+            _actors.shutdown();
+            _actors = null;
+        }
+
+        if (_mongoClient != null) {
+            _mongoClient.close();
+            _mongoClient = null;
+        }
+    }
+
+    static private boolean initMongo(String mongodbUri) {
+        boolean bSuccess = false;
         MongoClientURI mongoClientURI = new MongoClientURI(mongodbUri);
 
         Logger.info("The MongoDB is {}/{}", mongoClientURI.getHosts(), mongoClientURI.getDatabase());
@@ -69,19 +132,20 @@ public class Model {
                     .build();
             _jongo = new Jongo(_mongoDB, mapper);
 
-            // Let's make sure our DB has the neccesary collections and indexes
-            ensureDB(_mongoDB);
+            // Make sure our DB has the neccesary collections and indexes
+            ensureMongoDB();
 
-            // Ahora ya estamos en el environment solicitado
-            _mongoAppEnv = appEnv;
+            bSuccess = true;
         }
         catch (Exception exc) {
             Logger.error("Error initializating MongoDB {}/{}: {}", mongoClientURI.getHosts(),
                                                                    mongoClientURI.getDatabase(), exc.toString());
         }
+
+        return bSuccess;
     }
 
-    private static void ensurePostgresDB() {
+    private static void initPostgresDB() {
 
         Logger.info("Ejecutando migraciones Flyway.");
 
@@ -103,20 +167,13 @@ public class Model {
         }
     }
 
-    static public String getMongoAppEnv(){
-        return _mongoAppEnv;
-    }
+    static private String readMongoUriForEnvironment(TargetEnvironment env) {
 
-    static public boolean isLocalMongoAppEnv() {
-        return _LOCAL_HOST_MONGO_APP_ENV.equals(getMongoAppEnv());
-    }
-
-    static private String getMongoUriForApp(String appEnv) {
         String ret = Play.application().configuration().getString("mongodb.uri");
 
-        if (!appEnv.equals(_LOCAL_HOST_MONGO_APP_ENV)) {
+        if (env != TargetEnvironment.LOCALHOST) {
             try {
-                ret = readLineFromInputStream(Runtime.getRuntime().exec("heroku config:get MONGOHQ_URL -a " + appEnv));
+                ret = ProcessExec.exec("heroku config:get MONGOHQ_URL -a " + env.herokuAppName);
             }
             catch (IOException e) {
                 Logger.error("WTF 8266 Sin permisos, o sin heroku instalado. Falling back to local.");
@@ -126,51 +183,46 @@ public class Model {
         return ret;
     }
 
-    static private String readLineFromInputStream(Process p) throws IOException {
-        String line;
+    static public void reset(boolean forSnapshot) {
+        _actors.restartActors();
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
-            line = reader.readLine();
-            Logger.info(line);
-        }
+        dropMongoDB(forSnapshot);
 
-        return line;
-    }
+        if (!forSnapshot) {
+            ensureMongoDB();
 
-    static public void shutdown() {
-        if (_mongoClient != null) {
-            _mongoClient.close();
-            _mongoClient = null;
+            PointsTranslation.createDefault();
+            TemplateSoccerTeam.createInvalidTeam();
+
+            MockData.ensureMockDataUsers();
+            MockData.ensureCompetitions();
         }
     }
 
-    static public void resetDB() {
-        dropDB(_mongoDB);
-        ensureDB(_mongoDB);
+    static private void dropMongoDB(boolean dropSystemUsers) {
 
-        PointsTranslation.createDefault();
-        TemplateSoccerTeam.createInvalidTeam();
-    }
-
-    static public void fullDropMongoDB() {
-        dropDB(_mongoDB);
-        _mongoDB.getCollection("system.users").drop();
-    }
-
-    static private void dropDB(DB theMongoDB) {
-
-        for (String collection : theMongoDB.getCollectionNames()) {
-            if (!collection.contains("system.")) {
-                Logger.debug("About to delete collection: {}", collection);
-                theMongoDB.getCollection(collection).drop();
+        for (String collName : _mongoDB.getCollectionNames()) {
+            if (collName.contains("system.")) {
+                if (collName.equals("system.users") && dropSystemUsers) {
+                    _mongoDB.getCollection(collName).drop();
+                }
             }
+            else {
+                _mongoDB.getCollection(collName).drop();
+            }
+
+            Logger.debug("Collection {} dropped", collName);
         }
+
+        Logger.debug("All collections dropped");
     }
 
-    static private void ensureDB(DB theMongoDB) {
-        ensureUsersDB(theMongoDB);
-        ensureOptaDB(theMongoDB);
-        ensureContestsDB(theMongoDB);
+    static private void ensureMongoDB() {
+        ensureUsersDB(_mongoDB);
+        ensureOptaDB(_mongoDB);
+        ensureContestsDB(_mongoDB);
+        ensureTransactionsDB(_mongoDB);
+        ensureNotificationsDB(_mongoDB);
     }
 
     static private void ensureUsersDB(DB theMongoDB) {
@@ -254,6 +306,21 @@ public class Model {
         }
     }
 
+    static private void ensureTransactionsDB(DB theMongoDB) {
+        if (!theMongoDB.collectionExists("accountingTransactions")) {
+            DBCollection accountingTransactions = theMongoDB.createCollection("accountingTransactions", new BasicDBObject());
+             accountingTransactions.createIndex(new BasicDBObject("accountOps.accountId", 1).append("accountOps.seqId", 1), new BasicDBObject("unique", true));
+        }
+    }
+
+    static private void ensureNotificationsDB(DB theMongoDB) {
+        if (!theMongoDB.collectionExists("notifications")) {
+            DBCollection notifications = theMongoDB.createCollection("notifications", new BasicDBObject());
+            notifications.createIndex(new BasicDBObject("topic", 1));
+            notifications.createIndex(new BasicDBObject("reason", 1));
+            notifications.createIndex(new BasicDBObject("userId", 1));
+        }
+    }
 
     /**
      * Query de una lista de ObjectIds (en una misma query)
@@ -266,9 +333,8 @@ public class Model {
         return collection.find(String.format("{%s: {$in: #}}", fieldId), objectIds);
     }
 
-
-    static private final String _LOCAL_HOST_MONGO_APP_ENV = "localhost";
-    static private String _mongoAppEnv;
+    static private TargetEnvironment _targetEnvironment;
+    static private InstanceRole _instanceRole;
 
     // http://docs.mongodb.org/ecosystem/tutorial/getting-started-with-java-driver/
     static private MongoClient _mongoClient;
@@ -279,4 +345,7 @@ public class Model {
 
     // Jongo is thread safe too: https://groups.google.com/forum/#!topic/jongo-user/KwukXi5Vm7c
     static private Jongo _jongo;
+
+    // Mantenemos aqui nuestro unico Actors para asegurar que tiene el mismo ciclo de vida que nosotros
+    static private Actors _actors;
 }

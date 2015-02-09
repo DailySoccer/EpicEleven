@@ -3,14 +3,12 @@ package controllers.admin;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import model.GlobalDate;
-import model.MockData;
 import model.Model;
 import model.OpsLog;
 import model.opta.*;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
-import utils.PaginationData;
 
 import java.util.List;
 
@@ -27,11 +25,6 @@ public class OptaController extends Controller {
                 "seasonCompetitionId", seasonCompetitionId,
                 "activated", state));
         return ok("OK");
-    }
-
-    public static Result createAllCompetitions() {
-        MockData.ensureCompetitions();
-        return optaCompetitions();
     }
 
     public static Result optaSoccerPlayers() {

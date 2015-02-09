@@ -83,9 +83,13 @@ public class ExcelController extends Controller {
 
                 newSalaries.put(myRow.getCell(_SalarySheet.OPTA_PLAYER_ID.column).getStringCellValue(),
                                 (int)evaluator.evaluate(myRow.getCell(_SalarySheet.SALARY.column)).getNumberValue());
-                newTags.put(myRow.getCell(_SalarySheet.OPTA_PLAYER_ID.column).getStringCellValue(),
-                            myRow.getCell(_SalarySheet.CURRENT_TAGS.column).getStringCellValue().trim());
 
+                if (myRow.getCell(_SalarySheet.CURRENT_TAGS.column)==null) {
+                    newTags.put(myRow.getCell(_SalarySheet.OPTA_PLAYER_ID.column).getStringCellValue(), "");
+                } else {
+                    newTags.put(myRow.getCell(_SalarySheet.OPTA_PLAYER_ID.column).getStringCellValue(),
+                            myRow.getCell(_SalarySheet.CURRENT_TAGS.column).getStringCellValue().trim());
+                }
             }
 
             BatchWriteOperation batchWriteOperation = new BatchWriteOperation(Model.templateSoccerPlayers().getDBCollection().initializeUnorderedBulkOperation());

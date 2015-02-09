@@ -1,7 +1,7 @@
 package actors;
 
 import akka.actor.UntypedActor;
-import akka.japi.Procedure;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import model.GlobalDate;
 import model.Model;
 import model.opta.OptaImporter;
@@ -23,7 +23,7 @@ public class OptaProcessorActor extends UntypedActor {
         // Es posible que se parara justo cuando estaba en isProcessing == true
         resetIsProcessing();
 
-        _nextDocMsg = NextDocMsg.Null();
+        _nextDocDate = null;
     }
 
     // postRestart y preStart se llaman en el nuevo actor (despues de la reinicializacion, claro).
@@ -36,79 +36,64 @@ public class OptaProcessorActor extends UntypedActor {
     @Override public void postStop() {
         Logger.debug("OptaProcessorActor postStop");
 
-        closeConnection();
+        shutdown();
     }
 
     public void onReceive(Object message) {
 
-        if (message.equals("Tick")) {
-            // Reciclamos memoria (podriamos probar a dejar el cache y reciclar cada cierto tiempo...)
-            _optaProcessor = new OptaProcessor();
-
-            ensureNextDocument(REGULAR_DOCUMENTS_PER_QUERY);
-            processNextDocument();
-
-            // Reeschudeleamos una llamada a nosotros mismos para el siguiente Tick
-            getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
-                                                           "Tick", getContext().dispatcher(), null);
-        }
-        else if (message.equals("SimulatorStart")) {
-            // Nos transformamos en un procesador de ticks de simulacion. El tick del simulador tiene la logica cambiada
-            // respecto al normal: Primero procesa, luego asegura el siguiente. Lo hacemos asi pq el simulador necesita
-            // saber en to.do momento la fecha del siguiente documento, para poder avanzar el tiempo hacia el.
-            getContext().become(_simulator, false);
-
-            // Y nos volvemos a mandar el mensaje para hacer el reset
-            getSelf().tell("SimulatorStart", getSender());
-        }
-        else {
-            unhandled(message);
-        }
-    }
-
-    // Nuestro onReceive cuando somos un servicio para el simulador
-    Procedure<Object> _simulator = new Procedure<Object>() {
-
-        @Override public void apply(Object message) {
-
-            if (message.equals("SimulatorStart")) {
-                // Puede ser el N-esimo Start, reseteamos nuestro acceso a la DB
-                closeConnection();
-
-                // Para el simulador usamos 1 optaprocesor que nunca reciclamos
+        switch ((String)message) {
+            case "Tick":
+                // Reciclamos memoria (podriamos probar a dejar el cache y reciclar cada cierto tiempo...)
                 _optaProcessor = new OptaProcessor();
 
-                // Ensuramos el siguiente, somos asi de amables
-                ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
-
-                // Mandamos de vuelta la info del siguiente doc que procesaremos al llamar a SimulatorTick
-                sender().tell(_nextDocMsg, getSelf());
-            }
-            else if (message.equals("SimulatorTick")) {
+                ensureNextDocument(REGULAR_DOCUMENTS_PER_QUERY);
                 processNextDocument();
-                ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
 
-                sender().tell(_nextDocMsg, getSelf());
-            }
-            else if (message.equals("SimulatorShutdown")) {
-                getContext().unbecome();
-            }
-            else if (message.equals("Tick")) {
+                // Reeschudeleamos una llamada a nosotros mismos para el siguiente Tick
                 getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
-                                                                               "Tick", getContext().dispatcher(), null);
-            }
-            else {
+                                                               "Tick", getContext().dispatcher(), null);
+
+                // Aseguramos que oscilamos bien entre el Tick y el SimulatorTick
+                _optaProcessor = null;
+                break;
+
+            case "SimulatorTick":
+                // Para el simulador usamos 1 optaprocesor que nunca reciclamos (pq por dentro cachea)
+                if (_optaProcessor == null) {
+                    _optaProcessor = new OptaProcessor();
+                }
+                ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
+                processNextDocument();
+
+                break;
+
+            case "GetNextDoc":
+                if (_nextDocDate == null) {
+                    ensureNextDocument(REGULAR_DOCUMENTS_PER_QUERY);
+                }
+                sender().tell(getNextDocDate(), self());
+                break;
+
+            case "GetLastProcessedDate":
+                sender().tell(getLastProcessedDate(), self());
+                break;
+
+            default:
                 unhandled(message);
-            }
+                break;
         }
-    };
+    }
 
     private static void resetIsProcessing() {
         Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with("{$set: {isProcessing: false}}");
     }
 
+    private Date getNextDocDate() {
+        // Por el sistema de mensajes no se puede pasar null, asi que usamos 0L para señalar que no tenemos siguiente fecha
+        return (_nextDocDate != null)? _nextDocDate : new Date(0L);
+    }
 
-    public static Date getLastProcessedDate() {
+    private Date getLastProcessedDate() {
         OptaProcessorState state = OptaProcessorState.findOne();
 
         if (state != null && state.lastProcessedDate != null) {
@@ -121,9 +106,9 @@ public class OptaProcessorActor extends UntypedActor {
 
     private void ensureNextDocument(int documentsPerQuery) {
 
-        // Somos una ensure, si el siguiente documento ya esta cargado simplemente retornamos. _nextDocMsg se pone
+        // Somos una ensure, si el siguiente documento ya esta cargado simplemente retornamos. _nextDoc se pone
         // a null en processNextDocument, a la espera de que se ordene asegurar el siguiente
-        if (_nextDocMsg.isNotNull())
+        if (_nextDocDate != null)
             return;
 
         ensureConnection();
@@ -136,13 +121,13 @@ public class OptaProcessorActor extends UntypedActor {
                 queryNextResultSet(documentsPerQuery);
 
                 if (!readNextDocument()) {
-                    closeConnection();
+                    shutdown();
                 }
             }
         }
         catch (Exception e) {
-            // Punto de recuperacion 1. Al saltar una excepcion no habremos cambiado _nextDocMsg == null y por lo tanto reintentaremos.
-            // Nota: Prodriamos dejarlo fallar y que se produjera un restart del actor. Para ello, lo primero sera cambiar
+            // Punto de recuperacion 1. Al saltar una excepcion no habremos cambiado _nextDoc == null y por lo tanto reintentaremos.
+            // Nota: Podriamos dejarlo fallar y que se produjera un restart del actor. Para ello, lo primero sera cambiar
             //       la estrategia de inicializacion, puesto que en un restart nadie esta poniendo en accion el Tick.
             Logger.error("WTF 1533", e);
         }
@@ -151,28 +136,28 @@ public class OptaProcessorActor extends UntypedActor {
     private boolean readNextDocument() throws SQLException {
 
         // Cuando vamos a leer el siguiente documento, el anterior no puede estar sin procesar.
-        if (_nextDocMsg.isNotNull())
+        if (_nextDocDate != null)
             throw new RuntimeException("WTF 5820");
 
         if (_optaResultSet.next()) {
-            _nextDocMsg = new NextDocMsg(new Date(_optaResultSet.getTimestamp("created_at").getTime()), _optaResultSet.getInt(1));
+            _nextDocDate = new Date(_optaResultSet.getTimestamp("created_at").getTime());
         }
 
-        return _nextDocMsg.isNotNull();
+        return _nextDocDate != null;
     }
 
     private void processNextDocument() {
 
         // Es posible que ensureNextDocument haya fallado
-        if (_nextDocMsg.isNull())
+        if (_nextDocDate == null)
             return;
 
         try {
             processCurrentDocumentInResultSet(_optaResultSet, _optaProcessor);
-            _nextDocMsg = NextDocMsg.Null();
+            _nextDocDate = null;
         }
         catch (Exception e) {
-            // Punto de recuperacion 2. Al saltar una excepcion, no ponemos _nextDocMsg a null y por lo tanto reintentaremos
+            // Punto de recuperacion 2. Al saltar una excepcion, no ponemos _nextDoc a null y por lo tanto reintentaremos
             Logger.error("WTF 7817", e);
 
             // Aseguramos que podemos reintentar
@@ -209,7 +194,7 @@ public class OptaProcessorActor extends UntypedActor {
         String competitionId = resultSet.getString("competition_id");
         String gameId = resultSet.getString("game_id");
 
-        Logger.info("OptaProcessorActor: {}, {}, {}, {}/{}", feedType, name, GlobalDate.formatDate(created_at), seasonId, competitionId);
+        Logger.debug("OptaProcessorActor: {}, {}, {}, {}/{}", feedType, name, GlobalDate.formatDate(created_at), seasonId, competitionId);
 
         processor.processOptaDBInput(feedType, name, competitionId, seasonId, gameId, sqlxml);
         new OptaImporter(processor).process();
@@ -243,14 +228,15 @@ public class OptaProcessorActor extends UntypedActor {
         _connection = DB.getConnection();
     }
 
-    private void closeConnection() {
+    private void shutdown() {
         DbUtils.closeQuietly(_connection, _stmt, _optaResultSet);
 
         _connection = null;
         _stmt = null;
         _optaResultSet = null;
 
-        _nextDocMsg = NextDocMsg.Null();
+        _optaProcessor = null;
+        _nextDocDate = null;
     }
 
     final int SIMULATOR_DOCUMENTS_PER_QUERY = 500;
@@ -259,9 +245,9 @@ public class OptaProcessorActor extends UntypedActor {
     Connection _connection;
     ResultSet _optaResultSet;
     Statement _stmt;
-    OptaProcessor _optaProcessor;
 
-    NextDocMsg _nextDocMsg;
+    OptaProcessor _optaProcessor;
+    Date _nextDocDate;
 
 
     static private class OptaProcessorState {
@@ -274,18 +260,5 @@ public class OptaProcessorActor extends UntypedActor {
         static public OptaProcessorState findOne() {
             return Model.optaProcessor().findOne("{stateId: #}", OptaProcessorState.UNIQUE_ID).as(OptaProcessorState.class);
         }
-    }
-
-    static public class NextDocMsg {
-        final public Date date;
-        final public int id;
-
-        public NextDocMsg(Date d, int i) { date = d; id = i; }
-
-        // Como no podemos mandar un mensaje null, lo marcamos asi
-        public boolean isNull() { return date == null; }
-        public boolean isNotNull() { return date != null; }
-
-        static NextDocMsg Null() { return new NextDocMsg(null, -1); }
     }
 }

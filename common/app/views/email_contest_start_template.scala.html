@@ -1,0 +1,5 @@
+@(contests: List[model.Contest])
+
+@for(p <- contests) {
+<li>@p.translatedName (@p.getNumEntries apuntados de @p.maxEntries)</li>
+}

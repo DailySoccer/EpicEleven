@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import model.Model;
 import model.Snapshot;
 import play.Logger;
 import play.mvc.Controller;
@@ -14,12 +15,8 @@ public class SnapshotController extends Controller {
         return ok(views.html.snapshot.render());
     }
 
-    public static Result continueFromSnapshot() {
-        if (OptaSimulator.isCreated()) {
-            OptaSimulator.shutdown();
-        }
+    public static Result loadSnapshot() {
         Snapshot.instance().load();
-        OptaSimulator.init();
 
         return redirect(routes.SnapshotController.index());
     }
@@ -28,7 +25,7 @@ public class SnapshotController extends Controller {
         return Snapshot.instance().getName();
     }
 
-    public static Result snapshot() {
+    public static Result saveSnapshot() {
         Snapshot.instance().save();
 
         return redirect(routes.SnapshotController.index());

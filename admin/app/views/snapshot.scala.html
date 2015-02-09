@@ -7,23 +7,21 @@
 
 @main("Snapshots - Admin") {
 
-<h1 class="page-header">Snapshot</h1>
-    <div><strong>Last Snapshot</strong> (@SnapshotController.getSnapshotName()):
-    </div>
+    <h1 class="page-header">Snapshots</h1>
+    <div><strong>Last Snapshot</strong> (@SnapshotController.getSnapshotName()):</div>
     <br/>
-
     <div class="btn-group">
-        <a class="btn btn-primary" href="@routes.SnapshotController.continueFromSnapshot" title="Continue from snapshot.">
-            Continue from Snapshot
+        <a class="btn btn-primary" href="@routes.SnapshotController.loadSnapshot" title="Load snapshot.">
+            Load Snapshot
         </a>
-        <a class="btn btn-primary" href="@routes.SnapshotController.snapshot" title="Create a snapshot.">
-            Create Snapshot
+        <a class="btn btn-primary" href="@routes.SnapshotController.saveSnapshot" title="Save snapshot.">
+            Save Snapshot
         </a>
     </div>
     <hr>
     <div class="btn-group">
-        <a class="btn btn-primary" href="@routes.SnapshotController.snapshotDump" title="Saves the Database saved snapshot to disk.">
-            Save Snapshot to Disk
+        <a class="btn btn-primary" href="@routes.SnapshotController.snapshotDump" title="Dumps saved snapshot to disk.">
+            Dump Snapshot to Disk
         </a>
         <a class="btn btn-primary" href="@routes.SnapshotController.snapshotRestore" title="Load a snapshot from disk to database.">
             Restore Snapshot from Disk

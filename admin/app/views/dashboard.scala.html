@@ -1,15 +1,15 @@
-@(competitions_enabled : List[model.opta.OptaCompetition])
-
-@import controllers.admin.AdminController
-
 @import controllers.admin.routes._
+@import actors.BotParentActor
+
+@(competitions_enabled : List[model.opta.OptaCompetition], botsState : BotParentActor.ChildrenState)
 
 @scripts = {
 <script type="text/javascript" charset="utf-8">
 
+var moneySelected = 5;
+
 $(document).ready(function() {
     getMongo();
-
 });
 
 function setOverlay() {
@@ -34,7 +34,7 @@ function setMongo() {
         var new_mongo = $('#mongo-conn').val();
         setOverlay();
         var another_temp = $.ajax({
-                        url: "/admin/setmongo/"+new_mongo,
+                        url: "/admin/set_target_environment/"+new_mongo,
                         success: function (result) {
                             location.reload();
                         }
@@ -43,60 +43,101 @@ function setMongo() {
 
 function getMongo() {
     var temp = $.ajax({
-                    url: "/admin/getmongo",
+                    url: "/admin/get_target_environment",
                     success: function (result) {
                         $('#mongo-conn option[value="'+result+'"]').prop('selected', true);
                     }
                 });
 }
+
+function addMoney(target, amount) {
+    console.log("addMoney: " + amount);
+
+    var temp = $.ajax({
+                    url: "/admin/add_money_to_"+target+"/"+amount
+                });
+}
+
 </script>
 }
 
 @main("DailySoccer - Admin", scripts) {
 
-<h1 class="page-header">Dashboard</h1>
+    <h1 class="page-header">Dashboard</h1>
 
 
-<div>
-    <select id="mongo-conn" onchange="setMongo()" class="form-control" style="width: inherit; display: inline-block;">
-        <option value="localhost">Localhost</option>
-        <option value="dailysoccer-staging">Staging</option>
-        <option value="dailysoccer">Epic Eleven</option>
-    </select>
+    <div>
+        <select id="mongo-conn" onchange="setMongo()" class="form-control" style="width: inherit; display: inline-block;">
+            <option value="LOCALHOST">Localhost</option>
+            <option value="STAGING">Staging</option>
+            <option value="PRODUCTION">Epic Eleven</option>
+        </select>
 
-    @if(AdminController.isLocalMongo()) {
-    <div style="float: right; margin-right:100px;">
-        <a href="@DashboardController.resetDB" class="btn btn-danger">Reset DB</a>
-        @if(competitions_enabled.isEmpty) {
-            <a href="@DashboardController.initialSetup" class="btn btn-danger disabled">Initial Setup</a>
-        } else {
-            <a href="@DashboardController.initialSetup" class="btn btn-danger">Initial Setup</a>
+        @if(model.Model.isLocalHostTargetEnvironment()) {
+            <div style="float: right; margin-right:100px;">
+
+                <a href="@DashboardController.resetDB" class="btn btn-danger">Reset DB</a>
+
+                @if(competitions_enabled.isEmpty) {
+                    <a href="@DashboardController.initialSetup" class="btn btn-danger disabled">Initial Setup</a>
+                } else {
+                    <a href="@DashboardController.initialSetup" class="btn btn-danger">Initial Setup</a>
+                }
+            </div>
         }
     </div>
-    }
-</div>
-<br/>
-<div>
-    <p><a href="@OptaController.optaCompetitions" class="btn btn-primary">Select Competitions</a></p>
-    @if(competitions_enabled.isEmpty) {
-        <span class="bg-danger text-danger" style="padding:5px">&#8999; Ninguna Competición</span>
-    } else {
-        @for((p, index) <- competitions_enabled.zipWithIndex) {
-            <p><em class="bg-success text-primary" style="margin:35px; padding:5px">&#10003; @p.competitionName/@p.seasonId</em></p>
+
+    <br/>
+
+    <div>
+        <p><a href="@OptaController.optaCompetitions" class="btn btn-primary">Select Competitions</a></p>
+        @if(competitions_enabled.isEmpty) {
+            <span class="bg-danger text-danger" style="padding:5px">&#8999; Ninguna Competición</span>
+        } else {
+            @for((p, index) <- competitions_enabled.zipWithIndex) {
+                <p><em class="bg-success text-primary" style="margin:35px; padding:5px">&#10003; @p.competitionName/@p.seasonId</em></p>
+            }
         }
-    }
-</div>
-<br/>
-<div>
-    <p><a class="btn btn-primary" href="@ExcelController.index" title="Excel Import/Export">
-        Salaries Import/Export
-    </a></p>
-    <a href="@ImportController.showImportTeams" class="btn btn-warning">Opta Import Log</a>
-</div>
+    </div>
 
-<br/>
-<br/>
+    <br/>
 
+    <p>
+        <a class="btn btn-primary" href="@ExcelController.index" title="Excel Import/Export">
+            Salaries Import/Export
+        </a>
+    </p>
 
+    <p>
+        <a href="@ImportController.showImportTeams" class="btn btn-primary">Opta Import Log</a>
+    </p>
 
+    <hr/>
+
+    <p>
+        @if(botsState != BotParentActor.ChildrenState.STOPPED) {
+            <a href="@DashboardController.startStopBotActors()" class="btn btn-primary">Stop Bots</a>
+
+            <a href="@DashboardController.pauseResumeBotActors()" class="btn btn-primary">
+                @if(botsState == BotParentActor.ChildrenState.PAUSED) {
+                    Resume
+                } else {
+                    Pause
+                }
+            </a>
+            <a href="@DashboardController.stampedeBotActors()" class="btn btn-primary">Stampede!</a>
+        } else {
+            <a href="@DashboardController.startStopBotActors()" class="btn btn-warning">Start Bots</a>
+        }
+    </p>
+
+    <select id="money-list" onchange="moneySelected = $('#money-list').val()" class="form-control" style="width: 130px; display: inline-block;">
+        <option value="5" selected="true">5€</option>
+        <option value="10">10€</option>
+        <option value="1000">1000€</option>
+    </select>
+    <button id="add-money-bots" type="button" onclick="addMoney('bots', moneySelected)" class="btn btn-primary" style="position:relative;">Añadir Fondos a Bots</button>
+    <button id="add-money-tests" type="button" onclick="addMoney('tests', moneySelected)" class="btn btn-primary" style="position:relative;">Añadir Fondos a Tests</button>
+
+    <br/><br/><p><a href="http://localhost:15672/#/queues">Link de conveniencia a tu RabbitMQ local</a></p>
 }
