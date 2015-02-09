@@ -466,7 +466,7 @@ public class BotActor extends UntypedActor {
 
     private String addContestEntry(List<TemplateSoccerPlayer> lineup, ObjectId contestId) throws TimeoutException {
 
-        String idList = getObjectMapper().valueToTree(ListUtils.stringListFromObjectIdList(ListUtils.convertToIdList(lineup))).toString();
+        String idList = new ObjectMapper().valueToTree(ListUtils.stringListFromObjectIdList(ListUtils.convertToIdList(lineup))).toString();
         JsonNode jsonNode = post("add_contest_entry", String.format("contestId=%s&soccerTeam=%s", contestId.toString(), idList));
 
         // Nosotros podemos pedir un contestId, pero el servidor puede elegir meternos en otro
@@ -584,20 +584,6 @@ public class BotActor extends UntypedActor {
 
         return jsonPromise.get(5000, TimeUnit.MILLISECONDS);
     }
-
-    static ObjectMapper getObjectMapper() {
-        if (objectMapper == null) {
-            SimpleModule module = new SimpleModule();
-            module.addDeserializer(Money.class, new JacksonJodaMoney.MoneyDeserializer());
-            module.addSerializer(Money.class, new JacksonJodaMoney.MoneySerializer());
-
-            objectMapper = new ObjectMapper();
-            objectMapper.registerModule(module);
-        }
-        return objectMapper;
-    }
-
-    static ObjectMapper objectMapper;
 
     int _botActorId;
     User _user;
