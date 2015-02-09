@@ -142,10 +142,6 @@ public class Contest implements JongoId {
         return ListUtils.asList(Model.contests().find("{templateContestId: #}", templateContestId).as(Contest.class));
     }
 
-    static public List<Contest> findAllNotCanceledFromTemplateContest(ObjectId templateContestId) {
-        return ListUtils.asList(Model.contests().find("{templateContestId: #, state: { $ne: \"CANCELED\" }}", templateContestId).as(Contest.class));
-    }
-
     static public List<Contest> findAllStartingIn(int hours) {
         DateTime oneHourInFuture = new DateTime(GlobalDate.getCurrentDate()).plusHours(hours);
         return ListUtils.asList(Model.contests()
@@ -181,41 +177,6 @@ public class Contest implements JongoId {
                 .find("{$and: [{state: \"ACTIVE\"}, {$where: \"this.contestEntries.length < this.maxEntries\"}]}")
                 .projection(ViewProjection.get(projectionClass, Contest.class))
                 .as(Contest.class));
-    }
-
-    static public List<Contest> findAllActiveWithNoneOrOneEntry(ObjectId templateMatchEventId) {
-        String query = String.format("{$and: [{state: \"ACTIVE\", templateMatchEventIds: {$in:[#]}, 'contestEntries.%s': {$exists: false}}]}", 1);
-        return ListUtils.asList(Model.contests()
-                .find(query, templateMatchEventId)
-                .projection(ViewProjection.get(JsonViews.Public.class, Contest.class))
-                .as(Contest.class));
-    }
-
-    static public List<Contest> findAllActiveNotFullWithEntryFee(ObjectId templateMatchEventId) {
-        return ListUtils.asList(Model.contests()
-                .find("{$and: [{state: \"ACTIVE\", templateMatchEventIds: {$in:[#]}, entryFee: {$gt: 0}}, {$where: \"this.contestEntries.length < this.maxEntries\"}]}", templateMatchEventId)
-                .projection(ViewProjection.get(JsonViews.Public.class, Contest.class))
-                .as(Contest.class));
-    }
-
-    static public List<Contest> findAllActiveAndInvalid(ObjectId templateMatchEventId) {
-        // 1. Busca aquellos contests que estén ACTIVOS e incluyan ese partido
-        // 2. Precalcula una serie de parámetros ("entries": número de entries, "entryFee": el dinero de la entrada, "notFull": si no están llenos)
-        // 3. Se queda con los contests que:
-        //      a) Tienen entryFree y no están llenos
-        //      b) Están vacíos o tienen una única entry (< 2 entries)
-        // 4. Devuelve únicamente los ids
-        return Model.contests()
-                .aggregate("{$match: { state: \"ACTIVE\", templateMatchEventIds: {$in: [#]}}}", templateMatchEventId)
-                .and("{$project: {\"entries\": {$size: \"$contestEntries\"}, entryFee: 1, notFull: { $lt: [ {$size: \"$contestEntries\"}, \"$maxEntries\"] }}}")
-                .and("{$match:" +
-                        "{$or: [" +
-                            "{$and: [{\"entryFee\": {$gt: 0}}, {notFull: true}] }," +
-                            "{entries: {$lt: 2}}" +
-                        "]}" +
-                        "}")
-                .and("{$project: {_id: 1}}")
-                .as(Contest.class);
     }
 
     static public List<Contest> findAllHistoryNotClosed() {
