@@ -8,6 +8,7 @@ import play.api.mvc.Results._
 import play.api.mvc.{EssentialAction, Filter, Filters, _}
 import play.filters.gzip.GzipFilter
 import stormpath.StormPathClient
+
 import utils.InstanceRole
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -60,9 +61,14 @@ object Global extends GlobalSettings {
 
     model.Model.init(instanceRole)
 
-    // Es aqui donde se llama a la inicializacion de Stormpath a traves del constructor
+    model.Model.init()
+    actors.DailySoccerActors.init(isWorker)
+
     if (StormPathClient.instance.isConnected) {
-      Logger.info("Stormpath CONNECTED")
+      Logger.info("Stormpath connected properly")
+    }
+    else {
+      Logger.info( "Stormpath not connected")
     }
   }
 

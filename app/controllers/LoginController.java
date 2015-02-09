@@ -69,6 +69,10 @@ public class LoginController extends Controller {
         @Required public String token;
     }
 
+    public static class VerifyAccountTokenParams {
+        @Required public String token;
+    }
+
     public static class PasswordResetParams {
         @Required public String password;
         @Required public String token;
@@ -91,6 +95,26 @@ public class LoginController extends Controller {
             }
             else {
                 returnHelper.setKO(translateError(askForPasswordResetErrors));
+            }
+        }
+        return returnHelper.toResult();
+    }
+
+    public static Result verifyAccountToken() {
+        Form<VerifyAccountTokenParams> verifyAccountTokenParamsForm = form(VerifyAccountTokenParams.class).bindFromRequest();
+        VerifyAccountTokenParams params;
+
+        ReturnHelper returnHelper = new ReturnHelper();
+
+        if (!verifyAccountTokenParamsForm.hasErrors()) {
+            params = verifyAccountTokenParamsForm.get();
+
+            F.Tuple<Integer, String> verifyAccountTokenErrors = StormPathClient.instance().verifyAccountToken(params.token);
+
+            if (verifyAccountTokenErrors._1 == -1) {
+                returnHelper.setOK(ImmutableMap.of("success", "Token valido"));
+            } else {
+                returnHelper.setKO(ImmutableMap.of("error", translateError(verifyAccountTokenErrors)));
             }
         }
         return returnHelper.toResult();
