@@ -3,7 +3,10 @@ package model;
 import com.fasterxml.jackson.annotation.JsonView;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTranPrize;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 import org.jongo.marshall.jackson.oid.Id;
 import java.math.BigDecimal;
 
@@ -139,6 +142,13 @@ public class Contest implements JongoId {
 
     static public List<Contest> findAllNotCanceledFromTemplateContest(ObjectId templateContestId) {
         return ListUtils.asList(Model.contests().find("{templateContestId: #, state: { $ne: \"CANCELED\" }}", templateContestId).as(Contest.class));
+    }
+
+    static public List<Contest> findAllStartingIn(int hours) {
+        DateTime oneHourInFuture = new DateTime(GlobalDate.getCurrentDate()).plusHours(hours);
+        return ListUtils.asList(Model.contests()
+                .find("{startDate: {$gt: #, $lte: # }}", GlobalDate.getCurrentDate(), oneHourInFuture.toDate())
+                .as(Contest.class));
     }
 
     static public List<Contest> findAllFromTemplateContests(List<TemplateContest> templateContests) {
@@ -284,6 +294,16 @@ public class Contest implements JongoId {
             contestEntry.prize = prizes.getValue(contestEntry.position);
             contestEntry.updateRanking();
         }
+    }
+
+    public String translatedName() {
+        // DateTimeService.formatDateWithDayOfTheMonth(startDate))
+        return StringUtils.capitalize(name.replaceAll("%StartDate", DateTimeFormat.forPattern("EEE, d MMM").withLocale(new Locale("es", "ES")).print(new DateTime(startDate)))
+                .replaceAll("%MaxEntries", Integer.toString(maxEntries))
+                .replaceAll("%SalaryCap", Integer.toString(new Double(salaryCap / 1000).intValue()))
+                .replaceAll("%PrizeType", prizeType.name())
+                .replaceAll("%EntryFee", Integer.toString(entryFee))
+                .replaceAll("%MockUsers", ""));
     }
 
     private void givePrizes(Prizes prizes) {

@@ -432,7 +432,7 @@ public class BotActor extends UntypedActor {
         if (jsonNodeContest != null && jsonNodeSoccerPlayers != null) {
             // Debemos hacer to.do nuestro proceso con los datos de salario, equipo, etc que vienen en los Instances y no en los Templates.
             // Los instances los obtenemos de la query "get_public_contest" (dado que el contest que recibimos no lo incluye, al obtenerse de una query "active_contests")
-            List<InstanceSoccerPlayer> instanceSoccerPlayers =  JsonUtils.fromJSON(jsonNodeContest.toString(), new TypeReference<Contest>() { }).instanceSoccerPlayers;
+            List<InstanceSoccerPlayer> instanceSoccerPlayers = JsonUtils.fromJSON(jsonNodeContest.toString(), new TypeReference<Contest>() { }).instanceSoccerPlayers;
             List<TemplateSoccerPlayer> soccerPlayers = JsonUtils.fromJSON(jsonNodeSoccerPlayers.toString(), new TypeReference<List<TemplateSoccerPlayer>>() { });
 
             // Simplemente "parcheamos" los templates con los datos de los instances

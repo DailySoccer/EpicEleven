@@ -243,6 +243,7 @@ public class Actors {
         _localActors.put("CloseContestsActor", Akka.system().actorOf(Props.create(CloseContestsActor.class), "CloseContestsActor"));
         _localActors.put("TransactionsActor", Akka.system().actorOf(Props.create(TransactionsActor.class), "TransactionsActor"));
         _localActors.put("BotParentActor", Akka.system().actorOf(Props.create(BotParentActor.class), "BotParentActor"));
+        _localActors.put("NotificationActor", Akka.system().actorOf(Props.create(NotificationActor.class), "NotificationActor"));
         _localActors.put("SimulatorActor", Akka.system().actorOf(Props.create(SimulatorActor.class), "SimulatorActor"));
     }
 

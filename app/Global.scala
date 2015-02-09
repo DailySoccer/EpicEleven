@@ -1,15 +1,14 @@
+import java.util.concurrent.TimeUnit
 import play.Logger
 import play.api.Play.current
 import play.api._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.ws.{WS, WSRequestHolder}
-import play.api.mvc.{EssentialAction, Filter, Filters}
+import play.api.mvc.Results._
+import play.api.mvc.{EssentialAction, Filter, Filters, _}
 import play.filters.gzip.GzipFilter
 import stormpath.StormPathClient
 import utils.InstanceRole
-import play.api.mvc._
-import play.api.mvc.Results._
-
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
@@ -103,7 +102,7 @@ object Global extends GlobalSettings {
           response => (response.json \\ "name").last.as[String]
         }
 
-        version = Await.result(futureResponse, 10 seconds)
+        version = Await.result(futureResponse, Duration.create(10, TimeUnit.SECONDS))
       }
     }
     catch {
@@ -112,6 +111,5 @@ object Global extends GlobalSettings {
 
     version
   }
-
 }
 
