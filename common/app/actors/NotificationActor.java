@@ -132,5 +132,5 @@ public class NotificationActor extends UntypedActor {
         return usersContestsMap;
     }
 
-    private final String _contestStartingTemplateName = "torneoporempezar";
+    private final String _contestStartingTemplateName = "CONTEST_NEXT_HOUR";
 }
