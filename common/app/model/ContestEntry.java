@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 import org.bson.types.ObjectId;
+import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
@@ -27,7 +28,7 @@ public class ContestEntry implements JongoId {
     public int position = -1;
 
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
-    public Money prize;
+    public Money prize = Money.zero(CurrencyUnit.EUR);
 
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
     public int fantasyPoints;
@@ -52,7 +53,7 @@ public class ContestEntry implements JongoId {
         Model.contests()
             .update("{'contestEntries._id': #}", getId())
             .with("{$set: {'contestEntries.$.position': #, 'contestEntries.$.fantasyPoints': #, 'contestEntries.$.prize': #}}",
-                    position, fantasyPoints, prize);
+                    position, fantasyPoints, prize.toString());
     }
 
 
