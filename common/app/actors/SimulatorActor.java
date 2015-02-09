@@ -191,6 +191,8 @@ public class SimulatorActor extends UntypedActor {
         Model.actors().tell("TransactionsActor", "SimulatorTick");
         Model.actors().tell("OptaProcessorActor", "SimulatorTick");
 
+        //Model.actors().tell("NotificationActor", "SimulatorTick");
+
         if (!_state.isPaused && !onlyNextStep) {
             reescheduleTick();
         }
