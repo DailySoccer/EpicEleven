@@ -3,13 +3,16 @@ package model;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
+
 public class Product {
     public String name;
-    public int price;
+    public Money price;
 
     public Product () {}
 
-    public Product (String name, int price) {
+    public Product (String name, Money price) {
         this.name = name;
         this.price = price;
     }
@@ -19,7 +22,7 @@ public class Product {
     }
 
     static private Map<String, Product> catalog = ImmutableMap.of(
-        "PRODUCT_1", new Product("Product 1: Platinum", 10),
-        "PRODUCT_2", new Product("Product 2: Gold", 20)
+        "PRODUCT_1", new Product("Product 1: Platinum", Money.of(CurrencyUnit.EUR, 10)),
+        "PRODUCT_2", new Product("Product 2: Gold", Money.of(CurrencyUnit.EUR, 20))
     );
 }

@@ -7,6 +7,8 @@ import model.Model;
 import model.User;
 import model.accounting.*;
 import org.bson.types.ObjectId;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -46,10 +48,10 @@ public class CancelContestJob extends Job {
                 }
 
                 if (bValid) {
-                    if (contest.entryFee > 0 && !contest.contestEntries.isEmpty()) {
+                    if (contest.entryFee.isGreaterThan(Money.zero(CurrencyUnit.EUR)) && !contest.contestEntries.isEmpty()) {
                         List<AccountOp> accounts = new ArrayList<>();
                         for (ContestEntry contestEntry : contest.contestEntries) {
-                            accounts.add(new AccountOp(contestEntry.userId, new BigDecimal(contest.entryFee), User.getSeqId(contestEntry.userId) + 1));
+                            accounts.add(new AccountOp(contestEntry.userId, contest.entryFee, User.getSeqId(contestEntry.userId) + 1));
                         }
                         AccountingTran accountingTran = AccountingTranCancelContest.create(contestId, accounts);
                         bValid = (accountingTran != null);

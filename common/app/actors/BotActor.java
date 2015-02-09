@@ -4,9 +4,11 @@ import akka.actor.UntypedActor;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import model.*;
 import org.bson.types.ObjectId;
+import org.joda.money.Money;
 import play.Logger;
 import play.Play;
 import play.libs.F;
@@ -14,6 +16,7 @@ import play.libs.ws.WS;
 import play.libs.ws.WSRequestHolder;
 import play.libs.ws.WSResponse;
 import utils.JsonUtils;
+import utils.JacksonJodaMoney;
 import utils.ListUtils;
 
 import java.util.*;
@@ -581,7 +584,6 @@ public class BotActor extends UntypedActor {
 
         return jsonPromise.get(5000, TimeUnit.MILLISECONDS);
     }
-
 
     int _botActorId;
     User _user;

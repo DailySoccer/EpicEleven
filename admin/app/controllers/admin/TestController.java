@@ -5,6 +5,8 @@ import model.GlobalDate;
 import model.Model;
 import model.PrizeType;
 import model.TemplateContest;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import play.mvc.Controller;
@@ -50,19 +52,19 @@ public class TestController extends Controller {
         switch(mockIndex) {
             case 0:
                 Model.templateContests().insert(new TemplateContest(
-                        "jue., 12 jun.!! %MockUsers", 1, 200, 60000, 0, PrizeType.FREE,
+                        "jue., 12 jun.!! %MockUsers", 1, 200, 60000, Money.zero(CurrencyUnit.EUR), PrizeType.FREE,
                         new DateTime(2014, 6, 12, 0, 0, DateTimeZone.UTC).toDate(),
                         new ArrayList<String>(Arrays.asList("731782", "731768"))) //RUS-SOUTHKOREA MEX-CMR
                 );
 
                 Model.templateContests().insert(new TemplateContest(
-                        "jue., 12 jun.... %MockUsers", 1, 200, 70000, 0, PrizeType.FREE,
+                        "jue., 12 jun.... %MockUsers", 1, 200, 70000, Money.zero(CurrencyUnit.EUR), PrizeType.FREE,
                         new DateTime(2014, 6, 12, 0, 0, DateTimeZone.UTC).toDate(),
                         new ArrayList<String>(Arrays.asList("731767", "731776", "731793", "731813"))) // BRA-HRV FRA-HND ARG-IRN KOR-BEL
                 );
 
                 Model.templateContests().insert(new TemplateContest(
-                        "jue., 12 jun.++ %MockUsers", 1, 100, 65000, 0, PrizeType.FREE,
+                        "jue., 12 jun.++ %MockUsers", 1, 100, 65000, Money.zero(CurrencyUnit.EUR), PrizeType.FREE,
                         new DateTime(2014, 6, 12, 0, 0, DateTimeZone.UTC).toDate(),
                         new ArrayList<String>(Arrays.asList("731767", "731768", "731769"))) // BRA-HRV MEX-CMR ESP-NLD
                 );

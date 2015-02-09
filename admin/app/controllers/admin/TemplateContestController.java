@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.mongodb.WriteConcern;
 import model.*;
 import org.bson.types.ObjectId;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import play.Logger;
@@ -219,36 +221,37 @@ public class TemplateContestController extends Controller {
     }
 
     public static void createMock(List<TemplateMatchEvent> templateMatchEvents) {
-        createMock(templateMatchEvents, 0, 3, PrizeType.FREE, 70000);
+        createMock(templateMatchEvents, Money.zero(CurrencyUnit.EUR), 3, PrizeType.FREE, 70000);
         //createMock(templateMatchEvents, 0, 5, PrizeType.FREE);
         //createMock(templateMatchEvents, 0, 10, PrizeType.FREE);
-        createMock(templateMatchEvents, 0, 25, PrizeType.FREE, 65000);
+        createMock(templateMatchEvents, Money.zero(CurrencyUnit.EUR), 25, PrizeType.FREE, 65000);
 
 
         for (int i = 1; i<=6; i++) {
+            Money money = Money.of(CurrencyUnit.EUR, i);
 
             switch (i) {
                 case 1:
-                    createMock(templateMatchEvents, i, 2, PrizeType.WINNER_TAKES_ALL, 60000);
-                    createMock(templateMatchEvents, i, 10, PrizeType.TOP_3_GET_PRIZES, 65000);
+                    createMock(templateMatchEvents, money, 2, PrizeType.WINNER_TAKES_ALL, 60000);
+                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_3_GET_PRIZES, 65000);
                     break;
                 case 2:
-                    createMock(templateMatchEvents, i, 25, PrizeType.WINNER_TAKES_ALL, 65000);
+                    createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, 65000);
                     break;
                 case 3:
-                    createMock(templateMatchEvents, i, 5, PrizeType.TOP_THIRD_GET_PRIZES, 70000);
-                    createMock(templateMatchEvents, i, 3, PrizeType.FIFTY_FIFTY, 60000);
+                    createMock(templateMatchEvents, money, 5, PrizeType.TOP_THIRD_GET_PRIZES, 70000);
+                    createMock(templateMatchEvents, money, 3, PrizeType.FIFTY_FIFTY, 60000);
                     break;
                 case 4:
-                    createMock(templateMatchEvents, i, 3, PrizeType.FIFTY_FIFTY, 65000);
-                    createMock(templateMatchEvents, i, 10, PrizeType.TOP_3_GET_PRIZES, 70000);
+                    createMock(templateMatchEvents, money, 3, PrizeType.FIFTY_FIFTY, 65000);
+                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_3_GET_PRIZES, 70000);
                     break;
                 case 5:
-                    createMock(templateMatchEvents, i, 10, PrizeType.TOP_3_GET_PRIZES, 60000);
-                    createMock(templateMatchEvents, i, 25, PrizeType.WINNER_TAKES_ALL, 65000);
+                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_3_GET_PRIZES, 60000);
+                    createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, 65000);
                     break;
                 case 6:
-                    createMock(templateMatchEvents, i, 25, PrizeType.WINNER_TAKES_ALL, 70000);
+                    createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, 70000);
                     break;
             }
             /*
@@ -275,7 +278,7 @@ public class TemplateContestController extends Controller {
         }
     }
 
-    public static void createMock(List<TemplateMatchEvent> templateMatchEvents, int entryFee, int maxEntries, PrizeType prizeType, int salaryCap) {
+    public static void createMock(List<TemplateMatchEvent> templateMatchEvents, Money entryFee, int maxEntries, PrizeType prizeType, int salaryCap) {
         if (templateMatchEvents.size() == 0) {
             Logger.error("create: templateMatchEvents is empty");
             return;
@@ -312,7 +315,7 @@ public class TemplateContestController extends Controller {
     }
 
     public static Result getPrizes(String prizeType, Integer maxEntries, Integer entryFee) {
-        Prizes prizes = Prizes.findOne(PrizeType.valueOf(prizeType), maxEntries, entryFee);
+        Prizes prizes = Prizes.findOne(PrizeType.valueOf(prizeType), maxEntries, Money.of(CurrencyUnit.EUR, entryFee));
         return new ReturnHelper(prizes.getAllValues()).toResult();
     }
 }

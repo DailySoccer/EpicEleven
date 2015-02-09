@@ -1,19 +1,22 @@
 package model;
 
+import java.math.RoundingMode;
 import java.util.*;
 import com.google.common.collect.ImmutableList;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 
 public class Prizes {
     public PrizeType prizeType;
     public int maxEntries;
-    public int entryFee;
+    public Money entryFee;
     // public List<Float> multipliers = new ArrayList<>();
-    public List<Integer> values = new ArrayList<>();
+    public List<Money> values = new ArrayList<>();
 
     private Prizes() {
     }
 
-    private Prizes(PrizeType prizeType, int maxEntries, int entryFee) {
+    private Prizes(PrizeType prizeType, int maxEntries, Money entryFee) {
         this.prizeType = prizeType;
         this.maxEntries = maxEntries;
         this.entryFee = entryFee;
@@ -21,19 +24,19 @@ public class Prizes {
         this.values = getPrizesApplyingMultipliers(getPrizePool(maxEntries, entryFee), getMultipliers(prizeType, maxEntries));
     }
 
-    public Integer getValue(int position) {
-        Integer ret = 0;
+    public Money getValue(int position) {
+        Money ret;
         if (prizeType.equals(PrizeType.FIFTY_FIFTY)) {
-            ret = (position < (maxEntries / 2)) ? values.get(0) : 0;
+            ret = (position < (maxEntries / 2)) ? values.get(0) : Money.zero(CurrencyUnit.EUR);
         }
         else {
-            ret = (position < values.size()) ? values.get(position) : 0;
+            ret = (position < values.size()) ? values.get(position) : Money.zero(CurrencyUnit.EUR);
         }
         return ret;
     }
 
-    public List<Integer> getAllValues() {
-        List<Integer> ret = new ArrayList<>();
+    public List<Money> getAllValues() {
+        List<Money> ret = new ArrayList<>();
 
         if (prizeType == PrizeType.FIFTY_FIFTY) {
             for (int i=0; i<maxEntries / 2; i++) {
@@ -51,7 +54,7 @@ public class Prizes {
         return findOne(contest.prizeType, contest.maxEntries, contest.entryFee);
     }
 
-    public static Prizes findOne(PrizeType prizeType, int maxEntries, int entryFee) {
+    public static Prizes findOne(PrizeType prizeType, int maxEntries, Money entryFee) {
         return new Prizes(prizeType, maxEntries, entryFee);
     }
 
@@ -144,39 +147,38 @@ public class Prizes {
         return multipliers;
     }
 
-    static private List<Integer> getPrizesApplyingMultipliers(int prizePool, List<Float> multipliers) {
-        List<Integer> prizes = new ArrayList<>();
+    static private List<Money> getPrizesApplyingMultipliers(Money prizePool, List<Float> multipliers) {
+        List<Money> prizes = new ArrayList<>();
 
         if (multipliers.size() > 1) {
-            float resto = prizePool;
+            Money resto = prizePool;
             for (int i = 0; i < multipliers.size(); i++) {
-                float premio = multipliers.get(i) * prizePool;
+                Money premio = prizePool.multipliedBy(multipliers.get(i), RoundingMode.HALF_UP);
                 // premio = Math.round(premio * 2) * 0.5f;
-                premio = Math.round(premio + 0.5f);
-                if (premio > resto) {
+                if (premio.isGreaterThan(resto)) {
                     premio = resto;
                 }
                 if (i == multipliers.size() - 1) {
-                    if (resto > premio) {
+                    if (resto.isGreaterThan(premio)) {
                         premio = resto;
                     }
                 }
 
-                if (((int) premio) > 0) {
-                    prizes.add((int) premio);
-                    resto -= premio;
+                if (premio.isPositiveOrZero()) {
+                    prizes.add(premio);
+                    resto = resto.minus(premio);
                 }
             }
         }
         else if (multipliers.size() > 0) {
-            prizes.add((int) (multipliers.get(0) * prizePool));
+            prizes.add(prizePool.multipliedBy(multipliers.get(0), RoundingMode.HALF_UP));
         }
 
         return prizes;
     }
 
-    static int getPrizePool(int maxEntries, int entryFee) {
-        return (int)((maxEntries * entryFee) * 0.90f);
+    static Money getPrizePool(int maxEntries, Money entryFee) {
+        return entryFee.multipliedBy(maxEntries * 0.90f, RoundingMode.HALF_UP);
     }
 }
 
