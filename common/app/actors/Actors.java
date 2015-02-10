@@ -295,7 +295,7 @@ public class Actors {
                             }
                         }
                         catch (Exception exc) {
-                            Logger.error("WTF 5222 Actors mensaje {}, actor {}", new String(body), queueName, exc);
+                            Logger.error("WTF 5122 Actors mensaje {}, actor {}", new String(body), queueName, exc);
                         }
 
                         returnChannel.basicAck(envelope.getDeliveryTag(), false);

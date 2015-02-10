@@ -226,7 +226,7 @@ public class SimulatorActor extends UntypedActor {
         else {
             ret = Model.actors().tellAndAwait("OptaProcessorActor", "GetNextDoc");
 
-            if (ret.compareTo(new Date(0L)) == 0) {
+            if (ret != null && ret.compareTo(new Date(0L)) == 0) {
                 ret = null;
             }
         }
