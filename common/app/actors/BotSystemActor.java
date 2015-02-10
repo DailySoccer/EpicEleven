@@ -32,11 +32,11 @@ public class BotSystemActor extends UntypedActor {
 
     private void readConfig() {
         _numBots = Play.application().configuration().getInt("botSystemActor.numBots");
-        _tickInterval = Duration.create(Play.application().configuration().getInt("botSystemActor.tickInterval"), TimeUnit.MILLISECONDS);
+        _tickInterval = Duration.create(Play.application().configuration().getMilliseconds("botSystemActor.tickInterval"), TimeUnit.MILLISECONDS);
         _tickMode = TickingMode.valueOf(Play.application().configuration().getString("botSystemActor.tickMode"));
         _personality = BotActor.Personality.valueOf(Play.application().configuration().getString("botSystemActor.personality"));
         _cyclePersonalities = Play.application().configuration().getBoolean("botSystemActor.cyclePersonalities");
-        _cyclePersonalitiesInterval = Duration.create(Play.application().configuration().getInt("botSystemActor.cyclePersonalitiesInterval"), TimeUnit.MILLISECONDS);
+        _cyclePersonalitiesInterval = Duration.create(Play.application().configuration().getMilliseconds("botSystemActor.cyclePersonalitiesInterval"), TimeUnit.MILLISECONDS);
     }
 
     @Override
