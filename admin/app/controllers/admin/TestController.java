@@ -1,6 +1,7 @@
 package controllers.admin;
 
 import actors.MessageEnvelope;
+import actors.SimulatorState;
 import model.GlobalDate;
 import model.Model;
 import model.PrizeType;
@@ -43,7 +44,20 @@ public class TestController extends Controller {
     }
 
     static public Result getCurrentDate() {
-        return ok(GlobalDate.getCurrentDateString());
+
+        SimulatorState simulatorState = null;
+
+        try {
+            simulatorState = Model.actors().tellAndAwait("SimulatorActor", "GetSimulatorState");
+        }
+        catch (Exception e) {}
+
+        if (simulatorState != null) {
+            return ok(simulatorState.getSimulationDateFormatted());
+        }
+        else {
+            return ok(GlobalDate.getCurrentDateString());
+        }
     }
 
     static public Result createContests(int mockIndex){

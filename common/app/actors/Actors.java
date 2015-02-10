@@ -169,7 +169,7 @@ public class Actors {
                 QueueingConsumer consumer = new QueueingConsumer(_directChannel);
                 _directChannel.basicConsume(callbackQueueName, false, consumer);
 
-                QueueingConsumer.Delivery delivery = consumer.nextDelivery(5000);
+                QueueingConsumer.Delivery delivery = consumer.nextDelivery(10000);
 
                 if (delivery != null) {
                     _directChannel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
@@ -269,7 +269,7 @@ public class Actors {
                         try {
                             // Si hay un correlationId es que el cliente espera respuesta por parte del actor
                             if (correlationId != null) {
-                                Timeout timeout = new Timeout(Duration.create(5, TimeUnit.SECONDS));
+                                Timeout timeout = new Timeout(Duration.create(10, TimeUnit.SECONDS));
                                 scala.concurrent.Future<Object> response = Patterns.ask(actorRef, deserialize(body), timeout);
 
                                 Logger.trace("1001 handleDelivery {}, mensaje {}", queueName, new String(body));
