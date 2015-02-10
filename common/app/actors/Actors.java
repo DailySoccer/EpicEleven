@@ -90,8 +90,7 @@ public class Actors {
 
         if (_connection != null) {
             tell("OptaProcessorActor", "PoisonPill");
-            tell("InstantiateContestsActor", "PoisonPill");
-            tell("CloseContestsActor", "PoisonPill");
+            tell("ContestsActor", "PoisonPill");
             tell("TransactionsActor", "PoisonPill");
             tell("BotSystemActor", "PoisonPill");
             tell("SimulatorActor", "PoisonPill");
@@ -232,8 +231,7 @@ public class Actors {
 
     private void createLocalActors() {
         _localActors.put("OptaProcessorActor", Akka.system().actorOf(Props.create(OptaProcessorActor.class), "OptaProcessorActor"));
-        _localActors.put("InstantiateContestsActor", Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateContestsActor"));
-        _localActors.put("CloseContestsActor", Akka.system().actorOf(Props.create(CloseContestsActor.class), "CloseContestsActor"));
+        _localActors.put("ContestsActor", Akka.system().actorOf(Props.create(ContestsActor.class), "ContestsActor"));
 
         _localActors.put("TransactionsActor", Akka.system().actorOf(Props.create(TransactionsActor.class), "TransactionsActor"));
         _localActors.put("NotificationActor", Akka.system().actorOf(Props.create(NotificationActor.class), "NotificationActor"));

@@ -1,45 +1,28 @@
 package actors;
 
-import akka.actor.UntypedActor;
 import model.GlobalDate;
 import model.Model;
 import model.accounting.AccountingTran;
 import model.jobs.Job;
 import org.joda.time.DateTime;
 import play.Logger;
-import scala.concurrent.duration.Duration;
 import utils.ListUtils;
 
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-public class TransactionsActor extends UntypedActor {
+public class TransactionsActor extends TickableActor {
+
     public void onReceive(Object msg) {
 
         switch ((String)msg) {
-
-            case "Tick":
-                onTick();
-                getContext().system().scheduler().scheduleOnce(Duration.create(30, TimeUnit.SECONDS), getSelf(),
-                        "Tick", getContext().dispatcher(), null);
-                break;
-
-            // En el caso del SimulatorTick no tenemos que reeschedulear el mensaje porque es el Simulator el que se
-            // encarga de drivearnos.
-            case "SimulatorTick":
-                onTick();
-                break;
-
             default:
-                unhandled(msg);
+                super.onReceive(msg);
                 break;
         }
     }
 
-    private void onTick() {
-        Logger.debug("TransactionsActor: {}", GlobalDate.getCurrentDateString());
-
+    @Override protected void onTick() {
         /*
         *   Una transacción pasará de Uncommitted a Committed cuando verifique que todas las anteriores transacciones
         *   de sus "accountOps" han sido realizadas (anteriores AccountOp.seqId en estado Committed)
@@ -65,4 +48,5 @@ public class TransactionsActor extends UntypedActor {
         for (Job job: Job.findByStateAndLastModified(Job.JobState.CANCELING, dateThreshold)) {
             job.continueProcessing();
         }
-    }}
+    }
+}

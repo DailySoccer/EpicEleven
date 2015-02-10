@@ -17,7 +17,7 @@ import java.sql.*;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-public class OptaProcessorActor extends UntypedActor {
+public class OptaProcessorActor extends TickableActor {
 
     // postRestart y preStart se llaman en el nuevo actor (despues de la reinicializacion, claro).
     // preRestart y postStop en el viejo moribundo.
@@ -32,9 +32,7 @@ public class OptaProcessorActor extends UntypedActor {
 
         _nextDocDate = null;
 
-        if (Play.application().configuration().getBoolean("optaProcessorActor.autoStart")) {
-            self().tell("Tick", getSelf()); // Primer tick inmediato
-        }
+        super.preStart();
     }
 
     // En el nuevo
@@ -50,36 +48,15 @@ public class OptaProcessorActor extends UntypedActor {
     }
 
     // En el viejo
-    @Override public void postStop() {
+    @Override public void postStop() throws Exception {
         Logger.debug("OptaProcessorActor postStop");
         shutdown();
+        super.postStop();
     }
 
     public void onReceive(Object message) {
 
         switch ((String)message) {
-            case "Tick":
-                // Reciclamos memoria (podriamos probar a dejar el cache y reciclar cada cierto tiempo...)
-                _optaProcessor = new OptaProcessor();
-
-                ensureNextDocument(REGULAR_DOCUMENTS_PER_QUERY);
-                processNextDocument();
-
-                reescheduleTick();
-
-                // Aseguramos que oscilamos bien entre el Tick y el SimulatorTick
-                _optaProcessor = null;
-                break;
-
-            case "SimulatorTick":
-                // Para el simulador usamos 1 optaprocesor que nunca reciclamos (pq por dentro cachea)
-                if (_optaProcessor == null) {
-                    _optaProcessor = new OptaProcessor();
-                }
-                ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
-                processNextDocument();
-
-                break;
 
             case "GetNextDoc":
                 if (_nextDocDate == null) {
@@ -93,9 +70,30 @@ public class OptaProcessorActor extends UntypedActor {
                 break;
 
             default:
-                unhandled(message);
+                super.onReceive(message);
                 break;
         }
+    }
+
+    @Override protected void onTick() {
+        // Reciclamos memoria (podriamos probar a dejar el cache y reciclar cada cierto tiempo...)
+        _optaProcessor = new OptaProcessor();
+
+        ensureNextDocument(REGULAR_DOCUMENTS_PER_QUERY);
+        processNextDocument();
+
+        // Aseguramos que oscilamos bien entre el Tick y el SimulatorTick
+        _optaProcessor = null;
+    }
+
+    @Override protected void onSimulatorTick() {
+        // Para el simulador usamos 1 optaprocesor que nunca reciclamos (pq por dentro cachea)
+        if (_optaProcessor == null) {
+            _optaProcessor = new OptaProcessor();
+        }
+
+        ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
+        processNextDocument();
     }
 
     private static void resetIsProcessing() {
@@ -251,21 +249,8 @@ public class OptaProcessorActor extends UntypedActor {
 
         _optaProcessor = null;
         _nextDocDate = null;
-
-        cancelTicking();
     }
 
-    private void cancelTicking() {
-        if (_tickCancellable != null) {
-            _tickCancellable.cancel();
-            _tickCancellable = null;
-        }
-    }
-
-    private void reescheduleTick() {
-        _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(), "Tick",
-                getContext().dispatcher(), null);
-    }
 
     final int SIMULATOR_DOCUMENTS_PER_QUERY = 500;
     final int REGULAR_DOCUMENTS_PER_QUERY = 1;
@@ -276,8 +261,6 @@ public class OptaProcessorActor extends UntypedActor {
 
     OptaProcessor _optaProcessor;
     Date _nextDocDate;
-
-    Cancellable _tickCancellable;
 
 
     static private class OptaProcessorState {

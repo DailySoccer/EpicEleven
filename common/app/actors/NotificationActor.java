@@ -1,6 +1,5 @@
 package actors;
 
-import akka.actor.UntypedActor;
 import model.Contest;
 import model.ContestEntry;
 import model.GlobalDate;
@@ -11,39 +10,25 @@ import model.notification.Notification.Topic;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
 import play.Logger;
-import scala.concurrent.duration.Duration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 
-public class NotificationActor extends UntypedActor {
+public class NotificationActor extends TickableActor {
 
-    public void onReceive(Object msg) {
+    @Override public void onReceive(Object msg) {
 
         switch ((String)msg) {
-
-            case "Tick":
-                onTick();
-                getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.MINUTES), getSelf(),
-                                                               "Tick", getContext().dispatcher(), null);
-                break;
-
-            case "SimulatorTick":
-                onTick();
-                break;
-
             default:
-                unhandled(msg);
+                super.onReceive(msg);
                 break;
         }
     }
 
-    private void onTick() {
-        Logger.debug("NotificationActor: {}", GlobalDate.getCurrentDateString());
+    @Override protected void onTick() {
 
         notifyContestStartsInOneHour();
     }
