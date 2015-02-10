@@ -46,7 +46,7 @@ public class BotActor extends UntypedActor {
     public BotActor(int botActorId, Personality pers) {
         _botActorId = botActorId;
         _personality = pers;
-        _targetUrl = Play.application().configuration().getString("botSystem.targetUrl");
+        _targetUrl = Play.application().configuration().getString("botSystemActor.targetUrl");
     }
 
     private String composeUrl(String suffix) {

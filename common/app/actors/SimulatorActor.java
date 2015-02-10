@@ -186,8 +186,7 @@ public class SimulatorActor extends UntypedActor {
         advanceOrPause(getNextDate());
 
         // El orden de entrega de estos mensajes no esta garantizado, como debe de ser.
-        Model.actors().tell("InstantiateContestsActor", "SimulatorTick");
-        Model.actors().tell("CloseContestsActor", "SimulatorTick");
+        Model.actors().tell("ContestsActor", "SimulatorTick");
         Model.actors().tell("TransactionsActor", "SimulatorTick");
         Model.actors().tell("OptaProcessorActor", "SimulatorTick");
 

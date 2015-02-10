@@ -1,7 +1,7 @@
 @import controllers.admin.routes._
-@import actors.BotParentActor
+@import actors.BotSystemActor
 
-@(competitions_enabled : List[model.opta.OptaCompetition], botsState : BotParentActor.ChildrenState)
+@(competitions_enabled : List[model.opta.OptaCompetition], botsState : BotSystemActor.ChildrenState)
 
 @scripts = {
 <script type="text/javascript" charset="utf-8">
@@ -115,11 +115,11 @@ function addMoney(target, amount) {
     <hr/>
 
     <p>
-        @if(botsState != BotParentActor.ChildrenState.STOPPED) {
+        @if(botsState != BotSystemActor.ChildrenState.STOPPED) {
             <a href="@DashboardController.startStopBotActors()" class="btn btn-primary">Stop Bots</a>
 
             <a href="@DashboardController.pauseResumeBotActors()" class="btn btn-primary">
-                @if(botsState == BotParentActor.ChildrenState.PAUSED) {
+                @if(botsState == BotSystemActor.ChildrenState.PAUSED) {
                     Resume
                 } else {
                     Pause

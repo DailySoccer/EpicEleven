@@ -1,6 +1,6 @@
 package controllers.admin;
 
-import actors.BotParentActor;
+import actors.BotSystemActor;
 import model.Model;
 import model.User;
 import model.accounting.AccountOp;
@@ -13,7 +13,6 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utils.TargetEnvironment;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,17 +43,17 @@ public class DashboardController extends Controller {
     }
 
     static public Result startStopBotActors() {
-        Model.actors().tellAndAwait("BotParentActor", "StartStop");
+        Model.actors().tellAndAwait("BotSystemActor", "StartStop");
         return redirect(routes.DashboardController.index());
     }
 
     static public Result pauseResumeBotActors() {
-        Model.actors().tellAndAwait("BotParentActor", "PauseResume");
+        Model.actors().tellAndAwait("BotSystemActor", "PauseResume");
         return redirect(routes.DashboardController.index());
     }
 
     static public Result stampedeBotActors() {
-        Model.actors().tellAndAwait("BotParentActor", "Stampede");
+        Model.actors().tellAndAwait("BotSystemActor", "Stampede");
         return redirect(routes.DashboardController.index());
     }
 
@@ -85,7 +84,7 @@ public class DashboardController extends Controller {
         }
     }
 
-    static private BotParentActor.ChildrenState getBotsState() {
-        return Model.actors().tellAndAwait("BotParentActor", "GetChildrenState");
+    static private BotSystemActor.ChildrenState getBotsState() {
+        return Model.actors().tellAndAwait("BotSystemActor", "GetChildrenState");
     }
 }

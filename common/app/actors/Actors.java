@@ -54,7 +54,6 @@ public class Actors {
         initRabbitMQ(TargetEnvironment.LOCALHOST); // LOCALHOST equivale a decirle "no intentes leer de heroku"
         createLocalActors();
         bindLocalActorsToQueues();
-        tickActors();
     }
 
     private void initWebRole() {
@@ -91,11 +90,11 @@ public class Actors {
 
         if (_connection != null) {
             tell("OptaProcessorActor", "PoisonPill");
-            tell("InstantiateContestsActor", "PoisonPill");
-            tell("CloseContestsActor", "PoisonPill");
+            tell("ContestsActor", "PoisonPill");
             tell("TransactionsActor", "PoisonPill");
-            tell("BotParentActor", "PoisonPill");
+            tell("BotSystemActor", "PoisonPill");
             tell("SimulatorActor", "PoisonPill");
+            tell("NotificationActor", "PoisonPill");
         } else {
             stopLocalActors();
             createLocalActors();
@@ -231,20 +230,15 @@ public class Actors {
         return ret;
     }
 
-    private void tickActors() {
-        for (ActorRef actorRef : _localActors.values()) {
-            actorRef.tell("Tick", ActorRef.noSender());
-        }
-    }
-
     private void createLocalActors() {
         _localActors.put("OptaProcessorActor", Akka.system().actorOf(Props.create(OptaProcessorActor.class), "OptaProcessorActor"));
-        _localActors.put("InstantiateContestsActor", Akka.system().actorOf(Props.create(InstantiateContestsActor.class), "InstantiateContestsActor"));
-        _localActors.put("CloseContestsActor", Akka.system().actorOf(Props.create(CloseContestsActor.class), "CloseContestsActor"));
+        _localActors.put("ContestsActor", Akka.system().actorOf(Props.create(ContestsActor.class), "ContestsActor"));
+
         _localActors.put("TransactionsActor", Akka.system().actorOf(Props.create(TransactionsActor.class), "TransactionsActor"));
-        _localActors.put("BotParentActor", Akka.system().actorOf(Props.create(BotParentActor.class), "BotParentActor"));
         _localActors.put("NotificationActor", Akka.system().actorOf(Props.create(NotificationActor.class), "NotificationActor"));
+
         _localActors.put("SimulatorActor", Akka.system().actorOf(Props.create(SimulatorActor.class), "SimulatorActor"));
+        _localActors.put("BotSystemActor", Akka.system().actorOf(Props.create(BotSystemActor.class), "BotSystemActor"));
     }
 
     private void bindLocalActorsToQueues() {
