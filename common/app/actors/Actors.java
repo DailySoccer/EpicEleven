@@ -94,6 +94,7 @@ public class Actors {
             tell("TransactionsActor", "PoisonPill");
             tell("BotSystemActor", "PoisonPill");
             tell("SimulatorActor", "PoisonPill");
+            tell("NotificationActor", "PoisonPill");
         } else {
             stopLocalActors();
             createLocalActors();
