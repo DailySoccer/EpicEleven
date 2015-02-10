@@ -6,6 +6,7 @@ import model.GlobalDate;
 import play.Logger;
 import play.Play;
 import scala.concurrent.duration.Duration;
+import scala.concurrent.duration.FiniteDuration;
 import java.util.concurrent.TimeUnit;
 
 
@@ -16,13 +17,28 @@ public abstract class TickableActor extends UntypedActor {
 
 
     @Override public void preStart() {
-
         Logger.debug("TickableActor::{} preStart", getActorName());
 
-        Boolean autoStart = Play.application().configuration().getBoolean(getLowerCaseActorName() + ".autoStart");
+        String actorName = getLowerCaseActorName();
 
+        Long millisecs = Play.application().configuration().getMilliseconds(actorName + ".tickInterval");
+        if (millisecs == null) {
+            millisecs = 60000L;
+        }
+        _duration = Duration.create(millisecs, TimeUnit.MILLISECONDS);
+
+        Boolean autoStart = Play.application().configuration().getBoolean(actorName + ".autoStart");
         if (autoStart != null && autoStart) {
             self().tell("Tick", getSelf()); // Primer tick inmediato
+        }
+    }
+
+    @Override public void postStop() {
+        Logger.debug("TickableActor::{} postStop", getActorName());
+
+        if (_tickCancellable != null) {
+            _tickCancellable.cancel();
+            _tickCancellable = null;
         }
     }
 
@@ -47,8 +63,7 @@ public abstract class TickableActor extends UntypedActor {
     }
 
     private void reescheduleTick() {
-        _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(10, TimeUnit.SECONDS),
-                getSelf(), "Tick", getContext().dispatcher(), null);
+        _tickCancellable = getContext().system().scheduler().scheduleOnce(_duration, getSelf(), "Tick", getContext().dispatcher(), null);
     }
 
     private String getActorName() {
@@ -60,5 +75,6 @@ public abstract class TickableActor extends UntypedActor {
         return actorName.substring(0, 1).toLowerCase() + actorName.substring(1);
     }
 
+    FiniteDuration _duration;
     Cancellable _tickCancellable;
 }

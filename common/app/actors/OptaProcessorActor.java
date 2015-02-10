@@ -25,14 +25,12 @@ public class OptaProcessorActor extends TickableActor {
     // http://doc.akka.io/docs/akka/snapshot/scala/actors.html section "Restart Hooks"
     @Override public void preStart() {
 
-        Logger.debug("OptaProcessorActor preStart");
+        super.preStart();
 
         // Es posible que se parara justo cuando estaba en isProcessing == true
         resetIsProcessing();
 
         _nextDocDate = null;
-
-        super.preStart();
     }
 
     // En el nuevo
@@ -48,8 +46,7 @@ public class OptaProcessorActor extends TickableActor {
     }
 
     // En el viejo
-    @Override public void postStop() throws Exception {
-        Logger.debug("OptaProcessorActor postStop");
+    @Override public void postStop() {
         shutdown();
         super.postStop();
     }
