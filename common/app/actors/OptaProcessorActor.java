@@ -1,5 +1,6 @@
 package actors;
 
+import akka.actor.Cancellable;
 import akka.actor.UntypedActor;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import model.GlobalDate;
@@ -17,17 +18,21 @@ import java.util.concurrent.TimeUnit;
 
 public class OptaProcessorActor extends UntypedActor {
 
-    public OptaProcessorActor() {
+    // postRestart y preStart se llaman en el nuevo actor (despues de la reinicializacion, claro).
+    // preRestart y postStop en el viejo moribundo.
+    @Override public void preStart() {
+
         Logger.debug("OptaProcessorActor preStart");
 
         // Es posible que se parara justo cuando estaba en isProcessing == true
         resetIsProcessing();
 
         _nextDocDate = null;
+
+        // Primer tick inmediato
+        self().tell("Tick", getSelf());
     }
 
-    // postRestart y preStart se llaman en el nuevo actor (despues de la reinicializacion, claro).
-    // preRestart y postStop en el viejo moribundo.
     @Override public void postRestart(Throwable reason) throws Exception {
         Logger.debug("OptaProcessorActor postRestart, reason:", reason);
         super.postRestart(reason);
@@ -35,7 +40,6 @@ public class OptaProcessorActor extends UntypedActor {
 
     @Override public void postStop() {
         Logger.debug("OptaProcessorActor postStop");
-
         shutdown();
     }
 
@@ -49,9 +53,7 @@ public class OptaProcessorActor extends UntypedActor {
                 ensureNextDocument(REGULAR_DOCUMENTS_PER_QUERY);
                 processNextDocument();
 
-                // Reeschudeleamos una llamada a nosotros mismos para el siguiente Tick
-                getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(),
-                                                               "Tick", getContext().dispatcher(), null);
+                reescheduleTick();
 
                 // Aseguramos que oscilamos bien entre el Tick y el SimulatorTick
                 _optaProcessor = null;
@@ -237,6 +239,20 @@ public class OptaProcessorActor extends UntypedActor {
 
         _optaProcessor = null;
         _nextDocDate = null;
+
+        cancelTicking();
+    }
+
+    private void cancelTicking() {
+        if (_tickCancellable != null) {
+            _tickCancellable.cancel();
+            _tickCancellable = null;
+        }
+    }
+
+    private void reescheduleTick() {
+        _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(), "Tick",
+                                                                          getContext().dispatcher(), null);
     }
 
     final int SIMULATOR_DOCUMENTS_PER_QUERY = 500;
@@ -248,6 +264,8 @@ public class OptaProcessorActor extends UntypedActor {
 
     OptaProcessor _optaProcessor;
     Date _nextDocDate;
+
+    Cancellable _tickCancellable;
 
 
     static private class OptaProcessorState {
