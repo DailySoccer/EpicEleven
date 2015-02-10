@@ -31,12 +31,11 @@ public class SimulatorState {
     public boolean isInit() { return simulationDate != null; }
 
     @JsonSerialize
-    public Date   getCurrentDate() { return GlobalDate.getCurrentDate(); }
+    public Date   getCurrentDate() { return (simulationDate == null)? GlobalDate.getCurrentDate() : simulationDate; }
 
     @JsonSerialize
-    public String getCurrentDateFormatted() { return GlobalDate.getCurrentDateString(); }
-    @JsonSerialize
-    public String getSimulationDateFormatted() { return (simulationDate != null)? GlobalDate.formatDate(simulationDate) : ""; }
+    public String getCurrentDateFormatted() { return (simulationDate == null)? GlobalDate.getCurrentDateString() : GlobalDate.formatDate(simulationDate); }
+
     @JsonSerialize
     public String getPauseDateFormatted() { return (pauseDate != null)? GlobalDate.formatDate(pauseDate) : ""; }
 }

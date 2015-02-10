@@ -53,7 +53,7 @@ public class TestController extends Controller {
         catch (Exception e) {}
 
         if (simulatorState != null) {
-            return ok(simulatorState.getSimulationDateFormatted());
+            return ok(simulatorState.getCurrentDateFormatted());
         }
         else {
             return ok(GlobalDate.getCurrentDateString());
