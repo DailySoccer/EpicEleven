@@ -9,6 +9,7 @@ import model.opta.OptaImporter;
 import model.opta.OptaProcessor;
 import org.apache.commons.dbutils.DbUtils;
 import play.Logger;
+import play.Play;
 import play.db.DB;
 import scala.concurrent.duration.Duration;
 
@@ -20,6 +21,8 @@ public class OptaProcessorActor extends UntypedActor {
 
     // postRestart y preStart se llaman en el nuevo actor (despues de la reinicializacion, claro).
     // preRestart y postStop en el viejo moribundo.
+    // Las dejamos aqui como referencia (siempre se me olvidan!)
+    // http://doc.akka.io/docs/akka/snapshot/scala/actors.html section "Restart Hooks"
     @Override public void preStart() {
 
         Logger.debug("OptaProcessorActor preStart");
@@ -29,15 +32,24 @@ public class OptaProcessorActor extends UntypedActor {
 
         _nextDocDate = null;
 
-        // Primer tick inmediato
-        self().tell("Tick", getSelf());
+        if (Play.application().configuration().getBoolean("optaProcessorActor.autoStart")) {
+            self().tell("Tick", getSelf()); // Primer tick inmediato
+        }
     }
 
+    // En el nuevo
     @Override public void postRestart(Throwable reason) throws Exception {
-        Logger.debug("OptaProcessorActor postRestart, reason:", reason);
+        Logger.debug("OptaProcessorActor postRestart, reason: {}", reason);
         super.postRestart(reason);
     }
 
+    // En el viejo
+    @Override public void preRestart(Throwable reason, scala.Option<Object> message) throws Exception {
+        Logger.debug("OptaProcessorActor preRestart, reason: {}, message {}", reason, message);
+        super.preRestart(reason, message);
+    }
+
+    // En el viejo
     @Override public void postStop() {
         Logger.debug("OptaProcessorActor postStop");
         shutdown();
@@ -252,7 +264,7 @@ public class OptaProcessorActor extends UntypedActor {
 
     private void reescheduleTick() {
         _tickCancellable = getContext().system().scheduler().scheduleOnce(Duration.create(1, TimeUnit.SECONDS), getSelf(), "Tick",
-                                                                          getContext().dispatcher(), null);
+                getContext().dispatcher(), null);
     }
 
     final int SIMULATOR_DOCUMENTS_PER_QUERY = 500;

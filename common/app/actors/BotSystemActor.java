@@ -19,19 +19,24 @@ public class BotSystemActor extends UntypedActor {
         STOPPED
     }
 
+    @Override public void preStart() {
+        if (Play.application().configuration().getBoolean("botSystemActor.autoStart")) {
+           startChildren();
+        }
+    }
+
     @Override public void postStop() {
-        // Para evitar que nos lleguen cartas de muertos
-        cancelTicking();
-        stopActors();
+        Logger.debug("BotSystemActor postStop");
+        stopChildren();
     }
 
     private void readConfig() {
-        _numBots = Play.application().configuration().getInt("botSystem.numBots");
-        _tickInterval = Duration.create(Play.application().configuration().getInt("botSystem.tickInterval"), TimeUnit.MILLISECONDS);
-        _tickMode = TickingMode.valueOf(Play.application().configuration().getString("botSystem.tickMode"));
-        _personality = BotActor.Personality.valueOf(Play.application().configuration().getString("botSystem.personality"));
-        _cyclePersonalities = Play.application().configuration().getBoolean("botSystem.cyclePersonalities");
-        _cyclePersonalitiesInterval = Duration.create(Play.application().configuration().getInt("botSystem.cyclePersonalitiesInterval"), TimeUnit.MILLISECONDS);
+        _numBots = Play.application().configuration().getInt("botSystemActor.numBots");
+        _tickInterval = Duration.create(Play.application().configuration().getInt("botSystemActor.tickInterval"), TimeUnit.MILLISECONDS);
+        _tickMode = TickingMode.valueOf(Play.application().configuration().getString("botSystemActor.tickMode"));
+        _personality = BotActor.Personality.valueOf(Play.application().configuration().getString("botSystemActor.personality"));
+        _cyclePersonalities = Play.application().configuration().getBoolean("botSystemActor.cyclePersonalities");
+        _cyclePersonalitiesInterval = Duration.create(Play.application().configuration().getInt("botSystemActor.cyclePersonalitiesInterval"), TimeUnit.MILLISECONDS);
     }
 
     @Override
