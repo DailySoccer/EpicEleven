@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.*;
 import com.fasterxml.jackson.databind.*;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
+import play.Logger;
 
 import java.io.IOException;
 
@@ -23,7 +24,7 @@ public class JacksonJodaMoney {
                 return Money.parse(value);
             }
             catch (IllegalArgumentException e) {
-                // Versión antigua: Expresa el dinero como "Int32" o "Double"
+                // Logger.warn("MoneyDeserializer: Versión antigua expresando el dinero como \"Int32\" o \"Double\"");
                 return Money.of(CurrencyUnit.EUR, Double.parseDouble(value));
             }
         }

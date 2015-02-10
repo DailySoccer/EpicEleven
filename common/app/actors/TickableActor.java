@@ -24,6 +24,7 @@ public abstract class TickableActor extends UntypedActor {
         Long millisecs = Play.application().configuration().getMilliseconds(actorName + ".tickInterval");
         if (millisecs == null) {
             millisecs = 60000L;
+            Logger.warn("{} no tiene configurado su tickInterval!", actorName);
         }
         _duration = Duration.create(millisecs, TimeUnit.MILLISECONDS);
 
