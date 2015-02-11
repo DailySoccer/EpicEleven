@@ -45,8 +45,8 @@ public class ContestsActor extends TickableActor {
 
     private void creatingTemplateContests() {
         Find findedMatchEvents = _lastMathEventId != null
-                ? Model.templateMatchEvents().find("{_id: {$gt: #}}", _lastMathEventId)
-                : Model.templateMatchEvents().find();
+                ? Model.templateMatchEvents().find("{_id: {$gt: #}, startDate: {$gt: #}}", _lastMathEventId, GlobalDate.getCurrentDate())
+                : Model.templateMatchEvents().find("{startDate: {$gt: #}}", GlobalDate.getCurrentDate());
 
         List<TemplateMatchEvent> newMatchEvents = ListUtils.asList(findedMatchEvents.sort("{_id: 1}").as(TemplateMatchEvent.class));
 
@@ -95,7 +95,9 @@ public class ContestsActor extends TickableActor {
         // Creamos los partidos que nos han quedado
         for (List<TemplateMatchEvent> matchEvents : matchEventsByCompetition.values()) {
             createMock(matchEvents);
-            _lastMathEventId = matchEvents.get(matchEvents.size()-1).templateMatchEventId;
+
+            TemplateMatchEvent lastMatchEvent = matchEvents.get(matchEvents.size() - 1);
+            _lastMathEventId = lastMatchEvent.templateMatchEventId;
         }
 
     }
