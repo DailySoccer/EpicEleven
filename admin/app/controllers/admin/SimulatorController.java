@@ -43,7 +43,6 @@ public class SimulatorController extends Controller {
 
     public static Result reset() {
         Model.reset(false);
-        Model.actors().tell("SimulatorActor", "InitShutdown");
         return ok();
     }
 

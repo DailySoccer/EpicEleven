@@ -1,6 +1,7 @@
 package actors;
 
 import akka.actor.ActorRef;
+import akka.actor.Kill;
 import akka.actor.PoisonPill;
 import akka.actor.Props;
 import akka.pattern.Patterns;
@@ -95,7 +96,8 @@ public class Actors {
             tell("BotSystemActor", "PoisonPill");
             tell("SimulatorActor", "PoisonPill");
             tell("NotificationActor", "PoisonPill");
-        } else {
+        }
+        else {
             stopLocalActors();
             createLocalActors();
             bindLocalActorsToQueues();
@@ -107,7 +109,7 @@ public class Actors {
     private void stopLocalActors() {
         for (ActorRef actorRef : _localActors.values()) {
             try {
-                scala.concurrent.Future<Boolean> stopped = akka.pattern.Patterns.gracefulStop(actorRef, Duration.create(10, TimeUnit.SECONDS), PoisonPill.getInstance());
+                scala.concurrent.Future<Boolean> stopped = akka.pattern.Patterns.gracefulStop(actorRef, Duration.create(10, TimeUnit.SECONDS), Kill.getInstance());
                 Await.result(stopped, Duration.create(11, TimeUnit.SECONDS));
             }
             catch (Exception e) {
