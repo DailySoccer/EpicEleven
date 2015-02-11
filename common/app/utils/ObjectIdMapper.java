@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.bson.types.ObjectId;
+import org.joda.money.Money;
 
 import java.io.IOException;
 
@@ -17,6 +18,8 @@ public class ObjectIdMapper extends ObjectMapper {
     public ObjectIdMapper() {
         SimpleModule module = new SimpleModule("ObjectIdModule");
         module.addSerializer(ObjectId.class, new ObjectIdSerializer());
+        module.addSerializer(Money.class, new JacksonJodaMoney.MoneySerializer());
+        module.addDeserializer(Money.class, new JacksonJodaMoney.MoneyDeserializer());
         this.registerModule(module);
 
         setVisibility(PropertyAccessor.ALL, Visibility.NONE);

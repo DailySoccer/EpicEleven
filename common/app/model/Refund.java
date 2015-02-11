@@ -5,6 +5,7 @@ import model.accounting.AccountOp;
 import model.accounting.AccountingTranRefund;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
+import org.joda.money.Money;
 
 import java.math.BigDecimal;
 
@@ -20,11 +21,11 @@ public class Refund {
 
     public ObjectId userId;
     public State state;
-    public int amount;
+    public Money amount;
 
     public Refund() {}
 
-    public Refund(ObjectId userId, int amount) {
+    public Refund(ObjectId userId, Money amount) {
         this.userId = userId;
         this.state = State.PENDING;
         this.amount = amount;
@@ -47,12 +48,12 @@ public class Refund {
             Integer seqId = User.getSeqId(userId) + 1;
 
             // El usuario tiene dinero suficiente?
-            BigDecimal userBalance = User.calculateBalance(userId);
-            if (userBalance.compareTo(new BigDecimal(amount)) >= 0) {
+            Money userBalance = User.calculateBalance(userId);
+            if (userBalance.compareTo(amount) >= 0) {
 
                 // Registrar la devolución
                 AccountingTranRefund.create(refundId, ImmutableList.of(
-                        new AccountOp(userId, new BigDecimal(-amount), seqId)
+                        new AccountOp(userId, amount.negated(), seqId)
                 ));
 
                 setCompleted();

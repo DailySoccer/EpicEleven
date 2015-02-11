@@ -9,7 +9,6 @@ import model.opta.*;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
-import utils.PaginationData;
 
 import java.util.List;
 

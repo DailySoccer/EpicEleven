@@ -1,11 +1,13 @@
 package model;
 
-import actors.DailySoccerActors;
+import actors.Actors;
 import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.mongodb.*;
 import org.bson.types.ObjectId;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
+import org.joda.money.Money;
 import org.jongo.Find;
 import org.jongo.Jongo;
 import org.jongo.Mapper;
@@ -14,6 +16,7 @@ import org.jongo.marshall.jackson.JacksonMapper;
 import play.Logger;
 import play.Play;
 import utils.InstanceRole;
+import utils.JacksonJodaMoney;
 import utils.ProcessExec;
 import utils.TargetEnvironment;
 
@@ -44,15 +47,17 @@ public class Model {
     static public MongoCollection optaMatchEvents() { return _jongo.getCollection("optaMatchEvents"); }
     static public MongoCollection optaMatchEventStats() { return _jongo.getCollection("optaMatchEventStats"); }
     static public MongoCollection pointsTranslation() { return _jongo.getCollection("pointsTranslation"); }
-    static public MongoCollection optaProcessor()     { return _jongo.getCollection("optaProcessor"); }
 
     static public MongoCollection jobs() { return _jongo.getCollection("jobs"); }
     static public MongoCollection accountingTransactions() { return _jongo.getCollection("accountingTransactions"); }
+
+    static public MongoCollection notifications() {return _jongo.getCollection("notifications");}
 
     static public MongoCollection orders() { return _jongo.getCollection("orders"); }
     static public MongoCollection refunds() { return _jongo.getCollection("refunds"); }
     static public MongoCollection paypalResponses() { return _jongo.getCollection("paypalResponses"); }
 
+    static public MongoCollection optaProcessor()  { return _jongo.getCollection("optaProcessor"); }
     static public MongoCollection simulator() { return _jongo.getCollection("simulator"); }
 
 
@@ -86,7 +91,7 @@ public class Model {
     }
 
     // Desde fuera se necesita acceder al gestor de actores para poder mandar mensajes desde el UI de administracion
-    static public DailySoccerActors getDailySoccerActors() {
+    static public Actors actors() {
         return _actors;
     }
 
@@ -97,7 +102,7 @@ public class Model {
         initMongo(readMongoUriForEnvironment(_targetEnvironment));
         initPostgresDB();
 
-        _actors = new DailySoccerActors(_instanceRole);
+        _actors = new Actors(_instanceRole);
     }
 
     static public void shutdown() {
@@ -123,15 +128,21 @@ public class Model {
             _mongoClient = new MongoClient(mongoClientURI);
             _mongoDB = _mongoClient.getDB(mongoClientURI.getDatabase());
 
+            SimpleModule module = new SimpleModule();
+            module.addDeserializer(Money.class, new JacksonJodaMoney.MoneyDeserializer());
+            module.addSerializer(Money.class, new JacksonJodaMoney.MoneySerializer());
+
             Mapper mapper = new JacksonMapper.Builder()
                     .disable(MapperFeature.AUTO_DETECT_GETTERS)
                     .disable(MapperFeature.AUTO_DETECT_IS_GETTERS)
                     .disable(MapperFeature.AUTO_DETECT_SETTERS)
+                    .registerModule(module)
                     .build();
+
             _jongo = new Jongo(_mongoDB, mapper);
 
             // Make sure our DB has the neccesary collections and indexes
-            ensureMongoDB(_mongoDB);
+            ensureMongoDB();
 
             bSuccess = true;
         }
@@ -181,34 +192,53 @@ public class Model {
         return ret;
     }
 
-    static public void resetMongoDB() {
-        dropMongoDB(_mongoDB);
-        ensureMongoDB(_mongoDB);
+    static public void reset(boolean forSnapshot) {
+        _actors.stopActors();
 
-        PointsTranslation.createDefault();
-        TemplateSoccerTeam.createInvalidTeam();
-    }
+        dropMongoDB(forSnapshot);
 
-    static public void fullDropMongoDB() {
-        dropMongoDB(_mongoDB);
-        _mongoDB.getCollection("system.users").drop();
-    }
+        if (!forSnapshot) {
+            ensureMongoDB();
 
-    static private void dropMongoDB(DB theMongoDB) {
+            PointsTranslation.createDefault();
+            TemplateSoccerTeam.createInvalidTeam();
 
-        for (String collection : theMongoDB.getCollectionNames()) {
-            if (!collection.contains("system.")) {
-                Logger.debug("About to delete collection: {}", collection);
-                theMongoDB.getCollection(collection).drop();
-            }
+            MockData.ensureMockDataUsers();
+            MockData.ensureCompetitions();
         }
+
+        // Debido a que no tenemos una fecha global distribuida, tenemos que resetear manualmente. Obviamente se quedara
+        // mal en todas las maquinas adonde no ha llegado ese start(), asi que los tests no funcionan con varios
+        // Web Process
+        GlobalDate.setFakeDate(null);
+
+        _actors.startActors();
     }
 
-    static private void ensureMongoDB(DB theMongoDB) {
-        ensureUsersDB(theMongoDB);
-        ensureOptaDB(theMongoDB);
-        ensureContestsDB(theMongoDB);
-        ensureTransactionsDB(theMongoDB);
+    static private void dropMongoDB(boolean dropSystemUsers) {
+
+        for (String collName : _mongoDB.getCollectionNames()) {
+            if (collName.contains("system.")) {
+                if (collName.equals("system.users") && dropSystemUsers) {
+                    _mongoDB.getCollection(collName).drop();
+                }
+            }
+            else {
+                _mongoDB.getCollection(collName).drop();
+            }
+
+            Logger.debug("Collection {} dropped", collName);
+        }
+
+        Logger.debug("All collections dropped");
+    }
+
+    static private void ensureMongoDB() {
+        ensureUsersDB(_mongoDB);
+        ensureOptaDB(_mongoDB);
+        ensureContestsDB(_mongoDB);
+        ensureTransactionsDB(_mongoDB);
+        ensureNotificationsDB(_mongoDB);
     }
 
     static private void ensureUsersDB(DB theMongoDB) {
@@ -299,6 +329,15 @@ public class Model {
         }
     }
 
+    static private void ensureNotificationsDB(DB theMongoDB) {
+        if (!theMongoDB.collectionExists("notifications")) {
+            DBCollection notifications = theMongoDB.createCollection("notifications", new BasicDBObject());
+            notifications.createIndex(new BasicDBObject("topic", 1));
+            notifications.createIndex(new BasicDBObject("reason", 1));
+            notifications.createIndex(new BasicDBObject("userId", 1));
+        }
+    }
+
     /**
      * Query de una lista de ObjectIds (en una misma query)
      *
@@ -323,6 +362,6 @@ public class Model {
     // Jongo is thread safe too: https://groups.google.com/forum/#!topic/jongo-user/KwukXi5Vm7c
     static private Jongo _jongo;
 
-    // Mantenemos aqui nuestro unico DailySoccerActors para asegurar que tiene el mismo ciclo de vida que nosotros
-    static private DailySoccerActors _actors;
+    // Mantenemos aqui nuestro unico Actors para asegurar que tiene el mismo ciclo de vida que nosotros
+    static private Actors _actors;
 }

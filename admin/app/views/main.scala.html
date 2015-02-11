@@ -1,5 +1,6 @@
 @(title: String, scripts: Html = Html(""))(content: Html)
 
+
 @import controllers.admin.FlashMessage
 @import controllers.admin.routes._
 @import model._
@@ -94,16 +95,18 @@
 </div>
 <!-- Bootstrap core JavaScript
 ================================================== -->
+
 <!-- Placed at the end of the document so the pages load faster -->
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
 <script src="/js/jquery.dataTables.js"></script>
 <script src="/js/dataTables.bootstrap.js"></script>
 <script src="/js/bootstrap.min.js"></script>
-<!--script src="//cdn.datatables.net/1.10.0/js/jquery.dataTables.js"></script>
-<script src="//cdn.datatables.net/plug-ins/be7019ee387/integration/bootstrap/3/dataTables.bootstrap.js"></script-->
-<!--<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>-->
-@simulatorbar()
+
+@* Inyectamos nuestra barra de control del simulador solo si estamos controlando nuestra maquina local *@
+@if(model.Model.isLocalHostTargetEnvironment) {
+    @controllers.admin.SimulatorController.simulatorBar()
+}
 
 @scripts
 

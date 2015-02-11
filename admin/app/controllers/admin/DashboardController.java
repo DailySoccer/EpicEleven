@@ -1,18 +1,18 @@
 package controllers.admin;
 
-import actors.BotParentActor;
-import model.MockData;
+import actors.BotSystemActor;
 import model.Model;
 import model.User;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.opta.OptaCompetition;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.TargetEnvironment;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,13 +28,8 @@ public class DashboardController extends Controller {
     }
 
     static public Result resetDB() {
-
-        Model.resetMongoDB();
-        MockData.ensureMockDataUsers();
-        MockData.ensureCompetitions();
-
+        Model.reset(false);
         FlashMessage.success("Reset DB: OK");
-
         return index();
     }
 
@@ -48,17 +43,17 @@ public class DashboardController extends Controller {
     }
 
     static public Result startStopBotActors() {
-        Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "StartStop");
+        Model.actors().tellAndAwait("BotSystemActor", "StartStop");
         return redirect(routes.DashboardController.index());
     }
 
     static public Result pauseResumeBotActors() {
-        Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "PauseResume");
+        Model.actors().tellAndAwait("BotSystemActor", "PauseResume");
         return redirect(routes.DashboardController.index());
     }
 
     static public Result stampedeBotActors() {
-        Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "Stampede");
+        Model.actors().tellAndAwait("BotSystemActor", "Stampede");
         return redirect(routes.DashboardController.index());
     }
 
@@ -79,7 +74,7 @@ public class DashboardController extends Controller {
     static private void addMoney(List<User> users, Integer amount) {
         List<AccountOp> accountOps = new ArrayList<>();
         for (User bot : users) {
-            accountOps.add(new AccountOp(bot.userId, new BigDecimal(amount), bot.getSeqId() + 1));
+            accountOps.add(new AccountOp(bot.userId, Money.of(CurrencyUnit.EUR, amount), bot.getSeqId() + 1));
         }
 
         if (!accountOps.isEmpty()) {
@@ -89,7 +84,7 @@ public class DashboardController extends Controller {
         }
     }
 
-    static private BotParentActor.ChildrenState getBotsState() {
-        return (BotParentActor.ChildrenState)Model.getDailySoccerActors().tellToActorAwaitResult("BotParentActor", "GetChildrenState");
+    static private BotSystemActor.ChildrenState getBotsState() {
+        return Model.actors().tellAndAwait("BotSystemActor", "GetChildrenState");
     }
 }

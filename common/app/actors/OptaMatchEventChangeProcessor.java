@@ -59,11 +59,11 @@ public class OptaMatchEventChangeProcessor {
                 .with("{$set: {state: \"LIVE\"}}");
 
         // Los Contests válidos pasarán a "live"
-        // Válido = (Sin cuota de entrada AND entries > 1) OR Llenos
+        // Válido = (Gratuitos AND entries > 1) OR Llenos
         Model.contests()
                 .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"," +
                         "$or: [" +
-                        "  {entryFee: {$eq: 0}, \"contestEntries.1\": {$exists: true}}," +
+                        "  {prizeType: {$eq: \"FREE\"}, \"contestEntries.1\": {$exists: true}}," +
                         "  {$where: \"this.contestEntries.length == this.maxEntries\"}" +
                         "]}", matchEvent.templateMatchEventId)
                 .multi()

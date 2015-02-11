@@ -3,8 +3,13 @@ package model;
 import com.fasterxml.jackson.annotation.JsonView;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTranPrize;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.money.CurrencyUnit;
 import org.jongo.marshall.jackson.oid.Id;
+import org.joda.money.Money;
 import java.math.BigDecimal;
 
 import utils.ListUtils;
@@ -45,7 +50,7 @@ public class Contest implements JongoId {
     public int salaryCap;
 
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
-    public int entryFee;
+    public Money entryFee;
 
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public PrizeType prizeType;
@@ -137,8 +142,11 @@ public class Contest implements JongoId {
         return ListUtils.asList(Model.contests().find("{templateContestId: #}", templateContestId).as(Contest.class));
     }
 
-    static public List<Contest> findAllNotCanceledFromTemplateContest(ObjectId templateContestId) {
-        return ListUtils.asList(Model.contests().find("{templateContestId: #, state: { $ne: \"CANCELED\" }}", templateContestId).as(Contest.class));
+    static public List<Contest> findAllStartingIn(int hours) {
+        DateTime oneHourInFuture = new DateTime(GlobalDate.getCurrentDate()).plusHours(hours);
+        return ListUtils.asList(Model.contests()
+                .find("{startDate: {$gt: #, $lte: # }}", GlobalDate.getCurrentDate(), oneHourInFuture.toDate())
+                .as(Contest.class));
     }
 
     static public List<Contest> findAllFromTemplateContests(List<TemplateContest> templateContests) {
@@ -169,41 +177,6 @@ public class Contest implements JongoId {
                 .find("{$and: [{state: \"ACTIVE\"}, {$where: \"this.contestEntries.length < this.maxEntries\"}]}")
                 .projection(ViewProjection.get(projectionClass, Contest.class))
                 .as(Contest.class));
-    }
-
-    static public List<Contest> findAllActiveWithNoneOrOneEntry(ObjectId templateMatchEventId) {
-        String query = String.format("{$and: [{state: \"ACTIVE\", templateMatchEventIds: {$in:[#]}, 'contestEntries.%s': {$exists: false}}]}", 1);
-        return ListUtils.asList(Model.contests()
-                .find(query, templateMatchEventId)
-                .projection(ViewProjection.get(JsonViews.Public.class, Contest.class))
-                .as(Contest.class));
-    }
-
-    static public List<Contest> findAllActiveNotFullWithEntryFee(ObjectId templateMatchEventId) {
-        return ListUtils.asList(Model.contests()
-                .find("{$and: [{state: \"ACTIVE\", templateMatchEventIds: {$in:[#]}, entryFee: {$gt: 0}}, {$where: \"this.contestEntries.length < this.maxEntries\"}]}", templateMatchEventId)
-                .projection(ViewProjection.get(JsonViews.Public.class, Contest.class))
-                .as(Contest.class));
-    }
-
-    static public List<Contest> findAllActiveAndInvalid(ObjectId templateMatchEventId) {
-        // 1. Busca aquellos contests que estén ACTIVOS e incluyan ese partido
-        // 2. Precalcula una serie de parámetros ("entries": número de entries, "entryFee": el dinero de la entrada, "notFull": si no están llenos)
-        // 3. Se queda con los contests que:
-        //      a) Tienen entryFree y no están llenos
-        //      b) Están vacíos o tienen una única entry (< 2 entries)
-        // 4. Devuelve únicamente los ids
-        return Model.contests()
-                .aggregate("{$match: { state: \"ACTIVE\", templateMatchEventIds: {$in: [#]}}}", templateMatchEventId)
-                .and("{$project: {\"entries\": {$size: \"$contestEntries\"}, entryFee: 1, notFull: { $lt: [ {$size: \"$contestEntries\"}, \"$maxEntries\"] }}}")
-                .and("{$match:" +
-                        "{$or: [" +
-                            "{$and: [{\"entryFee\": {$gt: 0}}, {notFull: true}] }," +
-                            "{entries: {$lt: 2}}" +
-                        "]}" +
-                        "}")
-                .and("{$project: {_id: 1}}")
-                .as(Contest.class);
     }
 
     static public List<Contest> findAllHistoryNotClosed() {
@@ -286,17 +259,25 @@ public class Contest implements JongoId {
         }
     }
 
+    public String translatedName() {
+        // DateTimeService.formatDateWithDayOfTheMonth(startDate))
+        return StringUtils.capitalize(name.replaceAll("%StartDate", DateTimeFormat.forPattern("EEE, d MMM").withLocale(new Locale("es", "ES")).print(new DateTime(startDate)))
+                .replaceAll("%MaxEntries", Integer.toString(maxEntries))
+                .replaceAll("%SalaryCap", Integer.toString(new Double(salaryCap / 1000).intValue()))
+                .replaceAll("%PrizeType", prizeType.name())
+                .replaceAll("%EntryFee", entryFee.toString())
+                .replaceAll("%MockUsers", ""));
+    }
+
     private void givePrizes(Prizes prizes) {
         // Si el contest tiene premios para repartir...
         if (!prizeType.equals(PrizeType.FREE)) {
             List<AccountOp> accounts = new ArrayList<>();
-
             for (ContestEntry contestEntry : contestEntries) {
-                Integer prize = prizes.getValue(contestEntry.position);
-
-                if (prize > 0) {
+                Money prize = prizes.getValue(contestEntry.position);
+                if (prize.isGreaterThan(Money.zero(CurrencyUnit.EUR))) {
                     User user = User.findOne(contestEntry.userId);
-                    accounts.add(new AccountOp(contestEntry.userId, new BigDecimal(prize), user.getSeqId() + 1));
+                    accounts.add(new AccountOp(contestEntry.userId, prize, user.getSeqId() + 1));
                 }
             }
 

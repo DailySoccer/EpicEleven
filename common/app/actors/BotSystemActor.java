@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class BotParentActor extends UntypedActor {
+public class BotSystemActor extends UntypedActor {
 
     public enum ChildrenState {
         STARTED,
@@ -19,19 +19,24 @@ public class BotParentActor extends UntypedActor {
         STOPPED
     }
 
+    @Override public void preStart() {
+        if (Play.application().configuration().getBoolean("botSystemActor.autoStart")) {
+           startChildren();
+        }
+    }
+
     @Override public void postStop() {
-        // Para evitar que nos lleguen cartas de muertos
-        cancelTicking();
-        stopActors();
+        Logger.debug("BotSystemActor postStop");
+        stopChildren();
     }
 
     private void readConfig() {
-        _numBots = Play.application().configuration().getInt("botSystem.numBots");
-        _tickInterval = Duration.create(Play.application().configuration().getInt("botSystem.tickInterval"), TimeUnit.MILLISECONDS);
-        _tickMode = TickingMode.valueOf(Play.application().configuration().getString("botSystem.tickMode"));
-        _personality = BotActor.Personality.valueOf(Play.application().configuration().getString("botSystem.personality"));
-        _cyclePersonalities = Play.application().configuration().getBoolean("botSystem.cyclePersonalities");
-        _cyclePersonalitiesInterval = Duration.create(Play.application().configuration().getInt("botSystem.cyclePersonalitiesInterval"), TimeUnit.MILLISECONDS);
+        _numBots = Play.application().configuration().getInt("botSystemActor.numBots");
+        _tickInterval = Duration.create(Play.application().configuration().getMilliseconds("botSystemActor.tickInterval"), TimeUnit.MILLISECONDS);
+        _tickMode = TickingMode.valueOf(Play.application().configuration().getString("botSystemActor.tickMode"));
+        _personality = BotActor.Personality.valueOf(Play.application().configuration().getString("botSystemActor.personality"));
+        _cyclePersonalities = Play.application().configuration().getBoolean("botSystemActor.cyclePersonalities");
+        _cyclePersonalitiesInterval = Duration.create(Play.application().configuration().getMilliseconds("botSystemActor.cyclePersonalitiesInterval"), TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -49,18 +54,18 @@ public class BotParentActor extends UntypedActor {
     }
 
     private void startChildren() {
-        Logger.debug("BotParentActor arrancando {} bots hijos", _numBots);
+        Logger.debug("BotSystemActor arrancando {} bots hijos", _numBots);
         readConfig();
         createActors();
         startTicking();
-        Logger.debug("BotParentActor {} hijos arrancados", _numBots);
+        Logger.debug("BotSystemActor {} hijos arrancados", _numBots);
     }
 
     private void stopChildren() {
-        Logger.debug("BotParentActor parando {} bots hijos", _numBots);
+        Logger.debug("BotSystemActor parando");
         cancelTicking();
         stopActors();
-        Logger.debug("BotParentActor {} hijos parados", _numBots);
+        Logger.debug("BotSystemActor parado");
     }
 
     private void onReceive(String msg) {
@@ -80,14 +85,14 @@ public class BotParentActor extends UntypedActor {
             case "PauseResume":
                 if (_childrenStarted) {
                     if (_tickCancellable != null) {
-                        Logger.debug("BotParentActor pausando hijos");
+                        Logger.debug("BotSystemActor pausando hijos");
                         cancelTicking();
-                        Logger.debug("BotParentActor hijos pausados");
+                        Logger.debug("BotSystemActor hijos pausados");
                     }
                     else {
-                        Logger.debug("BotParentActor resumiendo hijos");
+                        Logger.debug("BotSystemActor resumiendo hijos");
                         startTicking();
-                        Logger.debug("BotParentActor hijos resumidos");
+                        Logger.debug("BotSystemActor hijos resumidos");
                     }
                 }
                 else {
@@ -102,12 +107,12 @@ public class BotParentActor extends UntypedActor {
                 break;
 
             case "Stampede":
-                Logger.debug("BotParentActor Stampede!");
+                Logger.debug("BotSystemActor Stampede!");
                 for (ActorRef actorRef : getContext().getChildren()) {
                     actorRef.tell("LeaveAllContests", getSelf());
                     cancelTicking();
                 }
-                Logger.debug("BotParentActor Stampede end");
+                Logger.debug("BotSystemActor Stampede end");
 
                 sender().tell(getCurrentChildrenState(), getSelf());
                 break;

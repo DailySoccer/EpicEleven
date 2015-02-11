@@ -64,12 +64,14 @@ public class GenerateLineup {
             int averageRemainingSalary = (salaryCap - sumSalary(lineup)) / (11 - lineup.size());
 
             List<TemplateSoccerPlayer> filtered = filterBySalary(from, 0, averageRemainingSalary);
-            sortByFantasyPoints(filtered, true);
+            if (!filtered.isEmpty()) {
+                sortByFantasyPoints(filtered, true);
 
-            // Entre los 8 mejores... esto podia ser un parametro para ajustar mas, por ejemplo dependiendo del numero de maxEntries
-            TemplateSoccerPlayer selected = filtered.get(_rand.nextInt(Math.min(8, filtered.size())));
-            lineup.add(selected);
-            from.remove(selected);
+                // Entre los 8 mejores... esto podia ser un parametro para ajustar mas, por ejemplo dependiendo del numero de maxEntries
+                TemplateSoccerPlayer selected = filtered.get(_rand.nextInt(Math.min(8, filtered.size())));
+                lineup.add(selected);
+                from.remove(selected);
+            }
         }
     }
 

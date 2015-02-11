@@ -9,6 +9,8 @@ import model.*;
 import model.jobs.CancelContestEntryJob;
 import model.jobs.EnterContestJob;
 import org.bson.types.ObjectId;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import play.Logger;
 import play.data.Form;
 import play.data.validation.Constraints;
@@ -101,10 +103,10 @@ public class ContestEntryController extends Controller {
             }
 
             if (errores.isEmpty()) {
-                if (aContest.entryFee > 0) {
+                if (aContest.entryFee.isGreaterThan(Money.zero(CurrencyUnit.EUR))) {
                     // Verificar que el usuario tiene dinero suficiente...
-                    BigDecimal userBalance = User.calculateBalance(theUser.userId);
-                    if (userBalance.compareTo(new BigDecimal(aContest.entryFee)) < 0) {
+                    Money userBalance = User.calculateBalance(theUser.userId);
+                    if (userBalance.compareTo(aContest.entryFee) < 0) {
                         errores.add(ERROR_USER_BALANCE_NEGATIVE);
                     }
                 }

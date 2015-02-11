@@ -106,9 +106,9 @@ def copydb(origin='', destination='', password=''):
     OPTS_DICT = {'local':
                      '-h localhost:27017 -d dailySoccerDB',
                  'production':
-                     '-h lamppost.7.mongolayer.com:10078 -d app23671191 -u "admin" -p "%s"' % (password),
+                     '-h lamppost.6.mongolayer.com:10078 -d app23671191 -u "admin" -p "%s"' % (password),
                  'staging':
-                     '-h lamppost.7.mongolayer.com:10011 -d app26235550 -u "admin" -p "%s"' % (password)
+                     '-h lamppost.6.mongolayer.com:10011 -d app26235550 -u "admin" -p "%s"' % (password)
                 }
 
     # Name of the MongoDB database in production
