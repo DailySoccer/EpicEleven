@@ -56,7 +56,7 @@ GET            /date_last_xml                                          controlle
 POST           /opta                                                   controllers.OptaHttpController.optaXmlInput()
 
 # Paypal
-GET            /paypal/approval_payment/:userId/:amount                controllers.PaypalController.approvalPayment(userId, amount : Integer)
+GET            /paypal/approval_payment/:userId/:amount                controllers.PaypalController.approvalPayment(userId, amount : Double)
 GET            /paypal/approval_buy/:userId/:productId                 controllers.PaypalController.approvalBuy(userId, productId)
 GET            /paypal/execute_payment                                 controllers.PaypalController.executePayment()
 GET            /paypal/verify_payment/:paymentId                       controllers.PaypalController.verifyPayment(paymentId)
