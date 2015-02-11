@@ -193,7 +193,7 @@ public class Model {
     }
 
     static public void reset(boolean forSnapshot) {
-        _actors.restartActors();
+        _actors.stopActors();
 
         dropMongoDB(forSnapshot);
 
@@ -211,6 +211,8 @@ public class Model {
         // mal en todas las maquinas adonde no ha llegado ese start(), asi que los tests no funcionan con varios
         // Web Process
         GlobalDate.setFakeDate(null);
+
+        _actors.startActors();
     }
 
     static private void dropMongoDB(boolean dropSystemUsers) {

@@ -85,9 +85,9 @@ public class Actors {
         }
     }
 
-    public void restartActors() {
+    public void stopActors() {
 
-        Logger.debug("Restarting Actors");
+        Logger.debug("Stopping Actors");
 
         if (_connection != null) {
             tell("OptaProcessorActor", "PoisonPill");
@@ -99,17 +99,23 @@ public class Actors {
         }
         else {
             stopLocalActors();
+        }
+
+        Logger.debug("Actors stopped");
+    }
+
+    public void startActors() {
+
+        if (_connection != null) {
             createLocalActors();
             bindLocalActorsToQueues();
         }
-
-        Logger.debug("Actors restarted");
     }
 
     private void stopLocalActors() {
         for (ActorRef actorRef : _localActors.values()) {
             try {
-                scala.concurrent.Future<Boolean> stopped = akka.pattern.Patterns.gracefulStop(actorRef, Duration.create(10, TimeUnit.SECONDS), Kill.getInstance());
+                scala.concurrent.Future<Boolean> stopped = akka.pattern.Patterns.gracefulStop(actorRef, Duration.create(10, TimeUnit.SECONDS), PoisonPill.getInstance());
                 Await.result(stopped, Duration.create(11, TimeUnit.SECONDS));
             }
             catch (Exception e) {
