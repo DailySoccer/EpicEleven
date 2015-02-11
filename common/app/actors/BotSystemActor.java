@@ -62,10 +62,10 @@ public class BotSystemActor extends UntypedActor {
     }
 
     private void stopChildren() {
-        Logger.debug("BotSystemActor parando {} bots hijos", _numBots);
+        Logger.debug("BotSystemActor parando");
         cancelTicking();
         stopActors();
-        Logger.debug("BotSystemActor {} hijos parados", _numBots);
+        Logger.debug("BotSystemActor parado");
     }
 
     private void onReceive(String msg) {
