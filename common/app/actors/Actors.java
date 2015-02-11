@@ -106,7 +106,7 @@ public class Actors {
 
     public void startActors() {
 
-        if (_connection != null) {
+        if (_connection == null) {
             createLocalActors();
             bindLocalActorsToQueues();
         }
