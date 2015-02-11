@@ -1,7 +1,7 @@
 package actors;
 
 import akka.actor.ActorRef;
-import akka.actor.Kill;
+import akka.actor.PoisonPill;
 import akka.actor.Props;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
@@ -117,9 +117,7 @@ public class Actors {
     private void stopLocalActors() {
         for (ActorRef actorRef : _localActors.values()) {
             try {
-                // PoisonPill se encola al final y por lo tanto, si estamos procesando justo ahora un tick, se encolara otro Tick
-                // despues del PoisonPill, y como las mailboxes no se vacian, ese tick le llegara al nuevo actor.
-                scala.concurrent.Future<Boolean> stopped = akka.pattern.Patterns.gracefulStop(actorRef, Duration.create(10, TimeUnit.SECONDS), Kill.getInstance());
+                scala.concurrent.Future<Boolean> stopped = akka.pattern.Patterns.gracefulStop(actorRef, Duration.create(10, TimeUnit.SECONDS), PoisonPill.getInstance());
                 Await.result(stopped, Duration.create(11, TimeUnit.SECONDS));
             }
             catch (Exception e) {
