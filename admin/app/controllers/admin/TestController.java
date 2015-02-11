@@ -20,8 +20,7 @@ import java.util.Date;
 public class TestController extends Controller {
 
     static public Result start() {
-        Model.reset(false);
-        return ok("OK");
+        return SimulatorController.reset();
     }
 
 

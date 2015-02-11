@@ -206,6 +206,11 @@ public class Model {
             MockData.ensureMockDataUsers();
             MockData.ensureCompetitions();
         }
+
+        // Debido a que no tenemos una fecha global distribuida, tenemos que resetear manualmente. Obviamente se quedara
+        // mal en todas las maquinas adonde no ha llegado ese start(), asi que los tests no funcionan con varios
+        // Web Process
+        GlobalDate.setFakeDate(null);
     }
 
     static private void dropMongoDB(boolean dropSystemUsers) {
