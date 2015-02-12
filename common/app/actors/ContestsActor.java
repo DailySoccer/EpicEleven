@@ -4,6 +4,7 @@ import model.Contest;
 import model.GlobalDate;
 import model.TemplateContest;
 import model.*;
+import model.opta.OptaCompetition;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -33,73 +34,76 @@ public class ContestsActor extends TickableActor {
             creatingTemplateContests();
         }
 
-        for (TemplateContest templateContest : TemplateContest.findAllByActivationAt(GlobalDate.getCurrentDate())) {
-            // El TemplateContest instanciara sus Contests y MatchEvents asociados
-            templateContest.instantiate();
-        }
+        // El TemplateContest instanciara sus Contests y MatchEvents asociados
+        TemplateContest.findAllByActivationAt(GlobalDate.getCurrentDate()).forEach(TemplateContest::instantiate);
 
-        for (Contest contest : Contest.findAllHistoryNotClosed()) {
-            contest.closeContest();
-        }
+        Contest.findAllHistoryNotClosed().forEach(Contest::closeContest);
     }
 
     private void creatingTemplateContests() {
-        Find findedMatchEvents = _lastMathEventId != null
-                ? Model.templateMatchEvents().find("{_id: {$gt: #}, startDate: {$gt: #}}", _lastMathEventId, GlobalDate.getCurrentDate())
-                : Model.templateMatchEvents().find("{startDate: {$gt: #}}", GlobalDate.getCurrentDate());
+        OptaCompetition.findAllActive().forEach(competition ->
+                creatingTemplateContests(competition.competitionId)
+        );
+    }
+
+    private void creatingTemplateContests(String competitionId) {
+        Find findedMatchEvents = _lastMatchEventByCompetition.containsKey(competitionId)
+                ? Model.templateMatchEvents().find("{_id: {$gt: #}, optaCompetitionId: #, startDate: {$gt: #}}", _lastMatchEventByCompetition.get(competitionId), competitionId, GlobalDate.getCurrentDate())
+                : Model.templateMatchEvents().find("{optaCompetitionId: #, startDate: {$gt: #}}", competitionId, GlobalDate.getCurrentDate());
 
         List<TemplateMatchEvent> newMatchEvents = ListUtils.asList(findedMatchEvents.sort("{_id: 1}").as(TemplateMatchEvent.class));
+        if (!newMatchEvents.isEmpty()) {
+            // Si los nuevos partidos comienzan antes de 7 días...
+            //  No queremos generar los templates con mucha antelación para que tengan la información de "startDate" correcta (actualizada por Opta)
+            DateTime currentTime = new DateTime(GlobalDate.getCurrentDate());
+            if (currentTime.plusDays(7).isAfter(new DateTime(newMatchEvents.get(0).startDate))) {
+                List<TemplateMatchEvent> nextMatchEvents = getNextMatches(newMatchEvents);
+                if (!nextMatchEvents.isEmpty()) {
+                    createMock(nextMatchEvents);
 
-        // Registraremos los partidos de una determinada competición
-        Map<String, List<TemplateMatchEvent>> matchEventsByCompetition = new HashMap<>();
+                    TemplateMatchEvent lastMatchEvent = nextMatchEvents.get(nextMatchEvents.size() - 1);
 
-        for (TemplateMatchEvent match: newMatchEvents) {
-            DateTime lastMatchDateTime = null;
-
-            List<TemplateMatchEvent> matchEventsInCompetition = new ArrayList<>();
-            TemplateMatchEvent lastMatchEvent = match;
-
-            if (matchEventsByCompetition.containsKey(match.optaCompetitionId)) {
-                matchEventsInCompetition = matchEventsByCompetition.get(match.optaCompetitionId);
-                lastMatchEvent = matchEventsInCompetition.get( matchEventsInCompetition.size() - 1 );
-                lastMatchDateTime = new DateTime(lastMatchEvent.startDate, DateTimeZone.UTC);
-            }
-            else {
-                lastMatchDateTime = new DateTime(match.startDate, DateTimeZone.UTC);
-            }
-
-            DateTime matchDateTime = new DateTime(match.startDate, DateTimeZone.UTC);
-
-            // El partido es de un dia distinto?
-            if (lastMatchDateTime.dayOfYear().get() != matchDateTime.dayOfYear().get()) {
-                // Logger.info("{} != {}", dateTime.dayOfYear().get(), matchDateTime.dayOfYear().get());
-
-                // El dia anterior tenia un numero suficiente de partidos? (minimo 2)
-                if (matchEventsInCompetition.size() >= 2) {
-
-                    // crear el contest
-                    createMock(matchEventsInCompetition);
-
-                    // Registramos el último partido con el que construimos un contest
-                    _lastMathEventId =lastMatchEvent.templateMatchEventId;
-
-                    // empezar a registrar los partidos del nuevo contest
-                    matchEventsInCompetition.clear();
+                    // Registramos el último partido con el que construimos el template
+                    _lastMatchEventByCompetition.put(competitionId, lastMatchEvent.templateMatchEventId);
                 }
             }
+        }
+    }
 
-            matchEventsInCompetition.add(match);
-            matchEventsByCompetition.put(match.optaCompetitionId, matchEventsInCompetition);
+    private List<TemplateMatchEvent> getNextMatches(List<TemplateMatchEvent> matchEvents) {
+        List<TemplateMatchEvent> nextMatches = new ArrayList<>();
+
+        Set<String> teams = new HashSet<>();
+
+        DateTime lastMatchDate = null;
+        for (TemplateMatchEvent matchEvent : matchEvents) {
+            DateTime matchDate = new DateTime(matchEvent.startDate);
+            if (lastMatchDate == null) {
+                lastMatchDate = matchDate;
+            }
+
+            // Es un partido de una misma jornada, si...
+
+            // ... el intervalo de tiempo entre partidos es menor a 2 días
+            if (lastMatchDate.plusDays(2).isBefore(matchDate)) {
+                break;
+            }
+
+            // ... el equipo ha participado ya en la jornada
+            if (teams.contains(matchEvent.optaTeamAId) || teams.contains(matchEvent.optaTeamBId)) {
+                break;
+            }
+
+            nextMatches.add(matchEvent);
+
+            if (lastMatchDate.isBefore(matchDate)) {
+                lastMatchDate = matchDate;
+            }
+            teams.add(matchEvent.optaTeamAId);
+            teams.add(matchEvent.optaTeamBId);
         }
 
-        // Creamos los partidos que nos han quedado
-        for (List<TemplateMatchEvent> matchEvents : matchEventsByCompetition.values()) {
-            createMock(matchEvents);
-
-            TemplateMatchEvent lastMatchEvent = matchEvents.get(matchEvents.size() - 1);
-            _lastMathEventId = lastMatchEvent.templateMatchEventId;
-        }
-
+        return nextMatches;
     }
 
     private void createMock(List<TemplateMatchEvent> templateMatchEvents) {
@@ -145,7 +149,7 @@ public class ContestsActor extends TickableActor {
             return;
         }
 
-        Date startDate = templateMatchEvents.get(0).startDate;
+        Date startDate = getStartDate(templateMatchEvents);
 
         TemplateContest templateContest = new TemplateContest();
 
@@ -175,7 +179,18 @@ public class ContestsActor extends TickableActor {
         Model.templateContests().insert(templateContest);
     }
 
+    private Date getStartDate(List<TemplateMatchEvent> templateMatchEvents) {
+        Date startDate = null;
+        for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
+            if (startDate == null || startDate.after(templateMatchEvent.startDate)) {
+                startDate = templateMatchEvent.startDate;
+            }
+        }
+        return startDate;
+    }
+
     private ObjectId _lastMathEventId;
+    private Map<String, ObjectId> _lastMatchEventByCompetition = new HashMap<>();
     private int _templateCount = 0;
     private final String[] _contestNameSuffixes = {"1", "a", "b", "a", "2", "n", "asfex", "dfggh", "piu", "lorem", "7", "8", "9"};
 
