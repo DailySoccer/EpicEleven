@@ -21,7 +21,7 @@ public class TestController extends Controller {
 
     static public Result start() {
         Model.reset(false);
-        return ok();
+        return ok("OK");
     }
 
 
