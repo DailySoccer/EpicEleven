@@ -51,7 +51,7 @@ public class ContestsActor extends TickableActor {
                 ? Model.templateMatchEvents().find("{_id: {$gt: #}, optaCompetitionId: #, startDate: {$gt: #}}", _lastMatchEventByCompetition.get(competitionId), competitionId, GlobalDate.getCurrentDate())
                 : Model.templateMatchEvents().find("{optaCompetitionId: #, startDate: {$gt: #}}", competitionId, GlobalDate.getCurrentDate());
 
-        List<TemplateMatchEvent> newMatchEvents = ListUtils.asList(findedMatchEvents.sort("{_id: 1}").as(TemplateMatchEvent.class));
+        List<TemplateMatchEvent> newMatchEvents = ListUtils.asList(findedMatchEvents.sort("{startDate: 1}").as(TemplateMatchEvent.class));
         if (!newMatchEvents.isEmpty()) {
             // Si los nuevos partidos comienzan antes de 7 días...
             //  No queremos generar los templates con mucha antelación para que tengan la información de "startDate" correcta (actualizada por Opta)
@@ -189,7 +189,6 @@ public class ContestsActor extends TickableActor {
         return startDate;
     }
 
-    private ObjectId _lastMathEventId;
     private Map<String, ObjectId> _lastMatchEventByCompetition = new HashMap<>();
     private int _templateCount = 0;
     private final String[] _contestNameSuffixes = {"1", "a", "b", "a", "2", "n", "asfex", "dfggh", "piu", "lorem", "7", "8", "9"};
