@@ -84,8 +84,8 @@ GET         /load_snapshot                                                      
 GET         /snapshot_dump                                                       controllers.admin.SnapshotController.snapshotDump()
 GET         /snapshot_restore                                                    controllers.admin.SnapshotController.snapshotRestore()
 
-GET         /refresher                                                           controllers.admin.RefresherController.index()
 GET         /start_stop_refresh                                                  controllers.admin.RefresherController.startStopRefresh()
+GET         /refresher                                                           controllers.admin.RefresherController.index()
 GET         /refresher_in_progress                                               controllers.admin.RefresherController.inProgress()
 GET         /last_date                                                           controllers.admin.RefresherController.lastDate()
 

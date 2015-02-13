@@ -58,10 +58,9 @@
     </script>
 }
 
-
 @main("Refresher - Admin", scripts) {
 
-<h1 class="page-header">Refresher</h1>
+    <h1 class="page-header">Refresher</h1>
     <div><span>Production server has:</span>
          <span style="font-weight:700; margin-left: 0.5em;" id="remaining"></span>
          <span> more documents than you</span>
@@ -73,7 +72,7 @@
     <br/>
 
     <div class="btn-group">
-        <a class="btn btn-with-symbol btn-primary ajax play import" href="@RefresherController.startStopRefresh()" title="Synchronize all documents from Opta.">
+        <a class="btn btn-with-symbol btn-primary play import" href="@RefresherController.startStopRefresh()" title="Synchronize all documents from Opta.">
             @if(isInProgress) {
                 Stop RefresherActor
             } else {

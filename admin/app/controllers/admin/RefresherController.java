@@ -17,8 +17,7 @@ public class RefresherController extends Controller {
     }
 
     public static Result startStopRefresh() {
-        boolean isTicking = Model.actors().tellAndAwait("RefresherActor", "StartStopTicking");
-        Logger.debug("Retornando en el otro {}", isTicking);
+        Model.actors().tell("RefresherActor", "StartStopTicking");
         return redirect(routes.RefresherController.index());
     }
 
@@ -27,8 +26,6 @@ public class RefresherController extends Controller {
     }
 
     static private boolean getIsTicking() {
-        boolean isTicking = Model.actors().tellAndAwait("RefresherActor", "GetIsTicking");
-        Logger.debug("Retornando {}", isTicking);
-        return isTicking;
+        return Model.actors().tellAndAwait("RefresherActor", "GetIsTicking");
     }
 }
