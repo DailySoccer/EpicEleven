@@ -32,6 +32,8 @@ public abstract class TickableActor extends UntypedActor {
         if (autoStart != null && autoStart) {
             self().tell("Tick", getSelf()); // Primer tick inmediato
         }
+
+        _immediateTicking = false;
     }
 
     @Override public void postStop() {
@@ -64,7 +66,13 @@ public abstract class TickableActor extends UntypedActor {
     }
 
     private void reescheduleTick() {
-        _tickCancellable = getContext().system().scheduler().scheduleOnce(_duration, getSelf(), "Tick", getContext().dispatcher(), null);
+        if (!_immediateTicking) {
+            _tickCancellable = getContext().system().scheduler().scheduleOnce(_duration, getSelf(), "Tick", getContext().dispatcher(), null);
+        }
+        else {
+            _tickCancellable = null;
+            self().tell("Tick", getSelf());
+        }
     }
 
     private String getActorName() {
@@ -76,6 +84,11 @@ public abstract class TickableActor extends UntypedActor {
         return actorName.substring(0, 1).toLowerCase() + actorName.substring(1);
     }
 
+    protected void setImmediateTicking(boolean enabled) {
+        _immediateTicking = enabled;
+    }
+
+    boolean _immediateTicking;
     FiniteDuration _duration;
     Cancellable _tickCancellable;
 }
