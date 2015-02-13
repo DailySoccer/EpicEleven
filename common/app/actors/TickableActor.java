@@ -30,17 +30,19 @@ public abstract class TickableActor extends UntypedActor {
 
         Boolean autoStart = Play.application().configuration().getBoolean(actorName + ".autoStart");
         if (autoStart != null && autoStart) {
-            self().tell("Tick", getSelf()); // Primer tick inmediato
+            startTicking();
         }
+        else {
+            _isTicking = false;
+        }
+
+        _immediateTicking = false;
     }
 
     @Override public void postStop() {
         Logger.debug("TickableActor::{} postStop", getActorName());
 
-        if (_tickCancellable != null) {
-            _tickCancellable.cancel();
-            _tickCancellable = null;
-        }
+        stopTicking();
     }
 
     @Override public void onReceive(Object msg) {
@@ -57,14 +59,70 @@ public abstract class TickableActor extends UntypedActor {
 
                 onSimulatorTick();
                 break;
+
+            case "GetIsTicking":
+                sender().tell(_isTicking, self());
+                break;
+
+            case "StartTicking":
+                if (!_isTicking) {
+                    startTicking();
+                }
+                else {
+                    Logger.debug("WTF 7711 TickableActor.StartTicking estado incorrecto");
+                }
+                break;
+
+            case "StopTicking":
+                if (_isTicking) {
+                    stopTicking();
+                }
+                else {
+                    Logger.debug("WTF 7211 TickableActor.StartTicking estado incorrecto");
+                }
+                break;
+
+            case "StartStopTicking":
+                if (!_isTicking) {
+                    startTicking();
+                }
+                else {
+                    stopTicking();
+                }
+                sender().tell(_isTicking, self());
+                break;
+
             default:
                 unhandled(msg);
                 break;
         }
     }
 
+    private void startTicking() {
+        self().tell("Tick", getSelf());
+        _isTicking = true;
+
+        Logger.debug("{} started ticking", getActorName());
+    }
+
+    private void stopTicking() {
+        if (_tickCancellable != null) {
+            _tickCancellable.cancel();
+            _tickCancellable = null;
+            _isTicking = false;
+        }
+
+        Logger.debug("{} stopped ticking", getActorName());
+    }
+
     private void reescheduleTick() {
-        _tickCancellable = getContext().system().scheduler().scheduleOnce(_duration, getSelf(), "Tick", getContext().dispatcher(), null);
+        if (_immediateTicking) {
+            _tickCancellable = null;
+            self().tell("Tick", getSelf());
+        }
+        else {
+            _tickCancellable = getContext().system().scheduler().scheduleOnce(_duration, getSelf(), "Tick", getContext().dispatcher(), null);
+        }
     }
 
     private String getActorName() {
@@ -76,6 +134,12 @@ public abstract class TickableActor extends UntypedActor {
         return actorName.substring(0, 1).toLowerCase() + actorName.substring(1);
     }
 
+    protected void setImmediateTicking(boolean enabled) {
+        _immediateTicking = enabled;
+    }
+
+    boolean _immediateTicking = false;
+    boolean _isTicking = false;
     FiniteDuration _duration;
     Cancellable _tickCancellable;
 }

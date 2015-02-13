@@ -130,18 +130,6 @@
         var another_temp = $.ajax({ url: "/admin/simulator_speed/" + new_speed });
     }
 
-    $('.ajax').on('click', function(e) {
-        $(this).addClass('active');
-        e.preventDefault();
-        var myself = $(this);
-        $.ajax({
-             url: $(this).attr('href'),
-             complete: function(result) {
-                myself.removeClass('active');
-             }
-        });
-    });
-
     $('#date-pause-ok').click(function(){
         var form = $('#date-pause-form');
         $.ajax({
