@@ -61,10 +61,8 @@ public class ContestsActor extends TickableActor {
                 if (!nextMatchEvents.isEmpty()) {
                     createMock(nextMatchEvents);
 
-                    TemplateMatchEvent lastMatchEvent = nextMatchEvents.get(nextMatchEvents.size() - 1);
-
                     // Registramos el último partido con el que construimos el template
-                    _lastMatchEventByCompetition.put(competitionId, lastMatchEvent.templateMatchEventId);
+                    _lastMatchEventByCompetition.put(competitionId, getLastId(nextMatchEvents));
                 }
             }
         }
@@ -177,6 +175,16 @@ public class ContestsActor extends TickableActor {
         Logger.info("Generate: Template Contest: {}: {}", GlobalDate.formatDate(startDate), templateContest.templateMatchEventIds);
 
         Model.templateContests().insert(templateContest);
+    }
+
+    private ObjectId getLastId(List<TemplateMatchEvent> templateMatchEvents) {
+        ObjectId lastId = null;
+        for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
+            if (lastId == null || (templateMatchEvent.templateMatchEventId.compareTo(lastId) > 0)) {
+                lastId = templateMatchEvent.templateMatchEventId;
+            }
+        }
+        return lastId;
     }
 
     private Date getStartDate(List<TemplateMatchEvent> templateMatchEvents) {
