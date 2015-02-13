@@ -8,9 +8,9 @@
 
         function updatePage() {
             $.ajax({
-                url: "/admin/is_paused_simulator",
+                url: "/admin/get_simulator_state",
                 success: function(result) {
-                    if (result == "false") {
+                    if (result.init && !result.isPaused) {
                         window.location.reload(true);
                     }
                 }

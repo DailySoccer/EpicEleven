@@ -8,6 +8,7 @@ import model.Model;
 import model.opta.OptaImporter;
 import model.opta.OptaProcessor;
 import org.apache.commons.dbutils.DbUtils;
+import org.joda.time.DateTime;
 import play.Logger;
 import play.Play;
 import play.db.DB;
@@ -90,8 +91,19 @@ public class OptaProcessorActor extends TickableActor {
         }
 
         ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
-        processNextDocument();
+
+        Date currentDate = GlobalDate.getCurrentDate();
+
+        while (_nextDocDate != null && isBeforeOrEqualNextDocDate(currentDate)) {
+            processNextDocument();
+            ensureNextDocument(SIMULATOR_DOCUMENTS_PER_QUERY);
+        }
     }
+
+    private boolean isBeforeOrEqualNextDocDate(Date other) {
+        return !(new DateTime(_nextDocDate).isAfter(new DateTime(other)));
+    }
+
 
     private static void resetIsProcessing() {
         Model.optaProcessor().update("{stateId: #}", OptaProcessorState.UNIQUE_ID).with("{$set: {isProcessing: false}}");

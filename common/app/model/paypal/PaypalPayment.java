@@ -63,14 +63,14 @@ public class PaypalPayment {
         // Moneda usada y dinero
         Amount amount = new Amount();
         amount.setCurrency(CURRENCY);
-        amount.setTotal(String.valueOf(product.price));
+        amount.setTotal(String.valueOf(product.price.getAmount()));
 
         // Crear la lista de productos
         List<Item> items = new ArrayList<>();
         Item item = new Item();
         item.setQuantity(String.valueOf(1));
         item.setName(product.name);
-        item.setPrice(String.valueOf(product.price));
+        item.setPrice(String.valueOf(product.price.getAmount()));
         item.setCurrency(CURRENCY);
         items.add(item);
 

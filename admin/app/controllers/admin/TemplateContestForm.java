@@ -7,6 +7,7 @@ import org.joda.time.DateTime;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 public class TemplateContestForm {
@@ -26,7 +27,7 @@ public class TemplateContestForm {
     @Constraints.Required
     public int salaryCap;
     @Constraints.Required
-    public Money entryFee;
+    public BigDecimal entryFee;
     @Constraints.Required
     public PrizeType prizeType;
 
@@ -51,7 +52,7 @@ public class TemplateContestForm {
         minInstances = templateContest.minInstances;
         maxEntries = templateContest.maxEntries;
         salaryCap = templateContest.salaryCap;
-        entryFee = templateContest.entryFee;
+        entryFee = templateContest.entryFee.getAmount();
         prizeType = templateContest.prizeType;
 
         for(TemplateMatchEvent matchEvent : TemplateMatchEvent.findAll(templateContest.templateMatchEventIds)) {

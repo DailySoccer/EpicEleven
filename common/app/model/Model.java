@@ -193,7 +193,10 @@ public class Model {
     }
 
     static public void reset(boolean forSnapshot) {
-        _actors.stopActors();
+
+        Logger.debug("Model.reset in progress...");
+
+        _actors.preReset();
 
         dropMongoDB(forSnapshot);
 
@@ -208,11 +211,13 @@ public class Model {
         }
 
         // Debido a que no tenemos una fecha global distribuida, tenemos que resetear manualmente. Obviamente se quedara
-        // mal en todas las maquinas adonde no ha llegado ese start(), asi que los tests no funcionan con varios
-        // Web Process
+        // mal en todas las maquinas adonde no ha llegado este reset(), asi que los tests no funcionan con varios Web Process
         GlobalDate.setFakeDate(null);
 
-        _actors.startActors();
+        // Ya podemos volver a arrancar los actores
+        _actors.postReset();
+
+        Logger.debug("Model.reset done");
     }
 
     static private void dropMongoDB(boolean dropSystemUsers) {

@@ -193,6 +193,8 @@ public class SimulatorActor extends UntypedActor {
         if (!_state.isPaused && !onlyNextStep) {
             reescheduleTick();
         }
+
+        Logger.debug("SimulatorActor: fin del tick at {}", GlobalDate.getCurrentDateString());
     }
 
     private void advanceOrPause(Date toDate) {

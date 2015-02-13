@@ -60,9 +60,21 @@ public class Actors {
     }
 
     private void initWebRole() {
-        // De momento solo lo necesitamos para el admin en staging, pero tambien querremos en el futuro mandar
-        // tareas (mirror de operaciones en posgres por ejemplo) a nuestros actores
-        initRabbitMQ(TargetEnvironment.LOCALHOST);
+        // En staging seguimos sin poder ejecutar el simulador pq no tenemos una forma de distribuir la fecha
+        // entre roles (GlobalDate.getCurrentDate se coge siempre de la maquina local), asi que por defecto solo
+        // arrancamos en Heroku el web role sin workers y aqui iniciamos to.do
+        if (isStaging()) {
+            initDevelopmentRole(TargetEnvironment.LOCALHOST);
+        }
+        else {
+            // De momento solo lo necesitamos para el admin, pero tambien querremos en el futuro mandar
+            // tareas (mirror de operaciones en posgres por ejemplo) a nuestros actores
+            initRabbitMQ(TargetEnvironment.LOCALHOST);
+        }
+    }
+
+    private boolean isStaging() {
+        return play.Play.application().configuration().getString("config.resource").equals("staging.conf");
     }
 
     public void setTargetEnvironment(TargetEnvironment env) {
@@ -87,31 +99,21 @@ public class Actors {
         }
     }
 
-    public void stopActors() {
+    public void preReset() {
 
         Logger.debug("Stopping Actors");
 
-        if (_connection != null) {
-            tell("OptaProcessorActor", "PoisonPill");
-            tell("ContestsActor", "PoisonPill");
-            tell("TransactionsActor", "PoisonPill");
-            tell("BotSystemActor", "PoisonPill");
-            tell("SimulatorActor", "PoisonPill");
-            tell("NotificationActor", "PoisonPill");
-        }
-        else {
-            stopLocalActors();
-        }
+        closeRabbitMq();
+        stopLocalActors();
 
         Logger.debug("Actors stopped");
     }
 
-    public void startActors() {
+    public void postReset() {
 
-        if (_connection == null) {
-            createLocalActors();
-            bindLocalActorsToQueues();
-        }
+        initRabbitMQ(TargetEnvironment.LOCALHOST);
+        createLocalActors();
+        bindLocalActorsToQueues();
     }
 
     private void stopLocalActors() {

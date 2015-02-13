@@ -51,7 +51,7 @@ public class PaypalController extends Controller {
     // La url a la que redirigimos al usuario cuando el proceso de pago se complete (con éxito o cancelación)
     static final String REFERER_URL_DEFAULT = "epiceleven.com";
 
-    public static Result approvalPayment(String userId, int amount) {
+    public static Result approvalPayment(String userId, Double amount) {
         // Obtenemos desde qué url están haciendo la solicitud
         String refererUrl = request().hasHeader("Referer") ? request().getHeader("Referer") : REFERER_URL_DEFAULT;
 

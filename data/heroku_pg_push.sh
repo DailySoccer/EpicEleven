@@ -27,8 +27,7 @@ if which heroku >/dev/null
   then
     if [[ "$1" == "staging" ]]
         then
-            #DB="JADE"
-            DB="BROWN"
+            DB="CYAN"
             app="dailysoccer-staging"
     elif [[ "$1" == "production" ]]
         then

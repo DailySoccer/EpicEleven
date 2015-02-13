@@ -144,7 +144,7 @@ public class TemplateContestController extends Controller {
         templateContest.minInstances = params.minInstances;
         templateContest.maxEntries = params.maxEntries;
         templateContest.salaryCap = params.salaryCap;
-        templateContest.entryFee = params.entryFee;
+        templateContest.entryFee = Money.of(CurrencyUnit.EUR, params.entryFee);
         templateContest.prizeType = params.prizeType;
 
         templateContest.activationAt = new DateTime(params.activationAt).withZoneRetainFields(DateTimeZone.UTC).toDate();
