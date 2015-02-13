@@ -22,6 +22,20 @@ public class ContestsActor extends TickableActor {
     @Override public void onReceive(Object msg) {
 
         switch ((String)msg) {
+            case "StartCreatingTemplateContests":
+                Logger.debug("CreatingTemplateContests ON");
+                _creatingTemplateContestsEnabled = true;
+                break;
+
+            case "StopCreatingTemplateContests":
+                Logger.debug("CreatingTemplateContests OFF");
+                _creatingTemplateContestsEnabled = false;
+                break;
+
+            case "GetCreatingTemplateContestsState":
+                sender().tell(_creatingTemplateContestsEnabled, self());
+                break;
+
             default:
                 super.onReceive(msg);
                 break;
@@ -30,7 +44,7 @@ public class ContestsActor extends TickableActor {
 
     @Override protected void onTick() {
 
-        if (Play.isDev()) {
+        if (Play.isDev() && _creatingTemplateContestsEnabled) {
             creatingTemplateContests();
         }
 
@@ -87,7 +101,7 @@ public class ContestsActor extends TickableActor {
                 break;
             }
 
-            // ... el equipo ha participado ya en la jornada
+            // ... el equipo NO ha participado ya en la jornada
             if (teams.contains(matchEvent.optaTeamAId) || teams.contains(matchEvent.optaTeamBId)) {
                 break;
             }
@@ -197,6 +211,7 @@ public class ContestsActor extends TickableActor {
         return startDate;
     }
 
+    private boolean _creatingTemplateContestsEnabled = false;
     private Map<String, ObjectId> _lastMatchEventByCompetition = new HashMap<>();
     private int _templateCount = 0;
     private final String[] _contestNameSuffixes = {"1", "a", "b", "a", "2", "n", "asfex", "dfggh", "piu", "lorem", "7", "8", "9"};

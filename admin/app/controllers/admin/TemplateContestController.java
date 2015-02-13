@@ -28,7 +28,7 @@ public class TemplateContestController extends Controller {
     public static final String[] contestNameSuffixes = {"1", "a", "b", "a", "2", "n", "asfex", "dfggh", "piu", "lorem", "7", "8", "9"};
 
     public static Result index() {
-        return ok(views.html.template_contest_list.render());
+        return ok(views.html.template_contest_list.render(getCreatingTemplateContestsState()));
     }
 
     public static Result indexAjax() {
@@ -222,7 +222,12 @@ public class TemplateContestController extends Controller {
         return redirect(routes.TemplateContestController.index());
     }
 
-    private static void createMock(List<TemplateMatchEvent> templateMatchEvents) {
+    public static Result setCreatingTemplateContestsState(boolean state) {
+        Model.actors().tell("ContestsActor", state ? "StartCreatingTemplateContests" : "StopCreatingTemplateContests");
+        return redirect(routes.TemplateContestController.index());
+    }
+
+    public static void createMock(List<TemplateMatchEvent> templateMatchEvents) {
         createMock(templateMatchEvents, Money.zero(CurrencyUnit.EUR), 3, PrizeType.FREE, 70000);
         //createMock(templateMatchEvents, 0, 5, PrizeType.FREE);
         //createMock(templateMatchEvents, 0, 10, PrizeType.FREE);
@@ -319,5 +324,9 @@ public class TemplateContestController extends Controller {
     public static Result getPrizes(String prizeType, Integer maxEntries, Integer entryFee) {
         Prizes prizes = Prizes.findOne(PrizeType.valueOf(prizeType), maxEntries, Money.of(CurrencyUnit.EUR, entryFee));
         return new ReturnHelper(prizes.getAllValues()).toResult();
+    }
+
+    static private Boolean getCreatingTemplateContestsState() {
+        return Model.actors().tellAndAwait("ContestsActor", "GetCreatingTemplateContestsState");
     }
 }

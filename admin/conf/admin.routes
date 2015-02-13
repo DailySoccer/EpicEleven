@@ -41,6 +41,7 @@ GET         /contest/:contestId                                                 
 GET         /template_contests                                                   controllers.admin.TemplateContestController.index()
 GET         /template_contests/ajax                                              controllers.admin.TemplateContestController.indexAjax()
 GET         /template_contest/create_all                                         controllers.admin.TemplateContestController.createAll()
+GET         /template_contest/enableCreating/:state                              controllers.admin.TemplateContestController.setCreatingTemplateContestsState(state : Boolean)
 GET         /template_contest/save/:templateContestId                            controllers.admin.TemplateContestController.edit(templateContestId : String)
 GET         /template_contest/save                                               controllers.admin.TemplateContestController.newForm()
 POST        /template_contest/save                                               controllers.admin.TemplateContestController.create()
