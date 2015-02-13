@@ -1,13 +1,9 @@
-@()
+@(isInProgress:Boolean)
 
-@import helper._
-@import helper.twitterBootstrap._
 @import controllers.admin.routes._
-@import model._
 
 @scripts = {
     <script type="text/javascript" charset="utf-8">
-
 
         function repaintDateServerLastXML(result) {
             document.getElementById("date_server_last_xml").innerHTML=result;
@@ -18,9 +14,6 @@
         function repaintRemaining(remaining) {
             var prevHtml = document.getElementById("remaining").innerHTML;
             document.getElementById("remaining").innerHTML=remaining;
-            if (remaining == "0" && prevHtml != "0") {
-                repaintButton();
-            }
         }
 
         function checkRemaining(remaining) {
@@ -56,25 +49,10 @@
             });
         }
 
-        function repaintButton() {
-            var temp =  $.ajax({
-                url: "@RefresherController.inProgress",
-                success: function(result) {
-                        getLastXML();
-                        if (result == "true" || document.getElementById("remaining").innerHTML == "0") {
-                            $(".play.import").addClass("disabled");
-                        } else {
-                            $(".play.import").removeClass("disabled");
-                        }
-                }
-            });
-        }
-
-        $(document).ready( function(){
+        $(document).ready( function() {
            getLastXML();
            checkDates();
-           window.setInterval(checkDates, 10000);
-           window.setInterval(repaintButton, 1000);
+           window.setInterval(checkDates, 5000);
         });
 
     </script>
@@ -95,8 +73,12 @@
     <br/>
 
     <div class="btn-group">
-            <a class="btn btn-with-symbol btn-primary ajax play import disabled" href="@RefresherController.importFromLast" title="Synchronize all documents from Opta.">
-                Import
-            </a>
+        <a class="btn btn-with-symbol btn-primary ajax play import" href="@RefresherController.startStopRefresh()" title="Synchronize all documents from Opta.">
+            @if(isInProgress) {
+                Stop RefresherActor
+            } else {
+                Start RefresherActor
+            }
+        </a>
     </div>
 }
