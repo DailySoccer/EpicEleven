@@ -108,17 +108,30 @@
     @controllers.admin.SimulatorController.simulatorBar()
 }
 
-@scripts
-
 <script type="text/javascript" charset="utf-8">
-        $(document).ready( function () {
-//            console.log( "DataTable init" );
-            $('#table_id').dataTable( {
-                stateSave: true,
-                iDisplayLength: 100
-            } );
+    $(document).ready( function () {
+        $('#table_id').dataTable( {
+            stateSave: true,
+            iDisplayLength: 100
         } );
+    } );
+
+    // Gracias a esto basta poner en un boton la clase 'ajax' para que el boton haga un ajax request sin provocar un
+    // refresco total de la pagina
+    $('.ajax').on('click', function(e) {
+        $(this).addClass('active');
+        e.preventDefault();
+        var myself = $(this);
+        $.ajax({
+            url: $(this).attr('href'),
+                complete: function(result) {
+                    myself.removeClass('active');
+                }
+        });
+    });
 </script>
+
+@scripts
 
 </body>
 </html>

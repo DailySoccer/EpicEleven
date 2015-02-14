@@ -251,6 +251,8 @@ public class Actors {
 
         _localActors.put("SimulatorActor", Akka.system().actorOf(Props.create(SimulatorActor.class), "SimulatorActor"));
         _localActors.put("BotSystemActor", Akka.system().actorOf(Props.create(BotSystemActor.class), "BotSystemActor"));
+
+        _localActors.put("RefresherActor", Akka.system().actorOf(Props.create(RefresherActor.class), "RefresherActor"));
     }
 
     private void bindLocalActorsToQueues() {
@@ -381,7 +383,7 @@ public class Actors {
             Logger.info("RabbitMq inicializado en TargetEnvironment.{}", env.toString());
         }
         catch (Exception exc) {
-            Logger.warn("Actors no pudo inicializar RabbitMq");
+            Logger.warn("Actors no pudo conectar con RabbitMq");
         }
     }
 
