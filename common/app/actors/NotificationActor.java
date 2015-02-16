@@ -2,7 +2,6 @@ package actors;
 
 import model.Contest;
 import model.ContestEntry;
-import model.GlobalDate;
 import model.User;
 import model.notification.MessageTemplateSend;
 import model.notification.Notification;

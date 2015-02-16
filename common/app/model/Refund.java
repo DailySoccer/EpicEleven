@@ -4,10 +4,8 @@ import com.google.common.collect.ImmutableList;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTranRefund;
 import org.bson.types.ObjectId;
-import org.jongo.marshall.jackson.oid.Id;
 import org.joda.money.Money;
-
-import java.math.BigDecimal;
+import org.jongo.marshall.jackson.oid.Id;
 
 public class Refund {
     public enum State {

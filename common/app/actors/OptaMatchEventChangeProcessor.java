@@ -1,7 +1,8 @@
 package actors;
 
 import model.*;
-import model.jobs.*;
+import model.jobs.CancelContestJob;
+import model.jobs.Job;
 import model.opta.OptaEvent;
 import model.opta.OptaProcessor;
 import play.Logger;

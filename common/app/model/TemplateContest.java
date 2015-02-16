@@ -5,8 +5,8 @@ import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
 import org.bson.types.ObjectId;
-import org.jongo.marshall.jackson.oid.Id;
 import org.joda.money.Money;
+import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
 

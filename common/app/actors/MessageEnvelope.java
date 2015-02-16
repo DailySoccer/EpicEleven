@@ -3,8 +3,6 @@ package actors;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import java.io.Serializable;
-
 //
 // Usamos esta clase cuando para comunicar actores queremos un mensaje con parametros, para que no nos haga falta definir
 // una clase por cada mensaje que haya.

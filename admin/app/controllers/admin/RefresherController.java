@@ -2,7 +2,6 @@ package controllers.admin;
 
 import model.Model;
 import model.opta.OptaXmlUtils;
-import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
 

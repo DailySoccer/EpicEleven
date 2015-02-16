@@ -1,4 +1,5 @@
 import java.util.concurrent.TimeUnit
+
 import play.Logger
 import play.api.Play.current
 import play.api._
@@ -9,6 +10,7 @@ import play.api.mvc.{EssentialAction, Filter, Filters, _}
 import play.filters.gzip.GzipFilter
 import stormpath.StormPathClient
 import utils.InstanceRole
+
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 

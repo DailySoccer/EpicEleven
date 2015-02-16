@@ -1,6 +1,5 @@
 package controllers.admin;
 
-import model.Model;
 import model.Snapshot;
 import play.Logger;
 import play.mvc.Controller;

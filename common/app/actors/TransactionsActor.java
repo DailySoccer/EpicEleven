@@ -5,7 +5,6 @@ import model.Model;
 import model.accounting.AccountingTran;
 import model.jobs.Job;
 import org.joda.time.DateTime;
-import play.Logger;
 import utils.ListUtils;
 
 import java.util.Date;

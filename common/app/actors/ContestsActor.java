@@ -1,15 +1,8 @@
 package actors;
 
-import akka.actor.Cancellable;
-import akka.actor.UntypedActor;
 import model.Contest;
 import model.GlobalDate;
 import model.TemplateContest;
-import play.Logger;
-import play.Play;
-import scala.concurrent.duration.Duration;
-
-import java.util.concurrent.TimeUnit;
 
 public class ContestsActor extends TickableActor {
 

@@ -3,10 +3,9 @@ package model.accounting;
 import model.Model;
 import model.User;
 import org.bson.types.ObjectId;
-import java.math.BigDecimal;
-
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
+
 import java.util.List;
 
 public class AccountOp {
