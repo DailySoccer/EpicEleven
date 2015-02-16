@@ -1,18 +1,14 @@
 package actors;
 
-import model.Contest;
-import model.GlobalDate;
-import model.TemplateContest;
 import model.*;
 import model.opta.OptaCompetition;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
+import org.joda.time.Period;
 import org.jongo.Find;
 import play.Logger;
-import play.Play;
 import utils.ListUtils;
 
 import java.util.*;
@@ -44,23 +40,27 @@ public class ContestsActor extends TickableActor {
 
     @Override protected void onTick() {
 
-        if (Play.isDev() && _creatingTemplateContestsEnabled) {
-            creatingTemplateContests();
-        }
-
         // El TemplateContest instanciara sus Contests y MatchEvents asociados
         TemplateContest.findAllByActivationAt(GlobalDate.getCurrentDate()).forEach(TemplateContest::instantiate);
 
         Contest.findAllHistoryNotClosed().forEach(Contest::closeContest);
     }
 
+    @Override protected void onSimulatorTick() {
+        if (_creatingTemplateContestsEnabled && verifyPeriod("creatingTemplateContest", new Period().plusHours(12))) {
+            creatingTemplateContests();
+        }
+
+        onTick();
+    }
+
     private void creatingTemplateContests() {
         OptaCompetition.findAllActive().forEach(competition ->
-                creatingTemplateContests(competition.competitionId)
+                createTemplateContests(competition.competitionId)
         );
     }
 
-    private void creatingTemplateContests(String competitionId) {
+    private void createTemplateContests(String competitionId) {
         Find findedMatchEvents = _lastMatchEventByCompetition.containsKey(competitionId)
                 ? Model.templateMatchEvents().find("{_id: {$gt: #}, optaCompetitionId: #, startDate: {$gt: #}}", _lastMatchEventByCompetition.get(competitionId), competitionId, GlobalDate.getCurrentDate())
                 : Model.templateMatchEvents().find("{optaCompetitionId: #, startDate: {$gt: #}}", competitionId, GlobalDate.getCurrentDate());
@@ -211,6 +211,16 @@ public class ContestsActor extends TickableActor {
         return startDate;
     }
 
+    private boolean verifyPeriod(String timerKey, Period period) {
+        DateTime currentTime = new DateTime(GlobalDate.getCurrentDate());
+        if (!_lastDate.containsKey(timerKey) || _lastDate.get(timerKey).plus(period).isBefore(currentTime)) {
+            _lastDate.put(timerKey, currentTime);
+            return true;
+        }
+        return false;
+    }
+
+    private Map<String, DateTime> _lastDate = new HashMap<>();
     private boolean _creatingTemplateContestsEnabled = false;
     private Map<String, ObjectId> _lastMatchEventByCompetition = new HashMap<>();
     private int _templateCount = 0;
