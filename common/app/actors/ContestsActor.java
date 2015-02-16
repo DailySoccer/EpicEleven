@@ -119,7 +119,7 @@ public class ContestsActor extends TickableActor {
     }
 
     private void createMock(List<TemplateMatchEvent> templateMatchEvents) {
-        createMock(templateMatchEvents, Money.zero(CurrencyUnit.EUR), 5, PrizeType.FREE, 70000);
+        createMock(templateMatchEvents, Money.zero(CurrencyUnit.EUR), 20, PrizeType.FREE, 70000);
 
         /*
         createMock(templateMatchEvents, Money.zero(CurrencyUnit.EUR), 25, PrizeType.FREE, 65000);
@@ -177,7 +177,7 @@ public class ContestsActor extends TickableActor {
         templateContest.templateMatchEventIds = new ArrayList<>();
 
         // Se activará 2 dias antes a la fecha del partido
-        templateContest.activationAt = new DateTime(startDate).minusDays(2).toDate();
+        templateContest.activationAt = new DateTime(startDate).minusDays(5).toDate();
 
         templateContest.createdAt = GlobalDate.getCurrentDate();
 
