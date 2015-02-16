@@ -40,9 +40,11 @@ object Global extends GlobalSettings {
       //Logger.info(s"${requestHeader.method} ${requestHeader.uri} took ${requestTime}ms " + s"and returned ${result.header.status}")
       //val action = requestHeader.tags(Routes.ROUTE_CONTROLLER) + "." + requestHeader.tags(Routes.ROUTE_ACTION_METHOD)
 
-      // Quitamos los logs que vienen de la descarga de Assets y de la zona de admin
-      if (!requestHeader.tags(Routes.ROUTE_CONTROLLER).contains("Assets") && !requestHeader.tags(Routes.ROUTE_CONTROLLER).contains("admin")) {
-        Logger.debug(requestHeader.tags(Routes.ROUTE_ACTION_METHOD) + s" took ${requestTime}ms")
+      if(!requestHeader.method.equals("HEAD")) {
+        // Quitamos los logs que vienen de la descarga de Assets y de la zona de admin
+        if (!requestHeader.tags(Routes.ROUTE_CONTROLLER).contains("Assets") && !requestHeader.tags(Routes.ROUTE_CONTROLLER).contains("admin")) {
+          Logger.debug(requestHeader.tags(Routes.ROUTE_ACTION_METHOD) + s" took ${requestTime}ms")
+        }
       }
 
       result.withHeaders("Request-Time" -> requestTime.toString)
