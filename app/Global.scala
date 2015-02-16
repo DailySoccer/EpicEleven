@@ -40,11 +40,16 @@ object Global extends GlobalSettings {
       //Logger.info(s"${requestHeader.method} ${requestHeader.uri} took ${requestTime}ms " + s"and returned ${result.header.status}")
       //val action = requestHeader.tags(Routes.ROUTE_CONTROLLER) + "." + requestHeader.tags(Routes.ROUTE_ACTION_METHOD)
 
-      if(!requestHeader.method.equals("HEAD")) {
+      // En algunas llamadas es posible que no venga este tag porque el router no sabe que hacer con ellas, por ejemplo cuando
+      // es una llamada con verbo HEAD (probablemente generada por algun crawler bot)
+      if (requestHeader.tags.contains(Routes.ROUTE_CONTROLLER)) {
         // Quitamos los logs que vienen de la descarga de Assets y de la zona de admin
         if (!requestHeader.tags(Routes.ROUTE_CONTROLLER).contains("Assets") && !requestHeader.tags(Routes.ROUTE_CONTROLLER).contains("admin")) {
           Logger.debug(requestHeader.tags(Routes.ROUTE_ACTION_METHOD) + s" took ${requestTime}ms")
         }
+      }
+      else {
+        Logger.debug("Llamada no controlada por el router: {}", requestHeader)
       }
 
       result.withHeaders("Request-Time" -> requestTime.toString)
