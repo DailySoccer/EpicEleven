@@ -49,10 +49,12 @@ public abstract class TickableActor extends UntypedActor {
     @Override public void onReceive(Object msg) {
         switch ((String)msg) {
             case "Tick":
-                Logger.debug("{} Tick @ {}", getActorName(), GlobalDate.getCurrentDateString());
+                if (_isTicking) {
+                    Logger.debug("{} Tick @ {}", getActorName(), GlobalDate.getCurrentDateString());
 
-                onTick();
-                reescheduleTick();
+                    onTick();
+                    reescheduleTick();
+                }
                 break;
 
             case "SimulatorTick":
@@ -90,7 +92,6 @@ public abstract class TickableActor extends UntypedActor {
                 else {
                     stopTicking();
                 }
-                sender().tell(_isTicking, self());
                 break;
 
             default:
@@ -110,8 +111,9 @@ public abstract class TickableActor extends UntypedActor {
         if (_tickCancellable != null) {
             _tickCancellable.cancel();
             _tickCancellable = null;
-            _isTicking = false;
         }
+
+        _isTicking = false;
 
         Logger.debug("{} stopped ticking", getActorName());
     }
