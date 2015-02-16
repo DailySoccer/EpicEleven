@@ -120,8 +120,6 @@ public class ContestsActor extends TickableActor {
 
     private void createMock(List<TemplateMatchEvent> templateMatchEvents) {
         createMock(templateMatchEvents, Money.zero(CurrencyUnit.EUR), 20, PrizeType.FREE, 70000);
-
-        /*
         createMock(templateMatchEvents, Money.zero(CurrencyUnit.EUR), 25, PrizeType.FREE, 65000);
 
         for (int i = 1; i<=6; i++) {
@@ -136,7 +134,7 @@ public class ContestsActor extends TickableActor {
                     createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, 65000);
                     break;
                 case 3:
-                    createMock(templateMatchEvents, money, 5, PrizeType.TOP_THIRD_GET_PRIZES, 70000);
+                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_THIRD_GET_PRIZES, 70000);
                     createMock(templateMatchEvents, money, 10, PrizeType.FIFTY_FIFTY, 60000);
                     break;
                 case 4:
@@ -152,7 +150,6 @@ public class ContestsActor extends TickableActor {
                     break;
             }
         }
-        */
     }
 
     private void createMock(List<TemplateMatchEvent> templateMatchEvents, Money entryFee, int maxEntries, PrizeType prizeType, int salaryCap) {
