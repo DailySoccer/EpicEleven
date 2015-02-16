@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import actions.CheckTargetEnvironment;
 import model.Snapshot;
 import play.Logger;
 import play.mvc.Controller;
@@ -8,6 +9,7 @@ import play.mvc.Result;
 import java.io.File;
 import java.io.IOException;
 
+@CheckTargetEnvironment
 public class SnapshotController extends Controller {
 
     public static Result index() {

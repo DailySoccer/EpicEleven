@@ -196,6 +196,10 @@ public class Model {
 
         Logger.debug("Model.reset in progress...");
 
+        if (!isLocalHostTargetEnvironment()) {
+            throw new RuntimeException("WTF 9151 Intento de reset con TargetEnvironment remoto");
+        }
+
         _actors.preReset();
 
         dropMongoDB(forSnapshot);

@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import actions.CheckTargetEnvironment;
 import actors.MessageEnvelope;
 import actors.SimulatorState;
 import model.Model;
@@ -16,6 +17,7 @@ import java.util.Date;
 
 import static play.data.Form.form;
 
+@CheckTargetEnvironment
 public class SimulatorController extends Controller {
 
     public static Html simulatorBar() {

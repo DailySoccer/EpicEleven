@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import actions.CheckTargetEnvironment;
 import model.Model;
 import model.PointsTranslation;
 import org.bson.types.ObjectId;
@@ -40,6 +41,7 @@ public class PointsTranslationController extends Controller {
         return ok(points_translation_add.render(pointsTranslationForm));
     }
 
+    @CheckTargetEnvironment
     public static Result resetToDefault(){
         Model.pointsTranslation().remove();
         PointsTranslation.createDefault();
