@@ -100,6 +100,10 @@ public class BotActor extends UntypedActor {
     private void onReceive(String msg) throws TimeoutException {
 
         switch (msg) {
+            case "Berserker":
+                _personality = Personality.BERSERKER;
+                break;
+
             case "NextPersonality":
                 Logger.debug("{} va a cambiar de personalidad, current personality {}", getFullName(), _personality.toString());
 

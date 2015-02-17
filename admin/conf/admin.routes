@@ -4,8 +4,11 @@ GET         /reset_db                                                           
 GET         /initial_setup                                                       controllers.admin.DashboardController.initialSetup()
 GET         /get_target_environment                                              controllers.admin.DashboardController.getTargetEnvironment()
 GET         /start_stop_bot_actors                                               controllers.admin.DashboardController.startStopBotActors()
+GET         /start_bot_actors                                                    controllers.admin.DashboardController.startBotActors()
+GET         /stop_bot_actors                                                     controllers.admin.DashboardController.stopBotActors()
 GET         /pause_resume_bot_actors                                             controllers.admin.DashboardController.pauseResumeBotActors()
 GET         /stampede_bot_actors                                                 controllers.admin.DashboardController.stampedeBotActors()
+GET         /berserker_bot_actors                                                controllers.admin.DashboardController.berserkerBotActors()
 GET         /add_money_to_bots/:amount                                           controllers.admin.DashboardController.addMoneyToBots(amount : Integer)
 GET         /add_money_to_tests/:amount                                          controllers.admin.DashboardController.addMoneyToTests(amount : Integer)
 
