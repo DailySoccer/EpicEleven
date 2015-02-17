@@ -235,7 +235,7 @@ def launch_functional_tests(dest='staging'):
         local('curl "%s"' % test_hooks[env.dest], capture=True)
 
 @task
-def deploy(dest='staging', mode='release'):
+def deploy(dest='staging', mode='debug'):
     """
     Deploy a Heroku. Parámetros: dest=staging/production,mode=release/debug
     """
