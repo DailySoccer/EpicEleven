@@ -42,6 +42,7 @@ public class ContestController extends Controller {
             }
         }
 
+        response().setHeader("Cache-Control","no-cache");
         return new ReturnHelper(ImmutableMap.of("contests", contestsNotFull)).toResult();
     }
 
