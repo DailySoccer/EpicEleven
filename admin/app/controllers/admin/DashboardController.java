@@ -46,6 +46,16 @@ public class DashboardController extends Controller {
         return redirect(routes.DashboardController.index());
     }
 
+    static public Result startBotActors() {
+        Model.actors().tellAndAwait("BotSystemActor", "Start");
+        return redirect(routes.DashboardController.index());
+    }
+
+    static public Result stopBotActors() {
+        Model.actors().tellAndAwait("BotSystemActor", "Stop");
+        return redirect(routes.DashboardController.index());
+    }
+
     static public Result pauseResumeBotActors() {
         Model.actors().tellAndAwait("BotSystemActor", "PauseResume");
         return redirect(routes.DashboardController.index());
@@ -53,6 +63,11 @@ public class DashboardController extends Controller {
 
     static public Result stampedeBotActors() {
         Model.actors().tellAndAwait("BotSystemActor", "Stampede");
+        return redirect(routes.DashboardController.index());
+    }
+
+    static public Result berserkerBotActors() {
+        Model.actors().tellAndAwait("BotSystemActor", "Berserker");
         return redirect(routes.DashboardController.index());
     }
 
