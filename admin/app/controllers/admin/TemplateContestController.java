@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import actions.CheckTargetEnvironment;
 import com.google.common.collect.ImmutableList;
 import com.mongodb.WriteConcern;
 import model.*;
@@ -181,6 +182,7 @@ public class TemplateContestController extends Controller {
         Model.contests().withWriteConcern(WriteConcern.SAFE).update("{templateContestId: #}", templateContest.getId()).multi().with("{$set: {name: #}}", templateContest.name);
     }
 
+    @CheckTargetEnvironment
     public static Result createAll() {
         templateCount = 0;
         Iterable<TemplateMatchEvent> matchEventResults = Model.templateMatchEvents().find().sort("{startDate: 1}").as(TemplateMatchEvent.class);
@@ -220,7 +222,7 @@ public class TemplateContestController extends Controller {
         return redirect(routes.TemplateContestController.index());
     }
 
-    public static void createMock(List<TemplateMatchEvent> templateMatchEvents) {
+    private static void createMock(List<TemplateMatchEvent> templateMatchEvents) {
         createMock(templateMatchEvents, Money.zero(CurrencyUnit.EUR), 3, PrizeType.FREE, 70000);
         //createMock(templateMatchEvents, 0, 5, PrizeType.FREE);
         //createMock(templateMatchEvents, 0, 10, PrizeType.FREE);
@@ -278,7 +280,7 @@ public class TemplateContestController extends Controller {
         }
     }
 
-    public static void createMock(List<TemplateMatchEvent> templateMatchEvents, Money entryFee, int maxEntries, PrizeType prizeType, int salaryCap) {
+    private static void createMock(List<TemplateMatchEvent> templateMatchEvents, Money entryFee, int maxEntries, PrizeType prizeType, int salaryCap) {
         if (templateMatchEvents.size() == 0) {
             Logger.error("create: templateMatchEvents is empty");
             return;

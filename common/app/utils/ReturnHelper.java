@@ -4,9 +4,9 @@ package utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import model.JsonViews;
 import play.Logger;
-import play.twirl.api.Content;
 import play.mvc.Result;
 import play.mvc.Results;
+import play.twirl.api.Content;
 
 
 public class ReturnHelper {

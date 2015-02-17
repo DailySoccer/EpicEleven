@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import actions.CheckTargetEnvironment;
 import actors.MessageEnvelope;
 import actors.SimulatorState;
 import model.Model;
@@ -16,6 +17,7 @@ import java.util.Date;
 
 import static play.data.Form.form;
 
+@CheckTargetEnvironment
 public class SimulatorController extends Controller {
 
     public static Html simulatorBar() {
@@ -65,14 +67,7 @@ public class SimulatorController extends Controller {
         // Puesto que se llamara tambien desde el cliente en un dominio distinto, tenemos que poner el CORS
         response().setHeader("Access-Control-Allow-Origin", "*");
 
-        SimulatorState ret = null;
-
-        try {
-            ret = Model.actors().tellAndAwait("SimulatorActor", "GetSimulatorState");
-        }
-        // Absorbemos silenciosamente pq por ejemplo al cambiar de TargetEnvironment se sigue llamando aqui y durante
-        // la inicializacion de los actores no estamos preparados para llamar a tellAndWait
-        catch (Exception e) {}
+        SimulatorState ret = Model.actors().tellAndAwait("SimulatorActor", "GetSimulatorState");
 
         return new ReturnHelper(ret).toResult();
     }

@@ -4,11 +4,13 @@ import com.google.common.collect.ImmutableList;
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.WriteResult;
 import model.*;
-import model.accounting.*;
+import model.accounting.AccountOp;
+import model.accounting.AccountingTran;
+import model.accounting.AccountingTranCancelContestEntry;
+import model.accounting.AccountingTranEnterContest;
 import org.bson.types.ObjectId;
-
-import java.math.BigDecimal;
 import org.joda.money.Money;
+
 import java.util.List;
 
 public class EnterContestJob extends Job {

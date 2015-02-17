@@ -1,8 +1,5 @@
 package actors;
 
-import akka.actor.Cancellable;
-import akka.actor.UntypedActor;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import model.GlobalDate;
 import model.Model;
 import model.opta.OptaImporter;
@@ -10,13 +7,10 @@ import model.opta.OptaProcessor;
 import org.apache.commons.dbutils.DbUtils;
 import org.joda.time.DateTime;
 import play.Logger;
-import play.Play;
 import play.db.DB;
-import scala.concurrent.duration.Duration;
 
 import java.sql.*;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 
 public class OptaProcessorActor extends TickableActor {
 

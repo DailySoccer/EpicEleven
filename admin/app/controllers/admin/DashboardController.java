@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import actions.CheckTargetEnvironment;
 import actors.BotSystemActor;
 import model.Model;
 import model.User;
@@ -21,22 +22,20 @@ public class DashboardController extends Controller {
         return ok(views.html.dashboard.render(OptaCompetition.findAllActive(), getBotsState()));
     }
 
+    @CheckTargetEnvironment
     static public Result initialSetup() {
         PointsTranslationController.resetToDefault();
         TemplateContestController.createAll();
         return index();
     }
 
+    @CheckTargetEnvironment
     static public Result resetDB() {
         Model.reset(false);
         FlashMessage.success("Reset DB: OK");
         return index();
     }
 
-    static public Result setTargetEnvironment(String env) {
-        Model.setTargetEnvironment(TargetEnvironment.valueOf(env));
-        return ok("");
-    }
 
     static public Result getTargetEnvironment() {
         return ok(Model.getTargetEnvironment().toString());

@@ -10,7 +10,10 @@ import play.Logger;
 import play.Play;
 import utils.ListUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 public class TemplateSoccerPlayer implements JongoId {
     @Id

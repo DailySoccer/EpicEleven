@@ -87,7 +87,7 @@ public class LoginController extends Controller {
             F.Tuple<Integer, String> askForPasswordResetErrors = StormPathClient.instance().askForPasswordReset(params.email);
 
             if (askForPasswordResetErrors._1 == -1) {
-                returnHelper.setOK(ImmutableMap.of("success", "Instrucciones para cambiar contraseña enviadas."));
+                returnHelper.setOK(ImmutableMap.of("success", "Instructions sent."));
             }
             else {
                 returnHelper.setKO(translateError(askForPasswordResetErrors));
@@ -109,7 +109,7 @@ public class LoginController extends Controller {
             F.Tuple<Integer, String> verifyPasswordResetTokenErrors = StormPathClient.instance().verifyPasswordResetToken(params.token);
 
             if (verifyPasswordResetTokenErrors._1 == -1) {
-                returnHelper.setOK(ImmutableMap.of("success", "Token valido"));
+                returnHelper.setOK(ImmutableMap.of("success", "Valid token"));
             } else {
                 returnHelper.setKO(ImmutableMap.of("error", translateError(verifyPasswordResetTokenErrors)));
             }
@@ -220,28 +220,28 @@ public class LoginController extends Controller {
         HashMap<String, String> returnError = new HashMap<>();
 
         if (error._1 == 0) {
-            returnError.put("email", "Hubo un problema en la creación de tu usuario");
+            returnError.put("email", "ERROR_CREATING_YOUR_ACCOUNT");
         }
         else if (error._1 == 1) {
-            returnError.put("nickName", "Ya existe una cuenta con ese nombre de usuario. Elige uno diferente.");
+            returnError.put("nickName", "ERROR_NICKNAME_TAKEN");
         }
         else if (error._1 == 2) {
-            returnError.put("email", "Ya existe una cuenta con ese email. Indica otro email.");
+            returnError.put("email", "ERROR_EMAIL_TAKEN");
         }
         else if (error._1 == 3) {
-            returnError.put("nickName", "Ya existe una cuenta con ese nombre de usuario. Elige uno diferente.");
-            returnError.put("email", "Ya existe una cuenta con ese email. Indica otro email.");
+            returnError.put("nickName", "ERROR_NICKNAME_TAKEN");
+            returnError.put("email", "ERROR_EMAIL_TAKEN");
         }
         else if (error._1 == 2001) {
             if (error._2.contains("email")) {
-                returnError.put("email", "Ya existe una cuenta con ese email. Indica otro email.");
+                returnError.put("email", "ERROR_EMAIL_TAKEN");
             }
             else {
-                returnError.put("nickName", "Ya existe una cuenta con ese nombre de usuario. Elige uno diferente.");
+                returnError.put("nickName", "ERROR_NICKNAME_TAKEN");
             }
         }
         else if (error._1 == 404) {
-            returnError.put("email", "Algo ha ido mal, comprueba que la dirección esté bien escrita.");
+            returnError.put("email", "ERROR_CHECK_EMAIL_SPELLING");
         }
         else if (error._1 != -1) {
             returnError.put("error", (error._2));
@@ -324,7 +324,7 @@ public class LoginController extends Controller {
                     }
                     // Si el usuario no tiene cuenta en Stormpath ni lo encontramos en nuestra BD -> Reject
                     else {
-                        loginParamsForm.reject("email", "Email o contraseña incorrectos");
+                        loginParamsForm.reject("email", "ERROR_WRONG_EMAIL_OR_PASSWORD");
                         returnHelper.setKO(loginParamsForm.errorsAsJson());
                     }
                 }
@@ -334,7 +334,7 @@ public class LoginController extends Controller {
                 }
             }
             else {
-                loginParamsForm.reject("email", "Email o contraseña incorrectos");
+                loginParamsForm.reject("email", "ERROR_WRONG_EMAIL_OR_PASSWORD");
                 returnHelper.setKO(loginParamsForm.errorsAsJson());
             }
         }
@@ -365,7 +365,7 @@ public class LoginController extends Controller {
 
             }
             else {
-                loginParamsForm.reject("email", "Token incorrecto");
+                loginParamsForm.reject("email", "Wrong Token");
                 returnHelper.setKO(loginParamsForm.errorsAsJson());
             }
         }
@@ -500,15 +500,15 @@ public class LoginController extends Controller {
                 if (!stormpathErrors.isEmpty()) {
                     if (stormpathErrors.containsKey(409)) {
                         if (!params.nickName.isEmpty() && null != User.findByName(params.nickName)) {
-                            allErrors.put("nickName", "Ya existe una cuenta con ese nombre de usuario. Elige uno diferente.");
+                            allErrors.put("nickName", "ERROR_NICKNAME_TAKEN");
                         }
 
                         if (!params.email.isEmpty() && null != User.findByEmail(params.email)) {
-                            allErrors.put("email", "Ya existe una cuenta con ese email. Indica otro email.");
+                            allErrors.put("email", "ERROR_EMAIL_TAKEN");
                         }
                     }
                     if (stormpathErrors.containsKey(2007)) {
-                        allErrors.put("password", "La contraseña es demasiado corta.");
+                        allErrors.put("password", "ERROR_PASSWORD_TOO_SHORT");
                     }
                 }
 

@@ -12,7 +12,10 @@ import utils.ListUtils;
 import utils.ReturnHelper;
 import utils.ReturnHelperWithAttach;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @AllowCors.Origin
 public class ContestController extends Controller {

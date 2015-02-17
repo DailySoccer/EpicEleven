@@ -6,12 +6,12 @@ import model.Contest;
 import model.ContestEntry;
 import model.Model;
 import model.User;
-import model.accounting.*;
+import model.accounting.AccountOp;
+import model.accounting.AccountingTran;
+import model.accounting.AccountingTranCancelContestEntry;
 import org.bson.types.ObjectId;
-import play.Logger;
 import org.joda.money.Money;
-
-import java.math.BigDecimal;
+import play.Logger;
 
 public class CancelContestEntryJob extends Job {
     ObjectId userId;

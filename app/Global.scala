@@ -1,4 +1,5 @@
 import java.util.concurrent.TimeUnit
+
 import play.Logger
 import play.api.Play.current
 import play.api._
@@ -8,7 +9,8 @@ import play.api.mvc.Results._
 import play.api.mvc.{EssentialAction, Filter, Filters, _}
 import play.filters.gzip.GzipFilter
 import stormpath.StormPathClient
-import utils.InstanceRole
+import utils.{TargetEnvironment, InstanceRole}
+
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
@@ -20,6 +22,10 @@ object Global extends GlobalSettings {
 
   // Role of this machine (DEVELOPMENT_ROLE, WEB_ROLE, OPTAPROCESSOR_ROLE, BOTS_ROLE...)
   var instanceRole = InstanceRole.DEVELOPMENT_ROLE
+
+  // Target environment for our Model & Actors to connect to
+  var targetEnvironment = TargetEnvironment.LOCALHOST
+
 
   val releaseFilter = Filter { (nextFilter, requestHeader) =>
     nextFilter(requestHeader).map { result =>
@@ -38,9 +44,16 @@ object Global extends GlobalSettings {
       //Logger.info(s"${requestHeader.method} ${requestHeader.uri} took ${requestTime}ms " + s"and returned ${result.header.status}")
       //val action = requestHeader.tags(Routes.ROUTE_CONTROLLER) + "." + requestHeader.tags(Routes.ROUTE_ACTION_METHOD)
 
-      // Quitamos los logs que vienen de la descarga de Assets y de la zona de admin
-      if (!requestHeader.tags(Routes.ROUTE_CONTROLLER).contains("Assets") && !requestHeader.tags(Routes.ROUTE_CONTROLLER).contains("admin")) {
-        Logger.debug(requestHeader.tags(Routes.ROUTE_ACTION_METHOD) + s" took ${requestTime}ms")
+      // En algunas llamadas es posible que no venga este tag porque el router no sabe que hacer con ellas, por ejemplo cuando
+      // es una llamada con verbo HEAD (probablemente generada por algun crawler bot)
+      if (requestHeader.tags.contains(Routes.ROUTE_CONTROLLER)) {
+        // Quitamos los logs que vienen de la descarga de Assets y de la zona de admin
+        if (!requestHeader.tags(Routes.ROUTE_CONTROLLER).contains("Assets") && !requestHeader.tags(Routes.ROUTE_CONTROLLER).contains("admin")) {
+          Logger.debug(requestHeader.tags(Routes.ROUTE_ACTION_METHOD) + s" took ${requestTime}ms")
+        }
+      }
+      else {
+        Logger.debug("Llamada no controlada por el router: {}", requestHeader)
       }
 
       result.withHeaders("Request-Time" -> requestTime.toString)
@@ -56,9 +69,10 @@ object Global extends GlobalSettings {
   override def onStart(app: Application) {
     instanceRole = readInstanceRole
     releaseVersion = readReleaseVersion
-    Logger.info(s"Epic Eleven $instanceRole, version $releaseVersion has started")
+    targetEnvironment = readTargetEnvironment
+    Logger.info(s"Epic Eleven $instanceRole, Version: $releaseVersion, TargetEnvironment: $targetEnvironment, has started")
 
-    model.Model.init(instanceRole)
+    model.Model.init(instanceRole, targetEnvironment)
 
     // Es aqui donde se llama a la inicializacion de Stormpath a traves del constructor
     if (StormPathClient.instance.isConnected) {
@@ -85,6 +99,12 @@ object Global extends GlobalSettings {
     val temp = scala.util.Properties.propOrNull("config.instanceRole")
 
     if (temp == null) instanceRole else InstanceRole.valueOf(temp)
+  }
+
+  private def readTargetEnvironment: TargetEnvironment = {
+    val temp = Play.current.configuration.getString("targetEnvironment").orNull
+
+    if (temp == null) targetEnvironment else TargetEnvironment.valueOf(temp)
   }
 
   private def readReleaseVersion : String = {

@@ -1,6 +1,9 @@
 package model.opta;
 
-import model.*;
+import model.GlobalDate;
+import model.Model;
+import model.OpsLog;
+import model.PointsTranslation;
 import org.bson.types.ObjectId;
 import org.jdom2.Element;
 import org.jdom2.input.JDOMParseException;

@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import actions.CheckTargetEnvironment;
 import actors.MessageEnvelope;
 import actors.SimulatorState;
 import model.GlobalDate;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
+@CheckTargetEnvironment
 public class TestController extends Controller {
 
     static public Result start() {

@@ -1,9 +1,11 @@
 package controllers.admin;
 
 
-
 import model.*;
-import model.opta.*;
+import model.opta.OptaCompetition;
+import model.opta.OptaMatchEvent;
+import model.opta.OptaPlayer;
+import model.opta.OptaTeam;
 import play.mvc.Controller;
 import play.mvc.Result;
 

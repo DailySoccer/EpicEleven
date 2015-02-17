@@ -30,11 +30,11 @@ import java.util.concurrent.TimeUnit;
 
 public class Actors {
 
-    public Actors(InstanceRole instanceRole) {
+    public Actors(InstanceRole instanceRole, TargetEnvironment targetEnv) {
 
         switch (instanceRole) {
             case DEVELOPMENT_ROLE:
-                initDevelopmentRole(TargetEnvironment.LOCALHOST);
+                initDevelopmentRole(targetEnv);
                 break;
             case WORKER_ROLE:
                 initWorkerRole();
@@ -75,28 +75,6 @@ public class Actors {
 
     private boolean isStaging() {
         return play.Play.application().configuration().getString("config.resource").equals("staging.conf");
-    }
-
-    public void setTargetEnvironment(TargetEnvironment env) {
-
-        if (env == TargetEnvironment.LOCALHOST) {
-            // Obviamente asumimos que: 1.- LOCALHOST es el primer env desde el que se inicializa 2.- Quien nos llama
-            // aqui se ocupa de no pasarnos dos veces seguidas el mismo env
-            closeRabbitMq();
-            initDevelopmentRole(env);
-        }
-        else {
-            // Paramos los actores locales (si los hubiera), para no liar. Evitamos bugs como que un actor local
-            // tuviera un tick pendiente de ejecutar, lo ejecute con la conexion ya cambiada y de repente mande un
-            // mensaje al sistema remoto! (por ejemplo, SimulatorController.Reset :) )
-            stopLocalActors();
-
-            // Si hubiera conexion a un rabbitmq anterior, la matamos
-            closeRabbitMq();
-
-            // Iniciamos la nueva conexion al nuevo environment
-            initRabbitMQ(env);
-        }
     }
 
     public void preReset() {
@@ -191,11 +169,11 @@ public class Actors {
                         response = deserialize(delivery.getBody());
                     }
                     else {
-                        Logger.error("WTF 2020");
+                        Logger.error("WTF 2020 tellAndAwait {}, {}", actorName, message);
                     }
                 }
                 else {
-                    Logger.error("WTF 2021");
+                    Logger.error("WTF 2021 tellAndAwait {}, {}", actorName, message);
                 }
                 _directChannel.queueDelete(callbackQueueName);
 

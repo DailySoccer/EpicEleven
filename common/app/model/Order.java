@@ -3,11 +3,8 @@ package model;
 import com.google.common.collect.ImmutableList;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTranOrder;
-import org.jongo.marshall.jackson.oid.Id;
 import org.bson.types.ObjectId;
-import org.joda.money.Money;
-
-import java.math.BigDecimal;
+import org.jongo.marshall.jackson.oid.Id;
 
 public class Order {
     static final String REFERER_URL_DEFAULT = "epiceleven.com";

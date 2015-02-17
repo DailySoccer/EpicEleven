@@ -1,10 +1,10 @@
 package model;
 
 import com.google.common.collect.ImmutableMap;
-import java.util.Map;
-
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
+
+import java.util.Map;
 
 public class Product {
     public String name;

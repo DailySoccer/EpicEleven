@@ -1,11 +1,12 @@
 package controllers.admin;
 
+import actions.CheckTargetEnvironment;
 import model.Model;
 import model.opta.OptaXmlUtils;
-import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
 
+@CheckTargetEnvironment
 public class RefresherController extends Controller {
 
     public static Result index() {
