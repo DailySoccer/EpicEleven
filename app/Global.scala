@@ -9,7 +9,7 @@ import play.api.mvc.Results._
 import play.api.mvc.{EssentialAction, Filter, Filters, _}
 import play.filters.gzip.GzipFilter
 import stormpath.StormPathClient
-import utils.InstanceRole
+import utils.{TargetEnvironment, InstanceRole}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -22,6 +22,10 @@ object Global extends GlobalSettings {
 
   // Role of this machine (DEVELOPMENT_ROLE, WEB_ROLE, OPTAPROCESSOR_ROLE, BOTS_ROLE...)
   var instanceRole = InstanceRole.DEVELOPMENT_ROLE
+
+  // Target environment for our Model & Actors to connect to
+  var targetEnvironment = TargetEnvironment.LOCALHOST
+
 
   val releaseFilter = Filter { (nextFilter, requestHeader) =>
     nextFilter(requestHeader).map { result =>
@@ -65,9 +69,10 @@ object Global extends GlobalSettings {
   override def onStart(app: Application) {
     instanceRole = readInstanceRole
     releaseVersion = readReleaseVersion
-    Logger.info(s"Epic Eleven $instanceRole, version $releaseVersion has started")
+    targetEnvironment = readTargetEnvironment
+    Logger.info(s"Epic Eleven $instanceRole, Version: $releaseVersion, TargetEnvironment: $targetEnvironment, has started")
 
-    model.Model.init(instanceRole)
+    model.Model.init(instanceRole, targetEnvironment)
 
     // Es aqui donde se llama a la inicializacion de Stormpath a traves del constructor
     if (StormPathClient.instance.isConnected) {
@@ -94,6 +99,12 @@ object Global extends GlobalSettings {
     val temp = scala.util.Properties.propOrNull("config.instanceRole")
 
     if (temp == null) instanceRole else InstanceRole.valueOf(temp)
+  }
+
+  private def readTargetEnvironment: TargetEnvironment = {
+    val temp = Play.current.configuration.getString("targetEnvironment").orNull
+
+    if (temp == null) targetEnvironment else TargetEnvironment.valueOf(temp)
   }
 
   private def readReleaseVersion : String = {

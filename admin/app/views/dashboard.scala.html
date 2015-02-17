@@ -30,26 +30,6 @@ function setOverlay() {
       });
 }
 
-function setMongo() {
-        var new_mongo = $('#mongo-conn').val();
-        setOverlay();
-        var another_temp = $.ajax({
-                        url: "/admin/set_target_environment/"+new_mongo,
-                        success: function (result) {
-                            location.reload();
-                        }
-                    });
-}
-
-function getMongo() {
-    var temp = $.ajax({
-                    url: "/admin/get_target_environment",
-                    success: function (result) {
-                        $('#mongo-conn option[value="'+result+'"]').prop('selected', true);
-                    }
-                });
-}
-
 function addMoney(target, amount) {
     console.log("addMoney: " + amount);
 
@@ -67,11 +47,7 @@ function addMoney(target, amount) {
 
 
     <div>
-        <select id="mongo-conn" onchange="setMongo()" class="form-control" style="width: inherit; display: inline-block;">
-            <option value="LOCALHOST">Localhost</option>
-            <option value="STAGING">Staging</option>
-            <option value="PRODUCTION">Epic Eleven</option>
-        </select>
+        <p>Target Environment: <b>@model.Model.getTargetEnvironment</b></p>
 
         @if(model.Model.isLocalHostTargetEnvironment()) {
             <div style="float: right; margin-right:100px;">

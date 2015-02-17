@@ -65,27 +65,6 @@ public class Model {
         return _targetEnvironment;
     }
 
-    static public void setTargetEnvironment(TargetEnvironment env) {
-
-        if (env == _targetEnvironment) {
-            Logger.error("WTF 5772 no me gusta que me repitan las cosas");
-            return;
-        }
-
-        // Solo se puede cambiar el environment al que atacamos en maquinas de desarrollo, claro
-        if (_instanceRole != InstanceRole.DEVELOPMENT_ROLE) {
-            throw new RuntimeException("WTF 5771 are you nuts?");
-        }
-
-        // Cambiar el ataque del modelo a un environment distinto significa reinicializar mongo y rabbitmq
-        if (initMongo(readMongoUriForEnvironment(env))) {
-            _actors.setTargetEnvironment(env);
-
-            // Ahora ya estamos en el environment solicitado
-            _targetEnvironment = env;
-        }
-    }
-
     static public boolean isLocalHostTargetEnvironment() {
         return TargetEnvironment.LOCALHOST == _targetEnvironment;
     }
@@ -95,14 +74,19 @@ public class Model {
         return _actors;
     }
 
-    static public void init(InstanceRole instanceRole) {
+    static public void init(InstanceRole instanceRole, TargetEnvironment targetEnv) {
+
+        if ((!Play.isDev() || instanceRole != InstanceRole.DEVELOPMENT_ROLE) && targetEnv != TargetEnvironment.LOCALHOST) {
+            throw new RuntimeException("WTF 05 Intento de inicializar un entorno remoto sin ser una maquina de desarrollo");
+        }
+
         _instanceRole = instanceRole;
-        _targetEnvironment = TargetEnvironment.LOCALHOST;   // En produccion no tiene significado puesto que no se puede cambiar
+        _targetEnvironment = targetEnv;
 
         initMongo(readMongoUriForEnvironment(_targetEnvironment));
         initPostgresDB();
 
-        _actors = new Actors(_instanceRole);
+        _actors = new Actors(_instanceRole, targetEnv);
     }
 
     static public void shutdown() {

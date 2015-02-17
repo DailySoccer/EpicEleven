@@ -36,10 +36,6 @@ public class DashboardController extends Controller {
         return index();
     }
 
-    static public Result setTargetEnvironment(String env) {
-        Model.setTargetEnvironment(TargetEnvironment.valueOf(env));
-        return ok("");
-    }
 
     static public Result getTargetEnvironment() {
         return ok(Model.getTargetEnvironment().toString());

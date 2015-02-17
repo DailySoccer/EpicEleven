@@ -2,7 +2,6 @@ GET         /                                                                   
 
 GET         /reset_db                                                            controllers.admin.DashboardController.resetDB()
 GET         /initial_setup                                                       controllers.admin.DashboardController.initialSetup()
-GET         /set_target_environment/:appEnv                                      controllers.admin.DashboardController.setTargetEnvironment(appEnv : String)
 GET         /get_target_environment                                              controllers.admin.DashboardController.getTargetEnvironment()
 GET         /start_stop_bot_actors                                               controllers.admin.DashboardController.startStopBotActors()
 GET         /pause_resume_bot_actors                                             controllers.admin.DashboardController.pauseResumeBotActors()

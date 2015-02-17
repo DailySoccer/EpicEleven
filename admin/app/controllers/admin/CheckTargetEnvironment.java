@@ -21,7 +21,7 @@ public @interface CheckTargetEnvironment {
         public play.libs.F.Promise<play.mvc.Result>  call(Http.Context ctx) throws Throwable {
 
             if (!Model.isLocalHostTargetEnvironment()) {
-                Logger.error("WTF 9265: Se intento hacer una llamada a un enviroment remoto no autorizada" + ctx.request().uri());
+                Logger.error("WTF 9265: Se intento hacer una llamada a un enviroment remoto no autorizada {}", ctx.request().uri());
 
                 return F.Promise.promise(new F.Function0<Result>() {
                     public Result apply() throws Throwable {
