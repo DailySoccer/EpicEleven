@@ -10,6 +10,7 @@ import org.joda.money.Money;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utils.ReturnHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,25 +86,29 @@ public class ContestController extends Controller {
 
         Logger.info("verifyPrizes BEGIN");
 
+        List<String> errors = new ArrayList<>();
+
         for (Contest contest : Contest.findAllHistoryClosed()) {
-            List<String> errors = errorsInPrize(contest);
-            if (!errors.isEmpty()) {
-                Logger.error("Prize: contest: {} error: {}", contest.contestId, errors);
-                ret = false;
+            List<String> errorsInPrize = errorsInPrize(contest);
+            if (!errorsInPrize.isEmpty()) {
+                String error = String.format("Prize: contest: %s error: %s", contest.contestId, errorsInPrize);
+                errors.add(error);
+                Logger.error(error);
             }
         }
 
         for (Contest contest : Contest.findAllCanceled()) {
-            List<String> errors = errorsInCanceledPrize(contest);
-            if (!errors.isEmpty()) {
-                Logger.error("CanceledPrize: contest: {} error: {}", contest.contestId, errors);
-                ret = false;
+            List<String> errorsInCanceledPrize = errorsInCanceledPrize(contest);
+            if (!errorsInCanceledPrize.isEmpty()) {
+                String error = String.format("CanceledPrize: contest: %s error: %s", contest.contestId, errorsInCanceledPrize);
+                errors.add(error);
+                Logger.error(error);
             }
         }
 
         Logger.info("verifyPrizes END");
 
-        return ret ? ok("OK") : badRequest();
+        return errors.isEmpty() ? ok("OK") : new ReturnHelper(false, errors).toResult();
     }
 
     static private List<String> errorsInPrize(Contest contest) {
@@ -157,30 +162,28 @@ public class ContestController extends Controller {
             return errors;
         }
 
-        if (contest.contestEntries.size() < contest.maxEntries) {
-            AccountingTranCancelContest tranCancel = AccountingTranCancelContest.findOne(contest.contestId);
-            // Tendría que existir una transacción
-            if (tranCancel == null) {
-                errors.add("Sin AccountingTranCancelContest");
-            }
-            else {
-                for (ContestEntry contestEntry : contest.contestEntries) {
-                    AccountOp accountOp = tranCancel.getAccountOp(contestEntry.userId);
-                    // Tendría que tener una entrada entre las operaciones de la transacción
-                    if (accountOp == null) {
-                        errors.add(String.format("contestEntry: %s: Sin AccountOp", contestEntry.contestEntryId));
-                    }
-                    // Tendrían que devolverle el entryFee
-                    else if (!accountOp.value.equals(contest.entryFee)) {
-                        errors.add(String.format("contestEntry: %s AccountOp: %s != %s",
-                                contestEntry.contestEntryId, accountOp.value, contest.entryFee));
-                    }
-                }
-            }
+        if (contest.contestEntries.size() == contest.maxEntries) {
+            Logger.warn("CanceledPrize: {} LLENO !!!", contest.contestId);
+        }
+
+        AccountingTranCancelContest tranCancel = AccountingTranCancelContest.findOne(contest.contestId);
+        // Tendría que existir una transacción
+        if (tranCancel == null) {
+            errors.add("Sin AccountingTranCancelContest");
         }
         else {
-            // Contest Lleno !!
-            errors.add("LLENO !!!");
+            for (ContestEntry contestEntry : contest.contestEntries) {
+                AccountOp accountOp = tranCancel.getAccountOp(contestEntry.userId);
+                // Tendría que tener una entrada entre las operaciones de la transacción
+                if (accountOp == null) {
+                    errors.add(String.format("contestEntry: %s: Sin AccountOp", contestEntry.contestEntryId));
+                }
+                // Tendrían que devolverle el entryFee
+                else if (!accountOp.value.equals(contest.entryFee)) {
+                    errors.add(String.format("contestEntry: %s AccountOp: %s != %s",
+                            contestEntry.contestEntryId, accountOp.value, contest.entryFee));
+                }
+            }
         }
 
         return errors;
