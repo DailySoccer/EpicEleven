@@ -58,7 +58,7 @@
         // Lo pintamos la primera vez desde el cliente por ejemplo para settear correctamente el speedFactor
         repaintInterface(@isInit, @isPaused, "@currentDate", "@pauseDate", @speedFactor);
 
-        window.setInterval(refreshStateFromServer, 200);
+        window.setTimeout(refreshStateFromServer, 200);
     });
 
     function refreshStateFromServer() {
@@ -67,7 +67,11 @@
             url: "/admin/get_simulator_state",
             success: function (result) {
                 repaintInterface(result.init, result.isPaused, result.currentDateFormatted, result.pauseDateFormatted, result.speedFactor);
-            }});
+            },
+            complete: function () {
+                window.setTimeout(refreshStateFromServer, 200);
+            }
+        });
     }
 
 
