@@ -29,6 +29,9 @@ public class Contest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public Date finishedAt;
 
+    @JsonView(JsonViews.NotForClient.class)
+    public Date canceledAt;
+
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public ContestState state = ContestState.OFF;
 
