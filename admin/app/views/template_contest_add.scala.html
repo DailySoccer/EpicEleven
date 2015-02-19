@@ -73,13 +73,13 @@
             var entryFee = $('#entryFee').val();
             var prizeType = $('#prizeType').val();
 
-            $("#prize-pool").text("("+(maxEntries * entryFee * 0.90).toFixed(2) + "€)");
+            $("#prize-pool").text("("+(maxEntries * entryFee * 0.90) + "€)");
             $.ajax({
                 url: "/admin/template_contest/get_prizes/"+prizeType+"/"+maxEntries+"/"+entryFee,
                 success: function (result) {
                     var total = 0;
                     var head = "<table width='300'><caption>"
-                                // +"TABLA DE PREMIOS (" + (maxEntries * entryFee * 0.90).toFixed(2) + "€)"
+                                // +"TABLA DE PREMIOS (" + (maxEntries * entryFee * 0.90) + "€)"
                                 +"</caption><thead><tr>"
                                 + "<th>Position</th>"
                                 + "<th>Prize</th>"
