@@ -39,7 +39,7 @@ public class PaypalPayment {
     static final String SANDBOX_CANCEL_URL = "https://devtools-paypal.com/guide/pay_paypal?cancel=true&orderId=";
     static final String SANDBOX_RETURN_URL = "https://devtools-paypal.com/guide/pay_paypal?success=true&orderId=";
 
-    static final String CURRENCY = "EUR";
+    static final String CURRENCY = "USD";
 
     static final String TRANSACTION_DESCRIPTION = "Creating a payment";
 

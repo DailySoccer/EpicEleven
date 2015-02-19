@@ -1,6 +1,7 @@
 package model.accounting;
 
 import model.Model;
+import model.Product;
 import model.User;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
@@ -31,7 +32,7 @@ public class AccountOp {
 
     public void updateBalance() {
         // Obtenemos el balance del anterior COMMIT
-        Money lastBalance = getLastBalance().plus(value);
+        Money lastBalance = getLastBalance().plus(value.withCurrencyUnit(Product.CURRENCY_DEFAULT));
         // Actualizamos el cachedBalance del "account"
         Model.accountingTransactions().update("{ accountOps: { $elemMatch: {accountId: #, seqId: #} } }", accountId, seqId).with("{$set: {\"accountOps.$.cachedBalance\": #}}", lastBalance.toString());
         // Actualizamos el user
@@ -41,7 +42,7 @@ public class AccountOp {
     public Money getLastBalance() {
         // Si es el primer seqId no existe ninguno anterior
         if (seqId == 1) {
-            return Money.zero(CurrencyUnit.EUR);
+            return Money.zero(Product.CURRENCY_DEFAULT);
         }
 
         // TODO: ¿necesitamos comprobar que el commit es del "seqId" inmediatamente anterior?
@@ -55,6 +56,6 @@ public class AccountOp {
                 .and("{$group: {_id: \"balance\", accountId: { $first: \"$accountOps.accountId\" }, cachedBalance: { $first: \"$accountOps.cachedBalance\" }}}")
                 .as(AccountOp.class);
 
-        return (!accountOp.isEmpty()) ? accountOp.get(0).cachedBalance : Money.zero(CurrencyUnit.EUR);
+        return (!accountOp.isEmpty()) ? accountOp.get(0).cachedBalance.withCurrencyUnit(Product.CURRENCY_DEFAULT) : Money.zero(Product.CURRENCY_DEFAULT);
     }
 }

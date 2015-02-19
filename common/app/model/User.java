@@ -9,6 +9,8 @@ import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
 import utils.ListUtils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -137,10 +139,10 @@ public class User {
                 .and("{$group: {_id: #, _class: { $first: \"$_class\" }, accountOps: { $push: { accountId: \"$accountOps.accountId\", value: \"$accountOps.value\" }}}}", new ObjectId())
                 .as(AccountingTran.class);
 
-        Money balance = Money.zero(CurrencyUnit.EUR);
+        Money balance = Money.zero(Product.CURRENCY_DEFAULT);
         if (!accounting.isEmpty()) {
             for (AccountOp op : accounting.get(0).accountOps) {
-                balance = balance.plus(op.value);
+                balance = balance.plus(op.value.withCurrencyUnit(Product.CURRENCY_DEFAULT));
             }
         }
         return balance;

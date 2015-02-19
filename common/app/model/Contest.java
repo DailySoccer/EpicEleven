@@ -284,7 +284,7 @@ public class Contest implements JongoId {
             List<AccountOp> accounts = new ArrayList<>();
             for (ContestEntry contestEntry : contestEntries) {
                 Money prize = prizes.getValue(contestEntry.position);
-                if (prize.isGreaterThan(Money.zero(CurrencyUnit.EUR))) {
+                if (prize.isGreaterThan(Money.zero(Product.CURRENCY_DEFAULT))) {
                     User user = User.findOne(contestEntry.userId);
                     accounts.add(new AccountOp(contestEntry.userId, prize, user.getSeqId() + 1));
                 }

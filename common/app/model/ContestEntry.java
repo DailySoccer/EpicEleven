@@ -28,7 +28,7 @@ public class ContestEntry implements JongoId {
     public int position = -1;
 
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
-    public Money prize = Money.zero(CurrencyUnit.EUR);
+    public Money prize = Money.zero(Product.CURRENCY_DEFAULT);
 
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
     public int fantasyPoints;
