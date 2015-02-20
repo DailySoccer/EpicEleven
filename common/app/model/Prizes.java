@@ -151,10 +151,6 @@ public class Prizes {
         return multipliers;
     }
 
-    static private Money truncate(Money prize) {
-        return prize.multipliedBy(100).abs().multipliedBy(0.01, RoundingMode.UNNECESSARY);
-    }
-
     static private List<Money> getPrizesApplyingMultipliers(Money prizePool, List<Float> multipliers) {
         List<Money> prizes = new ArrayList<>();
 
@@ -173,13 +169,13 @@ public class Prizes {
                 }
 
                 if (premio.isPositiveOrZero()) {
-                    prizes.add(truncate(premio));
+                    prizes.add(premio);
                     resto = resto.minus(premio);
                 }
             }
         }
         else if (multipliers.size() > 0) {
-            prizes.add(truncate(prizePool.multipliedBy(multipliers.get(0), RoundingMode.HALF_UP)));
+            prizes.add(prizePool.multipliedBy(multipliers.get(0), RoundingMode.HALF_UP));
         }
 
         return prizes;
