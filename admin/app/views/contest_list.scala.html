@@ -39,10 +39,22 @@
             });
         })
 
+        function verifyPrizes() {
+            $.ajax({
+                url: "/admin/contests/verify_prizes"
+            });
+        }
+
     </script>
 }
 
 @main("Contests - Admin", scripts) {
+
+@if(model.Model.isLocalHostTargetEnvironment()) {
+<div style="float: right; margin-right:100px;">
+    <button class="btn btn-primary" onclick="verifyPrizes()">Verify Prizes</button>
+</div>
+}
 
 <h1 class="page-header">Contests</h1>
 

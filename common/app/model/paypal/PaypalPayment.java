@@ -34,12 +34,12 @@ public class PaypalPayment {
     /*
         SANDBOX CONFIGURATION
      */
-    static final String SANDBOX_CLIENT_ID = "AXGKyxAeNjwaGg4gNwHDEoidWC7_uQeRgaFAWTccuLqb1-R-s11FWbceSWR0";
-    static final String SANDBOX_SECRET = "ENlBYxDHZVn_hotpxYtCXD3NPvvPQSmj8CbfzYWZyaFddkQTwhhw3GxV5Ipe";
+    static final String SANDBOX_CLIENT_ID = "AWIunSu3Vqt484rLx3e9oOwMfS0u9pPDPm5mLfPJ9jlt1hwagfFoh-KVf-9hypmWF9npGy2gBeZO0ux7";
+    static final String SANDBOX_SECRET = "EA2CJVjXwtHzgXri0SIOLphSbeaoeCFOvpFfDCLTji_2W86RifRg4yFRhbwOQ5yINTBY9wFBjzt_IWMy";
     static final String SANDBOX_CANCEL_URL = "https://devtools-paypal.com/guide/pay_paypal?cancel=true&orderId=";
     static final String SANDBOX_RETURN_URL = "https://devtools-paypal.com/guide/pay_paypal?success=true&orderId=";
 
-    static final String CURRENCY = "EUR";
+    static final String CURRENCY = "USD";
 
     static final String TRANSACTION_DESCRIPTION = "Creating a payment";
 

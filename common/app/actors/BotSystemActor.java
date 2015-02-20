@@ -82,6 +82,20 @@ public class BotSystemActor extends UntypedActor {
                 sender().tell(getCurrentChildrenState(), getSelf());
                 break;
 
+            case "Start":
+                if (!_childrenStarted) {
+                    startChildren();
+                }
+                sender().tell(getCurrentChildrenState(), getSelf());
+                break;
+
+            case "Stop":
+                if (_childrenStarted) {
+                    stopChildren();
+                }
+                sender().tell(getCurrentChildrenState(), getSelf());
+                break;
+
             case "PauseResume":
                 if (_childrenStarted) {
                     if (_tickCancellable != null) {
@@ -113,6 +127,16 @@ public class BotSystemActor extends UntypedActor {
                     cancelTicking();
                 }
                 Logger.debug("BotSystemActor Stampede end");
+
+                sender().tell(getCurrentChildrenState(), getSelf());
+                break;
+
+            case "Berserker":
+                Logger.debug("BotSystemActor Berserker!");
+                for (ActorRef actorRef : getContext().getChildren()) {
+                    actorRef.tell("Berserker", getSelf());
+                }
+                Logger.debug("BotSystemActor Berserker end");
 
                 sender().tell(getCurrentChildrenState(), getSelf());
                 break;

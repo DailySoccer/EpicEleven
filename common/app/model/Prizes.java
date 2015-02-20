@@ -31,10 +31,10 @@ public class Prizes {
     public Money getValue(int position) {
         Money ret;
         if (prizeType.equals(PrizeType.FIFTY_FIFTY)) {
-            ret = (position < (maxEntries / 2)) ? values.get(0) : Money.zero(CurrencyUnit.EUR);
+            ret = (position < (maxEntries / 2)) ? values.get(0) : Money.zero(Product.CURRENCY_DEFAULT);
         }
         else {
-            ret = (position < values.size()) ? values.get(position) : Money.zero(CurrencyUnit.EUR);
+            ret = (position < values.size()) ? values.get(position) : Money.zero(Product.CURRENCY_DEFAULT);
         }
         return ret;
     }
@@ -151,6 +151,10 @@ public class Prizes {
         return multipliers;
     }
 
+    static private Money truncate(Money prize) {
+        return prize.multipliedBy(100).abs().multipliedBy(0.01, RoundingMode.UNNECESSARY);
+    }
+
     static private List<Money> getPrizesApplyingMultipliers(Money prizePool, List<Float> multipliers) {
         List<Money> prizes = new ArrayList<>();
 
@@ -169,13 +173,13 @@ public class Prizes {
                 }
 
                 if (premio.isPositiveOrZero()) {
-                    prizes.add(premio);
+                    prizes.add(truncate(premio));
                     resto = resto.minus(premio);
                 }
             }
         }
         else if (multipliers.size() > 0) {
-            prizes.add(prizePool.multipliedBy(multipliers.get(0), RoundingMode.HALF_UP));
+            prizes.add(truncate(prizePool.multipliedBy(multipliers.get(0), RoundingMode.HALF_UP)));
         }
 
         return prizes;

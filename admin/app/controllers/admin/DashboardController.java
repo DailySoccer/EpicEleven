@@ -3,6 +3,7 @@ package controllers.admin;
 import actions.CheckTargetEnvironment;
 import actors.BotSystemActor;
 import model.Model;
+import model.Product;
 import model.User;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
@@ -46,6 +47,16 @@ public class DashboardController extends Controller {
         return redirect(routes.DashboardController.index());
     }
 
+    static public Result startBotActors() {
+        Model.actors().tellAndAwait("BotSystemActor", "Start");
+        return redirect(routes.DashboardController.index());
+    }
+
+    static public Result stopBotActors() {
+        Model.actors().tellAndAwait("BotSystemActor", "Stop");
+        return redirect(routes.DashboardController.index());
+    }
+
     static public Result pauseResumeBotActors() {
         Model.actors().tellAndAwait("BotSystemActor", "PauseResume");
         return redirect(routes.DashboardController.index());
@@ -53,6 +64,11 @@ public class DashboardController extends Controller {
 
     static public Result stampedeBotActors() {
         Model.actors().tellAndAwait("BotSystemActor", "Stampede");
+        return redirect(routes.DashboardController.index());
+    }
+
+    static public Result berserkerBotActors() {
+        Model.actors().tellAndAwait("BotSystemActor", "Berserker");
         return redirect(routes.DashboardController.index());
     }
 
@@ -73,7 +89,7 @@ public class DashboardController extends Controller {
     static private void addMoney(List<User> users, Integer amount) {
         List<AccountOp> accountOps = new ArrayList<>();
         for (User bot : users) {
-            accountOps.add(new AccountOp(bot.userId, Money.of(CurrencyUnit.EUR, amount), bot.getSeqId() + 1));
+            accountOps.add(new AccountOp(bot.userId, Money.of(Product.CURRENCY_DEFAULT, amount), bot.getSeqId() + 1));
         }
 
         if (!accountOps.isEmpty()) {

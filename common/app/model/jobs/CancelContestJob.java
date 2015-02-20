@@ -1,10 +1,7 @@
 package model.jobs;
 
 import com.mongodb.WriteResult;
-import model.Contest;
-import model.ContestEntry;
-import model.Model;
-import model.User;
+import model.*;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.accounting.AccountingTranCancelContest;
@@ -40,7 +37,7 @@ public class CancelContestJob extends Job {
                     // Cancelamos el contest
                     WriteResult result = Model.contests()
                             .update("{_id: #, state: { $ne: \"CANCELED\" }}", contestId)
-                            .with("{$set: {state: \"CANCELED\"}, $addToSet: {pendingJobs: #}}", jobId);
+                            .with("{$set: {state: \"CANCELED\", canceledAt: #}, $addToSet: {pendingJobs: #}}", GlobalDate.getCurrentDate(), jobId);
                     bValid = (result.getN() > 0);
                 }
                 else {
@@ -49,7 +46,7 @@ public class CancelContestJob extends Job {
                 }
 
                 if (bValid) {
-                    if (contest.entryFee.isGreaterThan(Money.zero(CurrencyUnit.EUR)) && !contest.contestEntries.isEmpty()) {
+                    if (contest.entryFee.isGreaterThan(Money.zero(Product.CURRENCY_DEFAULT)) && !contest.contestEntries.isEmpty()) {
                         List<AccountOp> accounts = new ArrayList<>();
                         for (ContestEntry contestEntry : contest.contestEntries) {
                             accounts.add(new AccountOp(contestEntry.userId, contest.entryFee, User.getSeqId(contestEntry.userId) + 1));

@@ -29,6 +29,9 @@ public class Contest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public Date finishedAt;
 
+    @JsonView(JsonViews.NotForClient.class)
+    public Date canceledAt;
+
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public ContestState state = ContestState.OFF;
 
@@ -177,8 +180,16 @@ public class Contest implements JongoId {
                 .as(Contest.class));
     }
 
+    static public List<Contest> findAllHistoryClosed() {
+        return ListUtils.asList(Model.contests().find("{state: \"HISTORY\", closed: true}").as(Contest.class));
+    }
+
     static public List<Contest> findAllHistoryNotClosed() {
         return ListUtils.asList(Model.contests().find("{state: \"HISTORY\", $or: [{closed: {$exists: false}}, {closed: false}]}").as(Contest.class));
+    }
+
+    static public List<Contest> findAllCanceled() {
+        return ListUtils.asList(Model.contests().find("{state: \"CANCELED\"}").as(Contest.class));
     }
 
     static public List<Contest> findAllMyActive(ObjectId userId, Class<?> projectionClass) {
@@ -273,7 +284,7 @@ public class Contest implements JongoId {
             List<AccountOp> accounts = new ArrayList<>();
             for (ContestEntry contestEntry : contestEntries) {
                 Money prize = prizes.getValue(contestEntry.position);
-                if (prize.isGreaterThan(Money.zero(CurrencyUnit.EUR))) {
+                if (prize.isGreaterThan(Money.zero(Product.CURRENCY_DEFAULT))) {
                     User user = User.findOne(contestEntry.userId);
                     accounts.add(new AccountOp(contestEntry.userId, prize, user.getSeqId() + 1));
                 }

@@ -1,4 +1,4 @@
-@()
+@(automaticallyCreateEnabled : Boolean)
 
 @import model._
 @import controllers.admin.routes._
@@ -57,6 +57,11 @@
 
 @if(model.Model.isLocalHostTargetEnvironment()) {
 <div style="float: right; margin-right:100px;">
+    @if(!automaticallyCreateEnabled) {
+        <a href="@TemplateContestController.setCreatingTemplateContestsState(true)"><button class="btn btn-danger">Start Creating Template Contests</button></a>
+    } else {
+        <a href="@TemplateContestController.setCreatingTemplateContestsState(false)"><button class="btn btn-warning">Stop Creating Template Contests</button></a>
+    }
     <a href="@TemplateContestController.createAll"><button class="btn btn-danger">Create All Contests</button></a>
 </div>
 }

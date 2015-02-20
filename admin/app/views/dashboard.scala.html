@@ -8,28 +8,6 @@
 
 var moneySelected = 5;
 
-$(document).ready(function() {
-    getMongo();
-});
-
-function setOverlay() {
-   var docHeight = $(document).height();
-
-   $("body").append("<div id='overlay'></div>");
-
-   $("#overlay")
-      .height(docHeight)
-      .css({
-         'opacity' : 0.6,
-         'position': 'absolute',
-         'top': 0,
-         'left': 0,
-         'background-color': 'gray',
-         'width': '100%',
-         'z-index': 5000
-      });
-}
-
 function addMoney(target, amount) {
     console.log("addMoney: " + amount);
 
