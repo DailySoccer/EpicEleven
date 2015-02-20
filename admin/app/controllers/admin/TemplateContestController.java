@@ -145,7 +145,7 @@ public class TemplateContestController extends Controller {
         templateContest.minInstances = params.minInstances;
         templateContest.maxEntries = params.maxEntries;
         templateContest.salaryCap = params.salaryCap;
-        templateContest.entryFee = Money.of(CurrencyUnit.EUR, params.entryFee);
+        templateContest.entryFee = Money.of(Product.CURRENCY_DEFAULT, params.entryFee);
         templateContest.prizeType = params.prizeType;
 
         templateContest.activationAt = new DateTime(params.activationAt).withZoneRetainFields(DateTimeZone.UTC).toDate();
@@ -228,14 +228,14 @@ public class TemplateContestController extends Controller {
     }
 
     public static void createMock(List<TemplateMatchEvent> templateMatchEvents) {
-        createMock(templateMatchEvents, Money.zero(CurrencyUnit.EUR), 3, PrizeType.FREE, 70000);
+        createMock(templateMatchEvents, Money.zero(Product.CURRENCY_DEFAULT), 3, PrizeType.FREE, 70000);
         //createMock(templateMatchEvents, 0, 5, PrizeType.FREE);
         //createMock(templateMatchEvents, 0, 10, PrizeType.FREE);
-        createMock(templateMatchEvents, Money.zero(CurrencyUnit.EUR), 25, PrizeType.FREE, 65000);
+        createMock(templateMatchEvents, Money.zero(Product.CURRENCY_DEFAULT), 25, PrizeType.FREE, 65000);
 
 
         for (int i = 1; i<=6; i++) {
-            Money money = Money.of(CurrencyUnit.EUR, i);
+            Money money = Money.of(Product.CURRENCY_DEFAULT, i);
 
             switch (i) {
                 case 1:
@@ -322,7 +322,7 @@ public class TemplateContestController extends Controller {
     }
 
     public static Result getPrizes(String prizeType, Integer maxEntries, Integer entryFee) {
-        Prizes prizes = Prizes.findOne(PrizeType.valueOf(prizeType), maxEntries, Money.of(CurrencyUnit.EUR, entryFee));
+        Prizes prizes = Prizes.findOne(PrizeType.valueOf(prizeType), maxEntries, Money.of(Product.CURRENCY_DEFAULT, entryFee));
         return new ReturnHelper(prizes.getAllValues()).toResult();
     }
 

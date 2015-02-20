@@ -3,6 +3,7 @@ package controllers.admin;
 import actions.CheckTargetEnvironment;
 import actors.BotSystemActor;
 import model.Model;
+import model.Product;
 import model.User;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
@@ -88,7 +89,7 @@ public class DashboardController extends Controller {
     static private void addMoney(List<User> users, Integer amount) {
         List<AccountOp> accountOps = new ArrayList<>();
         for (User bot : users) {
-            accountOps.add(new AccountOp(bot.userId, Money.of(CurrencyUnit.EUR, amount), bot.getSeqId() + 1));
+            accountOps.add(new AccountOp(bot.userId, Money.of(Product.CURRENCY_DEFAULT, amount), bot.getSeqId() + 1));
         }
 
         if (!accountOps.isEmpty()) {

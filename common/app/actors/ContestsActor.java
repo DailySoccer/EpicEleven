@@ -119,11 +119,11 @@ public class ContestsActor extends TickableActor {
     }
 
     private void createMock(List<TemplateMatchEvent> templateMatchEvents) {
-        createMock(templateMatchEvents, Money.zero(CurrencyUnit.EUR), 20, PrizeType.FREE, 70000);
-        createMock(templateMatchEvents, Money.zero(CurrencyUnit.EUR), 25, PrizeType.FREE, 65000);
+        createMock(templateMatchEvents, Money.zero(Product.CURRENCY_DEFAULT), 20, PrizeType.FREE, 70000);
+        createMock(templateMatchEvents, Money.zero(Product.CURRENCY_DEFAULT), 25, PrizeType.FREE, 65000);
 
         for (int i = 1; i<=6; i++) {
-            Money money = Money.of(CurrencyUnit.EUR, i);
+            Money money = Money.of(Product.CURRENCY_DEFAULT, i);
 
             switch (i) {
                 case 1:
