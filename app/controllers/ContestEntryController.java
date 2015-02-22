@@ -20,7 +20,9 @@ import utils.ListUtils;
 import utils.ReturnHelper;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static play.data.Form.form;
 
@@ -38,6 +40,7 @@ public class ContestEntryController extends Controller {
     private static final String ERROR_OP_UNAUTHORIZED = "ERROR_OP_UNAUTHORIZED";
     private static final String ERROR_USER_ALREADY_INCLUDED = "ERROR_USER_ALREADY_INCLUDED";
     private static final String ERROR_USER_BALANCE_NEGATIVE = "ERROR_USER_BALANCE_NEGATIVE";
+    private static final String ERROR_MAX_PLAYERS_SAME_TEAM = "ERROR_MAX_PLAYERS_SAME_TEAM";
     private static final String ERROR_RETRY_OP = "ERROR_RETRY_OP";
 
     public static class AddContestEntryParams {
@@ -296,6 +299,11 @@ public class ContestEntryController extends Controller {
                 if (!isFormationValid(soccerPlayers)) {
                     errores.add(ERROR_FORMATION_INVALID);
                 }
+
+                // Verificar que no se han incluido muchos players del mismo equipo
+                if (!isMaxPlayersFromSameTeamValid(contest, soccerPlayers)) {
+                    errores.add(ERROR_MAX_PLAYERS_SAME_TEAM);
+                }
             }
         }
 
@@ -328,6 +336,27 @@ public class ContestEntryController extends Controller {
                 (countFieldPos(FieldPos.DEFENSE, soccerPlayers) == 4) &&
                 (countFieldPos(FieldPos.MIDDLE, soccerPlayers) == 4) &&
                 (countFieldPos(FieldPos.FORWARD, soccerPlayers) == 2);
+    }
+
+    private static boolean isMaxPlayersFromSameTeamValid(Contest contest, List<InstanceSoccerPlayer> soccerPlayers) {
+        boolean valid = true;
+
+        Map<String, Integer> numPlayersFromTeam = new HashMap<>();
+        for (InstanceSoccerPlayer player : soccerPlayers) {
+            String key = player.templateSoccerTeamId.toString();
+            Integer num = numPlayersFromTeam.containsKey(key)
+                    ? numPlayersFromTeam.get(key)
+                    : 0;
+            if (num < contest.getMaxPlayersFromSameTeam()) {
+                numPlayersFromTeam.put(key, num + 1);
+            }
+            else {
+                valid = false;
+                break;
+            }
+        }
+
+        return valid;
     }
 
     private static int countFieldPos(FieldPos fieldPos, List<InstanceSoccerPlayer> soccerPlayers) {

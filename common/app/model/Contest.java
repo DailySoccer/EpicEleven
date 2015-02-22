@@ -16,6 +16,8 @@ import utils.ViewProjection;
 import java.util.*;
 
 public class Contest implements JongoId {
+    final int MAX_PLAYERS_SAME_TEAM = 4;
+
     @Id
     public ObjectId contestId;
     public ObjectId templateContestId;
@@ -102,6 +104,10 @@ public class Contest implements JongoId {
 
     public List<TemplateMatchEvent> getTemplateMatchEvents() {
         return TemplateMatchEvent.findAll(templateMatchEventIds);
+    }
+
+    public int getMaxPlayersFromSameTeam() {
+        return MAX_PLAYERS_SAME_TEAM;
     }
 
     public ContestEntry findContestEntry(ObjectId contestEntryId) {
