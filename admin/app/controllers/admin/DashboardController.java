@@ -13,6 +13,7 @@ import org.joda.money.Money;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utils.MoneyUtils;
 import utils.TargetEnvironment;
 
 import java.util.ArrayList;
@@ -89,7 +90,7 @@ public class DashboardController extends Controller {
     static private void addMoney(List<User> users, Integer amount) {
         List<AccountOp> accountOps = new ArrayList<>();
         for (User bot : users) {
-            accountOps.add(new AccountOp(bot.userId, Money.of(Product.CURRENCY_DEFAULT, amount), bot.getSeqId() + 1));
+            accountOps.add(new AccountOp(bot.userId, MoneyUtils.of(amount), bot.getSeqId() + 1));
         }
 
         if (!accountOps.isEmpty()) {

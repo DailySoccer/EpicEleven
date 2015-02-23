@@ -9,6 +9,7 @@ import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
+import utils.MoneyUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -28,7 +29,7 @@ public class ContestEntry implements JongoId {
     public int position = -1;
 
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
-    public Money prize = Money.zero(Product.CURRENCY_DEFAULT);
+    public Money prize = MoneyUtils.zero;
 
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
     public int fantasyPoints;

@@ -18,6 +18,7 @@ import play.data.Form;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utils.MoneyUtils;
 import utils.ReturnHelper;
 
 import java.util.Map;
@@ -64,7 +65,7 @@ public class PaypalController extends Controller {
             ObjectId orderId = new ObjectId();
 
             // Producto que quiere comprar
-            Product product = new Product("Payment", Money.of(Product.CURRENCY_DEFAULT, amount));
+            Product product = new Product("Payment", MoneyUtils.of(amount));
 
             // Creamos la solicitud de pago (le proporcionamos el identificador del pedido para referencias posteriores)
             Payment payment = PaypalPayment.instance().createPayment(orderId, product);
@@ -197,7 +198,7 @@ public class PaypalController extends Controller {
     public static Result withdrawFunds(int amount) {
         User theUser = (User) ctx().args.get("User");
 
-        Refund refund = new Refund(theUser.userId, Money.of(Product.CURRENCY_DEFAULT, amount));
+        Refund refund = new Refund(theUser.userId, MoneyUtils.of(amount));
         refund.insert();
 
         return new ReturnHelper(ImmutableMap.of(

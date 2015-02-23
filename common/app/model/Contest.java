@@ -11,6 +11,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.jongo.marshall.jackson.oid.Id;
 import utils.ListUtils;
+import utils.MoneyUtils;
 import utils.ViewProjection;
 
 import java.util.*;
@@ -290,7 +291,7 @@ public class Contest implements JongoId {
             List<AccountOp> accounts = new ArrayList<>();
             for (ContestEntry contestEntry : contestEntries) {
                 Money prize = prizes.getValue(contestEntry.position);
-                if (prize.isGreaterThan(Money.zero(Product.CURRENCY_DEFAULT))) {
+                if (MoneyUtils.isGreaterThan(prize, MoneyUtils.zero)) {
                     User user = User.findOne(contestEntry.userId);
                     accounts.add(new AccountOp(contestEntry.userId, prize, user.getSeqId() + 1));
                 }
