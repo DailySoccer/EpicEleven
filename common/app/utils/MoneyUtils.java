@@ -3,7 +3,19 @@ package utils;
 import model.Product;
 import org.joda.money.Money;
 
+import java.math.BigDecimal;
+
 public class MoneyUtils {
+    static public final Money zero = Money.zero(Product.CURRENCY_DEFAULT);
+
+    static public Money of(double amount) {
+        return Money.of(Product.CURRENCY_DEFAULT, amount);
+    }
+
+    static public Money of(BigDecimal amount) {
+        return Money.of(Product.CURRENCY_DEFAULT, amount);
+    }
+
     static public Money withCurrencyUnit(Money aMoney) {
         return aMoney.withCurrencyUnit(Product.CURRENCY_DEFAULT);
     }

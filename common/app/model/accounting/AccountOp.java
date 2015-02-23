@@ -43,7 +43,7 @@ public class AccountOp {
     public Money getLastBalance() {
         // Si es el primer seqId no existe ninguno anterior
         if (seqId == 1) {
-            return Money.zero(Product.CURRENCY_DEFAULT);
+            return MoneyUtils.zero;
         }
 
         // TODO: ¿necesitamos comprobar que el commit es del "seqId" inmediatamente anterior?
@@ -57,6 +57,6 @@ public class AccountOp {
                 .and("{$group: {_id: \"balance\", accountId: { $first: \"$accountOps.accountId\" }, cachedBalance: { $first: \"$accountOps.cachedBalance\" }}}")
                 .as(AccountOp.class);
 
-        return (!accountOp.isEmpty()) ? MoneyUtils.withCurrencyUnit(accountOp.get(0).cachedBalance) : Money.zero(Product.CURRENCY_DEFAULT);
+        return (!accountOp.isEmpty()) ? MoneyUtils.withCurrencyUnit(accountOp.get(0).cachedBalance) : MoneyUtils.zero;
     }
 }

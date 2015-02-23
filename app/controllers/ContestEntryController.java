@@ -106,7 +106,7 @@ public class ContestEntryController extends Controller {
             }
 
             if (errores.isEmpty()) {
-                if (MoneyUtils.isGreaterThan(aContest.entryFee, Money.zero(Product.CURRENCY_DEFAULT))) {
+                if (MoneyUtils.isGreaterThan(aContest.entryFee, MoneyUtils.zero)) {
                     // Verificar que el usuario tiene dinero suficiente...
                     Money userBalance = User.calculateBalance(theUser.userId);
                     if (MoneyUtils.compareTo(userBalance, aContest.entryFee) < 0) {
