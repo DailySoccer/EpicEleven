@@ -237,9 +237,9 @@ public class ExcelController extends Controller {
             for (TemplateSoccerPlayer soccerPlayer: TemplateSoccerPlayer.findAllFromTemplateTeam(templateSoccerTeam.templateSoccerTeamId)) {
                 String teamName = soccerTeamsMap.containsKey(soccerPlayer.templateTeamId.toString()) ? soccerTeamsMap.get(soccerPlayer.templateTeamId.toString()) : "unknown";
 
-                pivotRow = pivotSheet.createRow((short)playerRowCounter);
-                salaryRow = salarySheet.createRow((short)playerRowCounter);
-                emaRow = emaSheet.createRow((short)playerRowCounter++);
+                pivotRow = pivotSheet.createRow(playerRowCounter);
+                salaryRow = salarySheet.createRow(playerRowCounter);
+                emaRow = emaSheet.createRow(playerRowCounter++);
 
                 pivotRow.createCell(_PivotSheet.OPTA_PLAYER_ID.column).setCellValue(soccerPlayer.optaPlayerId);
 
@@ -250,7 +250,7 @@ public class ExcelController extends Controller {
 
                 int statCounter = 0;
                 for (SoccerPlayerStats stat : soccerPlayer.stats) {
-                    row = logSheet.createRow((short)rowCounter++);
+                    row = logSheet.createRow(rowCounter++);
                     fillLogRow(optaCompetitions, row, soccerPlayer, teamName, stat);
 
                     fillPivotRows(pivotRow, statCounter, stat);
