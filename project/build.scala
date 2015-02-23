@@ -2,7 +2,7 @@
 // Sbt es 'enrevesado'. Para poder tocar y entenderlo bien hace falta leerse el tutorial completo!
 //
 
-import com.heroku.sbt._
+import com.heroku.sbt.HerokuPlugin.autoImport._
 import play.PlayImport.PlayKeys._
 import play.PlayJava
 import sbt._
@@ -23,6 +23,7 @@ object build extends Build {
     sources in (Compile,doc) := Seq.empty,
     publishArtifact in (Compile, packageDoc) := false,
 
+    herokuAppName in Compile := "dailysoccer-staging",
 
 
       sourceDirectory in Assets := (sourceDirectory in Compile).value,
