@@ -198,7 +198,8 @@ def save_last_commit():
 
 def heroku_push():
     print blue("Pushing to Heroku...")
-    local('git push %s deploy:master --force' % env.dest)
+#    local('git push %s deploy:master --force' % env.dest)
+    local('sbt clean compile stage deployHeroku')
 
 def heroku_version():
     print blue("Getting Heroku version of the app...")

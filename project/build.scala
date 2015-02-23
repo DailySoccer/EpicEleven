@@ -24,6 +24,9 @@ object build extends Build {
     publishArtifact in (Compile, packageDoc) := false,
 
     herokuAppName in Compile := "dailysoccer-staging",
+    herokuIncludePaths in Compile := Seq(
+      "app", "common/app/model/migrations", "public"
+    ),
 
 
       sourceDirectory in Assets := (sourceDirectory in Compile).value,
