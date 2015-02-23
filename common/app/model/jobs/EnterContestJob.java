@@ -10,6 +10,7 @@ import model.accounting.AccountingTranCancelContestEntry;
 import model.accounting.AccountingTranEnterContest;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
+import utils.MoneyUtils;
 
 import java.util.List;
 
@@ -108,7 +109,7 @@ public class EnterContestJob extends Job {
 
         // El usuario tiene dinero suficiente?
         Money userBalance = User.calculateBalance(userId);
-        if (userBalance.compareTo(entryFee) >= 0) {
+        if (MoneyUtils.compareTo(userBalance, entryFee) >= 0) {
             try {
                 // Registrar el pago
                 AccountingTran accountingTran = AccountingTranEnterContest.create(contestId, contestEntryId, ImmutableList.of(

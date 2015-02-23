@@ -17,6 +17,7 @@ import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
+import utils.MoneyUtils;
 import utils.ReturnHelper;
 
 import java.util.ArrayList;
@@ -105,10 +106,10 @@ public class ContestEntryController extends Controller {
             }
 
             if (errores.isEmpty()) {
-                if (aContest.entryFee.withCurrencyUnit(Product.CURRENCY_DEFAULT).isGreaterThan(Money.zero(Product.CURRENCY_DEFAULT))) {
+                if (MoneyUtils.isGreaterThan(aContest.entryFee, MoneyUtils.zero)) {
                     // Verificar que el usuario tiene dinero suficiente...
                     Money userBalance = User.calculateBalance(theUser.userId);
-                    if (userBalance.compareTo(aContest.entryFee) < 0) {
+                    if (MoneyUtils.compareTo(userBalance, aContest.entryFee) < 0) {
                         errores.add(ERROR_USER_BALANCE_NEGATIVE);
                     }
                 }

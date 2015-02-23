@@ -29,7 +29,7 @@ public class JacksonJodaMoney {
             }
             catch (IllegalArgumentException e) {
                 // Logger.warn("MoneyDeserializer: Versión antigua expresando el dinero como \"Int32\" o \"Double\"");
-                return Money.of(Product.CURRENCY_DEFAULT, Double.parseDouble(value));
+                return MoneyUtils.of(Double.parseDouble(value));
             }
         }
     }

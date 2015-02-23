@@ -10,6 +10,7 @@ import org.joda.time.Period;
 import org.jongo.Find;
 import play.Logger;
 import utils.ListUtils;
+import utils.MoneyUtils;
 
 import java.util.*;
 
@@ -119,11 +120,11 @@ public class ContestsActor extends TickableActor {
     }
 
     private void createMock(List<TemplateMatchEvent> templateMatchEvents) {
-        createMock(templateMatchEvents, Money.zero(Product.CURRENCY_DEFAULT), 20, PrizeType.FREE, 70000);
-        createMock(templateMatchEvents, Money.zero(Product.CURRENCY_DEFAULT), 25, PrizeType.FREE, 65000);
+        createMock(templateMatchEvents, MoneyUtils.zero, 20, PrizeType.FREE, 70000);
+        createMock(templateMatchEvents, MoneyUtils.zero, 25, PrizeType.FREE, 65000);
 
         for (int i = 1; i<=6; i++) {
-            Money money = Money.of(Product.CURRENCY_DEFAULT, i);
+            Money money = MoneyUtils.of(i);
 
             switch (i) {
                 case 1:

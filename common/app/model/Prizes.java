@@ -3,6 +3,7 @@ package model;
 import com.google.common.collect.ImmutableList;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
+import utils.MoneyUtils;
 
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -31,10 +32,10 @@ public class Prizes {
     public Money getValue(int position) {
         Money ret;
         if (prizeType.equals(PrizeType.FIFTY_FIFTY)) {
-            ret = (position < (maxEntries / 2)) ? values.get(0) : Money.zero(Product.CURRENCY_DEFAULT);
+            ret = (position < (maxEntries / 2)) ? values.get(0) : MoneyUtils.zero;
         }
         else {
-            ret = (position < values.size()) ? values.get(position) : Money.zero(Product.CURRENCY_DEFAULT);
+            ret = (position < values.size()) ? values.get(position) : MoneyUtils.zero;
         }
         return ret;
     }
