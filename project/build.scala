@@ -1,6 +1,8 @@
 //
 // Sbt es 'enrevesado'. Para poder tocar y entenderlo bien hace falta leerse el tutorial completo!
 //
+
+import com.heroku.sbt._
 import play.PlayImport.PlayKeys._
 import play.PlayJava
 import sbt._
@@ -21,12 +23,15 @@ object build extends Build {
     sources in (Compile,doc) := Seq.empty,
     publishArtifact in (Compile, packageDoc) := false,
 
-    sourceDirectory in Assets := (sourceDirectory in Compile).value,
+
+
+      sourceDirectory in Assets := (sourceDirectory in Compile).value,
 
     // Para que la compilacion incremental sea mas rapida. De momento dicen que es experimental con sbt 0.13.7
     // http://typesafe.com/blog/improved-dependency-management-with-sbt-0137
     updateOptions := updateOptions.value.withCachedResolution(true)
   )
+
 
   lazy val removeAdminFromRouterTaskKey = taskKey[Unit]("Removes the admin route from the router")
 
