@@ -10,6 +10,7 @@ import org.joda.money.Money;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utils.MoneyUtils;
 import utils.ReturnHelper;
 
 import java.util.ArrayList;
@@ -179,7 +180,7 @@ public class ContestController extends Controller {
                     errors.add(String.format("contestEntry: %s: Sin AccountOp", contestEntry.contestEntryId));
                 }
                 // Tendrían que devolverle el entryFee
-                else if (!accountOp.value.equals(contest.entryFee)) {
+                else if (!MoneyUtils.equals(accountOp.value, contest.entryFee)) {
                     errors.add(String.format("contestEntry: %s AccountOp: %s != %s",
                             contestEntry.contestEntryId, accountOp.value, contest.entryFee));
                 }
