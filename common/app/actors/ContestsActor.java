@@ -3,7 +3,6 @@ package actors;
 import model.*;
 import model.opta.OptaCompetition;
 import org.bson.types.ObjectId;
-import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
@@ -120,40 +119,40 @@ public class ContestsActor extends TickableActor {
     }
 
     private void createMock(List<TemplateMatchEvent> templateMatchEvents) {
-        createMock(templateMatchEvents, MoneyUtils.zero, 20, PrizeType.FREE, 70000);
-        createMock(templateMatchEvents, MoneyUtils.zero, 25, PrizeType.FREE, 65000);
+        createMock(templateMatchEvents, MoneyUtils.zero, 20, PrizeType.FREE, SalaryCap.STANDARD);
+        createMock(templateMatchEvents, MoneyUtils.zero, 25, PrizeType.FREE, SalaryCap.DIFFICULT);
 
         for (int i = 1; i<=6; i++) {
             Money money = MoneyUtils.of(i);
 
             switch (i) {
                 case 1:
-                    createMock(templateMatchEvents, money, 2, PrizeType.WINNER_TAKES_ALL, 60000);
-                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_3_GET_PRIZES, 65000);
+                    createMock(templateMatchEvents, money, 2, PrizeType.WINNER_TAKES_ALL, SalaryCap.EASY);
+                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_3_GET_PRIZES, SalaryCap.DIFFICULT);
                     break;
                 case 2:
-                    createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, 65000);
+                    createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, SalaryCap.DIFFICULT);
                     break;
                 case 3:
-                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_THIRD_GET_PRIZES, 70000);
-                    createMock(templateMatchEvents, money, 10, PrizeType.FIFTY_FIFTY, 60000);
+                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_THIRD_GET_PRIZES, SalaryCap.STANDARD);
+                    createMock(templateMatchEvents, money, 10, PrizeType.FIFTY_FIFTY, SalaryCap.EASY);
                     break;
                 case 4:
-                    createMock(templateMatchEvents, money, 10, PrizeType.FIFTY_FIFTY, 65000);
-                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_3_GET_PRIZES, 70000);
+                    createMock(templateMatchEvents, money, 10, PrizeType.FIFTY_FIFTY, SalaryCap.DIFFICULT);
+                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_3_GET_PRIZES, SalaryCap.STANDARD);
                     break;
                 case 5:
-                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_3_GET_PRIZES, 60000);
-                    createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, 65000);
+                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_3_GET_PRIZES, SalaryCap.EASY);
+                    createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, SalaryCap.DIFFICULT);
                     break;
                 case 6:
-                    createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, 70000);
+                    createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, SalaryCap.STANDARD);
                     break;
             }
         }
     }
 
-    private void createMock(List<TemplateMatchEvent> templateMatchEvents, Money entryFee, int maxEntries, PrizeType prizeType, int salaryCap) {
+    private void createMock(List<TemplateMatchEvent> templateMatchEvents, Money entryFee, int maxEntries, PrizeType prizeType, SalaryCap salaryCap) {
         if (templateMatchEvents.size() == 0) {
             Logger.error("create: templateMatchEvents is empty");
             return;
@@ -170,7 +169,7 @@ public class ContestsActor extends TickableActor {
         templateContest.maxEntries = maxEntries;
         templateContest.prizeType = prizeType;
         templateContest.entryFee = entryFee;
-        templateContest.salaryCap = salaryCap;
+        templateContest.salaryCap = salaryCap.money;
         templateContest.startDate = startDate;
         templateContest.templateMatchEventIds = new ArrayList<>();
 
