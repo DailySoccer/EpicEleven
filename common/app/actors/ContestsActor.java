@@ -119,34 +119,34 @@ public class ContestsActor extends TickableActor {
     }
 
     private void createMock(List<TemplateMatchEvent> templateMatchEvents) {
-        createMock(templateMatchEvents, MoneyUtils.zero, 20, PrizeType.FREE, SalaryCap.STANDARD);
-        createMock(templateMatchEvents, MoneyUtils.zero, 25, PrizeType.FREE, SalaryCap.DIFFICULT);
+        createMock(templateMatchEvents, MoneyUtils.zero, 20, PrizeType.FREE, SalaryCap.EASY);
+        createMock(templateMatchEvents, MoneyUtils.zero, 25, PrizeType.FREE, SalaryCap.STANDARD);
 
         for (int i = 1; i<=6; i++) {
             Money money = MoneyUtils.of(i);
 
             switch (i) {
                 case 1:
-                    createMock(templateMatchEvents, money, 2, PrizeType.WINNER_TAKES_ALL, SalaryCap.EASY);
-                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_3_GET_PRIZES, SalaryCap.DIFFICULT);
+                    createMock(templateMatchEvents, money, 2, PrizeType.WINNER_TAKES_ALL, SalaryCap.STANDARD); //MEDIO
+                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_3_GET_PRIZES, SalaryCap.STANDARD); //MEDIO
                     break;
                 case 2:
-                    createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, SalaryCap.DIFFICULT);
+                    createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, SalaryCap.STANDARD); //MEDIO
                     break;
                 case 3:
-                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_THIRD_GET_PRIZES, SalaryCap.STANDARD);
-                    createMock(templateMatchEvents, money, 10, PrizeType.FIFTY_FIFTY, SalaryCap.EASY);
+                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_THIRD_GET_PRIZES, SalaryCap.EASY); //FACIL
+                    createMock(templateMatchEvents, money, 10, PrizeType.FIFTY_FIFTY, SalaryCap.STANDARD); //MEDIO
                     break;
                 case 4:
-                    createMock(templateMatchEvents, money, 10, PrizeType.FIFTY_FIFTY, SalaryCap.DIFFICULT);
-                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_3_GET_PRIZES, SalaryCap.STANDARD);
+                    createMock(templateMatchEvents, money, 10, PrizeType.FIFTY_FIFTY, SalaryCap.STANDARD); //MEDIO
+                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_3_GET_PRIZES, SalaryCap.EASY); //FACIL
                     break;
                 case 5:
-                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_3_GET_PRIZES, SalaryCap.EASY);
-                    createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, SalaryCap.DIFFICULT);
+                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_3_GET_PRIZES, SalaryCap.STANDARD); //MEDIO
+                    createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, SalaryCap.STANDARD); //MEDIO
                     break;
                 case 6:
-                    createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, SalaryCap.STANDARD);
+                    createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, SalaryCap.EASY); //FACIL
                     break;
             }
         }

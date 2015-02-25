@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 
 public enum SalaryCap {
-    EASY(60000), //FIXME: 75000
+    EASY(75000),
     STANDARD(70000),
     DIFFICULT(65000);
 
