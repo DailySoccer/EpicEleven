@@ -1,5 +1,8 @@
 package controllers.admin;
 
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import actions.CheckTargetEnvironment;
 import com.google.common.collect.ImmutableList;
 import com.mongodb.WriteConcern;
@@ -14,10 +17,6 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utils.MoneyUtils;
 import utils.ReturnHelper;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 import static play.data.Form.form;
 
@@ -327,6 +326,12 @@ public class TemplateContestController extends Controller {
     }
 
     static private Boolean getCreatingTemplateContestsState() {
-        return Model.actors().tellAndAwait("ContestsActor", "GetCreatingTemplateContestsState");
+        Boolean response = Model.actors().tellAndAwait("ContestsActor", "GetCreatingTemplateContestsState");
+        if (response != null) {
+            _creatingTemplateContestState.set(response);
+        }
+        return _creatingTemplateContestState.get();
     }
+
+    static private AtomicBoolean _creatingTemplateContestState = new AtomicBoolean();
 }
