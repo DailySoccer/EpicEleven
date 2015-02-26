@@ -18,9 +18,13 @@ public class PromoForm {
     public String id;
 
     public String url;
+    public String html;
     public String imageXs;
     public String imageDesktop;
+
+    @Constraints.Required
     public Date activationDate;
+    @Constraints.Required
     public Date deactivationDate;
 
 
@@ -41,6 +45,7 @@ public class PromoForm {
         codeName = promo.codeName;
         priority = promo.priority;
         url = promo.url;
+        html = promo.html;
         imageXs = promo.imageXs;
         imageDesktop = promo.imageDesktop;
         activationDate = promo.activationDate;

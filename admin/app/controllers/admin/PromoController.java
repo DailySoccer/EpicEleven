@@ -3,28 +3,19 @@ package controllers.admin;
 import model.Model;
 import model.Promo;
 import org.bson.types.ObjectId;
-import play.Logger;
 import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
-import views.html.points_translation_add;
+import views.html.promo_add;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static play.data.Form.form;
 
 public class PromoController extends Controller {
     public static Result index() {
-        List<Integer> differentTypes = Model.promos().distinct("eventTypeId").as(Integer.class);
-        List<Promo> promoList = new ArrayList<>();
-        for (Integer differentType: differentTypes){
-            promoList.add(Model.promos().
-                    find("{eventTypeId: #}", differentType).sort("{timestamp: -1}").limit(1).
-                    as(Promo.class).iterator().next());
-        }
-
+        List<Promo> promoList = ListUtils.asList(Model.promos().find().as(Promo.class));
         return ok(views.html.promo_list.render(promoList));
     }
 
@@ -35,8 +26,7 @@ public class PromoController extends Controller {
 
     public static Result edit(String promoId) {
         Promo promo = Promo.findOne(new ObjectId(promoId));
-        Form<PromoForm> promoForm = Form.form(PromoForm.class).
-                                                            fill(new PromoForm(promo));
+        Form<PromoForm> promoForm = Form.form(PromoForm.class).fill(new PromoForm(promo));
         return ok(promo_add.render(promoForm));
     }
 
@@ -48,8 +38,13 @@ public class PromoController extends Controller {
 
         PromoForm params = promoForm.get();
 
-        boolean success = params.id.isEmpty()? Promo.createPromo(params.eventType.code, params.points):
-                Promo.edit(new ObjectId(params.id), params.points);
+        Promo myPromo = new Promo(params.activationDate, params.deactivationDate,
+                                params.priority, params.codeName, params.url,
+                                params.html, params.imageXs, params.imageDesktop);
+
+        boolean success = params.id.isEmpty()? Promo.createPromo(myPromo):
+                                               Promo.edit(new ObjectId(params.id), myPromo);
+
 
         if (!success) {
             FlashMessage.warning("Promo invalid");

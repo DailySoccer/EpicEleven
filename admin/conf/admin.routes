@@ -73,6 +73,11 @@ GET         /opta_events                                                        
 GET         /opta_events/ajax                                                    controllers.admin.OptaController.optaEventsAjax()
 GET         /opta_events/update                                                  controllers.admin.OptaController.updateOptaEvents()
 
+GET         /promos                                                              controllers.admin.PromoController.index()
+GET         /promos/add                                                          controllers.admin.PromoController.newForm()
+GET         /promos/edit/:promoId                                                controllers.admin.PromoController.edit(promoId)
+POST        /promos/save                                                         controllers.admin.PromoController.create()
+
 GET         /init_shutdown_simulator                                             controllers.admin.SimulatorController.initShutdown()
 GET         /pause_resume_simulator                                              controllers.admin.SimulatorController.pauseResume()
 GET         /reset_simulator                                                     controllers.admin.SimulatorController.reset()

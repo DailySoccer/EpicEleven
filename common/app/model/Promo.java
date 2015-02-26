@@ -10,14 +10,19 @@ import java.util.List;
 
 public class Promo implements JongoId {
     @Id
+    @JsonView(JsonViews.NotForClient.class)
     public ObjectId promoId;
 
+    @JsonView(JsonViews.NotForClient.class)
     public int priority;
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
+    @JsonView(JsonViews.NotForClient.class)
     public Date activationDate;
+
+    @JsonView(JsonViews.NotForClient.class)
     public Date deactivationDate;
 
     public String codeName;
@@ -28,6 +33,18 @@ public class Promo implements JongoId {
 
 
     public Promo() {}
+
+    public Promo(Date activationDate, Date deactivationDate, int priority, String codeName, String url, String html, String imageXs, String imageDesktop) {
+        this.priority = priority;
+        this.createdAt = GlobalDate.getCurrentDate();
+        this.activationDate = activationDate;
+        this.deactivationDate = deactivationDate;
+        this.codeName = codeName;
+        this.url = url;
+        this.html = html;
+        this.imageDesktop = imageDesktop;
+        this.imageXs = imageXs;
+    }
 
     public ObjectId getId() {
         return promoId;
@@ -45,21 +62,17 @@ public class Promo implements JongoId {
                         .as(Promo.class));
     }
 
+
+
+    public static boolean edit(ObjectId promoId, Promo promo) {
+        Model.promos().update("{_id: #}", promoId).with(promo);
+        return true;
+    }
+
     /**
      * Creacion de una promo
      */
-    public static boolean createPromo(Date activationDate, Date deactivationDate, int priority, String codeName, String url, String html, String imageXs, String imageDesktop) {
-        Promo promo = new Promo();
-        promo.priority = priority;
-        promo.createdAt = GlobalDate.getCurrentDate();
-        promo.activationDate = activationDate;
-        promo.deactivationDate = deactivationDate;
-        promo.codeName = codeName;
-        promo.url = url;
-        promo.html = html;
-        promo.imageDesktop = imageDesktop;
-        promo.imageXs = imageXs;
-
+    public static boolean createPromo(Promo promo) {
         Model.promos().insert(promo);
 
         OpsLog.onNew(promo);
