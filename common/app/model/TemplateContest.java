@@ -52,14 +52,14 @@ public class TemplateContest implements JongoId {
 
     public TemplateContest() { }
 
-    public TemplateContest(String name, int minInstances, int maxEntries, int salaryCap,
+    public TemplateContest(String name, int minInstances, int maxEntries, SalaryCap salaryCap,
                             Money entryFee, PrizeType prizeType, Date activationAt,
                             List<String> templateMatchEvents) {
 
         this.name = name;
         this.minInstances = minInstances;
         this.maxEntries = maxEntries;
-        this.salaryCap = salaryCap;
+        this.salaryCap = salaryCap.money;
         this.entryFee = entryFee;
         this.prizeType = prizeType;
         this.activationAt = activationAt;

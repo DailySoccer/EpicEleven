@@ -156,10 +156,14 @@
                 isActive
             )
 
-            @myInputText(
+            @mySelect(
                 templateContestForm("salaryCap"),
                 "Salary Cap",
-                10,
+                options(EnumUtils.toMap(classOf[SalaryCap])),
+                false,
+                1,
+                true,
+                "",
                 isActive
             )
 

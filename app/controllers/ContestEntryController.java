@@ -9,7 +9,6 @@ import model.*;
 import model.jobs.CancelContestEntryJob;
 import model.jobs.EnterContestJob;
 import org.bson.types.ObjectId;
-import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import play.Logger;
 import play.data.Form;
