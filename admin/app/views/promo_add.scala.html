@@ -36,7 +36,7 @@
             @textarea(field=promoForm("html"), args = 'placeholder -> "HTML", 'class -> "form-control")
             @inputText(field=promoForm("imageXs"), args = 'placeholder -> "imageXs", 'class -> "form-control")
             @inputText(field=promoForm("imageDesktop"), args = 'placeholder -> "imageDesktop", 'class -> "form-control")
-            @inputText(field=promoForm("priority"), args = 'placeholder -> "Priority", 'class -> "form-control")
+            @inputText(field=promoForm("priority"), args = 'placeholder -> "1: Mínima prioridad, 10: Máxima prioridad", 'class -> "form-control")
             @inputDate(field=promoForm("activationDate"), args = 'class -> "form-control")
             @inputDate(field=promoForm("deactivationDate"), args = 'class -> "form-control")
 
@@ -47,7 +47,7 @@
     <div class="control-group">
         <label class="control-label" for="ok"></label>
         <div class="controls">
-            <button id="ok" name="ok" type="submit" class="btn btn-success">Create</button>
+            <button id="ok" name="ok" type="submit" class="btn btn-success">Save</button>
             <a href="@PromoController.index" class="btn btn-danger">Cancel</a>
         </div>
     </div>
@@ -55,7 +55,14 @@
 </fieldset>
 }
 
+
 <br/>
+
+@if(promoForm("id").value != null) {
+<div style="float: right; margin-right:100px;">
+    <a href='@PromoController.delete(promoForm("id").value)'><button class="btn btn-danger">Delete</button></a>
+</div>
+}
 
 <br/>
 <a href='@PromoController.index'>Back to Promos</a>

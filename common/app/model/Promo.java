@@ -13,7 +13,6 @@ public class Promo implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public ObjectId promoId;
 
-    @JsonView(JsonViews.NotForClient.class)
     public int priority;
 
     @JsonView(JsonViews.NotForClient.class)
@@ -54,18 +53,22 @@ public class Promo implements JongoId {
         return Model.promos().findOne("{_id: #}", promoId).as(Promo.class);
     }
 
-    public static List<Promo> getCurrent(int quantity) {
+    public static List<Promo> getCurrent() {
         return ListUtils.asList(Model.promos()
-                        .aggregate("{$match: {activationDate: {$lte: #},  deactivationDate: {$gt: #}}} ", GlobalDate.getCurrentDate(), GlobalDate.getCurrentDate())
-                        .and("{$sort: {priority: -1}}")
-                        .and("{$limit: #}", quantity)
-                        .as(Promo.class));
+                .aggregate("{$match: {activationDate: {$lte: #},  deactivationDate: {$gt: #}}} ", GlobalDate.getCurrentDate(), GlobalDate.getCurrentDate())
+                .and("{$sort: {priority: -1}}")
+                .as(Promo.class));
     }
 
 
 
     public static boolean edit(ObjectId promoId, Promo promo) {
         Model.promos().update("{_id: #}", promoId).with(promo);
+        return true;
+    }
+
+    public static boolean delete(ObjectId promoId) {
+        Model.promos().remove("{_id: #}", promoId);
         return true;
     }
 

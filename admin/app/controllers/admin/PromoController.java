@@ -30,6 +30,10 @@ public class PromoController extends Controller {
         return ok(promo_add.render(promoForm));
     }
 
+    public static Result delete(String promoId) {
+        return Promo.delete(new ObjectId(promoId))? redirect(routes.PromoController.index()): internalServerError();
+    }
+
     public static Result create() {
         Form<PromoForm> promoForm = form(PromoForm.class).bindFromRequest();
         if (promoForm.hasErrors()) {

@@ -32,6 +32,12 @@ public class PromoForm {
 
         List<ValidationError> errors = new ArrayList<>();
 
+
+        if(this.activationDate.after(this.deactivationDate)) {
+            errors.add(new ValidationError("activationDate", "Estas fechas no son válidas"));
+        }
+
+
         if(errors.size() > 0)
             return errors;
 

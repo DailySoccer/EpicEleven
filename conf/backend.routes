@@ -53,7 +53,7 @@ GET            /remaining/:timestamp                                   controlle
 GET            /date_last_xml                                          controllers.OptaHttpController.dateLastXML()
 
 # Promos
-GET            /promos/:quantity                                       controllers.PromoController.getPromos(quantity: Integer)
+GET            /promos                                                 controllers.PromoController.getPromos()
 
 # Por aqui nos entran todos nuestros datos de opta
 POST           /opta                                                   controllers.OptaHttpController.optaXmlInput()
