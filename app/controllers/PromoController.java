@@ -17,7 +17,6 @@ public class PromoController extends Controller {
     /*
      * Devuelve la lista de promos activas
      */
-    @UserAuthenticated
     public static Result getPromos() {
         return new ReturnHelper(ImmutableMap.of("promos", Promo.getCurrent())).toResult();
     }
