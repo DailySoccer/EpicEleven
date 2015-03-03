@@ -53,6 +53,10 @@ public class Promo implements JongoId {
         return Model.promos().findOne("{_id: #}", promoId).as(Promo.class);
     }
 
+    public static List<Promo> findByCodeName(String codeName) {
+        return ListUtils.asList(Model.promos().find("{codeName: #}", codeName).as(Promo.class));
+    }
+
     public static List<Promo> getCurrent() {
         return ListUtils.asList(Model.promos()
                 .aggregate("{$match: {activationDate: {$lte: #},  deactivationDate: {$gt: #}}} ", GlobalDate.getCurrentDate(), GlobalDate.getCurrentDate())

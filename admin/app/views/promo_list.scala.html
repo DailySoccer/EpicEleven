@@ -3,8 +3,9 @@
 @import model.opta.{OptaEventType, OptaProcessor}
 @import model.GlobalDate
 @import controllers.admin.routes._
+@import controllers.admin.PromoController
 
-@main("Contests - Admin") {
+@main("Promos - Admin") {
 
 <h1 class="page-header">Promo List</h1>
 
@@ -20,6 +21,8 @@
             <th>Activation date</th>
             <th>Deactivation date</th>
             <th>Active</th>
+            <th>Preview Promo</th>
+
         </tr>
         </thead>
         <tbody>
@@ -30,6 +33,7 @@
             <td>@GlobalDate.formatDate(p.activationDate)</td>
             <td>@GlobalDate.formatDate(p.deactivationDate)</td>
             <td>@GlobalDate.currentlyBetween(p.activationDate, p.deactivationDate)</td>
+            <td><a target="_blank" href=@PromoController.getPreviewUrl(p.codeName)><button class="btn btn-success">Preview</button></a></td>
         </tr>
         }
         </tbody>

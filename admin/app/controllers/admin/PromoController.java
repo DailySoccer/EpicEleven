@@ -34,6 +34,12 @@ public class PromoController extends Controller {
         return Promo.delete(new ObjectId(promoId))? redirect(routes.PromoController.index()): internalServerError();
     }
 
+    public static String getPreviewUrl(String codeName) {
+
+        String host = Model.isLocalHostTargetEnvironment()? "": "http://www.epiceleven.com";
+        return host+"/#/lobby/view_promo/"+codeName;
+    }
+
     public static Result create() {
         Form<PromoForm> promoForm = form(PromoForm.class).bindFromRequest();
         if (promoForm.hasErrors()) {

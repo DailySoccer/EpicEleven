@@ -54,6 +54,7 @@ GET            /date_last_xml                                          controlle
 
 # Promos
 GET            /promos                                                 controllers.PromoController.getPromos()
+GET            /promos/:codeName                                       controllers.PromoController.getPromo(codeName: String)
 
 # Por aqui nos entran todos nuestros datos de opta
 POST           /opta                                                   controllers.OptaHttpController.optaXmlInput()

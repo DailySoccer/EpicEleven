@@ -17,7 +17,12 @@ public class PromoController extends Controller {
     /*
      * Devuelve la lista de promos activas
      */
+    public static Result getPromo(String codeName) {
+        return new ReturnHelper(ImmutableMap.of("promos", Promo.findByCodeName(codeName))).toResult();
+    }
+
     public static Result getPromos() {
         return new ReturnHelper(ImmutableMap.of("promos", Promo.getCurrent())).toResult();
     }
+
 }
