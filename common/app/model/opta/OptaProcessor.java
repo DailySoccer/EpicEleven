@@ -254,9 +254,18 @@ public class OptaProcessor {
         // Obtener las estadísticas (minutos jugados por los futbolistas) y eventos (cleanSheet, goalsAgainst)
         Element myF9 = f9.getChild("SoccerDocument");
 
+        processMatchResult(myF9);
+
         if (myF9.getAttribute("Type").getValue().equals("Result")) {
             processFinishedMatch(myF9);
         }
+    }
+
+    private void processMatchResult(Element F9) {
+        // _dirtyMatchEventIds.add(_gameId);
+
+        List<Element> teamDatas = F9.getChild("MatchData").getChildren("TeamData");
+        OptaMatchEventStats.updateMatchResult(_gameId, teamDatas);
     }
 
     private void processFinishedMatch(Element F9) {
@@ -282,8 +291,7 @@ public class OptaProcessor {
             processGoalsConcededOrCleanSheet(F9, teamData, cleanSheet);
         }
 
-        OptaMatchEventStats stats = new OptaMatchEventStats(_gameId, teamDatas);
-        Model.optaMatchEventStats().update("{optaMatchEventId: #}", _gameId).upsert().with(stats);
+        OptaMatchEventStats.updateTeamStats(_gameId, teamDatas);
 
         createEvent(F9, null, 0, OptaEventType.GAME_END.code, 9998, 1);
     }

@@ -5,6 +5,7 @@ import com.mongodb.WriteConcern;
 import model.opta.OptaEvent;
 import model.opta.OptaEventType;
 import model.opta.OptaMatchEvent;
+import model.opta.OptaMatchEventStats;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
 import org.jongo.marshall.jackson.oid.Id;
@@ -43,6 +44,11 @@ public class TemplateMatchEvent implements JongoId {
 
     public ObjectId templateSoccerTeamAId;
     public ObjectId templateSoccerTeamBId;
+
+    @JsonView(JsonViews.FullContest.class)
+    public int homeScore = -1;
+    @JsonView(JsonViews.FullContest.class)
+    public int awayScore = -1;
 
     // Asocia un soccerPlayerId con fantasyPoints
     @JsonView(JsonViews.FullContest.class)
@@ -214,6 +220,7 @@ public class TemplateMatchEvent implements JongoId {
     public void updateState() {
         updateFantasyPoints();
         updateMatchEventTime(OptaEvent.findLast(optaMatchEventId));
+        updateMatchEventResult();
     }
 
     private void updateMatchEventTime(OptaEvent optaEvent) {
@@ -247,6 +254,18 @@ public class TemplateMatchEvent implements JongoId {
         }
 
         Model.templateMatchEvents().update(templateMatchEventId).with("{$set: {period: #, minutesPlayed: #}}", period, minutesPlayed);
+    }
+
+    private void updateMatchEventResult() {
+
+        OptaMatchEventStats stats = OptaMatchEventStats.findOne(optaMatchEventId);
+        if (stats == null) {
+            return;
+        }
+        homeScore = stats.homeScore;
+        awayScore = stats.awayScore;
+
+        Model.templateMatchEvents().update(templateMatchEventId).with("{$set: {homeScore: #, awayScore: #}}", homeScore, awayScore);
     }
 
     /**
