@@ -41,7 +41,11 @@
             teamB = p.templateSoccerTeamBId.toString
         }
     }
-    teamA + " vS " + teamB
+    if (p.homeScore != -1 && p.awayScore != -1) {
+        teamA + " vS " + teamB + " (" + p.homeScore + " - " + p.awayScore + ")"
+    } else {
+        teamA + " vS " + teamB
+    }
 }
 
 @include_columns() = {
