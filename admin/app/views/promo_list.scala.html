@@ -9,7 +9,7 @@
 
 <h1 class="page-header">Promo List</h1>
 
-<a href="@PromoController.newForm"><button class="btn btn-success">New Promo</button></a>
+<a href="@controllers.admin.routes.PromoController.newForm"><button class="btn btn-success">New Promo</button></a>
 
 <h2 class="sub-header"></h2>
 <div class="table-responsive">
@@ -28,7 +28,7 @@
         <tbody>
         @for(p <- promos) {
         <tr>
-            <td><a href="@PromoController.edit(p.promoId.toString())">@p.codeName</a></td>
+            <td><a href="@controllers.admin.routes.PromoController.edit(p.promoId.toString())">@p.codeName</a></td>
             <td>@p.priority</td>
             <td>@GlobalDate.formatDate(p.activationDate)</td>
             <td>@GlobalDate.formatDate(p.deactivationDate)</td>
