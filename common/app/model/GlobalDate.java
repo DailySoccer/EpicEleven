@@ -67,6 +67,10 @@ public class GlobalDate {
         return dateTime.toDate();
     }
 
+    static public boolean currentlyBetween(Date date1, Date date2) {
+        return (!getCurrentDate().before(date1) && !getCurrentDate().after(date2));
+    }
+
     private static final DateTimeZone _LONDON_TIME_ZONE = DateTimeZone.forID("Europe/London");
     private static Date _fakeDate;
 }

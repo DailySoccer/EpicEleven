@@ -24,7 +24,7 @@ public class TemplateContestForm {
     public int maxEntries;
 
     @Constraints.Required
-    public int salaryCap;
+    public SalaryCap salaryCap = SalaryCap.STANDARD;
     @Constraints.Required
     public BigDecimal entryFee;
     @Constraints.Required
@@ -50,7 +50,7 @@ public class TemplateContestForm {
         name = templateContest.name;
         minInstances = templateContest.minInstances;
         maxEntries = templateContest.maxEntries;
-        salaryCap = templateContest.salaryCap;
+        salaryCap = SalaryCap.findByMoney(templateContest.salaryCap);
         entryFee = templateContest.entryFee.getAmount();
         prizeType = templateContest.prizeType;
 

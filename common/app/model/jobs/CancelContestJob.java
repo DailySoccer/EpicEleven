@@ -35,11 +35,14 @@ public class CancelContestJob extends Job {
             Contest contest = Contest.findOne(contestId);
             if (contest != null) {
                 if (!contest.isCanceled()) {
-                    // Cancelamos el contest
-                    WriteResult result = Model.contests()
-                            .update("{_id: #, state: { $ne: \"CANCELED\" }}", contestId)
-                            .with("{$set: {state: \"CANCELED\", canceledAt: #}, $addToSet: {pendingJobs: #}}", GlobalDate.getCurrentDate(), jobId);
-                    bValid = (result.getN() > 0);
+                    // Cancelamos el contest si sigue sin estar Cancelado y sin estar Lleno
+                    // Una vez marcado como Cancelado, volvemos a leer el contest actualizado, para garantizar que tenemos los contestEntries correctos
+                    contest = Model.contests()
+                            .findAndModify("{$and: [{_id: #, state: { $ne: \"CANCELED\" }}, {$where: \"this.contestEntries.length < this.maxEntries\"}]}", contestId)
+                            .with("{$set: {state: \"CANCELED\", canceledAt: #}, $addToSet: {pendingJobs: #}}", GlobalDate.getCurrentDate(), jobId)
+                            .returnNew()
+                            .as(Contest.class);
+                    bValid = (contest != null);
                 }
                 else {
                     // Si lo ha cancelado este job, tendremos que finalizar lo que empezamos

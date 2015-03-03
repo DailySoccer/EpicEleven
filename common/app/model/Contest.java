@@ -5,7 +5,6 @@ import model.accounting.AccountOp;
 import model.accounting.AccountingTranPrize;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
-import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -292,8 +291,7 @@ public class Contest implements JongoId {
             for (ContestEntry contestEntry : contestEntries) {
                 Money prize = prizes.getValue(contestEntry.position);
                 if (MoneyUtils.isGreaterThan(prize, MoneyUtils.zero)) {
-                    User user = User.findOne(contestEntry.userId);
-                    accounts.add(new AccountOp(contestEntry.userId, prize, user.getSeqId() + 1));
+                    accounts.add(new AccountOp(contestEntry.userId, prize, User.getSeqId(contestEntry.userId) + 1));
                 }
             }
 
