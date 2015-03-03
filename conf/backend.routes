@@ -52,6 +52,10 @@ GET            /return_xml/:timestamp                                  controlle
 GET            /remaining/:timestamp                                   controllers.OptaHttpController.remainingXMLs(timestamp: Long)
 GET            /date_last_xml                                          controllers.OptaHttpController.dateLastXML()
 
+# Promos
+GET            /promos                                                 controllers.PromoController.getPromos()
+GET            /promos/:codeName                                       controllers.PromoController.getPromo(codeName: String)
+
 # Por aqui nos entran todos nuestros datos de opta
 POST           /opta                                                   controllers.OptaHttpController.optaXmlInput()
 
