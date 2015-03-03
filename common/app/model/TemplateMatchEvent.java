@@ -47,6 +47,7 @@ public class TemplateMatchEvent implements JongoId {
 
     @JsonView(JsonViews.FullContest.class)
     public int homeScore = -1;
+    @JsonView(JsonViews.FullContest.class)
     public int awayScore = -1;
 
     // Asocia un soccerPlayerId con fantasyPoints
