@@ -336,7 +336,7 @@ public class Model {
 
     static private void ensurePromosDB(DB theMongoDB) {
         if (!theMongoDB.collectionExists("promos")) {
-            DBCollection accountingTransactions = theMongoDB.createCollection("promos", new BasicDBObject());
+            DBCollection promos = theMongoDB.createCollection("promos", new BasicDBObject());
         }
     }
 
