@@ -5,6 +5,7 @@ import model.GlobalDate;
 import model.opta.OptaXmlUtils;
 import org.joda.time.DateTime;
 import play.Logger;
+import play.libs.F;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -84,8 +85,16 @@ public class OptaHttpController extends Controller {
         }));
     }
 
+    /*
     public static Result dateLastXML() {
         return ok(GlobalDate.formatDate(OptaXmlUtils.getLastDate()));
+    }
+    */
+
+    public static F.Promise<Result> dateLastXML() {
+        F.Promise<String> stringPromise = F.Promise.promise(() ->
+                GlobalDate.formatDate(OptaXmlUtils.getLastDate()));
+        return stringPromise.map((String i) -> ok(i));
     }
 
     public static Result remainingXMLs(long last_timestamp) {

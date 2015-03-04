@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import model.*;
 import org.bson.types.ObjectId;
 import play.Logger;
+import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
@@ -45,9 +46,9 @@ public class ContestController extends Controller {
         return new ReturnHelper(ImmutableMap.of("contests", contestsNotFull)).toResult();
     }
 
-    @UserAuthenticated
-    public static Result getMyContests() {
-        User theUser = (User)ctx().args.get("User");
+
+    private static ReturnHelper as() {
+        User theUser = (User) ctx().args.get("User");
 
         List<Contest> myActiveContests = Contest.findAllMyActive(theUser.userId, JsonViews.MyActiveContests.class);
         List<Contest> myLiveContests = Contest.findAllMyLive(theUser.userId, JsonViews.MyLiveContests.class);
@@ -58,8 +59,8 @@ public class ContestController extends Controller {
 
         // Buscar todos los players que han sido incrustados en los contests
         Set<ObjectId> playersInContests = new HashSet<>();
-        for (Contest liveContest: myLiveContests) {
-            for (InstanceSoccerPlayer instance: liveContest.instanceSoccerPlayers) {
+        for (Contest liveContest : myLiveContests) {
+            for (InstanceSoccerPlayer instance : liveContest.instanceSoccerPlayers) {
                 playersInContests.add(instance.templateSoccerPlayerId);
             }
         }
@@ -72,8 +73,13 @@ public class ContestController extends Controller {
                 .attachObject("contests_2", myHistoryContests, JsonViews.Extended.class)
                 .attachObject("match_events", liveMatchEvents, JsonViews.FullContest.class)
                 .attachObject("soccer_teams", teams, JsonViews.Public.class)
-                .attachObject("soccer_players", players, JsonViews.Public.class)
-                .toResult();
+                .attachObject("soccer_players", players, JsonViews.Public.class);
+    }
+
+    @UserAuthenticated
+    public static F.Promise<Result> getMyContests() {
+        F.Promise<ReturnHelper> responsePromise = F.Promise.promise(() -> as());
+        return responsePromise.map((ReturnHelper i) -> i.toResult());
     }
 
     @UserAuthenticated
@@ -181,10 +187,17 @@ public class ContestController extends Controller {
                 "prizes", Prizes.findOne(contest)))
                 .toResult(JsonViews.ContestInfo.class);
     }
-    
+
+    public static F.Promise<Result> getPublicContest(String contestId) {
+        F.Promise<ReturnHelper> responsePromise = F.Promise.promise(() -> attachInfoToContest(Contest.findOne(contestId)));
+        return responsePromise.map((ReturnHelper i) -> i.toResult(JsonViews.Extended.class));
+    }
+
+    /*
     public static Result getPublicContest(String contestId) {
         return attachInfoToContest(Contest.findOne(contestId)).toResult(JsonViews.Extended.class);
     }
+    */
 
     private static ReturnHelper attachInfoToContest(Contest contest) {
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);

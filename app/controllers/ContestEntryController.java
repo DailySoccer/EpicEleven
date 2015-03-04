@@ -13,6 +13,7 @@ import org.joda.money.Money;
 import play.Logger;
 import play.data.Form;
 import play.data.validation.Constraints;
+import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
@@ -56,24 +57,32 @@ public class ContestEntryController extends Controller {
      *      (participacion de un usuario en un contest, por medio de la seleccion de un equipo de futbolistas)
      */
     @UserAuthenticated
-    public static Result addContestEntry() {
-        Form<AddContestEntryParams> contestEntryForm = form(AddContestEntryParams.class).bindFromRequest();
+    public static F.Promise<Result> addContestEntry() {
+        F.Promise<F.Tuple<Boolean, Object>> responsePromise = F.Promise.promise(() -> addContestEntryWith((User) ctx().args.get("User"), form(AddContestEntryParams.class).bindFromRequest()));
+        return responsePromise.map((F.Tuple<Boolean, Object> i) -> new ReturnHelper(i._1, i._2).toResult());
+    }
 
-        User theUser = (User) ctx().args.get("User");
+    private static F.Tuple<Boolean, Object> addContestEntryWith(User theUser, Form<AddContestEntryParams> contestEntryForm) {
+        AddContestEntryParams params = contestEntryForm.get();
 
         // Donde nos solicitan que quieren insertarlo
-        String contestIdRequested = "";
+        String contestIdRequested = params.contestId;
+
+        // Buscar el contest : ObjectId
+        Contest aContest = Contest.findOne(contestIdRequested);
 
         // Id del contest que hemos encontrado
-        ObjectId contestIdValid = null;
+        ObjectId contestIdValid = aContest!=null? aContest.contestId: null;
 
+        F.Tuple<Form<AddContestEntryParams>,ObjectId> partial = addContestEntryStepFirst(theUser, contestEntryForm, params, aContest, contestIdValid);
+
+        Object result = addContestEntryStepLast(partial._1, theUser, contestIdRequested, partial._2);
+
+        return new F.Tuple<Boolean, Object>(!contestEntryForm.hasErrors(), result);
+    }
+
+    private static F.Tuple<Form<AddContestEntryParams>,ObjectId> addContestEntryStepFirst(User theUser, Form<AddContestEntryParams> contestEntryForm, AddContestEntryParams params, Contest aContest, ObjectId contestIdValid) {
         if (!contestEntryForm.hasErrors()) {
-            AddContestEntryParams params = contestEntryForm.get();
-
-            contestIdRequested = params.contestId;
-
-            // Buscar el contest : ObjectId
-            Contest aContest = Contest.findOne(contestIdRequested);
 
             // Obtener los soccerIds de los futbolistas : List<ObjectId>
             List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
@@ -131,7 +140,10 @@ public class ContestEntryController extends Controller {
                 contestEntryForm.reject(CONTEST_ENTRY_KEY, error);
             }
         }
+        return new F.Tuple<>(contestEntryForm, contestIdValid);
+    }
 
+    private static Object addContestEntryStepLast(Form<AddContestEntryParams> contestEntryForm, User theUser, String contestIdRequested, ObjectId contestIdValid) {
         Object result = contestEntryForm.errorsAsJson();
 
         if (!contestEntryForm.hasErrors()) {
@@ -152,7 +164,7 @@ public class ContestEntryController extends Controller {
         else {
             Logger.warn("addContestEntry failed: userId: {}: contestId: {}: error: {}", theUser.userId.toString(), contestIdRequested, contestEntryForm.errorsAsJson());
         }
-        return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
+        return result;
     }
 
     public static class EditContestEntryParams {
