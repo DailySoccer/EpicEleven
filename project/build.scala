@@ -63,7 +63,7 @@ object build extends Build {
                     javaJdbc
                     ,javaWs
                     ,"org.mongodb" % "mongo-java-driver" % "2.12.4"
-                    ,"org.jongo" % "jongo" % "1.0"
+                    ,"org.jongo" % "jongo" % "1.1"
                     ,"org.jdom" % "jdom" % "2.0.2"
                     ,"org.joda" % "joda-money" % "0.10.0"
                     ,"postgresql" % "postgresql" % "9.1-901-1.jdbc4"
