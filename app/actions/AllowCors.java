@@ -38,7 +38,7 @@ public class AllowCors {
         }
     }
 
-    public static void preFlight(Http.Request request, Http.Response response) {
+    public static boolean preFlight(Http.Request request, Http.Response response) {
 
         String origin = getOrigin(request);
 
@@ -53,6 +53,7 @@ public class AllowCors {
             // Al poner esto, el preflight se hace 1 vez y no se vuelve a hacer hasta que pase el tiempo.
             response.setHeader("Access-Control-Max-Age", String.valueOf(3600));
         }
+        return true;
     }
 
     private static String getOrigin(Http.Request request) {

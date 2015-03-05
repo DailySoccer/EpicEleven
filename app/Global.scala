@@ -1,5 +1,4 @@
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
 
 import play.Logger
 import play.api.Play.current
@@ -34,16 +33,12 @@ object Global extends GlobalSettings {
     }
   }
 
-  val concurrentThreads:AtomicInteger = new AtomicInteger()
-
 
   val loggingFilter = Filter { (nextFilter, requestHeader) =>
     val startTime = System.currentTimeMillis
-    Logger.debug(""+concurrentThreads.incrementAndGet())
 
     nextFilter(requestHeader).map { result =>
       val endTime = System.currentTimeMillis
-      concurrentThreads.decrementAndGet()
       val requestTime = endTime - startTime
 
       //Logger.info(s"${requestHeader.method} ${requestHeader.uri} took ${requestTime}ms " + s"and returned ${result.header.status}")
