@@ -35,6 +35,10 @@ GET            /get_contest_info/:contest                              controlle
 
 # Concursos asociados a usuario
 GET            /get_my_contests                                        controllers.ContestController.getMyContests()
+GET            /get_my_active_contests                                 controllers.ContestController.getMyActiveContests()
+GET            /get_my_live_contests                                   controllers.ContestController.getMyLiveContests()
+GET            /get_my_history_contests                                controllers.ContestController.getMyHistoryContests()
+GET            /count_my_live_contests                                 controllers.ContestController.countMyLiveContests()
 GET            /get_my_contest/:contest                                controllers.ContestController.getMyContest(contest)
 GET            /get_my_contest_entry/:contest                          controllers.ContestController.getMyContestEntry(contest)
 GET            /get_view_contest/:contest                              controllers.ContestController.getViewContest(contest)
