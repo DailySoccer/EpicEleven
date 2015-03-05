@@ -35,13 +35,6 @@ public class RefresherController extends Controller {
         return stringPromise.map((String i) -> ok(i)); // Returns date in millis
     }
 
-    /*
-    public static Result lastDate() {
-
-        return ok(String.valueOf(OptaXmlUtils.getLastDate().getTime()));    // Returns date in millis
-    }
-    */
-
     static private boolean getIsTicking() {
         return Model.actors().tellAndAwait("RefresherActor", "GetIsTicking");
     }
