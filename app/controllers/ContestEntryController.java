@@ -58,31 +58,28 @@ public class ContestEntryController extends Controller {
      */
     @UserAuthenticated
     public static F.Promise<Result> addContestEntry() {
-        F.Promise<F.Tuple<Boolean, Object>> responsePromise = F.Promise.promise(() -> addContestEntryWith((User) ctx().args.get("User"), form(AddContestEntryParams.class).bindFromRequest()));
-        return responsePromise.map((F.Tuple<Boolean, Object> i) -> new ReturnHelper(i._1, i._2).toResult());
+        return F.Promise.promise(() -> _addContestEntry()).map((ReturnHelper i) -> i.toResult());
     }
 
-    private static F.Tuple<Boolean, Object> addContestEntryWith(User theUser, Form<AddContestEntryParams> contestEntryForm) {
-        AddContestEntryParams params = contestEntryForm.get();
+    private static ReturnHelper _addContestEntry() {
+
+        User theUser = (User) ctx().args.get("User");
+
+        Form<AddContestEntryParams> contestEntryForm = form(AddContestEntryParams.class).bindFromRequest();
 
         // Donde nos solicitan que quieren insertarlo
-        String contestIdRequested = params.contestId;
-
-        // Buscar el contest : ObjectId
-        Contest aContest = Contest.findOne(contestIdRequested);
+        String contestIdRequested = "";
 
         // Id del contest que hemos encontrado
-        ObjectId contestIdValid = aContest!=null? aContest.contestId: null;
+        ObjectId contestIdValid = null;
 
-        F.Tuple<Form<AddContestEntryParams>,ObjectId> partial = addContestEntryStepFirst(theUser, contestEntryForm, params, aContest, contestIdValid);
-
-        Object result = addContestEntryStepLast(partial._1, theUser, contestIdRequested, partial._2);
-
-        return new F.Tuple<Boolean, Object>(!contestEntryForm.hasErrors(), result);
-    }
-
-    private static F.Tuple<Form<AddContestEntryParams>,ObjectId> addContestEntryStepFirst(User theUser, Form<AddContestEntryParams> contestEntryForm, AddContestEntryParams params, Contest aContest, ObjectId contestIdValid) {
         if (!contestEntryForm.hasErrors()) {
+            AddContestEntryParams params = contestEntryForm.get();
+
+            contestIdRequested = params.contestId;
+
+            // Buscar el contest : ObjectId
+            Contest aContest = Contest.findOne(contestIdRequested);
 
             // Obtener los soccerIds de los futbolistas : List<ObjectId>
             List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
@@ -140,10 +137,7 @@ public class ContestEntryController extends Controller {
                 contestEntryForm.reject(CONTEST_ENTRY_KEY, error);
             }
         }
-        return new F.Tuple<>(contestEntryForm, contestIdValid);
-    }
 
-    private static Object addContestEntryStepLast(Form<AddContestEntryParams> contestEntryForm, User theUser, String contestIdRequested, ObjectId contestIdValid) {
         Object result = contestEntryForm.errorsAsJson();
 
         if (!contestEntryForm.hasErrors()) {
@@ -164,8 +158,9 @@ public class ContestEntryController extends Controller {
         else {
             Logger.warn("addContestEntry failed: userId: {}: contestId: {}: error: {}", theUser.userId.toString(), contestIdRequested, contestEntryForm.errorsAsJson());
         }
-        return result;
+        return new ReturnHelper(!contestEntryForm.hasErrors(), result);
     }
+
 
     public static class EditContestEntryParams {
         @Constraints.Required
@@ -176,7 +171,12 @@ public class ContestEntryController extends Controller {
     }
 
     @UserAuthenticated
-    public static Result editContestEntry() {
+    public static F.Promise<Result> editContestEntry() {
+        F.Promise<ReturnHelper> returnHelperPromise = F.Promise.promise(() -> _editContestEntry());
+        return returnHelperPromise.map((ReturnHelper i) -> i.toResult());
+    }
+
+    private static ReturnHelper _editContestEntry() {
         Form<EditContestEntryParams> contestEntryForm = form(EditContestEntryParams.class).bindFromRequest();
 
         if (!contestEntryForm.hasErrors()) {
@@ -220,7 +220,7 @@ public class ContestEntryController extends Controller {
         else {
             Logger.error("WTF 7240: editContestEntry: {}", contestEntryForm.errorsAsJson());
         }
-        return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
+        return new ReturnHelper(!contestEntryForm.hasErrors(), result);
     }
 
 
@@ -230,7 +230,12 @@ public class ContestEntryController extends Controller {
     }
 
     @UserAuthenticated
-    public static Result cancelContestEntry() {
+    public static F.Promise<Result> cancelContestEntry() {
+        F.Promise<ReturnHelper> returnHelperPromise = F.Promise.promise(() -> _cancelContestEntry());
+        return returnHelperPromise.map((ReturnHelper i) -> i.toResult());
+    }
+
+    private static ReturnHelper  _cancelContestEntry() {
         Form<CancelContestEntryParams> contestEntryForm = form(CancelContestEntryParams.class).bindFromRequest();
 
         User theUser = (User) ctx().args.get("User");
@@ -277,7 +282,7 @@ public class ContestEntryController extends Controller {
         else {
             Logger.error("WTF 7241: cancelContestEntry: {}", contestEntryForm.errorsAsJson());
         }
-        return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
+        return new ReturnHelper(!contestEntryForm.hasErrors(), result);
     }
 
     private static List<String> validateContestEntry (Contest contest, List<ObjectId> objectIds) {
