@@ -107,6 +107,7 @@ GET         /test_current_date                                                  
 
 GET         /test_initial_setup                                                  controllers.admin.TestController.initialSetup()
 GET         /create_contests/:mockIndex                                          controllers.admin.TestController.createContests(mockIndex: Int)
+GET         /create_promos/:mockIndex                                            controllers.admin.TestController.createPromos(mockIndex: Int)
 
 
 # WIP
