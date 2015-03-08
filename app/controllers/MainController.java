@@ -4,6 +4,7 @@ import actions.AllowCors;
 import com.google.common.collect.ImmutableMap;
 import model.*;
 import org.bson.types.ObjectId;
+import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
@@ -14,8 +15,8 @@ import java.util.*;
 @AllowCors.Origin
 public class MainController extends Controller {
 
-    public static Result ping() {
-    	return ok("Pong");
+    public static F.Promise<Result> ping() {
+        return F.Promise.promise(() -> "Pong").map((String i) -> ok(i));
     }
 
     // Toda nuestra API va con preflight. No hemos tenido mas remedio, porque se nos planteaba el siguiente problema:
@@ -25,27 +26,30 @@ public class MainController extends Controller {
     // Podriamos hacer que toda el API fuera entonces por POST y meter el sessionToken UrlEnconded, pero no nos parece
     // elegante. Hasta que se demuestre lo contrario, usamos el preflight con max-age agresivo.
     //
-    public static Result preFlight(String path) {
-        AllowCors.preFlight(request(), response());
-        return ok();
+    public static F.Promise<Result> preFlight(String path) {
+        return F.Promise.promise(() -> AllowCors.preFlight(request(), response())).map((Boolean i) -> ok());
     }
 
     /*
      * Fecha actual del servidor: Puede ser la hora en tiempo real o la fecha de simulacion
      */
-    public static Result getCurrentDate() {
-        return new ReturnHelper(ImmutableMap.of("currentDate", GlobalDate.getCurrentDate())).toResult();
+    public static F.Promise<Result> getCurrentDate() {
+        return F.Promise.promise(() -> new ReturnHelper(ImmutableMap.of("currentDate", GlobalDate.getCurrentDate()))).map((ReturnHelper i) -> i.toResult());
     }
 
 
-    public static Result getScoringRules() {
-        return new ReturnHelper(ImmutableMap.of("scoring_rules", PointsTranslation.getAllCurrent())).toResult();
+    public static F.Promise<Result> getScoringRules() {
+        return F.Promise.promise(() -> new ReturnHelper(ImmutableMap.of("scoring_rules", PointsTranslation.getAllCurrent()))).map((ReturnHelper i) -> i.toResult());
     }
 
     /*
      * Obtener la información sobre un InstanceSoccerPlayer (estadísticas,...)
      */
-    public static Result getInstanceSoccerPlayerInfo(String contestId, String templateSoccerPlayerId) {
+    public static F.Promise<Result> getInstanceSoccerPlayerInfo(String contestId, String templateSoccerPlayerId) {
+        return F.Promise.promise(() -> _getInstanceSoccerPlayerInfo(contestId, templateSoccerPlayerId)).map((ReturnHelper i) -> i.toResult(JsonViews.Statistics.class));
+    }
+
+    private static ReturnHelper _getInstanceSoccerPlayerInfo(String contestId, String templateSoccerPlayerId) {
         InstanceSoccerPlayer instanceSoccerPlayer = InstanceSoccerPlayer.findOne(new ObjectId(contestId), new ObjectId(templateSoccerPlayerId));
         TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(templateSoccerPlayerId));
 
@@ -76,14 +80,18 @@ public class MainController extends Controller {
         if (templateMatchEvent != null) {
             data.put("match_event", templateMatchEvent);
         }
-        return new ReturnHelper(data).toResult(JsonViews.Statistics.class);
+
+        return new ReturnHelper(data);
     }
 
     /*
      * Obtener la información sobre un SoccerPlayer (estadísticas,...)
      */
-    public static Result getTemplateSoccerPlayerInfo(String templateSoccerPlayerId) {
+    public static F.Promise<Result> getTemplateSoccerPlayerInfo(String templateSoccerPlayerId) {
+        return F.Promise.promise(() -> _getTemplateSoccerPlayerInfo(templateSoccerPlayerId)).map((ReturnHelper i) -> i.toResult(JsonViews.Statistics.class));
+    }
 
+    private static ReturnHelper _getTemplateSoccerPlayerInfo(String templateSoccerPlayerId) {
         TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(templateSoccerPlayerId));
 
         Set<ObjectId> templateSoccerTeamIds = new HashSet<>();
@@ -112,6 +120,6 @@ public class MainController extends Controller {
         if (templateMatchEvent != null) {
             data.put("match_event", templateMatchEvent);
         }
-        return new ReturnHelper(data).toResult(JsonViews.Statistics.class);
+        return new ReturnHelper(data);
     }
 }

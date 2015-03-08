@@ -3,6 +3,7 @@ package controllers;
 import actions.AllowCors;
 import play.Logger;
 import play.data.Form;
+import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 
@@ -18,8 +19,11 @@ public class LoggerController extends Controller {
         public String userAgent;
     }
 
-    public static Result log() {
+    public static F.Promise<Result> log() {
+        return F.Promise.promise(() ->_log()).map((Boolean i) -> ok());
+    }
 
+    private static boolean _log() {
         Form<Params> errorForm = form(Params.class).bindFromRequest();
         Params params = errorForm.get();
 
@@ -31,8 +35,7 @@ public class LoggerController extends Controller {
         else {
             Logger.info("[{} from {}, {}, {}] {}", params.level, params.email, address, params.userAgent, params.message);
         }
-
-        return ok();
+        return true;
     }
 
 }

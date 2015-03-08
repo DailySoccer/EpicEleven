@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import model.*;
 import org.bson.types.ObjectId;
 import play.Logger;
+import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
@@ -29,7 +30,11 @@ public class ContestController extends Controller {
      * Devuelve la lista de contests activos (aquellos a los que un usuario puede apuntarse)
      */
     // @Cached(key = "ActiveContest", duration = 1)
-    public static Result getActiveContests() {
+    @UserAuthenticated
+    public static F.Promise<Result> getActiveContests() {
+        return F.Promise.promise(() -> _getActiveContests()).map((ReturnHelper i) -> i.toResult());
+    }
+    private static ReturnHelper _getActiveContests() {
         // Query que compara el "número de entries" con "maxEntries" (parece más lenta que haciendo el filtro a mano)
         // List<Contest> contests = Contest.findAllActiveNotFull(JsonViews.ActiveContests.class);
         List<Contest> contests = Contest.findAllActive(JsonViews.ActiveContests.class);
@@ -42,12 +47,17 @@ public class ContestController extends Controller {
             }
         }
 
-        return new ReturnHelper(ImmutableMap.of("contests", contestsNotFull)).toResult();
+        return new ReturnHelper(ImmutableMap.of("contests", contestsNotFull));
     }
 
+
+
     @UserAuthenticated
-    public static Result getMyContests() {
-        User theUser = (User)ctx().args.get("User");
+    public static F.Promise<Result> getMyContests() {
+        return F.Promise.promise(() -> _getMyContests()).map((ReturnHelper i) -> i.toResult());
+    }
+    private static ReturnHelper _getMyContests() {
+        User theUser = (User) ctx().args.get("User");
 
         List<Contest> myActiveContests = Contest.findAllMyActive(theUser.userId, JsonViews.MyActiveContests.class);
         List<Contest> myLiveContests = Contest.findAllMyLive(theUser.userId, JsonViews.MyLiveContests.class);
@@ -58,8 +68,8 @@ public class ContestController extends Controller {
 
         // Buscar todos los players que han sido incrustados en los contests
         Set<ObjectId> playersInContests = new HashSet<>();
-        for (Contest liveContest: myLiveContests) {
-            for (InstanceSoccerPlayer instance: liveContest.instanceSoccerPlayers) {
+        for (Contest liveContest : myLiveContests) {
+            for (InstanceSoccerPlayer instance : liveContest.instanceSoccerPlayers) {
                 playersInContests.add(instance.templateSoccerPlayerId);
             }
         }
@@ -72,19 +82,22 @@ public class ContestController extends Controller {
                 .attachObject("contests_2", myHistoryContests, JsonViews.Extended.class)
                 .attachObject("match_events", liveMatchEvents, JsonViews.FullContest.class)
                 .attachObject("soccer_teams", teams, JsonViews.Public.class)
-                .attachObject("soccer_players", players, JsonViews.Public.class)
-                .toResult();
+                .attachObject("soccer_players", players, JsonViews.Public.class);
     }
 
+
     @UserAuthenticated
-    public static Result getViewContest(String contestId) {
+    public static F.Promise<Result> getViewContest(String contestId) {
+        return F.Promise.promise(() -> _getViewContest(contestId)).map((ReturnHelper i) -> i.toResult(JsonViews.FullContest.class));
+    }
+    private static ReturnHelper _getViewContest(String contestId) {
         User theUser = (User)ctx().args.get("User");
         Contest contest = Contest.findOne(contestId);
 
         // No se puede ver el contest "completo" si está "activo" (únicamente en "live" o "history")
         if (contest.isActive()) {
             Logger.error("WTF 7945: getViewContest: contest: {} user: {}", contestId, theUser.userId);
-            return new ReturnHelper(false, ERROR_VIEW_CONTEST_INVALID).toResult();
+            return new ReturnHelper(false, ERROR_VIEW_CONTEST_INVALID);
         }
 
         if (!contest.containsContestEntryWithUser(theUser.userId)) {
@@ -109,17 +122,19 @@ public class ContestController extends Controller {
                 .put("soccer_teams", teams)
                 .put("soccer_players", players)
                 .put("prizes", Prizes.findOne(contest))
-                .build())
-                .toResult(JsonViews.FullContest.class);
+                .build());
     }
 
     @UserAuthenticated
-    public static Result getMyContest(String contestId) {
+    public static F.Promise<Result> getMyContest(String contestId) {
+        return F.Promise.promise(() -> _getMyContest(contestId)).map((ReturnHelper i) -> i.toResult(JsonViews.FullContest.class));
+    }
+    private static ReturnHelper _getMyContest(String contestId) {
         User theUser = (User)ctx().args.get("User");
         Contest contest = Contest.findOne(contestId);
         if (!contest.containsContestEntryWithUser(theUser.userId)) {
             Logger.error("WTF 7943: getMyContest: contest: {} user: {}", contestId, theUser.userId);
-            return new ReturnHelper(false, ERROR_MY_CONTEST_INVALID).toResult();
+            return new ReturnHelper(false, ERROR_MY_CONTEST_INVALID);
         }
 
         // Quitamos todos fantasyTeam de los contestEntries que no sean del User
@@ -129,16 +144,19 @@ public class ContestController extends Controller {
             }
         }
 
-        return attachInfoToContest(contest).toResult(JsonViews.FullContest.class);
+        return _attachInfoToContest(contest);
     }
 
     @UserAuthenticated
-    public static Result getMyContestEntry(String contestId) {
+    public static F.Promise<Result> getMyContestEntry(String contestId) {
+        return F.Promise.promise(() -> _getMyContestEntry(contestId)).map((ReturnHelper i) -> i.toResult(JsonViews.FullContest.class));
+    }
+    private static ReturnHelper _getMyContestEntry(String contestId) {
         User theUser = (User)ctx().args.get("User");
         Contest contest = Contest.findOne(contestId);
         if (!contest.containsContestEntryWithUser(theUser.userId)) {
             Logger.error("WTF 7944: getMyContestEntry: contest: {} user: {}", contestId, theUser.userId);
-            return new ReturnHelper(false, ERROR_MY_CONTEST_ENTRY_INVALID).toResult();
+            return new ReturnHelper(false, ERROR_MY_CONTEST_ENTRY_INVALID);
         }
 
         Set<ObjectId> playersInContestEntry = new HashSet<>();
@@ -163,11 +181,13 @@ public class ContestController extends Controller {
                 "users_info", usersInfoInContest,
                 "match_events", matchEvents,
                 "soccer_teams", teams,
-                "soccer_players", players))
-                .toResult(JsonViews.FullContest.class);
+                "soccer_players", players));
     }
 
-    public static Result getContestInfo(String contestId) {
+    public static F.Promise<Result> getContestInfo(String contestId) {
+        return F.Promise.promise(() -> _getContestInfo(contestId)).map((ReturnHelper i) -> i.toResult(JsonViews.ContestInfo.class));
+    }
+    private static ReturnHelper _getContestInfo(String contestId) {
         Contest contest = Contest.findOne(contestId);
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
@@ -178,15 +198,14 @@ public class ContestController extends Controller {
                 "users_info", usersInfoInContest,
                 "match_events", matchEvents,
                 "soccer_teams", teams,
-                "prizes", Prizes.findOne(contest)))
-                .toResult(JsonViews.ContestInfo.class);
-    }
-    
-    public static Result getPublicContest(String contestId) {
-        return attachInfoToContest(Contest.findOne(contestId)).toResult(JsonViews.Extended.class);
+                "prizes", Prizes.findOne(contest)));
     }
 
-    private static ReturnHelper attachInfoToContest(Contest contest) {
+
+    public static F.Promise<Result> getPublicContest(String contestId) {
+        return F.Promise.promise(() -> _attachInfoToContest(Contest.findOne(contestId))).map((ReturnHelper i) -> i.toResult(JsonViews.Extended.class));
+    }
+    private static ReturnHelper _attachInfoToContest(Contest contest) {
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
         List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
@@ -215,18 +234,20 @@ public class ContestController extends Controller {
      * @return La lista de partidos "live"
      */
     @UserAuthenticated
-    public static Result getLiveMatchEventsFromTemplateContest(String templateContestId) {
-
+    public static F.Promise<Result> getLiveMatchEventsFromTemplateContest(String templateContestId) {
+        return F.Promise.promise(() -> _getLiveMatchEventsFromTemplateContest(templateContestId)).map((ReturnHelper i) -> i.toResult(JsonViews.FullContest.class));
+    }
+    private static ReturnHelper _getLiveMatchEventsFromTemplateContest(String templateContestId) {
         // Obtenemos el TemplateContest
         TemplateContest templateContest = TemplateContest.findOne(templateContestId);
 
         if (templateContest == null) {
-            return new ReturnHelper(false, ERROR_TEMPLATE_CONTEST_INVALID).toResult();
+            return new ReturnHelper(false, ERROR_TEMPLATE_CONTEST_INVALID);
         }
 
         // Consultar por los partidos del TemplateContest (queremos su version "live")
         List<TemplateMatchEvent> liveMatchEventList = TemplateMatchEvent.findAllPlaying(templateContest.templateMatchEventIds);
 
-        return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
+        return new ReturnHelper(liveMatchEventList);
     }
 }

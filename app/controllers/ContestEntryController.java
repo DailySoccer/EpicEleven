@@ -13,6 +13,7 @@ import org.joda.money.Money;
 import play.Logger;
 import play.data.Form;
 import play.data.validation.Constraints;
+import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
@@ -56,10 +57,15 @@ public class ContestEntryController extends Controller {
      *      (participacion de un usuario en un contest, por medio de la seleccion de un equipo de futbolistas)
      */
     @UserAuthenticated
-    public static Result addContestEntry() {
-        Form<AddContestEntryParams> contestEntryForm = form(AddContestEntryParams.class).bindFromRequest();
+    public static F.Promise<Result> addContestEntry() {
+        return F.Promise.promise(() -> _addContestEntry()).map((ReturnHelper i) -> i.toResult());
+    }
+
+    private static ReturnHelper _addContestEntry() {
 
         User theUser = (User) ctx().args.get("User");
+
+        Form<AddContestEntryParams> contestEntryForm = form(AddContestEntryParams.class).bindFromRequest();
 
         // Donde nos solicitan que quieren insertarlo
         String contestIdRequested = "";
@@ -152,8 +158,9 @@ public class ContestEntryController extends Controller {
         else {
             Logger.warn("addContestEntry failed: userId: {}: contestId: {}: error: {}", theUser.userId.toString(), contestIdRequested, contestEntryForm.errorsAsJson());
         }
-        return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
+        return new ReturnHelper(!contestEntryForm.hasErrors(), result);
     }
+
 
     public static class EditContestEntryParams {
         @Constraints.Required
@@ -164,7 +171,12 @@ public class ContestEntryController extends Controller {
     }
 
     @UserAuthenticated
-    public static Result editContestEntry() {
+    public static F.Promise<Result> editContestEntry() {
+        F.Promise<ReturnHelper> returnHelperPromise = F.Promise.promise(() -> _editContestEntry());
+        return returnHelperPromise.map((ReturnHelper i) -> i.toResult());
+    }
+
+    private static ReturnHelper _editContestEntry() {
         Form<EditContestEntryParams> contestEntryForm = form(EditContestEntryParams.class).bindFromRequest();
 
         if (!contestEntryForm.hasErrors()) {
@@ -208,7 +220,7 @@ public class ContestEntryController extends Controller {
         else {
             Logger.error("WTF 7240: editContestEntry: {}", contestEntryForm.errorsAsJson());
         }
-        return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
+        return new ReturnHelper(!contestEntryForm.hasErrors(), result);
     }
 
 
@@ -218,7 +230,12 @@ public class ContestEntryController extends Controller {
     }
 
     @UserAuthenticated
-    public static Result cancelContestEntry() {
+    public static F.Promise<Result> cancelContestEntry() {
+        F.Promise<ReturnHelper> returnHelperPromise = F.Promise.promise(() -> _cancelContestEntry());
+        return returnHelperPromise.map((ReturnHelper i) -> i.toResult());
+    }
+
+    private static ReturnHelper  _cancelContestEntry() {
         Form<CancelContestEntryParams> contestEntryForm = form(CancelContestEntryParams.class).bindFromRequest();
 
         User theUser = (User) ctx().args.get("User");
@@ -265,7 +282,7 @@ public class ContestEntryController extends Controller {
         else {
             Logger.error("WTF 7241: cancelContestEntry: {}", contestEntryForm.errorsAsJson());
         }
-        return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
+        return new ReturnHelper(!contestEntryForm.hasErrors(), result);
     }
 
     private static List<String> validateContestEntry (Contest contest, List<ObjectId> objectIds) {

@@ -74,8 +74,11 @@ public class LoginController extends Controller {
         @Required public String token;
     }
 
-    public static Result askForPasswordReset() {
 
+    public static F.Promise<Result> askForPasswordReset() {
+        return F.Promise.promise(() -> _askForPasswordReset()).map((ReturnHelper i) -> i.toResult());
+    }
+    private static ReturnHelper _askForPasswordReset() {
         Form<AskForPasswordResetParams> askForPasswordResetParamsForm = form(AskForPasswordResetParams.class).bindFromRequest();
         AskForPasswordResetParams params;
 
@@ -93,11 +96,14 @@ public class LoginController extends Controller {
                 returnHelper.setKO(translateError(askForPasswordResetErrors));
             }
         }
-        return returnHelper.toResult();
+        return returnHelper;
     }
 
 
-    public static Result verifyPasswordResetToken() {
+    public static F.Promise<Result> verifyPasswordResetToken() {
+        return F.Promise.promise(() -> _verifyPasswordResetToken()).map((ReturnHelper i) -> i.toResult());
+    }
+    private static ReturnHelper _verifyPasswordResetToken() {
         Form<VerifyPasswordResetTokenParams> verifyPasswordResetTokenParamsForm = form(VerifyPasswordResetTokenParams.class).bindFromRequest();
         VerifyPasswordResetTokenParams params;
 
@@ -114,11 +120,14 @@ public class LoginController extends Controller {
                 returnHelper.setKO(ImmutableMap.of("error", translateError(verifyPasswordResetTokenErrors)));
             }
         }
-        return returnHelper.toResult();
+        return returnHelper;
     }
 
 
-    public static Result resetPasswordWithToken() {
+    public static F.Promise<Result> resetPasswordWithToken() {
+        return F.Promise.promise(() -> _resetPasswordWithToken()).map((ReturnHelper i) -> i.toResult());
+    }
+    private static ReturnHelper _resetPasswordWithToken() {
 
         Form<PasswordResetParams> passwordResetParamsForm = form(PasswordResetParams.class).bindFromRequest();
         PasswordResetParams params;
@@ -149,11 +158,14 @@ public class LoginController extends Controller {
             }
         }
 
-        return returnHelper.toResult();
+        return returnHelper;
     }
 
 
-    public static Result signup() {
+    public static F.Promise<Result> signup() {
+        return F.Promise.promise(() -> _signup()).map((ReturnHelper i) -> i.toResult());
+    }
+    private static ReturnHelper _signup() {
         Form<SignupParams> signupForm = form(SignupParams.class).bindFromRequest();
 
         JsonNode result = signupForm.errorsAsJson();
@@ -173,7 +185,7 @@ public class LoginController extends Controller {
             }
         }
 
-        return new ReturnHelper(!signupForm.hasErrors(), result).toResult();
+        return new ReturnHelper(!signupForm.hasErrors(), result);
     }
 
 
@@ -295,8 +307,10 @@ public class LoginController extends Controller {
     }
 
 
-    public static Result login() {
-
+    public static F.Promise<Result> login() {
+        return F.Promise.promise(() -> _login()).map((ReturnHelper i) -> i.toResult());
+    }
+    private static ReturnHelper _login() {
         Form<LoginParams> loginParamsForm = Form.form(LoginParams.class).bindFromRequest();
         ReturnHelper returnHelper = new ReturnHelper();
 
@@ -339,12 +353,14 @@ public class LoginController extends Controller {
             }
         }
 
-        return returnHelper.toResult();
+        return returnHelper;
     }
 
 
-    public static Result facebookLogin() {
-
+    public static F.Promise<Result> facebookLogin() {
+        return F.Promise.promise(() -> _facebookLogin()).map((ReturnHelper i) -> i.toResult());
+    }
+    private static ReturnHelper _facebookLogin() {
         Form<FBLoginParams> loginParamsForm = Form.form(FBLoginParams.class).bindFromRequest();
         ReturnHelper returnHelper = new ReturnHelper();
 
@@ -369,7 +385,7 @@ public class LoginController extends Controller {
                 returnHelper.setKO(loginParamsForm.errorsAsJson());
             }
         }
-        return returnHelper.toResult();
+        return returnHelper;
     }
 
     private static String getOrSetNickname(Account account) {
@@ -428,12 +444,18 @@ public class LoginController extends Controller {
     }
 
     @UserAuthenticated
-    public static Result getUserProfile() {
-        return new ReturnHelper(((User)ctx().args.get("User")).getProfile()).toResult();
+    public static F.Promise<Result> getUserProfile() {
+        return F.Promise.promise(() -> _getUserProfile()).map((ReturnHelper i) -> i.toResult());
+    }
+    private static ReturnHelper _getUserProfile() {
+        return new ReturnHelper(((User)ctx().args.get("User")).getProfile());
     }
 
     @UserAuthenticated
-    public static Result getTransactionHistory() {
+    public static F.Promise<Result> getTransactionHistory() {
+        return F.Promise.promise(() -> _getTransactionHistory()).map((ReturnHelper i) -> i.toResult());
+    }
+    private static ReturnHelper _getTransactionHistory() {
         User theUser = (User)ctx().args.get("User");
 
         List<Map<String, String>> transactions = new ArrayList<>();
@@ -446,7 +468,7 @@ public class LoginController extends Controller {
             }
         }
 
-        return new ReturnHelper(ImmutableMap.of("transactions", transactions)).toResult();
+        return new ReturnHelper(ImmutableMap.of("transactions", transactions));
     }
 
     public static class ChangeParams {
@@ -460,8 +482,10 @@ public class LoginController extends Controller {
     }
 
     @UserAuthenticated
-    public static Result changeUserProfile() {
-
+    public static F.Promise<Result> changeUserProfile() {
+        return F.Promise.promise(() -> _changeUserProfile()).map((ReturnHelper i) -> i.toResult());
+    }
+    private static ReturnHelper _changeUserProfile() {
         User theUser = (User)ctx().args.get("User");
         Form<ChangeParams> changeParamsForm = form(ChangeParams.class).bindFromRequest();
         ChangeParams params;
@@ -527,7 +551,7 @@ public class LoginController extends Controller {
             result = changeParamsForm.errorsAsJson();
         }
 
-        return new ReturnHelper(!changeParamsForm.hasErrors(), result).toResult();
+        return new ReturnHelper(!changeParamsForm.hasErrors(), result);
     }
 
 

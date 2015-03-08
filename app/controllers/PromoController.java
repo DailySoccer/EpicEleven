@@ -1,9 +1,9 @@
 package controllers;
 
 import actions.AllowCors;
-import actions.UserAuthenticated;
 import com.google.common.collect.ImmutableMap;
 import model.Promo;
+import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ReturnHelper;
@@ -17,12 +17,12 @@ public class PromoController extends Controller {
     /*
      * Devuelve la lista de promos activas
      */
-    public static Result getPromo(String codeName) {
-        return new ReturnHelper(ImmutableMap.of("promos", Promo.findByCodeName(codeName))).toResult();
+    public static F.Promise<Result> getPromo(String codeName) {
+        return F.Promise.promise(() -> new ReturnHelper(ImmutableMap.of("promos", Promo.findByCodeName(codeName)))).map((ReturnHelper i) -> i.toResult());
     }
 
-    public static Result getPromos() {
-        return new ReturnHelper(ImmutableMap.of("promos", Promo.getCurrent())).toResult();
+    public static F.Promise<Result> getPromos() {
+        return F.Promise.promise(() -> new ReturnHelper(ImmutableMap.of("promos", Promo.getCurrent()))).map((ReturnHelper i) -> i.toResult());
     }
 
 }

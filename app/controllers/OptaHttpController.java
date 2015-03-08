@@ -5,6 +5,7 @@ import model.GlobalDate;
 import model.opta.OptaXmlUtils;
 import org.joda.time.DateTime;
 import play.Logger;
+import play.libs.F;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -21,8 +22,11 @@ import java.util.Map;
 public class OptaHttpController extends Controller {
 
     @BodyParser.Of(value = BodyParser.TolerantText.class, maxLength = 4 * 1024 * 1024)
-    public static Result optaXmlInput() {
-
+    public static F.Promise<Result>  optaXmlInput() {
+        F.Promise<String> stringPromise = F.Promise.promise(() -> _optaXmlInput());
+        return stringPromise.map((String i) -> ok(i));
+    }
+    private static String _optaXmlInput() {
         String bodyText = null;
 
         if (!request().headers().containsKey("X-Meta-Encoding") ||
@@ -38,17 +42,16 @@ public class OptaHttpController extends Controller {
             Logger.info("About to insert {}", fileName);
 
             OptaXmlUtils.insertXml(bodyText, getHeadersString(request().headers()), new Date(), fileName,
-                                   getHeader("X-Meta-Feed-Type", request().headers()),
-                                   getHeader("X-Meta-Game-Id", request().headers()),
-                                   getHeader("X-Meta-Competition-Id", request().headers()),
-                                   getHeader("X-Meta-Season-Id", request().headers()),
-                                   GlobalDate.parseDate(getHeader("X-Meta-Last-Updated", request().headers()), null));
+                    getHeader("X-Meta-Feed-Type", request().headers()),
+                    getHeader("X-Meta-Game-Id", request().headers()),
+                    getHeader("X-Meta-Competition-Id", request().headers()),
+                    getHeader("X-Meta-Season-Id", request().headers()),
+                    GlobalDate.parseDate(getHeader("X-Meta-Last-Updated", request().headers()), null));
         }
         catch (Exception e) {
             Logger.error("WTF 5119", e);
         }
-
-        return ok("Yeah, XML inserted");
+        return "Yeah, XML inserted";
     }
 
     private static String getHeadersString(Map<String, String[]> headers) {
@@ -70,26 +73,37 @@ public class OptaHttpController extends Controller {
                             null;
     }
 
-    public static Result returnXML(long last_timestamp) {
+    public static F.Promise<Result> returnXML(long last_timestamp) {
+        F.Promise<String> stringPromise = F.Promise.promise(() ->
+            OptaXmlUtils.readNextXmlByDate(new Date(last_timestamp), new DbSqlUtils.IResultSetReader<String>() {
 
-        return ok(OptaXmlUtils.readNextXmlByDate(new Date(last_timestamp), new DbSqlUtils.IResultSetReader<String>() {
+                public String handleResultSet(ResultSet resultSet) throws SQLException {
+                    setResponseHeaders(resultSet);
+                    return resultSet.getString("xml");
+                }
 
-            public String handleResultSet(ResultSet resultSet) throws SQLException {
-                setResponseHeaders(resultSet);
-                return resultSet.getString("xml");
-            }
-
-            public String handleEmptyResultSet() { return "NULL"; }
-            public String handleSQLException()   { throw new RuntimeException("WTF 2056"); }
-        }));
+                public String handleEmptyResultSet() { return "NULL"; }
+                public String handleSQLException()   { throw new RuntimeException("WTF 2056"); }
+            }));
+        return stringPromise.map((String i) -> ok(i));
     }
 
+    /*
     public static Result dateLastXML() {
         return ok(GlobalDate.formatDate(OptaXmlUtils.getLastDate()));
     }
+    */
 
-    public static Result remainingXMLs(long last_timestamp) {
-        return ok(String.valueOf(OptaXmlUtils.getRemainingXmlCount(new Date(last_timestamp))));
+    public static F.Promise<Result> dateLastXML() {
+        F.Promise<String> stringPromise = F.Promise.promise(() ->
+                GlobalDate.formatDate(OptaXmlUtils.getLastDate()));
+        return stringPromise.map((String i) -> ok(i));
+    }
+
+    public static F.Promise<Result> remainingXMLs(long last_timestamp) {
+        F.Promise<String> stringPromise = F.Promise.promise(() ->
+                String.valueOf(OptaXmlUtils.getRemainingXmlCount(new Date(last_timestamp))));
+        return stringPromise.map((String i) -> ok(i));
     }
 
     private static void setResponseHeaders(ResultSet nextOptaData) throws SQLException {
