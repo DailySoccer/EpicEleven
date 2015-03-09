@@ -12,10 +12,7 @@ import org.jongo.*;
 import org.jongo.marshall.jackson.JacksonMapper;
 import play.Logger;
 import play.Play;
-import utils.InstanceRole;
-import utils.JacksonJodaMoney;
-import utils.ProcessExec;
-import utils.TargetEnvironment;
+import utils.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -130,6 +127,9 @@ public class Model {
 
             // Make sure our DB has the neccesary collections and indexes
             ensureMongoDB();
+
+            // Realizar las migraciones que hagan falta
+            Migrations.applyAll();
 
             bSuccess = true;
         }
