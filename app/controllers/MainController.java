@@ -66,7 +66,7 @@ public class MainController extends Controller {
             templateSoccerTeamIds.add(templateMatchEvent.templateSoccerTeamBId);
         }
 
-        List<TemplateSoccerTeam> templateSoccerTeams = !templateSoccerTeamIds.isEmpty() ? TemplateSoccerTeam.findAll(ListUtils.asList(templateSoccerTeamIds.iterator()))
+        List<TemplateSoccerTeam> templateSoccerTeams = !templateSoccerTeamIds.isEmpty() ? TemplateSoccerTeam.findAll(ListUtils.asList(templateSoccerTeamIds))
                 : new ArrayList<TemplateSoccerTeam>();
 
         Map<String, Object> data = new HashMap<>();
@@ -103,7 +103,7 @@ public class MainController extends Controller {
             templateSoccerTeamIds.add(templateMatchEvent.templateSoccerTeamBId);
         }
 
-        List<TemplateSoccerTeam> templateSoccerTeams = !templateSoccerTeamIds.isEmpty() ? TemplateSoccerTeam.findAll(ListUtils.asList(templateSoccerTeamIds.iterator()))
+        List<TemplateSoccerTeam> templateSoccerTeams = !templateSoccerTeamIds.isEmpty() ? TemplateSoccerTeam.findAll(ListUtils.asList(templateSoccerTeamIds))
                 : new ArrayList<TemplateSoccerTeam>();
 
         Map<String, Object> data = new HashMap<>();

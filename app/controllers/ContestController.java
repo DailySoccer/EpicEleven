@@ -64,7 +64,7 @@ public class ContestController extends Controller {
             }
         }
 
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests.iterator()));
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests));
 
         return new ReturnHelperWithAttach()
                 .attachObject("contests_0", myActiveContests, JsonViews.Public.class)
@@ -148,7 +148,7 @@ public class ContestController extends Controller {
         for (ContestEntry contestEntry: contest.contestEntries) {
             playersInContestEntries.addAll(contestEntry.soccerIds);
         }
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContestEntries.iterator()));
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContestEntries));
 
         return new ReturnHelper(ImmutableMap.builder()
                 .put("contest", contest)
@@ -205,7 +205,7 @@ public class ContestController extends Controller {
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
         List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
 
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContestEntry.iterator()));
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContestEntry));
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                 "users_info", usersInfoInContest,
@@ -244,7 +244,7 @@ public class ContestController extends Controller {
         for (InstanceSoccerPlayer instance: contest.instanceSoccerPlayers) {
             playersInContests.add(instance.templateSoccerPlayerId);
         }
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests.iterator()));
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests));
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                                                 "users_info", usersInfoInContest,

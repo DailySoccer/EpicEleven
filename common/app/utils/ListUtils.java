@@ -26,24 +26,22 @@ public class ListUtils {
 
     /**
      * Convertir un iterator a una lista  (Iterator -> List>
-     * @param iter Iterator
+     * @param iterable Iterable
      * @param <T> Tipo del iterator
      * @return La lista de elementos (extraidos del iterator)
      */
-    public static <T> List<T> asList(Iterator<T> iter) {
+    public static <T> List<T> asList(Iterable<T> iterable) {
+        if (iterable instanceof List) {
+            return (List<T>) iterable;
+        }
+
         List<T> list = new ArrayList<>();
+        Iterator<T> iter = iterable.iterator();
         if (iter != null) {
             while (iter.hasNext())
                 list.add(iter.next());
         }
         return list;
-    }
-
-    public static <T> List<T> asList(Iterable<T> iterable) {
-        if (iterable instanceof List) {
-            return (List<T>) iterable;
-        }
-        return asList(iterable.iterator());
     }
 
     /**
