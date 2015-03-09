@@ -1,5 +1,6 @@
 package actors;
 
+import com.mongodb.DuplicateKeyException;
 import model.*;
 import model.jobs.CancelContestJob;
 import model.jobs.Job;
@@ -70,13 +71,18 @@ public class OptaMatchEventChangeProcessor {
                 .multi()
                 .with("{$set: {state: \"LIVE\", startedAt: #}}", GlobalDate.getCurrentDate());
 
-        // Cancelamos aquellos contests que aún permanezcan activos
-        //  deben ser los inválidos, dado que en la query anterior se han cambiado de estado a los válidos
-        for (Contest contest: Contest.findAllActiveFromTemplateMatchEvent(matchEvent.templateMatchEventId)) {
-            Job job = CancelContestJob.create(contest.contestId);
-            if (!job.isDone()) {
-                Logger.error("CancelContestJob {} error", contest.contestId);
+        try {
+            // Cancelamos aquellos contests que aún permanezcan activos
+            //  deben ser los inválidos, dado que en la query anterior se han cambiado de estado a los válidos
+            for (Contest contest : Contest.findAllActiveFromTemplateMatchEvent(matchEvent.templateMatchEventId)) {
+                Job job = CancelContestJob.create(contest.contestId);
+                if (!job.isDone()) {
+                    Logger.error("CancelContestJob {} error", contest.contestId);
+                }
             }
+        }
+        catch(DuplicateKeyException e) {
+            play.Logger.error("WTF 3333: actionWhenMatchEventIsStarted: {}", e.toString());
         }
     }
 

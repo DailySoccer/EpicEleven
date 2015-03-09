@@ -1,5 +1,6 @@
 package actors;
 
+import com.mongodb.DuplicateKeyException;
 import model.*;
 import model.opta.OptaCompetition;
 import org.bson.types.ObjectId;
@@ -40,10 +41,15 @@ public class ContestsActor extends TickableActor {
 
     @Override protected void onTick() {
 
-        // El TemplateContest instanciara sus Contests y MatchEvents asociados
-        TemplateContest.findAllByActivationAt(GlobalDate.getCurrentDate()).forEach(TemplateContest::instantiate);
+        try {
+            // El TemplateContest instanciara sus Contests y MatchEvents asociados
+            TemplateContest.findAllByActivationAt(GlobalDate.getCurrentDate()).forEach(TemplateContest::instantiate);
 
-        Contest.findAllHistoryNotClosed().forEach(Contest::closeContest);
+            Contest.findAllHistoryNotClosed().forEach(Contest::closeContest);
+        }
+        catch(DuplicateKeyException e) {
+            play.Logger.error("WTF 2222: ContestActor: {}", e.toString());
+        }
     }
 
     @Override protected void onSimulatorTick() {
