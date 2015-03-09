@@ -210,6 +210,10 @@ public class Contest implements JongoId {
         return findAllMyContests(userId, "{state: \"HISTORY\", \"contestEntries.userId\": #}", projectionClass);
     }
 
+    static public long countAllMyLive(ObjectId userId) {
+        return Model.contests().count("{state: \"LIVE\", \"contestEntries.userId\": #}", userId);
+    }
+
     static private List<Contest> findAllMyContests(ObjectId userId, String query, Class<?> projectionClass) {
         return ListUtils.asList(Model.contests()
                 .find(query, userId)

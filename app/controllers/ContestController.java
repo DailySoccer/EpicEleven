@@ -77,6 +77,54 @@ public class ContestController extends Controller {
     }
 
     @UserAuthenticated
+    public static Result getMyActiveContests() {
+        User theUser = (User)ctx().args.get("User");
+        return new ReturnHelper(ImmutableMap.of("contests", Contest.findAllMyActive(theUser.userId, JsonViews.MyActiveContests.class)))
+                .toResult();
+    }
+
+    @UserAuthenticated
+    public static Result getMyLiveContests() {
+        User theUser = (User)ctx().args.get("User");
+
+        List<Contest> myLiveContests = Contest.findAllMyLive(theUser.userId, JsonViews.MyLiveContests.class);
+
+        List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.gatherFromContests(myLiveContests);
+        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(liveMatchEvents);
+
+        // Buscar todos los players que han sido incrustados en los contests
+        Set<ObjectId> playersInContests = new HashSet<>();
+        for (Contest liveContest: myLiveContests) {
+            for (InstanceSoccerPlayer instance: liveContest.instanceSoccerPlayers) {
+                playersInContests.add(instance.templateSoccerPlayerId);
+            }
+        }
+
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests.iterator()));
+
+        return new ReturnHelperWithAttach()
+                .attachObject("contests", myLiveContests, JsonViews.FullContest.class)
+                .attachObject("match_events", liveMatchEvents, JsonViews.FullContest.class)
+                .attachObject("soccer_teams", teams, JsonViews.Public.class)
+                .attachObject("soccer_players", players, JsonViews.Public.class)
+                .toResult();
+    }
+
+    @UserAuthenticated
+    public static Result getMyHistoryContests() {
+        User theUser = (User)ctx().args.get("User");
+        return new ReturnHelper(ImmutableMap.of("contests", Contest.findAllMyHistory(theUser.userId, JsonViews.MyHistoryContests.class)))
+                .toResult(JsonViews.Extended.class);
+    }
+
+    @UserAuthenticated
+    public static Result countMyLiveContests() {
+        User theUser = (User)ctx().args.get("User");
+        return new ReturnHelper(ImmutableMap.of("count", Contest.countAllMyLive(theUser.userId)))
+                .toResult();
+    }
+
+    @UserAuthenticated
     public static Result getViewContest(String contestId) {
         User theUser = (User)ctx().args.get("User");
         Contest contest = Contest.findOne(contestId);
