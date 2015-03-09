@@ -82,7 +82,7 @@ public class CancelContestEntryJob extends Job {
         try {
             Contest contest = Model.contests()
                     .findAndModify("{_id: #, state: \"ACTIVE\", contestEntries._id: #, contestEntries.userId: #}", contestId, contestEntryId, userId)
-                    .with("{$pull: {contestEntries: {_id: #}}, $addToSet: {pendingJobs: #}}", contestEntryId, jobId)
+                    .with("{$pull: {contestEntries: {_id: #}}, $inc: {freeSlots : 1}, $addToSet: {pendingJobs: #}}", contestEntryId, jobId)
                     .as(Contest.class);
 
             if (contest != null) {

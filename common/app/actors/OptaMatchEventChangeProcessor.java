@@ -66,7 +66,7 @@ public class OptaMatchEventChangeProcessor {
                 .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"," +
                         "$or: [" +
                         "  {prizeType: {$eq: \"FREE\"}, \"contestEntries.1\": {$exists: true}}," +
-                        "  {$where: \"this.contestEntries.length == this.maxEntries\"}" +
+                        "  {freeSlots: 0}" +
                         "]}", matchEvent.templateMatchEventId)
                 .multi()
                 .with("{$set: {state: \"LIVE\", startedAt: #}}", GlobalDate.getCurrentDate());

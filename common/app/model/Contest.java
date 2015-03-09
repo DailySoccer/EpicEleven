@@ -16,6 +16,7 @@ import utils.ViewProjection;
 import java.util.*;
 
 public class Contest implements JongoId {
+    @JsonView(JsonViews.NotForClient.class)
     final int MAX_PLAYERS_SAME_TEAM = 4;
 
     @Id
@@ -50,6 +51,9 @@ public class Contest implements JongoId {
 
     public int maxEntries;
 
+    @JsonView(JsonViews.NotForClient.class)
+    public int freeSlots;
+
     public int salaryCap;
 
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
@@ -81,6 +85,7 @@ public class Contest implements JongoId {
         state = template.state;
         name = template.name;
         maxEntries = template.maxEntries;
+        freeSlots = template.maxEntries;
         salaryCap = template.salaryCap;
         entryFee = template.entryFee;
         prizeType = template.prizeType;
@@ -169,7 +174,7 @@ public class Contest implements JongoId {
 
     static public long countActiveNotFullFromTemplateContest(ObjectId templateContestId) {
         return Model.contests()
-                .count("{$and: [{templateContestId: #, state: \"ACTIVE\"}, {$where: \"this.contestEntries.length < this.maxEntries\"}]}", templateContestId);
+                .count("{templateContestId: #, state: \"ACTIVE\", freeSlots: {$gt: 0}}", templateContestId);
     }
 
     static public List<Contest> findAllActiveFromTemplateMatchEvent(ObjectId templateMatchEventId) {
@@ -181,7 +186,7 @@ public class Contest implements JongoId {
 
     static public List<Contest> findAllActiveNotFull(Class<?> projectionClass) {
         return ListUtils.asList(Model.contests()
-                .find("{$and: [{state: \"ACTIVE\"}, {$where: \"this.contestEntries.length < this.maxEntries\"}]}")
+                .find("{state: \"ACTIVE\", freeSlots: {$gt: 0}}")
                 .projection(ViewProjection.get(projectionClass, Contest.class))
                 .as(Contest.class));
     }
