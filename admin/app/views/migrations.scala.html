@@ -1,0 +1,20 @@
+@import controllers.admin.routes._
+
+@(migrations : Map[String, String])
+
+@scripts = {
+}
+
+@main("Migrations - Admin", scripts) {
+
+<h1 class="page-header">Migrations</h1>
+
+    <ul>
+    @for((key, value) <- migrations) {
+        <li><a href="@MigrationsController.apply(key)">
+            @key
+        </a>: @value documents</li>
+    }
+    </ul>
+
+}

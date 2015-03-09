@@ -8,10 +8,7 @@ import org.bson.types.ObjectId;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.joda.money.Money;
-import org.jongo.Find;
-import org.jongo.Jongo;
-import org.jongo.Mapper;
-import org.jongo.MongoCollection;
+import org.jongo.*;
 import org.jongo.marshall.jackson.JacksonMapper;
 import play.Logger;
 import play.Play;
@@ -102,6 +99,10 @@ public class Model {
             _mongoClient.close();
             _mongoClient = null;
         }
+    }
+
+    static public void runCommand(String command, String javascript) {
+        _jongo.runCommand(command, javascript).map(new RawResultHandler<DBObject>());
     }
 
     static private boolean initMongo(String mongodbUri) {
