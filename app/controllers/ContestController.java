@@ -100,7 +100,7 @@ public class ContestController extends Controller {
             }
         }
 
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests.iterator()));
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests));
 
         return new ReturnHelperWithAttach()
                 .attachObject("contests", myLiveContests, JsonViews.FullContest.class)
