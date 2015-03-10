@@ -22,6 +22,7 @@ class FieldComparable implements Comparator<Map<String,Object>>{
 }
 
 public class PaginationData {
+    public String projection() { return null; }
     public List<String> getFieldNames() { return null; }
     public String getFieldByIndex(Object data, Integer index) { return null; }
     public String getRenderFieldByIndex(Object data, String fieldValue, Integer index) { return fieldValue; }
@@ -39,12 +40,16 @@ public class PaginationData {
         List<String> fieldNames = paginationData.getFieldNames();
         String sortBy = fieldNames.get(iSort);
         String order = params.get("sSortDir_0")[0];
-        Boolean sortedByBDD = !sortBy.equals("");
+        Boolean sortedByBDD = false; //!sortBy.equals("");
 
         // Aqui iremos añadiendo los registros válidos
         List<Map<String, Object>> dataList = new ArrayList<>();
 
         Find find = collection.find();
+
+        if (paginationData.projection() != null) {
+            find.projection(paginationData.projection());
+        }
 
         List<Map<String, Object>> dataRow = new ArrayList<>();
 
