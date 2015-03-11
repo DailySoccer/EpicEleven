@@ -112,30 +112,6 @@ public class ContestEntry implements JongoId {
         return bRet;
     }
 
-    public static boolean remove(ObjectId userId, ObjectId contestId, ObjectId contestEntryId) {
-
-        boolean bRet = false;
-
-        try {
-            Contest contest = Model.contests()
-                    .findAndModify("{_id: #, state: \"ACTIVE\", contestEntries._id: #, contestEntries.userId: #}", contestId, contestEntryId, userId)
-                    .with("{$pull: {contestEntries: {_id: #}}}", contestEntryId)
-                    .as(Contest.class);
-
-            if (contest != null) {
-                // Registrar el contestEntry eliminado
-                ContestEntry cancelledContestEntry = contest.findContestEntry(contestEntryId);
-                Model.cancelledContestEntries().insert(cancelledContestEntry);
-                bRet = true;
-            }
-        }
-        catch (MongoException exc) {
-            Logger.error("WTF 7801: ", exc);
-        }
-
-        return bRet;
-    }
-
     public int getFantasyPointsFromMatchEvents(List<TemplateMatchEvent> templateMatchEvents) {
         int fantasyPoints = 0;
         for (ObjectId templateSoccerPlayerId : soccerIds) {

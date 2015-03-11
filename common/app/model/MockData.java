@@ -88,6 +88,7 @@ public final class MockData {
                 soccerIds.add(soccer.templateSoccerPlayerId);
 
             contest.contestEntries.add(new ContestEntry(user.userId, soccerIds));
+            contest.freeSlots--;
         }
 
     }

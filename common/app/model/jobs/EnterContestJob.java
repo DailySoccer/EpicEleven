@@ -131,7 +131,7 @@ public class EnterContestJob extends Job {
         //  Comprobamos que el contest siga ACTIVE, que el usuario no esté ya inscrito y que existan Huecos Libres
         String query = String.format("{_id: #, state: \"ACTIVE\", contestEntries.userId: {$ne: #}, contestEntries.%s: {$exists: false}}", contest.maxEntries - 1);
         return Model.contests().findAndModify(query, contestId, userId)
-                .with("{$addToSet: {contestEntries: #}}", contestEntry)
+                .with("{$push: {contestEntries: #}, $inc: {freeSlots : -1}}", contestEntry)
                 .returnNew()
                 .as(Contest.class);
     }

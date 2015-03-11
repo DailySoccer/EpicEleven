@@ -8,17 +8,11 @@ import org.bson.types.ObjectId;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
 import org.joda.money.Money;
-import org.jongo.Find;
-import org.jongo.Jongo;
-import org.jongo.Mapper;
-import org.jongo.MongoCollection;
+import org.jongo.*;
 import org.jongo.marshall.jackson.JacksonMapper;
 import play.Logger;
 import play.Play;
-import utils.InstanceRole;
-import utils.JacksonJodaMoney;
-import utils.ProcessExec;
-import utils.TargetEnvironment;
+import utils.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -104,6 +98,10 @@ public class Model {
         }
     }
 
+    static public void runCommand(String command, String javascript) {
+        _jongo.runCommand(command, javascript).map(new RawResultHandler<DBObject>());
+    }
+
     static private boolean initMongo(String mongodbUri) {
         boolean bSuccess = false;
         MongoClientURI mongoClientURI = new MongoClientURI(mongodbUri);
@@ -129,6 +127,9 @@ public class Model {
 
             // Make sure our DB has the neccesary collections and indexes
             ensureMongoDB();
+
+            // Realizar las migraciones que hagan falta
+            Migrations.applyAll();
 
             bSuccess = true;
         }

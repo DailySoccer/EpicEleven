@@ -99,6 +99,9 @@ GET         /refresher                                                          
 GET         /refresher_in_progress                                               controllers.admin.RefresherController.inProgress()
 GET         /last_date                                                           controllers.admin.RefresherController.lastDate()
 
+GET         /migrations                                                          controllers.admin.MigrationsController.index()
+GET         /migration/:type                                                     controllers.admin.MigrationsController.apply(type)
+
 # Test Driven Routes
 GET         /test_goto/:year/:month/:day/:hour/:minute/:second                   controllers.admin.TestController.gotoDate(year: Int, month: Int, day: Int, hour: Int, minute: Int, second:Int)
 GET         /test_start                                                          controllers.admin.TestController.start()
