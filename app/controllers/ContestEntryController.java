@@ -239,7 +239,7 @@ public class ContestEntryController extends Controller {
                 Contest contest = Contest.findOneFromContestEntry(contestEntry.contestEntryId);
 
                 // Verificar que el contest sigue estando activo (ni "live" ni "history")
-                if (!contest.isActive()) {
+                if (!contest.state.isActive()) {
                     contestEntryForm.reject(CONTEST_ENTRY_KEY, ERROR_CONTEST_NOT_ACTIVE);
                 }
 
@@ -277,7 +277,7 @@ public class ContestEntryController extends Controller {
         }
         else {
             // Verificar que el contest esté activo (ni "live" ni "history")
-            if (!contest.isActive()) {
+            if (!contest.state.isActive()) {
                 errores.add(ERROR_CONTEST_NOT_ACTIVE);
             }
 

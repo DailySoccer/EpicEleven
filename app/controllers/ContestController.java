@@ -130,7 +130,7 @@ public class ContestController extends Controller {
         Contest contest = Contest.findOne(contestId);
 
         // No se puede ver el contest "completo" si está "activo" (únicamente en "live" o "history")
-        if (contest.isActive()) {
+        if (contest.state.isActive()) {
             Logger.error("WTF 7945: getViewContest: contest: {} user: {}", contestId, theUser.userId);
             return new ReturnHelper(false, ERROR_VIEW_CONTEST_INVALID).toResult();
         }

@@ -46,11 +46,11 @@ public class ContestController extends Controller {
                     case 2: return String.valueOf(contest.maxEntries);
                     case 3: return contest.templateContestId.toString();
                     case 4: return contest.optaCompetitionId;
-                    case 5: if(contest.isHistory()) {
+                    case 5: if(contest.state.isHistory()) {
                                 return "Finished";
-                            } else if(contest.isCanceled()) {
+                            } else if(contest.state.isCanceled()) {
                                 return "Canceled";
-                            } else if(contest.isLive()) {
+                            } else if(contest.state.isLive()) {
                                 return "Live";
                             } else {
                                 return "Waiting";

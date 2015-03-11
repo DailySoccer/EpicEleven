@@ -1,6 +1,7 @@
 package model;
 
 public enum ContestState {
+    DRAFT(-1),
     OFF(0),
     ACTIVE(1),
     LIVE(2),
@@ -13,6 +14,7 @@ public enum ContestState {
         this.id = id;
     }
 
+    public boolean isDraft()    { return (this == ContestState.DRAFT); }
     public boolean isOff()      { return (this == ContestState.OFF); }
     public boolean isActive()   { return (this == ContestState.ACTIVE); }
     public boolean isLive()     { return (this == ContestState.LIVE); }

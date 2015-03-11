@@ -98,12 +98,6 @@ public class Contest implements JongoId {
 
     public ObjectId getId() { return contestId; }
 
-    public boolean isOff()      { return (state == ContestState.OFF); }
-    public boolean isActive()   { return (state == ContestState.ACTIVE); }
-    public boolean isLive()     { return (state == ContestState.LIVE); }
-    public boolean isHistory()  { return (state == ContestState.HISTORY); }
-    public boolean isCanceled() { return (state == ContestState.CANCELED); }
-
     public boolean isFull() { return getNumEntries() >= maxEntries; }
 
 
