@@ -25,7 +25,10 @@ public class Migrations {
     }
 
     public static void applyAll() {
-        evaluate().keySet().forEach(Migrations::apply);
+        evaluate().forEach((key, value) -> {
+            apply(key);
+            Logger.info("Migration: {} SUCCESS ({})", key, value);
+        });
     }
 
     public static void apply(String type) {
