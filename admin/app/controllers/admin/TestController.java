@@ -91,4 +91,39 @@ public class TestController extends Controller {
         return ok("OK");
     }
 
+
+    static public Result createPromos(int mockIndex){
+
+        switch(mockIndex) {
+            case 0:
+                Model.promos().insert(new Promo(
+                        new DateTime(2010, 6, 12, 0, 0, DateTimeZone.UTC).toDate(),
+                        new DateTime(2020, 7, 12, 0, 0, DateTimeZone.UTC).toDate(),
+                        1,
+                        "mockpromo1",
+                        "#/restricted",
+                        "",
+                        "images/promos/promoGen01Xs.jpg",
+                        "images/promos/promoGen01Desktop.png")
+                );
+                break;
+            case 1:
+                Model.promos().insert(new Promo(
+                                new DateTime(2014, 6, 12, 0, 0, DateTimeZone.UTC).toDate(),
+                                new DateTime(2014, 7, 12, 0, 0, DateTimeZone.UTC).toDate(),
+                                1,
+                                "mockpromo2",
+                                "#/restricted",
+                                "",
+                                "images/promos/promoGen02Xs.jpg",
+                                "images/promos/promoGen02Desktop.png")
+                );
+                break;
+            default:
+        }
+
+
+        return ok("OK");
+    }
+
 }

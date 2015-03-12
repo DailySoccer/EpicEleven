@@ -23,6 +23,10 @@ public class ContestController extends Controller {
 
     public static Result indexAjax() {
         return PaginationData.withAjax(request().queryString(), Model.contests(), Contest.class, new PaginationData() {
+            public String projection() {
+                return "{name: 1, 'contestEntries.userId': 1, maxEntries: 1, templateContestId: 1, optaCompetitionId: 1, state: 1}";
+            }
+
             public List<String> getFieldNames() {
                 return ImmutableList.of(
                     "name",
@@ -42,11 +46,11 @@ public class ContestController extends Controller {
                     case 2: return String.valueOf(contest.maxEntries);
                     case 3: return contest.templateContestId.toString();
                     case 4: return contest.optaCompetitionId;
-                    case 5: if(contest.isHistory()) {
+                    case 5: if(contest.state.isHistory()) {
                                 return "Finished";
-                            } else if(contest.isCanceled()) {
+                            } else if(contest.state.isCanceled()) {
                                 return "Canceled";
-                            } else if(contest.isLive()) {
+                            } else if(contest.state.isLive()) {
                                 return "Live";
                             } else {
                                 return "Waiting";

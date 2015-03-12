@@ -64,7 +64,7 @@ public class ContestController extends Controller {
             }
         }
 
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests.iterator()));
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests));
 
         return new ReturnHelperWithAttach()
                 .attachObject("contests_0", myActiveContests, JsonViews.Public.class)
@@ -77,12 +77,60 @@ public class ContestController extends Controller {
     }
 
     @UserAuthenticated
+    public static Result getMyActiveContests() {
+        User theUser = (User)ctx().args.get("User");
+        return new ReturnHelper(ImmutableMap.of("contests", Contest.findAllMyActive(theUser.userId, JsonViews.MyActiveContests.class)))
+                .toResult();
+    }
+
+    @UserAuthenticated
+    public static Result getMyLiveContests() {
+        User theUser = (User)ctx().args.get("User");
+
+        List<Contest> myLiveContests = Contest.findAllMyLive(theUser.userId, JsonViews.MyLiveContests.class);
+
+        List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.gatherFromContests(myLiveContests);
+        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(liveMatchEvents);
+
+        // Buscar todos los players que han sido incrustados en los contests
+        Set<ObjectId> playersInContests = new HashSet<>();
+        for (Contest liveContest: myLiveContests) {
+            for (InstanceSoccerPlayer instance: liveContest.instanceSoccerPlayers) {
+                playersInContests.add(instance.templateSoccerPlayerId);
+            }
+        }
+
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests));
+
+        return new ReturnHelperWithAttach()
+                .attachObject("contests", myLiveContests, JsonViews.FullContest.class)
+                .attachObject("match_events", liveMatchEvents, JsonViews.FullContest.class)
+                .attachObject("soccer_teams", teams, JsonViews.Public.class)
+                .attachObject("soccer_players", players, JsonViews.Public.class)
+                .toResult();
+    }
+
+    @UserAuthenticated
+    public static Result getMyHistoryContests() {
+        User theUser = (User)ctx().args.get("User");
+        return new ReturnHelper(ImmutableMap.of("contests", Contest.findAllMyHistory(theUser.userId, JsonViews.MyHistoryContests.class)))
+                .toResult(JsonViews.Extended.class);
+    }
+
+    @UserAuthenticated
+    public static Result countMyLiveContests() {
+        User theUser = (User)ctx().args.get("User");
+        return new ReturnHelper(ImmutableMap.of("count", Contest.countAllMyLive(theUser.userId)))
+                .toResult();
+    }
+
+    @UserAuthenticated
     public static Result getViewContest(String contestId) {
         User theUser = (User)ctx().args.get("User");
         Contest contest = Contest.findOne(contestId);
 
         // No se puede ver el contest "completo" si está "activo" (únicamente en "live" o "history")
-        if (contest.isActive()) {
+        if (contest.state.isActive()) {
             Logger.error("WTF 7945: getViewContest: contest: {} user: {}", contestId, theUser.userId);
             return new ReturnHelper(false, ERROR_VIEW_CONTEST_INVALID).toResult();
         }
@@ -100,7 +148,7 @@ public class ContestController extends Controller {
         for (ContestEntry contestEntry: contest.contestEntries) {
             playersInContestEntries.addAll(contestEntry.soccerIds);
         }
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContestEntries.iterator()));
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContestEntries));
 
         return new ReturnHelper(ImmutableMap.builder()
                 .put("contest", contest)
@@ -157,7 +205,7 @@ public class ContestController extends Controller {
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
         List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
 
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContestEntry.iterator()));
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContestEntry));
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                 "users_info", usersInfoInContest,
@@ -196,7 +244,7 @@ public class ContestController extends Controller {
         for (InstanceSoccerPlayer instance: contest.instanceSoccerPlayers) {
             playersInContests.add(instance.templateSoccerPlayerId);
         }
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests.iterator()));
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests));
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                                                 "users_info", usersInfoInContest,

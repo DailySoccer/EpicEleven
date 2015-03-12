@@ -24,7 +24,7 @@ public class SessionUtils {
             return User.findByEmail(sessionToken);
         }
 
-        Session theSession = Model.sessions().findOne("{sessionToken:'#'}", sessionToken).as(Session.class);
+        Session theSession = Model.sessions().findOne("{sessionToken: # }", sessionToken).as(Session.class);
 
         if (theSession == null) {
             return null;

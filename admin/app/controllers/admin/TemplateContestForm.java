@@ -39,7 +39,7 @@ public class TemplateContestForm {
     public long createdAt;
 
     public TemplateContestForm() {
-        state = ContestState.OFF;
+        state = ContestState.DRAFT;
         activationAt = GlobalDate.getCurrentDate();
         createdAt = GlobalDate.getCurrentDate().getTime();
     }

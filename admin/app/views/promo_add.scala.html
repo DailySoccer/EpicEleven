@@ -17,9 +17,17 @@
 </div>
 }
 
-@main("Promo Add - Admin") {
+@main("Promo Add/Edit - Admin") {
 
 <h1 class="page-header">Promo Add</h1>
+
+@if(promoForm("id").value != null) {
+<div style="float: right; margin-right:100px;">
+    <a href='@PromoController.delete(promoForm("id").value)'><button class="btn btn-danger">Delete</button></a>
+</div>
+<br/>
+<hr/>
+}
 
 @helper.form(action = PromoController.create, 'class -> "form-horizontal") {
 <fieldset>
@@ -28,9 +36,11 @@
     <input type="hidden" name="id" value='@promoForm("id").value' >
 
 
-    <!-- Text input-->
-    <div class="control-group">
-        <div class="controls">
+    <div class="col-md-12">
+
+        <div class="col-md-7">
+            <form class="form-horizontal">
+
             @inputText(field=promoForm("codeName"), args = 'placeholder -> "CodeName", 'class -> "form-control")
             @inputText(field=promoForm("url"), args = 'placeholder -> "URL", 'class -> "form-control")
             @textarea(field=promoForm("html"), args = 'placeholder -> "HTML", 'class -> "form-control")
@@ -39,7 +49,8 @@
             @inputText(field=promoForm("priority"), args = 'placeholder -> "1: Mínima prioridad, 10: Máxima prioridad", 'class -> "form-control")
             @inputDate(field=promoForm("activationDate"), args = 'class -> "form-control")
             @inputDate(field=promoForm("deactivationDate"), args = 'class -> "form-control")
-
+                
+            </form>
         </div>
     </div>
 
@@ -53,15 +64,6 @@
     </div>
 
 </fieldset>
-}
-
-
-<br/>
-
-@if(promoForm("id").value != null) {
-<div style="float: right; margin-right:100px;">
-    <a href='@PromoController.delete(promoForm("id").value)'><button class="btn btn-danger">Delete</button></a>
-</div>
 }
 
 <br/>

@@ -34,11 +34,11 @@ public class CancelContestJob extends Job {
 
             Contest contest = Contest.findOne(contestId);
             if (contest != null) {
-                if (!contest.isCanceled()) {
+                if (!contest.state.isCanceled()) {
                     // Cancelamos el contest si sigue sin estar Cancelado y sin estar Lleno
                     // Una vez marcado como Cancelado, volvemos a leer el contest actualizado, para garantizar que tenemos los contestEntries correctos
                     contest = Model.contests()
-                            .findAndModify("{$and: [{_id: #, state: { $ne: \"CANCELED\" }}, {$where: \"this.contestEntries.length < this.maxEntries\"}]}", contestId)
+                            .findAndModify("{_id: #, state: { $ne: \"CANCELED\" }, freeSlots: {$gt: 0}}", contestId)
                             .with("{$set: {state: \"CANCELED\", canceledAt: #}, $addToSet: {pendingJobs: #}}", GlobalDate.getCurrentDate(), jobId)
                             .returnNew()
                             .as(Contest.class);

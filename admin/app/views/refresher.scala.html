@@ -38,6 +38,9 @@
                         repaintDateLastXML(result);
                 }
             });
+
+            getLastXML();
+
         }
 
         function getLastXML() {
@@ -50,7 +53,6 @@
         }
 
         $(document).ready( function() {
-           getLastXML();
            checkDates();
            window.setInterval(checkDates, 5000);
         });

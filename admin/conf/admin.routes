@@ -49,6 +49,7 @@ GET         /template_contest/enable_creating/:state                            
 GET         /template_contest/save/:templateContestId                            controllers.admin.TemplateContestController.edit(templateContestId : String)
 GET         /template_contest/save                                               controllers.admin.TemplateContestController.newForm()
 POST        /template_contest/save                                               controllers.admin.TemplateContestController.create()
+GET         /template_contest/publish/:templateContestId                         controllers.admin.TemplateContestController.publish(templateContestId : String)
 GET         /template_contest/delete/:templateContestId                          controllers.admin.TemplateContestController.destroy(templateContestId : String)
 GET         /template_contest/:templateContestId                                 controllers.admin.TemplateContestController.show(templateContestId : String)
 
@@ -99,6 +100,9 @@ GET         /refresher                                                          
 GET         /refresher_in_progress                                               controllers.admin.RefresherController.inProgress()
 GET         /last_date                                                           controllers.admin.RefresherController.lastDate()
 
+GET         /migrations                                                          controllers.admin.MigrationsController.index()
+GET         /migration/:type                                                     controllers.admin.MigrationsController.apply(type)
+
 # Test Driven Routes
 GET         /test_goto/:year/:month/:day/:hour/:minute/:second                   controllers.admin.TestController.gotoDate(year: Int, month: Int, day: Int, hour: Int, minute: Int, second:Int)
 GET         /test_start                                                          controllers.admin.TestController.start()
@@ -107,6 +111,7 @@ GET         /test_current_date                                                  
 
 GET         /test_initial_setup                                                  controllers.admin.TestController.initialSetup()
 GET         /create_contests/:mockIndex                                          controllers.admin.TestController.createContests(mockIndex: Int)
+GET         /create_promos/:mockIndex                                            controllers.admin.TestController.createPromos(mockIndex: Int)
 
 
 # WIP

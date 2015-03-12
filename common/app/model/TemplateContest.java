@@ -82,11 +82,6 @@ public class TemplateContest implements JongoId {
         return templateContestId;
     }
 
-    public boolean isOff()      { return (state == ContestState.OFF); }
-    public boolean isActive()   { return (state == ContestState.ACTIVE); }
-    public boolean isLive()     { return (state == ContestState.LIVE); }
-    public boolean isHistory()  { return (state == ContestState.HISTORY); }
-
     public List<TemplateMatchEvent> getTemplateMatchEvents() {
         return TemplateMatchEvent.findAll(templateMatchEventIds);
     }
@@ -136,7 +131,7 @@ public class TemplateContest implements JongoId {
 
         // Eliminar el template contest
         try {
-            WriteResult result = Model.templateContests().remove("{_id: #, state: \"OFF\"}", templateContest.templateContestId);
+            WriteResult result = Model.templateContests().remove("{_id: #, $or: [{state: \"DRAFT\"}, {state: \"OFF\"}]}", templateContest.templateContestId);
             if (result.getN() == 0) {
                 throw new RuntimeException(String.format("Template Contest: Error removing %s", templateContest.templateContestId.toString()));
             }
@@ -230,5 +225,9 @@ public class TemplateContest implements JongoId {
 
     public static boolean isFinished(String templateContestId) {
         return findOne(new ObjectId(templateContestId)).isFinished();
+    }
+
+    public static void publish(ObjectId templateContestId) {
+        Model.templateContests().update("{_id: #, state: \"DRAFT\"}", templateContestId).with("{$set: {state: \"OFF\"}}");
     }
 }

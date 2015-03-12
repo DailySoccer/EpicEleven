@@ -1,5 +1,8 @@
 package controllers.admin;
 
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import actions.CheckTargetEnvironment;
 import com.google.common.collect.ImmutableList;
 import com.mongodb.WriteConcern;
@@ -14,10 +17,6 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utils.MoneyUtils;
 import utils.ReturnHelper;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 import static play.data.Form.form;
 
@@ -76,21 +75,26 @@ public class TemplateContestController extends Controller {
                 TemplateContest templateContest = (TemplateContest) data;
                 switch (index) {
                     case 0:
-                        if      (templateContest.isHistory())   return String.format("<button class=\"btn btn-danger\">%s</button>", templateContest.state);
-                        else if (templateContest.isLive())      return String.format("<button class=\"btn btn-success\">%s</button>", templateContest.state);
-                        else if (templateContest.isActive())    return String.format("<button class=\"btn btn-warning\">%s</button>", templateContest.state);
+                        if      (templateContest.state.isDraft())     return String.format("<button class=\"btn btn-default\">%s</button>", templateContest.state);
+                        else if (templateContest.state.isHistory())   return String.format("<button class=\"btn btn-danger\">%s</button>", templateContest.state);
+                        else if (templateContest.state.isLive())      return String.format("<button class=\"btn btn-success\">%s</button>", templateContest.state);
+                        else if (templateContest.state.isActive())    return String.format("<button class=\"btn btn-warning\">%s</button>", templateContest.state);
                         return String.format("<button class=\"btn btn-warning disabled\">%s</button>", templateContest.state);
                     case 1: return String.format("<a href=\"%s\" style=\"white-space: nowrap\">%s</a>",
                                 routes.TemplateContestController.show(templateContest.templateContestId.toString()),
                                 fieldValue);
-                    case 10: return (templateContest.isOff() || templateContest.isActive())
+                    case 10: return (templateContest.state.isDraft() || templateContest.state.isOff() || templateContest.state.isActive())
                                 ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">Edit</button></a>",
                                         routes.TemplateContestController.edit(templateContest.templateContestId.toString()))
                                 : "";
-                    case 11: return templateContest.isOff()
-                                ? String.format("<a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
+                    case 11: return templateContest.state.isDraft()
+                             ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">+</button></a> <a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
+                                        routes.TemplateContestController.publish(templateContest.templateContestId.toString()),
                                         routes.TemplateContestController.destroy(templateContest.templateContestId.toString()))
-                                : "";
+                             : templateContest.state.isOff() ?
+                                String.format("<a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
+                                        routes.TemplateContestController.destroy(templateContest.templateContestId.toString()))
+                             : "";
                 }
                 return fieldValue;
             }
@@ -117,7 +121,12 @@ public class TemplateContestController extends Controller {
         TemplateContestForm params = new TemplateContestForm(templateContest);
 
         Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
-        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.createdAt), templateContest.isActive()));
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.createdAt), templateContest.state.isActive()));
+    }
+
+    public static Result publish(String templateContestId) {
+        TemplateContest.publish(new ObjectId(templateContestId));
+        return redirect(routes.TemplateContestController.index());
     }
 
     public static Result destroy(String templateContestId) {
@@ -327,6 +336,12 @@ public class TemplateContestController extends Controller {
     }
 
     static private Boolean getCreatingTemplateContestsState() {
-        return Model.actors().tellAndAwait("ContestsActor", "GetCreatingTemplateContestsState");
+        Boolean response = Model.actors().tellAndAwait("ContestsActor", "GetCreatingTemplateContestsState");
+        if (response != null) {
+            _creatingTemplateContestState.set(response);
+        }
+        return _creatingTemplateContestState.get();
     }
+
+    static private AtomicBoolean _creatingTemplateContestState = new AtomicBoolean();
 }
