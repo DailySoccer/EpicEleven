@@ -125,7 +125,35 @@ public class ContestController extends Controller {
     }
 
     @UserAuthenticated
-    public static Result getViewContest(String contestId) {
+    public static Result getMyActiveContest(String contestId) {
+        User theUser = (User)ctx().args.get("User");
+        Contest contest = Contest.findOne(contestId);
+        if (!contest.containsContestEntryWithUser(theUser.userId)) {
+            Logger.error("WTF 7943: getMyContest: contest: {} user: {}", contestId, theUser.userId);
+            return new ReturnHelper(false, ERROR_MY_CONTEST_INVALID).toResult();
+        }
+
+        // Quitamos todos fantasyTeam de los contestEntries que no sean del User
+        for (ContestEntry contestEntry: contest.contestEntries) {
+            if (!contestEntry.userId.equals(theUser.userId)) {
+                contestEntry.soccerIds.clear();
+            }
+        }
+
+        return attachInfoToContest(contest).toResult(JsonViews.FullContest.class);
+    }
+
+    @UserAuthenticated
+    public static Result getMyLiveContest(String contestId) {
+        return getViewContest(contestId);
+    }
+
+    @UserAuthenticated
+    public static Result getMyHistoryContest(String contestId) {
+        return getViewContest(contestId);
+    }
+
+    private static Result getViewContest(String contestId) {
         User theUser = (User)ctx().args.get("User");
         Contest contest = Contest.findOne(contestId);
 
@@ -159,25 +187,6 @@ public class ContestController extends Controller {
                 .put("prizes", Prizes.findOne(contest))
                 .build())
                 .toResult(JsonViews.FullContest.class);
-    }
-
-    @UserAuthenticated
-    public static Result getMyContest(String contestId) {
-        User theUser = (User)ctx().args.get("User");
-        Contest contest = Contest.findOne(contestId);
-        if (!contest.containsContestEntryWithUser(theUser.userId)) {
-            Logger.error("WTF 7943: getMyContest: contest: {} user: {}", contestId, theUser.userId);
-            return new ReturnHelper(false, ERROR_MY_CONTEST_INVALID).toResult();
-        }
-
-        // Quitamos todos fantasyTeam de los contestEntries que no sean del User
-        for (ContestEntry contestEntry: contest.contestEntries) {
-            if (!contestEntry.userId.equals(theUser.userId)) {
-                contestEntry.soccerIds.clear();
-            }
-        }
-
-        return attachInfoToContest(contest).toResult(JsonViews.FullContest.class);
     }
 
     @UserAuthenticated
@@ -230,7 +239,7 @@ public class ContestController extends Controller {
                 .toResult(JsonViews.ContestInfo.class);
     }
     
-    public static Result getPublicContest(String contestId) {
+    public static Result getActiveContest(String contestId) {
         return attachInfoToContest(Contest.findOne(contestId)).toResult(JsonViews.Extended.class);
     }
 
