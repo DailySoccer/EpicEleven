@@ -21,7 +21,7 @@ public class TemplateContest implements JongoId {
     public ObjectId templateContestId;
 
     @JsonView(JsonViews.Extended.class)
-    public ContestState state = ContestState.DRAFT;
+    public ContestState state = ContestState.OFF;
 
     public String name;
 
