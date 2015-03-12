@@ -34,7 +34,7 @@ public class CancelContestJob extends Job {
 
             Contest contest = Contest.findOne(contestId);
             if (contest != null) {
-                if (!contest.isCanceled()) {
+                if (!contest.state.isCanceled()) {
                     // Cancelamos el contest si sigue sin estar Cancelado y sin estar Lleno
                     // Una vez marcado como Cancelado, volvemos a leer el contest actualizado, para garantizar que tenemos los contestEntries correctos
                     contest = Model.contests()
