@@ -12,6 +12,7 @@ import org.jongo.marshall.jackson.oid.Id;
 import utils.ListUtils;
 import utils.MoneyUtils;
 import utils.ViewProjection;
+import protocols.*;
 
 import java.util.*;
 
@@ -343,6 +344,42 @@ public class Contest implements JongoId {
     public Contest getSameContestWithFreeSlot(ObjectId userId) {
         String query = String.format("{templateContestId: #, 'contestEntries.%s': {$exists: false}, 'contestEntries.userId': {$ne:#}}", maxEntries-1);
         return Model.contests().findOne(query, templateContestId, userId).as(Contest.class);
+    }
+
+    public ContestProtos.Contest toProtocolBuffer() {
+        ContestProtos.Contest.Builder contestBuilder = ContestProtos.Contest.newBuilder();
+
+        contestBuilder
+                .setContestId(contestId.toString())
+                .setTemplateContestId(templateContestId.toString())
+                .setState(state.name())
+                .setName(name)
+                .setNumEntries(getNumEntries())
+                .setMaxEntries(maxEntries)
+                .setSalaryCap(salaryCap)
+                .setEntryFee(entryFee.toString())
+                .setPrizeType(prizeType.name())
+                .setStartDate(startDate.getTime())
+                .setOptaCompetitionId(optaCompetitionId);
+
+        contestEntries.forEach(contestEntry -> {
+            ContestProtos.Contest.ContestEntry.Builder contestEntryBuilder = ContestProtos.Contest.ContestEntry.newBuilder();
+            contestEntryBuilder.setContestEntryId(contestEntry.contestEntryId.toString());
+            contestEntryBuilder.setUserId(contestEntry.userId.toString());
+            contestBuilder.addContestEntry(contestEntryBuilder);
+        });
+
+        return contestBuilder.build();
+    }
+
+    static public ContestProtos.ContestList toProtocolBuffer(List<Contest> contests) {
+        ContestProtos.ContestList.Builder contestListBuilder = ContestProtos.ContestList.newBuilder();
+
+        contests.forEach(contest -> {
+            contestListBuilder.addContest(contest.toProtocolBuffer());
+        });
+
+        return contestListBuilder.build();
     }
 
     class ContestEntryComparable implements Comparator<ContestEntry>{

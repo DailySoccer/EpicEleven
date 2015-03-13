@@ -8,14 +8,13 @@ import org.bson.types.ObjectId;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
+import protocols.ContestProtos;
 import utils.ListUtils;
 import utils.ReturnHelper;
 import utils.ReturnHelperWithAttach;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @AllowCors.Origin
 public class ContestController extends Controller {
@@ -35,14 +34,11 @@ public class ContestController extends Controller {
         List<Contest> contests = Contest.findAllActive(JsonViews.ActiveContests.class);
 
         // Filtrar los contests que ya están completos
-        List<Contest> contestsNotFull = new ArrayList<>(contests.size());
-        for (Contest contest: contests) {
-            if (!contest.isFull()) {
-                contestsNotFull.add(contest);
-            }
-        }
+        List<Contest> contestsNotFull = contests.stream().filter(contest -> !contest.isFull()).collect(Collectors.toList());
 
-        return new ReturnHelper(ImmutableMap.of("contests", contestsNotFull)).toResult();
+        return new ReturnHelper(ImmutableMap.of(
+                "contests", Contest.toProtocolBuffer(contestsNotFull).toByteString()
+                )).toResult();
     }
 
     @UserAuthenticated
