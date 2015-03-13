@@ -28,6 +28,8 @@ POST           /ask_for_password_reset                                 controlle
 POST           /verify_password_reset_token                            controllers.LoginController.verifyPasswordResetToken()
 POST           /reset_password                                         controllers.LoginController.resetPasswordWithToken()
 
+GET            /resend_verification_email                              controllers.LoginController.resendVerificationEmail()
+
 # Concursos globales activos (Lobby)
 GET            /get_active_contests                                    controllers.ContestController.getActiveContests()
 GET            /get_public_contest/:contest                            controllers.ContestController.getPublicContest(contest)

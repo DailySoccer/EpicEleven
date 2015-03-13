@@ -2,6 +2,7 @@ package stormpath;
 
 import com.stormpath.sdk.account.Account;
 import com.stormpath.sdk.account.AccountList;
+import com.stormpath.sdk.account.VerificationEmailRequest;
 import com.stormpath.sdk.api.ApiKey;
 import com.stormpath.sdk.api.ApiKeys;
 import com.stormpath.sdk.application.*;
@@ -284,6 +285,13 @@ public class StormPathClient {
         return _client.getResource(account.getCustomData().getHref(), CustomData.class);
     }
 
+    public void resendVerificationEmail(String email) {
+        VerificationEmailRequest verificationEmailRequest = Applications.verificationEmailBuilder()
+                .setLogin(email)
+                .setAccountStore(_myDirectory)
+                .build();
+        _myApp.sendVerificationEmail(verificationEmailRequest);
+    }
 
     public static StormPathClient instance() {
         if (_instance == null) {
