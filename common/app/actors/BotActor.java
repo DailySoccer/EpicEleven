@@ -428,7 +428,7 @@ public class BotActor extends UntypedActor {
     private String enterContest(Contest contest) throws TimeoutException {
         Logger.debug("{} va a hacer un enterContest", getFullName());
 
-        JsonNode jsonNode = get(String.format("get_public_contest/%s", contest.contestId));
+        JsonNode jsonNode = get(String.format("get_active_contest/%s", contest.contestId));
         JsonNode jsonNodeContest = jsonNode.findValue("contest");
         JsonNode jsonNodeSoccerPlayers = jsonNode.findValue("soccer_players");
         String enteredContestId = null;
