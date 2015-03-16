@@ -77,7 +77,7 @@ public class NotificationActor extends TickableActor {
         }
     }
     
-    private MessageTemplateSend.MandrillMessage.MergeVarBucket prepareMergeVarBucket(User user, ArrayList<Contest> thisUsersContests) {
+    public static MessageTemplateSend.MandrillMessage.MergeVarBucket prepareMergeVarBucket(User user, ArrayList<Contest> thisUsersContests) {
         MessageTemplateSend.MergeVar name = new MessageTemplateSend.MergeVar();
         MessageTemplateSend.MergeVar contests = new MessageTemplateSend.MergeVar();
 

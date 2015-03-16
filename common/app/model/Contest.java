@@ -1,8 +1,10 @@
 package model;
 
+import actors.NotificationActor;
 import com.fasterxml.jackson.annotation.JsonView;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTranPrize;
+import model.notification.MessageTemplateSend;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
@@ -319,6 +321,17 @@ public class Contest implements JongoId {
         // Actualizamos las estadísticas de torneos ganados
         User userWinner = User.findOne(winner.userId);
         userWinner.updateStats();
+
+        // Test: Mandamos un email al ganador:
+        ArrayList<User> recipients = new ArrayList<>();
+        ArrayList<Contest> contests = new ArrayList<>();
+        contests.add(this);
+        recipients.add(userWinner);
+        List<MessageTemplateSend.MandrillMessage.MergeVarBucket> mergeVars = new ArrayList<>();
+        mergeVars.add(NotificationActor.prepareMergeVarBucket(userWinner, contests));
+
+        MessageTemplateSend.send(recipients, "CONTEST_NEXT_HOUR", "En Epic Eleven has ganado", mergeVars);
+        // </test>
     }
 
     private void setClosed() {
