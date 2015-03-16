@@ -2,6 +2,7 @@ package actors;
 
 import model.Contest;
 import model.ContestEntry;
+import model.Model;
 import model.User;
 import model.notification.MessageTemplateSend;
 import model.notification.Notification;
@@ -30,8 +31,49 @@ public class NotificationActor extends TickableActor {
     @Override protected void onTick() {
 
         notifyContestStartsInOneHour();
+        notifyWinners();
     }
 
+
+
+    public void prepareWinnerNotification(User user, Contest contest) {
+        Notification nf = new Notification(Topic.CONTEST_WINNER, contest.contestId.toString(), user.userId);
+        Model.notifications().insert(nf);
+    }
+
+    private void notifyWinners() {
+        List<Notification> notificationsPending = Notification.getUnsentNotifications(Topic.CONTEST_WINNER);
+        List<User> recipients = new ArrayList<>();
+
+        List<MessageTemplateSend.MandrillMessage.MergeVarBucket> mergeVars = new ArrayList<>();
+
+
+        for (Notification notification: notificationsPending) {
+            User winner = User.findOne(notification.userId);
+
+            if (!(winner.email.endsWith("test.com") || winner.email.endsWith("bototron.com"))) {
+                recipients.add(winner);
+
+                ArrayList<Contest> contests = new ArrayList<>();
+                Contest contestWon = Contest.findOne(notification.reason);
+                contests.add(contestWon);
+
+                mergeVars.add(NotificationActor.prepareMergeVarBucket(winner, contests));
+            } else {
+                notification.updateAsSent();
+            }
+        }
+
+        if (recipients.size()>0) {
+            boolean sent = MessageTemplateSend.send(recipients, Topic.CONTEST_WINNER.toString(), "En Epic Eleven has ganado", mergeVars);
+            if (sent) {
+                for (Notification notification : notificationsPending) {
+                    notification.updateAsSent();
+                }
+            }
+        }
+
+    }
 
     private void notifyContestStartsInOneHour() {
         List<Contest> nextContests = Contest.findAllStartingIn(1);

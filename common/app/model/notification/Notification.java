@@ -4,8 +4,10 @@ import model.GlobalDate;
 import model.Model;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
+import utils.ListUtils;
 
 import java.util.Date;
+import java.util.List;
 
 
 public class Notification {
@@ -37,6 +39,12 @@ public class Notification {
         Model.notifications().insert(this);
     }
 
+    public void updateAsSent() {
+        dateSent = GlobalDate.getCurrentDate();
+        Model.notifications().update("{notificationId: #}", notificationId).with(this);
+    }
+
+
     public static Notification getLastNotification(Topic topic, ObjectId recipientId) {
         Iterable<Notification> notifications = Model.notifications().find("{topic: #, userId: #}", topic, recipientId).sort("{createdAt: -1}").limit(1).as(Notification.class);
         return notifications.iterator().hasNext()? notifications.iterator().next(): null;
@@ -45,6 +53,10 @@ public class Notification {
 
     private static String getDigest(String original) {
         return original==null? null : String.valueOf(original.hashCode());
+    }
+
+    public static List<Notification> getUnsentNotifications(Topic topic) {
+        return ListUtils.asList(Model.notifications().find("{topic: #, dateSent:{ $exists: false }}", topic).as(Notification.class));
     }
 
 }

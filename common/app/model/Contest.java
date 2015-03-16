@@ -322,15 +322,17 @@ public class Contest implements JongoId {
         User userWinner = User.findOne(winner.userId);
         userWinner.updateStats();
 
-        // Test: Mandamos un email al ganador:
-        ArrayList<User> recipients = new ArrayList<>();
-        ArrayList<Contest> contests = new ArrayList<>();
-        contests.add(this);
-        recipients.add(userWinner);
-        List<MessageTemplateSend.MandrillMessage.MergeVarBucket> mergeVars = new ArrayList<>();
-        mergeVars.add(NotificationActor.prepareMergeVarBucket(userWinner, contests));
+        // Test: Mandamos un email al ganador si no es test ni bototron:
+        if (!(userWinner.email.endsWith("test.com") || userWinner.email.endsWith("bototron.com"))) {
+            ArrayList<User> recipients = new ArrayList<>();
+            ArrayList<Contest> contests = new ArrayList<>();
+            contests.add(this);
+            recipients.add(userWinner);
+            List<MessageTemplateSend.MandrillMessage.MergeVarBucket> mergeVars = new ArrayList<>();
+            mergeVars.add(NotificationActor.prepareMergeVarBucket(userWinner, contests));
 
-        MessageTemplateSend.send(recipients, "CONTEST_NEXT_HOUR", "En Epic Eleven has ganado", mergeVars);
+            MessageTemplateSend.send(recipients, "CONTEST_NEXT_HOUR", "En Epic Eleven has ganado", mergeVars);
+        }
         // </test>
     }
 
