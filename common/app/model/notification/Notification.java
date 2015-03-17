@@ -57,8 +57,8 @@ public class Notification {
         return original==null? null : String.valueOf(original.hashCode());
     }
 
-    public static List<Notification> getUnsentNotifications(Topic topic) {
-        return ListUtils.asList(Model.notifications().find("{topic: #, dateSent:{ $exists: false }}", topic.toString()).as(Notification.class));
+    public static List<Notification> findUnsentNotifications(Topic topic) {
+        return ListUtils.asList(Model.notifications().find("{topic: #, dateSent:{ $exists: false }}", topic).as(Notification.class));
     }
 
 

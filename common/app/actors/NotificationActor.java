@@ -31,7 +31,7 @@ public class NotificationActor extends TickableActor {
 
         // NOTIFICACION DE COMIENZO DE TORNEO DESACTIVADA
         // notifyContestStartsInOneHour();
-        
+
         notifyWinners();
 
     }
@@ -40,7 +40,7 @@ public class NotificationActor extends TickableActor {
 
 
     private void notifyWinners() {
-        List<Notification> notificationsPending = Notification.getUnsentNotifications(Topic.CONTEST_WINNER);
+        List<Notification> notificationsPending = Notification.findUnsentNotifications(Topic.CONTEST_WINNER);
         List<User> recipients = new ArrayList<>();
 
         List<MessageTemplateSend.MandrillMessage.MergeVarBucket> mergeVars = new ArrayList<>();
@@ -51,16 +51,15 @@ public class NotificationActor extends TickableActor {
 
             recipients.add(winner);
 
-            ArrayList<Contest> contests = new ArrayList<>();
             Contest contestWon = Contest.findOne(notification.reason);
-            contests.add(contestWon);
 
-            mergeVars.add(prepareMergeVarBucket(winner, contests));
+
+            mergeVars.add(prepareMergeVarBucketWinner(winner, contestWon));
 
         }
 
         if (recipients.size()>0) {
-            boolean sent = MessageTemplateSend.send(recipients, Topic.CONTEST_WINNER.toString(), null, mergeVars);
+            boolean sent = MessageTemplateSend.send(recipients, Topic.CONTEST_WINNER.name(), null, mergeVars);
             if (sent) {
                 for (Notification notification : notificationsPending) {
                     notification.updateAsSent();
@@ -131,6 +130,36 @@ public class NotificationActor extends TickableActor {
 
         mvb.vars.add(name);
         mvb.vars.add(contests);
+
+        return mvb;
+    }
+
+
+
+    private MessageTemplateSend.MandrillMessage.MergeVarBucket prepareMergeVarBucketWinner(User user, Contest thisUsersContest) {
+        MessageTemplateSend.MergeVar name = new MessageTemplateSend.MergeVar();
+        MessageTemplateSend.MergeVar contest = new MessageTemplateSend.MergeVar();
+        MessageTemplateSend.MergeVar contestId = new MessageTemplateSend.MergeVar();
+
+
+        name.name = "NICKNAME";
+        name.content = user.nickName;
+
+        contest.name = "TORNAMENTNAME";
+        contest.content =  thisUsersContest.translatedName();
+
+        contestId.name = "CONTESTID";
+        contestId.content = thisUsersContest.getId().toString();
+
+
+        MessageTemplateSend.MandrillMessage.MergeVarBucket mvb = new MessageTemplateSend.MandrillMessage.MergeVarBucket();
+        mvb.rcpt = user.email;
+        mvb.vars = new ArrayList<>();
+
+        mvb.vars.add(name);
+        mvb.vars.add(contest);
+        mvb.vars.add(contestId);
+
 
         return mvb;
     }
