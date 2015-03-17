@@ -58,7 +58,7 @@ public class NotificationActor extends TickableActor {
         }
 
         if (recipients.size()>0) {
-            boolean sent = MessageTemplateSend.send(recipients, Topic.CONTEST_WINNER.toString(), "En Epic Eleven has ganado", mergeVars);
+            boolean sent = MessageTemplateSend.send(recipients, Topic.CONTEST_WINNER.toString(), null, mergeVars);
             if (sent) {
                 for (Notification notification : notificationsPending) {
                     notification.updateAsSent();
@@ -113,7 +113,7 @@ public class NotificationActor extends TickableActor {
     }
 
 
-    public static MessageTemplateSend.MandrillMessage.MergeVarBucket prepareMergeVarBucket(User user, ArrayList<Contest> thisUsersContests) {
+    private MessageTemplateSend.MandrillMessage.MergeVarBucket prepareMergeVarBucket(User user, ArrayList<Contest> thisUsersContests) {
         MessageTemplateSend.MergeVar name = new MessageTemplateSend.MergeVar();
         MessageTemplateSend.MergeVar contests = new MessageTemplateSend.MergeVar();
 
