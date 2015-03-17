@@ -2,7 +2,6 @@ package actors;
 
 import model.Contest;
 import model.ContestEntry;
-import model.Model;
 import model.User;
 import model.notification.MessageTemplateSend;
 import model.notification.Notification;
@@ -32,14 +31,11 @@ public class NotificationActor extends TickableActor {
 
         notifyContestStartsInOneHour();
         notifyWinners();
+
     }
 
 
 
-    public void prepareWinnerNotification(User user, Contest contest) {
-        Notification nf = new Notification(Topic.CONTEST_WINNER, contest.contestId.toString(), user.userId);
-        Model.notifications().insert(nf);
-    }
 
     private void notifyWinners() {
         List<Notification> notificationsPending = Notification.getUnsentNotifications(Topic.CONTEST_WINNER);
@@ -51,17 +47,14 @@ public class NotificationActor extends TickableActor {
         for (Notification notification: notificationsPending) {
             User winner = User.findOne(notification.userId);
 
-            if (!(winner.email.endsWith("test.com") || winner.email.endsWith("bototron.com"))) {
-                recipients.add(winner);
+            recipients.add(winner);
 
-                ArrayList<Contest> contests = new ArrayList<>();
-                Contest contestWon = Contest.findOne(notification.reason);
-                contests.add(contestWon);
+            ArrayList<Contest> contests = new ArrayList<>();
+            Contest contestWon = Contest.findOne(notification.reason);
+            contests.add(contestWon);
 
-                mergeVars.add(NotificationActor.prepareMergeVarBucket(winner, contests));
-            } else {
-                notification.updateAsSent();
-            }
+            mergeVars.add(prepareMergeVarBucket(winner, contests));
+
         }
 
         if (recipients.size()>0) {
@@ -118,7 +111,8 @@ public class NotificationActor extends TickableActor {
             }
         }
     }
-    
+
+
     public static MessageTemplateSend.MandrillMessage.MergeVarBucket prepareMergeVarBucket(User user, ArrayList<Contest> thisUsersContests) {
         MessageTemplateSend.MergeVar name = new MessageTemplateSend.MergeVar();
         MessageTemplateSend.MergeVar contests = new MessageTemplateSend.MergeVar();

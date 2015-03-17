@@ -1,7 +1,9 @@
 package model.notification;
 
+import model.Contest;
 import model.GlobalDate;
 import model.Model;
+import model.User;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import utils.ListUtils;
@@ -29,7 +31,7 @@ public class Notification {
 
     public Notification(Topic topic, String reason, ObjectId recipientId) {
         this.topic = topic;
-        this.reason = getDigest(reason);
+        this.reason = reason;
         this.userId = recipientId;
         this.createdAt = GlobalDate.getCurrentDate();
     }
@@ -41,7 +43,7 @@ public class Notification {
 
     public void updateAsSent() {
         dateSent = GlobalDate.getCurrentDate();
-        Model.notifications().update("{notificationId: #}", notificationId).with(this);
+        Model.notifications().update("{_id: #}", notificationId).with(this);
     }
 
 
@@ -56,7 +58,15 @@ public class Notification {
     }
 
     public static List<Notification> getUnsentNotifications(Topic topic) {
-        return ListUtils.asList(Model.notifications().find("{topic: #, dateSent:{ $exists: false }}", topic).as(Notification.class));
+        return ListUtils.asList(Model.notifications().find("{topic: #, dateSent:{ $exists: false }}", topic.toString()).as(Notification.class));
+    }
+
+
+    public static void prepareWinnerNotification(User user, Contest contest) {
+        if (!(user.email.endsWith("test.com") || user.email.endsWith("bototron.com"))) {
+            Notification notification = new Notification(Topic.CONTEST_WINNER, contest.contestId.toString(), user.userId);
+            Model.notifications().insert(notification);
+        }
     }
 
 }
