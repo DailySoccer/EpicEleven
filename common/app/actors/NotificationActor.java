@@ -29,7 +29,9 @@ public class NotificationActor extends TickableActor {
 
     @Override protected void onTick() {
 
-        notifyContestStartsInOneHour();
+        // NOTIFICACION DE COMIENZO DE TORNEO DESACTIVADA
+        // notifyContestStartsInOneHour();
+        
         notifyWinners();
 
     }
