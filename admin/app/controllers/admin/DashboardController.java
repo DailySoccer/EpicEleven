@@ -22,6 +22,7 @@ import utils.TargetEnvironment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DashboardController extends Controller {
     public static Result index() {
@@ -92,18 +93,27 @@ public class DashboardController extends Controller {
     }
 
     static private void addMoney(List<User> users, Integer amount) {
-        List<AccountOp> accountOps = new ArrayList<>();
-        for (User bot : users) {
-            accountOps.add(new AccountOp(bot.userId, MoneyUtils.of(amount), bot.getSeqId() + 1));
-        }
+        if (!users.isEmpty()) {
+            List<AccountOp> accountOps = users.stream()
+                    .map((user) -> new AccountOp(user.userId, MoneyUtils.of(amount), user.getSeqId() + 1))
+                    .collect(Collectors.toList());
 
-        if (!accountOps.isEmpty()) {
-            /*
             AccountingTran accountingTran = new AccountingTran(AccountingTran.TransactionType.FREE_MONEY);
             accountingTran.accountOps = accountOps;
             accountingTran.insertAndCommit();
-            */
-            String bonusId = "FREE_MONEY_" + new ObjectId().toString();
+        }
+
+        // Damos un bonus a cada usuario
+        addBonus(users, amount);
+    }
+
+    static private void addBonus(List<User> users, Integer amount) {
+        if (!users.isEmpty()) {
+            List<AccountOp> accountOps = users.stream()
+                    .map((user) -> new AccountOp(user.userId, MoneyUtils.zero, user.getSeqId() + 1))
+                    .collect(Collectors.toList());
+
+            String bonusId = String.format("FREE_MONEY#%s", new ObjectId().toString());
             AccountingTranBonus.create(AccountingTran.TransactionType.BONUS,
                     bonusId,
                     MoneyUtils.of(amount),
