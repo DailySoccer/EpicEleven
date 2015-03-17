@@ -145,7 +145,7 @@ public class NotificationActor extends TickableActor {
         name.name = "NICKNAME";
         name.content = user.nickName;
 
-        contest.name = "TORNAMENTNAME";
+        contest.name = "TOURNAMENTNAME";
         contest.content =  thisUsersContest.translatedName();
 
         contestId.name = "CONTESTID";
