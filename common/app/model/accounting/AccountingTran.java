@@ -3,11 +3,13 @@ package model.accounting;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.collect.ImmutableMap;
 import model.GlobalDate;
 import model.Model;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import utils.ListUtils;
+import utils.MoneyUtils;
 import utils.ObjectIdMapper;
 
 import java.util.*;
@@ -60,17 +62,16 @@ public class AccountingTran {
     }
 
     public Map<String, String> getAccountInfo(ObjectId accountId) {
-        Map<String, String> info = new HashMap<>();
+        AccountOp accountOp = getAccountOp(accountId);
+        return accountOp != null ? getAccountInfo(accountOp) : null;
+    }
 
-        AccountOp op = getAccountOp(accountId);
-        if (op != null) {
-            info.put("accountingTranId", accountingTranId.toString());
-            info.put("type", type.name());
-            info.put("value", op.value.toString());
-            info.put("createdAt", String.valueOf(createdAt.getTime()));
-        }
-
-        return info;
+    public Map<String, String> getAccountInfo(AccountOp accountOp) {
+        return ImmutableMap.of(
+            "accountingTranId", accountingTranId.toString(),
+            "type", type.name(),
+            "value", accountOp.value.toString(),
+            "createdAt", String.valueOf(createdAt.getTime()));
     }
 
     public AccountOp getAccountOp(ObjectId accountId) {

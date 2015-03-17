@@ -62,18 +62,6 @@ public class Order {
     }
 
     public void setCompleted() {
-        AccountingTranOrder.create(orderId, paymentId, ImmutableList.of(
-                new AccountOp(userId, product.price, User.getSeqId(userId) + 1)
-        ));
-
-        Bonus bonus = Bonus.findOneByAddFunds(product.price);
-        if (bonus != null) {
-            // Bonus por añadir dinero
-            AccountingTranBonus.create(AccountingTran.TransactionType.BONUS, orderId.toString(), bonus.value, ImmutableList.of(
-                    new AccountOp(userId, MoneyUtils.zero, User.getSeqId(userId) + 1)
-            ));
-        }
-
         this.state = State.COMPLETED;
         Model.orders().update(orderId).with("{$set: {state: #}}", this.state);
     }

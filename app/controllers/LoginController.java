@@ -12,6 +12,7 @@ import model.GlobalDate;
 import model.Model;
 import model.Session;
 import model.User;
+import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import play.Logger;
 import play.Play;
@@ -24,6 +25,7 @@ import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import stormpath.StormPathClient;
+import utils.MoneyUtils;
 import utils.ReturnHelper;
 
 import java.util.ArrayList;
@@ -439,10 +441,10 @@ public class LoginController extends Controller {
         List<Map<String, String>> transactions = new ArrayList<>();
 
         List<AccountingTran> accountingTrans = AccountingTran.findAllFromUserId(theUser.userId);
-        for (AccountingTran op : accountingTrans) {
-            Map<String, String> accountInfo = op.getAccountInfo(theUser.userId);
-            if (!accountInfo.isEmpty()) {
-                transactions.add(accountInfo);
+        for (AccountingTran transaction : accountingTrans) {
+            AccountOp accountOp = transaction.getAccountOp(theUser.userId);
+            if (accountOp != null && MoneyUtils.isGreaterThan(accountOp.value, MoneyUtils.zero)) {
+                transactions.add(transaction.getAccountInfo(accountOp));
             }
         }
 

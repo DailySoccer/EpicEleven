@@ -18,7 +18,8 @@ public class Job {
     public enum JobType {
         ENTER_CONTEST,
         CANCEL_CONTEST_ENTRY,
-        CANCEL_CONTEST
+        CANCEL_CONTEST,
+        COMPLETE_ORDER
     }
 
     public enum JobState {
@@ -101,6 +102,9 @@ public class Job {
                     break;
                 case CANCEL_CONTEST:
                     job = find.as(CancelContestJob.class);
+                    break;
+                case COMPLETE_ORDER:
+                    job = find.as(CompleteOrderJob.class);
                     break;
             }
         }

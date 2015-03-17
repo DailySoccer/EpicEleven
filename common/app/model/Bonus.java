@@ -15,7 +15,7 @@ public class Bonus {
         this.value = money;
     }
 
-    static Bonus findOneByAddFunds(Money funds) {
+    static public Bonus findOneByAddFunds(Money funds) {
         Bonus bonus = null;
 
         // Bonus por introducir dinero (>= MIN_MONEY_FOR_BONUS)
