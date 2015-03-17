@@ -3,6 +3,7 @@ package model;
 import com.fasterxml.jackson.annotation.JsonView;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
+import model.accounting.AccountingTranBonus;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -29,6 +30,7 @@ public class User {
 
     // TODO: De momento no es realmente un "cache", siempre lo recalculamos
     public Money cachedBalance;
+    public Money cachedBonus;
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
@@ -119,6 +121,10 @@ public class User {
         return User.calculateBalance(userId);
     }
 
+    public Money calculateBonus() {
+        return User.calculateBalance(userId);
+    }
+
     static public Integer getSeqId(ObjectId userId) {
         List<AccountOp> account = Model.accountingTransactions()
                 .aggregate("{$match: { \"accountOps.accountId\": #}}", userId)
@@ -144,6 +150,20 @@ public class User {
         if (!accounting.isEmpty()) {
             for (AccountOp op : accounting.get(0).accountOps) {
                 balance = MoneyUtils.plus(balance, op.value);
+            }
+        }
+        return balance;
+    }
+
+    static public Money calculateBonus(ObjectId userId) {
+        List<AccountingTranBonus> transactions = ListUtils.asList(Model.accountingTransactions()
+                .find("{ \"accountOps.accountId\": #, state: \"VALID\", type: { $in: [\"BONUS\", \"BONUS_TO_CASH\"] } }", userId)
+                .as(AccountingTranBonus.class));
+
+        Money balance = MoneyUtils.zero;
+        if (!transactions.isEmpty()) {
+            for (AccountingTranBonus transacition : transactions) {
+                balance = MoneyUtils.plus(balance, transacition.bonus);
             }
         }
         return balance;

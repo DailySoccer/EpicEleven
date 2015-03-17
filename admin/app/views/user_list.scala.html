@@ -15,7 +15,8 @@
                     { "title": "Email" },
                     { "title": "Created At" },
                     { "title": "Wins" },
-                    { "title": "Balance" }
+                    { "title": "Balance" },
+                    { "title": "Bonus" }
                 ],
                 "data": [
                     @for((p, index) <- users.zipWithIndex) {
@@ -27,7 +28,8 @@
                             "@p.email",
                             "@GlobalDate.formatDate(p.createdAt)",
                             "@p.wins",
-                            "@p.calculateBalance()"
+                            "@p.calculateBalance()",
+                            "@p.calculateBonus()"
                         ] @if(index < users.size-1) { , }
                     }
                 ],

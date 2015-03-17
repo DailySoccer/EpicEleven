@@ -2,6 +2,8 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import model.accounting.AccountOp;
+import model.accounting.AccountingTran;
+import model.accounting.AccountingTranBonus;
 import model.accounting.AccountingTranPrize;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
@@ -13,6 +15,7 @@ import utils.ListUtils;
 import utils.MoneyUtils;
 import utils.ViewProjection;
 
+import java.math.RoundingMode;
 import java.util.*;
 
 public class Contest implements JongoId {
@@ -257,6 +260,7 @@ public class Contest implements JongoId {
             updateRanking(prizes);
             givePrizes(prizes);
             updateWinner();
+            bonusToCash();
         }
 
         setClosed();
@@ -329,6 +333,39 @@ public class Contest implements JongoId {
     private void updateWinner() {
         // Actualizamos las estadísticas de torneos ganados
         getWinner().updateStats();
+    }
+
+    private void bonusToCash() {
+        final Double MULT_BONUS_TO_CASH = 0.04;
+
+        // Si el contest tenía entryFee
+        if (MoneyUtils.isGreaterThan(entryFee, MoneyUtils.zero)) {
+            List<AccountOp> accounts = new ArrayList<>();
+            for (ContestEntry contestEntry : contestEntries) {
+
+                Integer userSeqId = User.getSeqId(contestEntry.userId) + 1;
+
+                // Buscamos si el usuario tiene algún bonus pendiente
+                Money userBonus = User.calculateBonus(contestEntry.userId);
+                if (MoneyUtils.isGreaterThan(userBonus, MoneyUtils.zero)) {
+
+                    // Cuánto sería el dinero a convertir de bonus a cash?
+                    Money bonus = entryFee.multipliedBy(MULT_BONUS_TO_CASH, RoundingMode.FLOOR);
+                    if (MoneyUtils.isGreaterThan(bonus, userBonus)) {
+                        bonus = userBonus;
+                    }
+
+                    // Le damos dinero al usuario
+                    accounts.add(new AccountOp(contestEntry.userId, bonus, userSeqId));
+
+                    // Se lo quitamos del bonus
+                    AccountingTranBonus.create(AccountingTran.TransactionType.BONUS_TO_CASH,
+                                                String.format("%s#%s", contestId.toString(), contestEntry.userId.toString()),
+                                                bonus.negated(),
+                                                accounts);
+                }
+            }
+        }
     }
 
     private void setClosed() {

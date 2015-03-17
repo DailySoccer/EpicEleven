@@ -2,11 +2,15 @@ package controllers.admin;
 
 import actions.CheckTargetEnvironment;
 import actors.BotSystemActor;
+import com.google.common.collect.ImmutableList;
+import org.bson.types.ObjectId;
+import model.Bonus;
 import model.Model;
 import model.Product;
 import model.User;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
+import model.accounting.AccountingTranBonus;
 import model.opta.OptaCompetition;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -94,9 +98,16 @@ public class DashboardController extends Controller {
         }
 
         if (!accountOps.isEmpty()) {
+            /*
             AccountingTran accountingTran = new AccountingTran(AccountingTran.TransactionType.FREE_MONEY);
             accountingTran.accountOps = accountOps;
             accountingTran.insertAndCommit();
+            */
+            String bonusId = "FREE_MONEY_" + new ObjectId().toString();
+            AccountingTranBonus.create(AccountingTran.TransactionType.BONUS,
+                    bonusId,
+                    MoneyUtils.of(amount),
+                    accountOps);
         }
     }
 
