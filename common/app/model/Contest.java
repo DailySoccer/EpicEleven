@@ -35,6 +35,9 @@ public class Contest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public Date canceledAt;
 
+    @JsonView(JsonViews.NotForClient.class)
+    public Date closedAt;
+
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public ContestState state = ContestState.OFF;
 
@@ -209,6 +212,10 @@ public class Contest implements JongoId {
         return findAllMyContests(userId, "{state: \"HISTORY\", \"contestEntries.userId\": #}", projectionClass);
     }
 
+    static public List<Contest> findAllClosedAfter(Date closedAt) {
+        return ListUtils.asList(Model.contests().find("{closed: true, closedAt: {$gt: #}}", closedAt).as(Contest.class));
+    }
+
     static public long countAllMyLive(ObjectId userId) {
         return Model.contests().count("{state: \"LIVE\", \"contestEntries.userId\": #}", userId);
     }
@@ -253,6 +260,23 @@ public class Contest implements JongoId {
         }
 
         setClosed();
+    }
+
+    public User getWinner() {
+        ContestEntry winner = null;
+
+        for (ContestEntry contestEntry : contestEntries) {
+            if (contestEntry.position == 0) {
+                winner = contestEntry;
+                break;
+            }
+        }
+
+        if (winner == null) {
+            throw new RuntimeException("WTF 7221 winner == null");
+        }
+
+        return User.findOne(winner.userId);
     }
 
     private void updateRanking(Prizes prizes) {
@@ -303,28 +327,14 @@ public class Contest implements JongoId {
     }
 
     private void updateWinner() {
-        ContestEntry winner = null;
-
-        for (ContestEntry contestEntry : contestEntries) {
-            if (contestEntry.position == 0) {
-                winner = contestEntry;
-                break;
-            }
-        }
-
-        if (winner == null) {
-            throw new RuntimeException("WTF 7221 winner == null");
-        }
-
         // Actualizamos las estadísticas de torneos ganados
-        User userWinner = User.findOne(winner.userId);
-        userWinner.updateStats();
+        getWinner().updateStats();
     }
 
     private void setClosed() {
         Model.contests()
                 .update("{_id: #, state: \"HISTORY\"}", contestId)
-                .with("{$set: {closed: true}}");
+                .with("{$set: {closed: true, closedAt: #}}", GlobalDate.getCurrentDate());
     }
 
     public InstanceSoccerPlayer getInstanceSoccerPlayer(ObjectId templateSoccerPlayerId) {

@@ -28,9 +28,11 @@ POST           /ask_for_password_reset                                 controlle
 POST           /verify_password_reset_token                            controllers.LoginController.verifyPasswordResetToken()
 POST           /reset_password                                         controllers.LoginController.resetPasswordWithToken()
 
+GET            /resend_verification_email                              controllers.LoginController.resendVerificationEmail()
+
 # Concursos globales activos (Lobby)
 GET            /get_active_contests                                    controllers.ContestController.getActiveContests()
-GET            /get_public_contest/:contest                            controllers.ContestController.getPublicContest(contest)
+GET            /get_active_contest/:contest                            controllers.ContestController.getActiveContest(contest)
 GET            /get_contest_info/:contest                              controllers.ContestController.getContestInfo(contest)
 
 # Concursos asociados a usuario
@@ -39,9 +41,10 @@ GET            /get_my_active_contests                                 controlle
 GET            /get_my_live_contests                                   controllers.ContestController.getMyLiveContests()
 GET            /get_my_history_contests                                controllers.ContestController.getMyHistoryContests()
 GET            /count_my_live_contests                                 controllers.ContestController.countMyLiveContests()
-GET            /get_my_contest/:contest                                controllers.ContestController.getMyContest(contest)
+GET            /get_my_active_contest/:contest                         controllers.ContestController.getMyActiveContest(contest)
+GET            /get_my_live_contest/:contest                           controllers.ContestController.getMyLiveContest(contest)
+GET            /get_my_history_contest/:contest                        controllers.ContestController.getMyHistoryContest(contest)
 GET            /get_my_contest_entry/:contest                          controllers.ContestController.getMyContestEntry(contest)
-GET            /get_view_contest/:contest                              controllers.ContestController.getViewContest(contest)
 
 # Live contests asociados a usuario
 GET            /get_live_match_events/template_contest/:contest        controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)

@@ -530,6 +530,16 @@ public class LoginController extends Controller {
         return new ReturnHelper(!changeParamsForm.hasErrors(), result).toResult();
     }
 
+    @UserAuthenticated
+    public static Result resendVerificationEmail() {
+        User theUser = (User)ctx().args.get("User");
+
+        if (StormPathClient.instance().isConnected()) {
+            StormPathClient.instance().resendVerificationEmail(theUser.email);
+        }
+        return ok();
+    }
+
 
     private static Map<Integer, String> changeStormpathProfile(User theUser, ChangeParams params, boolean somethingChanged, String originalEmail) {
 
