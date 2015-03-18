@@ -122,7 +122,7 @@ public class User {
     }
 
     public Money calculateBonus() {
-        return User.calculateBalance(userId);
+        return User.calculateBonus(userId);
     }
 
     static public Integer getSeqId(ObjectId userId) {
