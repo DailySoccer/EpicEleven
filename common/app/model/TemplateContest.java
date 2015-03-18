@@ -157,13 +157,11 @@ public class TemplateContest implements JongoId {
     public Contest instantiateContest(boolean addMockDataUsers) {
         Contest contest = new Contest(this);
         contest.state = ContestState.ACTIVE;
+        Model.contests().withWriteConcern(WriteConcern.SAFE).insert(contest);
 
         if (addMockDataUsers) {
             MockData.addContestEntries(contest, contest.maxEntries - 1);
         }
-
-        Model.contests().withWriteConcern(WriteConcern.SAFE).insert(contest);
-
         return contest;
     }
 
