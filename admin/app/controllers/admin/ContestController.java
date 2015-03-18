@@ -185,30 +185,28 @@ public class ContestController extends Controller {
             for (ContestEntry contestEntry : contest.contestEntries) {
                 // Tendría que existir una transacción con el pago del entry
                 AccountingTranEnterContest enterContestTransaction = AccountingTranEnterContest.findOne(contest.contestId, contestEntry.contestEntryId);
-                if (enterContestTransaction != null) {
+                if (enterContestTransaction == null) {
+                    errors.add(String.format("entryFee %s: contest: %s contestEntry: %s: Sin transaccion",
+                            contest.entryFee.toString(), contest.contestId, contestEntry.contestEntryId));
+                }
+                else {
                     // Comprobamos si el usuario tenía algún bonus pendiente
                     Money bonusPending = User.calculateBonus(contestEntry.userId, contest.finishedAt);
                     if (bonusPending.isPositive()) {
                         // Tendría que existir una transacción convirtiendo "bonus to cash"
                         String bonusId = AccountingTranBonus.bonusToCashId(contest.contestId, contestEntry.userId);
                         AccountingTranBonus bonusTransaction = AccountingTranBonus.findOne(AccountingTran.TransactionType.BONUS_TO_CASH, bonusId);
-                        if (bonusTransaction != null) {
-                            // Comprobar que sea la misma cantidad
-                            if (!MoneyUtils.equals(bonusTransaction.bonus.negated(), bonusTransaction.accountOps.get(0).value)) {
-                                errors.add(String.format("entryFee %s: contest: %s contestEntry: %s: Bonus: %s != Cash %s",
-                                        contest.entryFee.toString(), contest.contestId, contestEntry.contestEntryId,
-                                        bonusTransaction.bonus.negated(), bonusTransaction.accountOps.get(0).value));
-                            }
-                        }
-                        else {
+                        if (bonusTransaction == null) {
                             errors.add(String.format("entryFee %s: contest: %s contestEntry: %s: bonusPending %s: Sin 'Bonus to Cash'",
                                     contest.entryFee, contest.contestId, contestEntry.contestEntryId, bonusPending));
                         }
+                        // Comprobar que sea la misma cantidad (una positiva y otra negativa)
+                        else if (!MoneyUtils.equals(bonusTransaction.bonus.negated(), bonusTransaction.accountOps.get(0).value)) {
+                            errors.add(String.format("entryFee %s: contest: %s contestEntry: %s: Bonus: %s != Cash %s",
+                                    contest.entryFee.toString(), contest.contestId, contestEntry.contestEntryId,
+                                    bonusTransaction.bonus.negated(), bonusTransaction.accountOps.get(0).value));
+                        }
                     }
-                }
-                else {
-                    errors.add(String.format("entryFee %s: contest: %s contestEntry: %s: Sin transaccion",
-                            contest.entryFee.toString(), contest.contestId, contestEntry.contestEntryId));
                 }
             }
         }
