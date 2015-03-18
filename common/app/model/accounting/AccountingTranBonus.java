@@ -40,4 +40,8 @@ public class AccountingTranBonus extends AccountingTran {
         }
         return accountingOp;
     }
+
+    static public String bonusToCashId(ObjectId contestId, ObjectId userId) {
+        return String.format("%s#%s", contestId.toString(), userId.toString());
+    }
 }

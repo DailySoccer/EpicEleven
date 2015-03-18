@@ -2,10 +2,7 @@ package controllers.admin;
 
 import com.google.common.collect.ImmutableList;
 import model.*;
-import model.accounting.AccountOp;
-import model.accounting.AccountingTranCancelContest;
-import model.accounting.AccountingTranPrize;
-import org.joda.money.CurrencyUnit;
+import model.accounting.*;
 import org.joda.money.Money;
 import play.Logger;
 import play.mvc.Controller;
@@ -116,6 +113,27 @@ public class ContestController extends Controller {
         return errors.isEmpty() ? ok("OK") : new ReturnHelper(false, errors).toResult();
     }
 
+    static public Result verifyEntryFee() {
+        boolean ret = true;
+
+        Logger.info("verifyEntryFee BEGIN");
+
+        List<String> errors = new ArrayList<>();
+
+        for (Contest contest : Contest.findAllHistoryClosed()) {
+            List<String> errorsInPBonus = errorsInEntryFee(contest);
+            if (!errorsInPBonus.isEmpty()) {
+                String error = String.format("Bonus: contest: %s error: %s", contest.contestId, errorsInPBonus);
+                errors.add(error);
+                Logger.error(error);
+            }
+        }
+
+        Logger.info("verifyEntryFee END");
+
+        return errors.isEmpty() ? ok("OK") : new ReturnHelper(false, errors).toResult();
+    }
+
     static private List<String> errorsInPrize(Contest contest) {
         List<String> errors = new ArrayList<>();
 
@@ -152,6 +170,45 @@ public class ContestController extends Controller {
                         errors.add(String.format("contestEntry: %s AccountOp: %s != %s",
                                 contestEntry.contestEntryId, accountOp.value, prizes.getValue(contestEntry.position)));
                     }
+                }
+            }
+        }
+
+        return errors;
+    }
+
+    static private List<String> errorsInEntryFee(Contest contest) {
+        List<String> errors = new ArrayList<>();
+
+        // Si el contest tenía un entryFee
+        if (contest.entryFee.isPositive()) {
+            for (ContestEntry contestEntry : contest.contestEntries) {
+                // Tendría que existir una transacción con el pago del entry
+                AccountingTranEnterContest enterContestTransaction = AccountingTranEnterContest.findOne(contest.contestId, contestEntry.contestEntryId);
+                if (enterContestTransaction != null) {
+                    // Comprobamos si el usuario tenía algún bonus pendiente
+                    Money bonusPending = User.calculateBonus(contestEntry.userId, contest.finishedAt);
+                    if (bonusPending.isPositive()) {
+                        // Tendría que existir una transacción convirtiendo "bonus to cash"
+                        String bonusId = AccountingTranBonus.bonusToCashId(contest.contestId, contestEntry.userId);
+                        AccountingTranBonus bonusTransaction = AccountingTranBonus.findOne(AccountingTran.TransactionType.BONUS_TO_CASH, bonusId);
+                        if (bonusTransaction != null) {
+                            // Comprobar que sea la misma cantidad
+                            if (!MoneyUtils.equals(bonusTransaction.bonus.negated(), bonusTransaction.accountOps.get(0).value)) {
+                                errors.add(String.format("entryFee %s: contest: %s contestEntry: %s: Bonus: %s != Cash %s",
+                                        contest.entryFee.toString(), contest.contestId, contestEntry.contestEntryId,
+                                        bonusTransaction.bonus.negated(), bonusTransaction.accountOps.get(0).value));
+                            }
+                        }
+                        else {
+                            errors.add(String.format("entryFee %s: contest: %s contestEntry: %s: bonusPending %s: Sin 'Bonus to Cash'",
+                                    contest.entryFee, contest.contestId, contestEntry.contestEntryId, bonusPending));
+                        }
+                    }
+                }
+                else {
+                    errors.add(String.format("entryFee %s: contest: %s contestEntry: %s: Sin transaccion",
+                            contest.entryFee.toString(), contest.contestId, contestEntry.contestEntryId));
                 }
             }
         }

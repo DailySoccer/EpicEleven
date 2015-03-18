@@ -155,9 +155,9 @@ public class User {
         return balance;
     }
 
-    static public Money calculateBonus(ObjectId userId) {
+    static public Money calculateBonus(ObjectId userId, Date toDate) {
         List<AccountingTranBonus> transactions = ListUtils.asList(Model.accountingTransactions()
-                .find("{ \"accountOps.accountId\": #, state: \"VALID\", type: { $in: [\"BONUS\", \"BONUS_TO_CASH\"] } }", userId)
+                .find("{ \"accountOps.accountId\": #, state: \"VALID\", type: { $in: [\"BONUS\", \"BONUS_TO_CASH\"] }, createdAt: {$lte: #} }", userId, toDate)
                 .as(AccountingTranBonus.class));
 
         Money balance = MoneyUtils.zero;
@@ -167,5 +167,9 @@ public class User {
             }
         }
         return balance;
+    }
+
+    static public Money calculateBonus(ObjectId userId) {
+        return calculateBonus(userId, GlobalDate.getCurrentDate());
     }
 }

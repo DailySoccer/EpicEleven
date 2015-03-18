@@ -1,6 +1,7 @@
 package model;
 
 import org.joda.money.Money;
+import org.bson.types.ObjectId;
 import utils.MoneyUtils;
 
 import java.math.RoundingMode;

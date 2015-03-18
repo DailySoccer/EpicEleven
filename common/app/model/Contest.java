@@ -340,9 +340,7 @@ public class Contest implements JongoId {
 
         // Si el contest tenía entryFee
         if (MoneyUtils.isGreaterThan(entryFee, MoneyUtils.zero)) {
-            List<AccountOp> accounts = new ArrayList<>();
             for (ContestEntry contestEntry : contestEntries) {
-
                 Integer userSeqId = User.getSeqId(contestEntry.userId) + 1;
 
                 // Buscamos si el usuario tiene algún bonus pendiente
@@ -356,11 +354,12 @@ public class Contest implements JongoId {
                     }
 
                     // Le damos dinero al usuario
+                    List<AccountOp> accounts = new ArrayList<>();
                     accounts.add(new AccountOp(contestEntry.userId, bonus, userSeqId));
 
                     // Se lo quitamos del bonus
                     AccountingTranBonus.create(AccountingTran.TransactionType.BONUS_TO_CASH,
-                                                String.format("%s#%s", contestId.toString(), contestEntry.userId.toString()),
+                                                AccountingTranBonus.bonusToCashId(contestId, contestEntry.userId),
                                                 bonus.negated(),
                                                 accounts);
                 }
