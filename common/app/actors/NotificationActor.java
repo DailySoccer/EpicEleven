@@ -10,10 +10,7 @@ import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
 import play.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class NotificationActor extends TickableActor {
@@ -37,34 +34,43 @@ public class NotificationActor extends TickableActor {
     }
 
 
-
-
     private void notifyWinners() {
-        List<Notification> notificationsPending = Notification.findUnsentNotifications(Topic.CONTEST_WINNER);
-        List<User> recipients = new ArrayList<>();
+        Notification lastNotification = Notification.findLastNotification(Topic.CONTEST_WINNER);
+        Date lastNotificationDate = (lastNotification!=null)? lastNotification.createdAt : new Date(0L);
 
-        List<MessageTemplateSend.MandrillMessage.MergeVarBucket> mergeVars = new ArrayList<>();
+        List<Contest> notifiableContests = Contest.findAllClosedAfter(lastNotificationDate);
+        Date lastNotifiedContest = lastNotificationDate;
 
+        if (!notifiableContests.isEmpty()) {
+            List<User> recipients = new ArrayList<>();
+            List<Notification> notificationsPending  = new ArrayList<>();
+            List<MessageTemplateSend.MandrillMessage.MergeVarBucket> mergeVars = new ArrayList<>();
 
-        for (Notification notification: notificationsPending) {
-            User winner = User.findOne(notification.userId);
+            for (Contest contest: notifiableContests) {
+                User winner = contest.getWinner();
+                if (!(winner.email.endsWith("test.com") || winner.email.endsWith("bototron.com"))) {
+                    recipients.add(winner);
+                    mergeVars.add(prepareMergeVarBucketWinner(winner, contest));
+                    notificationsPending.add(new Notification(Topic.CONTEST_WINNER, contest.contestId.toString(), winner.userId));
 
-            recipients.add(winner);
+                    if (contest.closedAt.after(lastNotifiedContest)) {
+                        lastNotifiedContest = contest.closedAt;
+                    }
 
-            Contest contestWon = Contest.findOne(notification.reason);
-
-
-            mergeVars.add(prepareMergeVarBucketWinner(winner, contestWon));
-
-        }
-
-        if (recipients.size()>0) {
-            boolean sent = MessageTemplateSend.send(recipients, Topic.CONTEST_WINNER.name(), null, mergeVars);
-            if (sent) {
-                for (Notification notification : notificationsPending) {
-                    notification.updateAsSent();
                 }
             }
+
+
+            if (!recipients.isEmpty()) {
+                boolean sent = MessageTemplateSend.send(recipients, Topic.CONTEST_WINNER.name(), null, mergeVars);
+                if (sent) {
+                    for (Notification notification: notificationsPending) {
+                        notification.createdAt = lastNotifiedContest;
+                        notification.insertAsSent();
+                    }
+                }
+            }
+
         }
 
     }
@@ -80,7 +86,7 @@ public class NotificationActor extends TickableActor {
         for (Map.Entry<ObjectId, ArrayList<Contest>> entry : getUsersForContests(nextContests).entrySet()) {
             ObjectId userId = entry.getKey();
 
-            Notification lastNotification = Notification.getLastNotification(Topic.CONTEST_NEXT_HOUR, userId);
+            Notification lastNotification = Notification.findLastNotification(Topic.CONTEST_NEXT_HOUR, userId);
             DateTime nextNotifiableDate = (lastNotification!= null)? new DateTime(lastNotification.createdAt).plusHours(1) : new DateTime(0L);
 
             ArrayList<Contest> notifiableContests = new ArrayList<>();
@@ -90,7 +96,7 @@ public class NotificationActor extends TickableActor {
                 }
             }
 
-            if (notifiableContests.size() > 0) {
+            if (!notifiableContests.isEmpty()) {
                 User currentUserToNotify = User.findOne(userId);
                 recipients.add(currentUserToNotify);
                 mergeVars.add(prepareMergeVarBucket(currentUserToNotify, notifiableContests));
@@ -100,14 +106,11 @@ public class NotificationActor extends TickableActor {
             }
         }
 
-        if (recipients.size() > 0) {
+        if (!recipients.isEmpty()) {
             boolean sent = MessageTemplateSend.send(recipients, _contestStartingTemplateName, "En Epic Eleven tienes concursos por comenzar", mergeVars);
 
             if (sent) {
-                for (Notification notification : notifications) {
-                    notification.insertAsSent();
-                }
-
+                notifications.forEach(Notification::insertAsSent);
                 Logger.debug("Notification {} sent to {} users", Topic.CONTEST_NEXT_HOUR.toString(), recipients.size());
             }
         }
