@@ -3,18 +3,15 @@ package controllers.admin;
 import actions.CheckTargetEnvironment;
 import actors.BotSystemActor;
 import model.Model;
-import model.Product;
 import model.User;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.opta.OptaCompetition;
-import org.joda.money.CurrencyUnit;
-import org.joda.money.Money;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.MoneyUtils;
-import utils.TargetEnvironment;
+import utils.StormPathClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +25,7 @@ public class DashboardController extends Controller {
     static public Result initialSetup() {
         PointsTranslationController.resetToDefault();
         TemplateContestController.createAll();
+        StormPathClient.instance().deleteTestAccounts();
         return index();
     }
 

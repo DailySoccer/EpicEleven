@@ -1,8 +1,6 @@
-package stormpath;
+package utils;
 
-import com.stormpath.sdk.account.Account;
-import com.stormpath.sdk.account.AccountList;
-import com.stormpath.sdk.account.VerificationEmailRequest;
+import com.stormpath.sdk.account.*;
 import com.stormpath.sdk.api.ApiKey;
 import com.stormpath.sdk.api.ApiKeys;
 import com.stormpath.sdk.application.*;
@@ -292,6 +290,19 @@ public class StormPathClient {
                 .build();
         _myApp.sendVerificationEmail(verificationEmailRequest);
     }
+
+    public void deleteTestAccounts() {
+        //Comprobamos que el directorio donde vamos a borrar usuarios es STAGING
+        if (_myDirectory.getName().equals(Play.application().configuration().getString("stormpath.directories.STAGING.name"))) {
+            Logger.info("DELETING TEST ACCOUNTS IN STAGING DIRECTORY");
+
+            AccountCriteria onlyTestCriteria = Accounts.where(Accounts.email().containsIgnoreCase("newuser@mailinator.com"))
+                    .and(Accounts.username().containsIgnoreCase("newuser"));
+
+            _myDirectory.getAccounts(onlyTestCriteria).forEach(Account::delete);
+        }
+    }
+
 
     public static StormPathClient instance() {
         if (_instance == null) {

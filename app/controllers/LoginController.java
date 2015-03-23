@@ -23,7 +23,7 @@ import play.libs.Crypto;
 import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
-import stormpath.StormPathClient;
+import utils.StormPathClient;
 import utils.ReturnHelper;
 
 import java.util.ArrayList;
