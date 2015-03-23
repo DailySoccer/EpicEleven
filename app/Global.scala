@@ -8,8 +8,7 @@ import play.api.libs.ws.{WS, WSRequestHolder}
 import play.api.mvc.Results._
 import play.api.mvc.{EssentialAction, Filter, Filters, _}
 import play.filters.gzip.GzipFilter
-import stormpath.StormPathClient
-import utils.{TargetEnvironment, InstanceRole}
+import utils.{StormPathClient, TargetEnvironment, InstanceRole}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
