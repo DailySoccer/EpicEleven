@@ -50,7 +50,7 @@ public class AccountOp {
         List<AccountOp> accountOp = Model.accountingTransactions()
                 .aggregate("{$match: { \"accountOps.accountId\": #, proc: #, state: \"VALID\"}}", accountId, AccountingTran.TransactionProc.COMMITTED)
                 .and("{$unwind: \"$accountOps\"}")
-                .and("{$match: {\"accountOps.accountId\": #}}", accountId)
+                .and("{$match: {\"accountOps.accountId\": #, \"accountOps.seqId\": { $lt: # }}}", accountId, seqId)
                 .and("{$project: { \"accountOps.seqId\": 1, \"accountOps.cachedBalance\": 1 }}")
                 .and("{$sort: { \"accountOps.seqId\": -1 }}")
                 .and("{$limit: 1}")
