@@ -1,10 +1,8 @@
 package model.accounting;
 
 import model.Model;
-import model.Product;
 import model.User;
 import org.bson.types.ObjectId;
-import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import utils.MoneyUtils;
 
@@ -46,7 +44,6 @@ public class AccountOp {
             return MoneyUtils.zero;
         }
 
-        // TODO: ¿necesitamos comprobar que el commit es del "seqId" inmediatamente anterior?
         List<AccountOp> accountOp = Model.accountingTransactions()
                 .aggregate("{$match: { \"accountOps.accountId\": #, proc: #, state: \"VALID\"}}", accountId, AccountingTran.TransactionProc.COMMITTED)
                 .and("{$unwind: \"$accountOps\"}")
