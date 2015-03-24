@@ -52,6 +52,7 @@ public class Model {
     static public MongoCollection paypalResponses() { return _jongo.getCollection("paypalResponses"); }
 
     static public MongoCollection promos() { return _jongo.getCollection("promos"); }
+    static public MongoCollection bonus() { return _jongo.getCollection("bonus"); }
 
     static public MongoCollection optaProcessor()  { return _jongo.getCollection("optaProcessor"); }
     static public MongoCollection simulator() { return _jongo.getCollection("simulator"); }
@@ -236,6 +237,7 @@ public class Model {
         ensureTransactionsDB(_mongoDB);
         ensureNotificationsDB(_mongoDB);
         ensurePromosDB(_mongoDB);
+        ensureBonusDB(_mongoDB);
     }
 
     static private void ensureUsersDB(DB theMongoDB) {
@@ -338,6 +340,12 @@ public class Model {
     static private void ensurePromosDB(DB theMongoDB) {
         if (!theMongoDB.collectionExists("promos")) {
             DBCollection promos = theMongoDB.createCollection("promos", new BasicDBObject());
+        }
+    }
+
+    static private void ensureBonusDB(DB theMongoDB) {
+        if (!theMongoDB.collectionExists("bonus")) {
+            DBCollection bonus = theMongoDB.createCollection("bonus", new BasicDBObject());
         }
     }
 

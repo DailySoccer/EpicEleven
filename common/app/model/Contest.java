@@ -1,5 +1,6 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
@@ -19,7 +20,7 @@ import java.math.RoundingMode;
 import java.util.*;
 
 public class Contest implements JongoId {
-    @JsonView(JsonViews.NotForClient.class)
+    @JsonIgnore
     final int MAX_PLAYERS_SAME_TEAM = 4;
 
     @Id

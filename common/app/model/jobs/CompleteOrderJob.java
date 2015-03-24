@@ -1,7 +1,8 @@
 package model.jobs;
 
 import com.google.common.collect.ImmutableList;
-import model.Bonus;
+import model.bonus.AddFundsBonus;
+import model.bonus.Bonus;
 import model.Order;
 import model.User;
 import model.accounting.AccountOp;
@@ -9,6 +10,7 @@ import model.accounting.AccountingTran;
 import model.accounting.AccountingTranBonus;
 import model.accounting.AccountingTranOrder;
 import org.bson.types.ObjectId;
+import org.joda.money.Money;
 import utils.MoneyUtils;
 
 public class CompleteOrderJob extends Job {
@@ -35,9 +37,9 @@ public class CompleteOrderJob extends Job {
             ));
 
             // Existe un bonus por añadir dinero?
-            Bonus bonus = Bonus.findOneByAddFunds(order.product.price);
+            Money bonus = AddFundsBonus.getMoney(order.product.price);
             if (bonus != null) {
-                AccountingTranBonus.create(AccountingTran.TransactionType.BONUS, orderId.toString(), bonus.value, ImmutableList.of(
+                AccountingTranBonus.create(AccountingTran.TransactionType.BONUS, orderId.toString(), bonus, ImmutableList.of(
                         new AccountOp(order.userId, MoneyUtils.zero, User.getSeqId(order.userId) + 1)
                 ));
             }
