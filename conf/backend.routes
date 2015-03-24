@@ -76,6 +76,8 @@ POST           /paypal/ipn                                             controlle
 POST           /paypal/webhook                                         controllers.PaypalController.webhook()
 GET            /paypal/withdraw_funds/:amount                          controllers.PaypalController.withdrawFunds(amount : Integer)
 
+POST            /short_url                                             controllers.MainController.getShortUrl()
+
 # Loguear error del cliente
 POST           /log                                                    controllers.LoggerController.log()
 
