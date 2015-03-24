@@ -30,7 +30,7 @@ public class BonusController extends Controller {
         SignupBonus.create(params.signupBonus_activated, MoneyUtils.of(params.signupBonus_money));
         AddFundsBonus.create(params.addFundsBonus_activated,
                 MoneyUtils.of(params.addFundsBonus_minMoney), MoneyUtils.of(params.addFundsBonus_maxMoney),
-                params.addFundsBonus_multiplier);
+                params.addFundsBonus_percent);
 
         return redirect(routes.BonusController.index());
     }

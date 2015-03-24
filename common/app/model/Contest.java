@@ -6,6 +6,7 @@ import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.accounting.AccountingTranBonus;
 import model.accounting.AccountingTranPrize;
+import model.bonus.Bonus;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
@@ -337,8 +338,6 @@ public class Contest implements JongoId {
     }
 
     private void bonusToCash() {
-        final Double MULT_BONUS_TO_CASH = 0.04;
-
         // Si el contest tenía entryFee
         if (MoneyUtils.isGreaterThan(entryFee, MoneyUtils.zero)) {
             for (ContestEntry contestEntry : contestEntries) {
@@ -349,7 +348,7 @@ public class Contest implements JongoId {
                 if (MoneyUtils.isGreaterThan(userBonus, MoneyUtils.zero)) {
 
                     // Cuánto sería el dinero a convertir de bonus a cash?
-                    Money bonus = entryFee.multipliedBy(MULT_BONUS_TO_CASH, RoundingMode.FLOOR);
+                    Money bonus = entryFee.multipliedBy(Bonus.MULT_BONUS_TO_CASH, RoundingMode.FLOOR);
                     if (MoneyUtils.isGreaterThan(bonus, userBonus)) {
                         bonus = userBonus;
                     }

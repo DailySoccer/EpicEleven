@@ -13,7 +13,7 @@ public class BonusForm {
     public boolean addFundsBonus_activated;
     public BigDecimal addFundsBonus_minMoney = new BigDecimal(0);
     public BigDecimal addFundsBonus_maxMoney = new BigDecimal(0);
-    public float addFundsBonus_multiplier;
+    public int addFundsBonus_percent;
 
     public BonusForm () {
     }
@@ -28,7 +28,7 @@ public class BonusForm {
             addFundsBonus_activated = addFundsBonus.activated;
             addFundsBonus_minMoney = addFundsBonus.minMoney.getAmount();
             addFundsBonus_maxMoney = addFundsBonus.maxMoney.getAmount();
-            addFundsBonus_multiplier = addFundsBonus.multiplier;
+            addFundsBonus_percent = addFundsBonus.percent;
         }
     }
 }
