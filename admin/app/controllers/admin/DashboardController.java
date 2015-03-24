@@ -2,25 +2,18 @@ package controllers.admin;
 
 import actions.CheckTargetEnvironment;
 import actors.BotSystemActor;
-import com.google.common.collect.ImmutableList;
 import org.bson.types.ObjectId;
-import model.Bonus;
 import model.Model;
-import model.Product;
 import model.User;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.accounting.AccountingTranBonus;
 import model.opta.OptaCompetition;
-import org.joda.money.CurrencyUnit;
-import org.joda.money.Money;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.MoneyUtils;
-import utils.TargetEnvironment;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 

@@ -81,6 +81,9 @@ GET         /promos/edit/:promoId                                               
 GET         /promos/delete/:promoId                                              controllers.admin.PromoController.delete(promoId)
 POST        /promos/save                                                         controllers.admin.PromoController.create()
 
+GET         /bonus                                                               controllers.admin.BonusController.index()
+POST        /bonus/add_funds/save                                                controllers.admin.BonusController.save()
+
 GET         /init_shutdown_simulator                                             controllers.admin.SimulatorController.initShutdown()
 GET         /pause_resume_simulator                                              controllers.admin.SimulatorController.pauseResume()
 GET         /reset_simulator                                                     controllers.admin.SimulatorController.reset()
