@@ -1,11 +1,12 @@
-package model;
+package model.bonus;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.joda.money.Money;
-import org.bson.types.ObjectId;
 import utils.MoneyUtils;
 
 import java.math.RoundingMode;
 
+@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS,property="_class")
 public class Bonus {
     static final Money MIN_ADD_FUNDS_FOR_BONUS = MoneyUtils.of(10);
     static final Double MULT_BONUS_BY_ADD_FUNDS = 1.0;
@@ -14,6 +15,12 @@ public class Bonus {
 
     public Bonus (Money money) {
         this.value = money;
+    }
+
+    static public Bonus findOneBySignup() {
+        Bonus bonus = null;
+
+        return bonus;
     }
 
     static public Bonus findOneByAddFunds(Money funds) {

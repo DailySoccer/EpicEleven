@@ -49,6 +49,7 @@ public class User {
 
     public User getProfile() {
         cachedBalance = calculateBalance();
+        cachedBonus = calculateBonus();
         return this;
     }
 
