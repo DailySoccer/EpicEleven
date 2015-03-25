@@ -3,15 +3,13 @@ package model;
 import com.fasterxml.jackson.annotation.JsonView;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
+import model.accounting.AccountingTranBonus;
 import org.bson.types.ObjectId;
-import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
 import utils.ListUtils;
 import utils.MoneyUtils;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -29,6 +27,7 @@ public class User {
 
     // TODO: De momento no es realmente un "cache", siempre lo recalculamos
     public Money cachedBalance;
+    public Money cachedBonus;
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
@@ -50,6 +49,7 @@ public class User {
 
     public User getProfile() {
         cachedBalance = calculateBalance();
+        cachedBonus = calculateBonus();
         return this;
     }
 
@@ -119,6 +119,10 @@ public class User {
         return User.calculateBalance(userId);
     }
 
+    public Money calculateBonus() {
+        return User.calculateBonus(userId);
+    }
+
     static public Integer getSeqId(ObjectId userId) {
         List<AccountOp> account = Model.accountingTransactions()
                 .aggregate("{$match: { \"accountOps.accountId\": #}}", userId)
@@ -147,5 +151,23 @@ public class User {
             }
         }
         return balance;
+    }
+
+    static public Money calculateBonus(ObjectId userId, Date toDate) {
+        List<AccountingTranBonus> transactions = ListUtils.asList(Model.accountingTransactions()
+                .find("{ \"accountOps.accountId\": #, state: \"VALID\", type: { $in: [\"BONUS\", \"BONUS_TO_CASH\"] }, createdAt: {$lte: #} }", userId, toDate)
+                .as(AccountingTranBonus.class));
+
+        Money balance = MoneyUtils.zero;
+        if (!transactions.isEmpty()) {
+            for (AccountingTranBonus transacition : transactions) {
+                balance = MoneyUtils.plus(balance, transacition.bonus);
+            }
+        }
+        return balance;
+    }
+
+    static public Money calculateBonus(ObjectId userId) {
+        return calculateBonus(userId, GlobalDate.getCurrentDate());
     }
 }

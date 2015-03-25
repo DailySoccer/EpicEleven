@@ -2,9 +2,12 @@ package model;
 
 import com.google.common.collect.ImmutableList;
 import model.accounting.AccountOp;
+import model.accounting.AccountingTran;
+import model.accounting.AccountingTranBonus;
 import model.accounting.AccountingTranOrder;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
+import utils.MoneyUtils;
 
 public class Order {
     static final String REFERER_URL_DEFAULT = "epiceleven.com";
@@ -59,10 +62,6 @@ public class Order {
     }
 
     public void setCompleted() {
-        AccountingTranOrder.create(orderId, paymentId, ImmutableList.of(
-                new AccountOp(userId, product.price, User.getSeqId(userId) + 1)
-        ));
-
         this.state = State.COMPLETED;
         Model.orders().update(orderId).with("{$set: {state: #}}", this.state);
     }

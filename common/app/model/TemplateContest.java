@@ -150,20 +150,14 @@ public class TemplateContest implements JongoId {
         long instances = Contest.countActiveNotFullFromTemplateContest(templateContestId);
 
         for (long i=instances; i < templateContest.minInstances; i++) {
-            templateContest.instantiateContest(false);
+            templateContest.instantiateContest();
         }
     }
 
-    public Contest instantiateContest(boolean addMockDataUsers) {
+    public Contest instantiateContest() {
         Contest contest = new Contest(this);
         contest.state = ContestState.ACTIVE;
-
-        if (addMockDataUsers) {
-            MockData.addContestEntries(contest, contest.maxEntries - 1);
-        }
-
         Model.contests().withWriteConcern(WriteConcern.SAFE).insert(contest);
-
         return contest;
     }
 
@@ -178,7 +172,10 @@ public class TemplateContest implements JongoId {
 
         boolean mockDataUsers = name.contains(FILL_WITH_MOCK_USERS);
         for (long i=instances; i < minInstances; i++) {
-            instantiateContest(mockDataUsers);
+            Contest contest = instantiateContest();
+            if (mockDataUsers) {
+                MockData.addContestEntries(contest, contest.maxEntries - 1);
+            }
         }
 
         // Cuando hemos acabado de instanciar nuestras dependencias, nos ponemos en activo

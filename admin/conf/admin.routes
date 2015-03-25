@@ -41,6 +41,7 @@ GET         /contests                                                           
 GET         /contests/ajax                                                       controllers.admin.ContestController.indexAjax()
 GET         /contest/:contestId                                                  controllers.admin.ContestController.show(contestId : String)
 GET         /contests/verify_prizes                                              controllers.admin.ContestController.verifyPrizes()
+GET         /contests/verify_entry_fee                                           controllers.admin.ContestController.verifyEntryFee()
 
 GET         /template_contests                                                   controllers.admin.TemplateContestController.index()
 GET         /template_contests/ajax                                              controllers.admin.TemplateContestController.indexAjax()
@@ -79,6 +80,9 @@ GET         /promos/add                                                         
 GET         /promos/edit/:promoId                                                controllers.admin.PromoController.edit(promoId)
 GET         /promos/delete/:promoId                                              controllers.admin.PromoController.delete(promoId)
 POST        /promos/save                                                         controllers.admin.PromoController.create()
+
+GET         /bonus                                                               controllers.admin.BonusController.index()
+POST        /bonus/add_funds/save                                                controllers.admin.BonusController.save()
 
 GET         /init_shutdown_simulator                                             controllers.admin.SimulatorController.initShutdown()
 GET         /pause_resume_simulator                                              controllers.admin.SimulatorController.pauseResume()

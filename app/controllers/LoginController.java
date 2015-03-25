@@ -4,6 +4,7 @@ import actions.AllowCors;
 import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.DuplicateKeyException;
 import com.stormpath.sdk.account.Account;
@@ -12,7 +13,11 @@ import model.GlobalDate;
 import model.Model;
 import model.Session;
 import model.User;
+import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
+import model.accounting.AccountingTranBonus;
+import model.bonus.SignupBonus;
+import org.joda.money.Money;
 import play.Logger;
 import play.Play;
 import play.data.Form;
@@ -24,6 +29,7 @@ import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import stormpath.StormPathClient;
+import utils.MoneyUtils;
 import utils.ReturnHelper;
 
 import java.util.ArrayList;
@@ -195,8 +201,17 @@ public class LoginController extends Controller {
 
             if (theUser == null) {
                 try {
-                    Model.users().insert(new User(theParams.firstName, theParams.lastName, theParams.nickName,
-                            theParams.email.toLowerCase()));
+                    theUser = new User(theParams.firstName, theParams.lastName, theParams.nickName,
+                            theParams.email.toLowerCase());
+                    Model.users().insert(theUser);
+
+                    // Existe un bonus por registrarse?
+                    Money bonus = SignupBonus.getMoney();
+                    if (bonus != null) {
+                        AccountingTranBonus.create(AccountingTran.TransactionType.BONUS, "SIGNUP", bonus, ImmutableList.of(
+                                new AccountOp(theUser.userId, MoneyUtils.zero, User.getSeqId(theUser.userId) + 1)
+                        ));
+                    }
                 } catch (DuplicateKeyException exc) {
                     int mongoError = 0; //"Hubo un problema en la creación de tu usuario");
                     if (exc.getMessage().contains("email")) {
@@ -439,10 +454,10 @@ public class LoginController extends Controller {
         List<Map<String, String>> transactions = new ArrayList<>();
 
         List<AccountingTran> accountingTrans = AccountingTran.findAllFromUserId(theUser.userId);
-        for (AccountingTran op : accountingTrans) {
-            Map<String, String> accountInfo = op.getAccountInfo(theUser.userId);
-            if (!accountInfo.isEmpty()) {
-                transactions.add(accountInfo);
+        for (AccountingTran transaction : accountingTrans) {
+            AccountOp accountOp = transaction.getAccountOp(theUser.userId);
+            if (accountOp != null && MoneyUtils.isGreaterThan(accountOp.value, MoneyUtils.zero)) {
+                transactions.add(transaction.getAccountInfo(accountOp));
             }
         }
 
