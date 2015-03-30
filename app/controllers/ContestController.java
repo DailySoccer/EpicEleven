@@ -124,7 +124,6 @@ public class ContestController extends Controller {
                 .toResult();
     }
 
-    @UserAuthenticated
     public static Result getMyActiveContest(String contestId) {
         User theUser = (User)ctx().args.get("User");
         Contest contest = Contest.findOne(contestId);
@@ -143,12 +142,10 @@ public class ContestController extends Controller {
         return attachInfoToContest(contest).toResult(JsonViews.FullContest.class);
     }
 
-    @UserAuthenticated
     public static Result getMyLiveContest(String contestId) {
         return getViewContest(contestId);
     }
 
-    @UserAuthenticated
     public static Result getMyHistoryContest(String contestId) {
         return getViewContest(contestId);
     }
