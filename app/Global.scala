@@ -70,6 +70,9 @@ object Global extends GlobalSettings {
     instanceRole = readInstanceRole
     releaseVersion = readReleaseVersion
     targetEnvironment = readTargetEnvironment
+    if (Play.isProd) {
+      launchReadVersionThread()
+    }
     Logger.info(s"Epic Eleven $instanceRole, Version: $releaseVersion, TargetEnvironment: $targetEnvironment, has started")
 
     model.Model.init(instanceRole, targetEnvironment)
@@ -107,9 +110,23 @@ object Global extends GlobalSettings {
     if (temp == null) targetEnvironment else TargetEnvironment.valueOf(temp)
   }
 
+  private def launchReadVersionThread(): Unit = {
+    if (releaseVersion == "devel") {
+      val thread = new Thread(new Runnable {
+        def run(): Unit = {
+          while (releaseVersion == "devel") {
+            releaseVersion = readReleaseVersion
+            Thread.sleep(1000)
+          }
+        }
+      })
+      thread.start()
+    }
+  }
+
+
   private def readReleaseVersion : String = {
     var version = "devel"
-
     try {
       val herokuKey = Play.current.configuration.getString("heroku_key").orNull
       val herokuApp = Play.current.configuration.getString("heroku_app").orNull
@@ -128,7 +145,6 @@ object Global extends GlobalSettings {
     catch {
       case e: Exception => Logger.error("WTF 7932 Error durante la inicializacion de la version", e)
     }
-
     version
   }
 }
