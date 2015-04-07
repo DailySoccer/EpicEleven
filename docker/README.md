@@ -23,8 +23,10 @@
 ```
   $ docker run --name my-mongo -d mongo:2.6
   $ docker run --name some-postgres -e POSTGRES_PASSWORD=postgres -d postgres
-  $ docker run -d -v $PWD:/app:rw -p 80:9000  --name my-web --link some-postgres:postgres --link my-mongo:mongo dailysoccer/web
-  $ docker run -d -v $PWD:/app:rw  --name my-worker --link some-postgres:postgres --link my-mongo:mongo dailysoccer/worker
+  $ docker run -d -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock -t jwilder/nginx-proxy
+  $ docker run -d -v $PWD:/app:rw -e VIRTUAL_HOST=foo.bar.com -P --link some-postgres:postgres --link my-mongo:mongo dailysoccer/web
+  $ docker run -d -v $PWD:/app:rw -e VIRTUAL_HOST=foo.bar.com -P --link some-postgres:postgres --link my-mongo:mongo dailysoccer/web
+  $ docker run -d -v $PWD:/app:rw --link some-postgres:postgres --link my-mongo:mongo dailysoccer/worker
 ```
 ### Paso 6: Verlo correr
 ```
