@@ -19,7 +19,7 @@
   $ docker build -t dailysoccer/worker:latest .
   $ cd ../..
 ```
-### Paso 5: Lanzamos contenedores: Mongo, Postgres, Web y Worker
+### Paso 5: Lanzamos contenedores: Mongo, Postgres, Nginx, 2 Web y 1 Worker
 ```
   $ docker run --name my-mongo -d mongo:2.6
   $ docker run --name some-postgres -e POSTGRES_PASSWORD=postgres -d postgres
