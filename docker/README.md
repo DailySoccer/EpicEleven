@@ -28,7 +28,11 @@
   $ docker run -d -v $PWD:/app:rw -e VIRTUAL_HOST=foo.bar.com -P --link some-postgres:postgres --link my-mongo:mongo dailysoccer/web
   $ docker run -d -v $PWD:/app:rw --link some-postgres:postgres --link my-mongo:mongo dailysoccer/worker
 ```
-### Paso 6: Verlo correr
+### Paso 6: Actualizar el /etc/hosts
 ```
-  $ $ open "http://$(boot2docker ip)"
+$ sudo sed -i .bak "s/.*foo.bar.com/$(boot2docker ip)  foo.bar.com/" /etc/hosts
+```
+### Paso 7: Verlo correr
+```
+  $ open http://foo.bar.com
 ```
