@@ -1,4 +1,4 @@
-FROM ingensi/oracle-jdk
+FROM dockerfile/java:oracle-java8
 MAINTAINER Federico Mon <gnu.fede@gmail.com>
 
 ENV PORT 9000
@@ -8,4 +8,4 @@ EXPOSE 9000
 RUN mkdir /app
 WORKDIR /app
 
-CMD target/universal/stage/bin/backend -Dhttp.port=$PORT -Dconfig.resource=$CONFIG_FILE -Dconfig.instanceRole=WEB_ROLE -Dpidfile.path=/var/run/play.pid
+CMD target/universal/stage/bin/backend -Dhttp.port=$PORT -Dconfig.resource=$CONFIG_FILE -Dconfig.instanceRole=WEB_ROLE -Dpidfile.path=/dev/null
