@@ -15,4 +15,4 @@ fi
 
 sed -i .bak "s/.*    VIRTUAL_HOST.*/    VIRTUAL_HOST: $VIRTUAL_HOST/" docker-compose.yml;
 
-docker-compose up
+docker-compose start postgres rabbitmq mongo web
