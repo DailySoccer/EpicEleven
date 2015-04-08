@@ -1,38 +1,16 @@
-### Paso 1: Compilamos la build:
+### Paso 1: Instalar Docker Compose
 ```
-  $ activator compile stage
+  $ brew install docker-compose
 ```
-### Paso 2: Instalamos docker (caso mac: https://docs.docker.com/installation/mac/)
-
-### Paso 3 (caso mac): Lanzamos boot2docker
+### Paso 2 (opcional): Elegimos dominio (por defecto: epicdocker.com)
 ```
-  $ boot2docker init
-  $ boot2docker start
-  $ eval "$(boot2docker shellinit)"
+  $ vim launch_docker.sh
 ```
-### Paso 4: Construimos nuestros contenedores web y worker
+### Paso 3: Lanzamos
 ```
-  $ cd docker
-  $ cd web_role
-  $ docker build -t dailysoccer/web:latest .
-  $ cd ../worker_role
-  $ docker build -t dailysoccer/worker:latest .
-  $ cd ../..
+  $ ./launch_docker.sh
 ```
-### Paso 5: Lanzamos contenedores: Mongo, Postgres, Nginx, 2 Web y 1 Worker
+### Paso 4: Verlo correr
 ```
-  $ docker run --name my-mongo -d mongo:2.6
-  $ docker run --name some-postgres -e POSTGRES_PASSWORD=postgres -d postgres
-  $ docker run -d -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock -t jwilder/nginx-proxy
-  $ docker run -d -v $PWD:/app:rw -e VIRTUAL_HOST=foo.bar.com -P --link some-postgres:postgres --link my-mongo:mongo dailysoccer/web
-  $ docker run -d -v $PWD:/app:rw -e VIRTUAL_HOST=foo.bar.com -P --link some-postgres:postgres --link my-mongo:mongo dailysoccer/web
-  $ docker run -d -v $PWD:/app:rw --link some-postgres:postgres --link my-mongo:mongo dailysoccer/worker
-```
-### Paso 6: Actualizar el /etc/hosts
-```
-$ sudo sed -i .bak "s/.*foo.bar.com/$(boot2docker ip)  foo.bar.com/" /etc/hosts
-```
-### Paso 7: Verlo correr
-```
-  $ open http://foo.bar.com
+  $ open http://epicdocker.com
 ```
