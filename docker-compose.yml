@@ -1,0 +1,39 @@
+postgres:
+  image: postgres
+  environment:
+    POSTGRES_PASSWORD: postgres
+
+mongo:
+  image: mongo:2.6
+
+rabbitmq:
+  image: rabbitmq
+  environment:
+    RABBITMQ_NODENAME: my-rabbit
+
+nginx:
+  image: jwilder/nginx-proxy
+  volumes:
+    - /var/run/docker.sock:/tmp/docker.sock
+  ports:
+    - "80:80"
+
+web:
+  build: docker/web_role
+  volumes:
+    - .:/app
+  environment:
+    VIRTUAL_HOST: epicdocker.com
+  links:
+    - postgres
+    - mongo
+    - rabbitmq
+
+worker:
+  build: docker/worker_role
+  volumes:
+    - .:/app
+  links:
+    - postgres
+    - mongo
+    - rabbitmq
