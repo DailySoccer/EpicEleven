@@ -1,3 +1,9 @@
+logspout:
+  image: gliderlabs/logspout
+  volumes:
+    - /var/run/docker.sock:/tmp/docker.sock
+  command: syslog://logs2.papertrailapp.com:39714
+
 postgres:
   image: postgres
   environment:
