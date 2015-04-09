@@ -21,7 +21,8 @@ nginx:
 web:
   build: docker/web_role
   volumes:
-    - .:/app
+    - ./target/universal/stage:/app
+    - ./common/app/model/migrations:/app/common/app/model/migrations
   environment:
     VIRTUAL_HOST: epicdocker.com
   links:
@@ -32,8 +33,10 @@ web:
 worker:
   build: docker/worker_role
   volumes:
-    - .:/app
+    - ./target/universal/stage:/app
+    - ./common/app/model/migrations:/app/common/app/model/migrations
   links:
     - postgres
     - mongo
     - rabbitmq
+    - web
