@@ -1,8 +1,26 @@
+#shipyard:
+#  image: shipyard/deploy
+#  volumes:
+#    - /var/run/docker.sock:/var/run/docker.sock
+#  command: start
+#  ports:
+#    - "8080"
+
+dockerui:
+  image: dockerui/dockerui
+  privileged: true
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+  ports:
+    - "9000:9000"
+
+
 logspout:
-  image: gliderlabs/logspout
+#  image: gliderlabs/logspout
+  build: docker/logspout_custom
   volumes:
     - /var/run/docker.sock:/tmp/docker.sock
-  command: syslog://logs2.papertrailapp.com:39714
+  command: tcp://logs2.papertrailapp.com:46177
 
 postgres:
   image: postgres
@@ -11,6 +29,8 @@ postgres:
 
 mongo:
   image: mongo:2.6
+  volumes:
+    - ./docker/data:/data
 
 rabbitmq:
   image: rabbitmq
@@ -32,9 +52,9 @@ web:
   environment:
     VIRTUAL_HOST: epicdocker.com
   links:
-    - postgres
     - mongo
     - rabbitmq
+    - postgres
 
 worker:
   build: docker/worker_role

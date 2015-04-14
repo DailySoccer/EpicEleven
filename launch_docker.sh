@@ -2,7 +2,7 @@
 
 VIRTUAL_HOST="epicdocker.com"
 
-activator compile stage
+#activator compile stage
 boot2docker init
 boot2docker start
 eval "$(boot2docker shellinit)"
@@ -15,5 +15,6 @@ fi
 
 sed -i .bak "s/.*    VIRTUAL_HOST.*/    VIRTUAL_HOST: $VIRTUAL_HOST/" docker-compose.yml;
 
-docker-compose build web worker
-docker-compose start postgres rabbitmq mongo nginx web
+docker-compose up
+#docker-compose build web worker
+#docker-compose start postgres rabbitmq mongo nginx web
