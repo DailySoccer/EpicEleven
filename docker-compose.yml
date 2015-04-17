@@ -6,6 +6,23 @@
 #  ports:
 #    - "8080"
 
+pgbackup:
+  build: docker/pg_backup
+  environment:
+    PG_PASSWORD: postgres
+    POSTGRES_USERNAME: postgres
+  volumes:
+    - ./docker/pg_backups:/shared
+  links:
+    - postgres:db
+
+genghis:
+  build: docker/genghis
+  ports:
+    - "5000:5000"
+  links:
+    - mongo:db
+
 dockerui:
   image: dockerui/dockerui
   privileged: true

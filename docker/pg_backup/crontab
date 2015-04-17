@@ -1,0 +1,5 @@
+*/30 * * * * root /usr/bin/pg_backup.sh >> /var/log/cron.log 2>&1
+#* * * * * root echo "$DB_PORT_5432_TCP_ADDR"
+#* * * * * root echo pg_dump -h "$DB_PORT_5432_TCP_ADDR" -f "/shared/`date +P4CMPlus_int_67.%m.%d.%Y.backup`" P4CMPlus_int
+# An empty line is required at the end of this file for a valid cron file.
+
