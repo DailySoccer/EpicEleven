@@ -8,8 +8,10 @@
 
 pgbackup:
   build: docker/pg_backup
+  ports:
+    - "8000"
   environment:
-    PG_PASSWORD: postgres
+    PGPASSWORD: postgres
     POSTGRES_USERNAME: postgres
   volumes:
     - ./docker/pg_backups:/shared
