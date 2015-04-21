@@ -6,6 +6,15 @@
 #  ports:
 #    - "8080"
 
+mongobackup:
+  build: docker/mongo_backup
+  ports:
+    - "8000"
+  volumes:
+    - ./docker/mongo_backups:/shared
+  links:
+    - mongo:db
+
 pgbackup:
   build: docker/pg_backup
   ports:
