@@ -1,6 +1,6 @@
 FROM debian:jessie
 MAINTAINER Fede "gnu.fede@gmail.com"
-EXPOSE 8000
+EXPOSE 8001
 
 RUN apt-get update -y && \
     apt-get install -y postgresql-client rsyslog cron && \
@@ -23,7 +23,7 @@ RUN touch /var/log/cron.log
 
 
 # Run the command on container startup
-CMD /usr/bin/var_change.py && cron && cd /shared && python -m SimpleHTTPServer 8000
+CMD /usr/bin/var_change.py && cron && cd /shared && python -m SimpleHTTPServer 8001
 #&& tail -f /var/log/cron.log
 
 #CMD /usr/bin/pg_backup.sh

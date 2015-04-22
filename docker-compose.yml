@@ -8,6 +8,9 @@
 
 mongobackup:
   build: docker/mongo_backup
+  environment:
+    VIRTUAL_HOST: mongobackups.epicdocker.com
+    VIRTUAL_PORT: 8000
   ports:
     - "8000"
   volumes:
@@ -18,10 +21,12 @@ mongobackup:
 pgbackup:
   build: docker/pg_backup
   ports:
-    - "8000"
+    - "8001"
   environment:
     PGPASSWORD: postgres
     POSTGRES_USERNAME: postgres
+    VIRTUAL_HOST: pgbackups.epicdocker.com
+    VIRTUAL_PORT: 8001
   volumes:
     - ./docker/pg_backups:/shared
   links:
@@ -29,8 +34,10 @@ pgbackup:
 
 genghis:
   build: docker/genghis
+  environment:
+    VIRTUAL_HOST: genghis.epicdocker.com
   ports:
-    - "5000:5000"
+    - "5000"
   links:
     - mongo:db
 
@@ -39,8 +46,10 @@ dockerui:
   privileged: true
   volumes:
     - /var/run/docker.sock:/var/run/docker.sock
+  environment:
+    VIRTUAL_HOST: dockerui.epicdocker.com
   ports:
-    - "9000:9000"
+    - "9000"
 
 
 logspout:
@@ -69,6 +78,7 @@ nginx:
   image: jwilder/nginx-proxy
   volumes:
     - /var/run/docker.sock:/tmp/docker.sock
+    - ./docker/htpasswd:/etc/nginx/htpasswd
   ports:
     - "80:80"
 
