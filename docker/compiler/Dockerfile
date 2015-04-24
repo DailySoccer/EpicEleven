@@ -9,12 +9,12 @@ RUN curl -sL https://deb.nodesource.com/setup | bash -
 RUN apt-get install -y nodejs dart git && \
     apt-get clean -y
 
-RUN curl -o activator.zip http://downloads.typesafe.com/typesafe-activator/1.3.2/typesafe-activator-1.3.2-minimal.zip
+RUN curl -o activator.zip http://downloads.typesafe.com/typesafe-activator/1.3.2/typesafe-activator-1.3.2.zip
 RUN unzip activator.zip -d /opt/
 
 RUN ln -s /usr/lib/dart /usr/lib/dart/bin/dart-sdk
 RUN echo 'export DART_SDK="/usr/lib/dart"' | tee -a ~/.profile
-RUN echo 'export PATH="$PATH:/usr/lib/dart/bin:/opt/activator-1.3.2-minimal"' | tee -a ~/.profile 
+RUN echo 'export PATH="$PATH:/usr/lib/dart/bin:/opt/activator-1.3.2"' | tee -a ~/.profile 
 
 CMD . ~/.profile && \
     eval "$(ssh-agent -s)" && \
