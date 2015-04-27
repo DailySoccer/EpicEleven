@@ -1,6 +1,8 @@
 FROM dockerfile/java:oracle-java8
 MAINTAINER Federico Mon <gnu.fede@gmail.com>
 
+VOLUME /app
+
 RUN apt-get update -y && apt-get install apt-transport-https
 RUN sh -c 'curl https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -'
 RUN sh -c 'curl https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list'
@@ -27,4 +29,7 @@ CMD . ~/.profile && \
     pub get && \
     bash ./build_for_deploy.sh && \
     cd ../backend && \
-    activator "set offline := true" clean compile stage
+    activator "set offline := true" clean compile stage && \
+    cp -R /data/backend/target/universal/stage/* /app && \
+    mkdir -p /app/common/app/model/migrations && \
+    cp -R /data/backend/common/app/model/migrations/* /app/common/app/model/migrations

@@ -6,8 +6,15 @@
 #  ports:
 #    - "8080"
 
+appdata:
+  build: docker/appdata
+  volumes:
+    - /app
+
 compiler:
   build: docker/compiler
+  volumes_from:
+    - appdata
   volumes:
     - ~/.ssh:/root/.ssh
 
@@ -89,9 +96,8 @@ nginx:
 
 web:
   build: docker/web_role
-  volumes:
-    - ./target/universal/stage:/app
-    - ./common/app/model/migrations:/app/common/app/model/migrations
+  volumes_from:
+    - appdata
   environment:
     VIRTUAL_HOST: epicdocker.com
   links:
@@ -101,9 +107,8 @@ web:
 
 worker:
   build: docker/worker_role
-  volumes:
-    - ./target/universal/stage:/app
-    - ./common/app/model/migrations:/app/common/app/model/migrations
+  volumes_from:
+    - appdata
   links:
     - postgres
     - mongo
