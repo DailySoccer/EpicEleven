@@ -20,6 +20,7 @@ import scala.concurrent.Await;
 import scala.concurrent.duration.Duration;
 import utils.InstanceRole;
 import utils.ProcessExec;
+import utils.SystemMode;
 import utils.TargetEnvironment;
 
 import java.io.File;
@@ -30,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Actors {
 
-    public Actors(InstanceRole instanceRole, TargetEnvironment targetEnv) {
+    public Actors(InstanceRole instanceRole, TargetEnvironment targetEnv, SystemMode systemMode) {
 
         switch (instanceRole) {
             case DEVELOPMENT_ROLE:
@@ -40,7 +41,7 @@ public class Actors {
                 initWorkerRole();
                 break;
             case WEB_ROLE:
-                initWebRole();
+                initWebRole(systemMode);
                 break;
             default:
                 throw new RuntimeException("WTF 5550 instanceRole desconocido");
@@ -59,11 +60,11 @@ public class Actors {
         bindLocalActorsToQueues();
     }
 
-    private void initWebRole() {
+    private void initWebRole(SystemMode systemMode) {
         // En staging seguimos sin poder ejecutar el simulador pq no tenemos una forma de distribuir la fecha
         // entre roles (GlobalDate.getCurrentDate se coge siempre de la maquina local), asi que por defecto solo
         // arrancamos en Heroku el web role sin workers y aqui iniciamos to.do
-        if (isStaging()) {
+        if (systemMode.equals(SystemMode.STAGING)) {
             initDevelopmentRole(TargetEnvironment.LOCALHOST);
         }
         else {
@@ -71,10 +72,6 @@ public class Actors {
             // tareas (mirror de operaciones en posgres por ejemplo) a nuestros actores
             initRabbitMQ(TargetEnvironment.LOCALHOST);
         }
-    }
-
-    private boolean isStaging() {
-        return play.Play.application().configuration().getString("config.resource").equals("staging.conf");
     }
 
     public void preReset() {
