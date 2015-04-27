@@ -9,7 +9,7 @@ import play.api.mvc.Results._
 import play.api.mvc.{EssentialAction, Filter, Filters, _}
 import play.filters.gzip.GzipFilter
 import stormpath.StormPathClient
-import utils.{TargetEnvironment, InstanceRole}
+import utils.{SystemMode, TargetEnvironment, InstanceRole}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -25,6 +25,8 @@ object Global extends GlobalSettings {
 
   // Target environment for our Model & Actors to connect to
   var targetEnvironment = TargetEnvironment.LOCALHOST
+
+  var systemMode = SystemMode.DEVELOPMENT
 
 
   val releaseFilter = Filter { (nextFilter, requestHeader) =>
@@ -70,12 +72,13 @@ object Global extends GlobalSettings {
     instanceRole = readInstanceRole
     releaseVersion = readReleaseVersion
     targetEnvironment = readTargetEnvironment
+    systemMode = readSystemMode
     if (Play.isProd) {
       launchReadVersionThread()
     }
     Logger.info(s"Epic Eleven $instanceRole, Version: $releaseVersion, TargetEnvironment: $targetEnvironment, has started")
 
-    model.Model.init(instanceRole, targetEnvironment)
+    model.Model.init(instanceRole, targetEnvironment, systemMode)
 
     // Es aqui donde se llama a la inicializacion de Stormpath a traves del constructor
     if (StormPathClient.instance.isConnected) {
@@ -108,6 +111,12 @@ object Global extends GlobalSettings {
     val temp = Play.current.configuration.getString("targetEnvironment").orNull
 
     if (temp == null) targetEnvironment else TargetEnvironment.valueOf(temp)
+  }
+
+  private def readSystemMode: SystemMode = {
+    val temp = Play.current.configuration.getString("systemMode").orNull
+
+    if (temp == null) systemMode else SystemMode.valueOf(temp)
   }
 
   private def launchReadVersionThread(): Unit = {

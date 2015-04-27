@@ -71,7 +71,7 @@ public class Model {
         return _actors;
     }
 
-    static public void init(InstanceRole instanceRole, TargetEnvironment targetEnv) {
+    static public void init(InstanceRole instanceRole, TargetEnvironment targetEnv, SystemMode systemMode) {
 
         if ((!Play.isDev() || instanceRole != InstanceRole.DEVELOPMENT_ROLE) && targetEnv != TargetEnvironment.LOCALHOST) {
             throw new RuntimeException("WTF 05 Intento de inicializar un entorno remoto sin ser una maquina de desarrollo");
@@ -83,7 +83,7 @@ public class Model {
         initMongo(readMongoUriForEnvironment(_targetEnvironment));
         initPostgresDB();
 
-        _actors = new Actors(_instanceRole, targetEnv);
+        _actors = new Actors(_instanceRole, targetEnv, systemMode);
     }
 
     static public void shutdown() {
