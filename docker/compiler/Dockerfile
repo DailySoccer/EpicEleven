@@ -22,6 +22,9 @@ CMD . ~/.profile && \
     eval "$(ssh-agent -s)" && \
     ssh-add ~/.ssh/id_rsa && \
     git clone git@github.com:DailySoccer/backend.git && \
+    cd backend && \
+    git checkout feature/docker && \
+    cd .. &&  \
     git clone git@github.com:DailySoccer/webclient.git && \
     cd webclient && \
     npm install -g grunt-cli && \
@@ -30,6 +33,6 @@ CMD . ~/.profile && \
     bash ./build_for_deploy.sh && \
     cd ../backend && \
     activator "set offline := true" clean compile stage && \
-    cp -R /data/backend/target/universal/stage/* /app && \
-    mkdir -p /app/common/app/model/migrations && \
-    cp -R /data/backend/common/app/model/migrations/* /app/common/app/model/migrations
+    cp -R /data/backend/target/universal/stage/* /app  && \
+    mkdir -p /app/common/app/model && \
+    cp -R /data/backend/common/app/model/migrations /app/common/app/model/
