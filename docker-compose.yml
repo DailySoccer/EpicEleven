@@ -11,6 +11,11 @@ appdata:
   volumes:
     - /app
 
+tester:
+  build: docker/tester
+  volumes:
+    - ~/.ssh:/root/.ssh
+
 compiler:
   build: docker/compiler
   volumes_from:
