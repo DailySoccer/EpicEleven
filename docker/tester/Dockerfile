@@ -12,10 +12,21 @@ RUN unzip activator.zip -d /opt/
 
 RUN echo 'export PATH="$PATH:/usr/lib/dart/bin:/opt/activator-1.3.2"' | tee -a ~/.profile 
 
-CMD . ~/.profile && \
+COPY id_rsa /root/.ssh/
+COPY id_rsa.pub /root/.ssh/
+RUN chmod 0600 /root/.ssh/id_rsa
+RUN chmod 0644 /root/.ssh/id_rsa.pub
+
+RUN ssh-keyscan -t rsa github.com > ~/.ssh/known_hosts
+
+RUN . ~/.profile && \
     eval "$(ssh-agent -s)" && \
     ssh-add ~/.ssh/id_rsa && \
     git clone git@github.com:DailySoccer/webtest.git && \
     cd webtest && \
     git checkout feature/docker && \
-    bash ./playTest.sh -B IE_11
+    activator compile
+
+WORKDIR /data/webtest
+
+CMD . ~/.profile && git pull --rebase && bash ./playTest.sh -B ${SELENIUMCHROME_PORT_4444_TCP_ADDR} -u http://${WEB_PORT_9000_TCP_ADDR}:9000

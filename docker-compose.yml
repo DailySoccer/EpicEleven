@@ -13,9 +13,15 @@ appdata:
 
 tester:
   build: docker/tester
-  volumes:
-    - ~/.ssh:/root/.ssh
+  links:
+    - seleniumchrome
+    - web
 
+seleniumchrome:
+  image: selenium/standalone-chrome:2.45.0
+  ports:
+    - "4444:4444"
+  
 compiler:
   build: docker/compiler
   volumes_from:
@@ -105,6 +111,8 @@ web:
     - appdata
   environment:
     VIRTUAL_HOST: epicdocker.com
+  ports:
+    - "9000:9000"
   links:
     - mongo
     - rabbitmq
