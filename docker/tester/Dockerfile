@@ -29,4 +29,4 @@ RUN . ~/.profile && \
 
 WORKDIR /data/webtest
 
-CMD . ~/.profile && git pull --rebase && bash ./playTest.sh -B ${SELENIUMCHROME_PORT_4444_TCP_ADDR} -u http://${WEB_PORT_9000_TCP_ADDR}:9000
+CMD . ~/.profile && git pull --rebase && bash ./playTest.sh -B ${SELENIUM_PORT_4444_TCP_ADDR} -u http://${WEB_PORT_9000_TCP_ADDR}:9000

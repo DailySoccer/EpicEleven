@@ -17,11 +17,23 @@ tester:
     - seleniumchrome
     - web
 
-seleniumchrome:
-  image: selenium/standalone-chrome:2.45.0
+#seleniumchrome:
+#  image: selenium/standalone-chrome:2.44.0
+#  ports:
+#    - "4444:4444"
+  
+seleniumhub:
+  image: selenium/hub:2.44.0
   ports:
     - "4444:4444"
-  
+
+seleniumnode:
+  image: selenium/node-chrome-debug:2.44.0
+  ports:
+    - "5900:5900"
+  links:
+    - seleniumhub:hub
+
 compiler:
   build: docker/compiler
   volumes_from:
