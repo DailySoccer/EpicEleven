@@ -1,4 +1,4 @@
-FROM dockerfile/java:oracle-java8
+FROM library/java:8-jdk
 MAINTAINER Federico Mon <gnu.fede@gmail.com>
 
 RUN apt-get update -y && apt-get install apt-transport-https
@@ -27,6 +27,4 @@ RUN . ~/.profile && \
     git checkout feature/docker && \
     activator compile
 
-WORKDIR /data/webtest
-
-CMD . ~/.profile && git pull --rebase && bash ./playTest.sh -B ${SELENIUM_PORT_4444_TCP_ADDR} -u http://${WEB_PORT_9000_TCP_ADDR}:9000
+CMD . ~/.profile && cd webtest && git pull --rebase && bash ./playTest.sh -B ${SELENIUM_PORT_4444_TCP_ADDR} -u http://${WEB_PORT_9000_TCP_ADDR}:9000

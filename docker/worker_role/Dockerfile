@@ -1,4 +1,4 @@
-FROM dockerfile/java:oracle-java8
+FROM library/java:oracle-java8
 MAINTAINER Federico Mon <gnu.fede@gmail.com>
 
 ENV CONFIG_FILE docker-worker.conf

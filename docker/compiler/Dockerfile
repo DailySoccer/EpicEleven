@@ -1,4 +1,4 @@
-FROM dockerfile/java:oracle-java8
+FROM library/java:8-jdk
 MAINTAINER Federico Mon <gnu.fede@gmail.com>
 
 VOLUME /app
@@ -33,6 +33,6 @@ CMD . ~/.profile && \
     bash ./build_for_deploy.sh && \
     cd ../backend && \
     activator "set offline := true" clean compile stage && \
-    cp -R /data/backend/target/universal/stage/* /app  && \
+    cp -R target/universal/stage/* /app  && \
     mkdir -p /app/common/app/model && \
-    cp -R /data/backend/common/app/model/migrations /app/common/app/model/
+    cp -R common/app/model/migrations /app/common/app/model/

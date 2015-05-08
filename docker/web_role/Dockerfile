@@ -1,4 +1,4 @@
-FROM dockerfile/java:oracle-java8
+FROM library/java:8-jdk
 MAINTAINER Federico Mon <gnu.fede@gmail.com>
 
 ENV PORT 9000
