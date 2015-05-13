@@ -75,6 +75,9 @@ public class TemplateMatchEvent implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public HashSet<String> pendingTasks = new HashSet();
 
+    @JsonView(JsonViews.NotForClient.class)
+    public boolean simulated = false;
+
     public TemplateMatchEvent() { }
 
     public ObjectId getId() {
@@ -106,6 +109,10 @@ public class TemplateMatchEvent implements JongoId {
 
     public static List<TemplateMatchEvent> findAll(List<ObjectId> idList) {
         return ListUtils.asList(Model.findObjectIds(Model.templateMatchEvents(), "_id", idList).as(TemplateMatchEvent.class));
+    }
+
+    public static List<TemplateMatchEvent> findAllSimulated() {
+        return ListUtils.asList(Model.templateMatchEvents().find("{period: {$ne: 'POST_GAME'}, simulated: true}").as(TemplateMatchEvent.class));
     }
 
     public static List<TemplateMatchEvent> findAllPlaying(List<ObjectId> idList) {
@@ -163,8 +170,14 @@ public class TemplateMatchEvent implements JongoId {
         Model.templateMatchEvents().update("{_id: #, gameFinishedDate: {$exists: 0}}", templateMatchEventId).with("{$set: {gameFinishedDate: #}}", gameFinishedDate);
     }
 
+    public void setGameSimulated() {
+        simulated = true;
+        Model.templateMatchEvents().update("{_id: #}", templateMatchEventId).with("{$set: {simulated: #}}", simulated);
+    }
+
     public boolean isGameStarted()  { return gameStartedDate != null;  }
     public boolean isGameFinished() { return gameFinishedDate != null; }
+    public boolean isGameSimulated() { return simulated; }
 
     public void setPending(String task) {
         pendingTasks.add(task);

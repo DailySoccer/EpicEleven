@@ -30,6 +30,11 @@
 }
 
 <a href="@TemplateMatchEventController.showOptaEvents(match_event.templateMatchEventId.toString())"><button class="btn btn-success">Opta Events</button></a>
+@if(match_event.isGameSimulated()) {
+    <button class="btn btn-warning">Simulating...</button>
+} else {
+    <a href="@TemplateMatchEventController.simulate(match_event.templateMatchEventId.toString())"><button class="btn btn-danger">Simulate</button></a>
+}
 
 <h2 class="sub-header">Start Date: @GlobalDate.formatDate(match_event.startDate)</h2>
 <div class="table-responsive">
@@ -65,7 +70,7 @@
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
             <td>@p.getPlayedMatches()</td>
-            <td>@p.fantasyPoints</td>
+            <td><a href="@TemplateSoccerPlayerController.showStats(p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
         @if(match_event.isGameStarted()) {
             <td><a href="@TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">
                 @match_event.getSoccerPlayerFantasyPoints(p.templateSoccerPlayerId)
@@ -107,7 +112,7 @@
             <td>@p.fieldPos</td>
             <td>@p.salary</td>
             <td>@p.getPlayedMatches()</td>
-            <td>@p.fantasyPoints</td>
+            <td><a href="@TemplateSoccerPlayerController.showStats(p.templateSoccerPlayerId.toString())">@p.fantasyPoints</a></td>
         @if(match_event.isGameStarted()) {
             <td><a href="@TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(match_event.templateMatchEventId.toString(), p.templateSoccerPlayerId.toString())">
                 @match_event.getSoccerPlayerFantasyPoints(p.templateSoccerPlayerId)

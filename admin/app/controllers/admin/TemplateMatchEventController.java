@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import com.google.common.collect.ImmutableMap;
 import model.Model;
 import model.TemplateMatchEvent;
 import model.TemplateSoccerPlayer;
@@ -29,6 +30,14 @@ public class TemplateMatchEventController extends Controller {
         List<OptaEvent> optaEventList = ListUtils.asList(optaEventResults);
 
         return ok(views.html.match_event_opta_events_list.render(optaEventList, getPlayersInfo(matchEvent)));
+    }
+
+    public static Result simulate(String matchEventId) {
+        Model.actors().tellAndAwait("ContestsActor", ImmutableMap.of(
+                "id", "MatchEvent",
+                "matchEventId", matchEventId
+        ));
+        return redirect(routes.TemplateMatchEventController.show(matchEventId));
     }
 
     private static HashMap<String, String> getPlayersInfo(TemplateMatchEvent matchEvent){

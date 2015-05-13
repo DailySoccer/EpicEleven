@@ -185,6 +185,10 @@ public class OptaEvent {
         }
     }
 
+    public void insert() {
+        Model.optaEvents().update("{eventId: #, teamId: #, gameId: #}", eventId, teamId, gameId).upsert().with(this);
+    }
+
     static public OptaEvent findLast(String optaMatchEventId) {
         OptaEvent lastEvent = null;
 

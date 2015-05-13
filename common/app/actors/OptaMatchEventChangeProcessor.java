@@ -15,6 +15,11 @@ public class OptaMatchEventChangeProcessor {
         _changedOptaMatchEventIds = processor.getDirtyMatchEventIds();
     }
 
+    public OptaMatchEventChangeProcessor(String optaMatchEventId) {
+        _changedOptaMatchEventIds = new HashSet<String>();
+        _changedOptaMatchEventIds.add(optaMatchEventId);
+    }
+
     public void process() {
         final String TASK_ID = "PROCESS";
 
