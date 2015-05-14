@@ -55,7 +55,8 @@
     { "title": "Teams" },
     { "title": "Competition" },
     { "title": "Start Date" },
-    { "title": "State" }
+    { "title": "State" },
+    { "title": "" }
 }
 
 @include_match_events(match_event_list : List[model.TemplateMatchEvent]) = {
@@ -67,7 +68,8 @@
         "@TemplateMatchEventController.show(p.templateMatchEventId.toString())~@match_event_name(p)",
         "@p.optaCompetitionId",
         "@GlobalDate.formatDate(p.startDate)",
-        "@match_event_state(p)"
+        "@match_event_state(p)",
+        "@TemplateMatchEventController.simulate(p.templateMatchEventId.toString())"
         ] @if(index < match_event_list.size-1) { , }
     }
 }
@@ -110,7 +112,16 @@
                             return '<button class="btn btn-warning">' + data + '</button>';
                         }
                     }
-                } ],
+                },
+                {
+                    "targets": 7,
+                    "mRender": function (data, type, full) {
+                        if (full[0].indexOf('#') == -1)
+                            return '<a href="' + data + '">' + '<button class="btn btn-success">Simulate</button></a>';
+                        else
+                            return '';
+                    }
+                }],
                 stateSave: true,
                 iDisplayLength: 100,
                 "deferRender": true

@@ -42,7 +42,7 @@ public class TemplateMatchEventController extends Controller {
                 "matchEventId", templateMatchEvent.templateMatchEventId.toString()
         ));
 
-        return redirect(routes.TemplateMatchEventController.show(matchEventId));
+        return redirect(routes.TemplateMatchEventController.index());
     }
 
     private static TemplateMatchEvent createMatchEvent(String matchEventId) {
