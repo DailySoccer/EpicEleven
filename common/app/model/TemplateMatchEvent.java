@@ -107,6 +107,10 @@ public class TemplateMatchEvent implements JongoId {
         return ListUtils.asList(Model.templateMatchEvents().find().as(TemplateMatchEvent.class));
     }
 
+    public static long countClonesFromOptaId(String optaMatchEventId) {
+        return Model.templateMatchEvents().count("{optaMatchEventId: { $regex: # }}", String.format("^%s#*+", optaMatchEventId));
+    }
+
     public static List<TemplateMatchEvent> findAll(List<ObjectId> idList) {
         return ListUtils.asList(Model.findObjectIds(Model.templateMatchEvents(), "_id", idList).as(TemplateMatchEvent.class));
     }
@@ -368,6 +372,10 @@ public class TemplateMatchEvent implements JongoId {
         optaCompetitionId = optaMatchEvent.competitionId;
         optaSeasonId = optaMatchEvent.seasonId;
         updateDocument();
+    }
+
+    public void insert() {
+        Model.templateMatchEvents().withWriteConcern(WriteConcern.SAFE).update("{_id: #}", templateMatchEventId).upsert().with(this);
     }
 
     public void updateDocument() {

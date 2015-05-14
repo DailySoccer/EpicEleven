@@ -1,12 +1,12 @@
 package controllers.admin;
 
 import com.google.common.collect.ImmutableMap;
-import model.Model;
-import model.TemplateMatchEvent;
-import model.TemplateSoccerPlayer;
-import model.TemplateSoccerTeam;
+import model.*;
 import model.opta.OptaEvent;
+import model.opta.OptaMatchEvent;
+import model.opta.OptaProcessor;
 import org.bson.types.ObjectId;
+import org.jdom2.Element;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
@@ -33,11 +33,27 @@ public class TemplateMatchEventController extends Controller {
     }
 
     public static Result simulate(String matchEventId) {
+        TemplateMatchEvent templateMatchEvent = createMatchEvent(matchEventId);
+        templateMatchEvent.templateMatchEventId = new ObjectId();
+        templateMatchEvent.insert();
+
         Model.actors().tellAndAwait("ContestsActor", ImmutableMap.of(
                 "id", "MatchEvent",
-                "matchEventId", matchEventId
+                "matchEventId", templateMatchEvent.templateMatchEventId.toString()
         ));
+
         return redirect(routes.TemplateMatchEventController.show(matchEventId));
+    }
+
+    private static TemplateMatchEvent createMatchEvent(String matchEventId) {
+        TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOne(new ObjectId(matchEventId));
+
+        long nextMatchEvent = TemplateMatchEvent.countClonesFromOptaId(templateMatchEvent.optaMatchEventId);
+        OptaMatchEvent cloneOptaMatchEvent = OptaMatchEvent.findOne(templateMatchEvent.optaMatchEventId).copy();
+        cloneOptaMatchEvent.optaMatchEventId = String.format("%s#%d", templateMatchEvent.optaMatchEventId, nextMatchEvent);
+        cloneOptaMatchEvent.insert();
+
+        return TemplateMatchEvent.createFromOpta(cloneOptaMatchEvent);
     }
 
     private static HashMap<String, String> getPlayersInfo(TemplateMatchEvent matchEvent){
