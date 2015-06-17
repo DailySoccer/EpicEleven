@@ -394,6 +394,20 @@ public class TemplateMatchEvent implements JongoId {
         return true;
     }
 
+    static public TemplateMatchEvent createSimulation(ObjectId matchEventId) {
+        TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOne(matchEventId);
+
+        long nextMatchEvent = TemplateMatchEvent.countClonesFromOptaId(templateMatchEvent.optaMatchEventId);
+        OptaMatchEvent cloneOptaMatchEvent = OptaMatchEvent.findOne(templateMatchEvent.optaMatchEventId).copy();
+        cloneOptaMatchEvent.optaMatchEventId = String.format("%s#%d", templateMatchEvent.optaMatchEventId, nextMatchEvent);
+        cloneOptaMatchEvent.insert();
+
+        TemplateMatchEvent simulation = TemplateMatchEvent.createFromOpta(cloneOptaMatchEvent);
+        simulation.templateMatchEventId = new ObjectId();
+        simulation.insert();
+        return simulation;
+    }
+
     private void insertLivePlayers(List<TemplateSoccerPlayer> soccerPlayers) {
         for (TemplateSoccerPlayer soccerPlayer : soccerPlayers) {
             liveFantasyPoints.put(soccerPlayer.templateSoccerPlayerId.toString(), new LiveFantasyPoints());

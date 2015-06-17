@@ -2,9 +2,7 @@ package actors;
 
 import akka.actor.UntypedActor;
 import model.*;
-import model.opta.OptaEvent;
-import model.opta.OptaEventType;
-import model.opta.OptaMatchEventStats;
+import model.opta.*;
 import org.bson.types.ObjectId;
 import play.Logger;
 
@@ -105,7 +103,7 @@ public class MatchEventActor extends UntypedActor {
     }
 
     void onTick() {
-        Logger.debug("Tick {}", templateMatchEventId);
+        // Logger.debug("Tick {}", templateMatchEventId);
 
         for (int p=0; p<2; p++) {
             if (p == 1) {
@@ -223,9 +221,11 @@ public class MatchEventActor extends UntypedActor {
             priorities.put(player, priority);
             total += priority;
         }
+        /*
         for (TemplateSoccerPlayer player : players) {
             Logger.info("{}: {}%", player.name, priorities.get(player)*100/total);
         }
+        */
         return priorities;
     }
 
@@ -248,7 +248,7 @@ public class MatchEventActor extends UntypedActor {
         info.append(String.format("%s (%s) matches: %d \n",
                 player.name, player.templateSoccerPlayerId.toString(), player.getPlayedMatches()));
 
-        for (OptaEventType optaEventType : OptaEventType.values()){
+        for (OptaEventType optaEventType : OptaEventType.values()) {
             int count = (int) Model.optaEvents().count("{optaPlayerId: #, typeId: #, simulated: {$exists: false}}",
                     player.optaPlayerId, optaEventType.code);
             if (count > 0) {
@@ -257,7 +257,7 @@ public class MatchEventActor extends UntypedActor {
             }
         }
 
-        Logger.info(info.toString());
+        // Logger.info(info.toString());
     }
 
     void registerEvents(List<TemplateSoccerPlayer> players) {
@@ -329,21 +329,21 @@ public class MatchEventActor extends UntypedActor {
     }
 
     static OptaEventType[] attackEvents = {
-            OptaEventType.PASS_SUCCESSFUL, OptaEventType.TAKE_ON, OptaEventType.ASSIST, OptaEventType.FOUL_RECEIVED,
-            OptaEventType.PASS_UNSUCCESSFUL, OptaEventType.DISPOSSESSED, OptaEventType.ERROR, OptaEventType.DECISIVE_ERROR,
-            OptaEventType.ATTEMPT_SAVED, OptaEventType.POST, OptaEventType.MISS, OptaEventType.OWN_GOAL,
-            OptaEventType.CAUGHT_OFFSIDE, OptaEventType.GOAL_SCORED_BY_GOALKEEPER, OptaEventType.GOAL_SCORED_BY_DEFENDER,
-            OptaEventType.GOAL_SCORED_BY_MIDFIELDER, OptaEventType.GOAL_SCORED_BY_FORWARD
+        OptaEventType.PASS_SUCCESSFUL, OptaEventType.TAKE_ON, OptaEventType.ASSIST, OptaEventType.FOUL_RECEIVED,
+        OptaEventType.PASS_UNSUCCESSFUL, OptaEventType.DISPOSSESSED, OptaEventType.ERROR, OptaEventType.DECISIVE_ERROR,
+        OptaEventType.ATTEMPT_SAVED, OptaEventType.POST, OptaEventType.MISS, OptaEventType.OWN_GOAL,
+        OptaEventType.CAUGHT_OFFSIDE, OptaEventType.GOAL_SCORED_BY_GOALKEEPER, OptaEventType.GOAL_SCORED_BY_DEFENDER,
+        OptaEventType.GOAL_SCORED_BY_MIDFIELDER, OptaEventType.GOAL_SCORED_BY_FORWARD
     };
 
-    Set<OptaEventType> goalEvents = new HashSet<OptaEventType>() {{
+    static Set<OptaEventType> goalEvents = new HashSet<OptaEventType>() {{
         add(OptaEventType.GOAL_SCORED_BY_GOALKEEPER);
         add(OptaEventType.GOAL_SCORED_BY_DEFENDER);
         add(OptaEventType.GOAL_SCORED_BY_MIDFIELDER);
         add(OptaEventType.GOAL_SCORED_BY_FORWARD);
     }};
 
-    Set<OptaEventType> changeTeamEvents = new HashSet<OptaEventType>() {{
+    static Set<OptaEventType> changeTeamEvents = new HashSet<OptaEventType>() {{
         add(OptaEventType.PASS_UNSUCCESSFUL);
         add(OptaEventType.DISPOSSESSED);
         add(OptaEventType.ERROR);
@@ -420,6 +420,7 @@ GOAL_SCORED_BY_MIDFIELDER   (1603, "Goal scored by a midfielder"),
 GOAL_SCORED_BY_FORWARD      (1604, "Goal scored by a forward"),
 
 Acciones CONTRARIO:
+
 CLEARANCE               (12, "Player under pressure hits ball clear of the defensive zone or/and out of play"),
 TACKLE                  (7, "Tackle: dispossesses an opponent of the ball, not retaining possession"),
 TACKLE_EFFECTIVE        (1007, "Tackle: dispossesses an opponent of the ball, retaining possession"),

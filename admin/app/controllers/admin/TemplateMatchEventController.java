@@ -33,9 +33,7 @@ public class TemplateMatchEventController extends Controller {
     }
 
     public static Result simulate(String matchEventId) {
-        TemplateMatchEvent templateMatchEvent = createMatchEvent(matchEventId);
-        templateMatchEvent.templateMatchEventId = new ObjectId();
-        templateMatchEvent.insert();
+        TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.createSimulation(new ObjectId(matchEventId));
 
         Model.actors().tellAndAwait("ContestsActor", ImmutableMap.of(
                 "id", "MatchEvent",

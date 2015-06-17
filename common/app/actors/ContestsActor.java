@@ -33,6 +33,14 @@ public class ContestsActor extends TickableActor {
         if (msg instanceof Map) {
             Map<String, String> msgMap = (Map) msg;
             switch(msgMap.get("id")) {
+                case "TemplateContest":
+                    String templateContestId = msgMap.get("templateContestId");
+                    TemplateContest templateContest = TemplateContest.findOne(new ObjectId(templateContestId));
+                    for (ObjectId matchEventId : templateContest.templateMatchEventIds) {
+                        getContext().actorOf(Props.create(MatchEventActor.class, matchEventId), String.format("MatchActor%s", matchEventId));
+                    }
+                    sender().tell(true, self());
+                    break;
                 case "MatchEvent":
                     String matchEventId = msgMap.get("matchEventId");
                     getContext().actorOf(Props.create(MatchEventActor.class, new ObjectId(matchEventId)), String.format("MatchActor%s", matchEventId));

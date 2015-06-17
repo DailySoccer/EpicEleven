@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
+import model.opta.OptaMatchEvent;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
@@ -13,6 +14,7 @@ import utils.ListUtils;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TemplateContest implements JongoId {
     public static final String FILL_WITH_MOCK_USERS = "%MockUsers";
@@ -50,6 +52,9 @@ public class TemplateContest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
+    @JsonView(JsonViews.NotForClient.class)
+    public boolean simulated = false;
+
     public TemplateContest() { }
 
     public TemplateContest(String name, int minInstances, int maxEntries, SalaryCap salaryCap,
@@ -76,6 +81,34 @@ public class TemplateContest implements JongoId {
             }
         }
         this.startDate = startDate;
+    }
+
+    public TemplateContest copy() {
+        TemplateContest cloned = new TemplateContest();
+
+        cloned.templateContestId = templateContestId;
+        cloned.state = state;
+        cloned.name = name;
+        cloned.minInstances = minInstances;
+        cloned.maxEntries = maxEntries;
+
+        cloned.salaryCap = salaryCap;
+        cloned.entryFee = entryFee;
+        cloned.prizeType = prizeType;
+
+        cloned.startDate = startDate;
+        cloned.optaCompetitionId = optaCompetitionId;
+
+        cloned.templateMatchEventIds = new ArrayList<>(templateMatchEventIds);
+
+        if (instanceSoccerPlayers != null) {
+            cloned.instanceSoccerPlayers = new ArrayList<>(instanceSoccerPlayers);
+        }
+
+        cloned.activationAt = activationAt;
+        cloned.createdAt = createdAt;
+
+        return cloned;
     }
 
     public ObjectId getId() {
@@ -121,6 +154,11 @@ public class TemplateContest implements JongoId {
         return ListUtils.asList(Model.templateContests()
                                      .find("{state: \"OFF\", activationAt: {$lte: #}, startDate: {$gte: #}}", activationAt, GlobalDate.getCurrentDate())
                                      .as(TemplateContest.class));
+    }
+
+    public TemplateContest insert() {
+        Model.templateContests().withWriteConcern(WriteConcern.SAFE).update("{_id: #}", templateContestId).upsert().with(this);
+        return this;
     }
 
     /**
@@ -197,6 +235,28 @@ public class TemplateContest implements JongoId {
         }
     }
 
+    static public TemplateContest createSimulation(ObjectId templateContestId) {
+        TemplateContest simulation = TemplateContest.findOne(templateContestId).copy();
+        simulation.templateContestId = new ObjectId();
+
+        // Crear partidos "simulados"
+        simulation.templateMatchEventIds = simulation.templateMatchEventIds.stream().map(matchEventId -> {
+            TemplateMatchEvent simulateMatchEvent = TemplateMatchEvent.createSimulation(matchEventId);
+            return simulateMatchEvent.templateMatchEventId;
+        }).collect(Collectors.toList());
+
+        /*
+        if (!simulation.name.contains(FILL_WITH_MOCK_USERS)) {
+            simulation.name = simulation.name.concat(" ").concat(FILL_WITH_MOCK_USERS);
+        }
+        */
+
+        simulation.insert().setSimulation();
+
+        simulation.instantiate();
+        return simulation;
+    }
+
     /**
      *  Estado del partido
      */
@@ -226,5 +286,10 @@ public class TemplateContest implements JongoId {
 
     public static void publish(ObjectId templateContestId) {
         Model.templateContests().update("{_id: #, state: \"DRAFT\"}", templateContestId).with("{$set: {state: \"OFF\"}}");
+    }
+
+    public void setSimulation() {
+        simulated = true;
+        Model.templateContests().update("{_id: #}", templateContestId).with("{$set: {simulated: #}}", simulated);
     }
 }

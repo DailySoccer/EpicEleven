@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import actions.CheckTargetEnvironment;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.mongodb.WriteConcern;
 import model.*;
 import org.bson.types.ObjectId;
@@ -46,7 +47,8 @@ public class TemplateContestController extends Controller {
                         "startDate",
                         "activationAt",
                         "",             // Edit
-                        ""              // Delete
+                        "",             // Delete
+                        ""              // Simulated
 
                 );
             }
@@ -67,6 +69,7 @@ public class TemplateContestController extends Controller {
                     case 10: return GlobalDate.formatDate(templateContest.activationAt);
                     case 11: return "";
                     case 12: return "";
+                    case 13: return "";
                 }
                 return "<invalid value>";
             }
@@ -83,11 +86,11 @@ public class TemplateContestController extends Controller {
                     case 1: return String.format("<a href=\"%s\" style=\"white-space: nowrap\">%s</a>",
                                 routes.TemplateContestController.show(templateContest.templateContestId.toString()),
                                 fieldValue);
-                    case 10: return (templateContest.state.isDraft() || templateContest.state.isOff() || templateContest.state.isActive())
+                    case 11: return (templateContest.state.isDraft() || templateContest.state.isOff() || templateContest.state.isActive())
                                 ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">Edit</button></a>",
                                         routes.TemplateContestController.edit(templateContest.templateContestId.toString()))
                                 : "";
-                    case 11: return templateContest.state.isDraft()
+                    case 12: return templateContest.state.isDraft()
                              ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">+</button></a> <a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
                                         routes.TemplateContestController.publish(templateContest.templateContestId.toString()),
                                         routes.TemplateContestController.destroy(templateContest.templateContestId.toString()))
@@ -95,6 +98,12 @@ public class TemplateContestController extends Controller {
                                 String.format("<a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
                                         routes.TemplateContestController.destroy(templateContest.templateContestId.toString()))
                              : "";
+                    case 13: return !templateContest.simulated
+                            ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">Simulation</button></a>",
+                                    routes.TemplateContestController.simulate(templateContest.templateContestId.toString()))
+                            : templateContest.state.isActive() ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">Start</button></a>",
+                                    routes.TemplateContestController.startSimulation(templateContest.templateContestId.toString()))
+                            : "";
                 }
                 return fieldValue;
             }
@@ -132,6 +141,27 @@ public class TemplateContestController extends Controller {
     public static Result destroy(String templateContestId) {
         TemplateContest templateContest = TemplateContest.findOne(new ObjectId(templateContestId));
         TemplateContest.remove(templateContest);
+        return redirect(routes.TemplateContestController.index());
+    }
+
+    public static Result simulate(String templateContestId) {
+        TemplateContest templateContest = TemplateContest.createSimulation(new ObjectId(templateContestId));
+
+        /*
+        Model.actors().tellAndAwait("ContestsActor", ImmutableMap.of(
+                "id", "TemplateContest",
+                "templateContestId", templateContest.templateContestId.toString()
+        ));
+        */
+
+        return redirect(routes.TemplateContestController.index());
+    }
+
+    public static Result startSimulation(String templateContestId) {
+        Model.actors().tellAndAwait("ContestsActor", ImmutableMap.of(
+                "id", "TemplateContest",
+                "templateContestId", templateContestId
+        ));
         return redirect(routes.TemplateContestController.index());
     }
 

@@ -52,6 +52,8 @@ GET         /template_contest/save                                              
 POST        /template_contest/save                                               controllers.admin.TemplateContestController.create()
 GET         /template_contest/publish/:templateContestId                         controllers.admin.TemplateContestController.publish(templateContestId : String)
 GET         /template_contest/delete/:templateContestId                          controllers.admin.TemplateContestController.destroy(templateContestId : String)
+GET         /template_contest/simulate/:templateContestId                        controllers.admin.TemplateContestController.simulate(templateContestId : String)
+GET         /template_contest/start_simulation/:templateContestId                controllers.admin.TemplateContestController.startSimulation(templateContestId : String)
 GET         /template_contest/:templateContestId                                 controllers.admin.TemplateContestController.show(templateContestId : String)
 
 GET         /template_contest/get_prizes/:prizeType/:maxEntries/:entryFee        controllers.admin.TemplateContestController.getPrizes(prizeType : String, maxEntries : Int, entryFee : Int)
