@@ -24,7 +24,8 @@ public class TemplateContestController extends Controller {
 
     // Test purposes
     public static int templateCount = 0;
-    public static final String[] contestNameSuffixes = {"1", "a", "b", "a", "2", "n", "asfex", "dfggh", "piu", "lorem", "7", "8", "9"};
+    public static final String[] contestNameSuffixes = {"All stars", "Special", "Regular", "Professional",
+            "Just 4 Fun", "Weekly", "Experts Only", "Friends", "Pro Level", "Friday Only", "Amateur", "Weekend Only", "For Fame & Glory"};
 
     public static Result index() {
         return ok(views.html.template_contest_list.render(getCreatingTemplateContestsState()));

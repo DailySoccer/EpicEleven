@@ -1,5 +1,6 @@
 import java.util.concurrent.TimeUnit
 
+import model.GlobalDate
 import play.Logger
 import play.api.Play.current
 import play.api._
@@ -73,9 +74,13 @@ object Global extends GlobalSettings {
     releaseVersion = readReleaseVersion
     targetEnvironment = readTargetEnvironment
     systemMode = readSystemMode
+
     if (Play.isProd) {
       launchReadVersionThread()
     }
+
+    readFakeDate()
+
     Logger.info(s"Epic Eleven $instanceRole, Version: $releaseVersion, TargetEnvironment: $targetEnvironment, has started")
 
     model.Model.init(instanceRole, targetEnvironment, systemMode)
@@ -86,6 +91,22 @@ object Global extends GlobalSettings {
     }
   }
 
+
+  // Hack para fijar la fecha global y por ejemplo poder enseñar el juego fuera de temporada. Se configura con una variable
+  // de entorno ${FAKE_DATE} leida desde application.conf
+  def readFakeDate(): Unit = {
+    val temp = Play.current.configuration.getString("fakeDate").orNull
+
+    if (temp != null) {
+      try {
+        val parsedDate = GlobalDate.parseDate(temp, null)
+        GlobalDate.setFakeDate(parsedDate)
+      }
+      catch {
+        case e => Logger.error("WTF 8211 Parseando la fecha {}", temp, e)
+      }
+    }
+  }
 
   override def onStop(app: Application) {
     Logger.info("Epic Eleven shutdown...")
