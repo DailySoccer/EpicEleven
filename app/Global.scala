@@ -91,7 +91,6 @@ object Global extends GlobalSettings {
     }
   }
 
-
   // Hack para fijar la fecha global y por ejemplo poder enseñar el juego fuera de temporada. Se configura con una variable
   // de entorno ${FAKE_DATE} leida desde application.conf
   def readFakeDate(): Unit = {
@@ -103,7 +102,7 @@ object Global extends GlobalSettings {
         GlobalDate.setFakeDate(parsedDate)
       }
       catch {
-        case e => Logger.error("WTF 8211 Parseando la fecha {}", temp, e)
+        case e: Throwable => Logger.error("WTF 8211 Parseando la fecha {}", temp, e)
       }
     }
   }
