@@ -8,6 +8,7 @@ import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.PaymentHistory;
 import com.paypal.core.rest.PayPalRESTException;
 import model.*;
+import model.jobs.CompleteOrderJob;
 import model.paypal.PaypalIPNMessage;
 import model.paypal.PaypalPayment;
 import org.bson.types.ObjectId;
@@ -167,7 +168,8 @@ public class PaypalController extends Controller {
                 // Evaluar la respuesta de Paypal (values: "created", "approved", "failed", "canceled", "expired", "pending")
                 if (payment.getState().equalsIgnoreCase(PAYMENT_STATE_APPROVED)) {
                     // Pago aprobado
-                    order.setCompleted();
+                    CompleteOrderJob.create(order.orderId);
+                    // order.setCompleted();
                 }
                 else if (payment.getState().equalsIgnoreCase(PAYMENT_STATE_PENDING)) {
                     // El pago permanece pendiente de evaluación posterior (ipnListener)
@@ -254,7 +256,8 @@ public class PaypalController extends Controller {
                 Order order = Order.findOne(ipnMessage.getIpnValue(PaypalIPNMessage.FIELD_CUSTOM_ID));
                 // Aseguramos que siempre completamos el pedido, la operación "setCompleted" es idempotente
                 if (order != null) {
-                    order.setCompleted();
+                    CompleteOrderJob.create(order.orderId);
+                    // order.setCompleted();
                 }
             }
 

@@ -52,6 +52,7 @@ public class Model {
     static public MongoCollection paypalResponses() { return _jongo.getCollection("paypalResponses"); }
 
     static public MongoCollection promos() { return _jongo.getCollection("promos"); }
+    static public MongoCollection bonus() { return _jongo.getCollection("bonus"); }
 
     static public MongoCollection optaProcessor()  { return _jongo.getCollection("optaProcessor"); }
     static public MongoCollection simulator() { return _jongo.getCollection("simulator"); }
@@ -70,7 +71,7 @@ public class Model {
         return _actors;
     }
 
-    static public void init(InstanceRole instanceRole, TargetEnvironment targetEnv) {
+    static public void init(InstanceRole instanceRole, TargetEnvironment targetEnv, SystemMode systemMode) {
 
         if ((!Play.isDev() || instanceRole != InstanceRole.DEVELOPMENT_ROLE) && targetEnv != TargetEnvironment.LOCALHOST) {
             throw new RuntimeException("WTF 05 Intento de inicializar un entorno remoto sin ser una maquina de desarrollo");
@@ -82,7 +83,7 @@ public class Model {
         initMongo(readMongoUriForEnvironment(_targetEnvironment));
         initPostgresDB();
 
-        _actors = new Actors(_instanceRole, targetEnv);
+        _actors = new Actors(_instanceRole, targetEnv, systemMode);
     }
 
     static public void shutdown() {
@@ -236,6 +237,7 @@ public class Model {
         ensureTransactionsDB(_mongoDB);
         ensureNotificationsDB(_mongoDB);
         ensurePromosDB(_mongoDB);
+        ensureBonusDB(_mongoDB);
     }
 
     static private void ensureUsersDB(DB theMongoDB) {
@@ -338,6 +340,12 @@ public class Model {
     static private void ensurePromosDB(DB theMongoDB) {
         if (!theMongoDB.collectionExists("promos")) {
             DBCollection promos = theMongoDB.createCollection("promos", new BasicDBObject());
+        }
+    }
+
+    static private void ensureBonusDB(DB theMongoDB) {
+        if (!theMongoDB.collectionExists("bonus")) {
+            DBCollection bonus = theMongoDB.createCollection("bonus", new BasicDBObject());
         }
     }
 

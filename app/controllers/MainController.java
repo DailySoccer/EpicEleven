@@ -4,6 +4,8 @@ import actions.AllowCors;
 import com.google.common.collect.ImmutableMap;
 import model.*;
 import org.bson.types.ObjectId;
+import play.libs.F;
+import play.libs.ws.WS;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
@@ -113,5 +115,13 @@ public class MainController extends Controller {
             data.put("match_event", templateMatchEvent);
         }
         return new ReturnHelper(data).toResult(JsonViews.Statistics.class);
+    }
+
+
+    public static F.Promise<Result> getShortUrl() {
+        String url = request().body().asJson().get("url").asText();
+        return WS.url("http://www.readability.com/api/shortener/v1/urls").post("url="+url).map(response -> {
+            return ok(response.getBody());
+        });
     }
 }

@@ -1,5 +1,6 @@
 import java.util.concurrent.TimeUnit
 
+import model.GlobalDate
 import play.Logger
 import play.api.Play.current
 import play.api._
@@ -9,7 +10,7 @@ import play.api.mvc.Results._
 import play.api.mvc.{EssentialAction, Filter, Filters, _}
 import play.filters.gzip.GzipFilter
 import stormpath.StormPathClient
-import utils.{TargetEnvironment, InstanceRole}
+import utils.{SystemMode, TargetEnvironment, InstanceRole}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -25,6 +26,8 @@ object Global extends GlobalSettings {
 
   // Target environment for our Model & Actors to connect to
   var targetEnvironment = TargetEnvironment.LOCALHOST
+
+  var systemMode = SystemMode.DEVELOPMENT
 
 
   val releaseFilter = Filter { (nextFilter, requestHeader) =>
@@ -70,9 +73,17 @@ object Global extends GlobalSettings {
     instanceRole = readInstanceRole
     releaseVersion = readReleaseVersion
     targetEnvironment = readTargetEnvironment
+    systemMode = readSystemMode
+
+    if (Play.isProd) {
+      launchReadVersionThread()
+    }
+
+    readFakeDate()
+
     Logger.info(s"Epic Eleven $instanceRole, Version: $releaseVersion, TargetEnvironment: $targetEnvironment, has started")
 
-    model.Model.init(instanceRole, targetEnvironment)
+    model.Model.init(instanceRole, targetEnvironment, systemMode)
 
     // Es aqui donde se llama a la inicializacion de Stormpath a traves del constructor
     if (StormPathClient.instance.isConnected) {
@@ -80,6 +91,22 @@ object Global extends GlobalSettings {
     }
   }
 
+
+  // Hack para fijar la fecha global y por ejemplo poder enseñar el juego fuera de temporada. Se configura con una variable
+  // de entorno ${FAKE_DATE} leida desde application.conf
+  def readFakeDate(): Unit = {
+    val temp = Play.current.configuration.getString("fakeDate").orNull
+
+    if (temp != null) {
+      try {
+        val parsedDate = GlobalDate.parseDate(temp, null)
+        GlobalDate.setFakeDate(parsedDate)
+      }
+      catch {
+        case e => Logger.error("WTF 8211 Parseando la fecha {}", temp, e)
+      }
+    }
+  }
 
   override def onStop(app: Application) {
     Logger.info("Epic Eleven shutdown...")
@@ -107,9 +134,29 @@ object Global extends GlobalSettings {
     if (temp == null) targetEnvironment else TargetEnvironment.valueOf(temp)
   }
 
+  private def readSystemMode: SystemMode = {
+    val temp = Play.current.configuration.getString("systemMode").orNull
+
+    if (temp == null) systemMode else SystemMode.valueOf(temp)
+  }
+
+  private def launchReadVersionThread(): Unit = {
+    if (releaseVersion == "devel") {
+      val thread = new Thread(new Runnable {
+        def run(): Unit = {
+          while (releaseVersion == "devel") {
+            releaseVersion = readReleaseVersion
+            Thread.sleep(1000)
+          }
+        }
+      })
+      thread.start()
+    }
+  }
+
+
   private def readReleaseVersion : String = {
     var version = "devel"
-
     try {
       val herokuKey = Play.current.configuration.getString("heroku_key").orNull
       val herokuApp = Play.current.configuration.getString("heroku_app").orNull
@@ -128,7 +175,6 @@ object Global extends GlobalSettings {
     catch {
       case e: Exception => Logger.error("WTF 7932 Error durante la inicializacion de la version", e)
     }
-
     version
   }
 }

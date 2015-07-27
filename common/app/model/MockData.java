@@ -1,8 +1,11 @@
 package model;
 
+import model.jobs.EnterContestJob;
 import model.opta.OptaCompetition;
 import org.bson.types.ObjectId;
+import org.joda.money.Money;
 import utils.ListUtils;
+import utils.MoneyUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,6 +76,14 @@ public final class MockData {
         for (int i=0; i<size && i<users.size(); i++) {
             User user = users.get(i);
 
+            if (contest.entryFee.isPositive()) {
+                // El usuario tiene que tener el dinero suficiente para entrar en el contest
+                Money balance = user.calculateBalance();
+                if (balance.isLessThan(contest.entryFee)) {
+                    continue;
+                }
+            }
+
             List<ObjectId> soccerIds = new ArrayList<>();
 
             for (TemplateSoccerPlayer soccer : ListUtils.randomElements(goalKeepers, 1))
@@ -87,8 +98,7 @@ public final class MockData {
             for (TemplateSoccerPlayer soccer : ListUtils.randomElements(forwards, 2))
                 soccerIds.add(soccer.templateSoccerPlayerId);
 
-            contest.contestEntries.add(new ContestEntry(user.userId, soccerIds));
-            contest.freeSlots--;
+            EnterContestJob.create(user.userId, contest.contestId, soccerIds);
         }
 
     }

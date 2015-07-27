@@ -179,7 +179,7 @@ public class MessageTemplateSend {
 
         MandrillMessage message = new MandrillMessage();
         message.to = to;
-        message.fromEmail = "support@epiceleven.com";
+        message.fromEmail = "no-reply@epiceleven.com";
         message.fromName = "Epic Eleven";
 
         message.mergeVars = mergeVars;

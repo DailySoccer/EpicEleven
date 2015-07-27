@@ -237,7 +237,7 @@ public class BotActor extends UntypedActor {
         Logger.debug("{} va a pedir sus getMyActiveContests", getFullName());
 
         List<Contest> ret;
-        JsonNode jsonNode = get("get_my_active_contests").findValue("contests_0");
+        JsonNode jsonNode = get("get_my_active_contests").findValue("contests");
 
         if (jsonNode != null) {
             ret = JsonUtils.fromJSON(jsonNode.toString(), new TypeReference<List<Contest>>() { });

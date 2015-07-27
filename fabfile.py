@@ -92,7 +92,15 @@ def copydb(origin='', destination='', password=''):
     """
     (mongocp) needs origin, destination and password
     """
-    if not origin or not destination:
+    OPTS_DICT = {'local':
+                     '-h localhost:27017 -d dailySoccerDB',
+                 'production':
+                     '-h lamppost.7.mongolayer.com:10078 -d app23671191 -u "admin" -p "%s"' % (password),
+                 'staging':
+                     '-h lamppost.7.mongolayer.com:10011 -d app26235550 -u "admin" -p "%s"' % (password)
+                 }
+
+    if destination not in OPTS_DICT or origin not in OPTS_DICT:
         abort("""Usage:
                  $ fab copydb:origin=origin,destination=destination,password=password
 
@@ -103,33 +111,15 @@ def copydb(origin='', destination='', password=''):
     if origin == destination:
         abort('Destination cannot be the same as origin')
 
-    OPTS_DICT = {'local':
-                     '-h localhost:27017 -d dailySoccerDB',
-                 'production':
-                     '-h lamppost.6.mongolayer.com:10078 -d app23671191 -u "admin" -p "%s"' % (password),
-                 'staging':
-                     '-h lamppost.6.mongolayer.com:10011 -d app26235550 -u "admin" -p "%s"' % (password)
-                }
+    # Creamos un directorio temporal
+    temp_dir = mkdtemp()
 
-    # Name of the MongoDB database in production
-    env.prod_app_name = None if origin in OPTS_DICT else 'app23671191'
+    local('mongodump %s -o %s' % (OPTS_DICT[origin], temp_dir))
+    dir_created = local('ls %s' % temp_dir, capture=True)
+    local('mongorestore --drop %s %s/%s' % (OPTS_DICT[destination], temp_dir, dir_created))
 
-    if destination in OPTS_DICT:
-        #Creamos un directorio temporal
-        temp_dir = mkdtemp()
-
-        if env.prod_app_name:
-            local('tar xzf %s -C %s' % (tarfile, temp_dir))
-            local('mongodump --dbpath %s' % (temp_dir))
-            local('mongorestore --drop %s dump/%s' % (OPTS_DICT[destination], origin))
-            rmtree('dump')
-        else:
-            local('mongodump %s -o %s' % (OPTS_DICT[origin], temp_dir))
-            dir_created = local('ls %s' % temp_dir, capture=True)
-            local('mongorestore --drop %s %s/%s' % (OPTS_DICT[destination], temp_dir, dir_created))
-
-        #Borramos el directorio temporal
-        rmtree(temp_dir)
+    # Borramos el directorio temporal
+    rmtree(temp_dir)
 
 
 def get_branch_name():
