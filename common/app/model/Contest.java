@@ -86,6 +86,9 @@ public class Contest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public boolean closed = false;
 
+    @JsonView(JsonViews.NotForClient.class)
+    public boolean simulation = false;
+
     public Contest() {}
 
     public Contest(TemplateContest template) {
@@ -101,6 +104,7 @@ public class Contest implements JongoId {
         optaCompetitionId = template.optaCompetitionId;
         templateMatchEventIds = template.templateMatchEventIds;
         instanceSoccerPlayers = template.instanceSoccerPlayers;
+        simulation = template.simulation;
         createdAt = GlobalDate.getCurrentDate();
     }
 

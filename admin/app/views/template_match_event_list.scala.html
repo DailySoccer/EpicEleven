@@ -6,8 +6,6 @@
 @match_event_state(match_event : model.TemplateMatchEvent) = @{
     if(match_event.isGameFinished()) {
         "Finished"
-    } else if (match_event.isGameSimulated()) {
-        "Simulating"
     } else if (match_event.isGameStarted()) {
         "Live"
     } else {
@@ -15,10 +13,18 @@
     }
 }
 
+@match_event_simulation(match_event : model.TemplateMatchEvent) = @{
+    if (match_event.isSimulation()) {
+        "Simulation"
+    } else {
+        ""
+    }
+}
+
 @match_event_name(p : model.TemplateMatchEvent) = @{
     var teamA = ""
     var teamB = ""
-    if(p.isGameStarted() || p.isGameSimulated()) {
+    if(p.isGameStarted()) {
         if(templateSoccerTeamMap.containsKey(p.templateSoccerTeamAId)) {
             teamA = templateSoccerTeamMap(p.templateSoccerTeamAId).name + "(" + p.getFantasyPointsForTeam(p.templateSoccerTeamAId) + ")"
         } else {
@@ -69,7 +75,7 @@
         "@p.optaCompetitionId",
         "@GlobalDate.formatDate(p.startDate)",
         "@match_event_state(p)",
-        "@TemplateMatchEventController.simulate(p.templateMatchEventId.toString())"
+        "@match_event_simulation(p)"
         ] @if(index < match_event_list.size-1) { , }
     }
 }
@@ -106,20 +112,9 @@
                             return '<button class="btn btn-danger">' + data + '</button>';
                         } else if (data == "Live") {
                             return '<button class="btn btn-success">' + data + '</button>';
-                        } else if (data == "Simulating") {
-                            return '<button class="btn btn-success">' + data + '</button>';
                         } else {
                             return '<button class="btn btn-warning">' + data + '</button>';
                         }
-                    }
-                },
-                {
-                    "targets": 7,
-                    "mRender": function (data, type, full) {
-                        if (full[0].indexOf('#') == -1)
-                            return '<a href="' + data + '">' + '<button class="btn btn-success">Simulate</button></a>';
-                        else
-                            return '';
                     }
                 }],
                 stateSave: true,

@@ -53,6 +53,9 @@ public class TemplateContest implements JongoId {
     public Date createdAt;
 
     @JsonView(JsonViews.NotForClient.class)
+    public boolean simulation = false;
+
+    @JsonView(JsonViews.NotForClient.class)
     public boolean simulated = false;
 
     public TemplateContest() { }

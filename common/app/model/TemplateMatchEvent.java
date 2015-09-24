@@ -76,6 +76,9 @@ public class TemplateMatchEvent implements JongoId {
     public HashSet<String> pendingTasks = new HashSet();
 
     @JsonView(JsonViews.NotForClient.class)
+    public boolean simulation = false;
+
+    @JsonView(JsonViews.NotForClient.class)
     public boolean simulated = false;
 
     public TemplateMatchEvent() { }
@@ -181,7 +184,7 @@ public class TemplateMatchEvent implements JongoId {
 
     public boolean isGameStarted()  { return gameStartedDate != null;  }
     public boolean isGameFinished() { return gameFinishedDate != null; }
-    public boolean isGameSimulated() { return simulated; }
+    public boolean isSimulation()   { return simulation; }
 
     public void setPending(String task) {
         pendingTasks.add(task);
