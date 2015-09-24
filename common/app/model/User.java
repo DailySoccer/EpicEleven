@@ -31,6 +31,8 @@ public class User {
 	public String email;
 
     public int wins;
+    public int trueSkill = 0;
+    public Money earnedMoney = MoneyUtils.zero;
 
     // TODO: De momento no es realmente un "cache", siempre lo recalculamos
     public Money cachedBalance;
@@ -57,7 +59,7 @@ public class User {
 	}
 
     public UserInfo info() {
-        return new UserInfo(userId, nickName, wins);
+        return new UserInfo(userId, nickName, wins, trueSkill, earnedMoney);
     }
 
     public User getProfile() {
@@ -84,6 +86,10 @@ public class User {
             aUser = findOne(new ObjectId(userId));
         }
         return aUser;
+    }
+
+    static public List<User> findAll() {
+        return ListUtils.asList(Model.users().find().as(User.class));
     }
 
     static public User findByName(String username) {

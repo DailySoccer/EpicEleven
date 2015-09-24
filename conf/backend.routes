@@ -11,6 +11,9 @@ GET            /get_instance_soccer_player_info/:contest/:soccerPlayer controlle
 # Reglas del juego
 GET            /get_scoring_rules                                      controllers.MainController.getScoringRules()
 
+# Leaderboard
+GET            /get_leaderboard                                        controllers.MainController.getLeaderboard()
+
 # Enganche de la zona de administracion
 ->             /admin                                                  admin.Routes
 
