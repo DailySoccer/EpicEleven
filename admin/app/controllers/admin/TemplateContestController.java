@@ -48,7 +48,7 @@ public class TemplateContestController extends Controller {
                         "activationAt",
                         "",             // Edit
                         "",             // Delete
-                        ""              // Simulated
+                        ""              // Simulation
 
                 );
             }
@@ -121,8 +121,7 @@ public class TemplateContestController extends Controller {
                                 : "";
                     case 13:
                         return templateContest.simulation
-                                ? String.format("<button class=\"btn btn-success\">Simulation</button>",
-                                routes.TemplateContestController.simulate(templateContest.templateContestId.toString()))
+                                ? String.format("<button class=\"btn btn-success\">Simulation</button>")
                                 : "";
                 }
                 return fieldValue;
@@ -165,15 +164,6 @@ public class TemplateContestController extends Controller {
     }
 
     public static Result simulate(String templateContestId) {
-        TemplateContest templateContest = TemplateContest.createSimulation(new ObjectId(templateContestId));
-
-        /*
-        Model.actors().tellAndAwait("ContestsActor", ImmutableMap.of(
-                "id", "TemplateContest",
-                "templateContestId", templateContest.templateContestId.toString()
-        ));
-        */
-
         return redirect(routes.TemplateContestController.index());
     }
 
@@ -211,22 +201,24 @@ public class TemplateContestController extends Controller {
         templateContest.activationAt = new DateTime(params.activationAt).withZone(DateTimeZone.UTC).toDate();
         templateContest.createdAt = new Date(params.createdAt);
 
+        Date startDate = null;
+        templateContest.templateMatchEventIds = new ArrayList<>();
+        for (String templateMatchEventId : params.templateMatchEvents) {
+            TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId));
+            templateContest.optaCompetitionId = templateMatchEvent.optaCompetitionId;
+            templateContest.templateMatchEventIds.add(templateMatchEvent.templateMatchEventId);
+
+            if (startDate == null || templateMatchEvent.startDate.before(startDate)) {
+                startDate = templateMatchEvent.startDate;
+            }
+        }
+
         // Si es una "simulación" la fecha de comienzo la leeremos del formulario
         if (templateContest.simulation) {
             templateContest.startDate = new DateTime(params.startDate).withZone(DateTimeZone.UTC).toDate();
         }
         else {
-            Date startDate = null;
-            templateContest.templateMatchEventIds = new ArrayList<>();
-            for (String templateMatchEventId : params.templateMatchEvents) {
-                TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId));
-                templateContest.optaCompetitionId = templateMatchEvent.optaCompetitionId;
-                templateContest.templateMatchEventIds.add(templateMatchEvent.templateMatchEventId);
-
-                if (startDate == null || templateMatchEvent.startDate.before(startDate)) {
-                    startDate = templateMatchEvent.startDate;
-                }
-            }
+            // Si no es simulación, la fecha de comienzo es la del primer partido
             templateContest.startDate = startDate;
         }
 

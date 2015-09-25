@@ -116,6 +116,16 @@
                             return '<button class="btn btn-warning">' + data + '</button>';
                         }
                     }
+                },
+                {
+                    "targets": 7,
+                    "mRender": function (data, type, full) {
+                        if (data == "Simulation") {
+                            return '<button class="btn btn-success">' + data + '</button>';
+                        } else {
+                            return '';
+                        }
+                    }
                 }],
                 stateSave: true,
                 iDisplayLength: 100,

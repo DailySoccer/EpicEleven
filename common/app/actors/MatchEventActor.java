@@ -78,8 +78,6 @@ public class MatchEventActor extends UntypedActor {
             prioritiesTotal.put(TEAM.AWAY, prioritiesTotal.get(TEAM.AWAY) + priority);
         });
 
-        templateMatchEvent.setGameSimulated();
-
         startGame();
         onTick();
 
@@ -136,7 +134,7 @@ public class MatchEventActor extends UntypedActor {
         String optaTeam = teamWithBall.equals(TEAM.HOME) ? homeTeamId : awayTeamId;
         OptaEventType action = selectAction(playerWithBall);
 
-        createEvent(action.code, optaTeam, playerWithBall.optaPlayerId).insert().markAsSimulated();
+        // createEvent(action.code, optaTeam, playerWithBall.optaPlayerId).insert().markAsSimulated();
 
         // Gol?
         if (goalEvents.contains(action)) {
@@ -249,7 +247,7 @@ public class MatchEventActor extends UntypedActor {
                 player.name, player.templateSoccerPlayerId.toString(), player.getPlayedMatches()));
 
         for (OptaEventType optaEventType : OptaEventType.values()) {
-            int count = (int) Model.optaEvents().count("{optaPlayerId: #, typeId: #, simulated: {$exists: false}}",
+            int count = (int) Model.optaEvents().count("{optaPlayerId: #, typeId: #}",
                     player.optaPlayerId, optaEventType.code);
             if (count > 0) {
                 stats.put(optaEventType.toString(), count);

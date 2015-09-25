@@ -190,11 +190,6 @@ public class OptaEvent {
         return this;
     }
 
-    public OptaEvent markAsSimulated() {
-        Model.optaEvents().update("{eventId: #, teamId: #, gameId: #}", eventId, teamId, gameId).with("{$set: {simulated: true}}");
-        return this;
-    }
-
     static public OptaEvent findLast(String optaMatchEventId) {
         OptaEvent lastEvent = null;
 

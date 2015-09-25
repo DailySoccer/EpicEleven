@@ -55,9 +55,6 @@ public class TemplateContest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public boolean simulation = false;
 
-    @JsonView(JsonViews.NotForClient.class)
-    public boolean simulated = false;
-
     public TemplateContest() { }
 
     public TemplateContest(String name, int minInstances, int maxEntries, SalaryCap salaryCap,
@@ -206,6 +203,10 @@ public class TemplateContest implements JongoId {
 
         Logger.info("TemplateContest.instantiate: {}: activationAt: {}", name, GlobalDate.formatDate(activationAt));
 
+        if (simulation) {
+            setupSimulation();
+        }
+
         registerSoccerPlayers();
 
         // Cuantas instancias tenemos creadas?
@@ -220,7 +221,14 @@ public class TemplateContest implements JongoId {
         }
 
         // Cuando hemos acabado de instanciar nuestras dependencias, nos ponemos en activo
-        Model.templateContests().update("{_id: #, state: \"OFF\"}", templateContestId).with("{$set: {state: \"ACTIVE\", instanceSoccerPlayers:#}}", instanceSoccerPlayers);
+        if (simulation) {
+            // Con la simulación también hay que actualizar la lista de partidos "virtuales"
+            Model.templateContests().update("{_id: #, state: \"OFF\"}", templateContestId).with("{$set: {state: \"ACTIVE\", instanceSoccerPlayers:#, templateMatchEventIds:#}}",
+                    instanceSoccerPlayers, templateMatchEventIds);
+        }
+        else {
+            Model.templateContests().update("{_id: #, state: \"OFF\"}", templateContestId).with("{$set: {state: \"ACTIVE\", instanceSoccerPlayers:#}}", instanceSoccerPlayers);
+        }
 
         // Ya estamos activos!
         state = ContestState.ACTIVE;
@@ -238,26 +246,14 @@ public class TemplateContest implements JongoId {
         }
     }
 
-    static public TemplateContest createSimulation(ObjectId templateContestId) {
-        TemplateContest simulation = TemplateContest.findOne(templateContestId).copy();
-        simulation.templateContestId = new ObjectId();
+    public void setupSimulation() {
+        Logger.debug("TemplateContest.SetupSimulation: " + templateContestId.toString());
 
         // Crear partidos "simulados"
-        simulation.templateMatchEventIds = simulation.templateMatchEventIds.stream().map(matchEventId -> {
-            TemplateMatchEvent simulateMatchEvent = TemplateMatchEvent.createSimulation(matchEventId);
+        templateMatchEventIds = templateMatchEventIds.stream().map(matchEventId -> {
+            TemplateMatchEvent simulateMatchEvent = TemplateMatchEvent.createSimulationWithStartDate(matchEventId, startDate);
             return simulateMatchEvent.templateMatchEventId;
         }).collect(Collectors.toList());
-
-        /*
-        if (!simulation.name.contains(FILL_WITH_MOCK_USERS)) {
-            simulation.name = simulation.name.concat(" ").concat(FILL_WITH_MOCK_USERS);
-        }
-        */
-
-        simulation.insert().setSimulation();
-
-        simulation.instantiate();
-        return simulation;
     }
 
     /**
@@ -287,12 +283,9 @@ public class TemplateContest implements JongoId {
         return findOne(new ObjectId(templateContestId)).isFinished();
     }
 
+    public boolean isSimulation()   { return simulation; }
+
     public static void publish(ObjectId templateContestId) {
         Model.templateContests().update("{_id: #, state: \"DRAFT\"}", templateContestId).with("{$set: {state: \"OFF\"}}");
-    }
-
-    public void setSimulation() {
-        simulated = true;
-        Model.templateContests().update("{_id: #}", templateContestId).with("{$set: {simulated: #}}", simulated);
     }
 }

@@ -78,10 +78,26 @@ public class TemplateMatchEvent implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public boolean simulation = false;
 
-    @JsonView(JsonViews.NotForClient.class)
-    public boolean simulated = false;
-
     public TemplateMatchEvent() { }
+
+    public TemplateMatchEvent copy() {
+        TemplateMatchEvent templateMatchEvent = new TemplateMatchEvent();
+
+        templateMatchEvent.optaMatchEventId = this.optaMatchEventId;
+        templateMatchEvent.optaCompetitionId = this.optaCompetitionId;
+        templateMatchEvent.optaSeasonId = this.optaSeasonId;
+        templateMatchEvent.templateSoccerTeamAId = this.templateSoccerTeamAId;
+        templateMatchEvent.optaTeamAId = this.optaTeamAId;
+        templateMatchEvent.templateSoccerTeamBId = this.templateSoccerTeamBId;
+        templateMatchEvent.optaTeamBId = this.optaTeamBId;
+
+        templateMatchEvent.startDate = this.startDate;
+        templateMatchEvent.createdAt = GlobalDate.getCurrentDate();
+
+        templateMatchEvent.simulation = this.simulation;
+
+        return templateMatchEvent;
+    }
 
     public ObjectId getId() {
         return templateMatchEventId;
@@ -118,8 +134,8 @@ public class TemplateMatchEvent implements JongoId {
         return ListUtils.asList(Model.findObjectIds(Model.templateMatchEvents(), "_id", idList).as(TemplateMatchEvent.class));
     }
 
-    public static List<TemplateMatchEvent> findAllSimulated() {
-        return ListUtils.asList(Model.templateMatchEvents().find("{period: {$ne: 'POST_GAME'}, simulated: true}").as(TemplateMatchEvent.class));
+    public static List<TemplateMatchEvent> findAllSimulationsByStartDate() {
+        return ListUtils.asList(Model.templateMatchEvents().find("{period: {$ne: 'POST_GAME'}, simulation: true, startDate: {$lte: #}}", GlobalDate.getCurrentDate()).as(TemplateMatchEvent.class));
     }
 
     public static List<TemplateMatchEvent> findAllPlaying(List<ObjectId> idList) {
@@ -177,11 +193,6 @@ public class TemplateMatchEvent implements JongoId {
         Model.templateMatchEvents().update("{_id: #, gameFinishedDate: {$exists: 0}}", templateMatchEventId).with("{$set: {gameFinishedDate: #}}", gameFinishedDate);
     }
 
-    public void setGameSimulated() {
-        simulated = true;
-        Model.templateMatchEvents().update("{_id: #}", templateMatchEventId).with("{$set: {simulated: #}}", simulated);
-    }
-
     public boolean isGameStarted()  { return gameStartedDate != null;  }
     public boolean isGameFinished() { return gameFinishedDate != null; }
     public boolean isSimulation()   { return simulation; }
@@ -212,6 +223,14 @@ public class TemplateMatchEvent implements JongoId {
         return liveFantasyPoints.containsKey(soccerPlayerId.toString());
     }
 
+    public LiveFantasyPoints getLiveFantasyPointsBySoccerPlayer(ObjectId soccerPlayerId) {
+        LiveFantasyPoints ret = null;
+        if (containsTemplateSoccerPlayer(soccerPlayerId)) {
+            ret = liveFantasyPoints.get(soccerPlayerId.toString());
+        }
+        return ret;
+    }
+
     public int getSoccerPlayerFantasyPoints(ObjectId soccerPlayerId) {
         return containsTemplateSoccerPlayer(soccerPlayerId) ? liveFantasyPoints.get(soccerPlayerId.toString()).points : 0;
     }
@@ -237,55 +256,76 @@ public class TemplateMatchEvent implements JongoId {
         }
     }
 
-    public void updateState() {
-        updateFantasyPoints();
-        updateMatchEventTime(OptaEvent.findLast(optaMatchEventId));
-        updateMatchEventResult();
+    public void updateSimulationState() {
+        Logger.debug("TemplateMatchEvent: updateSimulationState: " + templateMatchEventId.toString());
+
+        // TODO: Comenzamos y damos por terminado el partido
+        setGameStarted();
+        updateMatchEventTime(PeriodType.POST_GAME, 90);
+        setGameFinished();
     }
 
-    private void updateMatchEventTime(OptaEvent optaEvent) {
-        if (period == null) {
-            period = PeriodType.PRE_GAME;
+    public void updateState() {
+        updateFantasyPoints();
+        updateMatchEventTimeFromOptaEvent(OptaEvent.findLast(optaMatchEventId));
+
+        // Obtener las estadísticas del partido para conocer el resultado actual del partido
+        OptaMatchEventStats stats = OptaMatchEventStats.findOne(optaMatchEventId);
+        if (stats != null) {
+            updateMatchEventResult(stats.homeScore, stats.awayScore);
+        }
+    }
+
+    private void updateMatchEventTimeFromOptaEvent(OptaEvent optaEvent) {
+        PeriodType thePeriodType = period;
+
+        if (thePeriodType == null) {
+            thePeriodType = PeriodType.PRE_GAME;
         }
 
-        if (period == PeriodType.PRE_GAME) {
+        if (thePeriodType == PeriodType.PRE_GAME) {
             if (Model.optaEvents().findOne("{gameId: #, periodId: 1}", optaMatchEventId).as(OptaEvent.class) != null) {
-                period = PeriodType.FIRST_HALF;
+                thePeriodType = PeriodType.FIRST_HALF;
             }
         }
 
-        if (period == PeriodType.FIRST_HALF) {
+        if (thePeriodType == PeriodType.FIRST_HALF) {
             if (Model.optaEvents().findOne("{gameId: #, periodId: 2}", optaMatchEventId).as(OptaEvent.class) != null) {
-                period = PeriodType.SECOND_HALF;
+                thePeriodType = PeriodType.SECOND_HALF;
             }
         }
 
-        if (period == PeriodType.SECOND_HALF) {
+        if (thePeriodType == PeriodType.SECOND_HALF) {
             if (Model.optaEvents().findOne("{gameId: #, periodId: 14}", optaMatchEventId).as(OptaEvent.class) != null) {
-                period = PeriodType.POST_GAME;
+                thePeriodType = PeriodType.POST_GAME;
             }
         }
+
+        updateMatchEventTime(thePeriodType, optaEvent.min);
+    }
+
+    private void updateMatchEventTime(PeriodType thePeriodType, int theMinutesPlayed) {
+        period = thePeriodType;
 
         switch(period) {
             case PRE_GAME:      minutesPlayed = 0; break;
             case FIRST_HALF:
-            case SECOND_HALF:   minutesPlayed = optaEvent.min; break;
+            case SECOND_HALF:   minutesPlayed = theMinutesPlayed; break;
             case POST_GAME:     minutesPlayed = 90; break;
         }
 
         Model.templateMatchEvents().update(templateMatchEventId).with("{$set: {period: #, minutesPlayed: #}}", period, minutesPlayed);
     }
 
-    private void updateMatchEventResult() {
+    private void updateMatchEventResult(int theHomeScore, int theAwayScore) {
 
-        OptaMatchEventStats stats = OptaMatchEventStats.findOne(optaMatchEventId);
-        if (stats == null) {
-            return;
+        if (homeScore != theHomeScore || theAwayScore != awayScore) {
+
+            homeScore = theHomeScore;
+            awayScore = theAwayScore;
+
+            Model.templateMatchEvents().update(templateMatchEventId).with("{$set: {homeScore: #, awayScore: #}}", homeScore, awayScore);
         }
-        homeScore = stats.homeScore;
-        awayScore = stats.awayScore;
-
-        Model.templateMatchEvents().update(templateMatchEventId).with("{$set: {homeScore: #, awayScore: #}}", homeScore, awayScore);
     }
 
     /**
@@ -397,18 +437,27 @@ public class TemplateMatchEvent implements JongoId {
         return true;
     }
 
-    static public TemplateMatchEvent createSimulation(ObjectId matchEventId) {
+    static public TemplateMatchEvent createSimulationWithStartDate(ObjectId matchEventId, Date startDateModified) {
+        Logger.debug("TemplateMatchEvent.CreateSimulationWithStartDate: " + matchEventId.toString() + " startDate: " + startDateModified.toString());
+
         TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOne(matchEventId);
 
+        /*
         long nextMatchEvent = TemplateMatchEvent.countClonesFromOptaId(templateMatchEvent.optaMatchEventId);
         OptaMatchEvent cloneOptaMatchEvent = OptaMatchEvent.findOne(templateMatchEvent.optaMatchEventId).copy();
         cloneOptaMatchEvent.optaMatchEventId = String.format("%s#%d", templateMatchEvent.optaMatchEventId, nextMatchEvent);
         cloneOptaMatchEvent.insert();
+        */
 
-        TemplateMatchEvent simulation = TemplateMatchEvent.createFromOpta(cloneOptaMatchEvent);
-        simulation.templateMatchEventId = new ObjectId();
-        simulation.insert();
-        return simulation;
+        TemplateMatchEvent virtualMatchEvent = templateMatchEvent.copy();
+        virtualMatchEvent.templateMatchEventId = new ObjectId();
+        virtualMatchEvent.startDate = startDateModified;
+        // Marcamos el identificador del partido de Opta con un flag. De tal forma que no se considere el partido clonado como asociado con el de Opta
+        virtualMatchEvent.optaMatchEventId = virtualMatchEvent.optaMatchEventId + "#";
+        virtualMatchEvent.simulation = true;
+        virtualMatchEvent.insert();
+
+        return virtualMatchEvent;
     }
 
     private void insertLivePlayers(List<TemplateSoccerPlayer> soccerPlayers) {

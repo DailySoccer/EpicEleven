@@ -33,13 +33,6 @@ public class TemplateMatchEventController extends Controller {
     }
 
     public static Result simulate(String matchEventId) {
-        TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.createSimulation(new ObjectId(matchEventId));
-
-        Model.actors().tellAndAwait("ContestsActor", ImmutableMap.of(
-                "id", "MatchEvent",
-                "matchEventId", templateMatchEvent.templateMatchEventId.toString()
-        ));
-
         return redirect(routes.TemplateMatchEventController.index());
     }
 

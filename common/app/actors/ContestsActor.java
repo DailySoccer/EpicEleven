@@ -21,11 +21,13 @@ import java.util.*;
 public class ContestsActor extends TickableActor {
 
     @Override public void preStart() {
+        /*
         List<TemplateMatchEvent> matchEventsToSimulate = TemplateMatchEvent.findAllSimulated();
         matchEventsToSimulate.forEach(matchEvent -> {
                     getContext().actorOf(Props.create(MatchEventActor.class, matchEvent.templateMatchEventId), String.format("MatchActor%s", matchEvent.templateMatchEventId));
                 }
         );
+        */
     }
 
     @Override public void onReceive(Object msg) {
