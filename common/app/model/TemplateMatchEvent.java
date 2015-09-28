@@ -276,7 +276,9 @@ public class TemplateMatchEvent implements JongoId {
                 .with("{$set: {simulationEvents: #}}", events);
 
         // Damos el partido como iniciado
+        // IMPORTANTE: El orden de las acciones es importante!
         setGameStarted();
+        TemplateContest.actionWhenMatchEventIsStarted(this);
         updateMatchEventTime(PeriodType.FIRST_HALF, 0);
     }
 
@@ -316,8 +318,11 @@ public class TemplateMatchEvent implements JongoId {
             updateMatchEventTime(minutes <= 45 ? PeriodType.FIRST_HALF : PeriodType.SECOND_HALF, (int) minutes);
         }
         else {
-            updateMatchEventTime(PeriodType.POST_GAME, 90);
+            // Damos por finalizado el partido
+            // IMPORTANTE: El orden de las acciones es importante!
             setGameFinished();
+            TemplateContest.actionWhenMatchEventIsFinished(this);
+            updateMatchEventTime(PeriodType.POST_GAME, 90);
         }
     }
 

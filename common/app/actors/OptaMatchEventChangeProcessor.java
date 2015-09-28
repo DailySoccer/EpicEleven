@@ -59,55 +59,11 @@ public class OptaMatchEventChangeProcessor {
     }
 
     private void actionWhenMatchEventIsStarted(TemplateMatchEvent matchEvent) {
-        // Los template contests (que incluyan este match event y que esten "activos") tienen que ser marcados como "live"
-        Model.templateContests()
-                .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}", matchEvent.templateMatchEventId)
-                .multi()
-                .with("{$set: {state: \"LIVE\"}}");
-
-        // Los Contests válidos pasarán a "live"
-        // Válido = (Gratuitos AND entries > 1) OR Llenos
-        Model.contests()
-                .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"," +
-                        "$or: [" +
-                        "  {prizeType: {$eq: \"FREE\"}, \"contestEntries.1\": {$exists: true}}," +
-                        "  {freeSlots: 0}" +
-                        "]}", matchEvent.templateMatchEventId)
-                .multi()
-                .with("{$set: {state: \"LIVE\", startedAt: #}}", GlobalDate.getCurrentDate());
-
-        try {
-            // Cancelamos aquellos contests que aún permanezcan activos
-            //  deben ser los inválidos, dado que en la query anterior se han cambiado de estado a los válidos
-            for (Contest contest : Contest.findAllActiveFromTemplateMatchEvent(matchEvent.templateMatchEventId)) {
-                Job job = CancelContestJob.create(contest.contestId);
-                if (!job.isDone()) {
-                    Logger.error("CancelContestJob {} error", contest.contestId);
-                }
-            }
-        }
-        catch(DuplicateKeyException e) {
-            play.Logger.error("WTF 3333: actionWhenMatchEventIsStarted: {}", e.toString());
-        }
+        TemplateContest.actionWhenMatchEventIsStarted(matchEvent);
     }
 
     private void actionWhenMatchEventIsFinished(TemplateMatchEvent matchEvent) {
-        // Buscamos los template contests que incluyan ese partido
-        Iterable<TemplateContest> templateContests = Model.templateContests()
-                .find("{templateMatchEventIds: {$in:[#]}}", matchEvent.templateMatchEventId).as(TemplateContest.class);
-
-        for (TemplateContest templateContest : templateContests) {
-            // Si el contest ha terminado (true si todos sus partidos han terminado)
-            if (templateContest.isFinished()) {
-                Model.templateContests().update("{_id: #, state: \"LIVE\"}", templateContest.templateContestId).with("{$set: {state: \"HISTORY\"}}");
-
-                Model.contests()
-                        .update("{templateContestId: #, state: \"LIVE\"}", templateContest.templateContestId)
-                        .multi()
-                        .with("{$set: {state: \"HISTORY\", finishedAt: #}}", GlobalDate.getCurrentDate());
-            }
-        }
-
+        TemplateContest.actionWhenMatchEventIsFinished(matchEvent);
         matchEvent.saveStats();
     }
 
