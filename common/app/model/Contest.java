@@ -86,7 +86,6 @@ public class Contest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public boolean closed = false;
 
-    @JsonView(JsonViews.NotForClient.class)
     public boolean simulation = false;
 
     public Contest() {}
