@@ -261,6 +261,21 @@ public class TemplateMatchEvent implements JongoId {
 
         // TODO: Comenzamos y damos por terminado el partido
         setGameStarted();
+
+        // Lanzar la simulación
+        MatchEventSimulation simulation = new MatchEventSimulation(templateMatchEventId);
+
+        // Leer los valores calculados
+        homeScore = simulation.homeScore;
+        awayScore = simulation.awayScore;
+        liveFantasyPoints = simulation.liveFantasyPoints;
+
+        // Actualizar los liveFantasyPoints del partido
+        Model.templateMatchEvents()
+                .update("{_id: #}", templateMatchEventId)
+                .with("{$set: {liveFantasyPoints: #}}", liveFantasyPoints);
+
+        updateMatchEventResult(homeScore, awayScore);
         updateMatchEventTime(PeriodType.POST_GAME, 90);
         setGameFinished();
     }
@@ -319,13 +334,10 @@ public class TemplateMatchEvent implements JongoId {
 
     private void updateMatchEventResult(int theHomeScore, int theAwayScore) {
 
-        if (homeScore != theHomeScore || theAwayScore != awayScore) {
+        homeScore = theHomeScore;
+        awayScore = theAwayScore;
 
-            homeScore = theHomeScore;
-            awayScore = theAwayScore;
-
-            Model.templateMatchEvents().update(templateMatchEventId).with("{$set: {homeScore: #, awayScore: #}}", homeScore, awayScore);
-        }
+        Model.templateMatchEvents().update(templateMatchEventId).with("{$set: {homeScore: #, awayScore: #}}", homeScore, awayScore);
     }
 
     /**
