@@ -7,7 +7,7 @@
     if(match_event.isGameFinished()) {
         "Finished"
     } else if (match_event.isGameStarted()) {
-        "Live"
+        "Live~"+match_event.minutesPlayed
     } else {
         "Waiting"
     }
@@ -108,12 +108,13 @@
                 {
                     "targets": 6,
                     "mRender": function (data, type, full) {
-                        if (data == "Finished") {
-                            return '<button class="btn btn-danger">' + data + '</button>';
-                        } else if (data == "Live") {
-                            return '<button class="btn btn-success">' + data + '</button>';
+                        var fields = data.split('~');
+                        if (fields[0] == "Finished") {
+                            return '<button class="btn btn-danger">' + fields[0] + '</button>';
+                        } else if (fields[0] == "Live") {
+                            return '<button class="btn btn-success">' + fields[0] + ' : ' + fields[1] + '</button>';
                         } else {
-                            return '<button class="btn btn-warning">' + data + '</button>';
+                            return '<button class="btn btn-warning">' + fields[0] + '</button>';
                         }
                     }
                 },

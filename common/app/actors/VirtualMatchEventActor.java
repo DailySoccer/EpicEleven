@@ -30,10 +30,17 @@ public class VirtualMatchEventActor extends TickableActor {
     @Override protected void onTick() {
         long startTime = System.currentTimeMillis();
 
-        List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAllSimulationsByStartDate();
-        for(TemplateMatchEvent matchEvent : matchEvents) {
-            matchEvent.updateSimulationState();
+        // Simulamos completamente los partidos que deberían haber empezado...
+        List<TemplateMatchEvent> matchEventsByStartDate = TemplateMatchEvent.findAllSimulationsByStartDate();
+        for(TemplateMatchEvent matchEvent : matchEventsByStartDate) {
+            MatchEventSimulation simulation = new MatchEventSimulation(matchEvent.templateMatchEventId);
+            matchEvent.startSimulation(simulation.simulationEvents);
         }
+
+        final long TIME_MULTIPLIER = 1;
+
+        // Actualizamos el estado de los partidos simulados para que se actualicen poco a poco ("live")
+        TemplateMatchEvent.findAllSimulationsToUpdate().forEach(matchEvent -> matchEvent.updateSimulationState(TIME_MULTIPLIER));
 
         Logger.debug("Virtual MatchEvent: elapsed: {}", System.currentTimeMillis() - startTime);
     }

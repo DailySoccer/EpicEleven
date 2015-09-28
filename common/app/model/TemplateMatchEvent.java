@@ -8,11 +8,13 @@ import model.opta.OptaMatchEvent;
 import model.opta.OptaMatchEventStats;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
+import org.joda.time.Minutes;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class TemplateMatchEvent implements JongoId {
     public enum PeriodType {
@@ -78,6 +80,9 @@ public class TemplateMatchEvent implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public boolean simulation = false;
 
+    @JsonView(JsonViews.NotForClient.class)
+    public ArrayList<SimulationEvent> simulationEvents = new ArrayList<>();
+
     public TemplateMatchEvent() { }
 
     public TemplateMatchEvent copy() {
@@ -135,7 +140,11 @@ public class TemplateMatchEvent implements JongoId {
     }
 
     public static List<TemplateMatchEvent> findAllSimulationsByStartDate() {
-        return ListUtils.asList(Model.templateMatchEvents().find("{period: {$ne: 'POST_GAME'}, simulation: true, startDate: {$lte: #}}", GlobalDate.getCurrentDate()).as(TemplateMatchEvent.class));
+        return ListUtils.asList(Model.templateMatchEvents().find("{simulation: true, period: 'PRE_GAME', startDate: {$lte: #}}", GlobalDate.getCurrentDate()).as(TemplateMatchEvent.class));
+    }
+
+    public static List<TemplateMatchEvent> findAllSimulationsToUpdate() {
+        return ListUtils.asList(Model.templateMatchEvents().find("{simulation: true, period: {$in: ['FIRST_HALF', 'SECOND_HALF']}, startDate: {$lte: #}}", GlobalDate.getCurrentDate()).as(TemplateMatchEvent.class));
     }
 
     public static List<TemplateMatchEvent> findAllPlaying(List<ObjectId> idList) {
@@ -256,28 +265,96 @@ public class TemplateMatchEvent implements JongoId {
         }
     }
 
-    public void updateSimulationState() {
-        Logger.debug("TemplateMatchEvent: updateSimulationState: " + templateMatchEventId.toString());
+    public void startSimulation(ArrayList<SimulationEvent> events) {
+        Logger.debug("TemplateMatchEvent: startSimulation: " + templateMatchEventId.toString());
 
-        // TODO: Comenzamos y damos por terminado el partido
-        setGameStarted();
+        // Actualizamos los eventos que simulan el partido
+        simulationEvents = events;
 
-        // Lanzar la simulación
-        MatchEventSimulation simulation = new MatchEventSimulation(templateMatchEventId);
-
-        // Leer los valores calculados
-        homeScore = simulation.homeScore;
-        awayScore = simulation.awayScore;
-        liveFantasyPoints = simulation.liveFantasyPoints;
-
-        // Actualizar los liveFantasyPoints del partido
         Model.templateMatchEvents()
                 .update("{_id: #}", templateMatchEventId)
-                .with("{$set: {liveFantasyPoints: #}}", liveFantasyPoints);
+                .with("{$set: {simulationEvents: #}}", events);
 
-        updateMatchEventResult(homeScore, awayScore);
-        updateMatchEventTime(PeriodType.POST_GAME, 90);
-        setGameFinished();
+        // Damos el partido como iniciado
+        setGameStarted();
+        updateMatchEventTime(PeriodType.FIRST_HALF, 0);
+    }
+
+    public void updateSimulationState(long timeMultiplier) {
+        // Averiguar cuánto tiempo queremos simular
+        long diff = GlobalDate.getCurrentDate().getTime() - startDate.getTime();
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(diff * timeMultiplier);
+
+        // Si el partido ya tiene calculada la simulación para el momento actual...
+        if (minutes > 0 && minutes != minutesPlayed) {
+
+            // Limpiamos todos los fantasyPoints (vamos a regenerarlos)
+            liveFantasyPoints = new HashMap<>();
+
+            Logger.debug("TemplateMatchEvent: Simulando: {} min: {}", templateMatchEventId.toString(), minutes);
+
+            // Generar los fantasyPoints y registrar los goles
+            simulationEvents.forEach(event -> {
+                if (event.min < minutes) {
+                    updateLiveFantasyPointFromSimulationEvent(event);
+                    homeScore = event.homeScore;
+                    awayScore = event.awayScore;
+                }
+            });
+
+            // Actualizar los liveFantasyPoints del partido
+            Model.templateMatchEvents()
+                    .update("{_id: #}", templateMatchEventId)
+                    .with("{$set: {liveFantasyPoints: #}}", liveFantasyPoints);
+
+            // Actualizar el marcador
+            updateMatchEventResult(homeScore, awayScore);
+        }
+
+        // Actualizar los minutos del partido
+        if (minutes <= 90) {
+            updateMatchEventTime(minutes <= 45 ? PeriodType.FIRST_HALF : PeriodType.SECOND_HALF, (int) minutes);
+        }
+        else {
+            updateMatchEventTime(PeriodType.POST_GAME, 90);
+            setGameFinished();
+        }
+    }
+
+    void updateLiveFantasyPointFromSimulationEvent(SimulationEvent event) {
+        String soccerPlayerIdStr = event.templateSoccerPlayerId.toString();
+
+        // Crear/Obtener los fantasyPoints del soccerPlayer
+        LiveFantasyPoints fantasyPoints;
+
+        if (liveFantasyPoints.containsKey(soccerPlayerIdStr)) {
+            fantasyPoints = liveFantasyPoints.get(soccerPlayerIdStr);
+        }
+        else {
+            fantasyPoints = new LiveFantasyPoints();
+            fantasyPoints.points = 0;
+        }
+
+        // Crear/Obtener el eventInfo del soccerPlayer
+        LiveEventInfo eventInfo;
+        if (fantasyPoints.events.containsKey(event.eventType.name())) {
+            eventInfo = fantasyPoints.events.get(event.eventType.name());
+        }
+        else {
+            eventInfo = new LiveEventInfo(0);
+        }
+
+        // Incrementar los puntos
+        eventInfo.add(new LiveEventInfo(event.points));
+        fantasyPoints.points += event.points;
+
+        // Logger.debug("{}: Result: {} min: {} sec: {}", templateMatchEventId.toString(), fantasyPoints.points, min, sec);
+
+        // Actualizar la lista de eventos
+        fantasyPoints.events.put(event.eventType.name(), eventInfo);
+
+        // Actualizar la lista de fantasyPoints
+        liveFantasyPoints.put(soccerPlayerIdStr, fantasyPoints);
     }
 
     public void updateState() {

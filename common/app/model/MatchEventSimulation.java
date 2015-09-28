@@ -18,9 +18,9 @@ public class MatchEventSimulation {
     final String PLAYED_MINUTES = "PLAYED_MINUTES";
     final int TICK_SECONDS = 20;
 
-    public HashMap<String, LiveFantasyPoints> liveFantasyPoints = new HashMap<>();
     public int homeScore = 0;
     public int awayScore = 0;
+    public ArrayList<SimulationEvent> simulationEvents = new ArrayList<>();
 
     public MatchEventSimulation(ObjectId aTemplateMatchEventId) {
         long startTime = System.currentTimeMillis();
@@ -72,13 +72,13 @@ public class MatchEventSimulation {
         });
 
         startGame();
-        onTick();
+        runGame();
 
         Logger.debug("MatchEventSimulation: elapsed: {}", System.currentTimeMillis() - startTime);
     }
 
-    void onTick() {
-        // TODO: Loop del partido (lo calculamos en su totalidad)
+    void runGame() {
+        // Recorremos las 2 partes
         for (int p=0; p<2; p++) {
             if (p == 1) {
                 secondHalfGame();
@@ -87,7 +87,7 @@ public class MatchEventSimulation {
                 for (int s = 0; s < 60; s += TICK_SECONDS) {
                     min = 45 * p + m;
                     sec = s;
-                    onGameTick();
+                    updateGameTick();
                 }
             }
         }
@@ -98,7 +98,7 @@ public class MatchEventSimulation {
         // new OptaMatchEventChangeProcessor(optaMatchEventId).process();
     }
 
-    void onGameTick() {
+    void updateGameTick() {
         if (teamWithBall == null) {
             teamWithBall = teamBegins();
         }
@@ -107,9 +107,9 @@ public class MatchEventSimulation {
         playerWithBall = getTarget();
 
         // Qué acción realiza
-        String optaTeam = teamWithBall.equals(TEAM.HOME) ? homeTeamId : awayTeamId;
         OptaEventType action = selectAction(playerWithBall);
 
+        // String optaTeam = teamWithBall.equals(TEAM.HOME) ? homeTeamId : awayTeamId;
         // createEvent(action.code, optaTeam, playerWithBall.optaPlayerId).insert().markAsSimulated();
         createEvent(action, playerWithBall);
 
@@ -285,86 +285,23 @@ public class MatchEventSimulation {
         return selected;
     }
 
-    /*
-    OptaEvent createEvent(int typeId) {
-        OptaEvent optaEvent = new OptaEvent();
-        optaEvent.gameId = optaMatchEventId;
-        optaEvent.homeTeamId = homeTeamId;
-        optaEvent.awayTeamId = awayTeamId;
-        optaEvent.competitionId = competitionId;
-        optaEvent.seasonId = seasonId;
-
-        optaEvent.periodId = periodId;
-        optaEvent.timestamp = timestamp;
-        optaEvent.min = min;
-        optaEvent.sec = sec;
-
-        optaEvent.eventId = eventId++;
-        optaEvent.typeId = typeId;
-        return optaEvent;
-    }
-
-    OptaEvent createEvent(int typeId, String teamId, String optaPlayerId) {
-        OptaEvent optaEvent = createEvent(typeId);
-        optaEvent.teamId = Integer.parseInt(teamId);
-        optaEvent.optaPlayerId = optaPlayerId;
-
-        PointsTranslation pointsTranslation = pointsTranslationMap.get(typeId);
-        optaEvent.points = (pointsTranslation != null) ? pointsTranslation.points : 0;
-        optaEvent.pointsTranslationId = (pointsTranslation != null) ? pointsTranslation.pointsTranslationId : null;
-        return optaEvent;
-    }
-    */
-
     void createEvent(OptaEventType eventType, TemplateSoccerPlayer soccerPlayer) {
-        String soccerPlayerIdStr = soccerPlayer.templateSoccerPlayerId.toString();
-
         // Obtenemos los puntos que vale el evento
         PointsTranslation pointsTranslation = pointsTranslationMap.get(eventType.code);
         int points = (pointsTranslation != null) ? pointsTranslation.points : 0;
 
         Logger.debug("MatchEventSimulation: {} createEvent: {} min: {} sec: {} points: {}", templateMatchEventId.toString(), eventType.name(), min, sec, points);
 
-        /*
-        if (points == 0) {
-            Logger.debug("{}: Sin points", templateMatchEventId.toString());
-        }
-        */
-
-        // Crear/Obtener los fantasyPoints del soccerPlayer
-        LiveFantasyPoints fantasyPoints;
-        if (liveFantasyPoints.containsKey(soccerPlayerIdStr)) {
-            fantasyPoints = liveFantasyPoints.get(soccerPlayerIdStr);
-            // Logger.debug("{}: SI Player: fantasyPoints: {}", templateMatchEventId.toString(), fantasyPoints.points);
-        }
-        else {
-            fantasyPoints = new LiveFantasyPoints();
-            fantasyPoints.points = 0;
-            // Logger.debug("{}: NO Player", templateMatchEventId.toString());
-        }
-
-        // Crear/Obtener el eventInfo del soccerPlayer
-        LiveEventInfo eventInfo;
-        if (fantasyPoints.events.containsKey(eventType.name())) {
-            eventInfo = fantasyPoints.events.get(eventType.name());
-            // Logger.debug("{}: SI Evento", templateMatchEventId.toString());
-        }
-        else {
-            eventInfo = new LiveEventInfo(0);
-            // Logger.debug("{}: NO Evento", templateMatchEventId.toString());
-        }
-
-        // Incrementar los puntos
-        eventInfo.add(new LiveEventInfo(points));
-        fantasyPoints.points += points;
-
-        // Logger.debug("{}: Result: {} min: {} sec: {}", templateMatchEventId.toString(), fantasyPoints.points, min, sec);
-
-        // Actualizar la lista de eventos
-        fantasyPoints.events.put(eventType.name(), eventInfo);
-
-        // Actualizar la lista de fantasyPoints
-        liveFantasyPoints.put(soccerPlayerIdStr, fantasyPoints);
+        // Creamos el evento simulado
+        SimulationEvent simulationEvent = new SimulationEvent();
+        simulationEvent.homeScore = homeScore;
+        simulationEvent.awayScore = awayScore;
+        simulationEvent.min = min;
+        simulationEvent.sec = sec;
+        simulationEvent.templateSoccerPlayerId = soccerPlayer.templateSoccerPlayerId;
+        simulationEvent.eventType = eventType;
+        simulationEvent.points = points;
+        simulationEvents.add(simulationEvent);
     }
 
     static OptaEventType[] attackEvents = {
