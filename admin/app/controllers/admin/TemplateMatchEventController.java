@@ -32,21 +32,6 @@ public class TemplateMatchEventController extends Controller {
         return ok(views.html.match_event_opta_events_list.render(optaEventList, getPlayersInfo(matchEvent)));
     }
 
-    public static Result simulate(String matchEventId) {
-        return redirect(routes.TemplateMatchEventController.index());
-    }
-
-    private static TemplateMatchEvent createMatchEvent(String matchEventId) {
-        TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOne(new ObjectId(matchEventId));
-
-        long nextMatchEvent = TemplateMatchEvent.countClonesFromOptaId(templateMatchEvent.optaMatchEventId);
-        OptaMatchEvent cloneOptaMatchEvent = OptaMatchEvent.findOne(templateMatchEvent.optaMatchEventId).copy();
-        cloneOptaMatchEvent.optaMatchEventId = String.format("%s#%d", templateMatchEvent.optaMatchEventId, nextMatchEvent);
-        cloneOptaMatchEvent.insert();
-
-        return TemplateMatchEvent.createFromOpta(cloneOptaMatchEvent);
-    }
-
     private static HashMap<String, String> getPlayersInfo(TemplateMatchEvent matchEvent){
         HashMap<String, String> map = new HashMap<>();
 

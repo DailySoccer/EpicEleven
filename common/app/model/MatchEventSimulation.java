@@ -16,7 +16,7 @@ public class MatchEventSimulation {
 
     final String PLAYED_MATCHES = "PLAYED_MATCHES";
     final String PLAYED_MINUTES = "PLAYED_MINUTES";
-    final int TICK_SECONDS = 20;
+    final int TICK_SECONDS = 10;
 
     public int homeScore = 0;
     public int awayScore = 0;
@@ -170,26 +170,24 @@ public class MatchEventSimulation {
     OptaEventType selectAction(TemplateSoccerPlayer player) {
         OptaEventType action = OptaEventType.PASS_SUCCESSFUL;
 
-        if (statsCount.containsKey(player.templateSoccerPlayerId)) {
-            HashMap<String, Integer> stats = statsCount.get(player.templateSoccerPlayerId);
-            int total = 0;
-            for (OptaEventType optaEventType : attackEvents) {
-                total += getStat(stats, optaEventType);
-            }
+        HashMap<String, Integer> stats = statsCount.get(player.templateSoccerPlayerId);
+        int total = 0;
+        for (OptaEventType optaEventType : attackEvents) {
+            total += getStat(stats, optaEventType);
+        }
 
-            if (total > 0) {
-                int die = rnd.nextInt(total);
-                for (OptaEventType optaEventType : attackEvents) {
-                    die -= getStat(stats, optaEventType);
-                    if (die <= 0) {
-                        action = optaEventType;
-                        break;
-                    }
+        if (total > 0) {
+            int die = rnd.nextInt(total);
+            for (OptaEventType optaEventType : attackEvents) {
+                die -= getStat(stats, optaEventType);
+                if (die <= 0) {
+                    action = optaEventType;
+                    break;
                 }
             }
-            else {
-                action = OptaEventType.PASS_UNSUCCESSFUL;
-            }
+        }
+        else {
+            action = OptaEventType.PASS_UNSUCCESSFUL;
         }
 
         return action;

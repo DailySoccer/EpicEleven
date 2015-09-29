@@ -53,8 +53,6 @@ GET         /template_contest/save                                              
 POST        /template_contest/save                                               controllers.admin.TemplateContestController.create()
 GET         /template_contest/publish/:templateContestId                         controllers.admin.TemplateContestController.publish(templateContestId : String)
 GET         /template_contest/delete/:templateContestId                          controllers.admin.TemplateContestController.destroy(templateContestId : String)
-GET         /template_contest/simulate/:templateContestId                        controllers.admin.TemplateContestController.simulate(templateContestId : String)
-GET         /template_contest/start_simulation/:templateContestId                controllers.admin.TemplateContestController.startSimulation(templateContestId : String)
 GET         /template_contest/:templateContestId                                 controllers.admin.TemplateContestController.show(templateContestId : String)
 
 GET         /template_contest/get_prizes/:prizeType/:maxEntries/:entryFee        controllers.admin.TemplateContestController.getPrizes(prizeType : String, maxEntries : Int, entryFee : Int)
@@ -62,7 +60,6 @@ GET         /template_contest/get_prizes/:prizeType/:maxEntries/:entryFee       
 GET         /template_match_events                                               controllers.admin.TemplateMatchEventController.index()
 GET         /template_match_event/:templateMatchEventId                          controllers.admin.TemplateMatchEventController.show(templateMatchEventId : String)
 GET         /template_match_event/optaEvents/:matchEventId                       controllers.admin.TemplateMatchEventController.showOptaEvents(matchEventId : String)
-GET         /template_match_event/simulate/:matchEventId                         controllers.admin.TemplateMatchEventController.simulate(matchEventId : String)
 
 GET         /template_soccer_teams                                               controllers.admin.TemplateSoccerTeamController.index()
 GET         /template_soccer_team/:templateSoccerTeam                            controllers.admin.TemplateSoccerTeamController.show(templateSoccerTeam : String)
