@@ -9,6 +9,7 @@ import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.accounting.AccountingTranBonus;
 import model.opta.OptaCompetition;
+import org.joda.money.CurrencyUnit;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;

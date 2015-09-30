@@ -2,11 +2,12 @@ package utils;
 
 import model.Product;
 import org.joda.money.Money;
+import play.Logger;
 
 import java.math.BigDecimal;
 
 public class MoneyUtils {
-    static public final Money zero = Money.zero(Product.CURRENCY_DEFAULT);
+    static public Money zero = Money.zero(Product.CURRENCY_DEFAULT);
 
     static public Money of(double amount) {
         return Money.of(Product.CURRENCY_DEFAULT, amount);

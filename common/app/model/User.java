@@ -136,6 +136,23 @@ public class User {
         return (!account.isEmpty() && account.get(0).seqId != null) ? account.get(0).seqId : 0;
     }
 
+    static public Money calculatePrizes(ObjectId userId) {
+        List<AccountingTran> accounting = Model.accountingTransactions()
+                .aggregate("{$match: { \"accountOps.accountId\": #, type: #, state: \"VALID\"}}", userId, AccountingTran.TransactionType.PRIZE)
+                .and("{$unwind: \"$accountOps\"}")
+                .and("{$match: {\"accountOps.accountId\": #, type: #}}", userId, AccountingTran.TransactionType.PRIZE)
+                .and("{$group: {_id: #, _class: { $first: \"$_class\" }, accountOps: { $push: { accountId: \"$accountOps.accountId\", value: \"$accountOps.value\" }}}}", new ObjectId())
+                .as(AccountingTran.class);
+
+        Money balance = MoneyUtils.zero;
+        if (!accounting.isEmpty()) {
+            for (AccountOp op : accounting.get(0).accountOps) {
+                balance = MoneyUtils.plus(balance, op.value);
+            }
+        }
+        return balance;
+    }
+
     static public Money calculateBalance(ObjectId userId) {
         List<AccountingTran> accounting = Model.accountingTransactions()
                 .aggregate("{$match: { \"accountOps.accountId\": #, state: \"VALID\"}}", userId)
