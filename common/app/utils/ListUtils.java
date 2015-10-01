@@ -5,10 +5,8 @@ import model.JongoId;
 import org.bson.types.ObjectId;
 import play.libs.Json;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ListUtils {
     /**
@@ -42,6 +40,14 @@ public class ListUtils {
                 list.add(iter.next());
         }
         return list;
+    }
+
+    public static String asString(List<String> list) {
+        return list.stream().map(str -> String.format("\"%s\"", str)).collect(Collectors.joining(", "));
+    }
+
+    public static String asString(String[] array) {
+        return asString(Arrays.asList(array));
     }
 
     /**

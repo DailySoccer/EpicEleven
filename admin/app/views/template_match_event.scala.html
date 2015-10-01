@@ -30,7 +30,7 @@
 }
 
 @if(match_event.isSimulation()) {
-    <button class="btn btn-success">Simulation</button>
+    <a href="@TemplateMatchEventController.showSimulatedEvents(match_event.templateMatchEventId.toString())"><button class="btn btn-success">Simulated Events</button></a>
 } else {
     <a href="@TemplateMatchEventController.showOptaEvents(match_event.templateMatchEventId.toString())"><button class="btn btn-success">Opta Events</button></a>
 }
