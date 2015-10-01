@@ -1,5 +1,8 @@
 package actors;
 
+import akka.actor.ActorRef;
+import akka.actor.ActorSelection;
+import akka.actor.Props;
 import com.mongodb.DuplicateKeyException;
 import model.*;
 import model.opta.OptaCompetition;
@@ -9,12 +12,23 @@ import org.joda.time.DateTime;
 import org.joda.time.Period;
 import org.jongo.Find;
 import play.Logger;
+import play.Play;
 import utils.ListUtils;
 import utils.MoneyUtils;
 
 import java.util.*;
 
 public class ContestsActor extends TickableActor {
+
+    @Override public void preStart() {
+        /*
+        List<TemplateMatchEvent> matchEventsToSimulate = TemplateMatchEvent.findAllSimulated();
+        matchEventsToSimulate.forEach(matchEvent -> {
+                    getContext().actorOf(Props.create(MatchEventActor.class, matchEvent.templateMatchEventId), String.format("MatchActor%s", matchEvent.templateMatchEventId));
+                }
+        );
+        */
+    }
 
     @Override public void onReceive(Object msg) {
 
@@ -40,6 +54,10 @@ public class ContestsActor extends TickableActor {
     }
 
     @Override protected void onTick() {
+
+        for (ActorRef actorRef : getContext().getChildren()) {
+            actorRef.tell("Tick", getSelf());
+        }
 
         try {
             // El TemplateContest instanciara sus Contests y MatchEvents asociados

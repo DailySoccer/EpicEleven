@@ -6,12 +6,18 @@
 @match_event_state(match_event : model.TemplateMatchEvent) = @{
     if(match_event.isGameFinished()) {
         "Finished"
+    } else if (match_event.isGameStarted()) {
+        "Live~"+match_event.minutesPlayed
     } else {
-        if(match_event.isGameStarted()) {
-            "Live"
-        } else {
-            "Waiting"
-        }
+        "Waiting"
+    }
+}
+
+@match_event_simulation(match_event : model.TemplateMatchEvent) = @{
+    if (match_event.isSimulation()) {
+        "Simulation"
+    } else {
+        ""
     }
 }
 
@@ -55,7 +61,8 @@
     { "title": "Teams" },
     { "title": "Competition" },
     { "title": "Start Date" },
-    { "title": "State" }
+    { "title": "State" },
+    { "title": "" }
 }
 
 @include_match_events(match_event_list : List[model.TemplateMatchEvent]) = {
@@ -67,7 +74,8 @@
         "@TemplateMatchEventController.show(p.templateMatchEventId.toString())~@match_event_name(p)",
         "@p.optaCompetitionId",
         "@GlobalDate.formatDate(p.startDate)",
-        "@match_event_state(p)"
+        "@match_event_state(p)",
+        "@match_event_simulation(p)"
         ] @if(index < match_event_list.size-1) { , }
     }
 }
@@ -100,15 +108,26 @@
                 {
                     "targets": 6,
                     "mRender": function (data, type, full) {
-                        if (data == "Finished") {
-                            return '<button class="btn btn-danger">' + data + '</button>';
-                        } else if (data == "Live") {
-                            return '<button class="btn btn-success">' + data + '</button>';
+                        var fields = data.split('~');
+                        if (fields[0] == "Finished") {
+                            return '<button class="btn btn-danger">' + fields[0] + '</button>';
+                        } else if (fields[0] == "Live") {
+                            return '<button class="btn btn-success">' + fields[0] + ' : ' + fields[1] + '</button>';
                         } else {
-                            return '<button class="btn btn-warning">' + data + '</button>';
+                            return '<button class="btn btn-warning">' + fields[0] + '</button>';
                         }
                     }
-                } ],
+                },
+                {
+                    "targets": 7,
+                    "mRender": function (data, type, full) {
+                        if (data == "Simulation") {
+                            return '<button class="btn btn-success">' + data + '</button>';
+                        } else {
+                            return '';
+                        }
+                    }
+                }],
                 stateSave: true,
                 iDisplayLength: 100,
                 "deferRender": true

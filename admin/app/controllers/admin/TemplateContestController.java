@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import actions.CheckTargetEnvironment;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.mongodb.WriteConcern;
 import model.*;
 import org.bson.types.ObjectId;
@@ -47,7 +48,8 @@ public class TemplateContestController extends Controller {
                         "startDate",
                         "activationAt",
                         "",             // Edit
-                        ""              // Delete
+                        "",             // Delete
+                        ""              // Simulation
 
                 );
             }
@@ -55,19 +57,34 @@ public class TemplateContestController extends Controller {
             public String getFieldByIndex(Object data, Integer index) {
                 TemplateContest templateContest = (TemplateContest) data;
                 switch (index) {
-                    case 0: return templateContest.state.toString();
-                    case 1: return templateContest.name;
-                    case 2: return String.valueOf(templateContest.templateMatchEventIds.size());
-                    case 3: return templateContest.optaCompetitionId;
-                    case 4: return String.valueOf(templateContest.minInstances);
-                    case 5: return String.valueOf(templateContest.maxEntries);
-                    case 6: return String.valueOf(templateContest.salaryCap);
-                    case 7: return String.valueOf(templateContest.entryFee);
-                    case 8: return String.valueOf(templateContest.prizeType);
-                    case 9: return GlobalDate.formatDate(templateContest.startDate);
-                    case 10: return GlobalDate.formatDate(templateContest.activationAt);
-                    case 11: return "";
-                    case 12: return "";
+                    case 0:
+                        return templateContest.state.toString();
+                    case 1:
+                        return templateContest.name;
+                    case 2:
+                        return String.valueOf(templateContest.templateMatchEventIds.size());
+                    case 3:
+                        return templateContest.optaCompetitionId;
+                    case 4:
+                        return String.valueOf(templateContest.minInstances);
+                    case 5:
+                        return String.valueOf(templateContest.maxEntries);
+                    case 6:
+                        return String.valueOf(templateContest.salaryCap);
+                    case 7:
+                        return String.valueOf(templateContest.entryFee);
+                    case 8:
+                        return String.valueOf(templateContest.prizeType);
+                    case 9:
+                        return GlobalDate.formatDate(templateContest.startDate);
+                    case 10:
+                        return GlobalDate.formatDate(templateContest.activationAt);
+                    case 11:
+                        return "";
+                    case 12:
+                        return "";
+                    case 13:
+                        return "";
                 }
                 return "<invalid value>";
             }
@@ -76,26 +93,37 @@ public class TemplateContestController extends Controller {
                 TemplateContest templateContest = (TemplateContest) data;
                 switch (index) {
                     case 0:
-                        if      (templateContest.state.isDraft())     return String.format("<button class=\"btn btn-default\">%s</button>", templateContest.state);
-                        else if (templateContest.state.isHistory())   return String.format("<button class=\"btn btn-danger\">%s</button>", templateContest.state);
-                        else if (templateContest.state.isLive())      return String.format("<button class=\"btn btn-success\">%s</button>", templateContest.state);
-                        else if (templateContest.state.isActive())    return String.format("<button class=\"btn btn-warning\">%s</button>", templateContest.state);
+                        if (templateContest.state.isDraft())
+                            return String.format("<button class=\"btn btn-default\">%s</button>", templateContest.state);
+                        else if (templateContest.state.isHistory())
+                            return String.format("<button class=\"btn btn-danger\">%s</button>", templateContest.state);
+                        else if (templateContest.state.isLive())
+                            return String.format("<button class=\"btn btn-success\">%s</button>", templateContest.state);
+                        else if (templateContest.state.isActive())
+                            return String.format("<button class=\"btn btn-warning\">%s</button>", templateContest.state);
                         return String.format("<button class=\"btn btn-warning disabled\">%s</button>", templateContest.state);
-                    case 1: return String.format("<a href=\"%s\" style=\"white-space: nowrap\">%s</a>",
+                    case 1:
+                        return String.format("<a href=\"%s\" style=\"white-space: nowrap\">%s</a>",
                                 routes.TemplateContestController.show(templateContest.templateContestId.toString()),
                                 fieldValue);
-                    case 10: return (templateContest.state.isDraft() || templateContest.state.isOff() || templateContest.state.isActive())
+                    case 11:
+                        return (templateContest.state.isDraft() || templateContest.state.isOff() || templateContest.state.isActive())
                                 ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">Edit</button></a>",
-                                        routes.TemplateContestController.edit(templateContest.templateContestId.toString()))
+                                routes.TemplateContestController.edit(templateContest.templateContestId.toString()))
                                 : "";
-                    case 11: return templateContest.state.isDraft()
-                             ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">+</button></a> <a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
-                                        routes.TemplateContestController.publish(templateContest.templateContestId.toString()),
-                                        routes.TemplateContestController.destroy(templateContest.templateContestId.toString()))
-                             : templateContest.state.isOff() ?
+                    case 12:
+                        return templateContest.state.isDraft()
+                                ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">+</button></a> <a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
+                                routes.TemplateContestController.publish(templateContest.templateContestId.toString()),
+                                routes.TemplateContestController.destroy(templateContest.templateContestId.toString()))
+                                : templateContest.state.isOff() ?
                                 String.format("<a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
                                         routes.TemplateContestController.destroy(templateContest.templateContestId.toString()))
-                             : "";
+                                : "";
+                    case 13:
+                        return templateContest.simulation
+                                ? String.format("<button class=\"btn btn-success\">Simulation</button>")
+                                : "";
                 }
                 return fieldValue;
             }
@@ -136,6 +164,18 @@ public class TemplateContestController extends Controller {
         return redirect(routes.TemplateContestController.index());
     }
 
+    public static Result simulate(String templateContestId) {
+        return redirect(routes.TemplateContestController.index());
+    }
+
+    public static Result startSimulation(String templateContestId) {
+        Model.actors().tellAndAwait("ContestsActor", ImmutableMap.of(
+                "id", "TemplateContest",
+                "templateContestId", templateContestId
+        ));
+        return redirect(routes.TemplateContestController.index());
+    }
+
     public static Result create() {
         Form<TemplateContestForm> templateContestForm = form(TemplateContestForm.class).bindFromRequest();
         if (templateContestForm.hasErrors()) {
@@ -151,6 +191,7 @@ public class TemplateContestController extends Controller {
 
         templateContest.templateContestId = !isNew ? new ObjectId(params.id) : null;
         templateContest.state = params.state;
+        templateContest.simulation = (params.typeContest == TypeContest.VIRTUAL);
         templateContest.name = params.name;
         templateContest.minInstances = params.minInstances;
         templateContest.maxEntries = params.maxEntries;
@@ -158,12 +199,12 @@ public class TemplateContestController extends Controller {
         templateContest.entryFee = MoneyUtils.of(params.entryFee);
         templateContest.prizeType = params.prizeType;
 
-        templateContest.activationAt = new DateTime(params.activationAt).withZoneRetainFields(DateTimeZone.UTC).toDate();
+        templateContest.activationAt = new DateTime(params.activationAt).withZone(DateTimeZone.UTC).toDate();
         templateContest.createdAt = new Date(params.createdAt);
 
         Date startDate = null;
         templateContest.templateMatchEventIds = new ArrayList<>();
-        for (String templateMatchEventId: params.templateMatchEvents) {
+        for (String templateMatchEventId : params.templateMatchEvents) {
             TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId));
             templateContest.optaCompetitionId = templateMatchEvent.optaCompetitionId;
             templateContest.templateMatchEventIds.add(templateMatchEvent.templateMatchEventId);
@@ -172,7 +213,15 @@ public class TemplateContestController extends Controller {
                 startDate = templateMatchEvent.startDate;
             }
         }
-        templateContest.startDate = startDate;
+
+        // Si es una "simulación" la fecha de comienzo la leeremos del formulario
+        if (templateContest.simulation) {
+            templateContest.startDate = new DateTime(params.startDate).withZone(DateTimeZone.UTC).toDate();
+        }
+        else {
+            // Si no es simulación, la fecha de comienzo es la del primer partido
+            templateContest.startDate = startDate;
+        }
 
         if (isNew) {
             Model.templateContests().insert(templateContest);

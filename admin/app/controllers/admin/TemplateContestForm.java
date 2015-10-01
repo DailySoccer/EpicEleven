@@ -3,6 +3,8 @@ package controllers.admin;
 import model.*;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import play.data.format.Formats;
 import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
 
@@ -10,9 +12,13 @@ import java.math.BigDecimal;
 import java.util.*;
 
 public class TemplateContestForm {
+
     public String id;
 
     public ContestState state;
+
+    // Por defecto, el formulario asumirá "Virtual" (dada su mayor frecuencia de creación)
+    public TypeContest typeContest = TypeContest.VIRTUAL;
 
     @Constraints.Required
     public String name;             // Auto-gen if blank
@@ -33,7 +39,11 @@ public class TemplateContestForm {
     @Constraints.Required
     public List<String> templateMatchEvents = new ArrayList<>();  // We rather have it here that normalize it in a N:N table
 
+    @Formats.DateTime (pattern = "yyyy-MM-dd'T'HH:mm")
     public Date activationAt;
+
+    @Formats.DateTime (pattern = "yyyy-MM-dd'T'HH:mm")
+    public java.util.Date startDate;
 
     // Fecha expresada en Time (para que sea más fácil volverla a convertir en Date; se usa para filtrar por fecha)
     public long createdAt;
@@ -47,6 +57,7 @@ public class TemplateContestForm {
     public TemplateContestForm(TemplateContest templateContest) {
         id = templateContest.templateContestId.toString();
         state = templateContest.state;
+        typeContest = templateContest.simulation ? TypeContest.VIRTUAL : TypeContest.REAL;
         name = templateContest.name;
         minInstances = templateContest.minInstances;
         maxEntries = templateContest.maxEntries;
@@ -59,6 +70,7 @@ public class TemplateContestForm {
         }
 
         activationAt = templateContest.activationAt;
+        startDate = templateContest.startDate;
         createdAt = templateContest.createdAt.getTime();
     }
 
@@ -71,7 +83,7 @@ public class TemplateContestForm {
 
         final int MAX_MATCH_EVENTS = 100;
         List<TemplateMatchEvent> templateMatchEventsResults = utils.ListUtils.asList(Model.templateMatchEvents()
-                .find("{startDate: {$gte: #, $lte: #}}", startDate, new DateTime(startDate).plusDays(20).toDate())
+                .find("{startDate: {$gte: #, $lte: #}, simulation: {$ne: true}}", startDate, new DateTime(startDate).plusDays(20).toDate())
                 .sort("{startDate : 1}").limit(MAX_MATCH_EVENTS).as(TemplateMatchEvent.class));
 
         List<ObjectId> teamIds = new ArrayList<>();

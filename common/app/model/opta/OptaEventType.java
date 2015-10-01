@@ -24,7 +24,7 @@ public enum OptaEventType {
     DISPOSSESSED            (50, "Player is successfully tacked and loses possession of the ball"),
     ERROR                   (51, "Mistake by player losing the ball"),
     DECISIVE_ERROR          (1051, "Mistake by player ending in a conceded goal"),
-    //CAUGHT_OFFSIDE          (72, "Player who is offside"),
+    //CAUGHT_OFFSIDE          (72, "Player who is offside"),x
     SAVE_PLAYER             (1010, "Player blockes a shot."),
     ASSIST                  (1210, "The pass was an assist for a shot"),
     TACKLE_EFFECTIVE        (1007, "Tackle: dispossesses an opponent of the ball, retaining possession"),

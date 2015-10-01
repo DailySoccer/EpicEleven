@@ -21,7 +21,7 @@ public class ContestController extends Controller {
     public static Result indexAjax() {
         return PaginationData.withAjax(request().queryString(), Model.contests(), Contest.class, new PaginationData() {
             public String projection() {
-                return "{name: 1, 'contestEntries.userId': 1, maxEntries: 1, templateContestId: 1, optaCompetitionId: 1, state: 1}";
+                return "{name: 1, 'contestEntries.userId': 1, maxEntries: 1, templateContestId: 1, optaCompetitionId: 1, state: 1, simulation: 1}";
             }
 
             public List<String> getFieldNames() {
@@ -31,7 +31,8 @@ public class ContestController extends Controller {
                     "maxEntries",
                     "templateContestId",
                     "optaCompetitionId",
-                    ""                      // templateContest.state
+                    "",                     // templateContest.state
+                    ""                      // Simulation
                 );
             }
 
@@ -52,6 +53,7 @@ public class ContestController extends Controller {
                             } else {
                                 return "Waiting";
                             }
+                    case 6: return "";
                 }
                 return "<invalid value>";
             }
@@ -72,6 +74,10 @@ public class ContestController extends Controller {
                         } else {
                             return "<button class=\"btn btn-warning\">Waiting</button>";
                         }
+                    case 6:
+                        return contest.simulation
+                                ? "<button class=\"btn btn-success\">Simulation</button>"
+                                : "";
                 }
                 return fieldValue;
             }

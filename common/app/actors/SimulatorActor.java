@@ -187,6 +187,7 @@ public class SimulatorActor extends UntypedActor {
 
         // El orden de entrega de estos mensajes no esta garantizado, como debe de ser.
         Model.actors().tell("ContestsActor", "SimulatorTick");
+        Model.actors().tell("VirtualMatchEventActor", "SimulatorTick");
         Model.actors().tell("TransactionsActor", "SimulatorTick");
         Model.actors().tell("OptaProcessorActor", "SimulatorTick");
 
