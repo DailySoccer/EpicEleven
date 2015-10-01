@@ -259,10 +259,12 @@ public class Model {
         optaCompetitions.createIndex(new BasicDBObject("competitionId", 1));
 
         DBCollection optaEvents = theMongoDB.getCollection("optaEvents");
-        optaEvents.createIndex(new BasicDBObject("parentId", 1));
         optaEvents.createIndex(new BasicDBObject("eventId", 1));
         optaEvents.createIndex(new BasicDBObject("gameId", 1));
         optaEvents.createIndex(new BasicDBObject("optaPlayerId", 1));
+        optaEvents.createIndex(new BasicDBObject("competitionId", 1));
+        optaEvents.createIndex(new BasicDBObject("homeTeamId", 1));
+        optaEvents.createIndex(new BasicDBObject("awayTeamId", 1));
 
         DBCollection optaPlayers = theMongoDB.getCollection("optaPlayers");
         optaPlayers.createIndex(new BasicDBObject("optaPlayerId", 1));
