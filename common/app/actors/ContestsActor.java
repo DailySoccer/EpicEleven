@@ -147,7 +147,7 @@ public class ContestsActor extends TickableActor {
         createMock(templateMatchEvents, MoneyUtils.zero, 25, PrizeType.FREE, SalaryCap.STANDARD);
 
         for (int i = 1; i<=6; i++) {
-            Money money = MoneyUtils.of(i);
+            Money money = Money.of(MoneyUtils.CURRENCY_GOLD, i);
 
             switch (i) {
                 case 1:

@@ -108,8 +108,7 @@ public class EnterContestJob extends Job {
         Integer seqId = User.getSeqId(userId) + 1;
 
         // El usuario tiene dinero suficiente?
-        Money userBalance = User.calculateBalance(userId);
-        if (MoneyUtils.compareTo(userBalance, entryFee) >= 0) {
+        if (User.hasMoney(userId, entryFee) >= 0) {
             try {
                 // Registrar el pago
                 AccountingTran accountingTran = AccountingTranEnterContest.create(contestId, contestEntryId, ImmutableList.of(

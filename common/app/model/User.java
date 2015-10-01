@@ -7,6 +7,7 @@ import model.accounting.AccountingTranBonus;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
+import play.Logger;
 import utils.ListUtils;
 import utils.MoneyUtils;
 
@@ -28,6 +29,10 @@ public class User {
     // TODO: De momento no es realmente un "cache", siempre lo recalculamos
     public Money cachedBalance;
     public Money cachedBonus;
+
+    public Money goldBalance;
+    public Money managerBalance;
+    public Money energyBalance;
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
@@ -96,7 +101,16 @@ public class User {
     }
 
     static public void updateBalance(ObjectId userId, Money balance) {
-        Model.users().update(userId).with("{$set: {cachedBalance: #}}", balance.toString());
+        if (balance.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+            Model.users().update(userId).with("{$set: {goldBalance: #}}", balance.toString());
+        }
+        else if (balance.getCurrencyUnit().equals(MoneyUtils.CURRENCY_MANAGER)) {
+            Model.users().update(userId).with("{$set: {managerBalance: #}}", balance.toString());
+        }
+        else {
+            Model.users().update(userId).with("{$set: {energyBalance: #}}", balance.toString());
+        }
+        // Model.users().update(userId).with("{$set: {cachedBalance: #}}", balance.toString());
     }
 
     public void updateStats() {
@@ -116,7 +130,14 @@ public class User {
     }
 
     public Money calculateBalance() {
-        return User.calculateBalance(userId);
+        return User.calculateGoldBalance(userId);
+    }
+    public Money calculateGoldBalance() { return User.calculateGoldBalance(userId); }
+    public Money calculateManagerBalance() {
+        return User.calculateManagerBalance(userId);
+    }
+    public Money calculateEnergyBalance() {
+        return User.calculateEnergyBalance(userId);
     }
 
     public Money calculateBonus() {
@@ -147,27 +168,58 @@ public class User {
         Money balance = MoneyUtils.zero;
         if (!accounting.isEmpty()) {
             for (AccountOp op : accounting.get(0).accountOps) {
-                balance = MoneyUtils.plus(balance, op.value);
+                balance = MoneyUtils.plus(balance, op.asMoney());
             }
         }
         return balance;
     }
 
-    static public Money calculateBalance(ObjectId userId) {
+    static public Money calculateBalance(ObjectId userId, String currencyUnit) {
         List<AccountingTran> accounting = Model.accountingTransactions()
                 .aggregate("{$match: { \"accountOps.accountId\": #, state: \"VALID\"}}", userId)
                 .and("{$unwind: \"$accountOps\"}")
-                .and("{$match: {\"accountOps.accountId\": #}}", userId)
+                .and("{$match: {\"accountOps.accountId\": #, \"accountOps.currencyCode\": #}}", userId, currencyUnit)
                 .and("{$group: {_id: #, _class: { $first: \"$_class\" }, accountOps: { $push: { accountId: \"$accountOps.accountId\", value: \"$accountOps.value\" }}}}", new ObjectId())
                 .as(AccountingTran.class);
 
-        Money balance = MoneyUtils.zero;
+        Money balance = MoneyUtils.zero(currencyUnit);
         if (!accounting.isEmpty()) {
             for (AccountOp op : accounting.get(0).accountOps) {
-                balance = MoneyUtils.plus(balance, op.value);
+                balance = balance.plus(op.asMoney());
             }
         }
         return balance;
+    }
+
+    static public int hasMoney(ObjectId userId, Money money) {
+        Money balance;
+        if (money.equals(MoneyUtils.CURRENCY_GOLD)) {
+            balance = calculateGoldBalance(userId);
+        }
+        else if (money.equals(MoneyUtils.CURRENCY_MANAGER)) {
+            balance = calculateManagerBalance(userId);
+        }
+        else if (money.equals(MoneyUtils.CURRENCY_ENERGY)) {
+            balance = calculateEnergyBalance(userId);
+        }
+        else {
+            // El usuario no tendrá dinero, si la moneda es diferente
+            Logger.error("User.hasMoney: {}", money.toString());
+            return -1;
+        }
+        return MoneyUtils.compareTo(balance, money);
+    }
+
+    static public Money calculateGoldBalance(ObjectId userId) {
+        return calculateBalance(userId, MoneyUtils.CURRENCY_GOLD.getCode());
+    }
+
+    static public Money calculateManagerBalance(ObjectId userId) {
+        return calculateBalance(userId, MoneyUtils.CURRENCY_MANAGER.getCode());
+    }
+
+    static public Money calculateEnergyBalance(ObjectId userId) {
+        return calculateBalance(userId, MoneyUtils.CURRENCY_ENERGY.getCode());
     }
 
     static public Money calculateBonus(ObjectId userId, Date toDate) {
@@ -177,8 +229,8 @@ public class User {
 
         Money balance = MoneyUtils.zero;
         if (!transactions.isEmpty()) {
-            for (AccountingTranBonus transacition : transactions) {
-                balance = MoneyUtils.plus(balance, transacition.bonus);
+            for (AccountingTranBonus transaction : transactions) {
+                balance = MoneyUtils.plus(balance, transaction.bonus);
             }
         }
         return balance;

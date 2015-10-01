@@ -1,6 +1,7 @@
 @(user: model.User, transactions: List[model.accounting.AccountingTran])
 
 @import model._
+@import utils._
 @import controllers.admin.routes.DashboardController
 
 @scripts = {
@@ -19,8 +20,8 @@
                         [
                             "@p.accountingTranId",
                             "@p.getTransactionType()",
-                            "@p.getAccountOp(user.userId).value",
-                            "@p.getAccountOp(user.userId).cachedBalance",
+                            "@MoneyUtils.asString(p.getAccountOp(user.userId).value)",
+                            "@MoneyUtils.asString(p.getAccountOp(user.userId).cachedBalance)",
                             "@GlobalDate.formatDate(p.createdAt)"
                         ] @if(index < transactions.size-1) { , }
                     }
@@ -39,7 +40,8 @@
 
 <div>
     <h3>@user.nickName (@user.email)</h3>
-    <div><strong>Balance Total:</strong> @user.calculateBalance()</div>
+    <div><strong>Gold Total:</strong> @MoneyUtils.asString(user.calculateGoldBalance())</div>
+    <div><strong>Manager Total:</strong> @MoneyUtils.asString(user.calculateManagerBalance())</div>
 </div>
 <br/>
 <div class="table-responsive">

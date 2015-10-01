@@ -456,7 +456,7 @@ public class LoginController extends Controller {
         List<AccountingTran> accountingTrans = AccountingTran.findAllFromUserId(theUser.userId);
         for (AccountingTran transaction : accountingTrans) {
             AccountOp accountOp = transaction.getAccountOp(theUser.userId);
-            if (accountOp != null && MoneyUtils.isGreaterThan(accountOp.value, MoneyUtils.zero)) {
+            if (accountOp != null && MoneyUtils.isGreaterThan(accountOp.asMoney(), MoneyUtils.zero)) {
                 transactions.add(transaction.getAccountInfo(accountOp));
             }
         }

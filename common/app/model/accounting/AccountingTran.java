@@ -17,8 +17,6 @@ import java.util.*;
 public class AccountingTran {
     public enum TransactionType {
         PRIZE,
-        GOLD_PRIZE,
-        POINTS_PRIZE,
         ORDER,
         ENTER_CONTEST,
         CANCEL_CONTEST_ENTRY,

@@ -9,8 +9,8 @@ GET         /stop_bot_actors                                                    
 GET         /pause_resume_bot_actors                                             controllers.admin.DashboardController.pauseResumeBotActors()
 GET         /stampede_bot_actors                                                 controllers.admin.DashboardController.stampedeBotActors()
 GET         /berserker_bot_actors                                                controllers.admin.DashboardController.berserkerBotActors()
-GET         /add_money_to_bots/:amount                                           controllers.admin.DashboardController.addMoneyToBots(amount : Integer)
-GET         /add_money_to_tests/:amount                                          controllers.admin.DashboardController.addMoneyToTests(amount : Integer)
+GET         /add_money_to_bots/:amount                                           controllers.admin.DashboardController.addMoneyToBots(amount : String)
+GET         /add_money_to_tests/:amount                                          controllers.admin.DashboardController.addMoneyToTests(amount : String)
 
 GET         /lobby                                                               controllers.admin.LobbyController.lobby()
 

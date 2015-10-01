@@ -72,7 +72,7 @@ public class TemplateContestController extends Controller {
                     case 6:
                         return String.valueOf(templateContest.salaryCap);
                     case 7:
-                        return String.valueOf(templateContest.entryFee);
+                        return MoneyUtils.asString(templateContest.entryFee);
                     case 8:
                         return String.valueOf(templateContest.prizeType);
                     case 9:
@@ -196,7 +196,9 @@ public class TemplateContestController extends Controller {
         templateContest.minInstances = params.minInstances;
         templateContest.maxEntries = params.maxEntries;
         templateContest.salaryCap = params.salaryCap.money;
-        templateContest.entryFee = MoneyUtils.of(params.entryFee);
+
+        // En la simulación usaremos ENERGY, en los reales GOLD
+        templateContest.entryFee = Money.of(templateContest.simulation ? MoneyUtils.CURRENCY_ENERGY : MoneyUtils.CURRENCY_GOLD, params.entryFee);
         templateContest.prizeType = params.prizeType;
 
         templateContest.activationAt = new DateTime(params.activationAt).withZone(DateTimeZone.UTC).toDate();
@@ -294,7 +296,7 @@ public class TemplateContestController extends Controller {
 
 
         for (int i = 1; i<=6; i++) {
-            Money money = MoneyUtils.of(i);
+            Money money = Money.of(MoneyUtils.CURRENCY_GOLD, i);
 
             switch (i) {
                 case 1:
@@ -381,7 +383,7 @@ public class TemplateContestController extends Controller {
     }
 
     public static Result getPrizes(String prizeType, Integer maxEntries, Integer entryFee) {
-        Prizes prizes = Prizes.findOne(PrizeType.valueOf(prizeType), maxEntries, MoneyUtils.of(entryFee));
+        Prizes prizes = Prizes.findOne(PrizeType.valueOf(prizeType), maxEntries, Money.of(MoneyUtils.CURRENCY_GOLD, entryFee), MoneyUtils.CURRENCY_GOLD);
         return new ReturnHelper(prizes.getAllValues()).toResult();
     }
 

@@ -172,9 +172,9 @@ public class ContestController extends Controller {
                         errors.add(String.format("contestEntry: %s: Sin AccountOp", contestEntry.contestEntryId));
                     }
                     // Tendría que recibir el premio correspondiente
-                    else if (!accountOp.value.equals(prizes.getValue(contestEntry.position))) {
+                    else if (!accountOp.asMoney().equals(prizes.getValue(contestEntry.position))) {
                         errors.add(String.format("contestEntry: %s AccountOp: %s != %s",
-                                contestEntry.contestEntryId, accountOp.value, prizes.getValue(contestEntry.position)));
+                                contestEntry.contestEntryId, accountOp.asMoney(), prizes.getValue(contestEntry.position)));
                     }
                 }
             }
@@ -207,7 +207,7 @@ public class ContestController extends Controller {
                                     contest.entryFee, contest.contestId, contestEntry.contestEntryId, bonusPending));
                         }
                         // Comprobar que sea la misma cantidad (una positiva y otra negativa)
-                        else if (!MoneyUtils.equals(bonusTransaction.bonus.negated(), bonusTransaction.accountOps.get(0).value)) {
+                        else if (!MoneyUtils.equals(bonusTransaction.bonus.negated(), bonusTransaction.accountOps.get(0).asMoney())) {
                             errors.add(String.format("entryFee %s: contest: %s contestEntry: %s: Bonus: %s != Cash %s",
                                     contest.entryFee.toString(), contest.contestId, contestEntry.contestEntryId,
                                     bonusTransaction.bonus.negated(), bonusTransaction.accountOps.get(0).value));
@@ -245,7 +245,7 @@ public class ContestController extends Controller {
                     errors.add(String.format("contestEntry: %s: Sin AccountOp", contestEntry.contestEntryId));
                 }
                 // Tendrían que devolverle el entryFee
-                else if (!MoneyUtils.equals(accountOp.value, contest.entryFee)) {
+                else if (!MoneyUtils.equals(accountOp.asMoney(), contest.entryFee)) {
                     errors.add(String.format("contestEntry: %s AccountOp: %s != %s",
                             contestEntry.contestEntryId, accountOp.value, contest.entryFee));
                 }

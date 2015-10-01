@@ -2,6 +2,7 @@ package controllers.admin;
 
 import model.bonus.AddFundsBonus;
 import model.bonus.SignupBonus;
+import org.joda.money.Money;
 import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -27,9 +28,9 @@ public class BonusController extends Controller {
 
         BonusForm params = bonusForm.get();
 
-        SignupBonus.create(params.signupBonus_activated, MoneyUtils.of(params.signupBonus_money));
+        SignupBonus.create(params.signupBonus_activated, Money.of(MoneyUtils.CURRENCY_GOLD, params.signupBonus_money));
         AddFundsBonus.create(params.addFundsBonus_activated,
-                MoneyUtils.of(params.addFundsBonus_minMoney), MoneyUtils.of(params.addFundsBonus_maxMoney),
+                Money.of(MoneyUtils.CURRENCY_GOLD, params.addFundsBonus_minMoney), Money.of(MoneyUtils.CURRENCY_GOLD, params.addFundsBonus_maxMoney),
                 params.addFundsBonus_percent);
 
         return redirect(routes.BonusController.index());

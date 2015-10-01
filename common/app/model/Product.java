@@ -8,8 +8,6 @@ import utils.MoneyUtils;
 import java.util.Map;
 
 public class Product {
-    static public CurrencyUnit CURRENCY_DEFAULT = CurrencyUnit.CHF;
-
     public String name;
     public Money price;
 
