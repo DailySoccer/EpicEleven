@@ -45,6 +45,8 @@ public class TemplateContestController extends Controller {
                         "maxEntries",
                         "salaryCap",
                         "entryFee",
+                        "prizeMultiplier",
+                        "",             // Prize Pool
                         "prizeType",
                         "startDate",
                         "activationAt",
@@ -75,16 +77,20 @@ public class TemplateContestController extends Controller {
                     case 7:
                         return MoneyUtils.asString(templateContest.entryFee);
                     case 8:
-                        return String.valueOf(templateContest.prizeType);
+                        return String.valueOf(templateContest.prizeMultiplier);
                     case 9:
-                        return GlobalDate.formatDate(templateContest.startDate);
+                        return MoneyUtils.asString(templateContest.getPrizePool());
                     case 10:
-                        return GlobalDate.formatDate(templateContest.activationAt);
+                        return String.valueOf(templateContest.prizeType);
                     case 11:
-                        return "";
+                        return GlobalDate.formatDate(templateContest.startDate);
                     case 12:
-                        return "";
+                        return GlobalDate.formatDate(templateContest.activationAt);
                     case 13:
+                        return "";
+                    case 14:
+                        return "";
+                    case 15:
                         return "";
                 }
                 return "<invalid value>";
@@ -107,12 +113,12 @@ public class TemplateContestController extends Controller {
                         return String.format("<a href=\"%s\" style=\"white-space: nowrap\">%s</a>",
                                 routes.TemplateContestController.show(templateContest.templateContestId.toString()),
                                 fieldValue);
-                    case 11:
+                    case 13:
                         return (templateContest.state.isDraft() || templateContest.state.isOff() || templateContest.state.isActive())
                                 ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">Edit</button></a>",
                                 routes.TemplateContestController.edit(templateContest.templateContestId.toString()))
                                 : "";
-                    case 12:
+                    case 14:
                         return templateContest.state.isDraft()
                                 ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">+</button></a> <a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
                                 routes.TemplateContestController.publish(templateContest.templateContestId.toString()),
@@ -121,7 +127,7 @@ public class TemplateContestController extends Controller {
                                 String.format("<a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
                                         routes.TemplateContestController.destroy(templateContest.templateContestId.toString()))
                                 : "";
-                    case 13:
+                    case 15:
                         return templateContest.simulation
                                 ? String.format("<button class=\"btn btn-success\">Simulation</button>")
                                 : "";

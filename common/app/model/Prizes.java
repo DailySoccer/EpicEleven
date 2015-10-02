@@ -183,6 +183,11 @@ public class Prizes {
 
         return prizes;
     }
+
+    static public Money getPool(CurrencyUnit currencyUnit, Money entryFee, int maxEntries, float prizeMultiplier) {
+        Money money = Money.zero(currencyUnit);
+        return money.plus(entryFee.getAmount()).multipliedBy(maxEntries * prizeMultiplier, RoundingMode.HALF_UP);
+    }
 }
 
 /*

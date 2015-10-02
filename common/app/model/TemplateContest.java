@@ -13,6 +13,7 @@ import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
+import utils.MoneyUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -301,6 +302,10 @@ public class TemplateContest implements JongoId {
         Model.templateContests().update("{_id: #, state: \"DRAFT\"}", templateContestId).with("{$set: {state: \"OFF\"}}");
     }
 
+    public Money getPrizePool() {
+        return Prizes.getPool(simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD, entryFee, maxEntries, prizeMultiplier);
+    }
+
     public static void actionWhenMatchEventIsStarted(TemplateMatchEvent matchEvent) {
         // Los template contests (que incluyan este match event y que esten "activos") tienen que ser marcados como "live"
         Model.templateContests()
@@ -309,7 +314,15 @@ public class TemplateContest implements JongoId {
                 .with("{$set: {state: \"LIVE\"}}");
 
         // Los Contests válidos pasarán a "live"
-        // Válido = (Gratuitos AND entries > 1) OR Llenos
+        // Válido = Los que al menos tengan 2 participantes
+        Model.contests()
+                .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\", \"contestEntries.1\": {$exists: true}}", matchEvent.templateMatchEventId)
+                .multi()
+                .with("{$set: {state: \"LIVE\", startedAt: #}}", GlobalDate.getCurrentDate());
+
+        // Se cancelaban los contests que tenían premio
+        // OLD: Válido = (Gratuitos AND entries > 1) OR Llenos
+        /*
         Model.contests()
                 .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"," +
                         "$or: [" +
@@ -318,6 +331,7 @@ public class TemplateContest implements JongoId {
                         "]}", matchEvent.templateMatchEventId)
                 .multi()
                 .with("{$set: {state: \"LIVE\", startedAt: #}}", GlobalDate.getCurrentDate());
+        */
 
         try {
             // Cancelamos aquellos contests que aún permanezcan activos

@@ -107,7 +107,7 @@ public class ContestEntryController extends Controller {
             if (errores.isEmpty()) {
                 if (MoneyUtils.isGreaterThan(aContest.entryFee, MoneyUtils.zero)) {
                     // Verificar que el usuario tiene dinero suficiente...
-                    if (User.hasMoney(theUser.userId, aContest.entryFee) < 0) {
+                    if (!User.hasMoney(theUser.userId, aContest.entryFee)) {
                         errores.add(ERROR_USER_BALANCE_NEGATIVE);
                     }
                 }

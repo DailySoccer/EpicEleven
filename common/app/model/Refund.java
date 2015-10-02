@@ -46,7 +46,7 @@ public class Refund {
             Integer seqId = User.getSeqId(userId) + 1;
 
             // El usuario tiene dinero suficiente?
-            if (User.hasMoney(userId, amount) >= 0) {
+            if (User.hasMoney(userId, amount)) {
 
                 // Registrar la devolución
                 AccountingTranRefund.create(refundId, ImmutableList.of(

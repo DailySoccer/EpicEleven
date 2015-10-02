@@ -144,6 +144,10 @@ public class User {
         return User.calculateBonus(userId);
     }
 
+    public boolean hasMoney(Money money) {
+        return hasMoney(userId, money);
+    }
+
     static public Integer getSeqId(ObjectId userId) {
         List<AccountOp> account = Model.accountingTransactions()
                 .aggregate("{$match: { \"accountOps.accountId\": #}}", userId)
@@ -191,23 +195,23 @@ public class User {
         return balance;
     }
 
-    static public int hasMoney(ObjectId userId, Money money) {
+    static public boolean hasMoney(ObjectId userId, Money money) {
         Money balance;
-        if (money.equals(MoneyUtils.CURRENCY_GOLD)) {
+        if (money.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
             balance = calculateGoldBalance(userId);
         }
-        else if (money.equals(MoneyUtils.CURRENCY_MANAGER)) {
+        else if (money.getCurrencyUnit().equals(MoneyUtils.CURRENCY_MANAGER)) {
             balance = calculateManagerBalance(userId);
         }
-        else if (money.equals(MoneyUtils.CURRENCY_ENERGY)) {
+        else if (money.getCurrencyUnit().equals(MoneyUtils.CURRENCY_ENERGY)) {
             balance = calculateEnergyBalance(userId);
         }
         else {
             // El usuario no tendrá dinero, si la moneda es diferente
-            Logger.error("User.hasMoney: {}", money.toString());
-            return -1;
+            Logger.error("User not has Money: {}", money.toString());
+            return false;
         }
-        return MoneyUtils.compareTo(balance, money);
+        return MoneyUtils.compareTo(balance, money) >= 0;
     }
 
     static public Money calculateGoldBalance(ObjectId userId) {

@@ -78,8 +78,7 @@ public final class MockData {
 
             if (contest.entryFee.isPositive()) {
                 // El usuario tiene que tener el dinero suficiente para entrar en el contest
-                Money balance = user.calculateBalance();
-                if (balance.isLessThan(contest.entryFee)) {
+                if (!user.hasMoney(contest.entryFee)) {
                     continue;
                 }
             }

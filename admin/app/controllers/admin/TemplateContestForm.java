@@ -23,8 +23,9 @@ public class TemplateContestForm {
     @Constraints.Required
     public String name;             // Auto-gen if blank
 
+    @Constraints.Min(1)
     @Constraints.Required
-    public int minInstances;        // Minimum desired number of instances that we want running at any given moment
+    public int minInstances = 1;        // Minimum desired number of instances that we want running at any given moment
 
     @Constraints.Required
     public int maxEntries = 10;

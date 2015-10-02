@@ -18,6 +18,7 @@
                     { "title": "Wins" },
                     { "title": "Gold" },
                     { "title": "Manager" },
+                    { "title": "Energy" },
                     { "title": "Bonus" }
                 ],
                 "data": [
@@ -32,6 +33,7 @@
                             "@p.wins",
                             "@MoneyUtils.asString(p.calculateGoldBalance())",
                             "@MoneyUtils.asString(p.calculateManagerBalance())",
+                            "@MoneyUtils.asString(p.calculateEnergyBalance())",
                             "@MoneyUtils.asString(p.calculateBonus())"
                         ] @if(index < users.size-1) { , }
                     }

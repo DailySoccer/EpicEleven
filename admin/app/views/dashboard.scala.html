@@ -87,7 +87,10 @@ function addMoney(target, amount) {
     </p>
 
     <select id="money-list" onchange="moneySelected = $('#money-list').val()" class="form-control" style="width: 130px; display: inline-block;">
-        <option value="CHF 5" selected="true">@MoneyUtils.asString("CHF 5")</option>
+        <option value="JPY 5" selected="true">@MoneyUtils.asString("JPY 5")</option>
+        <option value="JPY 10">@MoneyUtils.asString("JPY 10")</option>
+        <option value="JPY 1000">@MoneyUtils.asString("JPY 1000")</option>
+        <option value="CHF 5">@MoneyUtils.asString("CHF 5")</option>
         <option value="CHF 10">@MoneyUtils.asString("CHF 10")</option>
         <option value="CHF 1000">@MoneyUtils.asString("CHF 1000")</option>
         <option value="AUD 5">@MoneyUtils.asString("AUD 5")</option>

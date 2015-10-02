@@ -330,7 +330,7 @@ public class Contest implements JongoId {
             List<AccountOp> accounts = new ArrayList<>();
             for (ContestEntry contestEntry : contestEntries) {
                 Money prize = prizes.getValue(contestEntry.position);
-                if (MoneyUtils.isGreaterThan(prize, MoneyUtils.zero)) {
+                if (prize.getAmount().floatValue() > 0) {
                     accounts.add(new AccountOp(contestEntry.userId, prize, User.getSeqId(contestEntry.userId) + 1));
                 }
             }
@@ -399,7 +399,7 @@ public class Contest implements JongoId {
     }
 
     public Money getPrizePool() {
-        return entryFee.multipliedBy(maxEntries * prizeMultiplier, RoundingMode.HALF_UP);
+        return Prizes.getPool(simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD, entryFee, maxEntries, prizeMultiplier);
     }
 
     class ContestEntryComparable implements Comparator<ContestEntry>{

@@ -46,7 +46,8 @@ public class EnterContestJob extends Job {
                 if (contestEntry == null) {
                     contestEntry = createContestEntry();
 
-                    bValid = contest.entryFee.isNegativeOrZero() || transactionPayment(contest.entryFee);
+                    // Será válido, si el contest es GRATIS o con ENERGÍA o el usuario tiene dinero
+                    bValid = contest.entryFee.isNegativeOrZero() || contest.entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_ENERGY) || transactionPayment(contest.entryFee);
 
                     if (bValid) {
                         Contest contestModified = transactionInsertContestEntry(contest, contestEntry);
@@ -108,7 +109,7 @@ public class EnterContestJob extends Job {
         Integer seqId = User.getSeqId(userId) + 1;
 
         // El usuario tiene dinero suficiente?
-        if (User.hasMoney(userId, entryFee) >= 0) {
+        if (User.hasMoney(userId, entryFee)) {
             try {
                 // Registrar el pago
                 AccountingTran accountingTran = AccountingTranEnterContest.create(contestId, contestEntryId, ImmutableList.of(
