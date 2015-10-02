@@ -55,6 +55,9 @@ public class User {
     public User getProfile() {
         cachedBalance = calculateBalance();
         cachedBonus = calculateBonus();
+        goldBalance = calculateGoldBalance();
+        managerBalance = calculateManagerBalance();
+        energyBalance = Money.zero(MoneyUtils.CURRENCY_ENERGY);
         return this;
     }
 
