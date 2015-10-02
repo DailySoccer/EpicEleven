@@ -253,7 +253,10 @@ public class TemplateContestController extends Controller {
 
     private static void updateActiveContestsFromTemplate(TemplateContest templateContest) {
         // Only name can change in Active contests
-        Model.contests().withWriteConcern(WriteConcern.SAFE).update("{templateContestId: #}", templateContest.getId()).multi().with("{$set: {name: #}}", templateContest.name);
+        Model.contests().withWriteConcern(WriteConcern.SAFE)
+                .update("{templateContestId: #}", templateContest.getId())
+                .multi()
+                .with("{$set: {name: #, specialImage: #}}", templateContest.name, templateContest.specialImage);
     }
 
     @CheckTargetEnvironment
