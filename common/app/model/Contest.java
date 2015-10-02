@@ -67,6 +67,9 @@ public class Contest implements JongoId {
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public Money entryFee;
 
+    @JsonView(JsonViews.NotForClient.class)
+    public float prizeMultiplier = 0.9f;
+
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public PrizeType prizeType;
 
@@ -98,6 +101,7 @@ public class Contest implements JongoId {
         freeSlots = template.maxEntries;
         salaryCap = template.salaryCap;
         entryFee = template.entryFee;
+        prizeMultiplier = template.prizeMultiplier;
         prizeType = template.prizeType;
         startDate = template.startDate;
         optaCompetitionId = template.optaCompetitionId;
@@ -392,6 +396,10 @@ public class Contest implements JongoId {
     public Contest getSameContestWithFreeSlot(ObjectId userId) {
         String query = String.format("{templateContestId: #, 'contestEntries.%s': {$exists: false}, 'contestEntries.userId': {$ne:#}}", maxEntries-1);
         return Model.contests().findOne(query, templateContestId, userId).as(Contest.class);
+    }
+
+    public Money getPrizePool() {
+        return entryFee.multipliedBy(maxEntries * prizeMultiplier, RoundingMode.HALF_UP);
     }
 
     class ContestEntryComparable implements Comparator<ContestEntry>{

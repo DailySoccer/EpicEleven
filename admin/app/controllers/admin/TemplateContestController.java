@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -382,8 +383,8 @@ public class TemplateContestController extends Controller {
         Model.templateContests().insert(templateContest);
     }
 
-    public static Result getPrizes(String prizeType, Integer maxEntries, Integer entryFee) {
-        Prizes prizes = Prizes.findOne(PrizeType.valueOf(prizeType), maxEntries, Money.of(MoneyUtils.CURRENCY_GOLD, entryFee), MoneyUtils.CURRENCY_GOLD);
+    public static Result getPrizes(String prizeType, Integer maxEntries, Integer prizePool) {
+        Prizes prizes = Prizes.findOne(PrizeType.valueOf(prizeType), maxEntries, Money.of(MoneyUtils.CURRENCY_DEFAULT, prizePool));
         return new ReturnHelper(prizes.getAllValues()).toResult();
     }
 

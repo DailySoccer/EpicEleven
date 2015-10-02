@@ -27,14 +27,16 @@ public class TemplateContestForm {
     public int minInstances;        // Minimum desired number of instances that we want running at any given moment
 
     @Constraints.Required
-    public int maxEntries;
+    public int maxEntries = 10;
 
     @Constraints.Required
     public SalaryCap salaryCap = SalaryCap.STANDARD;
     @Constraints.Required
-    public BigDecimal entryFee;
+    public BigDecimal entryFee = new BigDecimal(1);
     @Constraints.Required
-    public PrizeType prizeType;
+    public float prizeMultiplier = 1.0f;
+    @Constraints.Required
+    public PrizeType prizeType = PrizeType.WINNER_TAKES_ALL;
 
     @Constraints.Required
     public List<String> templateMatchEvents = new ArrayList<>();  // We rather have it here that normalize it in a N:N table
@@ -63,6 +65,7 @@ public class TemplateContestForm {
         maxEntries = templateContest.maxEntries;
         salaryCap = SalaryCap.findByMoney(templateContest.salaryCap);
         entryFee = templateContest.entryFee.getAmount();
+        prizeMultiplier = templateContest.prizeMultiplier;
         prizeType = templateContest.prizeType;
 
         for(TemplateMatchEvent matchEvent : TemplateMatchEvent.findAll(templateContest.templateMatchEventIds)) {

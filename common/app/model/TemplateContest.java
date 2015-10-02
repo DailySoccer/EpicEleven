@@ -38,6 +38,7 @@ public class TemplateContest implements JongoId {
     public int salaryCap;
     public Money entryFee;
     public PrizeType prizeType;
+    public float prizeMultiplier = 1.0f;
 
     public Date startDate;
 
@@ -61,7 +62,13 @@ public class TemplateContest implements JongoId {
     public TemplateContest() { }
 
     public TemplateContest(String name, int minInstances, int maxEntries, SalaryCap salaryCap,
-                            Money entryFee, PrizeType prizeType, Date activationAt,
+                           Money entryFee, PrizeType prizeType, Date activationAt,
+                           List<String> templateMatchEvents) {
+        this(name, minInstances, maxEntries, salaryCap, entryFee, 1.0f, prizeType, activationAt, templateMatchEvents);
+    }
+
+    public TemplateContest(String name, int minInstances, int maxEntries, SalaryCap salaryCap,
+                            Money entryFee, float prizeMultiplier, PrizeType prizeType, Date activationAt,
                             List<String> templateMatchEvents) {
 
         this.name = name;
@@ -69,6 +76,7 @@ public class TemplateContest implements JongoId {
         this.maxEntries = maxEntries;
         this.salaryCap = salaryCap.money;
         this.entryFee = entryFee;
+        this.prizeMultiplier = prizeMultiplier;
         this.prizeType = prizeType;
         this.activationAt = activationAt;
 
@@ -97,6 +105,7 @@ public class TemplateContest implements JongoId {
 
         cloned.salaryCap = salaryCap;
         cloned.entryFee = entryFee;
+        cloned.prizeMultiplier = prizeMultiplier;
         cloned.prizeType = prizeType;
 
         cloned.startDate = startDate;

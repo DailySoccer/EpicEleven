@@ -55,7 +55,7 @@ GET         /template_contest/publish/:templateContestId                        
 GET         /template_contest/delete/:templateContestId                          controllers.admin.TemplateContestController.destroy(templateContestId : String)
 GET         /template_contest/:templateContestId                                 controllers.admin.TemplateContestController.show(templateContestId : String)
 
-GET         /template_contest/get_prizes/:prizeType/:maxEntries/:entryFee        controllers.admin.TemplateContestController.getPrizes(prizeType : String, maxEntries : Int, entryFee : Int)
+GET         /template_contest/get_prizes/:prizeType/:maxEntries/:prizePool       controllers.admin.TemplateContestController.getPrizes(prizeType : String, maxEntries : Int, prizePool : Int)
 
 GET         /template_match_events                                               controllers.admin.TemplateMatchEventController.index()
 GET         /template_match_event/:templateMatchEventId                          controllers.admin.TemplateMatchEventController.show(templateMatchEventId : String)

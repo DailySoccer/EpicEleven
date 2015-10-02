@@ -10,42 +10,34 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Prizes {
     public PrizeType prizeType;
     public int maxEntries;
-    public Money entryFee;
-    public CurrencyUnit currency;
+    public Money prizePool;
     // public List<Float> multipliers = new ArrayList<>();
     public List<Money> values = new ArrayList<>();
 
     private Prizes() {
     }
 
-    private Prizes(PrizeType prizeType, int maxEntries, Money entryFee, CurrencyUnit currency) {
+    private Prizes(PrizeType prizeType, int maxEntries, Money prizePool) {
         this.prizeType = prizeType;
         this.maxEntries = maxEntries;
-        this.entryFee = entryFee;
-        this.currency = currency;
+        this.prizePool = prizePool;
         // this.multipliers = getMultipliers(prizeType, maxEntries);
 
-        // De los torneos con "GOLD" la casa se queda con parte del importe apostado
-        if (currency.equals(MoneyUtils.CURRENCY_GOLD)) {
-            this.values = getPrizesApplyingMultipliers(getPrizePool(maxEntries, entryFee), getMultipliers(prizeType, maxEntries));
-        }
-        else {
-            // De los torneos "MANAGER",...
-            this.values = getPrizesApplyingMultipliers(Money.zero(currency).plus(entryFee.getAmount()).multipliedBy(maxEntries), getMultipliers(prizeType, maxEntries));
-        }
+        this.values = getPrizesApplyingMultipliers(prizePool, getMultipliers(prizeType, maxEntries));
     }
 
     public Money getValue(int position) {
         Money ret;
         if (prizeType.equals(PrizeType.FIFTY_FIFTY)) {
-            ret = (position < (maxEntries / 2)) ? values.get(0) : Money.zero(currency);
+            ret = (position < (maxEntries / 2)) ? values.get(0) : Money.zero(prizePool.getCurrencyUnit());
         }
         else {
-            ret = (position < values.size()) ? values.get(position) : Money.zero(currency);
+            ret = (position < values.size()) ? values.get(position) : Money.zero(prizePool.getCurrencyUnit());
         }
         return ret;
     }
@@ -66,11 +58,11 @@ public class Prizes {
     }
 
     public static Prizes findOne(Contest contest) {
-        return findOne(contest.prizeType, contest.maxEntries, contest.entryFee, contest.simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD);
+        return findOne(contest.prizeType, contest.maxEntries, contest.getPrizePool());
     }
 
-    public static Prizes findOne(PrizeType prizeType, int maxEntries, Money entryFee, CurrencyUnit currency) {
-        return new Prizes(prizeType, maxEntries, entryFee, currency);
+    public static Prizes findOne(PrizeType prizeType, int maxEntries, Money prizePool) {
+        return new Prizes(prizeType, maxEntries, prizePool);
     }
 
     public static List<Prizes> findAllByContests(List<Contest>... elements) {
@@ -190,10 +182,6 @@ public class Prizes {
         }
 
         return prizes;
-    }
-
-    static Money getPrizePool(int maxEntries, Money entryFee) {
-        return entryFee.multipliedBy(maxEntries * 0.90f, RoundingMode.HALF_UP);
     }
 }
 
