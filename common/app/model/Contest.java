@@ -90,6 +90,7 @@ public class Contest implements JongoId {
     public boolean closed = false;
 
     public boolean simulation = false;
+    public String specialImage;
 
     public Contest() {}
 
@@ -108,6 +109,7 @@ public class Contest implements JongoId {
         templateMatchEventIds = template.templateMatchEventIds;
         instanceSoccerPlayers = template.instanceSoccerPlayers;
         simulation = template.simulation;
+        specialImage = template.specialImage;
         createdAt = GlobalDate.getCurrentDate();
     }
 

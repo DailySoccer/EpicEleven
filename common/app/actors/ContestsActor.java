@@ -193,6 +193,7 @@ public class ContestsActor extends TickableActor {
         templateContest.maxEntries = maxEntries;
         templateContest.prizeType = prizeType;
         templateContest.entryFee = entryFee;
+        templateContest.prizeMultiplier = 0.9f;
         templateContest.salaryCap = salaryCap.money;
         templateContest.startDate = startDate;
         templateContest.templateMatchEventIds = new ArrayList<>();

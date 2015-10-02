@@ -48,6 +48,8 @@ public class TemplateContestForm {
     @Formats.DateTime (pattern = "yyyy-MM-dd'T'HH:mm")
     public java.util.Date startDate;
 
+    public String specialImage;
+
     // Fecha expresada en Time (para que sea más fácil volverla a convertir en Date; se usa para filtrar por fecha)
     public long createdAt;
 
@@ -75,6 +77,9 @@ public class TemplateContestForm {
 
         activationAt = templateContest.activationAt;
         startDate = templateContest.startDate;
+
+        specialImage = templateContest.specialImage;
+
         createdAt = templateContest.createdAt.getTime();
     }
 
@@ -83,26 +88,30 @@ public class TemplateContestForm {
     }
 
     public static HashMap<String, String> matchEventsOptions(Date startDate) {
-        HashMap<String, String> options = new LinkedHashMap<>();
-
         final int MAX_MATCH_EVENTS = 100;
         List<TemplateMatchEvent> templateMatchEventsResults = utils.ListUtils.asList(Model.templateMatchEvents()
                 .find("{startDate: {$gte: #, $lte: #}, simulation: {$ne: true}}", startDate, new DateTime(startDate).plusDays(20).toDate())
                 .sort("{startDate : 1}").limit(MAX_MATCH_EVENTS).as(TemplateMatchEvent.class));
 
+        return matchEventsOptions(templateMatchEventsResults);
+    }
+
+    public static HashMap<String, String> matchEventsOptions(List<TemplateMatchEvent> templateMatchEvents) {
+        HashMap<String, String> options = new LinkedHashMap<>();
+
         List<ObjectId> teamIds = new ArrayList<>();
-        for (TemplateMatchEvent matchEvent: templateMatchEventsResults) {
+        for (TemplateMatchEvent matchEvent: templateMatchEvents) {
             teamIds.add(matchEvent.templateSoccerTeamAId);
             teamIds.add(matchEvent.templateSoccerTeamBId);
         }
         Map<ObjectId, TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllAsMap(teamIds);
 
-        for (TemplateMatchEvent matchEvent: templateMatchEventsResults) {
+        for (TemplateMatchEvent matchEvent: templateMatchEvents) {
             TemplateSoccerTeam teamA = teams.get(matchEvent.templateSoccerTeamAId);
             TemplateSoccerTeam teamB = teams.get(matchEvent.templateSoccerTeamBId);
             options.put(matchEvent.templateMatchEventId.toString(), String.format("%s - %s vs %s",
-                        GlobalDate.formatDate(matchEvent.startDate),
-                        teamA.name, teamB.name));
+                    GlobalDate.formatDate(matchEvent.startDate),
+                    teamA.name, teamB.name));
         }
         return options;
     }

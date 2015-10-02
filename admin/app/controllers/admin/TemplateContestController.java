@@ -157,6 +157,10 @@ public class TemplateContestController extends Controller {
         TemplateContestForm params = new TemplateContestForm(templateContest);
 
         Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
+        if (templateContest.state.isActive()) {
+            List<TemplateMatchEvent> templateMatchEvents = templateContest.getTemplateMatchEvents();
+            return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(templateMatchEvents), templateContest.state.isActive()));
+        }
         return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.createdAt), templateContest.state.isActive()));
     }
 
@@ -207,6 +211,8 @@ public class TemplateContestController extends Controller {
         // En la simulación usaremos ENERGY, en los reales GOLD
         templateContest.entryFee = Money.of(templateContest.simulation ? MoneyUtils.CURRENCY_ENERGY : MoneyUtils.CURRENCY_GOLD, params.entryFee);
         templateContest.prizeType = params.prizeType;
+
+        templateContest.specialImage = params.specialImage;
 
         templateContest.activationAt = new DateTime(params.activationAt).withZone(DateTimeZone.UTC).toDate();
         templateContest.createdAt = new Date(params.createdAt);

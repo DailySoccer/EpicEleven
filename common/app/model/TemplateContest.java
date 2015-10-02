@@ -58,6 +58,9 @@ public class TemplateContest implements JongoId {
     public Date createdAt;
 
     @JsonView(JsonViews.NotForClient.class)
+    public String specialImage;
+
+    @JsonView(JsonViews.NotForClient.class)
     public boolean simulation = false;
 
     public TemplateContest() { }
@@ -120,6 +123,9 @@ public class TemplateContest implements JongoId {
 
         cloned.activationAt = activationAt;
         cloned.createdAt = createdAt;
+
+        cloned.simulation = simulation;
+        cloned.specialImage = specialImage;
 
         return cloned;
     }
