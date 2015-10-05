@@ -6,16 +6,22 @@ import model.accounting.AccountingTran;
 import model.accounting.AccountingTranBonus;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
+import org.joda.time.DateTime;
+import org.joda.time.Minutes;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
 import utils.MoneyUtils;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 public class User {
+    static final int MINUTES_TO_RELOAD_ENERGY = 15;
+    static final BigDecimal MAX_ENERGY = new BigDecimal(10);
+
     @Id
     public ObjectId userId;
 
@@ -30,9 +36,11 @@ public class User {
     public Money cachedBalance;
     public Money cachedBonus;
 
-    public Money goldBalance;
-    public Money managerBalance;
-    public Money energyBalance;
+    public Money goldBalance        = Money.zero(MoneyUtils.CURRENCY_GOLD);
+    public Money managerBalance     = Money.zero(MoneyUtils.CURRENCY_MANAGER);
+    public Money energyBalance      = Money.of(MoneyUtils.CURRENCY_ENERGY, MAX_ENERGY);
+
+    public Date lastUpdatedEnergy;
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
@@ -57,8 +65,13 @@ public class User {
         cachedBonus = calculateBonus();
         goldBalance = calculateGoldBalance();
         managerBalance = calculateManagerBalance();
-        energyBalance = Money.zero(MoneyUtils.CURRENCY_ENERGY);
+        energyBalance = calculateEnergyBalance();
+        // Logger.debug("gold: {} manager: {} energy: {}", goldBalance, managerBalance, energyBalance);
         return this;
+    }
+
+    public void saveEnergy() {
+        Model.users().update(userId).with("{$set: {energyBalance: #, lastUpdatedEnergy: #}}", energyBalance.toString(), lastUpdatedEnergy);
     }
 
     /**
@@ -139,12 +152,73 @@ public class User {
     public Money calculateManagerBalance() {
         return User.calculateManagerBalance(userId);
     }
+
     public Money calculateEnergyBalance() {
-        return User.calculateEnergyBalance(userId);
+        // La energía no lo controlaremos con las transacciones, sino por medio del valor actual y el tiempo transcurrido desde que se usó la última vez (lastUpdatedEnergy)
+
+        // Si la energía está incompleta, habrá que averiguar si ya la ha recargado...
+        if (energyBalance.getAmount().compareTo(MAX_ENERGY) < 0) {
+            refreshEnergy();
+            saveEnergy();
+        }
+
+        return energyBalance;
     }
 
     public Money calculateBonus() {
         return User.calculateBonus(userId);
+    }
+
+    public boolean useEnergy(Money energy) {
+        boolean result = false;
+
+        refreshEnergy();
+        if (MoneyUtils.compareTo(energyBalance, energy) >= 0) {
+
+            // Si la energía la tenemos al máximo, podemos actualizar la fecha con la de NOW
+            if (energyBalance.getAmount().equals(MAX_ENERGY)) {
+                lastUpdatedEnergy = GlobalDate.getCurrentDate();
+            }
+            else {
+                // La energía ya se estaba recargando, tiene que estar correctamente actualizada por el refreshEnergy previo
+            }
+            energyBalance = energyBalance.minus(energy);
+
+            saveEnergy();
+
+            result = true;
+        }
+
+        return result;
+    }
+
+    private void refreshEnergy() {
+        // Si la energía está incompleta, habrá que averiguar si ya la ha recargado...
+        if (energyBalance.getAmount().compareTo(MAX_ENERGY) < 0) {
+
+            if (lastUpdatedEnergy != null) {
+                DateTime lastUpdated = new DateTime(lastUpdatedEnergy);
+                DateTime now = new DateTime(GlobalDate.getCurrentDate());
+                Minutes minutes = Minutes.minutesBetween(lastUpdated, now);
+
+                // Cuántos intervalos de incremento de energía se han producido?
+                int intervalos = minutes.dividedBy(MINUTES_TO_RELOAD_ENERGY).getMinutes();
+                while (intervalos > 0 && energyBalance.getAmount().compareTo(MAX_ENERGY) < 0) {
+                    // Aumentar la energía
+                    energyBalance = energyBalance.plus(1.0);
+                    // Avanzamos el tiempo
+                    lastUpdated.plusMinutes(MINUTES_TO_RELOAD_ENERGY);
+
+                    intervalos--;
+                }
+                lastUpdatedEnergy = lastUpdated.toDate();
+            }
+            else {
+                // Registrar que en la fecha actual el usuario tiene la energía al máximo (dado que nunca la ha usado)
+                lastUpdatedEnergy = GlobalDate.getCurrentDate();
+                energyBalance = Money.of(MoneyUtils.CURRENCY_ENERGY, MAX_ENERGY);
+            }
+        }
     }
 
     public boolean hasMoney(Money money) {
@@ -226,7 +300,9 @@ public class User {
     }
 
     static public Money calculateEnergyBalance(ObjectId userId) {
-        return calculateBalance(userId, MoneyUtils.CURRENCY_ENERGY.getCode());
+        // La energía no lo controlaremos con las transacciones, sino por medio del valor actual y el tiempo transcurrido desde que se usó la última vez (lastUpdatedEnergy)
+        User user = User.findOne(userId);
+        return user.calculateEnergyBalance();
     }
 
     static public Money calculateBonus(ObjectId userId, Date toDate) {
