@@ -338,6 +338,14 @@ public class Contest implements JongoId {
             }
 
             AccountingTranPrize.create(contestId, accounts);
+
+            // Si se jugaba con GOLD, se actualizarán las estadísticas de los ganadores
+            if (getPrizePool().getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+                for (AccountOp op : accounts) {
+                    User winner = User.findOne(op.accountId);
+                    winner.updateStats();
+                }
+            }
         }
     }
 

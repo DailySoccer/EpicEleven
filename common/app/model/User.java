@@ -5,6 +5,7 @@ import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.accounting.AccountingTranBonus;
 import org.bson.types.ObjectId;
+import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.joda.time.DateTime;
 import org.joda.time.Minutes;
@@ -68,6 +69,7 @@ public class User {
         goldBalance = calculateGoldBalance();
         managerBalance = calculateManagerBalance();
         energyBalance = calculateEnergyBalance();
+        earnedMoney = calculatePrizes(MoneyUtils.CURRENCY_GOLD);
         // Logger.debug("gold: {} manager: {} energy: {}", goldBalance, managerBalance, energyBalance);
         return this;
     }
@@ -136,6 +138,8 @@ public class User {
     }
 
     public void updateStats() {
+        earnedMoney = calculatePrizes(MoneyUtils.CURRENCY_GOLD);
+
         // Buscamos los contests en los que hayamos participado y ganado (position = 0)
         int contestsGanados = (int) Model.contests().count(
                 "{ contestEntries: {" +
@@ -144,7 +148,7 @@ public class User {
                         "position: 0" +
                     "}" +
                 "}}", userId);
-        Model.users().update(userId).with("{$set: {wins: #}}", contestsGanados);
+        Model.users().update(userId).with("{$set: {wins: #, earnedMoney: #}}", contestsGanados, earnedMoney.toString());
     }
 
     public Integer getSeqId() {
@@ -173,6 +177,14 @@ public class User {
 
     public Money calculateBonus() {
         return User.calculateBonus(userId);
+    }
+
+    public Money calculatePrizes(CurrencyUnit currenctyUnit) {
+        return User.calculatePrizes(userId, currenctyUnit);
+    }
+
+    public Money calculateGoldPrizes() {
+        return calculatePrizes(MoneyUtils.CURRENCY_GOLD);
     }
 
     public boolean useEnergy(Money energy) {
@@ -244,11 +256,11 @@ public class User {
         return (!account.isEmpty() && account.get(0).seqId != null) ? account.get(0).seqId : 0;
     }
 
-    static public Money calculatePrizes(ObjectId userId) {
+    static public Money calculatePrizes(ObjectId userId, CurrencyUnit currencyUnit) {
         List<AccountingTran> accounting = Model.accountingTransactions()
-                .aggregate("{$match: { \"accountOps.accountId\": #, type: #, state: \"VALID\"}}", userId, AccountingTran.TransactionType.PRIZE)
+                .aggregate("{$match: { \"accountOps.accountId\": #, \"accountOps.currencyCode\": #, type: #, state: \"VALID\"}}", userId, currencyUnit.toString(), AccountingTran.TransactionType.PRIZE)
                 .and("{$unwind: \"$accountOps\"}")
-                .and("{$match: {\"accountOps.accountId\": #, type: #}}", userId, AccountingTran.TransactionType.PRIZE)
+                .and("{$match: {\"accountOps.accountId\": #, \"accountOps.currencyCode\": #, type: #}}", userId, currencyUnit.toString(), AccountingTran.TransactionType.PRIZE)
                 .and("{$group: {_id: #, _class: { $first: \"$_class\" }, accountOps: { $push: { accountId: \"$accountOps.accountId\", value: \"$accountOps.value\" }}}}", new ObjectId())
                 .as(AccountingTran.class);
 

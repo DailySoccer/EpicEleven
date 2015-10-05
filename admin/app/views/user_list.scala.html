@@ -19,7 +19,7 @@
                     { "title": "Gold" },
                     { "title": "Manager" },
                     { "title": "Energy" },
-                    { "title": "Bonus" }
+                    { "title": "Earned Money" }
                 ],
                 "data": [
                     @for((p, index) <- users.zipWithIndex) {
@@ -34,7 +34,7 @@
                             "@MoneyUtils.asString(p.calculateGoldBalance())",
                             "@MoneyUtils.asString(p.calculateManagerBalance())",
                             "@MoneyUtils.asString(p.calculateEnergyBalance())",
-                            "@MoneyUtils.asString(p.calculateBonus())"
+                            "@MoneyUtils.asString(p.earnedMoney)"
                         ] @if(index < users.size-1) { , }
                     }
                 ],
