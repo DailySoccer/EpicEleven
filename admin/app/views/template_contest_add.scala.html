@@ -97,11 +97,13 @@
         function updatePrizes() {
             var maxEntries = $('#maxEntries').val();
             var entryFee = $('#entryFee').val();
+            var prizeMultiplier = $('#prizeMultiplier').val();
             var prizeType = $('#prizeType').val();
+            var prizePool = maxEntries * entryFee * prizeMultiplier;
 
-            $("#prize-pool").text("("+(maxEntries * entryFee * 0.90) + "€)");
+            $("#prize-pool").text("("+prizePool + ")");
             $.ajax({
-                url: "/admin/template_contest/get_prizes/"+prizeType+"/"+maxEntries+"/"+entryFee,
+                url: "/admin/template_contest/get_prizes/"+prizeType+"/"+maxEntries+"/"+prizePool,
                 success: function (result) {
                     var total = 0;
                     var head = "<table width='300'><caption>"
@@ -114,13 +116,13 @@
                     jQuery.each(result, function(index, value) {
                         var amount = Number(value.split(" ")[1]);
                         body += "<tr><td>"+(index+1)+"º</td>";
-                        body += "<td>"+amount+"€</td></tr>";
+                        body += "<td>"+amount+"</td></tr>";
                         total += amount;
                     });
                     body += "</tbody>";
                     var footer = "<tfoot><tr>";
                     footer += "<td>Total</td>";
-                    footer += "<td>"+total+"€</td>";
+                    footer += "<td>"+total+"</td>";
                     footer += "</tr></tfoot>";
                     var end = "</table>";
                     $("#prizes").html(head+body+footer+end);
@@ -129,15 +131,37 @@
         }
 
         $(document).ready( function(){
+            $('#typeContest').change(function(){
+                if ($('#typeContest').val() == "REAL") {
+                    $('#prizeMultiplier').val('0.9');
+                    $('#prizeMultiplier').prop('disabled', true);
+                }
+                else {
+                    $('#prizeMultiplier').val('1.0');
+                    $('#prizeMultiplier').prop('disabled', false);
+                }
+                updatePrizes();
+            });
             $('#maxEntries').change(function(){
                 updatePrizes();
             });
             $('#entryFee').change(function(){
+                if ($('#entryFee').val() > 0 && $('#prizeType').val() == "FREE") {
+                    $('#prizeType').val("WINNER_TAKES_ALL")
+                }
+                else if ($('#entryFee').val() == 0) {
+                    $('#prizeType').val("FREE");
+                }
+                updatePrizes();
+            });
+            $('#prizeMultiplier').change(function(){
                 updatePrizes();
             });
             $('#prizeType').change(function(){
                 updatePrizes();
             });
+
+            updatePrizes();
         })
 
     </script>
@@ -212,6 +236,13 @@
                 isActive
             )
 
+            @myInputText(
+                templateContestForm("prizeMultiplier"),
+                "Prize Multiplier",
+                10,
+                isActive
+            )
+
             @mySelect(
                 templateContestForm("prizeType"),
                 "Prize Type",
@@ -235,6 +266,12 @@
                 "Start Date (local)",
                 10,
                 isActive
+            )
+
+            @myInputText(
+                templateContestForm("specialImage"),
+                "Special Image",
+                50
             )
 
             </form>

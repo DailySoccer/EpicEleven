@@ -67,6 +67,9 @@ public class Contest implements JongoId {
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public Money entryFee;
 
+    @JsonView(JsonViews.NotForClient.class)
+    public float prizeMultiplier = 0.9f;
+
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public PrizeType prizeType;
 
@@ -87,6 +90,7 @@ public class Contest implements JongoId {
     public boolean closed = false;
 
     public boolean simulation = false;
+    public String specialImage;
 
     public Contest() {}
 
@@ -98,12 +102,14 @@ public class Contest implements JongoId {
         freeSlots = template.maxEntries;
         salaryCap = template.salaryCap;
         entryFee = template.entryFee;
+        prizeMultiplier = template.prizeMultiplier;
         prizeType = template.prizeType;
         startDate = template.startDate;
         optaCompetitionId = template.optaCompetitionId;
         templateMatchEventIds = template.templateMatchEventIds;
         instanceSoccerPlayers = template.instanceSoccerPlayers;
         simulation = template.simulation;
+        specialImage = template.specialImage;
         createdAt = GlobalDate.getCurrentDate();
     }
 
@@ -326,7 +332,7 @@ public class Contest implements JongoId {
             List<AccountOp> accounts = new ArrayList<>();
             for (ContestEntry contestEntry : contestEntries) {
                 Money prize = prizes.getValue(contestEntry.position);
-                if (MoneyUtils.isGreaterThan(prize, MoneyUtils.zero)) {
+                if (prize.getAmount().floatValue() > 0) {
                     accounts.add(new AccountOp(contestEntry.userId, prize, User.getSeqId(contestEntry.userId) + 1));
                 }
             }
@@ -392,6 +398,10 @@ public class Contest implements JongoId {
     public Contest getSameContestWithFreeSlot(ObjectId userId) {
         String query = String.format("{templateContestId: #, 'contestEntries.%s': {$exists: false}, 'contestEntries.userId': {$ne:#}}", maxEntries-1);
         return Model.contests().findOne(query, templateContestId, userId).as(Contest.class);
+    }
+
+    public Money getPrizePool() {
+        return Prizes.getPool(simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD, entryFee, maxEntries, prizeMultiplier);
     }
 
     class ContestEntryComparable implements Comparator<ContestEntry>{

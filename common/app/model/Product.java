@@ -8,8 +8,6 @@ import utils.MoneyUtils;
 import java.util.Map;
 
 public class Product {
-    static public CurrencyUnit CURRENCY_DEFAULT = CurrencyUnit.USD;
-
     public String name;
     public Money price;
 
@@ -25,7 +23,5 @@ public class Product {
     }
 
     static private Map<String, Product> catalog = ImmutableMap.of(
-        "PRODUCT_1", new Product("Product 1: Platinum", MoneyUtils.of(10)),
-        "PRODUCT_2", new Product("Product 2: Gold", MoneyUtils.of(20))
     );
 }

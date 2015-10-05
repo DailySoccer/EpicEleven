@@ -1,38 +1,51 @@
 package utils;
 
 import model.Product;
+import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
+import play.Logger;
 
 import java.math.BigDecimal;
 
 public class MoneyUtils {
-    static public final Money zero = Money.zero(Product.CURRENCY_DEFAULT);
+    static public CurrencyUnit CURRENCY_GOLD    = CurrencyUnit.AUD;
+    static public CurrencyUnit CURRENCY_MANAGER = CurrencyUnit.CHF;
+    static public CurrencyUnit CURRENCY_ENERGY  = CurrencyUnit.JPY;
+    static public CurrencyUnit CURRENCY_DEFAULT = CURRENCY_GOLD;
 
-    static public Money of(double amount) {
-        return Money.of(Product.CURRENCY_DEFAULT, amount);
+    static public Money zero = Money.zero(CURRENCY_DEFAULT);
+    static public Money zero(String currencyUnit) { return Money.zero(CurrencyUnit.of(currencyUnit)); };
+
+    static public String asString(String money) {
+        return asString(Money.parse(money));
     }
 
-    static public Money of(BigDecimal amount) {
-        return Money.of(Product.CURRENCY_DEFAULT, amount);
-    }
-
-    static public Money withCurrencyUnit(Money aMoney) {
-        return aMoney.withCurrencyUnit(Product.CURRENCY_DEFAULT);
+    static public String asString(Money money) {
+        if (money.getCurrencyUnit().equals(CURRENCY_GOLD)) {
+            return "@ " + money.getAmount().toBigInteger();
+        }
+        else if (money.getCurrencyUnit().equals(CURRENCY_MANAGER)) {
+            return "¥ " + money.getAmount().toBigInteger();
+        }
+        else if (money.getCurrencyUnit().equals(CURRENCY_ENERGY)) {
+            return "ƒ " + money.getAmount().toBigInteger();
+        }
+        return String.valueOf(money);
     }
 
     static public int compareTo(Money aMoney, Money otherMoney) {
-        return aMoney.withCurrencyUnit(Product.CURRENCY_DEFAULT).compareTo(otherMoney.withCurrencyUnit(Product.CURRENCY_DEFAULT));
+        return aMoney.withCurrencyUnit(CURRENCY_DEFAULT).compareTo(otherMoney.withCurrencyUnit(CURRENCY_DEFAULT));
     }
 
     static public Money plus(Money aMoney, Money amount) {
-        return aMoney.withCurrencyUnit(Product.CURRENCY_DEFAULT).plus(amount.withCurrencyUnit(Product.CURRENCY_DEFAULT));
+        return aMoney.withCurrencyUnit(CURRENCY_DEFAULT).plus(amount.withCurrencyUnit(CURRENCY_DEFAULT));
     }
 
     static public boolean isGreaterThan(Money aMoney, Money amount) {
-        return aMoney.withCurrencyUnit(Product.CURRENCY_DEFAULT).isGreaterThan(amount.withCurrencyUnit(Product.CURRENCY_DEFAULT));
+        return aMoney.withCurrencyUnit(CURRENCY_DEFAULT).isGreaterThan(amount.withCurrencyUnit(CURRENCY_DEFAULT));
     }
 
     static public boolean equals(Money aMoney, Money amount) {
-        return aMoney.withCurrencyUnit(Product.CURRENCY_DEFAULT).compareTo(amount.withCurrencyUnit(Product.CURRENCY_DEFAULT)) == 0;
+        return aMoney.withCurrencyUnit(CURRENCY_DEFAULT).compareTo(amount.withCurrencyUnit(CURRENCY_DEFAULT)) == 0;
     }
 }

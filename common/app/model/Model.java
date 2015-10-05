@@ -7,6 +7,7 @@ import com.mongodb.*;
 import org.bson.types.ObjectId;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
+import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.jongo.*;
 import org.jongo.marshall.jackson.JacksonMapper;
@@ -15,6 +16,7 @@ import play.Play;
 import utils.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 

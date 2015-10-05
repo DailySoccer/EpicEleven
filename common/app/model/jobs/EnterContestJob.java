@@ -46,6 +46,7 @@ public class EnterContestJob extends Job {
                 if (contestEntry == null) {
                     contestEntry = createContestEntry();
 
+                    // Será válido, si el contest es GRATIS o el usuario tiene dinero
                     bValid = contest.entryFee.isNegativeOrZero() || transactionPayment(contest.entryFee);
 
                     if (bValid) {
@@ -103,23 +104,29 @@ public class EnterContestJob extends Job {
     private boolean transactionPayment(Money entryFee) {
         boolean transactionValid = false;
 
-        // Registramos el seqId, de tal forma que si se produce una alteracion en el número de operaciones
-        // del usuario se lance una excepcion que impida la inserción ya que (accountId, seqId) es "unique key"
-        Integer seqId = User.getSeqId(userId) + 1;
+        // Los contests que requieren energía, los gestionaremos sin necesidad de transacciones
+        if (entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_ENERGY)) {
+            // El usuario puede usar la energía necesaria?
+            User user = User.findOne(userId);
+            transactionValid = user.useEnergy(entryFee);
+        }
+        else {
+            // Registramos el seqId, de tal forma que si se produce una alteracion en el número de operaciones
+            // del usuario se lance una excepcion que impida la inserción ya que (accountId, seqId) es "unique key"
+            Integer seqId = User.getSeqId(userId) + 1;
 
-        // El usuario tiene dinero suficiente?
-        Money userBalance = User.calculateBalance(userId);
-        if (MoneyUtils.compareTo(userBalance, entryFee) >= 0) {
-            try {
-                // Registrar el pago
-                AccountingTran accountingTran = AccountingTranEnterContest.create(contestId, contestEntryId, ImmutableList.of(
-                        new AccountOp(userId, entryFee.negated(), seqId)
-                ));
+            // El usuario tiene dinero suficiente?
+            if (User.hasMoney(userId, entryFee)) {
+                try {
+                    // Registrar el pago
+                    AccountingTran accountingTran = AccountingTranEnterContest.create(contestId, contestEntryId, ImmutableList.of(
+                            new AccountOp(userId, entryFee.negated(), seqId)
+                    ));
 
-                transactionValid = (accountingTran != null);
-            }
-            catch(DuplicateKeyException duplicateKeyException) {
-                play.Logger.info("DuplicateKeyException");
+                    transactionValid = (accountingTran != null);
+                } catch (DuplicateKeyException duplicateKeyException) {
+                    play.Logger.info("DuplicateKeyException");
+                }
             }
         }
 

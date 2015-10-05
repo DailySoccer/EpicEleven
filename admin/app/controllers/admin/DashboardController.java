@@ -9,6 +9,8 @@ import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.accounting.AccountingTranBonus;
 import model.opta.OptaCompetition;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -71,24 +73,26 @@ public class DashboardController extends Controller {
         return redirect(routes.DashboardController.index());
     }
 
-    static public Result addMoneyToBots(Integer amount) {
+    static public Result addMoneyToBots(String amount) {
         Logger.info("Ejecutando addMoneyToBots...");
         addMoney(User.findBots(), amount);
         Logger.info("addMoneyToBots OK");
         return ok("");
     }
 
-    static public Result addMoneyToTests(Integer amount) {
+    static public Result addMoneyToTests(String amount) {
         Logger.info("Ejecutando addMoneyToTests...");
         addMoney(User.findTests(), amount);
         Logger.info("addMoneyToTests OK");
         return ok("");
     }
 
-    static private void addMoney(List<User> users, Integer amount) {
+    static private void addMoney(List<User> users, String amount) {
+        Money money = Money.parse(amount);
+
         if (!users.isEmpty()) {
             List<AccountOp> accountOps = users.stream()
-                    .map((user) -> new AccountOp(user.userId, MoneyUtils.of(amount), user.getSeqId() + 1))
+                    .map((user) -> new AccountOp(user.userId, money, user.getSeqId() + 1))
                     .collect(Collectors.toList());
 
             AccountingTran accountingTran = new AccountingTran(AccountingTran.TransactionType.FREE_MONEY);
@@ -97,10 +101,10 @@ public class DashboardController extends Controller {
         }
 
         // Damos un bonus a cada usuario
-        addBonus(users, amount);
+        // addBonus(users, money);
     }
 
-    static private void addBonus(List<User> users, Integer amount) {
+    static private void addBonus(List<User> users, Money money) {
         if (!users.isEmpty()) {
             List<AccountOp> accountOps = users.stream()
                     .map((user) -> new AccountOp(user.userId, MoneyUtils.zero, user.getSeqId() + 1))
@@ -109,7 +113,7 @@ public class DashboardController extends Controller {
             String bonusId = String.format("FREE_MONEY#%s", new ObjectId().toString());
             AccountingTranBonus.create(AccountingTran.TransactionType.BONUS,
                     bonusId,
-                    MoneyUtils.of(amount),
+                    money,
                     accountOps);
         }
     }

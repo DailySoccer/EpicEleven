@@ -1,5 +1,6 @@
 package controllers.admin;
 
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -44,6 +45,8 @@ public class TemplateContestController extends Controller {
                         "maxEntries",
                         "salaryCap",
                         "entryFee",
+                        "prizeMultiplier",
+                        "",             // Prize Pool
                         "prizeType",
                         "startDate",
                         "activationAt",
@@ -72,18 +75,22 @@ public class TemplateContestController extends Controller {
                     case 6:
                         return String.valueOf(templateContest.salaryCap);
                     case 7:
-                        return String.valueOf(templateContest.entryFee);
+                        return MoneyUtils.asString(templateContest.entryFee);
                     case 8:
-                        return String.valueOf(templateContest.prizeType);
+                        return String.valueOf(templateContest.prizeMultiplier);
                     case 9:
-                        return GlobalDate.formatDate(templateContest.startDate);
+                        return MoneyUtils.asString(templateContest.getPrizePool());
                     case 10:
-                        return GlobalDate.formatDate(templateContest.activationAt);
+                        return String.valueOf(templateContest.prizeType);
                     case 11:
-                        return "";
+                        return GlobalDate.formatDate(templateContest.startDate);
                     case 12:
-                        return "";
+                        return GlobalDate.formatDate(templateContest.activationAt);
                     case 13:
+                        return "";
+                    case 14:
+                        return "";
+                    case 15:
                         return "";
                 }
                 return "<invalid value>";
@@ -106,12 +113,12 @@ public class TemplateContestController extends Controller {
                         return String.format("<a href=\"%s\" style=\"white-space: nowrap\">%s</a>",
                                 routes.TemplateContestController.show(templateContest.templateContestId.toString()),
                                 fieldValue);
-                    case 11:
+                    case 13:
                         return (templateContest.state.isDraft() || templateContest.state.isOff() || templateContest.state.isActive())
                                 ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">Edit</button></a>",
                                 routes.TemplateContestController.edit(templateContest.templateContestId.toString()))
                                 : "";
-                    case 12:
+                    case 14:
                         return templateContest.state.isDraft()
                                 ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">+</button></a> <a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
                                 routes.TemplateContestController.publish(templateContest.templateContestId.toString()),
@@ -120,7 +127,7 @@ public class TemplateContestController extends Controller {
                                 String.format("<a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
                                         routes.TemplateContestController.destroy(templateContest.templateContestId.toString()))
                                 : "";
-                    case 13:
+                    case 15:
                         return templateContest.simulation
                                 ? String.format("<button class=\"btn btn-success\">Simulation</button>")
                                 : "";
@@ -150,6 +157,10 @@ public class TemplateContestController extends Controller {
         TemplateContestForm params = new TemplateContestForm(templateContest);
 
         Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
+        if (templateContest.state.isActive()) {
+            List<TemplateMatchEvent> templateMatchEvents = templateContest.getTemplateMatchEvents();
+            return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(templateMatchEvents), templateContest.state.isActive()));
+        }
         return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.createdAt), templateContest.state.isActive()));
     }
 
@@ -196,8 +207,12 @@ public class TemplateContestController extends Controller {
         templateContest.minInstances = params.minInstances;
         templateContest.maxEntries = params.maxEntries;
         templateContest.salaryCap = params.salaryCap.money;
-        templateContest.entryFee = MoneyUtils.of(params.entryFee);
+
+        // En la simulación usaremos ENERGY, en los reales GOLD
+        templateContest.entryFee = Money.of(templateContest.simulation ? MoneyUtils.CURRENCY_ENERGY : MoneyUtils.CURRENCY_GOLD, params.entryFee);
         templateContest.prizeType = params.prizeType;
+
+        templateContest.specialImage = params.specialImage;
 
         templateContest.activationAt = new DateTime(params.activationAt).withZone(DateTimeZone.UTC).toDate();
         templateContest.createdAt = new Date(params.createdAt);
@@ -238,7 +253,10 @@ public class TemplateContestController extends Controller {
 
     private static void updateActiveContestsFromTemplate(TemplateContest templateContest) {
         // Only name can change in Active contests
-        Model.contests().withWriteConcern(WriteConcern.SAFE).update("{templateContestId: #}", templateContest.getId()).multi().with("{$set: {name: #}}", templateContest.name);
+        Model.contests().withWriteConcern(WriteConcern.SAFE)
+                .update("{templateContestId: #}", templateContest.getId())
+                .multi()
+                .with("{$set: {name: #, specialImage: #}}", templateContest.name, templateContest.specialImage);
     }
 
     @CheckTargetEnvironment
@@ -294,7 +312,7 @@ public class TemplateContestController extends Controller {
 
 
         for (int i = 1; i<=6; i++) {
-            Money money = MoneyUtils.of(i);
+            Money money = Money.of(MoneyUtils.CURRENCY_GOLD, i);
 
             switch (i) {
                 case 1:
@@ -380,8 +398,8 @@ public class TemplateContestController extends Controller {
         Model.templateContests().insert(templateContest);
     }
 
-    public static Result getPrizes(String prizeType, Integer maxEntries, Integer entryFee) {
-        Prizes prizes = Prizes.findOne(PrizeType.valueOf(prizeType), maxEntries, MoneyUtils.of(entryFee));
+    public static Result getPrizes(String prizeType, Integer maxEntries, Integer prizePool) {
+        Prizes prizes = Prizes.findOne(PrizeType.valueOf(prizeType), maxEntries, Money.of(MoneyUtils.CURRENCY_DEFAULT, prizePool));
         return new ReturnHelper(prizes.getAllValues()).toResult();
     }
 

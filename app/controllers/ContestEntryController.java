@@ -107,8 +107,7 @@ public class ContestEntryController extends Controller {
             if (errores.isEmpty()) {
                 if (MoneyUtils.isGreaterThan(aContest.entryFee, MoneyUtils.zero)) {
                     // Verificar que el usuario tiene dinero suficiente...
-                    Money userBalance = User.calculateBalance(theUser.userId);
-                    if (MoneyUtils.compareTo(userBalance, aContest.entryFee) < 0) {
+                    if (!User.hasMoney(theUser.userId, aContest.entryFee)) {
                         errores.add(ERROR_USER_BALANCE_NEGATIVE);
                     }
                 }
@@ -144,10 +143,11 @@ public class ContestEntryController extends Controller {
                 Logger.info("addContestEntry: userId: {}: contestId: {} => {}", theUser.userId.toString(), contestIdRequested, contestIdValid.toString());
             }
 
+            // Enviamos un perfil de usuario actualizado, dado que habrá gastado energía o gold al entrar en el constest
             result = ImmutableMap.of(
                     "result", "ok",
                     "contestId", contestIdValid.toString(),
-                    "profile", theUser.getProfile());
+                    "profile", User.findOne(theUser.userId).getProfile());
         }
         else {
             Logger.warn("addContestEntry failed: userId: {}: contestId: {}: error: {}", theUser.userId.toString(), contestIdRequested, contestEntryForm.errorsAsJson());

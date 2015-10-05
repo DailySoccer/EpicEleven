@@ -66,7 +66,7 @@ public class PaypalController extends Controller {
             ObjectId orderId = new ObjectId();
 
             // Producto que quiere comprar
-            Product product = new Product("Payment", MoneyUtils.of(amount));
+            Product product = new Product("Payment", Money.of(CurrencyUnit.EUR, amount));
 
             // Creamos la solicitud de pago (le proporcionamos el identificador del pedido para referencias posteriores)
             Payment payment = PaypalPayment.instance().createPayment(orderId, product);
@@ -200,7 +200,7 @@ public class PaypalController extends Controller {
     public static Result withdrawFunds(int amount) {
         User theUser = (User) ctx().args.get("User");
 
-        Refund refund = new Refund(theUser.userId, MoneyUtils.of(amount));
+        Refund refund = new Refund(theUser.userId, Money.of(CurrencyUnit.EUR, amount));
         refund.insert();
 
         return new ReturnHelper(ImmutableMap.of(

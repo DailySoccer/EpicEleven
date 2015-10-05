@@ -13,6 +13,7 @@ import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
+import utils.MoneyUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,6 +39,7 @@ public class TemplateContest implements JongoId {
     public int salaryCap;
     public Money entryFee;
     public PrizeType prizeType;
+    public float prizeMultiplier = 1.0f;
 
     public Date startDate;
 
@@ -56,12 +58,21 @@ public class TemplateContest implements JongoId {
     public Date createdAt;
 
     @JsonView(JsonViews.NotForClient.class)
+    public String specialImage;
+
+    @JsonView(JsonViews.NotForClient.class)
     public boolean simulation = false;
 
     public TemplateContest() { }
 
     public TemplateContest(String name, int minInstances, int maxEntries, SalaryCap salaryCap,
-                            Money entryFee, PrizeType prizeType, Date activationAt,
+                           Money entryFee, PrizeType prizeType, Date activationAt,
+                           List<String> templateMatchEvents) {
+        this(name, minInstances, maxEntries, salaryCap, entryFee, 1.0f, prizeType, activationAt, templateMatchEvents);
+    }
+
+    public TemplateContest(String name, int minInstances, int maxEntries, SalaryCap salaryCap,
+                            Money entryFee, float prizeMultiplier, PrizeType prizeType, Date activationAt,
                             List<String> templateMatchEvents) {
 
         this.name = name;
@@ -69,6 +80,7 @@ public class TemplateContest implements JongoId {
         this.maxEntries = maxEntries;
         this.salaryCap = salaryCap.money;
         this.entryFee = entryFee;
+        this.prizeMultiplier = prizeMultiplier;
         this.prizeType = prizeType;
         this.activationAt = activationAt;
 
@@ -97,6 +109,7 @@ public class TemplateContest implements JongoId {
 
         cloned.salaryCap = salaryCap;
         cloned.entryFee = entryFee;
+        cloned.prizeMultiplier = prizeMultiplier;
         cloned.prizeType = prizeType;
 
         cloned.startDate = startDate;
@@ -110,6 +123,9 @@ public class TemplateContest implements JongoId {
 
         cloned.activationAt = activationAt;
         cloned.createdAt = createdAt;
+
+        cloned.simulation = simulation;
+        cloned.specialImage = specialImage;
 
         return cloned;
     }
@@ -292,6 +308,10 @@ public class TemplateContest implements JongoId {
         Model.templateContests().update("{_id: #, state: \"DRAFT\"}", templateContestId).with("{$set: {state: \"OFF\"}}");
     }
 
+    public Money getPrizePool() {
+        return Prizes.getPool(simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD, entryFee, maxEntries, prizeMultiplier);
+    }
+
     public static void actionWhenMatchEventIsStarted(TemplateMatchEvent matchEvent) {
         // Los template contests (que incluyan este match event y que esten "activos") tienen que ser marcados como "live"
         Model.templateContests()
@@ -300,7 +320,15 @@ public class TemplateContest implements JongoId {
                 .with("{$set: {state: \"LIVE\"}}");
 
         // Los Contests válidos pasarán a "live"
-        // Válido = (Gratuitos AND entries > 1) OR Llenos
+        // Válido = Los que al menos tengan 2 participantes
+        Model.contests()
+                .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\", \"contestEntries.1\": {$exists: true}}", matchEvent.templateMatchEventId)
+                .multi()
+                .with("{$set: {state: \"LIVE\", startedAt: #}}", GlobalDate.getCurrentDate());
+
+        // Se cancelaban los contests que tenían premio
+        // OLD: Válido = (Gratuitos AND entries > 1) OR Llenos
+        /*
         Model.contests()
                 .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"," +
                         "$or: [" +
@@ -309,6 +337,7 @@ public class TemplateContest implements JongoId {
                         "]}", matchEvent.templateMatchEventId)
                 .multi()
                 .with("{$set: {state: \"LIVE\", startedAt: #}}", GlobalDate.getCurrentDate());
+        */
 
         try {
             // Cancelamos aquellos contests que aún permanezcan activos
