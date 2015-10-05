@@ -207,7 +207,7 @@ public class User {
                     // Aumentar la energía
                     energyBalance = energyBalance.plus(1.0);
                     // Avanzamos el tiempo
-                    lastUpdated.plusMinutes(MINUTES_TO_RELOAD_ENERGY);
+                    lastUpdated = lastUpdated.plusMinutes(MINUTES_TO_RELOAD_ENERGY);
 
                     intervalos--;
                 }
