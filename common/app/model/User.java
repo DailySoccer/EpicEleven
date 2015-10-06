@@ -5,6 +5,7 @@ import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.accounting.AccountingTranBonus;
 import org.bson.types.ObjectId;
+import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.joda.time.DateTime;
 import org.joda.time.Minutes;
@@ -12,6 +13,7 @@ import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
 import utils.MoneyUtils;
+import utils.TrueSkillHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -22,6 +24,18 @@ public class User {
     static final int MINUTES_TO_RELOAD_ENERGY = 15;
     static final BigDecimal MAX_ENERGY = new BigDecimal(10);
 
+    public class Rating {
+        public double Mean;
+        public double StandardDeviation;
+
+        public Rating() {}
+
+        public Rating(double mean, double standardDeviation) {
+            this.Mean = mean;
+            this.StandardDeviation = standardDeviation;
+        };
+    }
+
     @Id
     public ObjectId userId;
 
@@ -31,6 +45,15 @@ public class User {
 	public String email;
 
     public int wins;
+
+    // True Skill
+    public int trueSkill = 0;
+    // Rating de True Skill
+    public Rating rating = new Rating(TrueSkillHelper.INITIAL_MEAN, TrueSkillHelper.INITIAL_SD);
+    // Torneos que se han tenido en cuenta para calcular su rating
+    public List<ObjectId> contestsRating = new ArrayList<>();
+
+    public Money earnedMoney = MoneyUtils.zero;
 
     // TODO: De momento no es realmente un "cache", siempre lo recalculamos
     public Money cachedBalance;
@@ -57,7 +80,7 @@ public class User {
 	}
 
     public UserInfo info() {
-        return new UserInfo(userId, nickName, wins);
+        return new UserInfo(userId, nickName, wins, trueSkill, earnedMoney);
     }
 
     public User getProfile() {
@@ -66,6 +89,7 @@ public class User {
         goldBalance = calculateGoldBalance();
         managerBalance = calculateManagerBalance();
         energyBalance = calculateEnergyBalance();
+        earnedMoney = calculatePrizes(MoneyUtils.CURRENCY_GOLD);
         // Logger.debug("gold: {} manager: {} energy: {}", goldBalance, managerBalance, energyBalance);
         return this;
     }
@@ -84,6 +108,10 @@ public class User {
             aUser = findOne(new ObjectId(userId));
         }
         return aUser;
+    }
+
+    static public List<User> findAll() {
+        return ListUtils.asList(Model.users().find().as(User.class));
     }
 
     static public User findByName(String username) {
@@ -130,6 +158,8 @@ public class User {
     }
 
     public void updateStats() {
+        earnedMoney = calculatePrizes(MoneyUtils.CURRENCY_GOLD);
+
         // Buscamos los contests en los que hayamos participado y ganado (position = 0)
         int contestsGanados = (int) Model.contests().count(
                 "{ contestEntries: {" +
@@ -138,7 +168,12 @@ public class User {
                         "position: 0" +
                     "}" +
                 "}}", userId);
-        Model.users().update(userId).with("{$set: {wins: #}}", contestsGanados);
+        Model.users().update(userId).with("{$set: {wins: #, earnedMoney: #}}", contestsGanados, earnedMoney.toString());
+    }
+
+    public void updateTrueSkillByContest(ObjectId contestId) {
+        // Garantizamos que un determinado contest no influye varias veces en el cálculo del trueSkill
+        Model.users().update("{_id: #, contestsRating: {$nin: [#]} }", userId, contestId).with("{$set: {trueSkill: #, rating: #}, $push: {contestsRating: #}}", trueSkill, rating, contestId);
     }
 
     public Integer getSeqId() {
@@ -167,6 +202,14 @@ public class User {
 
     public Money calculateBonus() {
         return User.calculateBonus(userId);
+    }
+
+    public Money calculatePrizes(CurrencyUnit currenctyUnit) {
+        return User.calculatePrizes(userId, currenctyUnit);
+    }
+
+    public Money calculateGoldPrizes() {
+        return calculatePrizes(MoneyUtils.CURRENCY_GOLD);
     }
 
     public boolean useEnergy(Money energy) {
@@ -238,11 +281,11 @@ public class User {
         return (!account.isEmpty() && account.get(0).seqId != null) ? account.get(0).seqId : 0;
     }
 
-    static public Money calculatePrizes(ObjectId userId) {
+    static public Money calculatePrizes(ObjectId userId, CurrencyUnit currencyUnit) {
         List<AccountingTran> accounting = Model.accountingTransactions()
-                .aggregate("{$match: { \"accountOps.accountId\": #, type: #, state: \"VALID\"}}", userId, AccountingTran.TransactionType.PRIZE)
+                .aggregate("{$match: { \"accountOps.accountId\": #, \"accountOps.currencyCode\": #, type: #, state: \"VALID\"}}", userId, currencyUnit.toString(), AccountingTran.TransactionType.PRIZE)
                 .and("{$unwind: \"$accountOps\"}")
-                .and("{$match: {\"accountOps.accountId\": #, type: #}}", userId, AccountingTran.TransactionType.PRIZE)
+                .and("{$match: {\"accountOps.accountId\": #, \"accountOps.currencyCode\": #, type: #}}", userId, currencyUnit.toString(), AccountingTran.TransactionType.PRIZE)
                 .and("{$group: {_id: #, _class: { $first: \"$_class\" }, accountOps: { $push: { accountId: \"$accountOps.accountId\", value: \"$accountOps.value\" }}}}", new ObjectId())
                 .as(AccountingTran.class);
 

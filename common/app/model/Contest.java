@@ -13,8 +13,10 @@ import org.joda.money.Money;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.jongo.marshall.jackson.oid.Id;
+import play.Logger;
 import utils.ListUtils;
 import utils.MoneyUtils;
+import utils.TrueSkillHelper;
 import utils.ViewProjection;
 
 import java.math.RoundingMode;
@@ -314,6 +316,20 @@ public class Contest implements JongoId {
             contestEntry.prize = prizes.getValue(contestEntry.position);
             contestEntry.updateRanking();
         }
+
+        // Si es un torneo REAL, actualizaremos el TrueSkill de los participantes
+        if (!simulation) {
+            // Los contestEntries están ordenadas según sus posiciones
+            updateTrueSkill();
+        }
+    }
+
+    private void updateTrueSkill() {
+        // Calculamos el trueSkill de los participantes y actualizamos su información en la BDD
+        Map<ObjectId, User> usersRating = TrueSkillHelper.RecomputeRatings(contestEntries);
+        for (Map.Entry<ObjectId, User> user : usersRating.entrySet()) {
+            user.getValue().updateTrueSkillByContest(contestId);
+        }
     }
 
     public String translatedName() {
@@ -338,6 +354,14 @@ public class Contest implements JongoId {
             }
 
             AccountingTranPrize.create(contestId, accounts);
+
+            // Si se jugaba con GOLD, se actualizarán las estadísticas de los ganadores
+            if (getPrizePool().getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+                for (AccountOp op : accounts) {
+                    User winner = User.findOne(op.accountId);
+                    winner.updateStats();
+                }
+            }
         }
     }
 
