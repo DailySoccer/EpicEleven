@@ -13,6 +13,7 @@ import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
 import utils.MoneyUtils;
+import utils.TrueSkillHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -23,6 +24,18 @@ public class User {
     static final int MINUTES_TO_RELOAD_ENERGY = 15;
     static final BigDecimal MAX_ENERGY = new BigDecimal(10);
 
+    public class Rating {
+        public double Mean;
+        public double StandardDeviation;
+
+        public Rating() {}
+
+        public Rating(double mean, double standardDeviation) {
+            this.Mean = mean;
+            this.StandardDeviation = standardDeviation;
+        };
+    }
+
     @Id
     public ObjectId userId;
 
@@ -32,7 +45,14 @@ public class User {
 	public String email;
 
     public int wins;
+
+    // True Skill
     public int trueSkill = 0;
+    // Rating de True Skill
+    public Rating rating = new Rating(TrueSkillHelper.INITIAL_MEAN, TrueSkillHelper.INITIAL_SD);
+    // Torneos que se han tenido en cuenta para calcular su rating
+    public List<ObjectId> contestsRating = new ArrayList<>();
+
     public Money earnedMoney = MoneyUtils.zero;
 
     // TODO: De momento no es realmente un "cache", siempre lo recalculamos
@@ -149,6 +169,11 @@ public class User {
                     "}" +
                 "}}", userId);
         Model.users().update(userId).with("{$set: {wins: #, earnedMoney: #}}", contestsGanados, earnedMoney.toString());
+    }
+
+    public void updateTrueSkillByContest(ObjectId contestId) {
+        // Garantizamos que un determinado contest no influye varias veces en el cálculo del trueSkill
+        Model.users().update("{_id: #, contestsRating: {$nin: [#]} }", userId, contestId).with("{$set: {trueSkill: #, rating: #}, $push: {contestsRating: #}}", trueSkill, rating, contestId);
     }
 
     public Integer getSeqId() {
