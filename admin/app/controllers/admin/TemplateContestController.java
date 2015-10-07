@@ -211,6 +211,7 @@ public class TemplateContestController extends Controller {
         // En la simulación usaremos ENERGY, en los reales GOLD
         templateContest.entryFee = Money.of(templateContest.simulation ? MoneyUtils.CURRENCY_ENERGY : MoneyUtils.CURRENCY_GOLD, params.entryFee);
         templateContest.prizeType = params.prizeType;
+        templateContest.prizeMultiplier = templateContest.simulation ? params.prizeMultiplier : Prizes.PRIZE_MULTIPLIER_FOR_REAL_CONTEST;
 
         templateContest.specialImage = params.specialImage;
 

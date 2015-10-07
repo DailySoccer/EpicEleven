@@ -161,6 +161,10 @@
                 updatePrizes();
             });
 
+            if ($('#typeContest').val() == "REAL") {
+                $('#prizeMultiplier').val('0.9');
+                $('#prizeMultiplier').prop('disabled', true);
+            }
             updatePrizes();
         })
 

@@ -13,6 +13,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Prizes {
+    public static final float PRIZE_MULTIPLIER_FOR_REAL_CONTEST = 0.9f;
+
     public PrizeType prizeType;
     public int maxEntries;
     public Money prizePool;
