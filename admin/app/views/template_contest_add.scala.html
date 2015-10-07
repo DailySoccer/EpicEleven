@@ -9,18 +9,8 @@
     @controllers.admin.FlashMessage.danger("Template MatchEvent Form has errors")
 }
 
-@boxValue = @{ true }
-
-@myCheckBox(field: Field, _label: String = "", _hidden: Boolean = false) = {
-<div class="form-group @if(field.hasErrors) {has-error}" @if(_hidden){ hidden }>
-    @if(_label.nonEmpty) { <label class="control-label col-sm-3" for="@field.id">@_label</label> }
-    <div class="col-sm-7">
-        <input type="checkbox" name="@field.id" id="@field.id" @if(field.value == boxValue) {checked} class="form-control">
-        @if(field.hasErrors){
-        <p class="help-block">@{field.error.map { error => error.message }}</p>
-        }
-    </div>
-</div>
+@templateContestId = @{
+    templateContestForm("id").value.toString()
 }
 
 @myInputText(field: Field, _label: String = "", _size: Int = 10, _hidden: Boolean = false) = {
@@ -135,10 +125,14 @@
                 if ($('#typeContest').val() == "REAL") {
                     $('#prizeMultiplier').val('0.9');
                     $('#prizeMultiplier').prop('disabled', true);
+
+                    $('#startDate').val('');
                 }
                 else {
                     $('#prizeMultiplier').val('1.0');
                     $('#prizeMultiplier').prop('disabled', false);
+
+                    $('#startDate').val($('#activationAt').val());
                 }
                 updatePrizes();
             });

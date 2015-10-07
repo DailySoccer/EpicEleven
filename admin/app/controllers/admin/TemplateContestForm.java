@@ -9,6 +9,7 @@ import play.data.validation.Constraints;
 import play.data.validation.ValidationError;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 
 public class TemplateContestForm {
@@ -33,7 +34,7 @@ public class TemplateContestForm {
     @Constraints.Required
     public SalaryCap salaryCap = SalaryCap.STANDARD;
     @Constraints.Required
-    public BigDecimal entryFee = new BigDecimal(1);
+    public int entryFee = 1;
     @Constraints.Required
     public float prizeMultiplier = 1.0f;
     @Constraints.Required
@@ -60,14 +61,14 @@ public class TemplateContestForm {
     }
 
     public TemplateContestForm(TemplateContest templateContest) {
-        id = templateContest.templateContestId.toString();
+        id = templateContest.templateContestId != null ? templateContest.templateContestId.toString() : null;
         state = templateContest.state;
         typeContest = templateContest.simulation ? TypeContest.VIRTUAL : TypeContest.REAL;
         name = templateContest.name;
         minInstances = templateContest.minInstances;
         maxEntries = templateContest.maxEntries;
         salaryCap = SalaryCap.findByMoney(templateContest.salaryCap);
-        entryFee = templateContest.entryFee.getAmount();
+        entryFee = templateContest.entryFee.getAmount().intValue();
         prizeMultiplier = templateContest.prizeMultiplier;
         prizeType = templateContest.prizeType;
 

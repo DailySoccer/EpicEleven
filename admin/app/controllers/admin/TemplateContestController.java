@@ -91,7 +91,7 @@ public class TemplateContestController extends Controller {
                     case 14:
                         return "";
                     case 15:
-                        return "";
+                        return templateContest.simulation ? "Simulation" : "Real";
                 }
                 return "<invalid value>";
             }
@@ -100,15 +100,13 @@ public class TemplateContestController extends Controller {
                 TemplateContest templateContest = (TemplateContest) data;
                 switch (index) {
                     case 0:
-                        if (templateContest.state.isDraft())
-                            return String.format("<button class=\"btn btn-default\">%s</button>", templateContest.state);
-                        else if (templateContest.state.isHistory())
-                            return String.format("<button class=\"btn btn-danger\">%s</button>", templateContest.state);
-                        else if (templateContest.state.isLive())
-                            return String.format("<button class=\"btn btn-success\">%s</button>", templateContest.state);
-                        else if (templateContest.state.isActive())
-                            return String.format("<button class=\"btn btn-warning\">%s</button>", templateContest.state);
-                        return String.format("<button class=\"btn btn-warning disabled\">%s</button>", templateContest.state);
+                        String classStyle = "btn btn-warning disabled";
+                        if (templateContest.state.isDraft())            classStyle = "btn btn-default";
+                        else if (templateContest.state.isHistory())     classStyle = "btn btn-danger";
+                        else if (templateContest.state.isLive())        classStyle = "btn btn-success";
+                        else if (templateContest.state.isActive())      classStyle = "btn btn-warning";
+                        return String.format("<a href=\"%s\"><button class=\"%s\">%s</button></a>",
+                                routes.TemplateContestController.createClone(templateContest.templateContestId.toString()), classStyle, templateContest.state);
                     case 1:
                         return String.format("<a href=\"%s\" style=\"white-space: nowrap\">%s</a>",
                                 routes.TemplateContestController.show(templateContest.templateContestId.toString()),
@@ -154,6 +152,10 @@ public class TemplateContestController extends Controller {
 
     public static Result edit(String templateContestId) {
         TemplateContest templateContest = TemplateContest.findOne(new ObjectId(templateContestId));
+        return edit(templateContest);
+    }
+
+    public static Result edit(TemplateContest templateContest) {
         TemplateContestForm params = new TemplateContestForm(templateContest);
 
         Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
@@ -162,6 +164,14 @@ public class TemplateContestController extends Controller {
             return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(templateMatchEvents), templateContest.state.isActive()));
         }
         return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.createdAt), templateContest.state.isActive()));
+    }
+
+    public static Result createClone(String templateContestId) {
+        TemplateContest clonedTemplateContest = TemplateContest.findOne(new ObjectId(templateContestId)).copy();
+        clonedTemplateContest.templateContestId = null;
+        clonedTemplateContest.state = ContestState.DRAFT;
+        clonedTemplateContest.name += " (clone)";
+        return edit(clonedTemplateContest);
     }
 
     public static Result publish(String templateContestId) {
@@ -209,7 +219,7 @@ public class TemplateContestController extends Controller {
         templateContest.salaryCap = params.salaryCap.money;
 
         // En la simulación usaremos ENERGY, en los reales GOLD
-        templateContest.entryFee = Money.of(templateContest.simulation ? MoneyUtils.CURRENCY_ENERGY : MoneyUtils.CURRENCY_GOLD, params.entryFee);
+        templateContest.entryFee = Money.zero(templateContest.simulation ? MoneyUtils.CURRENCY_ENERGY : MoneyUtils.CURRENCY_GOLD).plus(params.entryFee);
         templateContest.prizeType = params.prizeType;
         templateContest.prizeMultiplier = templateContest.simulation ? params.prizeMultiplier : Prizes.PRIZE_MULTIPLIER_FOR_REAL_CONTEST;
 
