@@ -361,9 +361,9 @@ public class User {
         return (float)level + acc;
     }
 
-    static public Money decayManagerPoints(Money managerPoints) {
+    static public Money decayManagerPoints(Money managerPoints, float percentToDecay) {
         // Aplicarle la penalización al nivel de Manager
-        float level = managerLevelFromPoints(managerPoints) - PERCENT_TO_DECAY;
+        float level = managerLevelFromPoints(managerPoints) - percentToDecay;
         if (level < 0f) {
             level = 0f;
         }
@@ -371,25 +371,22 @@ public class User {
         // Volver a convertir el nivel a manager Points
         managerPoints = pointsFromManagerLevel(level);
 
-        Logger.debug("decay: manager: {} level: {}", managerPoints.getAmount().longValue(), level);
+        Logger.debug(">> decay: manager: {} level: {}", managerPoints.getAmount().longValue(), level);
         return managerPoints;
     }
 
     static public Money decayManagerPoints(Duration duration, Money managerPoints) {
         long horas = duration.getStandardHours();
         if (horas > HOURS_TO_DECAY) {
-            Logger.debug("Horas: {}", horas);
-
             // Cuántas veces tenemos que aplicar la penalización
             long penalizations = horas / HOURS_TO_DECAY;
-            Logger.debug("balance: {} level: {} penalizations: {}", managerPoints.getAmount(), managerLevelFromPoints(managerPoints), penalizations);
-            for (long i=0; i<penalizations && managerPoints.isPositive(); i++) {
-                // Aplicamos el decay de forma secuencial puesto que depende del nivel de Manager Points
-                managerPoints = decayManagerPoints(managerPoints);
-            }
+
+            Logger.debug("horas: {} balance: {} level: {} penalization: {}", horas, managerPoints.getAmount(), managerLevelFromPoints(managerPoints), -PERCENT_TO_DECAY * penalizations);
+
+            managerPoints = decayManagerPoints(managerPoints, PERCENT_TO_DECAY * penalizations);
         }
         else {
-            Logger.debug("balance: {} level: {}", managerPoints.getAmount(), managerLevelFromPoints(managerPoints));
+            Logger.debug("horas: {} balance: {} level: {}", horas, managerPoints.getAmount(), managerLevelFromPoints(managerPoints));
         }
         return managerPoints;
     }
@@ -430,7 +427,7 @@ public class User {
 
         Money balance = MoneyUtils.zero;
         if (!managerOps.isEmpty()) {
-            Logger.debug("-------------> UserId: {}", userId);
+            Logger.debug("-------------> Manager Points: UserId: {}", userId);
 
             // Decay de  los Manager Points entre tiempo (ganancias)
             DateTime lastDate = null;
