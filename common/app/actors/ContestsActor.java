@@ -143,43 +143,42 @@ public class ContestsActor extends TickableActor {
     }
 
     private void createMock(List<TemplateMatchEvent> templateMatchEvents) {
-        createMock(templateMatchEvents, MoneyUtils.zero, 20, PrizeType.FREE, SalaryCap.EASY);
-        createMock(templateMatchEvents, MoneyUtils.zero, 25, PrizeType.FREE, SalaryCap.STANDARD);
+        TemplateContest templateContest1 = createMock(templateMatchEvents, Money.of(MoneyUtils.CURRENCY_GOLD, 1), 20, PrizeType.WINNER_TAKES_ALL, SalaryCap.STANDARD);
+        if (templateContest1 != null) {
+            createVirtualMock(templateContest1);
+        }
 
-        for (int i = 1; i<=6; i++) {
-            Money money = Money.of(MoneyUtils.CURRENCY_GOLD, i);
-
-            switch (i) {
-                case 1:
-                    createMock(templateMatchEvents, money, 2, PrizeType.WINNER_TAKES_ALL, SalaryCap.STANDARD); //MEDIO
-                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_3_GET_PRIZES, SalaryCap.STANDARD); //MEDIO
-                    break;
-                case 2:
-                    createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, SalaryCap.STANDARD); //MEDIO
-                    break;
-                case 3:
-                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_THIRD_GET_PRIZES, SalaryCap.EASY); //FACIL
-                    createMock(templateMatchEvents, money, 10, PrizeType.FIFTY_FIFTY, SalaryCap.STANDARD); //MEDIO
-                    break;
-                case 4:
-                    createMock(templateMatchEvents, money, 10, PrizeType.FIFTY_FIFTY, SalaryCap.STANDARD); //MEDIO
-                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_3_GET_PRIZES, SalaryCap.EASY); //FACIL
-                    break;
-                case 5:
-                    createMock(templateMatchEvents, money, 10, PrizeType.TOP_3_GET_PRIZES, SalaryCap.STANDARD); //MEDIO
-                    createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, SalaryCap.STANDARD); //MEDIO
-                    break;
-                case 6:
-                    createMock(templateMatchEvents, money, 25, PrizeType.WINNER_TAKES_ALL, SalaryCap.EASY); //FACIL
-                    break;
-            }
+        TemplateContest templateContest2 = createMock(templateMatchEvents, Money.of(MoneyUtils.CURRENCY_GOLD, 5), 20, PrizeType.FIFTY_FIFTY, SalaryCap.STANDARD);
+        if (templateContest2 != null) {
+            createVirtualMock(templateContest2);
         }
     }
 
-    private void createMock(List<TemplateMatchEvent> templateMatchEvents, Money entryFee, int maxEntries, PrizeType prizeType, SalaryCap salaryCap) {
+    private void createVirtualMock(TemplateContest templateContest) {
+        DateTime currentDate = new DateTime(GlobalDate.getCurrentDate());
+        DateTime startDate = new DateTime(templateContest.startDate);
+        DateTime virtualStartDate = new DateTime(templateContest.activationAt);
+        virtualStartDate = virtualStartDate.plusHours(2);
+
+        while (virtualStartDate.isBefore(startDate)) {
+            if (virtualStartDate.isAfter(currentDate)) {
+                TemplateContest virtualContest = templateContest.copy();
+                virtualContest.templateContestId = new ObjectId();
+                virtualContest.simulation = true;
+                virtualContest.startDate = virtualStartDate.toDate();
+                virtualContest.entryFee = Money.zero(MoneyUtils.CURRENCY_ENERGY).plus(1);
+                virtualContest.prizeMultiplier = 10f;
+                Model.templateContests().insert(virtualContest);
+            }
+
+            virtualStartDate = virtualStartDate.plusHours(6);
+        }
+    }
+
+    private TemplateContest createMock(List<TemplateMatchEvent> templateMatchEvents, Money entryFee, int maxEntries, PrizeType prizeType, SalaryCap salaryCap) {
         if (templateMatchEvents.size() == 0) {
             Logger.error("create: templateMatchEvents is empty");
-            return;
+            return null;
         }
 
         Date startDate = getStartDate(templateMatchEvents);
@@ -211,6 +210,7 @@ public class ContestsActor extends TickableActor {
         Logger.info("Generate: Template Contest: {}: {}", GlobalDate.formatDate(startDate), templateContest.templateMatchEventIds);
 
         Model.templateContests().insert(templateContest);
+        return templateContest;
     }
 
     private ObjectId getLastId(List<TemplateMatchEvent> templateMatchEvents) {

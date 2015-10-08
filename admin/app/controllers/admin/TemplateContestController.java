@@ -185,18 +185,6 @@ public class TemplateContestController extends Controller {
         return redirect(routes.TemplateContestController.index());
     }
 
-    public static Result simulate(String templateContestId) {
-        return redirect(routes.TemplateContestController.index());
-    }
-
-    public static Result startSimulation(String templateContestId) {
-        Model.actors().tellAndAwait("ContestsActor", ImmutableMap.of(
-                "id", "TemplateContest",
-                "templateContestId", templateContestId
-        ));
-        return redirect(routes.TemplateContestController.index());
-    }
-
     public static Result create() {
         Form<TemplateContestForm> templateContestForm = form(TemplateContestForm.class).bindFromRequest();
         if (templateContestForm.hasErrors()) {

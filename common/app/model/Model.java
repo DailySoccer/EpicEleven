@@ -36,6 +36,8 @@ public class Model {
     static public MongoCollection contests() { return _jongo.getCollection("contests"); }
     static public MongoCollection matchEvents() { return _jongo.getCollection("matchEvents"); }
 
+    static public MongoCollection statsSimulation() { return _jongo.getCollection("statsSimulation"); }
+
     static public MongoCollection optaCompetitions() { return _jongo.getCollection("optaCompetitions"); }
     static public MongoCollection optaEvents() { return _jongo.getCollection("optaEvents"); }
     static public MongoCollection optaPlayers() { return _jongo.getCollection("optaPlayers"); }
@@ -322,6 +324,11 @@ public class Model {
 
         if (!theMongoDB.collectionExists("cancelledContestEntries")) {
             theMongoDB.createCollection("cancelledContestEntries", new BasicDBObject());
+        }
+
+        if (!theMongoDB.collectionExists("statsSimulation")) {
+            DBCollection statsSimulation = theMongoDB.createCollection("statsSimulation", new BasicDBObject());
+            statsSimulation.createIndex(new BasicDBObject("optaMatchEventId", 1));
         }
     }
 

@@ -30,16 +30,6 @@ public class User {
     static final long[] MANAGER_POINTS = new long[] {
       0, 65, 125, 250, 500, 1000
     };
-    static final long[] MANAGER_POINTS_ACC = new long[] {
-            MANAGER_POINTS[0],
-            MANAGER_POINTS[0] + MANAGER_POINTS[1],
-            MANAGER_POINTS[0] + MANAGER_POINTS[1] + MANAGER_POINTS[2],
-            MANAGER_POINTS[0] + MANAGER_POINTS[1] + MANAGER_POINTS[2] + MANAGER_POINTS[3],
-            MANAGER_POINTS[0] + MANAGER_POINTS[1] + MANAGER_POINTS[2] + MANAGER_POINTS[3] + MANAGER_POINTS[4],
-            MANAGER_POINTS[0] + MANAGER_POINTS[1] + MANAGER_POINTS[2] + MANAGER_POINTS[3] + MANAGER_POINTS[4] + MANAGER_POINTS[5]
-    };
-    static final long MANAGER_POINTS_MAX = MANAGER_POINTS[5];
-
 
     public class Rating {
         public double Mean;
@@ -315,7 +305,7 @@ public class User {
                 .and("{$project: {value: \"$accountOps.value\"}}")
                 .as(PrizeOp.class);
 
-        Money balance = MoneyUtils.zero;
+        Money balance = MoneyUtils.zero(currencyUnit.getCode());
         if (!prizeOps.isEmpty()) {
             for (PrizeOp op : prizeOps) {
                 balance = MoneyUtils.plus(balance, op.value);
@@ -332,63 +322,6 @@ public class User {
     // Para registrar los premios conseguidos de Manager Points
     static public class ManagerBalanceOp extends BalanceOp {
         public Date createdAt;
-    }
-
-    static public Money pointsFromManagerLevel(float managerLevel) {
-        int level = (int) managerLevel;
-        int acc = 0;
-        if (level < 5) {
-            float pointsToLevelUp = (float) (MANAGER_POINTS[level+1] - MANAGER_POINTS[level]);
-            float remainder = managerLevel - level;
-            acc = (int) (remainder * pointsToLevelUp);
-        }
-        return Money.zero(MoneyUtils.CURRENCY_MANAGER).plus(MANAGER_POINTS[level] + acc);
-    }
-
-    static public float managerLevelFromPoints(Money managerPoints) {
-        long points = managerPoints.getAmount().longValue();
-        int level = 0;
-        while (level+1 < MANAGER_POINTS.length && points >= MANAGER_POINTS[level+1]) {
-            level++;
-        }
-
-        float acc = 0;
-        if (level < 5) {
-            float pointsToLevelUp = (float) (MANAGER_POINTS[level+1] - MANAGER_POINTS[level]);
-            float remainder = (float) (points - MANAGER_POINTS[level]);
-            acc = remainder / pointsToLevelUp;
-        }
-        return (float)level + acc;
-    }
-
-    static public Money decayManagerPoints(Money managerPoints, float percentToDecay) {
-        // Aplicarle la penalización al nivel de Manager
-        float level = managerLevelFromPoints(managerPoints) - percentToDecay;
-        if (level < 0f) {
-            level = 0f;
-        }
-
-        // Volver a convertir el nivel a manager Points
-        managerPoints = pointsFromManagerLevel(level);
-
-        Logger.debug(">> decay: manager: {} level: {}", managerPoints.getAmount().longValue(), level);
-        return managerPoints;
-    }
-
-    static public Money decayManagerPoints(Duration duration, Money managerPoints) {
-        long horas = duration.getStandardHours();
-        if (horas > HOURS_TO_DECAY) {
-            // Cuántas veces tenemos que aplicar la penalización
-            long penalizations = horas / HOURS_TO_DECAY;
-
-            Logger.debug("horas: {} balance: {} level: {} penalization: {}", horas, managerPoints.getAmount(), managerLevelFromPoints(managerPoints), -PERCENT_TO_DECAY * penalizations);
-
-            managerPoints = decayManagerPoints(managerPoints, PERCENT_TO_DECAY * penalizations);
-        }
-        else {
-            Logger.debug("horas: {} balance: {} level: {}", horas, managerPoints.getAmount(), managerLevelFromPoints(managerPoints));
-        }
-        return managerPoints;
     }
 
     static public Money calculateBalance(ObjectId userId, String currencyUnit) {
@@ -425,7 +358,7 @@ public class User {
                 .and("{$project: {createdAt: 1, value: \"$accountOps.value\"}}")
                 .as(ManagerBalanceOp.class);
 
-        Money balance = MoneyUtils.zero;
+        Money balance = MoneyUtils.zero(currencyUnit);
         if (!managerOps.isEmpty()) {
             Logger.debug("-------------> Manager Points: UserId: {}", userId);
 
@@ -447,6 +380,63 @@ public class User {
         }
 
         return balance;
+    }
+
+    static private Money pointsFromManagerLevel(float managerLevel) {
+        int level = (int) managerLevel;
+        int acc = 0;
+        if (level < 5) {
+            float pointsToLevelUp = (float) (MANAGER_POINTS[level+1] - MANAGER_POINTS[level]);
+            float remainder = managerLevel - level;
+            acc = (int) (remainder * pointsToLevelUp);
+        }
+        return Money.zero(MoneyUtils.CURRENCY_MANAGER).plus(MANAGER_POINTS[level] + acc);
+    }
+
+    static private float managerLevelFromPoints(Money managerPoints) {
+        long points = managerPoints.getAmount().longValue();
+        int level = 0;
+        while (level+1 < MANAGER_POINTS.length && points >= MANAGER_POINTS[level+1]) {
+            level++;
+        }
+
+        float acc = 0;
+        if (level < 5) {
+            float pointsToLevelUp = (float) (MANAGER_POINTS[level+1] - MANAGER_POINTS[level]);
+            float remainder = (float) (points - MANAGER_POINTS[level]);
+            acc = remainder / pointsToLevelUp;
+        }
+        return (float)level + acc;
+    }
+
+    static private Money decayManagerPoints(Money managerPoints, float percentToDecay) {
+        // Aplicarle la penalización al nivel de Manager
+        float level = managerLevelFromPoints(managerPoints) - percentToDecay;
+        if (level < 0f) {
+            level = 0f;
+        }
+
+        // Volver a convertir el nivel a manager Points
+        managerPoints = pointsFromManagerLevel(level);
+
+        Logger.debug(">> decay: manager: {} level: {}", managerPoints.getAmount().longValue(), level);
+        return managerPoints;
+    }
+
+    static private Money decayManagerPoints(Duration duration, Money managerPoints) {
+        long horas = duration.getStandardHours();
+        if (horas > HOURS_TO_DECAY) {
+            // Cuántas veces tenemos que aplicar la penalización
+            long penalizations = horas / HOURS_TO_DECAY;
+
+            Logger.debug("horas: {} balance: {} level: {} penalization: {}", horas, managerPoints.getAmount(), managerLevelFromPoints(managerPoints), -PERCENT_TO_DECAY * penalizations);
+
+            managerPoints = decayManagerPoints(managerPoints, PERCENT_TO_DECAY * penalizations);
+        }
+        else {
+            Logger.debug("horas: {} balance: {} level: {}", horas, managerPoints.getAmount(), managerLevelFromPoints(managerPoints));
+        }
+        return managerPoints;
     }
 
     static public Money calculateEnergyBalance(ObjectId userId) {
