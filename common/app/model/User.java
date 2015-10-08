@@ -8,6 +8,7 @@ import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.joda.time.DateTime;
+import org.joda.time.Duration;
 import org.joda.time.Minutes;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
@@ -23,6 +24,22 @@ import java.util.List;
 public class User {
     static final int MINUTES_TO_RELOAD_ENERGY = 15;
     static final BigDecimal MAX_ENERGY = new BigDecimal(10);
+    static final long HOURS_TO_DECAY = 48;
+    static final float PERCENT_TO_DECAY = 0.5f;
+
+    static final long[] MANAGER_POINTS = new long[] {
+      0, 65, 125, 250, 500, 1000
+    };
+    static final long[] MANAGER_POINTS_ACC = new long[] {
+            MANAGER_POINTS[0],
+            MANAGER_POINTS[0] + MANAGER_POINTS[1],
+            MANAGER_POINTS[0] + MANAGER_POINTS[1] + MANAGER_POINTS[2],
+            MANAGER_POINTS[0] + MANAGER_POINTS[1] + MANAGER_POINTS[2] + MANAGER_POINTS[3],
+            MANAGER_POINTS[0] + MANAGER_POINTS[1] + MANAGER_POINTS[2] + MANAGER_POINTS[3] + MANAGER_POINTS[4],
+            MANAGER_POINTS[0] + MANAGER_POINTS[1] + MANAGER_POINTS[2] + MANAGER_POINTS[3] + MANAGER_POINTS[4] + MANAGER_POINTS[5]
+    };
+    static final long MANAGER_POINTS_MAX = MANAGER_POINTS[5];
+
 
     public class Rating {
         public double Mean;
@@ -63,7 +80,10 @@ public class User {
     public Money managerBalance     = Money.zero(MoneyUtils.CURRENCY_MANAGER);
     public Money energyBalance      = Money.of(MoneyUtils.CURRENCY_ENERGY, MAX_ENERGY);
 
+    // La última fecha en la que se recalculó la energía
     public Date lastUpdatedEnergy;
+
+    public float managerLevel = 0;
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
@@ -90,6 +110,7 @@ public class User {
         managerBalance = calculateManagerBalance();
         energyBalance = calculateEnergyBalance();
         earnedMoney = calculatePrizes(MoneyUtils.CURRENCY_GOLD);
+        managerLevel = managerLevelFromPoints(managerBalance);
         // Logger.debug("gold: {} manager: {} energy: {}", goldBalance, managerBalance, energyBalance);
         return this;
     }
@@ -281,57 +302,111 @@ public class User {
         return (!account.isEmpty() && account.get(0).seqId != null) ? account.get(0).seqId : 0;
     }
 
+    // Para registrar los premios ganado
+    static public class PrizeOp {
+        public Money value;
+    }
+
     static public Money calculatePrizes(ObjectId userId, CurrencyUnit currencyUnit) {
-        List<AccountingTran> accounting = Model.accountingTransactions()
+        List<PrizeOp> prizeOps = Model.accountingTransactions()
                 .aggregate("{$match: { \"accountOps.accountId\": #, \"accountOps.currencyCode\": #, type: #, state: \"VALID\"}}", userId, currencyUnit.toString(), AccountingTran.TransactionType.PRIZE)
                 .and("{$unwind: \"$accountOps\"}")
-                .and("{$match: {\"accountOps.accountId\": #, \"accountOps.currencyCode\": #, type: #}}", userId, currencyUnit.toString(), AccountingTran.TransactionType.PRIZE)
-                .and("{$group: {_id: #, _class: { $first: \"$_class\" }, accountOps: { $push: { accountId: \"$accountOps.accountId\", value: \"$accountOps.value\" }}}}", new ObjectId())
-                .as(AccountingTran.class);
+                .and("{$match: {\"accountOps.accountId\": #}}", userId)
+                .and("{$project: {value: \"$accountOps.value\"}}")
+                .as(PrizeOp.class);
 
         Money balance = MoneyUtils.zero;
-        if (!accounting.isEmpty()) {
-            for (AccountOp op : accounting.get(0).accountOps) {
-                balance = MoneyUtils.plus(balance, op.asMoney());
+        if (!prizeOps.isEmpty()) {
+            for (PrizeOp op : prizeOps) {
+                balance = MoneyUtils.plus(balance, op.value);
             }
         }
         return balance;
+    }
+
+    // Para registrar las operaciones
+    static public class BalanceOp {
+        public Money value;
+    }
+
+    // Para registrar los premios conseguidos de Manager Points
+    static public class ManagerBalanceOp extends BalanceOp {
+        public Date createdAt;
+    }
+
+    static public Money pointsFromManagerLevel(float managerLevel) {
+        int level = (int) managerLevel;
+        int acc = 0;
+        if (level < 5) {
+            float pointsToLevelUp = (float) (MANAGER_POINTS[level+1] - MANAGER_POINTS[level]);
+            float remainder = managerLevel - level;
+            acc = (int) (remainder * pointsToLevelUp);
+        }
+        return Money.zero(MoneyUtils.CURRENCY_MANAGER).plus(MANAGER_POINTS[level] + acc);
+    }
+
+    static public float managerLevelFromPoints(Money managerPoints) {
+        long points = managerPoints.getAmount().longValue();
+        int level = 0;
+        while (level+1 < MANAGER_POINTS.length && points >= MANAGER_POINTS[level+1]) {
+            level++;
+        }
+
+        float acc = 0;
+        if (level < 5) {
+            float pointsToLevelUp = (float) (MANAGER_POINTS[level+1] - MANAGER_POINTS[level]);
+            float remainder = (float) (points - MANAGER_POINTS[level]);
+            acc = remainder / pointsToLevelUp;
+        }
+        return (float)level + acc;
+    }
+
+    static public Money decayManagerPoints(Money managerPoints, float percentToDecay) {
+        // Aplicarle la penalización al nivel de Manager
+        float level = managerLevelFromPoints(managerPoints) - percentToDecay;
+        if (level < 0f) {
+            level = 0f;
+        }
+
+        // Volver a convertir el nivel a manager Points
+        managerPoints = pointsFromManagerLevel(level);
+
+        Logger.debug(">> decay: manager: {} level: {}", managerPoints.getAmount().longValue(), level);
+        return managerPoints;
+    }
+
+    static public Money decayManagerPoints(Duration duration, Money managerPoints) {
+        long horas = duration.getStandardHours();
+        if (horas > HOURS_TO_DECAY) {
+            // Cuántas veces tenemos que aplicar la penalización
+            long penalizations = horas / HOURS_TO_DECAY;
+
+            Logger.debug("horas: {} balance: {} level: {} penalization: {}", horas, managerPoints.getAmount(), managerLevelFromPoints(managerPoints), -PERCENT_TO_DECAY * penalizations);
+
+            managerPoints = decayManagerPoints(managerPoints, PERCENT_TO_DECAY * penalizations);
+        }
+        else {
+            Logger.debug("horas: {} balance: {} level: {}", horas, managerPoints.getAmount(), managerLevelFromPoints(managerPoints));
+        }
+        return managerPoints;
     }
 
     static public Money calculateBalance(ObjectId userId, String currencyUnit) {
-        List<AccountingTran> accounting = Model.accountingTransactions()
-                .aggregate("{$match: { \"accountOps.accountId\": #, state: \"VALID\"}}", userId)
+
+        List<BalanceOp> accountingOps = Model.accountingTransactions()
+                .aggregate("{$match: { \"accountOps.accountId\": #, \"accountOps.currencyCode\": #, state: \"VALID\"}}", userId, currencyUnit)
                 .and("{$unwind: \"$accountOps\"}")
-                .and("{$match: {\"accountOps.accountId\": #, \"accountOps.currencyCode\": #}}", userId, currencyUnit)
-                .and("{$group: {_id: #, _class: { $first: \"$_class\" }, accountOps: { $push: { accountId: \"$accountOps.accountId\", value: \"$accountOps.value\" }}}}", new ObjectId())
-                .as(AccountingTran.class);
+                .and("{$match: {\"accountOps.accountId\": #}}", userId)
+                .and("{$project: {value: \"$accountOps.value\"}}")
+                .as(BalanceOp.class);
 
         Money balance = MoneyUtils.zero(currencyUnit);
-        if (!accounting.isEmpty()) {
-            for (AccountOp op : accounting.get(0).accountOps) {
-                balance = balance.plus(op.asMoney());
+        if (!accountingOps.isEmpty()) {
+            for (BalanceOp op : accountingOps) {
+                balance = balance.plus(op.value);
             }
         }
         return balance;
-    }
-
-    static public boolean hasMoney(ObjectId userId, Money money) {
-        Money balance;
-        if (money.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
-            balance = calculateGoldBalance(userId);
-        }
-        else if (money.getCurrencyUnit().equals(MoneyUtils.CURRENCY_MANAGER)) {
-            balance = calculateManagerBalance(userId);
-        }
-        else if (money.getCurrencyUnit().equals(MoneyUtils.CURRENCY_ENERGY)) {
-            balance = calculateEnergyBalance(userId);
-        }
-        else {
-            // El usuario no tendrá dinero, si la moneda es diferente
-            Logger.error("User not has Money: {}", money.toString());
-            return false;
-        }
-        return MoneyUtils.compareTo(balance, money) >= 0;
     }
 
     static public Money calculateGoldBalance(ObjectId userId) {
@@ -339,7 +414,39 @@ public class User {
     }
 
     static public Money calculateManagerBalance(ObjectId userId) {
-        return calculateBalance(userId, MoneyUtils.CURRENCY_MANAGER.getCode());
+        String currencyUnit = MoneyUtils.CURRENCY_MANAGER.getCode();
+
+        // Queremos las operaciones sobre los Manager Points ordenadas por tiempo, dado que existe un factor de "decay" a lo largo del tiempo
+        List<ManagerBalanceOp> managerOps = Model.accountingTransactions()
+                .aggregate("{$match: { \"accountOps.accountId\": #, \"accountOps.currencyCode\": #, type: #, state: \"VALID\"}}", userId, currencyUnit, AccountingTran.TransactionType.PRIZE)
+                .and("{$sort : { createdAt : 1 }}")
+                .and("{$unwind: \"$accountOps\"}")
+                .and("{$match: {\"accountOps.accountId\": #}}", userId)
+                .and("{$project: {createdAt: 1, value: \"$accountOps.value\"}}")
+                .as(ManagerBalanceOp.class);
+
+        Money balance = MoneyUtils.zero;
+        if (!managerOps.isEmpty()) {
+            Logger.debug("-------------> Manager Points: UserId: {}", userId);
+
+            // Decay de  los Manager Points entre tiempo (ganancias)
+            DateTime lastDate = null;
+            for (ManagerBalanceOp op : managerOps) {
+                DateTime dateTime = new DateTime(op.createdAt);
+                if (lastDate != null) {
+                    Duration duration = new Duration(lastDate, dateTime);
+                    balance = decayManagerPoints(duration, balance);
+                }
+                balance = MoneyUtils.plus(balance, op.value);
+                lastDate = dateTime;
+            }
+
+            // Decay hasta el día de hoy
+            Duration duration = new Duration(lastDate, new DateTime(GlobalDate.getCurrentDate()));
+            balance = decayManagerPoints(duration, balance);
+        }
+
+        return balance;
     }
 
     static public Money calculateEnergyBalance(ObjectId userId) {
@@ -364,5 +471,24 @@ public class User {
 
     static public Money calculateBonus(ObjectId userId) {
         return calculateBonus(userId, GlobalDate.getCurrentDate());
+    }
+
+    static public boolean hasMoney(ObjectId userId, Money money) {
+        Money balance;
+        if (money.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+            balance = calculateGoldBalance(userId);
+        }
+        else if (money.getCurrencyUnit().equals(MoneyUtils.CURRENCY_MANAGER)) {
+            balance = calculateManagerBalance(userId);
+        }
+        else if (money.getCurrencyUnit().equals(MoneyUtils.CURRENCY_ENERGY)) {
+            balance = calculateEnergyBalance(userId);
+        }
+        else {
+            // El usuario no tendrá dinero, si la moneda es diferente
+            Logger.error("User not has Money: {}", money.toString());
+            return false;
+        }
+        return MoneyUtils.compareTo(balance, money) >= 0;
     }
 }

@@ -73,14 +73,17 @@ public class ContestController extends Controller {
                 .attachObject("match_events", liveMatchEvents, JsonViews.FullContest.class)
                 .attachObject("soccer_teams", teams, JsonViews.Public.class)
                 .attachObject("soccer_players", players, JsonViews.Public.class)
+                .attachObject("profile", theUser.getProfile(), JsonViews.Public.class)
                 .toResult();
     }
 
     @UserAuthenticated
     public static Result getMyActiveContests() {
         User theUser = (User)ctx().args.get("User");
-        return new ReturnHelper(ImmutableMap.of("contests", Contest.findAllMyActive(theUser.userId, JsonViews.MyActiveContests.class)))
-                .toResult();
+        return new ReturnHelper(ImmutableMap.of(
+                "contests", Contest.findAllMyActive(theUser.userId, JsonViews.MyActiveContests.class),
+                "profile", theUser.getProfile()
+        )).toResult();
     }
 
     @UserAuthenticated
@@ -107,14 +110,17 @@ public class ContestController extends Controller {
                 .attachObject("match_events", liveMatchEvents, JsonViews.FullContest.class)
                 .attachObject("soccer_teams", teams, JsonViews.Public.class)
                 .attachObject("soccer_players", players, JsonViews.Public.class)
+                .attachObject("profile", theUser.getProfile(), JsonViews.Public.class)
                 .toResult();
     }
 
     @UserAuthenticated
     public static Result getMyHistoryContests() {
         User theUser = (User)ctx().args.get("User");
-        return new ReturnHelper(ImmutableMap.of("contests", Contest.findAllMyHistory(theUser.userId, JsonViews.MyHistoryContests.class)))
-                .toResult(JsonViews.Extended.class);
+        return new ReturnHelper(ImmutableMap.of(
+                "contests", Contest.findAllMyHistory(theUser.userId, JsonViews.MyHistoryContests.class),
+                "profile", theUser.getProfile()
+        )).toResult(JsonViews.Extended.class);
     }
 
     @UserAuthenticated
