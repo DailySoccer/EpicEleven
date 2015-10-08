@@ -12,7 +12,6 @@ import java.util.List;
 
 public class AccountOp {
     public ObjectId accountId;          // Identificador del "account" (actualmente corresponde a un userId)
-    public String currencyCode;         // CurrencyUnit.code
     public Money value;            // Cantidad a modificar el balance
     public Integer seqId;               // Secuencia de operaciones de un "account" determinado
     public Money cachedBalance;    // El balance del "account" (en el momento que se hizo el "commit")
@@ -21,7 +20,6 @@ public class AccountOp {
 
     public AccountOp(ObjectId accountId, Money value, Integer seqId) {
         this.accountId = accountId;
-        this.currencyCode = value.getCurrencyUnit().getCode();
         this.value = value;
         this.seqId = seqId;
     }
@@ -42,7 +40,7 @@ public class AccountOp {
         Money lastBalance = getLastBalance().plus(value);
         // Actualizamos el cachedBalance del "account"
         Model.accountingTransactions()
-                .update("{ accountOps: { $elemMatch: {accountId: #, seqId: #, currencyCode: #} } }", accountId, seqId, currencyCode)
+                .update("{ accountOps: { $elemMatch: {accountId: #, seqId: #} }, currencyCode: # }", accountId, seqId, value.getCurrencyUnit().getCode())
                 .with("{$set: {\"accountOps.$.cachedBalance\": #}}", lastBalance);
         // Actualizamos el user
         User.updateBalance(accountId, lastBalance);
@@ -51,19 +49,19 @@ public class AccountOp {
     public Money getLastBalance() {
         // Si es el primer seqId no existe ninguno anterior
         if (seqId == 1) {
-            return MoneyUtils.zero(currencyCode);
+            return MoneyUtils.zero(value.getCurrencyUnit().getCode());
         }
 
         List<AccountOp> accountOp = Model.accountingTransactions()
-                .aggregate("{$match: { \"accountOps.accountId\": #, proc: #, state: \"VALID\"}}", accountId, AccountingTran.TransactionProc.COMMITTED)
+                .aggregate("{$match: { \"accountOps.accountId\": #, proc: #, state: \"VALID\", currencyCode: #}}", accountId, AccountingTran.TransactionProc.COMMITTED, value.getCurrencyUnit().getCode())
                 .and("{$unwind: \"$accountOps\"}")
-                .and("{$match: {\"accountOps.accountId\": #, \"accountOps.seqId\": { $lt: # }, \"accountOps.currencyCode\": #}}", accountId, seqId, currencyCode)
+                .and("{$match: {\"accountOps.accountId\": #, \"accountOps.seqId\": { $lt: # }}}", accountId, seqId)
                 .and("{$project: { \"accountOps.seqId\": 1, \"accountOps.cachedBalance\": 1 }}")
                 .and("{$sort: { \"accountOps.seqId\": -1 }}")
                 .and("{$limit: 1}")
                 .and("{$group: {_id: \"balance\", accountId: { $first: \"$accountOps.accountId\" }, cachedBalance: { $first: \"$accountOps.cachedBalance\" }}}")
                 .as(AccountOp.class);
 
-        return (!accountOp.isEmpty()) ? accountOp.get(0).cachedBalance : MoneyUtils.zero(currencyCode);
+        return (!accountOp.isEmpty()) ? accountOp.get(0).cachedBalance : MoneyUtils.zero(value.getCurrencyUnit().getCode());
     }
 }

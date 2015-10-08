@@ -119,7 +119,7 @@ public class EnterContestJob extends Job {
             if (User.hasMoney(userId, entryFee)) {
                 try {
                     // Registrar el pago
-                    AccountingTran accountingTran = AccountingTranEnterContest.create(contestId, contestEntryId, ImmutableList.of(
+                    AccountingTran accountingTran = AccountingTranEnterContest.create(entryFee.getCurrencyUnit().getCode(), contestId, contestEntryId, ImmutableList.of(
                             new AccountOp(userId, entryFee.negated(), seqId)
                     ));
 
@@ -156,7 +156,7 @@ public class EnterContestJob extends Job {
                 Contest contest = Contest.findOne(contestId);
 
                 // Generamos la operación de cancelación (ingresarle dinero)
-                AccountingTranCancelContestEntry.create(contestId, contestEntryId, ImmutableList.of(
+                AccountingTranCancelContestEntry.create(contest.entryFee.getCurrencyUnit().getCode(), contestId, contestEntryId, ImmutableList.of(
                         new AccountOp(userId, contest.entryFee, seqId)
                 ));
             }

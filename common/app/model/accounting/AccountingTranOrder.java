@@ -11,8 +11,8 @@ public class AccountingTranOrder extends AccountingTran {
 
     public AccountingTranOrder() {}
 
-    public AccountingTranOrder(ObjectId orderId, String paymentId) {
-        super(TransactionType.ORDER);
+    public AccountingTranOrder(String currencyCode, ObjectId orderId, String paymentId) {
+        super(currencyCode, TransactionType.ORDER);
         this.orderId = orderId;
         this.paymentId = paymentId;
     }
@@ -23,10 +23,10 @@ public class AccountingTranOrder extends AccountingTran {
                 .as(AccountingTranOrder.class);
     }
 
-    static public AccountingTran create(ObjectId orderId, String paymentId, List<AccountOp> accounts) {
+    static public AccountingTran create(String currencyCode, ObjectId orderId, String paymentId, List<AccountOp> accounts) {
         AccountingTranOrder accountingOp = findOne(orderId, paymentId);
         if (accountingOp == null) {
-            accountingOp = new AccountingTranOrder(orderId, paymentId);
+            accountingOp = new AccountingTranOrder(currencyCode, orderId, paymentId);
             accountingOp.accountOps = accounts;
             accountingOp.insertAndCommit();
         }

@@ -9,6 +9,7 @@ import model.accounting.AccountingTranPrize;
 import model.bonus.Bonus;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
+import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -353,7 +354,8 @@ public class Contest implements JongoId {
                 }
             }
 
-            AccountingTranPrize.create(contestId, accounts);
+            CurrencyUnit prizeCurrency = simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD;
+            AccountingTranPrize.create(prizeCurrency.getCode(), contestId, accounts);
 
             // Si se jugaba con GOLD, se actualizarán las estadísticas de los ganadores
             if (getPrizePool().getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
@@ -391,7 +393,8 @@ public class Contest implements JongoId {
                     accounts.add(new AccountOp(contestEntry.userId, bonus, userSeqId));
 
                     // Se lo quitamos del bonus
-                    AccountingTranBonus.create(AccountingTran.TransactionType.BONUS_TO_CASH,
+                    AccountingTranBonus.create(bonus.getCurrencyUnit().getCode(),
+                                                AccountingTran.TransactionType.BONUS_TO_CASH,
                                                 AccountingTranBonus.bonusToCashId(contestId, contestEntry.userId),
                                                 bonus.negated(),
                                                 accounts);

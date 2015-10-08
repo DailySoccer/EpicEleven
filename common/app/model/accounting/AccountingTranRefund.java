@@ -11,8 +11,8 @@ public class AccountingTranRefund extends AccountingTran {
 
     public AccountingTranRefund() {}
 
-    public AccountingTranRefund(ObjectId refundId) {
-        super(TransactionType.REFUND);
+    public AccountingTranRefund(String currencyCode, ObjectId refundId) {
+        super(currencyCode, TransactionType.REFUND);
         this.refundId = refundId;
     }
 
@@ -22,10 +22,10 @@ public class AccountingTranRefund extends AccountingTran {
                 .as(AccountingTranRefund.class);
     }
 
-    static public AccountingTran create(ObjectId refundId, List<AccountOp> accounts) {
+    static public AccountingTran create(String currencyCode, ObjectId refundId, List<AccountOp> accounts) {
         AccountingTranRefund accountingOp = findOne(refundId);
         if (accountingOp == null) {
-            accountingOp = new AccountingTranRefund(refundId);
+            accountingOp = new AccountingTranRefund(currencyCode, refundId);
             accountingOp.accountOps = accounts;
             accountingOp.insertAndCommit();
         }

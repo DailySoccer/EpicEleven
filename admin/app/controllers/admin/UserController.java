@@ -8,6 +8,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserController extends Controller {
@@ -21,6 +22,6 @@ public class UserController extends Controller {
         ObjectId userId = new ObjectId(userIdStr);
         User user = User.findOne(userId);
         List<AccountingTran> accountingTrans = AccountingTran.findAllFromUserId(userId);
-        return ok(views.html.user_transactions.render(user, accountingTrans));
+        return ok(views.html.user_transactions.render(user, User.includeDecayTransactions(accountingTrans)));
     }
 }

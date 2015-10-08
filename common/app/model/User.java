@@ -299,7 +299,7 @@ public class User {
 
     static public Money calculatePrizes(ObjectId userId, CurrencyUnit currencyUnit) {
         List<PrizeOp> prizeOps = Model.accountingTransactions()
-                .aggregate("{$match: { \"accountOps.accountId\": #, \"accountOps.currencyCode\": #, type: #, state: \"VALID\"}}", userId, currencyUnit.toString(), AccountingTran.TransactionType.PRIZE)
+                .aggregate("{$match: { \"accountOps.accountId\": #, currencyCode: #, type: #, state: \"VALID\"}}", userId, currencyUnit.toString(), AccountingTran.TransactionType.PRIZE)
                 .and("{$unwind: \"$accountOps\"}")
                 .and("{$match: {\"accountOps.accountId\": #}}", userId)
                 .and("{$project: {value: \"$accountOps.value\"}}")
@@ -327,7 +327,7 @@ public class User {
     static public Money calculateBalance(ObjectId userId, String currencyUnit) {
 
         List<BalanceOp> accountingOps = Model.accountingTransactions()
-                .aggregate("{$match: { \"accountOps.accountId\": #, \"accountOps.currencyCode\": #, state: \"VALID\"}}", userId, currencyUnit)
+                .aggregate("{$match: { \"accountOps.accountId\": #, currencyCode: #, state: \"VALID\"}}", userId, currencyUnit)
                 .and("{$unwind: \"$accountOps\"}")
                 .and("{$match: {\"accountOps.accountId\": #}}", userId)
                 .and("{$project: {value: \"$accountOps.value\"}}")
@@ -351,7 +351,7 @@ public class User {
 
         // Queremos las operaciones sobre los Manager Points ordenadas por tiempo, dado que existe un factor de "decay" a lo largo del tiempo
         List<ManagerBalanceOp> managerOps = Model.accountingTransactions()
-                .aggregate("{$match: { \"accountOps.accountId\": #, \"accountOps.currencyCode\": #, type: #, state: \"VALID\"}}", userId, currencyUnit, AccountingTran.TransactionType.PRIZE)
+                .aggregate("{$match: { \"accountOps.accountId\": #, currencyCode: #, type: #, state: \"VALID\"}}", userId, currencyUnit, AccountingTran.TransactionType.PRIZE)
                 .and("{$sort : { createdAt : 1 }}")
                 .and("{$unwind: \"$accountOps\"}")
                 .and("{$match: {\"accountOps.accountId\": #}}", userId)
@@ -480,5 +480,31 @@ public class User {
             return false;
         }
         return MoneyUtils.compareTo(balance, money) >= 0;
+    }
+
+    static public List<AccountingTran> includeDecayTransactions(List<AccountingTran> accountingTrans) {
+        List<AccountingTran> result = new ArrayList<>();
+
+        /*
+        for (ManagerBalanceOp op : managerOps) {
+            DateTime dateTime = new DateTime(op.createdAt);
+            if (lastDate != null) {
+                Duration duration = new Duration(lastDate, dateTime);
+                balance = decayManagerPoints(duration, balance);
+            }
+            balance = MoneyUtils.plus(balance, op.value);
+            lastDate = dateTime;
+        }
+        */
+
+        DateTime lastDate = null;
+        for (AccountingTran accountingTran : accountingTrans) {
+            if (accountingTran.type == AccountingTran.TransactionType.PRIZE) {
+
+            }
+            result.add(accountingTran);
+        }
+
+        return result;
     }
 }
