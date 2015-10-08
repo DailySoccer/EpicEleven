@@ -69,7 +69,7 @@ public class Contest implements JongoId {
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public Money entryFee;
 
-    @JsonView(JsonViews.NotForClient.class)
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public float prizeMultiplier = 0.9f;
 
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
