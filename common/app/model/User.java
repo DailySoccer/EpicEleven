@@ -308,7 +308,7 @@ public class User {
         Money balance = MoneyUtils.zero(currencyUnit.getCode());
         if (!prizeOps.isEmpty()) {
             for (PrizeOp op : prizeOps) {
-                balance = MoneyUtils.plus(balance, op.value);
+                balance = balance.plus(op.value);
             }
         }
         return balance;
@@ -370,7 +370,7 @@ public class User {
                     Duration duration = new Duration(lastDate, dateTime);
                     balance = decayManagerPoints(duration, balance);
                 }
-                balance = MoneyUtils.plus(balance, op.value);
+                balance = balance.plus(op.value);
                 lastDate = dateTime;
             }
 
@@ -453,7 +453,7 @@ public class User {
         Money balance = MoneyUtils.zero;
         if (!transactions.isEmpty()) {
             for (AccountingTranBonus transaction : transactions) {
-                balance = MoneyUtils.plus(balance, transaction.bonus);
+                balance = balance.plus(transaction.bonus);
             }
         }
         return balance;

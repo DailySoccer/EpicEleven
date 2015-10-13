@@ -37,10 +37,6 @@ public class MoneyUtils {
         return aMoney.withCurrencyUnit(CURRENCY_DEFAULT).compareTo(otherMoney.withCurrencyUnit(CURRENCY_DEFAULT));
     }
 
-    static public Money plus(Money aMoney, Money amount) {
-        return aMoney.withCurrencyUnit(CURRENCY_DEFAULT).plus(amount.withCurrencyUnit(CURRENCY_DEFAULT));
-    }
-
     static public boolean isGreaterThan(Money aMoney, Money amount) {
         return aMoney.withCurrencyUnit(CURRENCY_DEFAULT).isGreaterThan(amount.withCurrencyUnit(CURRENCY_DEFAULT));
     }
