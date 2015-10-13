@@ -66,7 +66,7 @@ public class PaypalController extends Controller {
             ObjectId orderId = new ObjectId();
 
             // Producto que quiere comprar
-            Product product = new Product("Payment", Money.of(CurrencyUnit.EUR, amount));
+            Product product = new Product("Payment", "Product", "", Money.of(CurrencyUnit.EUR, amount), Money.of(CurrencyUnit.EUR, amount));
 
             // Creamos la solicitud de pago (le proporcionamos el identificador del pedido para referencias posteriores)
             Payment payment = PaypalPayment.instance().createPayment(orderId, product);

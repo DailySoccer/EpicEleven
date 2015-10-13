@@ -48,6 +48,10 @@ public class MainController extends Controller {
         return new ReturnHelper(ImmutableMap.of("users", UserInfo.findAll())).toResult();
     }
 
+    public static Result getCatalog() {
+        return new ReturnHelper(ImmutableMap.of("products", Product.Catalog)).toResult();
+    }
+
     /*
      * Obtener la información sobre un InstanceSoccerPlayer (estadísticas,...)
      */
