@@ -49,7 +49,7 @@ public class Refund {
             if (User.hasMoney(userId, amount)) {
 
                 // Registrar la devolución
-                AccountingTranRefund.create(refundId, ImmutableList.of(
+                AccountingTranRefund.create(amount.getCurrencyUnit().getCode(), refundId, ImmutableList.of(
                         new AccountOp(userId, amount.negated(), seqId)
                 ));
 

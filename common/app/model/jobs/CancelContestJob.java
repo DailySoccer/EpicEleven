@@ -55,7 +55,7 @@ public class CancelContestJob extends Job {
                         for (ContestEntry contestEntry : contest.contestEntries) {
                             accounts.add(new AccountOp(contestEntry.userId, contest.entryFee, User.getSeqId(contestEntry.userId) + 1));
                         }
-                        AccountingTran accountingTran = AccountingTranCancelContest.create(contestId, accounts);
+                        AccountingTran accountingTran = AccountingTranCancelContest.create(contest.entryFee.getCurrencyUnit().getCode(), contestId, accounts);
                         bValid = (accountingTran != null);
                     }
 

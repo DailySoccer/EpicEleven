@@ -208,7 +208,7 @@ public class LoginController extends Controller {
                     // Existe un bonus por registrarse?
                     Money bonus = SignupBonus.getMoney();
                     if (bonus != null) {
-                        AccountingTranBonus.create(AccountingTran.TransactionType.BONUS, "SIGNUP", bonus, ImmutableList.of(
+                        AccountingTranBonus.create(bonus.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, "SIGNUP", bonus, ImmutableList.of(
                                 new AccountOp(theUser.userId, MoneyUtils.zero, User.getSeqId(theUser.userId) + 1)
                         ));
                     }

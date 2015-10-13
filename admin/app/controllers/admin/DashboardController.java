@@ -95,7 +95,7 @@ public class DashboardController extends Controller {
                     .map((user) -> new AccountOp(user.userId, money, user.getSeqId() + 1))
                     .collect(Collectors.toList());
 
-            AccountingTran accountingTran = new AccountingTran(AccountingTran.TransactionType.FREE_MONEY);
+            AccountingTran accountingTran = new AccountingTran(money.getCurrencyUnit().getCode(), AccountingTran.TransactionType.FREE_MONEY);
             accountingTran.accountOps = accountOps;
             accountingTran.insertAndCommit();
         }
@@ -111,7 +111,7 @@ public class DashboardController extends Controller {
                     .collect(Collectors.toList());
 
             String bonusId = String.format("FREE_MONEY#%s", new ObjectId().toString());
-            AccountingTranBonus.create(AccountingTran.TransactionType.BONUS,
+            AccountingTranBonus.create(money.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS,
                     bonusId,
                     money,
                     accountOps);

@@ -19,8 +19,8 @@ public class AccountingTranBonus extends AccountingTran {
 
     public AccountingTranBonus() {}
 
-    public AccountingTranBonus(TransactionType bonusType, String bonusId, Money bonus) {
-        super(bonusType);
+    public AccountingTranBonus(String currencyCode, TransactionType bonusType, String bonusId, Money bonus) {
+        super(currencyCode, bonusType);
         this.bonusId = bonusId;
         this.bonus = bonus;
     }
@@ -31,10 +31,10 @@ public class AccountingTranBonus extends AccountingTran {
                 .as(AccountingTranBonus.class);
     }
 
-    static public AccountingTran create(TransactionType bonusType, String bonusId, Money bonus, List<AccountOp> accounts) {
+    static public AccountingTran create(String currencyCode, TransactionType bonusType, String bonusId, Money bonus, List<AccountOp> accounts) {
         AccountingTranBonus accountingOp = findOne(bonusType, bonusId);
         if (accountingOp == null) {
-            accountingOp = new AccountingTranBonus(bonusType, bonusId, bonus);
+            accountingOp = new AccountingTranBonus(currencyCode, bonusType, bonusId, bonus);
             accountingOp.accountOps = accounts;
             accountingOp.insertAndCommit();
         }
