@@ -130,7 +130,6 @@ public class ContestController extends Controller {
                 .toResult();
     }
 
-    @UserAuthenticated
     public static Result getMyActiveContest(String contestId) {
         User theUser = (User)ctx().args.get("User");
         Contest contest = Contest.findOne(contestId);
@@ -149,28 +148,21 @@ public class ContestController extends Controller {
         return attachInfoToContest(contest).toResult(JsonViews.FullContest.class);
     }
 
-    @UserAuthenticated
     public static Result getMyLiveContest(String contestId) {
         return getViewContest(contestId);
     }
 
-    @UserAuthenticated
     public static Result getMyHistoryContest(String contestId) {
         return getViewContest(contestId);
     }
 
     private static Result getViewContest(String contestId) {
-        User theUser = (User)ctx().args.get("User");
         Contest contest = Contest.findOne(contestId);
 
         // No se puede ver el contest "completo" si está "activo" (únicamente en "live" o "history")
         if (contest.state.isActive()) {
-            Logger.error("WTF 7945: getViewContest: contest: {} user: {}", contestId, theUser.userId);
+            Logger.error("WTF 7945: getViewContest: contest: {}", contestId);
             return new ReturnHelper(false, ERROR_VIEW_CONTEST_INVALID).toResult();
-        }
-
-        if (!contest.containsContestEntryWithUser(theUser.userId)) {
-            Logger.error("WTF 7942: getViewContest: contest: {} user: {}", contestId, theUser.userId);
         }
 
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
@@ -277,7 +269,6 @@ public class ContestController extends Controller {
      * @param templateContestId TemplateContest sobre el que se esta interesado
      * @return La lista de partidos "live"
      */
-    @UserAuthenticated
     public static Result getLiveMatchEventsFromTemplateContest(String templateContestId) {
 
         // Obtenemos el TemplateContest
