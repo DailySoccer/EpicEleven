@@ -1,5 +1,6 @@
 package model.shop;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableList;
 import model.User;
@@ -10,30 +11,22 @@ import utils.MoneyUtils;
 import java.util.List;
 import java.util.Map;
 
+@JsonTypeInfo(use=JsonTypeInfo.Id.CLASS,property="_class")
 public class Product {
-    public String id;
-    public String name;
+    public enum ProductType {
+        MONEY,
+        SOCCER_PLAYER
+    }
+
+    public ProductType type;
+    public String productId;
     public Money price;
-    public Money gained;
-    public Money free;
-    public String imageUrl;
-    public boolean mostPopular;
 
     public Product () {}
 
-    public Product (String id, String name, String imageUrl, Money price, Money gained) {
-        this.id = id;
-        this.name = name;
-        this.imageUrl = imageUrl;
+    public Product (ProductType type, String productId, Money price) {
+        this.type = type;
+        this.productId = productId;
         this.price = price;
-        this.gained = gained;
-        this.free = Money.zero(price.getCurrencyUnit());
-        this.mostPopular = false;
-    }
-
-    public Product (String id, String name, String imageUrl, Money price, Money gained, Money free, boolean mostPopular) {
-        this(id, name, imageUrl, price, gained);
-        this.free = free;
-        this.mostPopular = mostPopular;
     }
 }

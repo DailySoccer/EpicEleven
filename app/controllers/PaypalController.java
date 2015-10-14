@@ -14,6 +14,7 @@ import model.paypal.PaypalPayment;
 import model.shop.Catalog;
 import model.shop.Order;
 import model.shop.Product;
+import model.shop.ProductMoney;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -68,7 +69,7 @@ public class PaypalController extends Controller {
             ObjectId orderId = new ObjectId();
 
             // Producto que quiere comprar
-            Product product = new Product("Payment", "Product", "", Money.of(CurrencyUnit.EUR, amount), Money.of(CurrencyUnit.EUR, amount));
+            ProductMoney product = new ProductMoney("Payment", Money.of(CurrencyUnit.EUR, amount), "Product", "", Money.of(CurrencyUnit.EUR, amount));
 
             // Creamos la solicitud de pago (le proporcionamos el identificador del pedido para referencias posteriores)
             Payment payment = PaypalPayment.instance().createPayment(orderId, product);
@@ -108,7 +109,7 @@ public class PaypalController extends Controller {
             ObjectId orderId = new ObjectId();
 
             // Producto que quiere comprar
-            Product product = Catalog.findOne(productId);
+            ProductMoney product = (ProductMoney) Catalog.findOne(productId);
 
             // Creamos la solicitud de pago (le proporcionamos el identificador del pedido para referencias posteriores)
             Payment payment = PaypalPayment.instance().createPayment(orderId, product);
