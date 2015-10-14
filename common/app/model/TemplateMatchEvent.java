@@ -140,6 +140,11 @@ public class TemplateMatchEvent implements JongoId {
     }
 
     public static List<TemplateMatchEvent> findAllSimulationsByStartDate() {
+        if (Model.isLocalHostTargetEnvironment()) {
+            return ListUtils.asList(Model.templateMatchEvents().find("{simulation: true, period: 'PRE_GAME', startDate: {$gt: #, $lte: #}}",
+                    new DateTime(GlobalDate.getCurrentDate()).minusDays(1).toDate(), GlobalDate.getCurrentDate()).as(TemplateMatchEvent.class));
+        }
+
         return ListUtils.asList(Model.templateMatchEvents().find("{simulation: true, period: 'PRE_GAME', startDate: {$lte: #}}", GlobalDate.getCurrentDate()).as(TemplateMatchEvent.class));
     }
 
