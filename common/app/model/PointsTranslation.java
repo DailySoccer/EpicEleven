@@ -79,17 +79,17 @@ public class PointsTranslation implements JongoId {
     public static void createDefault() {
         int[][] pointsTable = {
                 {OptaEventType.PASS_SUCCESSFUL.code, 2},               // pase bien hecho
-                {OptaEventType.TAKE_ON.code, 50},                      // regate
-                {OptaEventType.FOUL_RECEIVED.code, 10},                // falta recibida
+                {OptaEventType.TAKE_ON.code, 30},                      // regate
+                {OptaEventType.FOUL_RECEIVED.code, 50},                // falta recibida
                 {OptaEventType.TACKLE.code, 30},                       // recuperacion/entrada sin posesion
-                {OptaEventType.TACKLE_EFFECTIVE.code, 30},             // recuperacion/entrada con posesion
-                {OptaEventType.INTERCEPTION.code, 30},                 // intercepcion
+                {OptaEventType.TACKLE_EFFECTIVE.code, 50},             // recuperacion/entrada con posesion
+                {OptaEventType.INTERCEPTION.code, 70},                 // intercepcion
                 {OptaEventType.SAVE_GOALKEEPER.code, 120},             // parada
                 {OptaEventType.SAVE_PLAYER.code, 40},                  // tiro bloqueado por jugador
                 {OptaEventType.CLAIM.code, 150},                       // captura balon
                 {OptaEventType.CLEARANCE.code, 40},                    // parada
                 {OptaEventType.MISS.code, 80},                         // tiro a puerta
-                {OptaEventType.POST.code, 150},                        // tiro a puerta
+                {OptaEventType.POST.code, 120},                        // tiro a puerta
                 {OptaEventType.ATTEMPT_SAVED.code, 150},               // tiro a puerta
                 {OptaEventType.ASSIST.code, 110},                      // asistencia
                 //{16, 100},                                           // gol
@@ -97,22 +97,22 @@ public class PointsTranslation implements JongoId {
                 {OptaEventType.GOAL_SCORED_BY_DEFENDER.code, 600},     // gol del defensa
                 {OptaEventType.GOAL_SCORED_BY_MIDFIELDER.code, 450},   // gol del medio
                 {OptaEventType.GOAL_SCORED_BY_FORWARD.code, 300},      // gol del delantero
-                {OptaEventType.OWN_GOAL.code, -10},                    // gol en contra
+                {OptaEventType.OWN_GOAL.code, -50},                    // gol en contra
                 {OptaEventType.YELLOW_CARD.code, -100},                // tarjeta amarilla
-                {OptaEventType.SECOND_YELLOW_CARD.code, -100},         // tarjeta amarilla (segunda)
+                {OptaEventType.SECOND_YELLOW_CARD.code, -150},         // tarjeta amarilla (segunda)
                 {OptaEventType.PUNCH.code, 120},                       // despeje puños
-                {OptaEventType.PASS_UNSUCCESSFUL.code, -1},            // perdida de balon, pase perdido
+                {OptaEventType.PASS_UNSUCCESSFUL.code, -10},           // perdida de balon, pase perdido
                 {OptaEventType.DISPOSSESSED.code, -30},                // perdida de balon
-                {OptaEventType.ERROR.code, -120},                       // perdida de balon
+                {OptaEventType.ERROR.code, -120},                      // perdida de balon
                 {OptaEventType.DECISIVE_ERROR.code, -120},             // perdida de balon
                 {OptaEventType.CAUGHT_OFFSIDE.code, -10},              // fuera de juego
-                {OptaEventType.FOUL_COMMITTED.code, -100},              // falta infligida
-                {OptaEventType.RED_CARD.code, -200},                   // tarjeta roja
-                {OptaEventType.PENALTY_COMMITTED.code, -150},          // penalty infligido
-                {OptaEventType.PENALTY_FAILED.code, -200},             // penalty fallado
+                {OptaEventType.FOUL_COMMITTED.code, -40},              // falta infligida
+                {OptaEventType.RED_CARD.code, -300},                   // tarjeta roja
+                {OptaEventType.PENALTY_COMMITTED.code, -50},           // penalty infligido
+                {OptaEventType.PENALTY_FAILED.code, -70},              // penalty fallado
                 {OptaEventType.GOALKEEPER_SAVES_PENALTY.code, 300},    // penalty parado por el portero
-                {OptaEventType.CLEAN_SHEET.code, 250},                 // clean sheet
-                {OptaEventType.GOAL_CONCEDED.code, -150},              // Gol al defensa
+                {OptaEventType.CLEAN_SHEET.code, 200},                 // clean sheet
+                {OptaEventType.GOAL_CONCEDED.code, -120},              // Gol al defensa
         };
 
         for (int[] aPointsTable : pointsTable) {
