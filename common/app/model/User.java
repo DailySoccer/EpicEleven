@@ -246,6 +246,18 @@ public class User {
         return result;
     }
 
+    public void addEnergy(Money energy) {
+        lastUpdatedEnergy = GlobalDate.getCurrentDate();
+
+        Money maxEnergy = Money.of(MoneyUtils.CURRENCY_ENERGY, MAX_ENERGY);
+        energyBalance = energyBalance.plus(energy);
+        if (energyBalance.isGreaterThan(maxEnergy)) {
+            energyBalance = maxEnergy;
+        }
+
+        saveEnergy();
+    }
+
     private void refreshEnergy() {
         // Si la energía está incompleta, habrá que averiguar si ya la ha recargado...
         if (energyBalance.getAmount().compareTo(MAX_ENERGY) < 0) {

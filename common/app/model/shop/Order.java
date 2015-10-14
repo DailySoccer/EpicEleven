@@ -8,6 +8,7 @@ public class Order {
     static final String REFERER_URL_DEFAULT = "epiceleven.com";
 
     public enum TransactionType {
+        IN_GAME,
         PAYPAL,
         MORE_THAN_GAME
     }

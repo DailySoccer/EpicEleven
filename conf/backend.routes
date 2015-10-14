@@ -14,8 +14,10 @@ GET            /get_scoring_rules                                      controlle
 # Leaderboard
 GET            /get_leaderboard                                        controllers.MainController.getLeaderboard()
 
-# Catalog
+# Shop
 GET            /get_catalog                                            controllers.ShopController.getCatalog()
+GET            /buy_product/:productId                                 controllers.ShopController.buyProduct(productId : String)
+GET            /buy_soccer_player/:contest/:soccerPlayer               controllers.ShopController.buySoccerPlayer(contest : String, soccerPlayer : String)
 
 # Enganche de la zona de administracion
 ->             /admin                                                  admin.Routes

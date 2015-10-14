@@ -11,6 +11,7 @@ import model.*;
 import model.jobs.CompleteOrderJob;
 import model.paypal.PaypalIPNMessage;
 import model.paypal.PaypalPayment;
+import model.shop.Catalog;
 import model.shop.Order;
 import model.shop.Product;
 import org.bson.types.ObjectId;
@@ -107,7 +108,7 @@ public class PaypalController extends Controller {
             ObjectId orderId = new ObjectId();
 
             // Producto que quiere comprar
-            Product product = Product.findOne(productId);
+            Product product = Catalog.findOne(productId);
 
             // Creamos la solicitud de pago (le proporcionamos el identificador del pedido para referencias posteriores)
             Payment payment = PaypalPayment.instance().createPayment(orderId, product);
