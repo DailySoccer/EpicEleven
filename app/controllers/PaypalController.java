@@ -11,6 +11,8 @@ import model.*;
 import model.jobs.CompleteOrderJob;
 import model.paypal.PaypalIPNMessage;
 import model.paypal.PaypalPayment;
+import model.shop.Order;
+import model.shop.Product;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -19,7 +21,6 @@ import play.data.Form;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utils.MoneyUtils;
 import utils.ReturnHelper;
 
 import java.util.Map;

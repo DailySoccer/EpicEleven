@@ -2,8 +2,7 @@ package model.jobs;
 
 import com.google.common.collect.ImmutableList;
 import model.bonus.AddFundsBonus;
-import model.bonus.Bonus;
-import model.Order;
+import model.shop.Order;
 import model.User;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;

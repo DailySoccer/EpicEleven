@@ -15,7 +15,7 @@ GET            /get_scoring_rules                                      controlle
 GET            /get_leaderboard                                        controllers.MainController.getLeaderboard()
 
 # Catalog
-GET            /get_catalog                                            controllers.MainController.getCatalog()
+GET            /get_catalog                                            controllers.ShopController.getCatalog()
 
 # Enganche de la zona de administracion
 ->             /admin                                                  admin.Routes

@@ -22,10 +22,10 @@ import java.util.Date;
 import java.util.List;
 
 public class User {
-    static final int MINUTES_TO_RELOAD_ENERGY = 15;
-    static final BigDecimal MAX_ENERGY = new BigDecimal(10);
-    static final long HOURS_TO_DECAY = 48;
-    static final float PERCENT_TO_DECAY = 0.5f;
+    public static final int MINUTES_TO_RELOAD_ENERGY = 15;
+    public static final BigDecimal MAX_ENERGY = new BigDecimal(10);
+    public static final long HOURS_TO_DECAY = 48;
+    public static final float PERCENT_TO_DECAY = 0.5f;
 
     static final long[] MANAGER_POINTS = new long[] {
       0, 65, 125, 250, 500, 1000
