@@ -103,8 +103,6 @@ public class ShopController extends Controller {
 
         List<String> errores = new ArrayList<>();
 
-        Logger.debug("buySoccerPlayer: {} contestId: {} user: {}", templateSoccerPlayerId, contestId, theUser.userId.toString());
-
         // Obtenemos desde qué url están haciendo la solicitud
         String refererUrl = request().hasHeader("Referer") ? request().getHeader("Referer") : REFERER_URL_DEFAULT;
 
@@ -115,30 +113,36 @@ public class ShopController extends Controller {
         User userUpdated = theUser.getProfile();
         if (userUpdated.managerLevel < levelSoccerPlayer) {
             int goldNeeded = levelSoccerPlayer - (int) userUpdated.managerLevel;
+            Logger.debug("buySoccerPlayer: {} contestId: {} gold: {} user: {}", templateSoccerPlayerId, contestId, goldNeeded, theUser.userId.toString());
 
             // Creamos el producto de comprar al futbolista
             ProductSoccerPlayer product = new ProductSoccerPlayer(Money.zero(MoneyUtils.CURRENCY_GOLD).plus(goldNeeded), new ObjectId(contestId), new ObjectId(templateSoccerPlayerId));
 
-            // Averiguar si tiene dinero suficiente...
-            if (!userUpdated.hasMoney(product.price)) {
-                errores.add(ERROR_USER_BALANCE_NEGATIVE);
+            if (product.findOrder() == null) {
+                // Averiguar si tiene dinero suficiente...
+                if (!userUpdated.hasMoney(product.price)) {
+                    errores.add(ERROR_USER_BALANCE_NEGATIVE);
+                }
+
+                if (errores.isEmpty()) {
+                    // Crear el identificador del nuevo pedido
+                    ObjectId orderId = new ObjectId();
+
+                    Order order = Order.create(orderId, theUser.userId, Order.TransactionType.IN_GAME, "payment_ID_generic", product, refererUrl);
+
+                    AccountingTranOrder.create(product.price.getCurrencyUnit().getCode(), orderId, product.productId, ImmutableList.of(
+                            new AccountOp(theUser.userId, product.price.negated(), User.getSeqId(theUser.userId) + 1)
+                    ));
+
+                    order.setCompleted();
+                }
+
+                if (!errores.isEmpty()) {
+                    return new ReturnHelper(false, ImmutableMap.of(ENTRY_KEY_ERROR, errores)).toResult();
+                }
             }
-
-            if (errores.isEmpty()) {
-                // Crear el identificador del nuevo pedido
-                ObjectId orderId = new ObjectId();
-
-                Order order = Order.create(orderId, theUser.userId, Order.TransactionType.IN_GAME, "payment_ID_generic", product, refererUrl);
-
-                AccountingTranOrder.create(product.price.getCurrencyUnit().getCode(), orderId, product.productId, ImmutableList.of(
-                        new AccountOp(theUser.userId, product.price.negated(), User.getSeqId(theUser.userId) + 1)
-                ));
-
-                order.setCompleted();
-            }
-
-            if (!errores.isEmpty()) {
-                return new ReturnHelper(false, ImmutableMap.of(ENTRY_KEY_ERROR, errores)).toResult();
+            else {
+                Logger.debug("Ya comprado!!");
             }
         }
         return new ReturnHelper(ImmutableMap.of("profile", theUser.getProfile())).toResult();
