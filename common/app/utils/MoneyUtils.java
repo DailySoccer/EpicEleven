@@ -1,11 +1,7 @@
 package utils;
 
-import model.Product;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
-import play.Logger;
-
-import java.math.BigDecimal;
 
 public class MoneyUtils {
     static public CurrencyUnit CURRENCY_GOLD    = CurrencyUnit.AUD;

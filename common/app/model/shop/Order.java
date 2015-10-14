@@ -1,19 +1,16 @@
-package model;
+package model.shop;
 
-import com.google.common.collect.ImmutableList;
-import model.accounting.AccountOp;
-import model.accounting.AccountingTran;
-import model.accounting.AccountingTranBonus;
-import model.accounting.AccountingTranOrder;
+import model.Model;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
-import utils.MoneyUtils;
 
 public class Order {
     static final String REFERER_URL_DEFAULT = "epiceleven.com";
 
     public enum TransactionType {
-        PAYPAL
+        IN_GAME,
+        PAYPAL,
+        MORE_THAN_GAME
     }
 
     public enum State {

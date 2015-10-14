@@ -17,14 +17,14 @@ public class AccountingTranOrder extends AccountingTran {
         this.paymentId = paymentId;
     }
 
-    static public AccountingTranOrder findOne (ObjectId orderId, String paymentId) {
+    static public AccountingTranOrder findOne (String currencyCode, ObjectId orderId, String paymentId) {
         return Model.accountingTransactions()
-                .findOne("{type: #, orderId: #, paymentId: #}", TransactionType.ORDER, orderId, paymentId)
+                .findOne("{type: #, currencyCode: #, orderId: #, paymentId: #}", TransactionType.ORDER, currencyCode, orderId, paymentId)
                 .as(AccountingTranOrder.class);
     }
 
     static public AccountingTran create(String currencyCode, ObjectId orderId, String paymentId, List<AccountOp> accounts) {
-        AccountingTranOrder accountingOp = findOne(orderId, paymentId);
+        AccountingTranOrder accountingOp = findOne(currencyCode, orderId, paymentId);
         if (accountingOp == null) {
             accountingOp = new AccountingTranOrder(currencyCode, orderId, paymentId);
             accountingOp.accountOps = accounts;

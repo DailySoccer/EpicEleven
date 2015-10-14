@@ -5,7 +5,7 @@ import com.paypal.core.Constants;
 import com.paypal.core.rest.APIContext;
 import com.paypal.core.rest.OAuthTokenCredential;
 import com.paypal.core.rest.PayPalRESTException;
-import model.Product;
+import model.shop.Product;
 import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
