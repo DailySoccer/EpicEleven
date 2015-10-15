@@ -214,7 +214,6 @@ public class TemplateSoccerPlayer implements JongoId {
         Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).update("{optaPlayerId: #}", optaPlayerId).upsert().with(this);
     }
 
-
     static public boolean isInvalidFromImport(OptaPlayer optaPlayer) {
         boolean invalid = (optaPlayer.teamId == null) || optaPlayer.teamId.isEmpty();
 
@@ -224,6 +223,17 @@ public class TemplateSoccerPlayer implements JongoId {
         }
 
         return invalid;
+    }
+
+    static Integer[] LEVEL_SALARY = new Integer[]{
+        2750, 4250, 5750, 7250, 8750, 100000
+    };
+
+    static public int levelFromSalary(int salary) {
+        int level;
+        for (level = 0; level<LEVEL_SALARY.length && salary>LEVEL_SALARY[level]; level++) {
+        }
+        return level;
     }
 
 }
