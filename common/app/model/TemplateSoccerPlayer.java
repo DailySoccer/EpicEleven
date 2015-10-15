@@ -5,10 +5,12 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.WriteConcern;
 import model.opta.OptaPlayer;
 import org.bson.types.ObjectId;
+import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import play.Play;
 import utils.ListUtils;
+import utils.MoneyUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -236,4 +238,15 @@ public class TemplateSoccerPlayer implements JongoId {
         return level;
     }
 
+    static Integer[] LEVEL_PRICE = new Integer[]{
+        0, 2, 6, 11, 22, 44
+    };
+
+    static public Money moneyToBuy(int playerLevel, int managerLevel) {
+        Money result = Money.zero(MoneyUtils.CURRENCY_GOLD);
+        if (managerLevel < playerLevel) {
+            result = result.plus( (playerLevel - managerLevel) * LEVEL_PRICE[playerLevel] );
+        }
+        return result;
+    }
 }
