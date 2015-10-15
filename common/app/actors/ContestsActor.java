@@ -86,8 +86,8 @@ public class ContestsActor extends TickableActor {
 
     private void createTemplateContests(String competitionId) {
         Find findedMatchEvents = _lastMatchEventByCompetition.containsKey(competitionId)
-                ? Model.templateMatchEvents().find("{_id: {$gt: #}, optaCompetitionId: #, startDate: {$gt: #}}", _lastMatchEventByCompetition.get(competitionId), competitionId, GlobalDate.getCurrentDate())
-                : Model.templateMatchEvents().find("{optaCompetitionId: #, startDate: {$gt: #}}", competitionId, GlobalDate.getCurrentDate());
+                ? Model.templateMatchEvents().find("{_id: {$gt: #}, optaCompetitionId: #, startDate: {$gt: #}, simulation: {$ne: true}}", _lastMatchEventByCompetition.get(competitionId), competitionId, GlobalDate.getCurrentDate())
+                : Model.templateMatchEvents().find("{optaCompetitionId: #, startDate: {$gt: #}, simulation: {$ne: true}}", competitionId, GlobalDate.getCurrentDate());
 
         List<TemplateMatchEvent> newMatchEvents = ListUtils.asList(findedMatchEvents.sort("{startDate: 1}").as(TemplateMatchEvent.class));
         if (!newMatchEvents.isEmpty()) {
