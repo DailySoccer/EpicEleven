@@ -162,7 +162,7 @@ public class User {
         else if (balance.getCurrencyUnit().equals(MoneyUtils.CURRENCY_MANAGER)) {
             Model.users().update(userId).with("{$set: {managerBalance: #}}", balance.toString());
         }
-        else {
+        else if (balance.getCurrencyUnit().equals(MoneyUtils.CURRENCY_ENERGY)) {
             Model.users().update(userId).with("{$set: {energyBalance: #}}", balance.toString());
         }
         // Model.users().update(userId).with("{$set: {cachedBalance: #}}", balance.toString());
