@@ -110,7 +110,7 @@ public class ContestEntryController extends Controller {
 
                     // En los torneos Oficiales, el usuario también tiene que pagar a los futbolistas
                     if (aContest.entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
-                        List<InstanceSoccerPlayer> soccerPlayers = getSoccerPlayersFromContest(idsList, aContest);
+                        List<InstanceSoccerPlayer> soccerPlayers = aContest.getInstanceSoccerPlayers(idsList);
                         moneyNeeded = moneyNeeded.plus(User.moneyToBuy(theUser.userId, soccerPlayers));
                         Logger.debug("moneyNeeded: {}", moneyNeeded.toString());
                     }
@@ -291,7 +291,7 @@ public class ContestEntryController extends Controller {
             }
 
             // Buscar los soccerPlayers dentro de los partidos del contest
-            List<InstanceSoccerPlayer> soccerPlayers = getSoccerPlayersFromContest(objectIds, contest);
+            List<InstanceSoccerPlayer> soccerPlayers = contest.getInstanceSoccerPlayers(objectIds);
 
             // Verificar que TODOS los futbolistas seleccionados participen en los partidos del contest
             if (objectIds.size() != soccerPlayers.size()) {
@@ -317,19 +317,6 @@ public class ContestEntryController extends Controller {
         }
 
         return errores;
-    }
-
-    private static List<InstanceSoccerPlayer> getSoccerPlayersFromContest(List<ObjectId> ids, Contest contest) {
-        List<InstanceSoccerPlayer> soccerPlayers = new ArrayList<>();
-        for (ObjectId soccerPlayerId : ids) {
-            for (InstanceSoccerPlayer instancePlayer : contest.instanceSoccerPlayers) {
-                if (soccerPlayerId.equals(instancePlayer.templateSoccerPlayerId)) {
-                    soccerPlayers.add(instancePlayer);
-                    break;
-                }
-            }
-        }
-        return soccerPlayers;
     }
 
     private static int getSalaryCap(List<InstanceSoccerPlayer> soccerPlayers) {

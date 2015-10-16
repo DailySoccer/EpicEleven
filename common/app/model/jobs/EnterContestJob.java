@@ -10,6 +10,7 @@ import model.accounting.AccountingTranCancelContestEntry;
 import model.accounting.AccountingTranEnterContest;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
+import play.Logger;
 import utils.MoneyUtils;
 
 import java.util.List;
@@ -47,7 +48,7 @@ public class EnterContestJob extends Job {
                     contestEntry = createContestEntry();
 
                     // Será válido, si el contest es GRATIS o el usuario tiene dinero
-                    bValid = contest.entryFee.isNegativeOrZero() || transactionPayment(contest.entryFee);
+                    bValid = contest.entryFee.isNegativeOrZero() || transactionPayment(contest);
 
                     if (bValid) {
                         Contest contestModified = transactionInsertContestEntry(contest, contestEntry);
@@ -101,8 +102,10 @@ public class EnterContestJob extends Job {
         }
     }
 
-    private boolean transactionPayment(Money entryFee) {
+    private boolean transactionPayment(Contest contest) {
         boolean transactionValid = false;
+
+        Money entryFee = contest.entryFee;
 
         // Los contests que requieren energía, los gestionaremos sin necesidad de transacciones
         if (entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_ENERGY)) {
@@ -115,12 +118,20 @@ public class EnterContestJob extends Job {
             // del usuario se lance una excepcion que impida la inserción ya que (accountId, seqId) es "unique key"
             Integer seqId = User.getSeqId(userId) + 1;
 
+            Money moneyNeeded = entryFee;
+
+            // En los torneos Oficiales, el usuario también tiene que pagar a los futbolistas
+            if (entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+                List<InstanceSoccerPlayer> soccerPlayers = contest.getInstanceSoccerPlayers(soccerIds);
+                moneyNeeded = moneyNeeded.plus(User.moneyToBuy(userId, soccerPlayers));
+            }
+
             // El usuario tiene dinero suficiente?
-            if (User.hasMoney(userId, entryFee)) {
+            if (User.hasMoney(userId, moneyNeeded)) {
                 try {
                     // Registrar el pago
                     AccountingTran accountingTran = AccountingTranEnterContest.create(entryFee.getCurrencyUnit().getCode(), contestId, contestEntryId, ImmutableList.of(
-                            new AccountOp(userId, entryFee.negated(), seqId)
+                            new AccountOp(userId, moneyNeeded.negated(), seqId)
                     ));
 
                     transactionValid = (accountingTran != null);
