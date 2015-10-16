@@ -480,23 +480,42 @@ public class User {
         return calculateBonus(userId, GlobalDate.getCurrentDate());
     }
 
-    static public boolean hasMoney(ObjectId userId, Money money) {
+    static public Money getBalance(ObjectId userId, CurrencyUnit currencyUnit) {
         Money balance;
-        if (money.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+        if (currencyUnit.equals(MoneyUtils.CURRENCY_GOLD)) {
             balance = calculateGoldBalance(userId);
         }
-        else if (money.getCurrencyUnit().equals(MoneyUtils.CURRENCY_MANAGER)) {
+        else if (currencyUnit.equals(MoneyUtils.CURRENCY_MANAGER)) {
             balance = calculateManagerBalance(userId);
         }
-        else if (money.getCurrencyUnit().equals(MoneyUtils.CURRENCY_ENERGY)) {
+        else if (currencyUnit.equals(MoneyUtils.CURRENCY_ENERGY)) {
             balance = calculateEnergyBalance(userId);
         }
         else {
             // El usuario no tendrá dinero, si la moneda es diferente
-            Logger.error("User not has Money: {}", money.toString());
-            return false;
+            Logger.error("User not has Money: {}", currencyUnit.toString());
+            balance = Money.zero(currencyUnit);
         }
+        return balance;
+    }
+
+    static public boolean hasMoney(ObjectId userId, Money money) {
+        Money balance = getBalance(userId, money.getCurrencyUnit());
         return MoneyUtils.compareTo(balance, money) >= 0;
+    }
+
+    static public Money moneyToBuy(ObjectId userId, List<InstanceSoccerPlayer> instanceSoccerPlayers) {
+        Money price = Money.zero(MoneyUtils.CURRENCY_GOLD);
+
+        Money managerBalance = calculateManagerBalance(userId);
+        float managerLevel = managerLevelFromPoints(managerBalance);
+
+        for (InstanceSoccerPlayer instanceSoccerPlayer : instanceSoccerPlayers) {
+            int soccerPlayerLevel = TemplateSoccerPlayer.levelFromSalary(instanceSoccerPlayer.salary);
+            price = price.plus(TemplateSoccerPlayer.moneyToBuy(soccerPlayerLevel, (int) managerLevel));
+        }
+
+        return price;
     }
 
     static public List<AccountingTran> includeDecayTransactions(List<AccountingTran> accountingTrans) {

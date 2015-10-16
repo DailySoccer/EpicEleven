@@ -106,8 +106,17 @@ public class ContestEntryController extends Controller {
 
             if (errores.isEmpty()) {
                 if (MoneyUtils.isGreaterThan(aContest.entryFee, MoneyUtils.zero)) {
+                    Money moneyNeeded = aContest.entryFee;
+
+                    // En los torneos Oficiales, el usuario también tiene que pagar a los futbolistas
+                    if (aContest.entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+                        List<InstanceSoccerPlayer> soccerPlayers = getSoccerPlayersFromContest(idsList, aContest);
+                        moneyNeeded = moneyNeeded.plus(User.moneyToBuy(theUser.userId, soccerPlayers));
+                        Logger.debug("moneyNeeded: {}", moneyNeeded.toString());
+                    }
+
                     // Verificar que el usuario tiene dinero suficiente...
-                    if (!User.hasMoney(theUser.userId, aContest.entryFee)) {
+                    if (!User.hasMoney(theUser.userId, moneyNeeded)) {
                         errores.add(ERROR_USER_BALANCE_NEGATIVE);
                     }
                 }
