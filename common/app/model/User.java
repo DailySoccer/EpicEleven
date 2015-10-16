@@ -363,7 +363,7 @@ public class User {
 
         // Queremos las operaciones sobre los Manager Points ordenadas por tiempo, dado que existe un factor de "decay" a lo largo del tiempo
         List<ManagerBalanceOp> managerOps = Model.accountingTransactions()
-                .aggregate("{$match: { \"accountOps.accountId\": #, currencyCode: #, type: #, state: \"VALID\"}}", userId, currencyUnit, AccountingTran.TransactionType.PRIZE)
+                .aggregate("{$match: { \"accountOps.accountId\": #, currencyCode: #, state: \"VALID\"}}", userId, currencyUnit)
                 .and("{$sort : { createdAt : 1 }}")
                 .and("{$unwind: \"$accountOps\"}")
                 .and("{$match: {\"accountOps.accountId\": #}}", userId)
@@ -389,6 +389,11 @@ public class User {
             // Decay hasta el día de hoy
             Duration duration = new Duration(lastDate, new DateTime(GlobalDate.getCurrentDate()));
             balance = decayManagerPoints(duration, balance);
+
+            // Asegurarnos de que no superamos el máximo permitido
+            if (balance.getAmount().intValue() > MANAGER_POINTS[MANAGER_POINTS.length-1]) {
+                balance = Money.of(MoneyUtils.CURRENCY_MANAGER, MANAGER_POINTS[MANAGER_POINTS.length-1]);
+            }
         }
 
         return balance;
