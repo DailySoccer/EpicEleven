@@ -61,7 +61,13 @@ public class ShopController extends Controller {
             // Crear el identificador del nuevo pedido
             ObjectId orderId = new ObjectId();
 
-            Order order = Order.create(orderId, theUser.userId, Order.TransactionType.IN_GAME, "payment_ID_generic", product, refererUrl);
+            Order order = Order.create(
+                    orderId,
+                    theUser.userId,
+                    Order.TransactionType.IN_GAME,
+                    "payment_ID_generic",
+                    ImmutableList.of(product),
+                    refererUrl);
 
             // --------
             // Registramos la operación de PAGO del pedido
@@ -128,7 +134,13 @@ public class ShopController extends Controller {
                     // Crear el identificador del nuevo pedido
                     ObjectId orderId = new ObjectId();
 
-                    Order order = Order.create(orderId, theUser.userId, Order.TransactionType.IN_GAME, "payment_ID_generic", product, refererUrl);
+                    Order order = Order.create(
+                            orderId,
+                            theUser.userId,
+                            Order.TransactionType.IN_GAME,
+                            "payment_ID_generic",
+                            ImmutableList.of(product),
+                            refererUrl);
 
                     AccountingTranOrder.create(product.price.getCurrencyUnit().getCode(), orderId, product.productId, ImmutableList.of(
                             new AccountOp(theUser.userId, product.price.negated(), User.getSeqId(theUser.userId) + 1)

@@ -1,8 +1,14 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.google.common.collect.ImmutableList;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
+import model.accounting.AccountOp;
+import model.accounting.AccountingTranOrder;
+import model.shop.Order;
+import model.shop.Product;
+import model.shop.ProductSoccerPlayer;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -14,6 +20,7 @@ import utils.MoneyUtils;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ContestEntry implements JongoId {
     @Id
@@ -24,6 +31,9 @@ public class ContestEntry implements JongoId {
 
     @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class})
     public List<ObjectId> soccerIds;    // Fantasy team
+
+    @JsonView(value={JsonViews.FullContest.class})
+    public List<ObjectId> playersPurchased; // Futbolistas que han necesitado ser comprados por tener un nivel superior
 
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
     public int position = -1;
@@ -47,6 +57,12 @@ public class ContestEntry implements JongoId {
     }
 
     public ObjectId getId() { return contestEntryId; }
+
+    public List<InstanceSoccerPlayer> playersNotPurchased(List<InstanceSoccerPlayer> instanceSoccerPlayers) {
+        return instanceSoccerPlayers.stream().filter(instanceSoccerPlayer ->
+                        playersPurchased.stream().noneMatch(t -> t.equals(instanceSoccerPlayer.templateSoccerPlayerId))
+        ).collect(Collectors.toList());
+    }
 
     public void updateRanking() {
         // Logger.info("ContestEntry: {} | UserId: {} | Position: {} | FantasyPoints: {}", contestEntryId, userId, position, fantasyPoints);
@@ -93,14 +109,64 @@ public class ContestEntry implements JongoId {
         return contestEntries;
     }
 
-    public static boolean update(ObjectId userId, ObjectId contestId, ObjectId contestEntryId, List<ObjectId> soccersIds) {
+    public static boolean update(User user, Contest contest, ContestEntry contestEntry, List<ObjectId> playerIds) {
 
         boolean bRet = false;
 
+        List<Product> productSoccerPlayers = new ArrayList<>();
+        List<ObjectId> playersPurchasedList = contestEntry.playersPurchased;
+
+        // Si el contest es de pago con GOLD, entonces los futbolistas de nivel superior se compran y hay que crear una transacción
+        if (contest.entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+            Money managerBalance = User.calculateManagerBalance(user.userId);
+
+            List<InstanceSoccerPlayer> soccerPlayers = contest.getInstanceSoccerPlayers(playerIds);
+            List<InstanceSoccerPlayer> playersToBuy = contestEntry.playersNotPurchased(User.playersToBuy(managerBalance, soccerPlayers));
+            if (!playersToBuy.isEmpty()) {
+
+                // Actualizar la lista de futbolistas comprados
+                if (playersPurchasedList == null) {
+                    playersPurchasedList = new ArrayList<>();
+                }
+
+                playersPurchasedList.addAll(playersToBuy.stream().map(instanceSoccerPlayer ->
+                                instanceSoccerPlayer.templateSoccerPlayerId
+                ).collect(Collectors.toList()));
+
+                float managerLevel = User.managerLevelFromPoints(managerBalance);
+
+                for (InstanceSoccerPlayer instanceSoccerPlayer : playersToBuy) {
+                    Money price = TemplateSoccerPlayer.moneyToBuy(TemplateSoccerPlayer.levelFromSalary(instanceSoccerPlayer.salary), (int) managerLevel);
+                    ProductSoccerPlayer product = new ProductSoccerPlayer(price, contest.templateContestId, instanceSoccerPlayer.templateSoccerPlayerId);
+                    productSoccerPlayers.add(product);
+                }
+            }
+        }
+
         try {
+            if (!productSoccerPlayers.isEmpty()) {
+                // Crear el identificador del nuevo pedido
+                ObjectId orderId = new ObjectId();
+
+                Order order = Order.create(
+                        orderId,
+                        user.userId,
+                        Order.TransactionType.IN_GAME,
+                        "payment_ID_generic",
+                        productSoccerPlayers,
+                        "epiceleven.com");
+
+                // Crear la transacción
+                AccountingTranOrder.create(MoneyUtils.CURRENCY_GOLD.toString(), orderId, "payment_ID_generic", ImmutableList.of(
+                        new AccountOp(user.userId, order.price().negated(), User.getSeqId(user.userId) + 1)
+                ));
+
+                order.setCompleted();
+            }
+
             WriteResult result = Model.contests()
-                    .update("{_id: #, state: \"ACTIVE\", contestEntries._id: #, contestEntries.userId: #}", contestId, contestEntryId, userId)
-                    .with("{$set: {contestEntries.$.soccerIds: #}}", soccersIds);
+                    .update("{_id: #, state: \"ACTIVE\", contestEntries._id: #, contestEntries.userId: #}", contest.contestId, contestEntry.contestEntryId, user.userId)
+                    .with("{$set: {contestEntries.$.soccerIds: #, contestEntries.$.playersPurchased: #}}", playerIds, playersPurchasedList);
 
             // Comprobamos el número de documentos afectados (error == 0)
             bRet = (result.getN() > 0);

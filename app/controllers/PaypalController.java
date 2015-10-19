@@ -3,6 +3,7 @@ package controllers;
 import actions.AllowCors;
 import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.PaymentHistory;
@@ -77,7 +78,13 @@ public class PaypalController extends Controller {
 
             // Creamos el pedido (con el identificador generado y el de la solicitud de pago)
             //      Únicamente almacenamos el referer si no es el de "por defecto"
-            Order.create(orderId, new ObjectId(userId), Order.TransactionType.PAYPAL, payment.getId(), product, refererUrl);
+            Order.create(
+                    orderId,
+                    new ObjectId(userId),
+                    Order.TransactionType.PAYPAL,
+                    payment.getId(),
+                    ImmutableList.of(product),
+                    refererUrl);
 
             String redirectUrl = PaypalPayment.instance().getApprovalURL(payment);
             if (redirectUrl != null) {
@@ -117,7 +124,13 @@ public class PaypalController extends Controller {
 
             // Creamos el pedido (con el identificador generado y el de la solicitud de pago)
             //      Únicamente almacenamos el referer si no es el de "por defecto"
-            Order.create(orderId, new ObjectId(userId), Order.TransactionType.PAYPAL, payment.getId(), product, refererUrl);
+            Order.create(
+                    orderId,
+                    new ObjectId(userId),
+                    Order.TransactionType.PAYPAL,
+                    payment.getId(),
+                    ImmutableList.of(product),
+                    refererUrl);
 
             String redirectUrl = PaypalPayment.instance().getApprovalURL(payment);
             if (redirectUrl != null) {

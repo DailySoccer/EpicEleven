@@ -30,13 +30,14 @@ public class CompleteOrderJob extends Job {
         if (state.equals(Job.JobState.PROCESSING)) {
 
             Order order = Order.findOne(orderId.toString());
+            Money orderPrice = order.price();
 
-            AccountingTranOrder.create(order.product.price.getCurrencyUnit().getCode(), orderId, order.paymentId, ImmutableList.of(
-                    new AccountOp(order.userId, order.product.price, User.getSeqId(order.userId) + 1)
+            AccountingTranOrder.create(orderPrice.getCurrencyUnit().getCode(), orderId, order.paymentId, ImmutableList.of(
+                    new AccountOp(order.userId, orderPrice, User.getSeqId(order.userId) + 1)
             ));
 
             // Existe un bonus por añadir dinero?
-            Money bonus = AddFundsBonus.getMoney(order.product.price);
+            Money bonus = AddFundsBonus.getMoney(orderPrice);
             if (bonus != null) {
                 AccountingTranBonus.create(bonus.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, orderId.toString(), bonus, ImmutableList.of(
                         new AccountOp(order.userId, MoneyUtils.zero, User.getSeqId(order.userId) + 1)

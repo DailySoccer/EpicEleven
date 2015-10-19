@@ -10,9 +10,11 @@ import model.accounting.AccountingTranCancelContestEntry;
 import model.accounting.AccountingTranEnterContest;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
+import play.Logger;
 import utils.MoneyUtils;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class EnterContestJob extends Job {
     public ObjectId userId;
@@ -46,8 +48,8 @@ public class EnterContestJob extends Job {
                 if (contestEntry == null) {
                     contestEntry = createContestEntry();
 
-                    // Será válido, si el contest es GRATIS o el usuario tiene dinero
-                    bValid = contest.entryFee.isNegativeOrZero() || transactionPayment(contest.entryFee);
+                    // Será válido, si el contest es GRATIS o el usuario tiene dinero para realizar el contestEntry
+                    bValid = contest.entryFee.isNegativeOrZero() || transactionPayment(contest, contestEntry);
 
                     if (bValid) {
                         Contest contestModified = transactionInsertContestEntry(contest, contestEntry);
@@ -101,8 +103,10 @@ public class EnterContestJob extends Job {
         }
     }
 
-    private boolean transactionPayment(Money entryFee) {
+    private boolean transactionPayment(Contest contest, ContestEntry contestEntry) {
         boolean transactionValid = false;
+
+        Money entryFee = contest.entryFee;
 
         // Los contests que requieren energía, los gestionaremos sin necesidad de transacciones
         if (entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_ENERGY)) {
@@ -115,12 +119,28 @@ public class EnterContestJob extends Job {
             // del usuario se lance una excepcion que impida la inserción ya que (accountId, seqId) es "unique key"
             Integer seqId = User.getSeqId(userId) + 1;
 
+            Money moneyNeeded = entryFee;
+
+            // En los torneos Oficiales, el usuario también tiene que pagar los futbolistas de nivel superior al suyo
+            if (entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+                Money managerBalance = User.calculateManagerBalance(userId);
+
+                // Modificamos el contestEntry con los players que han de ser comprados...
+                List<InstanceSoccerPlayer> soccerPlayers = contest.getInstanceSoccerPlayers(soccerIds);
+                List<InstanceSoccerPlayer> playersToBuy = User.playersToBuy(managerBalance, soccerPlayers);
+                contestEntry.playersPurchased = playersToBuy.stream().map( instanceSoccerPlayer ->
+                                instanceSoccerPlayer.templateSoccerPlayerId
+                ).collect(Collectors.toList());
+
+                moneyNeeded = moneyNeeded.plus(User.moneyToBuy(managerBalance, playersToBuy));
+            }
+
             // El usuario tiene dinero suficiente?
-            if (User.hasMoney(userId, entryFee)) {
+            if (User.hasMoney(userId, moneyNeeded)) {
                 try {
                     // Registrar el pago
                     AccountingTran accountingTran = AccountingTranEnterContest.create(entryFee.getCurrencyUnit().getCode(), contestId, contestEntryId, ImmutableList.of(
-                            new AccountOp(userId, entryFee.negated(), seqId)
+                            new AccountOp(userId, moneyNeeded.negated(), seqId)
                     ));
 
                     transactionValid = (accountingTran != null);
