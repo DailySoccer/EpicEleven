@@ -209,7 +209,7 @@ public class LoginController extends Controller {
                     Money bonus = SignupBonus.getMoney();
                     if (bonus != null) {
                         AccountingTranBonus.create(bonus.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, "SIGNUP", bonus, ImmutableList.of(
-                                new AccountOp(theUser.userId, MoneyUtils.zero, User.getSeqId(theUser.userId) + 1)
+                                new AccountOp(theUser.userId, bonus, User.getSeqId(theUser.userId) + 1)
                         ));
                     }
                 } catch (DuplicateKeyException exc) {
