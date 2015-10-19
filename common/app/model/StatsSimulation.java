@@ -229,11 +229,18 @@ public class StatsSimulation {
                     "    ]}", player.optaPlayerId, templateMatchEvent.optaCompetitionId, optaEventType.code, eloString, eloString);
             */
             // Queremos seleccionar partidos en los que el equipo esté en la misma situación que ahora (juegue en casa o fuera)
+            /*
             String query = inHome
                     ? String.format("{optaPlayerId: \"%s\", competitionId: \"%s\", typeId: %d, awayTeamId: {$in: [%s]}}",
                     player.optaPlayerId, templateMatchEvent.optaCompetitionId, optaEventType.code, eloString)
                     : String.format("{optaPlayerId: \"%s\", competitionId: \"%s\", typeId: %d, homeTeamId: {$in: [%s]}}",
                     player.optaPlayerId, templateMatchEvent.optaCompetitionId, optaEventType.code, eloString);
+            */
+            String query = inHome
+                    ? String.format("{optaPlayerId: \"%s\", competitionId: \"%s\", typeId: %d, homeTeamId: \"%s\"}",
+                    player.optaPlayerId, templateMatchEvent.optaCompetitionId, optaEventType.code, homeTeamId)
+                    : String.format("{optaPlayerId: \"%s\", competitionId: \"%s\", typeId: %d, awayTeamId: \"%s\"}",
+                    player.optaPlayerId, templateMatchEvent.optaCompetitionId, optaEventType.code, awayTeamId);
             // Logger.debug("Query: {}", query);
 
             int count = (int) Model.optaEvents().count(query);
