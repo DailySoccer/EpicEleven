@@ -57,6 +57,7 @@ public class TemplateContestForm {
     public TemplateContestForm() {
         state = ContestState.DRAFT;
         activationAt = GlobalDate.getCurrentDate();
+        startDate = activationAt;
         createdAt = GlobalDate.getCurrentDate().getTime();
     }
 
