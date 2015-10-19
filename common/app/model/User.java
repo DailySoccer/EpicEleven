@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class User {
-    public static final int MINUTES_TO_RELOAD_ENERGY = 15;
+    public static final int MINUTES_TO_RELOAD_ENERGY = 60;
     public static final BigDecimal MAX_ENERGY = new BigDecimal(10);
     public static final long HOURS_TO_DECAY = 48;
     public static final float PERCENT_TO_DECAY = 0.5f;
