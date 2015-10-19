@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class User {
     public static final int MINUTES_TO_RELOAD_ENERGY = 15;
@@ -410,7 +411,7 @@ public class User {
         return Money.zero(MoneyUtils.CURRENCY_MANAGER).plus(MANAGER_POINTS[level] + acc);
     }
 
-    static private float managerLevelFromPoints(Money managerPoints) {
+    static public float managerLevelFromPoints(Money managerPoints) {
         long points = managerPoints.getAmount().longValue();
         int level = 0;
         while (level+1 < MANAGER_POINTS.length && points >= MANAGER_POINTS[level+1]) {
@@ -504,10 +505,9 @@ public class User {
         return MoneyUtils.compareTo(balance, money) >= 0;
     }
 
-    static public Money moneyToBuy(ObjectId userId, List<InstanceSoccerPlayer> instanceSoccerPlayers) {
+    static public Money moneyToBuy(Money managerBalance, List<InstanceSoccerPlayer> instanceSoccerPlayers) {
         Money price = Money.zero(MoneyUtils.CURRENCY_GOLD);
 
-        Money managerBalance = calculateManagerBalance(userId);
         float managerLevel = managerLevelFromPoints(managerBalance);
 
         for (InstanceSoccerPlayer instanceSoccerPlayer : instanceSoccerPlayers) {
@@ -516,6 +516,14 @@ public class User {
         }
 
         return price;
+    }
+
+    static public List<InstanceSoccerPlayer> playersToBuy(Money managerBalance, List<InstanceSoccerPlayer> instanceSoccerPlayers) {
+        float managerLevel = managerLevelFromPoints(managerBalance);
+
+        return instanceSoccerPlayers.stream().filter( instanceSoccerPlayer ->
+                TemplateSoccerPlayer.levelFromSalary(instanceSoccerPlayer.salary) > (int) managerLevel
+        ).collect(Collectors.toList());
     }
 
     static public List<AccountingTran> includeDecayTransactions(List<AccountingTran> accountingTrans) {

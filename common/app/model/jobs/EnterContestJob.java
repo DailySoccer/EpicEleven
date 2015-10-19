@@ -14,6 +14,7 @@ import play.Logger;
 import utils.MoneyUtils;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class EnterContestJob extends Job {
     public ObjectId userId;
@@ -47,8 +48,8 @@ public class EnterContestJob extends Job {
                 if (contestEntry == null) {
                     contestEntry = createContestEntry();
 
-                    // Será válido, si el contest es GRATIS o el usuario tiene dinero
-                    bValid = contest.entryFee.isNegativeOrZero() || transactionPayment(contest);
+                    // Será válido, si el contest es GRATIS o el usuario tiene dinero para realizar el contestEntry
+                    bValid = contest.entryFee.isNegativeOrZero() || transactionPayment(contest, contestEntry);
 
                     if (bValid) {
                         Contest contestModified = transactionInsertContestEntry(contest, contestEntry);
@@ -102,7 +103,7 @@ public class EnterContestJob extends Job {
         }
     }
 
-    private boolean transactionPayment(Contest contest) {
+    private boolean transactionPayment(Contest contest, ContestEntry contestEntry) {
         boolean transactionValid = false;
 
         Money entryFee = contest.entryFee;
@@ -120,10 +121,18 @@ public class EnterContestJob extends Job {
 
             Money moneyNeeded = entryFee;
 
-            // En los torneos Oficiales, el usuario también tiene que pagar a los futbolistas
+            // En los torneos Oficiales, el usuario también tiene que pagar los futbolistas de nivel superior al suyo
             if (entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+                Money managerBalance = User.calculateManagerBalance(userId);
+
+                // Modificamos el contestEntry con los players que han de ser comprados...
                 List<InstanceSoccerPlayer> soccerPlayers = contest.getInstanceSoccerPlayers(soccerIds);
-                moneyNeeded = moneyNeeded.plus(User.moneyToBuy(userId, soccerPlayers));
+                List<InstanceSoccerPlayer> playersToBuy = User.playersToBuy(managerBalance, soccerPlayers);
+                contestEntry.playersPurchased = playersToBuy.stream().map( instanceSoccerPlayer ->
+                                instanceSoccerPlayer.templateSoccerPlayerId
+                ).collect(Collectors.toList());
+
+                moneyNeeded = moneyNeeded.plus(User.moneyToBuy(managerBalance, playersToBuy));
             }
 
             // El usuario tiene dinero suficiente?
