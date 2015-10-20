@@ -216,7 +216,7 @@ public class StatsSimulation {
                 player.name, player.templateSoccerPlayerId.toString(), player.getPlayedMatches()));
 
         boolean inHome = optaTeamId.equals(homeTeamId);
-        String eloString = ListUtils.asString(getTeamsELO(inHome ? homeTeamId : awayTeamId, inHome ? awayTeamId : homeTeamId));
+        // String eloString = ListUtils.asString(getTeamsELO(inHome ? homeTeamId : awayTeamId, inHome ? awayTeamId : homeTeamId));
         // Logger.debug("ELO: {}", eloString);
 
         for (OptaEventType optaEventType : OptaEventType.values()) {
@@ -303,26 +303,72 @@ public class StatsSimulation {
 
     @JsonIgnore
     private TeamELO[] ELO = new TeamELO[] {
-            new TeamELO("178", 2064), // Barcelona
-            new TeamELO("186", 2055), // Real Madrid
-            new TeamELO("175", 1948), // Atlético de Madrid
-            new TeamELO("179", 1865), // Sevilla
-            new TeamELO("191", 1863), // Valencia
-            new TeamELO("176", 1809), // Celta de Vigo
-            new TeamELO("449", 1804), // Villarreal
             new TeamELO("174", 1777), // Athletic Club
-            new TeamELO("188", 1734), // Real Sociedad
+            new TeamELO("175", 1948), // Atlético de Madrid
+            new TeamELO("176", 1809), // Celta de Vigo
             new TeamELO("177", 1730), // Espanyol
-            new TeamELO("182", 1705), // Málaga
+            new TeamELO("178", 2064), // Barcelona
+            new TeamELO("179", 1865), // Sevilla
             new TeamELO("180", 1692), // Deportivo de la Coruña
+            new TeamELO("182", 1705), // Málaga
             new TeamELO("184", 1690), // Rayo Vallecano
-            new TeamELO("954", 1673), // Elche
+            new TeamELO("186", 2055), // Real Madrid
+            new TeamELO("188", 1734), // Real Sociedad
+            new TeamELO("191", 1863), // Valencia
+            new TeamELO("449", 1804), // Villarreal
             new TeamELO("855", 1658), // Levante
+            new TeamELO("952", 1548), // Córdoba
             new TeamELO("953", 1650), // Eibar
+            new TeamELO("954", 1673), // Elche
             new TeamELO("1450", 1648), // Getafe
             new TeamELO("5683", 1630), // Granada
             new TeamELO("1564", 1592), // Almería
-            new TeamELO("952", 1548), // Córdoba
+
+
+            new TeamELO("1", 1801), // Manchester United
+            new TeamELO("3", 1809), // Arsenal
+            new TeamELO("4", 1563), // Newcastle United
+            new TeamELO("6", 1728), // Tottenham Hotspur
+            new TeamELO("7", 1528), // Aston Villa
+            new TeamELO("8", 1806), // Chelsea
+            new TeamELO("11", 1698), // Everton
+            new TeamELO("13", 1636), // Leicester City
+            new TeamELO("14", 1708), // Liverpool
+            new TeamELO("20", 1682), // Southampton
+            new TeamELO("21", 1633), // West Ham United
+            new TeamELO("31", 1642), // Crystal Palace
+            new TeamELO("35", 1610), // West Bromwich Albion
+            new TeamELO("43", 1858), // Manchester City
+            new TeamELO("52", 1548), // Queens Park Rangers
+            new TeamELO("56", 1538), // Sunderland
+            new TeamELO("80", 1650), // Swansea City
+            new TeamELO("88", 1542), // Hull City
+            new TeamELO("90", 1543), // Burnley
+            new TeamELO("110", 1660), // Stoke City
+            new TeamELO("121", 1753), // Roma
+            new TeamELO("128", 1890), // Juventus
+            new TeamELO("146", 1719), // Monaco
+            new TeamELO("149", 1889), // Paris Saint Germain
+            new TeamELO("156", 2007), // FC Bayern München
+            new TeamELO("157", 1813), // Borussia Dortmund
+            new TeamELO("164", 1798), // Bayer 04 Leverkusen
+            new TeamELO("167", 1728), // FC Schalke 04
+            new TeamELO("201", 1823), // FC Porto
+            new TeamELO("202", 1254), // Olympiakos
+            new TeamELO("208", 1623), // Galatasaray
+            new TeamELO("215", 1652), // Ajax
+            new TeamELO("241", 1572), // RSC Anderlecht
+            new TeamELO("251", 1825), // Benfica
+            new TeamELO("255", 1689), // Sporting Lisbon
+            new TeamELO("455", 1548), // Shakhtar Donetsk
+            new TeamELO("479", 1548), // APOEL Nicosia
+            new TeamELO("481", 1695), // FC Basel
+            new TeamELO("993", 1537), // Malmö FF
+            new TeamELO("1340", 1548), // CSKA Moscow
+            new TeamELO("1341", 1548), // Zenit St Petersburg
+            new TeamELO("2155", 1548), // BATE Borisov
+            new TeamELO("3033", 1441), // NK Maribor
+            new TeamELO("6128", 1548), // Ludogorets Razgrad
     };
 
     public static OptaEventType[] AttackEvents = {

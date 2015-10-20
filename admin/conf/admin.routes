@@ -59,6 +59,7 @@ GET         /template_contest/:templateContestId                                
 GET         /template_contest/get_prizes/:prizeType/:maxEntries/:prizePool       controllers.admin.TemplateContestController.getPrizes(prizeType : String, maxEntries : Int, prizePool : Int)
 
 GET         /template_match_events                                               controllers.admin.TemplateMatchEventController.index()
+GET         /template_match_events/ajax                                          controllers.admin.TemplateMatchEventController.indexAjax()
 GET         /template_match_event/:templateMatchEventId                          controllers.admin.TemplateMatchEventController.show(templateMatchEventId : String)
 GET         /template_match_event/optaEvents/:matchEventId                       controllers.admin.TemplateMatchEventController.showOptaEvents(matchEventId : String)
 GET         /template_match_event/simulatedEvents/:matchEventId                  controllers.admin.TemplateMatchEventController.showSimulatedEvents(matchEventId : String)
