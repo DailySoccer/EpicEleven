@@ -228,7 +228,7 @@ public class TemplateSoccerPlayer implements JongoId {
     }
 
     static Integer[] LEVEL_SALARY = new Integer[]{
-        5000, 6200, 7500, 8900, 10000, 100000
+        5700, 6100, 6500, 7000, 7900, 100000
     };
 
     static public int levelFromSalary(int salary) {
