@@ -100,7 +100,7 @@ public class TemplateContestController extends Controller {
                 TemplateContest templateContest = (TemplateContest) data;
                 switch (index) {
                     case 0:
-                        String classStyle = "btn btn-warning disabled";
+                        String classStyle = "btn btn-warning";
                         if (templateContest.state.isDraft())            classStyle = "btn btn-default";
                         else if (templateContest.state.isHistory())     classStyle = "btn btn-danger";
                         else if (templateContest.state.isLive())        classStyle = "btn btn-success";
