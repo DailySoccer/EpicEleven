@@ -50,7 +50,8 @@ public class CancelContestJob extends Job {
                 }
 
                 if (bValid) {
-                    if (MoneyUtils.isGreaterThan(contest.entryFee, MoneyUtils.zero) && !contest.contestEntries.isEmpty()) {
+                    // Únicamente devolveremos el GOLD (no la ENERGY)
+                    if (contest.entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD) && MoneyUtils.isGreaterThan(contest.entryFee, MoneyUtils.zero) && !contest.contestEntries.isEmpty()) {
                         List<AccountOp> accounts = new ArrayList<>();
                         for (ContestEntry contestEntry : contest.contestEntries) {
                             accounts.add(new AccountOp(contestEntry.userId, contest.entryFee, User.getSeqId(contestEntry.userId) + 1));

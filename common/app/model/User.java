@@ -164,7 +164,9 @@ public class User {
             Model.users().update(userId).with("{$set: {managerBalance: #}}", balance.toString());
         }
         else if (balance.getCurrencyUnit().equals(MoneyUtils.CURRENCY_ENERGY)) {
-            Model.users().update(userId).with("{$set: {energyBalance: #}}", balance.toString());
+            // No actualizaremos la ENERGíA con ninguna transacción
+            Logger.error("WTF: 4401: updateBalance: {} {}", userId.toString(), balance.toString());
+            // Model.users().update(userId).with("{$set: {energyBalance: #}}", balance.toString());
         }
         // Model.users().update(userId).with("{$set: {cachedBalance: #}}", balance.toString());
     }
