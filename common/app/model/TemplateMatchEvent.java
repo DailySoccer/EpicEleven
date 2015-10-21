@@ -139,6 +139,10 @@ public class TemplateMatchEvent implements JongoId {
         return ListUtils.asList(Model.findObjectIds(Model.templateMatchEvents(), "_id", idList).as(TemplateMatchEvent.class));
     }
 
+    public static List<TemplateMatchEvent> findAllSimulationsToSetup() {
+        return ListUtils.asList(Model.templateMatchEvents().find("{simulation: true, period: 'PRE_GAME', \"simulationEvents.0\": {$exists: 0}}").as(TemplateMatchEvent.class));
+    }
+
     public static List<TemplateMatchEvent> findAllSimulationsByStartDate() {
         if (Model.isLocalHostTargetEnvironment()) {
             return ListUtils.asList(Model.templateMatchEvents().find("{simulation: true, period: 'PRE_GAME', startDate: {$gt: #, $lte: #}}",
@@ -149,7 +153,7 @@ public class TemplateMatchEvent implements JongoId {
     }
 
     public static List<TemplateMatchEvent> findAllSimulationsToUpdate() {
-        return ListUtils.asList(Model.templateMatchEvents().find("{simulation: true, period: {$in: ['FIRST_HALF', 'SECOND_HALF']}, startDate: {$lte: #}}", GlobalDate.getCurrentDate()).as(TemplateMatchEvent.class));
+        return ListUtils.asList(Model.templateMatchEvents().find("{simulation: true, period: {$in: ['FIRST_HALF', 'SECOND_HALF']}, startDate: {$lte: #}, \"simulationEvents.0\": {$exists: 1}}", GlobalDate.getCurrentDate()).as(TemplateMatchEvent.class));
     }
 
     public static List<TemplateMatchEvent> findAllPlaying(List<ObjectId> idList) {
@@ -270,15 +274,21 @@ public class TemplateMatchEvent implements JongoId {
         }
     }
 
-    public void startSimulation(ArrayList<SimulationEvent> events) {
-        Logger.debug("TemplateMatchEvent: startSimulation: " + templateMatchEventId.toString());
+    public void setupSimulation() {
+        Logger.debug("TemplateMatchEvent: setupSimulation: " + templateMatchEventId.toString());
+
+        MatchEventSimulation simulation = new MatchEventSimulation(templateMatchEventId);
 
         // Actualizamos los eventos que simulan el partido
-        simulationEvents = events;
+        simulationEvents = simulation.simulationEvents;
 
         Model.templateMatchEvents()
                 .update("{_id: #}", templateMatchEventId)
-                .with("{$set: {simulationEvents: #}}", events);
+                .with("{$set: {simulationEvents: #}}", simulationEvents);
+    }
+
+    public void startSimulation() {
+        Logger.debug("TemplateMatchEvent: startSimulation: " + templateMatchEventId.toString());
 
         // Damos el partido como iniciado
         // IMPORTANTE: El orden de las acciones es importante!
@@ -298,7 +308,7 @@ public class TemplateMatchEvent implements JongoId {
             // Limpiamos todos los fantasyPoints (vamos a regenerarlos)
             liveFantasyPoints = new HashMap<>();
 
-            Logger.debug("TemplateMatchEvent: Simulando: {} min: {}", templateMatchEventId.toString(), minutes);
+            // Logger.debug("TemplateMatchEvent: Simulando: {} min: {}", templateMatchEventId.toString(), minutes);
 
             // Generar los fantasyPoints y registrar los goles
             simulationEvents.forEach(event -> {

@@ -19,8 +19,6 @@ public class MatchEventSimulation {
     public MatchEventSimulation(ObjectId aTemplateMatchEventId) {
         long startTime = System.currentTimeMillis();
 
-        Logger.debug("MatchEventSimulation {}: init", aTemplateMatchEventId);
-
         TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOne(aTemplateMatchEventId);
         templateMatchEventId = templateMatchEvent.templateMatchEventId;
         optaMatchEventId = templateMatchEvent.optaMatchEventId;
@@ -45,7 +43,7 @@ public class MatchEventSimulation {
         startGame();
         runGame();
 
-        Logger.debug("MatchEventSimulation: elapsed: {}", System.currentTimeMillis() - startTime);
+        Logger.debug("MatchEventSimulation {}: elapsed: {}", aTemplateMatchEventId, System.currentTimeMillis() - startTime);
     }
 
     void runGame() {

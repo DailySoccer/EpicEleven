@@ -221,6 +221,7 @@ public class Actors {
         _localActors.put("OptaProcessorActor", Akka.system().actorOf(Props.create(OptaProcessorActor.class), "OptaProcessorActor"));
         _localActors.put("ContestsActor", Akka.system().actorOf(Props.create(ContestsActor.class), "ContestsActor"));
         _localActors.put("VirtualMatchEventActor", Akka.system().actorOf(Props.create(VirtualMatchEventActor.class), "VirtualMatchEventActor"));
+        _localActors.put("VirtualSetupActor", Akka.system().actorOf(Props.create(VirtualSetupActor.class), "VirtualSetupActor"));
 
         _localActors.put("TransactionsActor", Akka.system().actorOf(Props.create(TransactionsActor.class), "TransactionsActor"));
         _localActors.put("NotificationActor", Akka.system().actorOf(Props.create(NotificationActor.class), "NotificationActor"));
