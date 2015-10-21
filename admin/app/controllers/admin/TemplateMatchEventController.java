@@ -79,7 +79,7 @@ public class TemplateMatchEventController extends Controller {
                         if(fieldValue.equals("Finished")) {
                             return "<button class=\"btn btn-danger\">Finished</button>";
                         } else if(fieldValue.equals("Live")) {
-                            return "<button class=\"btn btn-success\">Live</button>";
+                            return String.format("<button class=\"btn btn-success\">Live - %d min.</button>", templateMatchEvent.minutesPlayed);
                         } else {
                             return "<button class=\"btn btn-warning\">Waiting</button>";
                         }
