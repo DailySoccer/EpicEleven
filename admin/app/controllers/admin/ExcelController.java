@@ -177,6 +177,9 @@ public class ExcelController extends Controller {
         salaryRow.createCell(_SalarySheet.SALARY.column).setCellFormula(new CellReference(calculatedSalaryCell).formatAsString());
 
         salaryRow.createCell(_SalarySheet.CURRENT_TAGS.column).setCellValue(soccerPlayer.tags.toString().substring(1, soccerPlayer.tags.toString().length() - 1));
+
+        TemplateSoccerTeam team = TemplateSoccerTeam.findOne(soccerPlayer.templateTeamId);
+        salaryRow.createCell(_SalarySheet.TEAM.column).setCellValue(team != null ? team.name : "unknown");
     }
 
 
@@ -382,12 +385,13 @@ public class ExcelController extends Controller {
         CURRENT_SALARY      (2, _CURRENT_SALARY),
         CALCULATED_SALARY   (3, _CALCULATED_SALARY),
         SALARY              (4, _SALARY),
-        CURRENT_TAGS        (5, _CURRENT_TAGS);
+        CURRENT_TAGS        (5, _CURRENT_TAGS),
+        TEAM                (6, _TEAM);
 
         public final int column;
         public final String colName;
 
-        public static final _SalarySheet lastCol = CURRENT_TAGS;
+        public static final _SalarySheet lastCol = TEAM;
 
         _SalarySheet(int c, String name) {
             column = c;
