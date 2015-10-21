@@ -1,13 +1,7 @@
 package actors;
 
-import akka.actor.UntypedActor;
 import model.*;
-import model.opta.*;
-import org.bson.types.ObjectId;
 import play.Logger;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 public class VirtualMatchEventActor extends TickableActor {
     public VirtualMatchEventActor() {
@@ -30,14 +24,11 @@ public class VirtualMatchEventActor extends TickableActor {
     @Override protected void onTick() {
         long startTime = System.currentTimeMillis();
 
-        // Simulamos completamente los partidos que deberían haber empezado...
-        List<TemplateMatchEvent> matchEventsByStartDate = TemplateMatchEvent.findAllSimulationsByStartDate();
-        for(TemplateMatchEvent matchEvent : matchEventsByStartDate) {
-            MatchEventSimulation simulation = new MatchEventSimulation(matchEvent.templateMatchEventId);
-            matchEvent.startSimulation(simulation.simulationEvents);
-        }
+        // Activamos los partidos simulados que deberían haber comenzado
+        TemplateMatchEvent.findAllSimulationsByStartDate().forEach(TemplateMatchEvent::startSimulation);
 
-        final long TIME_MULTIPLIER = 1;
+        // 1 seg. reales = x seg. simulados
+        final long TIME_MULTIPLIER = 10;
 
         // Actualizamos el estado de los partidos simulados para que se actualicen poco a poco ("live")
         TemplateMatchEvent.findAllSimulationsToUpdate().forEach(matchEvent -> matchEvent.updateSimulationState(TIME_MULTIPLIER));
