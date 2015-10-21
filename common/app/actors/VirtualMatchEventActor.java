@@ -2,9 +2,11 @@ package actors;
 
 import model.*;
 import play.Logger;
+import play.Play;
 
 public class VirtualMatchEventActor extends TickableActor {
     public VirtualMatchEventActor() {
+        readConfig();
     }
 
     @Override
@@ -27,11 +29,8 @@ public class VirtualMatchEventActor extends TickableActor {
         // Activamos los partidos simulados que deberían haber comenzado
         TemplateMatchEvent.findAllSimulationsByStartDate().forEach(TemplateMatchEvent::startSimulation);
 
-        // 1 seg. reales = x seg. simulados
-        final long TIME_MULTIPLIER = 10;
-
         // Actualizamos el estado de los partidos simulados para que se actualicen poco a poco ("live")
-        TemplateMatchEvent.findAllSimulationsToUpdate().forEach(matchEvent -> matchEvent.updateSimulationState(TIME_MULTIPLIER));
+        TemplateMatchEvent.findAllSimulationsToUpdate().forEach(matchEvent -> matchEvent.updateSimulationState(_timeMultiplier));
 
         Logger.debug("Virtual MatchEvent: elapsed: {}", System.currentTimeMillis() - startTime);
     }
@@ -40,4 +39,11 @@ public class VirtualMatchEventActor extends TickableActor {
         onTick();
     }
 
+    private void readConfig() {
+        _timeMultiplier = Play.application().configuration().getLong("virtualMatchEventActor.timeMultiplier");
+        Logger.debug("VirtualMatchEventActor: Time Multiplier: {}", _timeMultiplier);
+    }
+
+    // 1 seg. reales = x seg. simulados
+    private long _timeMultiplier = 1;
 }
