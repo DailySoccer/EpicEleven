@@ -11,6 +11,14 @@ GET            /get_instance_soccer_player_info/:contest/:soccerPlayer controlle
 # Reglas del juego
 GET            /get_scoring_rules                                      controllers.MainController.getScoringRules()
 
+# Leaderboard
+GET            /get_leaderboard                                        controllers.MainController.getLeaderboard()
+
+# Shop
+GET            /get_catalog                                            controllers.ShopController.getCatalog()
+GET            /buy_product/:productId                                 controllers.ShopController.buyProduct(productId : String)
+GET            /buy_soccer_player/:contest/:soccerPlayer               controllers.ShopController.buySoccerPlayer(contest : String, soccerPlayer : String)
+
 # Enganche de la zona de administracion
 ->             /admin                                                  admin.Routes
 

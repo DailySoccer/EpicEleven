@@ -1,10 +1,12 @@
 package controllers.admin;
 
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import actions.CheckTargetEnvironment;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.mongodb.WriteConcern;
 import model.*;
 import org.bson.types.ObjectId;
@@ -43,11 +45,14 @@ public class TemplateContestController extends Controller {
                         "maxEntries",
                         "salaryCap",
                         "entryFee",
+                        "prizeMultiplier",
+                        "",             // Prize Pool
                         "prizeType",
                         "startDate",
                         "activationAt",
                         "",             // Edit
-                        ""              // Delete
+                        "",             // Delete
+                        ""              // Simulation
 
                 );
             }
@@ -55,19 +60,38 @@ public class TemplateContestController extends Controller {
             public String getFieldByIndex(Object data, Integer index) {
                 TemplateContest templateContest = (TemplateContest) data;
                 switch (index) {
-                    case 0: return templateContest.state.toString();
-                    case 1: return templateContest.name;
-                    case 2: return String.valueOf(templateContest.templateMatchEventIds.size());
-                    case 3: return templateContest.optaCompetitionId;
-                    case 4: return String.valueOf(templateContest.minInstances);
-                    case 5: return String.valueOf(templateContest.maxEntries);
-                    case 6: return String.valueOf(templateContest.salaryCap);
-                    case 7: return String.valueOf(templateContest.entryFee);
-                    case 8: return String.valueOf(templateContest.prizeType);
-                    case 9: return GlobalDate.formatDate(templateContest.startDate);
-                    case 10: return GlobalDate.formatDate(templateContest.activationAt);
-                    case 11: return "";
-                    case 12: return "";
+                    case 0:
+                        return templateContest.state.toString();
+                    case 1:
+                        return templateContest.name;
+                    case 2:
+                        return String.valueOf(templateContest.templateMatchEventIds.size());
+                    case 3:
+                        return templateContest.optaCompetitionId;
+                    case 4:
+                        return String.valueOf(templateContest.minInstances);
+                    case 5:
+                        return String.valueOf(templateContest.maxEntries);
+                    case 6:
+                        return String.valueOf(templateContest.salaryCap);
+                    case 7:
+                        return MoneyUtils.asString(templateContest.entryFee);
+                    case 8:
+                        return String.valueOf(templateContest.prizeMultiplier);
+                    case 9:
+                        return MoneyUtils.asString(templateContest.getPrizePool());
+                    case 10:
+                        return String.valueOf(templateContest.prizeType);
+                    case 11:
+                        return GlobalDate.formatDate(templateContest.startDate);
+                    case 12:
+                        return GlobalDate.formatDate(templateContest.activationAt);
+                    case 13:
+                        return "";
+                    case 14:
+                        return "";
+                    case 15:
+                        return templateContest.simulation ? "Simulation" : "Real";
                 }
                 return "<invalid value>";
             }
@@ -76,26 +100,35 @@ public class TemplateContestController extends Controller {
                 TemplateContest templateContest = (TemplateContest) data;
                 switch (index) {
                     case 0:
-                        if      (templateContest.state.isDraft())     return String.format("<button class=\"btn btn-default\">%s</button>", templateContest.state);
-                        else if (templateContest.state.isHistory())   return String.format("<button class=\"btn btn-danger\">%s</button>", templateContest.state);
-                        else if (templateContest.state.isLive())      return String.format("<button class=\"btn btn-success\">%s</button>", templateContest.state);
-                        else if (templateContest.state.isActive())    return String.format("<button class=\"btn btn-warning\">%s</button>", templateContest.state);
-                        return String.format("<button class=\"btn btn-warning disabled\">%s</button>", templateContest.state);
-                    case 1: return String.format("<a href=\"%s\" style=\"white-space: nowrap\">%s</a>",
+                        String classStyle = "btn btn-warning";
+                        if (templateContest.state.isDraft())            classStyle = "btn btn-default";
+                        else if (templateContest.state.isHistory())     classStyle = "btn btn-danger";
+                        else if (templateContest.state.isLive())        classStyle = "btn btn-success";
+                        else if (templateContest.state.isActive())      classStyle = "btn btn-warning";
+                        return String.format("<a href=\"%s\"><button class=\"%s\">%s</button></a>",
+                                routes.TemplateContestController.createClone(templateContest.templateContestId.toString()), classStyle, templateContest.state);
+                    case 1:
+                        return String.format("<a href=\"%s\" style=\"white-space: nowrap\">%s</a>",
                                 routes.TemplateContestController.show(templateContest.templateContestId.toString()),
                                 fieldValue);
-                    case 10: return (templateContest.state.isDraft() || templateContest.state.isOff() || templateContest.state.isActive())
+                    case 13:
+                        return (templateContest.state.isDraft() || templateContest.state.isOff() || templateContest.state.isActive())
                                 ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">Edit</button></a>",
-                                        routes.TemplateContestController.edit(templateContest.templateContestId.toString()))
+                                routes.TemplateContestController.edit(templateContest.templateContestId.toString()))
                                 : "";
-                    case 11: return templateContest.state.isDraft()
-                             ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">+</button></a> <a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
-                                        routes.TemplateContestController.publish(templateContest.templateContestId.toString()),
-                                        routes.TemplateContestController.destroy(templateContest.templateContestId.toString()))
-                             : templateContest.state.isOff() ?
+                    case 14:
+                        return templateContest.state.isDraft()
+                                ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">+</button></a> <a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
+                                routes.TemplateContestController.publish(templateContest.templateContestId.toString()),
+                                routes.TemplateContestController.destroy(templateContest.templateContestId.toString()))
+                                : templateContest.state.isOff() ?
                                 String.format("<a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
                                         routes.TemplateContestController.destroy(templateContest.templateContestId.toString()))
-                             : "";
+                                : "";
+                    case 15:
+                        return templateContest.simulation
+                                ? String.format("<button class=\"btn btn-success\">Simulation</button>")
+                                : "";
                 }
                 return fieldValue;
             }
@@ -119,10 +152,26 @@ public class TemplateContestController extends Controller {
 
     public static Result edit(String templateContestId) {
         TemplateContest templateContest = TemplateContest.findOne(new ObjectId(templateContestId));
+        return edit(templateContest);
+    }
+
+    public static Result edit(TemplateContest templateContest) {
         TemplateContestForm params = new TemplateContestForm(templateContest);
 
         Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
+        if (templateContest.state.isActive()) {
+            List<TemplateMatchEvent> templateMatchEvents = templateContest.getTemplateMatchEvents();
+            return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(templateMatchEvents), templateContest.state.isActive()));
+        }
         return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.createdAt), templateContest.state.isActive()));
+    }
+
+    public static Result createClone(String templateContestId) {
+        TemplateContest clonedTemplateContest = TemplateContest.findOne(new ObjectId(templateContestId)).copy();
+        clonedTemplateContest.templateContestId = null;
+        clonedTemplateContest.state = ContestState.DRAFT;
+        clonedTemplateContest.name += " (clone)";
+        return edit(clonedTemplateContest);
     }
 
     public static Result publish(String templateContestId) {
@@ -151,19 +200,25 @@ public class TemplateContestController extends Controller {
 
         templateContest.templateContestId = !isNew ? new ObjectId(params.id) : null;
         templateContest.state = params.state;
+        templateContest.simulation = (params.typeContest == TypeContest.VIRTUAL);
         templateContest.name = params.name;
         templateContest.minInstances = params.minInstances;
         templateContest.maxEntries = params.maxEntries;
         templateContest.salaryCap = params.salaryCap.money;
-        templateContest.entryFee = MoneyUtils.of(params.entryFee);
-        templateContest.prizeType = params.prizeType;
 
-        templateContest.activationAt = new DateTime(params.activationAt).withZoneRetainFields(DateTimeZone.UTC).toDate();
+        // En la simulación usaremos ENERGY, en los reales GOLD
+        templateContest.entryFee = Money.zero(templateContest.simulation ? MoneyUtils.CURRENCY_ENERGY : MoneyUtils.CURRENCY_GOLD).plus(params.entryFee);
+        templateContest.prizeType = params.prizeType;
+        templateContest.prizeMultiplier = templateContest.simulation ? params.prizeMultiplier : Prizes.PRIZE_MULTIPLIER_FOR_REAL_CONTEST;
+
+        templateContest.specialImage = params.specialImage;
+
+        templateContest.activationAt = new DateTime(params.activationAt).withZone(DateTimeZone.UTC).toDate();
         templateContest.createdAt = new Date(params.createdAt);
 
         Date startDate = null;
         templateContest.templateMatchEventIds = new ArrayList<>();
-        for (String templateMatchEventId: params.templateMatchEvents) {
+        for (String templateMatchEventId : params.templateMatchEvents) {
             TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId));
             templateContest.optaCompetitionId = templateMatchEvent.optaCompetitionId;
             templateContest.templateMatchEventIds.add(templateMatchEvent.templateMatchEventId);
@@ -172,7 +227,15 @@ public class TemplateContestController extends Controller {
                 startDate = templateMatchEvent.startDate;
             }
         }
-        templateContest.startDate = startDate;
+
+        // Si es una "simulación" la fecha de comienzo la leeremos del formulario
+        if (templateContest.simulation) {
+            templateContest.startDate = new DateTime(params.startDate).withZone(DateTimeZone.UTC).toDate();
+        }
+        else {
+            // Si no es simulación, la fecha de comienzo es la del primer partido
+            templateContest.startDate = startDate;
+        }
 
         if (isNew) {
             Model.templateContests().insert(templateContest);
@@ -189,7 +252,10 @@ public class TemplateContestController extends Controller {
 
     private static void updateActiveContestsFromTemplate(TemplateContest templateContest) {
         // Only name can change in Active contests
-        Model.contests().withWriteConcern(WriteConcern.SAFE).update("{templateContestId: #}", templateContest.getId()).multi().with("{$set: {name: #}}", templateContest.name);
+        Model.contests().withWriteConcern(WriteConcern.SAFE)
+                .update("{templateContestId: #}", templateContest.getId())
+                .multi()
+                .with("{$set: {name: #, specialImage: #}}", templateContest.name, templateContest.specialImage);
     }
 
     @CheckTargetEnvironment
@@ -245,7 +311,7 @@ public class TemplateContestController extends Controller {
 
 
         for (int i = 1; i<=6; i++) {
-            Money money = MoneyUtils.of(i);
+            Money money = Money.of(MoneyUtils.CURRENCY_GOLD, i);
 
             switch (i) {
                 case 1:
@@ -331,8 +397,8 @@ public class TemplateContestController extends Controller {
         Model.templateContests().insert(templateContest);
     }
 
-    public static Result getPrizes(String prizeType, Integer maxEntries, Integer entryFee) {
-        Prizes prizes = Prizes.findOne(PrizeType.valueOf(prizeType), maxEntries, MoneyUtils.of(entryFee));
+    public static Result getPrizes(String prizeType, Integer maxEntries, Integer prizePool) {
+        Prizes prizes = Prizes.findOne(PrizeType.valueOf(prizeType), maxEntries, Money.of(MoneyUtils.CURRENCY_DEFAULT, prizePool));
         return new ReturnHelper(prizes.getAllValues()).toResult();
     }
 

@@ -24,7 +24,8 @@ public class AccountingTran {
         REFUND,
         FREE_MONEY,
         BONUS,
-        BONUS_TO_CASH
+        BONUS_TO_CASH,
+        DECAY
     }
 
     public enum TransactionProc {
@@ -43,16 +44,18 @@ public class AccountingTran {
     public TransactionProc proc;
     public TransactionState state;
     public TransactionType type;
+    public String currencyCode;
     public List<AccountOp> accountOps = new ArrayList<>();
 
     public Date createdAt;
 
     public AccountingTran() {}
 
-    public AccountingTran(TransactionType type) {
+    public AccountingTran(String currencyCode, TransactionType type) {
         this.proc = TransactionProc.UNCOMMITTED;
         this.state = TransactionState.VALID;
         this.type = type;
+        this.currencyCode = currencyCode;
         this.createdAt = GlobalDate.getCurrentDate();
     }
 

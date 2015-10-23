@@ -37,11 +37,20 @@ public final class MockData {
     }
 
     public static void ensureCompetitions() {
+        // Mundial
         createCompetition("4",  "IG_WC", "World Cup", "2013");
+
+        // 2014
         createCompetition("5",  "EU_CL", "Champions League", "2014");
         createCompetition("6",  "EU_UC", "UEFA Europa League", "2014");
         createCompetition("8",  "EN_PR", "English Barclays Premier League", "2014");
         createCompetition("23", "ES_PL", "Spanish La Liga", "2014");
+
+        // 2015
+        createCompetition("5",  "EU_CL", "Champions League", "2015");
+        createCompetition("6",  "EU_UC", "UEFA Europa League", "2015");
+        createCompetition("8",  "EN_PR", "English Barclays Premier League", "2015");
+        createCompetition("23", "ES_PL", "Spanish La Liga", "2015");
     }
 
     static private void createCompetition(String competitionId, String competitionCode, String competitionName, String seasonId) {
@@ -78,8 +87,7 @@ public final class MockData {
 
             if (contest.entryFee.isPositive()) {
                 // El usuario tiene que tener el dinero suficiente para entrar en el contest
-                Money balance = user.calculateBalance();
-                if (balance.isLessThan(contest.entryFee)) {
+                if (!user.hasMoney(contest.entryFee)) {
                     continue;
                 }
             }

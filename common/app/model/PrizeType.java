@@ -6,8 +6,7 @@ public enum PrizeType {
     WINNER_TAKES_ALL(1),
     TOP_3_GET_PRIZES(2),
     TOP_THIRD_GET_PRIZES(3),
-    FIFTY_FIFTY(4),
-    STANDARD(-1);
+    FIFTY_FIFTY(4);
 
     public final int id;
 

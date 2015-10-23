@@ -1,18 +1,24 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoException;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
+import model.jobs.CancelContestJob;
+import model.jobs.Job;
+import model.opta.OptaMatchEvent;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
+import utils.MoneyUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TemplateContest implements JongoId {
     public static final String FILL_WITH_MOCK_USERS = "%MockUsers";
@@ -33,6 +39,7 @@ public class TemplateContest implements JongoId {
     public int salaryCap;
     public Money entryFee;
     public PrizeType prizeType;
+    public float prizeMultiplier = 1.0f;
 
     public Date startDate;
 
@@ -50,10 +57,22 @@ public class TemplateContest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
+    @JsonView(JsonViews.NotForClient.class)
+    public String specialImage;
+
+    @JsonView(JsonViews.NotForClient.class)
+    public boolean simulation = false;
+
     public TemplateContest() { }
 
     public TemplateContest(String name, int minInstances, int maxEntries, SalaryCap salaryCap,
-                            Money entryFee, PrizeType prizeType, Date activationAt,
+                           Money entryFee, PrizeType prizeType, Date activationAt,
+                           List<String> templateMatchEvents) {
+        this(name, minInstances, maxEntries, salaryCap, entryFee, 1.0f, prizeType, activationAt, templateMatchEvents);
+    }
+
+    public TemplateContest(String name, int minInstances, int maxEntries, SalaryCap salaryCap,
+                            Money entryFee, float prizeMultiplier, PrizeType prizeType, Date activationAt,
                             List<String> templateMatchEvents) {
 
         this.name = name;
@@ -61,6 +80,7 @@ public class TemplateContest implements JongoId {
         this.maxEntries = maxEntries;
         this.salaryCap = salaryCap.money;
         this.entryFee = entryFee;
+        this.prizeMultiplier = prizeMultiplier;
         this.prizeType = prizeType;
         this.activationAt = activationAt;
 
@@ -76,6 +96,38 @@ public class TemplateContest implements JongoId {
             }
         }
         this.startDate = startDate;
+    }
+
+    public TemplateContest copy() {
+        TemplateContest cloned = new TemplateContest();
+
+        cloned.templateContestId = templateContestId;
+        cloned.state = state;
+        cloned.name = name;
+        cloned.minInstances = minInstances;
+        cloned.maxEntries = maxEntries;
+
+        cloned.salaryCap = salaryCap;
+        cloned.entryFee = entryFee;
+        cloned.prizeMultiplier = prizeMultiplier;
+        cloned.prizeType = prizeType;
+
+        cloned.startDate = startDate;
+        cloned.optaCompetitionId = optaCompetitionId;
+
+        cloned.templateMatchEventIds = new ArrayList<>(templateMatchEventIds);
+
+        if (instanceSoccerPlayers != null) {
+            cloned.instanceSoccerPlayers = new ArrayList<>(instanceSoccerPlayers);
+        }
+
+        cloned.activationAt = activationAt;
+        cloned.createdAt = createdAt;
+
+        cloned.simulation = simulation;
+        cloned.specialImage = specialImage;
+
+        return cloned;
     }
 
     public ObjectId getId() {
@@ -123,6 +175,11 @@ public class TemplateContest implements JongoId {
                                      .as(TemplateContest.class));
     }
 
+    public TemplateContest insert() {
+        Model.templateContests().withWriteConcern(WriteConcern.SAFE).update("{_id: #}", templateContestId).upsert().with(this);
+        return this;
+    }
+
     /**
      *  Eliminar un template contest y sus dependencias
      */
@@ -165,6 +222,10 @@ public class TemplateContest implements JongoId {
 
         Logger.info("TemplateContest.instantiate: {}: activationAt: {}", name, GlobalDate.formatDate(activationAt));
 
+        if (simulation) {
+            setupSimulation();
+        }
+
         registerSoccerPlayers();
 
         // Cuantas instancias tenemos creadas?
@@ -179,7 +240,14 @@ public class TemplateContest implements JongoId {
         }
 
         // Cuando hemos acabado de instanciar nuestras dependencias, nos ponemos en activo
-        Model.templateContests().update("{_id: #, state: \"OFF\"}", templateContestId).with("{$set: {state: \"ACTIVE\", instanceSoccerPlayers:#}}", instanceSoccerPlayers);
+        if (simulation) {
+            // Con la simulación también hay que actualizar la lista de partidos "virtuales"
+            Model.templateContests().update("{_id: #, state: \"OFF\"}", templateContestId).with("{$set: {state: \"ACTIVE\", instanceSoccerPlayers:#, templateMatchEventIds:#}}",
+                    instanceSoccerPlayers, templateMatchEventIds);
+        }
+        else {
+            Model.templateContests().update("{_id: #, state: \"OFF\"}", templateContestId).with("{$set: {state: \"ACTIVE\", instanceSoccerPlayers:#}}", instanceSoccerPlayers);
+        }
 
         // Ya estamos activos!
         state = ContestState.ACTIVE;
@@ -195,6 +263,16 @@ public class TemplateContest implements JongoId {
                 instanceSoccerPlayers.add(new InstanceSoccerPlayer(templateSoccerPlayer));
             }
         }
+    }
+
+    public void setupSimulation() {
+        Logger.debug("TemplateContest.SetupSimulation: " + templateContestId.toString());
+
+        // Crear partidos "simulados"
+        templateMatchEventIds = templateMatchEventIds.stream().map(matchEventId -> {
+            TemplateMatchEvent simulateMatchEvent = TemplateMatchEvent.createSimulationWithStartDate(matchEventId, startDate);
+            return simulateMatchEvent.templateMatchEventId;
+        }).collect(Collectors.toList());
     }
 
     /**
@@ -224,7 +302,73 @@ public class TemplateContest implements JongoId {
         return findOne(new ObjectId(templateContestId)).isFinished();
     }
 
+    public boolean isSimulation()   { return simulation; }
+
     public static void publish(ObjectId templateContestId) {
         Model.templateContests().update("{_id: #, state: \"DRAFT\"}", templateContestId).with("{$set: {state: \"OFF\"}}");
+    }
+
+    public Money getPrizePool() {
+        return Prizes.getPool(simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD, entryFee, maxEntries, prizeMultiplier);
+    }
+
+    public static void actionWhenMatchEventIsStarted(TemplateMatchEvent matchEvent) {
+        // Los template contests (que incluyan este match event y que esten "activos") tienen que ser marcados como "live"
+        Model.templateContests()
+                .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}", matchEvent.templateMatchEventId)
+                .multi()
+                .with("{$set: {state: \"LIVE\"}}");
+
+        // Los Contests válidos pasarán a "live"
+        // Válido = Los que al menos tengan 2 participantes
+        Model.contests()
+                .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\", \"contestEntries.1\": {$exists: true}}", matchEvent.templateMatchEventId)
+                .multi()
+                .with("{$set: {state: \"LIVE\", startedAt: #}}", GlobalDate.getCurrentDate());
+
+        // Se cancelaban los contests que tenían premio
+        // OLD: Válido = (Gratuitos AND entries > 1) OR Llenos
+        /*
+        Model.contests()
+                .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"," +
+                        "$or: [" +
+                        "  {prizeType: {$eq: \"FREE\"}, \"contestEntries.1\": {$exists: true}}," +
+                        "  {freeSlots: 0}" +
+                        "]}", matchEvent.templateMatchEventId)
+                .multi()
+                .with("{$set: {state: \"LIVE\", startedAt: #}}", GlobalDate.getCurrentDate());
+        */
+
+        try {
+            // Cancelamos aquellos contests que aún permanezcan activos
+            //  deben ser los inválidos, dado que en la query anterior se han cambiado de estado a los válidos
+            for (Contest contest : Contest.findAllActiveFromTemplateMatchEvent(matchEvent.templateMatchEventId)) {
+                Job job = CancelContestJob.create(contest.contestId);
+                if (!job.isDone()) {
+                    Logger.error("CancelContestJob {} error", contest.contestId);
+                }
+            }
+        }
+        catch(DuplicateKeyException e) {
+            play.Logger.error("WTF 3333: actionWhenMatchEventIsStarted: {}", e.toString());
+        }
+    }
+
+    public static void actionWhenMatchEventIsFinished(TemplateMatchEvent matchEvent) {
+        // Buscamos los template contests que incluyan ese partido
+        Iterable<TemplateContest> templateContests = Model.templateContests()
+                .find("{templateMatchEventIds: {$in:[#]}}", matchEvent.templateMatchEventId).as(TemplateContest.class);
+
+        for (TemplateContest templateContest : templateContests) {
+            // Si el contest ha terminado (true si todos sus partidos han terminado)
+            if (templateContest.isFinished()) {
+                Model.templateContests().update("{_id: #, state: \"LIVE\"}", templateContest.templateContestId).with("{$set: {state: \"HISTORY\"}}");
+
+                Model.contests()
+                        .update("{templateContestId: #, state: \"LIVE\"}", templateContest.templateContestId)
+                        .multi()
+                        .with("{$set: {state: \"HISTORY\", finishedAt: #}}", GlobalDate.getCurrentDate());
+            }
+        }
     }
 }

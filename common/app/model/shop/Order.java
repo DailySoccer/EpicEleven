@@ -1,19 +1,19 @@
-package model;
+package model.shop;
 
-import com.google.common.collect.ImmutableList;
-import model.accounting.AccountOp;
-import model.accounting.AccountingTran;
-import model.accounting.AccountingTranBonus;
-import model.accounting.AccountingTranOrder;
+import model.Model;
 import org.bson.types.ObjectId;
+import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
-import utils.MoneyUtils;
+
+import java.util.List;
 
 public class Order {
     static final String REFERER_URL_DEFAULT = "epiceleven.com";
 
     public enum TransactionType {
-        PAYPAL
+        IN_GAME,
+        PAYPAL,
+        MORE_THAN_GAME
     }
 
     public enum State {
@@ -36,18 +36,18 @@ public class Order {
     public String payerId;
     public String referer;
 
-    public Product product;
+    public List<Product> products;
 
     public Order() {
     }
 
-    public Order(ObjectId orderId, ObjectId userId, TransactionType transactionType, String paymentId, Product product) {
+    public Order(ObjectId orderId, ObjectId userId, TransactionType transactionType, String paymentId, List<Product> products) {
         this.orderId = orderId;
         this.transactionType = transactionType;
         this.userId = userId;
         this.state = State.WAITING_APPROVAL;
         this.paymentId = paymentId;
-        this.product = product;
+        this.products = products;
     }
 
     public void setWaitingPayment(String payerId) {
@@ -83,6 +83,19 @@ public class Order {
         return state.equals(State.CANCELED);
     }
 
+    public Money price() {
+        Money result = null;
+        for(Product product : products) {
+            if (result == null) {
+                result = product.price;
+            }
+            else {
+                result.plus(product.price);
+            }
+        }
+        return result;
+    }
+
     static public Order findOne(String orderId) {
         return ObjectId.isValid(orderId) ? Model.orders().findOne("{_id : #}", new ObjectId(orderId)).as(Order.class) : null;
     }
@@ -91,8 +104,8 @@ public class Order {
         return Model.orders().findOne("{paymentId : #}", paymentId).as(Order.class);
     }
 
-    static public Order create (ObjectId orderId, ObjectId userId, TransactionType transactionType, String paymentId, Product product, String refererUrl) {
-        Order order = new Order(orderId, userId, transactionType, paymentId, product);
+    static public Order create (ObjectId orderId, ObjectId userId, TransactionType transactionType, String paymentId, List<Product> products, String refererUrl) {
+        Order order = new Order(orderId, userId, transactionType, paymentId, products);
         // No almacenamos el referer si es el "por defecto"
         if (!refererUrl.contains(REFERER_URL_DEFAULT)) {
             order.referer = refererUrl;

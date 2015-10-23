@@ -21,7 +21,7 @@ public class ContestController extends Controller {
     public static Result indexAjax() {
         return PaginationData.withAjax(request().queryString(), Model.contests(), Contest.class, new PaginationData() {
             public String projection() {
-                return "{name: 1, 'contestEntries.userId': 1, maxEntries: 1, templateContestId: 1, optaCompetitionId: 1, state: 1}";
+                return "{name: 1, 'contestEntries.userId': 1, maxEntries: 1, entryFee: 1, prizeMultiplier: 1, templateContestId: 1, optaCompetitionId: 1, state: 1, simulation: 1}";
             }
 
             public List<String> getFieldNames() {
@@ -29,9 +29,11 @@ public class ContestController extends Controller {
                     "name",
                     "",                     // contestEntries.size
                     "maxEntries",
+                    "",                     // prize Pool
                     "templateContestId",
                     "optaCompetitionId",
-                    ""                      // templateContest.state
+                    "",                     // templateContest.state
+                    ""                      // Simulation
                 );
             }
 
@@ -41,9 +43,10 @@ public class ContestController extends Controller {
                     case 0: return contest.name;
                     case 1: return String.valueOf(contest.contestEntries.size());
                     case 2: return String.valueOf(contest.maxEntries);
-                    case 3: return contest.templateContestId.toString();
-                    case 4: return contest.optaCompetitionId;
-                    case 5: if(contest.state.isHistory()) {
+                    case 3: return MoneyUtils.asString(contest.getPrizePool());
+                    case 4: return contest.templateContestId.toString();
+                    case 5: return contest.optaCompetitionId;
+                    case 6: if(contest.state.isHistory()) {
                                 return "Finished";
                             } else if(contest.state.isCanceled()) {
                                 return "Canceled";
@@ -52,6 +55,7 @@ public class ContestController extends Controller {
                             } else {
                                 return "Waiting";
                             }
+                    case 7: return "";
                 }
                 return "<invalid value>";
             }
@@ -59,10 +63,10 @@ public class ContestController extends Controller {
             public String getRenderFieldByIndex(Object data, String fieldValue, Integer index) {
                 Contest contest = (Contest) data;
                 switch (index) {
-                    case 3: return String.format("<a href=\"%s\">%s</a>",
+                    case 4: return String.format("<a href=\"%s\">%s</a>",
                                 routes.TemplateContestController.show(fieldValue).url(),
                                 fieldValue);
-                    case 5:
+                    case 6:
                         if(fieldValue.equals("Finished")) {
                             return "<button class=\"btn btn-danger\">Finished</button>";
                         } else if(fieldValue.equals("Canceled")) {
@@ -72,6 +76,10 @@ public class ContestController extends Controller {
                         } else {
                             return "<button class=\"btn btn-warning\">Waiting</button>";
                         }
+                    case 7:
+                        return contest.simulation
+                                ? "<button class=\"btn btn-success\">Simulation</button>"
+                                : "";
                 }
                 return fieldValue;
             }
@@ -166,9 +174,9 @@ public class ContestController extends Controller {
                         errors.add(String.format("contestEntry: %s: Sin AccountOp", contestEntry.contestEntryId));
                     }
                     // Tendría que recibir el premio correspondiente
-                    else if (!accountOp.value.equals(prizes.getValue(contestEntry.position))) {
+                    else if (!accountOp.asMoney().equals(prizes.getValue(contestEntry.position))) {
                         errors.add(String.format("contestEntry: %s AccountOp: %s != %s",
-                                contestEntry.contestEntryId, accountOp.value, prizes.getValue(contestEntry.position)));
+                                contestEntry.contestEntryId, accountOp.asMoney(), prizes.getValue(contestEntry.position)));
                     }
                 }
             }
@@ -201,7 +209,7 @@ public class ContestController extends Controller {
                                     contest.entryFee, contest.contestId, contestEntry.contestEntryId, bonusPending));
                         }
                         // Comprobar que sea la misma cantidad (una positiva y otra negativa)
-                        else if (!MoneyUtils.equals(bonusTransaction.bonus.negated(), bonusTransaction.accountOps.get(0).value)) {
+                        else if (!MoneyUtils.equals(bonusTransaction.bonus.negated(), bonusTransaction.accountOps.get(0).asMoney())) {
                             errors.add(String.format("entryFee %s: contest: %s contestEntry: %s: Bonus: %s != Cash %s",
                                     contest.entryFee.toString(), contest.contestId, contestEntry.contestEntryId,
                                     bonusTransaction.bonus.negated(), bonusTransaction.accountOps.get(0).value));
@@ -239,7 +247,7 @@ public class ContestController extends Controller {
                     errors.add(String.format("contestEntry: %s: Sin AccountOp", contestEntry.contestEntryId));
                 }
                 // Tendrían que devolverle el entryFee
-                else if (!MoneyUtils.equals(accountOp.value, contest.entryFee)) {
+                else if (!MoneyUtils.equals(accountOp.asMoney(), contest.entryFee)) {
                     errors.add(String.format("contestEntry: %s AccountOp: %s != %s",
                             contestEntry.contestEntryId, accountOp.value, contest.entryFee));
                 }

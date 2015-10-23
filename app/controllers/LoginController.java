@@ -208,8 +208,8 @@ public class LoginController extends Controller {
                     // Existe un bonus por registrarse?
                     Money bonus = SignupBonus.getMoney();
                     if (bonus != null) {
-                        AccountingTranBonus.create(AccountingTran.TransactionType.BONUS, "SIGNUP", bonus, ImmutableList.of(
-                                new AccountOp(theUser.userId, MoneyUtils.zero, User.getSeqId(theUser.userId) + 1)
+                        AccountingTranBonus.create(bonus.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, "SIGNUP", bonus, ImmutableList.of(
+                                new AccountOp(theUser.userId, bonus, User.getSeqId(theUser.userId) + 1)
                         ));
                     }
                 } catch (DuplicateKeyException exc) {
@@ -456,7 +456,7 @@ public class LoginController extends Controller {
         List<AccountingTran> accountingTrans = AccountingTran.findAllFromUserId(theUser.userId);
         for (AccountingTran transaction : accountingTrans) {
             AccountOp accountOp = transaction.getAccountOp(theUser.userId);
-            if (accountOp != null && MoneyUtils.isGreaterThan(accountOp.value, MoneyUtils.zero)) {
+            if (accountOp != null && MoneyUtils.isGreaterThan(accountOp.asMoney(), MoneyUtils.zero)) {
                 transactions.add(transaction.getAccountInfo(accountOp));
             }
         }

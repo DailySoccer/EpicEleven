@@ -7,6 +7,7 @@ import com.mongodb.*;
 import org.bson.types.ObjectId;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.MigrationInfo;
+import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.jongo.*;
 import org.jongo.marshall.jackson.JacksonMapper;
@@ -15,6 +16,7 @@ import play.Play;
 import utils.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -33,6 +35,8 @@ public class Model {
 
     static public MongoCollection contests() { return _jongo.getCollection("contests"); }
     static public MongoCollection matchEvents() { return _jongo.getCollection("matchEvents"); }
+
+    static public MongoCollection statsSimulation() { return _jongo.getCollection("statsSimulation"); }
 
     static public MongoCollection optaCompetitions() { return _jongo.getCollection("optaCompetitions"); }
     static public MongoCollection optaEvents() { return _jongo.getCollection("optaEvents"); }
@@ -259,10 +263,12 @@ public class Model {
         optaCompetitions.createIndex(new BasicDBObject("competitionId", 1));
 
         DBCollection optaEvents = theMongoDB.getCollection("optaEvents");
-        optaEvents.createIndex(new BasicDBObject("parentId", 1));
         optaEvents.createIndex(new BasicDBObject("eventId", 1));
         optaEvents.createIndex(new BasicDBObject("gameId", 1));
         optaEvents.createIndex(new BasicDBObject("optaPlayerId", 1));
+        optaEvents.createIndex(new BasicDBObject("competitionId", 1));
+        optaEvents.createIndex(new BasicDBObject("homeTeamId", 1));
+        optaEvents.createIndex(new BasicDBObject("awayTeamId", 1));
 
         DBCollection optaPlayers = theMongoDB.getCollection("optaPlayers");
         optaPlayers.createIndex(new BasicDBObject("optaPlayerId", 1));
@@ -319,12 +325,18 @@ public class Model {
         if (!theMongoDB.collectionExists("cancelledContestEntries")) {
             theMongoDB.createCollection("cancelledContestEntries", new BasicDBObject());
         }
+
+        if (!theMongoDB.collectionExists("statsSimulation")) {
+            DBCollection statsSimulation = theMongoDB.createCollection("statsSimulation", new BasicDBObject());
+            statsSimulation.createIndex(new BasicDBObject("optaMatchEventId", 1));
+        }
     }
 
     static private void ensureTransactionsDB(DB theMongoDB) {
         if (!theMongoDB.collectionExists("accountingTransactions")) {
             DBCollection accountingTransactions = theMongoDB.createCollection("accountingTransactions", new BasicDBObject());
-             accountingTransactions.createIndex(new BasicDBObject("accountOps.accountId", 1).append("accountOps.seqId", 1), new BasicDBObject("unique", true));
+            accountingTransactions.createIndex(new BasicDBObject("accountOps.accountId", 1).append("accountOps.seqId", 1), new BasicDBObject("unique", true));
+            accountingTransactions.createIndex(new BasicDBObject("currencyCode", 1));
         }
     }
 

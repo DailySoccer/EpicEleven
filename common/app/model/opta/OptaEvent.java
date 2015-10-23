@@ -72,6 +72,22 @@ public class OptaEvent {
 
         ArrayList<Integer> qualifiers = new ArrayList<>();
 
+        final int TYPEID_PASS = 1;
+        final int TYPEID_GOAL = 16;
+        final int TYPEID_PENALTY_FACED = 58;
+        final int TYPEID_OFFSIDE_PASS = 2;
+        final int TYPEID_DELETED_EVENT = 43;
+        final int QUALIFIER_ASSIST = 210;
+        final int QUALIFIER_SECOND_YELLOW_CARD = 32;
+        final int QUALIFIER_RED_CARD = 33;
+        final int QUALIFIER_PENALTY = 9;
+        final int QUALIFIER_OWN_GOAL = 28;
+        final int QUALIFIER_SCORED = 186;
+        final int QUALIFIER_PLAYERS_CAUGHT_OFFSIDE = 7;
+        final int QUALIFIER_DEF_BLOCK = 94;
+        final int QUALIFIER_LEADING_TO_GOAL = 170;
+        final int QUALIFIER_LEADING_TO_ATTEMPT = 169;
+
         if (event.getAttribute("player_id") != null) {
             this.optaPlayerId = event.getAttributeValue("player_id");
         }
@@ -93,42 +109,43 @@ public class OptaEvent {
         }
         // DERIVED EVENTS GO HERE
         // Pase exitoso o fracasado
-        if (this.typeId == 1) {
+        if (this.typeId == TYPEID_PASS) {
             if (outcome == 1) {
-                this.typeId = OptaEventType.PASS_SUCCESSFUL.code;  //Pase exitoso-> 1001
+                if (qualifiers.contains(QUALIFIER_ASSIST))
+                    this.typeId = OptaEventType.ASSIST.code;  //Asistencia -> 1210
+                else
+                    this.typeId = OptaEventType.PASS_SUCCESSFUL.code;  //Pase exitoso-> 1001
             }
             else {
                 this.typeId = OptaEventType.PASS_UNSUCCESSFUL.code;  //Pase fracasado -> 1002
             }
         }
-        // Asistencia
-        if (this.typeId == OptaEventType.PASS_SUCCESSFUL.code && qualifiers.contains(210)) {
-            this.typeId = OptaEventType.ASSIST.code;  //Asistencia -> 1210
-        }
         // Falta/Penalty infligido
         else if (this.typeId == OptaEventType.FOUL_RECEIVED.code && outcome == 0) {
-            if (qualifiers.contains(9)) {
+            if (qualifiers.contains(QUALIFIER_PENALTY)) {
                 this.typeId = OptaEventType.PENALTY_COMMITTED.code;  //Penalty infligido -> 1409
             } else {
                 this.typeId = OptaEventType.FOUL_COMMITTED.code;  // Falta infligida -> 1004
             }
         }
-        // Segunda tarjeta amarilla -> 1017
-        else if (this.typeId == OptaEventType.YELLOW_CARD.code && qualifiers.contains(32)) {
-            this.typeId = OptaEventType.SECOND_YELLOW_CARD.code;
-        }
-        // Tarjeta roja -> 1117
-        else if (this.typeId == OptaEventType.YELLOW_CARD.code && qualifiers.contains(33)) {
-            this.typeId = OptaEventType.RED_CARD.code;
+        // Tarjeta amarilla
+        else if (this.typeId == OptaEventType.YELLOW_CARD.code) {
+            // Segunda tarjeta amarilla -> 1017
+            if (qualifiers.contains(QUALIFIER_SECOND_YELLOW_CARD)) {
+                this.typeId = OptaEventType.SECOND_YELLOW_CARD.code;
+            }
+            // Tarjeta roja -> 1117
+            else if (qualifiers.contains(QUALIFIER_RED_CARD)) {
+                this.typeId = OptaEventType.RED_CARD.code;
+            }
         }
         // Penalty miss -> 1410
-        else if ((this.typeId == OptaEventType.MISS.code || this.typeId == OptaEventType.POST.code ||
-                this.typeId == OptaEventType.ATTEMPT_SAVED.code) &&
-                outcome == 0 && qualifiers.contains(9)) {
+        else if ((this.typeId == OptaEventType.MISS.code || this.typeId == OptaEventType.POST.code || this.typeId == OptaEventType.ATTEMPT_SAVED.code) &&
+                outcome == 0 && qualifiers.contains(QUALIFIER_PENALTY)) {
             this.typeId = OptaEventType.PENALTY_FAILED.code;
-        } else if (this.typeId == 16 && outcome == 1) {
+        } else if (this.typeId == TYPEID_GOAL && outcome == 1) {
             // Gol en contra -> 1699
-            if (qualifiers.contains(28)) {
+            if (qualifiers.contains(QUALIFIER_OWN_GOAL)) {
                 this.typeId = OptaEventType.OWN_GOAL.code;
             } else {
                 // Diferencias en goles:
@@ -153,7 +170,7 @@ public class OptaEvent {
             }
         }
         // Penalty parado -> 1058
-        else if (this.typeId == 58 && !qualifiers.contains(186)) {
+        else if (this.typeId == TYPEID_PENALTY_FACED && !qualifiers.contains(QUALIFIER_SCORED)) {
             this.typeId = OptaEventType.GOALKEEPER_SAVES_PENALTY.code;
         }
         // Effective Tackle -> 1007
@@ -161,28 +178,33 @@ public class OptaEvent {
             this.typeId = OptaEventType.TACKLE_EFFECTIVE.code;
         }
         // Caught Offside -> 1072
-        else if (this.typeId == 2 && qualifiers.contains(7)) {
+        else if (this.typeId == TYPEID_OFFSIDE_PASS && qualifiers.contains(QUALIFIER_PLAYERS_CAUGHT_OFFSIDE)) {
             this.typeId = OptaEventType.CAUGHT_OFFSIDE.code;
             this.optaPlayerId = optaPlayerOffsideId;
         }
         // Player Saves -> 1010
-        else if (this.typeId == OptaEventType.SAVE_GOALKEEPER.code && qualifiers.contains(94)) {
+        else if (this.typeId == OptaEventType.SAVE_GOALKEEPER.code && qualifiers.contains(QUALIFIER_DEF_BLOCK)) {
             this.typeId = OptaEventType.SAVE_PLAYER.code;
         }
         // Player Saves -> 1051
         else if (this.typeId == OptaEventType.ERROR.code) {
-            if (qualifiers.contains(170)) {
+            if (qualifiers.contains(QUALIFIER_LEADING_TO_GOAL)) {
                 this.typeId = OptaEventType.DECISIVE_ERROR.code;
             }
-            else if (!qualifiers.contains(169)) {
+            else if (!qualifiers.contains(QUALIFIER_LEADING_TO_ATTEMPT)) {
                 this.typeId = OptaEventType._INVALID_.code;
             }
         }
 
         // Si no es un borrado, poner a INVALID si no está entre los que nos interesan
-        if (this.typeId != 43) {
+        if (this.typeId != TYPEID_DELETED_EVENT) {
             this.typeId = OptaEventType.getEnum(this.typeId).code;
         }
+    }
+
+    public OptaEvent insert() {
+        Model.optaEvents().update("{eventId: #, teamId: #, gameId: #}", eventId, teamId, gameId).upsert().with(this);
+        return this;
     }
 
     static public OptaEvent findLast(String optaMatchEventId) {

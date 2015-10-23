@@ -102,7 +102,7 @@ public class CancelContestEntryJob extends Job {
 
     private boolean transactionReturnPayment(Money entryFee) {
         // Crear la transacción de Abandonar un Contest
-        AccountingTran accountingTran = AccountingTranCancelContestEntry.create(contestId, contestEntryId, ImmutableList.of(
+        AccountingTran accountingTran = AccountingTranCancelContestEntry.create(entryFee.getCurrencyUnit().getCode(), contestId, contestEntryId, ImmutableList.of(
                 new AccountOp(userId, entryFee, User.getSeqId(userId) + 1)
         ));
         return accountingTran != null;

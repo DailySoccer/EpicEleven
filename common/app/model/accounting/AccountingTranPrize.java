@@ -10,8 +10,8 @@ public class AccountingTranPrize extends AccountingTran {
 
     public AccountingTranPrize() {}
 
-    public AccountingTranPrize(ObjectId contestId) {
-        super(TransactionType.PRIZE);
+    public AccountingTranPrize(String currencyCode, ObjectId contestId) {
+        super(currencyCode, TransactionType.PRIZE);
         this.contestId = contestId;
     }
 
@@ -21,10 +21,10 @@ public class AccountingTranPrize extends AccountingTran {
                 .as(AccountingTranPrize.class);
     }
 
-    static public AccountingTran create(ObjectId contestId, List<AccountOp> accounts) {
+    static public AccountingTran create(String currencyCode, ObjectId contestId, List<AccountOp> accounts) {
         AccountingTranPrize accountingOp = findOne(contestId);
         if (accountingOp == null) {
-            accountingOp = new AccountingTranPrize(contestId);
+            accountingOp = new AccountingTranPrize(currencyCode, contestId);
             accountingOp.accountOps = accounts;
             accountingOp.insertAndCommit();
         }

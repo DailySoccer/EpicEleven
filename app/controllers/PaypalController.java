@@ -3,6 +3,7 @@ package controllers;
 import actions.AllowCors;
 import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.PaymentHistory;
@@ -11,6 +12,10 @@ import model.*;
 import model.jobs.CompleteOrderJob;
 import model.paypal.PaypalIPNMessage;
 import model.paypal.PaypalPayment;
+import model.shop.Catalog;
+import model.shop.Order;
+import model.shop.Product;
+import model.shop.ProductMoney;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -19,7 +24,6 @@ import play.data.Form;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
-import utils.MoneyUtils;
 import utils.ReturnHelper;
 
 import java.util.Map;
@@ -66,7 +70,7 @@ public class PaypalController extends Controller {
             ObjectId orderId = new ObjectId();
 
             // Producto que quiere comprar
-            Product product = new Product("Payment", MoneyUtils.of(amount));
+            ProductMoney product = new ProductMoney("Payment", Money.of(CurrencyUnit.EUR, amount), "Product", "", Money.of(CurrencyUnit.EUR, amount));
 
             // Creamos la solicitud de pago (le proporcionamos el identificador del pedido para referencias posteriores)
             Payment payment = PaypalPayment.instance().createPayment(orderId, product);
@@ -74,7 +78,13 @@ public class PaypalController extends Controller {
 
             // Creamos el pedido (con el identificador generado y el de la solicitud de pago)
             //      Únicamente almacenamos el referer si no es el de "por defecto"
-            Order.create(orderId, new ObjectId(userId), Order.TransactionType.PAYPAL, payment.getId(), product, refererUrl);
+            Order.create(
+                    orderId,
+                    new ObjectId(userId),
+                    Order.TransactionType.PAYPAL,
+                    payment.getId(),
+                    ImmutableList.of(product),
+                    refererUrl);
 
             String redirectUrl = PaypalPayment.instance().getApprovalURL(payment);
             if (redirectUrl != null) {
@@ -106,7 +116,7 @@ public class PaypalController extends Controller {
             ObjectId orderId = new ObjectId();
 
             // Producto que quiere comprar
-            Product product = Product.findOne(productId);
+            ProductMoney product = (ProductMoney) Catalog.findOne(productId);
 
             // Creamos la solicitud de pago (le proporcionamos el identificador del pedido para referencias posteriores)
             Payment payment = PaypalPayment.instance().createPayment(orderId, product);
@@ -114,7 +124,13 @@ public class PaypalController extends Controller {
 
             // Creamos el pedido (con el identificador generado y el de la solicitud de pago)
             //      Únicamente almacenamos el referer si no es el de "por defecto"
-            Order.create(orderId, new ObjectId(userId), Order.TransactionType.PAYPAL, payment.getId(), product, refererUrl);
+            Order.create(
+                    orderId,
+                    new ObjectId(userId),
+                    Order.TransactionType.PAYPAL,
+                    payment.getId(),
+                    ImmutableList.of(product),
+                    refererUrl);
 
             String redirectUrl = PaypalPayment.instance().getApprovalURL(payment);
             if (redirectUrl != null) {
@@ -200,7 +216,7 @@ public class PaypalController extends Controller {
     public static Result withdrawFunds(int amount) {
         User theUser = (User) ctx().args.get("User");
 
-        Refund refund = new Refund(theUser.userId, MoneyUtils.of(amount));
+        Refund refund = new Refund(theUser.userId, Money.of(CurrencyUnit.EUR, amount));
         refund.insert();
 
         return new ReturnHelper(ImmutableMap.of(

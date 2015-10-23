@@ -13,6 +13,10 @@
             <button class="btn btn-warning">Waiting</button>
         }
     }
+
+    @if(template_contest.isSimulation()) {
+        <button class="btn btn-success">Simulation</button>
+    }
 }
 
 @match_event_state(match_event : model.TemplateMatchEvent) = {
@@ -20,7 +24,7 @@
         <button class="btn btn-danger state_match_event">Finished</button>
     } else {
         @if(match_event.isGameStarted()) {
-            <button class="btn btn-success state_match_event">Live</button>
+            <button class="btn btn-success state_match_event">Live - @match_event.minutesPlayed min.</button>
         } else {
             <button class="btn btn-warning state_match_event">Waiting</button>
         }

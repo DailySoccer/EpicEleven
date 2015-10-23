@@ -9,12 +9,15 @@ import model.accounting.AccountingTranPrize;
 import model.bonus.Bonus;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
+import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.jongo.marshall.jackson.oid.Id;
+import play.Logger;
 import utils.ListUtils;
 import utils.MoneyUtils;
+import utils.TrueSkillHelper;
 import utils.ViewProjection;
 
 import java.math.RoundingMode;
@@ -68,6 +71,9 @@ public class Contest implements JongoId {
     public Money entryFee;
 
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
+    public float prizeMultiplier = 0.9f;
+
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public PrizeType prizeType;
 
     public Date startDate;
@@ -86,6 +92,9 @@ public class Contest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public boolean closed = false;
 
+    public boolean simulation = false;
+    public String specialImage;
+
     public Contest() {}
 
     public Contest(TemplateContest template) {
@@ -96,11 +105,14 @@ public class Contest implements JongoId {
         freeSlots = template.maxEntries;
         salaryCap = template.salaryCap;
         entryFee = template.entryFee;
+        prizeMultiplier = template.prizeMultiplier;
         prizeType = template.prizeType;
         startDate = template.startDate;
         optaCompetitionId = template.optaCompetitionId;
         templateMatchEventIds = template.templateMatchEventIds;
         instanceSoccerPlayers = template.instanceSoccerPlayers;
+        simulation = template.simulation;
+        specialImage = template.specialImage;
         createdAt = GlobalDate.getCurrentDate();
     }
 
@@ -305,6 +317,20 @@ public class Contest implements JongoId {
             contestEntry.prize = prizes.getValue(contestEntry.position);
             contestEntry.updateRanking();
         }
+
+        // Si es un torneo REAL, actualizaremos el TrueSkill de los participantes
+        if (!simulation) {
+            // Los contestEntries están ordenadas según sus posiciones
+            updateTrueSkill();
+        }
+    }
+
+    private void updateTrueSkill() {
+        // Calculamos el trueSkill de los participantes y actualizamos su información en la BDD
+        Map<ObjectId, User> usersRating = TrueSkillHelper.RecomputeRatings(contestEntries);
+        for (Map.Entry<ObjectId, User> user : usersRating.entrySet()) {
+            user.getValue().updateTrueSkillByContest(contestId);
+        }
     }
 
     public String translatedName() {
@@ -323,12 +349,21 @@ public class Contest implements JongoId {
             List<AccountOp> accounts = new ArrayList<>();
             for (ContestEntry contestEntry : contestEntries) {
                 Money prize = prizes.getValue(contestEntry.position);
-                if (MoneyUtils.isGreaterThan(prize, MoneyUtils.zero)) {
+                if (prize.getAmount().floatValue() > 0) {
                     accounts.add(new AccountOp(contestEntry.userId, prize, User.getSeqId(contestEntry.userId) + 1));
                 }
             }
 
-            AccountingTranPrize.create(contestId, accounts);
+            CurrencyUnit prizeCurrency = simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD;
+            AccountingTranPrize.create(prizeCurrency.getCode(), contestId, accounts);
+
+            // Si se jugaba con GOLD, se actualizarán las estadísticas de los ganadores
+            if (getPrizePool().getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+                for (AccountOp op : accounts) {
+                    User winner = User.findOne(op.accountId);
+                    winner.updateStats();
+                }
+            }
         }
     }
 
@@ -358,7 +393,8 @@ public class Contest implements JongoId {
                     accounts.add(new AccountOp(contestEntry.userId, bonus, userSeqId));
 
                     // Se lo quitamos del bonus
-                    AccountingTranBonus.create(AccountingTran.TransactionType.BONUS_TO_CASH,
+                    AccountingTranBonus.create(bonus.getCurrencyUnit().getCode(),
+                                                AccountingTran.TransactionType.BONUS_TO_CASH,
                                                 AccountingTranBonus.bonusToCashId(contestId, contestEntry.userId),
                                                 bonus.negated(),
                                                 accounts);
@@ -386,9 +422,26 @@ public class Contest implements JongoId {
         return instanceSoccerPlayer;
     }
 
+    public List<InstanceSoccerPlayer> getInstanceSoccerPlayers(List<ObjectId> ids) {
+        List<InstanceSoccerPlayer> soccerPlayers = new ArrayList<>();
+        for (ObjectId soccerPlayerId : ids) {
+            for (InstanceSoccerPlayer instancePlayer : instanceSoccerPlayers) {
+                if (soccerPlayerId.equals(instancePlayer.templateSoccerPlayerId)) {
+                    soccerPlayers.add(instancePlayer);
+                    break;
+                }
+            }
+        }
+        return soccerPlayers;
+    }
+
     public Contest getSameContestWithFreeSlot(ObjectId userId) {
         String query = String.format("{templateContestId: #, 'contestEntries.%s': {$exists: false}, 'contestEntries.userId': {$ne:#}}", maxEntries-1);
         return Model.contests().findOne(query, templateContestId, userId).as(Contest.class);
+    }
+
+    public Money getPrizePool() {
+        return Prizes.getPool(simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD, entryFee, maxEntries, prizeMultiplier);
     }
 
     class ContestEntryComparable implements Comparator<ContestEntry>{

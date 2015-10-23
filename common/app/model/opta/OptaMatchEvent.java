@@ -1,6 +1,7 @@
 package model.opta;
 
 import model.GlobalDate;
+import model.Model;
 import org.jdom2.Element;
 
 import java.util.Date;
@@ -18,6 +19,7 @@ public class OptaMatchEvent {
     public Date matchDate;
     public Date lastModified;
     public boolean dirty = true;
+    public boolean simulated = false;
 
     public OptaMatchEvent() {}
 
@@ -45,5 +47,32 @@ public class OptaMatchEvent {
                 awayTeamId =  OptaProcessor.getStringId(team, "TeamRef");
             }
         }
+    }
+
+    public OptaMatchEvent copy() {
+        OptaMatchEvent cloned = new OptaMatchEvent();
+
+        cloned.optaMatchEventId = optaMatchEventId;
+        cloned.lastModified = lastModified;
+        cloned.matchDate = matchDate;
+
+        cloned.competitionId = competitionId;
+        cloned.seasonId = seasonId;
+
+        cloned.seasonName = seasonName;
+        cloned.competitionName = competitionName;
+
+        cloned.homeTeamId = homeTeamId;
+        cloned.awayTeamId = awayTeamId;
+
+        return cloned;
+    }
+
+    public void insert() {
+        Model.optaMatchEvents().update("{optaMatchEventId: #}", optaMatchEventId).upsert().with(this);
+    }
+
+    public static OptaMatchEvent findOne(String optaMatchEventId) {
+        return Model.optaMatchEvents().findOne("{optaMatchEventId : #}", optaMatchEventId).as(OptaMatchEvent.class);
     }
 }

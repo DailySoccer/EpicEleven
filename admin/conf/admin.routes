@@ -9,8 +9,8 @@ GET         /stop_bot_actors                                                    
 GET         /pause_resume_bot_actors                                             controllers.admin.DashboardController.pauseResumeBotActors()
 GET         /stampede_bot_actors                                                 controllers.admin.DashboardController.stampedeBotActors()
 GET         /berserker_bot_actors                                                controllers.admin.DashboardController.berserkerBotActors()
-GET         /add_money_to_bots/:amount                                           controllers.admin.DashboardController.addMoneyToBots(amount : Integer)
-GET         /add_money_to_tests/:amount                                          controllers.admin.DashboardController.addMoneyToTests(amount : Integer)
+GET         /add_money_to_bots/:amount                                           controllers.admin.DashboardController.addMoneyToBots(amount : String)
+GET         /add_money_to_tests/:amount                                          controllers.admin.DashboardController.addMoneyToTests(amount : String)
 
 GET         /lobby                                                               controllers.admin.LobbyController.lobby()
 
@@ -36,6 +36,7 @@ GET         /soccer_player_stats/:playerId                                      
 
 GET         /fantasy_points/contest/:contestId/:playerId                         controllers.admin.TemplateSoccerPlayerController.showFantasyPointsInContest(contestId : String, playerId : String)
 GET         /fantasy_points/match_event/:matchEventId/:playerId                  controllers.admin.TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(matchEventId : String, playerId : String)
+GET         /live_events/match_event/:matchEventId/:playerId                     controllers.admin.TemplateSoccerPlayerController.showPlayerLiveEventsInMatchEvent(matchEventId : String, playerId : String)
 
 GET         /contests                                                            controllers.admin.ContestController.index()
 GET         /contests/ajax                                                       controllers.admin.ContestController.indexAjax()
@@ -50,15 +51,18 @@ GET         /template_contest/enable_creating/:state                            
 GET         /template_contest/save/:templateContestId                            controllers.admin.TemplateContestController.edit(templateContestId : String)
 GET         /template_contest/save                                               controllers.admin.TemplateContestController.newForm()
 POST        /template_contest/save                                               controllers.admin.TemplateContestController.create()
+GET         /template_contests/clone/:templateContestId                          controllers.admin.TemplateContestController.createClone(templateContestId : String)
 GET         /template_contest/publish/:templateContestId                         controllers.admin.TemplateContestController.publish(templateContestId : String)
 GET         /template_contest/delete/:templateContestId                          controllers.admin.TemplateContestController.destroy(templateContestId : String)
 GET         /template_contest/:templateContestId                                 controllers.admin.TemplateContestController.show(templateContestId : String)
 
-GET         /template_contest/get_prizes/:prizeType/:maxEntries/:entryFee        controllers.admin.TemplateContestController.getPrizes(prizeType : String, maxEntries : Int, entryFee : Int)
+GET         /template_contest/get_prizes/:prizeType/:maxEntries/:prizePool       controllers.admin.TemplateContestController.getPrizes(prizeType : String, maxEntries : Int, prizePool : Int)
 
 GET         /template_match_events                                               controllers.admin.TemplateMatchEventController.index()
+GET         /template_match_events/ajax                                          controllers.admin.TemplateMatchEventController.indexAjax()
 GET         /template_match_event/:templateMatchEventId                          controllers.admin.TemplateMatchEventController.show(templateMatchEventId : String)
 GET         /template_match_event/optaEvents/:matchEventId                       controllers.admin.TemplateMatchEventController.showOptaEvents(matchEventId : String)
+GET         /template_match_event/simulatedEvents/:matchEventId                  controllers.admin.TemplateMatchEventController.showSimulatedEvents(matchEventId : String)
 
 GET         /template_soccer_teams                                               controllers.admin.TemplateSoccerTeamController.index()
 GET         /template_soccer_team/:templateSoccerTeam                            controllers.admin.TemplateSoccerTeamController.show(templateSoccerTeam : String)

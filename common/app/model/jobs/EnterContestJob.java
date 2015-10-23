@@ -10,9 +10,11 @@ import model.accounting.AccountingTranCancelContestEntry;
 import model.accounting.AccountingTranEnterContest;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
+import play.Logger;
 import utils.MoneyUtils;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class EnterContestJob extends Job {
     public ObjectId userId;
@@ -46,7 +48,8 @@ public class EnterContestJob extends Job {
                 if (contestEntry == null) {
                     contestEntry = createContestEntry();
 
-                    bValid = contest.entryFee.isNegativeOrZero() || transactionPayment(contest.entryFee);
+                    // Será válido, si el contest es GRATIS o el usuario tiene dinero para realizar el contestEntry
+                    bValid = contest.entryFee.isNegativeOrZero() || transactionPayment(contest, contestEntry);
 
                     if (bValid) {
                         Contest contestModified = transactionInsertContestEntry(contest, contestEntry);
@@ -100,26 +103,50 @@ public class EnterContestJob extends Job {
         }
     }
 
-    private boolean transactionPayment(Money entryFee) {
+    private boolean transactionPayment(Contest contest, ContestEntry contestEntry) {
         boolean transactionValid = false;
 
-        // Registramos el seqId, de tal forma que si se produce una alteracion en el número de operaciones
-        // del usuario se lance una excepcion que impida la inserción ya que (accountId, seqId) es "unique key"
-        Integer seqId = User.getSeqId(userId) + 1;
+        Money entryFee = contest.entryFee;
 
-        // El usuario tiene dinero suficiente?
-        Money userBalance = User.calculateBalance(userId);
-        if (MoneyUtils.compareTo(userBalance, entryFee) >= 0) {
-            try {
-                // Registrar el pago
-                AccountingTran accountingTran = AccountingTranEnterContest.create(contestId, contestEntryId, ImmutableList.of(
-                        new AccountOp(userId, entryFee.negated(), seqId)
-                ));
+        // Los contests que requieren energía, los gestionaremos sin necesidad de transacciones
+        if (entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_ENERGY)) {
+            // El usuario puede usar la energía necesaria?
+            User user = User.findOne(userId);
+            transactionValid = user.useEnergy(entryFee);
+        }
+        else {
+            // Registramos el seqId, de tal forma que si se produce una alteracion en el número de operaciones
+            // del usuario se lance una excepcion que impida la inserción ya que (accountId, seqId) es "unique key"
+            Integer seqId = User.getSeqId(userId) + 1;
 
-                transactionValid = (accountingTran != null);
+            Money moneyNeeded = entryFee;
+
+            // En los torneos Oficiales, el usuario también tiene que pagar los futbolistas de nivel superior al suyo
+            if (entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+                Money managerBalance = User.calculateManagerBalance(userId);
+
+                // Modificamos el contestEntry con los players que han de ser comprados...
+                List<InstanceSoccerPlayer> soccerPlayers = contest.getInstanceSoccerPlayers(soccerIds);
+                List<InstanceSoccerPlayer> playersToBuy = User.playersToBuy(managerBalance, soccerPlayers);
+                contestEntry.playersPurchased = playersToBuy.stream().map( instanceSoccerPlayer ->
+                                instanceSoccerPlayer.templateSoccerPlayerId
+                ).collect(Collectors.toList());
+
+                moneyNeeded = moneyNeeded.plus(User.moneyToBuy(managerBalance, playersToBuy));
             }
-            catch(DuplicateKeyException duplicateKeyException) {
-                play.Logger.info("DuplicateKeyException");
+
+            // El usuario tiene dinero suficiente?
+            if (User.hasMoney(userId, moneyNeeded)) {
+                try {
+                    // Registrar el pago
+                    AccountingTran accountingTran = AccountingTranEnterContest.create(entryFee.getCurrencyUnit().getCode(), contestId, contestEntryId, ImmutableList.of(
+                            new AccountOp(userId, moneyNeeded.negated(), seqId)
+                    ));
+
+                    transactionValid = (accountingTran != null);
+                } catch (DuplicateKeyException duplicateKeyException) {
+                    play.Logger.info("DuplicateKeyException");
+                }
             }
         }
 
@@ -149,7 +176,7 @@ public class EnterContestJob extends Job {
                 Contest contest = Contest.findOne(contestId);
 
                 // Generamos la operación de cancelación (ingresarle dinero)
-                AccountingTranCancelContestEntry.create(contestId, contestEntryId, ImmutableList.of(
+                AccountingTranCancelContestEntry.create(contest.entryFee.getCurrencyUnit().getCode(), contestId, contestEntryId, ImmutableList.of(
                         new AccountOp(userId, contest.entryFee, seqId)
                 ));
             }

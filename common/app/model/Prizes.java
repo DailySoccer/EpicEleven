@@ -10,32 +10,36 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Prizes {
+    public static final float PRIZE_MULTIPLIER_FOR_REAL_CONTEST = 0.9f;
+
     public PrizeType prizeType;
     public int maxEntries;
-    public Money entryFee;
+    public Money prizePool;
     // public List<Float> multipliers = new ArrayList<>();
     public List<Money> values = new ArrayList<>();
 
     private Prizes() {
     }
 
-    private Prizes(PrizeType prizeType, int maxEntries, Money entryFee) {
+    private Prizes(PrizeType prizeType, int maxEntries, Money prizePool) {
         this.prizeType = prizeType;
         this.maxEntries = maxEntries;
-        this.entryFee = entryFee;
+        this.prizePool = prizePool;
         // this.multipliers = getMultipliers(prizeType, maxEntries);
-        this.values = getPrizesApplyingMultipliers(getPrizePool(maxEntries, entryFee), getMultipliers(prizeType, maxEntries));
+
+        this.values = getPrizesApplyingMultipliers(prizePool, getMultipliers(prizeType, maxEntries));
     }
 
     public Money getValue(int position) {
         Money ret;
         if (prizeType.equals(PrizeType.FIFTY_FIFTY)) {
-            ret = (position < (maxEntries / 2)) ? values.get(0) : MoneyUtils.zero;
+            ret = (position < (maxEntries / 2)) ? values.get(0) : Money.zero(prizePool.getCurrencyUnit());
         }
         else {
-            ret = (position < values.size()) ? values.get(position) : MoneyUtils.zero;
+            ret = (position < values.size()) ? values.get(position) : Money.zero(prizePool.getCurrencyUnit());
         }
         return ret;
     }
@@ -56,11 +60,11 @@ public class Prizes {
     }
 
     public static Prizes findOne(Contest contest) {
-        return findOne(contest.prizeType, contest.maxEntries, contest.entryFee);
+        return findOne(contest.prizeType, contest.maxEntries, contest.getPrizePool());
     }
 
-    public static Prizes findOne(PrizeType prizeType, int maxEntries, Money entryFee) {
-        return new Prizes(prizeType, maxEntries, entryFee);
+    public static Prizes findOne(PrizeType prizeType, int maxEntries, Money prizePool) {
+        return new Prizes(prizeType, maxEntries, prizePool);
     }
 
     public static List<Prizes> findAllByContests(List<Contest>... elements) {
@@ -182,8 +186,9 @@ public class Prizes {
         return prizes;
     }
 
-    static Money getPrizePool(int maxEntries, Money entryFee) {
-        return entryFee.multipliedBy(maxEntries * 0.90f, RoundingMode.HALF_UP);
+    static public Money getPool(CurrencyUnit currencyUnit, Money entryFee, int maxEntries, float prizeMultiplier) {
+        Money money = Money.zero(currencyUnit);
+        return money.plus(entryFee.getAmount()).multipliedBy(maxEntries * prizeMultiplier, RoundingMode.HALF_UP);
     }
 }
 

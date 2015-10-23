@@ -1,21 +1,96 @@
 package controllers.admin;
 
-import model.Model;
-import model.TemplateMatchEvent;
-import model.TemplateSoccerPlayer;
-import model.TemplateSoccerTeam;
-import model.opta.OptaEvent;
+import com.google.common.collect.ImmutableList;
 import org.bson.types.ObjectId;
-import play.mvc.Controller;
-import play.mvc.Result;
+import model.*;
+import play.mvc.*;
+import java.util.*;
+import model.opta.OptaEvent;
 import utils.ListUtils;
-
-import java.util.HashMap;
-import java.util.List;
 
 public class TemplateMatchEventController extends Controller {
     public static Result index() {
         return ok(views.html.template_match_event_list.render(TemplateMatchEvent.findAll(), TemplateSoccerTeam.findAllAsMap()));
+    }
+
+    public static Result indexAjax() {
+        HashMap<ObjectId, TemplateSoccerTeam> teamsMap = TemplateSoccerTeam.findAllAsMap();
+
+        return PaginationData.withAjax(request().queryString(), Model.templateMatchEvents(), TemplateMatchEvent.class, new PaginationData() {
+            public List<String> getFieldNames() {
+                return ImmutableList.of(
+                        "optaMatchEventId",
+                        "optaTeamAId",
+                        "optaTeamBId",
+                        "templateMatchEventId",
+                        "optaCompetitionId",
+                        "startDate",
+                        "",                         // State
+                        ""                          // Simulation
+                );
+            }
+
+            public String getFieldByIndex(Object data, Integer index) {
+                TemplateMatchEvent templateMatchEvent = (TemplateMatchEvent) data;
+                switch (index) {
+                    case 0:
+                        return templateMatchEvent.optaMatchEventId;
+                    case 1:
+                        return templateMatchEvent.optaTeamAId;
+                    case 2:
+                        return templateMatchEvent.optaTeamBId;
+                    case 3:
+                        return (teamsMap.containsKey(templateMatchEvent.templateSoccerTeamAId) ? teamsMap.get(templateMatchEvent.templateSoccerTeamAId).name : templateMatchEvent.templateSoccerTeamAId.toString())
+                                + " vs " +
+                                (teamsMap.containsKey(templateMatchEvent.templateSoccerTeamBId) ? teamsMap.get(templateMatchEvent.templateSoccerTeamBId).name : templateMatchEvent.templateSoccerTeamBId.toString());
+                    case 4:
+                        return templateMatchEvent.optaCompetitionId;
+                    case 5:
+                        return GlobalDate.formatDate(templateMatchEvent.startDate);
+                    case 6: if(templateMatchEvent.isGameFinished()) {
+                                return "Finished";
+                            } else if(templateMatchEvent.isGameStarted()) {
+                                return "Live";
+                            } else {
+                                return "Waiting";
+                            }
+                    case 7:
+                        return templateMatchEvent.simulation ? "Simulation" : "Real";
+                }
+                return "<invalid value>";
+            }
+
+            public String getRenderFieldByIndex(Object data, String fieldValue, Integer index) {
+                TemplateMatchEvent templateMatchEvent = (TemplateMatchEvent) data;
+                switch (index) {
+                    case 3:
+                        String result = fieldValue;
+                        if (templateMatchEvent.isGameStarted()) {
+                            String teamAName = (teamsMap.containsKey(templateMatchEvent.templateSoccerTeamAId) ? teamsMap.get(templateMatchEvent.templateSoccerTeamAId).name : templateMatchEvent.templateSoccerTeamAId.toString());
+                            String teamBName = (teamsMap.containsKey(templateMatchEvent.templateSoccerTeamBId) ? teamsMap.get(templateMatchEvent.templateSoccerTeamBId).name : templateMatchEvent.templateSoccerTeamBId.toString());
+                            result = String.format("%s (%d) vs %s (%d)",
+                                    teamAName, templateMatchEvent.getFantasyPointsForTeam(templateMatchEvent.templateSoccerTeamAId), teamBName, templateMatchEvent.getFantasyPointsForTeam(templateMatchEvent.templateSoccerTeamBId));
+                            if (templateMatchEvent.homeScore != -1 && templateMatchEvent.awayScore != -1) {
+                                result = String.format("%s (%d - %d)", result, templateMatchEvent.homeScore, templateMatchEvent.awayScore);
+                            }
+                        }
+                        return String.format("<a href=\"%s\">%s</a>", routes.TemplateMatchEventController.show(templateMatchEvent.templateMatchEventId.toString()), result);
+                    case 6:
+                        if(fieldValue.equals("Finished")) {
+                            return "<button class=\"btn btn-danger\">Finished</button>";
+                        } else if(fieldValue.equals("Live")) {
+                            return String.format("<button class=\"btn btn-success\">Live - %d min.</button>", templateMatchEvent.minutesPlayed);
+                        } else {
+                            return "<button class=\"btn btn-warning\">Waiting</button>";
+                        }
+                    case 7:
+                        return templateMatchEvent.simulation
+                                ? String.format("<button class=\"btn btn-success\">Simulation</button>")
+                                : "";
+                }
+                return fieldValue;
+            }
+        });
     }
 
     public static Result show(String templateMatchEventId) {
@@ -28,10 +103,32 @@ public class TemplateMatchEventController extends Controller {
         Iterable<OptaEvent> optaEventResults = Model.optaEvents().find("{gameId: #, points: { $ne: 0 }}", matchEvent.optaMatchEventId).as(OptaEvent.class);
         List<OptaEvent> optaEventList = ListUtils.asList(optaEventResults);
 
-        return ok(views.html.match_event_opta_events_list.render(optaEventList, getPlayersInfo(matchEvent)));
+        return ok(views.html.match_event_opta_events_list.render(optaEventList, getOptaPlayersInfo(matchEvent)));
     }
 
-    private static HashMap<String, String> getPlayersInfo(TemplateMatchEvent matchEvent){
+    public static Result showSimulatedEvents(String matchEventId) {
+        TemplateMatchEvent matchEvent = TemplateMatchEvent.findOne(new ObjectId(matchEventId));
+        return ok(views.html.match_event_simulated_events_list.render(matchEvent.simulationEvents, getTemplateSoccerPlayersInfo(matchEvent)));
+    }
+
+    private static HashMap<String, String> getTemplateSoccerPlayersInfo(TemplateMatchEvent matchEvent){
+        HashMap<String, String> map = new HashMap<>();
+
+        TemplateSoccerTeam templateSoccerTeamA = TemplateSoccerTeam.findOne(matchEvent.templateSoccerTeamAId);
+        for (TemplateSoccerPlayer soccerPlayer : TemplateSoccerPlayer.findAllFromTemplateTeam(templateSoccerTeamA.templateSoccerTeamId)) {
+            map.put(soccerPlayer.templateSoccerPlayerId.toString(), soccerPlayer.name);
+            map.put(soccerPlayer.templateSoccerPlayerId.toString().concat("-team"), templateSoccerTeamA.name);
+        }
+
+        TemplateSoccerTeam templateSoccerTeamB = TemplateSoccerTeam.findOne(matchEvent.templateSoccerTeamBId);
+        for (TemplateSoccerPlayer soccerPlayer : TemplateSoccerPlayer.findAllFromTemplateTeam(templateSoccerTeamB.templateSoccerTeamId)) {
+            map.put(soccerPlayer.templateSoccerPlayerId.toString(), soccerPlayer.name);
+            map.put(soccerPlayer.templateSoccerPlayerId.toString() + "-team", templateSoccerTeamB.name);
+        }
+        return map;
+    }
+
+    private static HashMap<String, String> getOptaPlayersInfo(TemplateMatchEvent matchEvent){
         HashMap<String, String> map = new HashMap<>();
 
         TemplateSoccerTeam templateSoccerTeamA = TemplateSoccerTeam.findOne(matchEvent.templateSoccerTeamAId);

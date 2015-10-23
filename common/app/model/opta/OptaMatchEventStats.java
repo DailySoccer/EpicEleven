@@ -66,13 +66,16 @@ public class OptaMatchEventStats {
         }
 
         if (homeScore != -1 || awayScore != -1) {
-            Model.optaMatchEventStats()
-                    .update("{optaMatchEventId: #}", optaMatchEventId)
-                    .upsert()
-                    .with("{$set: {optaMatchEventId: #, homeScore: #, awayScore: #}}", optaMatchEventId, homeScore, awayScore);
+            updateMatchResult(optaMatchEventId, homeScore, awayScore);
         }
     }
 
+    static public void updateMatchResult(String optaMatchEventId, int homeScore, int awayScore) {
+        Model.optaMatchEventStats()
+                .update("{optaMatchEventId: #}", optaMatchEventId)
+                .upsert()
+                .with("{$set: {optaMatchEventId: #, homeScore: #, awayScore: #}}", optaMatchEventId, homeScore, awayScore);
+    }
 
     public int getPlayedMinutes(String optaPlayerId) {
         OptaPlayerStats playerStats = stats.get(optaPlayerId);

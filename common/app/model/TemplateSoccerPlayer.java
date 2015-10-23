@@ -5,10 +5,12 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.WriteConcern;
 import model.opta.OptaPlayer;
 import org.bson.types.ObjectId;
+import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import play.Play;
 import utils.ListUtils;
+import utils.MoneyUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -214,7 +216,6 @@ public class TemplateSoccerPlayer implements JongoId {
         Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).update("{optaPlayerId: #}", optaPlayerId).upsert().with(this);
     }
 
-
     static public boolean isInvalidFromImport(OptaPlayer optaPlayer) {
         boolean invalid = (optaPlayer.teamId == null) || optaPlayer.teamId.isEmpty();
 
@@ -226,4 +227,26 @@ public class TemplateSoccerPlayer implements JongoId {
         return invalid;
     }
 
+    static Integer[] LEVEL_SALARY = new Integer[]{
+        6100, 6500, 6900, 7300, 8000, 100000
+    };
+
+    static public int levelFromSalary(int salary) {
+        int level;
+        for (level = 0; level<LEVEL_SALARY.length && salary>LEVEL_SALARY[level]; level++) {
+        }
+        return level;
+    }
+
+    static Integer[] LEVEL_PRICE = new Integer[]{
+        0, 3, 7, 15, 30, 59
+    };
+
+    static public Money moneyToBuy(int playerLevel, int managerLevel) {
+        Money result = Money.zero(MoneyUtils.CURRENCY_GOLD);
+        if (managerLevel < playerLevel) {
+            result = result.plus( (playerLevel - managerLevel) * LEVEL_PRICE[playerLevel] );
+        }
+        return result;
+    }
 }

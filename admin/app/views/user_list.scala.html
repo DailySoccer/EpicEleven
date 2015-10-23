@@ -1,6 +1,7 @@
 @(users: List[model.User])
 
 @import model._
+@import utils._
 @import controllers.admin.routes.DashboardController
 
 @scripts = {
@@ -15,8 +16,11 @@
                     { "title": "Email" },
                     { "title": "Created At" },
                     { "title": "Wins" },
-                    { "title": "Balance" },
-                    { "title": "Bonus" }
+                    { "title": "Gold" },
+                    { "title": "Manager" },
+                    { "title": "Energy" },
+                    { "title": "Earned Money" },
+                    { "title": "TrueSkill" }
                 ],
                 "data": [
                     @for((p, index) <- users.zipWithIndex) {
@@ -28,17 +32,20 @@
                             "@p.email",
                             "@GlobalDate.formatDate(p.createdAt)",
                             "@p.wins",
-                            "@p.calculateBalance()",
-                            "@p.calculateBonus()"
+                            "@MoneyUtils.asString(p.calculateGoldBalance())",
+                            "@MoneyUtils.asString(p.calculateManagerBalance())",
+                            "@MoneyUtils.asString(p.calculateEnergyBalance())",
+                            "@MoneyUtils.asString(p.earnedMoney)",
+                            "@p.trueSkill"
                         ] @if(index < users.size-1) { , }
                     }
                 ],
                 "columnDefs": [ {
-                    "targets": 7,
+                    "targets": [7, 8],
                     "mRender": function (data, type, full) {
                         return '<a href="user/' + full[0] + '/transactions">' + data + '</a>';
                     }
-                } ],
+                }],
                 stateSave: true,
                 iDisplayLength: 100,
                 "deferRender": true

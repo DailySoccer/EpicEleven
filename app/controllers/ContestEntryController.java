@@ -4,10 +4,16 @@ import actions.AllowCors;
 import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import model.*;
+import model.accounting.AccountOp;
+import model.accounting.AccountingTranOrder;
 import model.jobs.CancelContestEntryJob;
 import model.jobs.EnterContestJob;
+import model.shop.Order;
+import model.shop.Product;
+import model.shop.ProductSoccerPlayer;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
 import play.Logger;
@@ -23,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static play.data.Form.form;
 
@@ -106,13 +113,24 @@ public class ContestEntryController extends Controller {
 
             if (errores.isEmpty()) {
                 if (MoneyUtils.isGreaterThan(aContest.entryFee, MoneyUtils.zero)) {
+                    Money moneyNeeded = aContest.entryFee;
+
+                    // En los torneos Oficiales, el usuario también tiene que pagar a los futbolistas
+                    if (aContest.entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+                        Money managerBalance = User.calculateManagerBalance(theUser.userId);
+
+                        List<InstanceSoccerPlayer> soccerPlayers = aContest.getInstanceSoccerPlayers(idsList);
+                        moneyNeeded = moneyNeeded.plus(User.moneyToBuy(managerBalance, soccerPlayers));
+                        Logger.debug("addContestEntry: moneyNeeded: {}", moneyNeeded.toString());
+                    }
+
                     // Verificar que el usuario tiene dinero suficiente...
-                    Money userBalance = User.calculateBalance(theUser.userId);
-                    if (MoneyUtils.compareTo(userBalance, aContest.entryFee) < 0) {
+                    if (!User.hasMoney(theUser.userId, moneyNeeded)) {
                         errores.add(ERROR_USER_BALANCE_NEGATIVE);
                     }
                 }
             }
+
             if (errores.isEmpty()) {
                 if (aContest == null) {
                     throw new RuntimeException("WTF 8639: aContest != null");
@@ -144,10 +162,11 @@ public class ContestEntryController extends Controller {
                 Logger.info("addContestEntry: userId: {}: contestId: {} => {}", theUser.userId.toString(), contestIdRequested, contestIdValid.toString());
             }
 
+            // Enviamos un perfil de usuario actualizado, dado que habrá gastado energía o gold al entrar en el constest
             result = ImmutableMap.of(
                     "result", "ok",
                     "contestId", contestIdValid.toString(),
-                    "profile", theUser.getProfile());
+                    "profile", User.findOne(theUser.userId).getProfile());
         }
         else {
             Logger.warn("addContestEntry failed: userId: {}: contestId: {}: error: {}", theUser.userId.toString(), contestIdRequested, contestEntryForm.errorsAsJson());
@@ -176,7 +195,6 @@ public class ContestEntryController extends Controller {
 
             ContestEntry contestEntry = ContestEntry.findOne(params.contestEntryId);
             if (contestEntry != null) {
-
                 // Obtener el contestId : ObjectId
                 Contest aContest = Contest.findOneFromContestEntry(contestEntry.contestEntryId);
 
@@ -184,8 +202,30 @@ public class ContestEntryController extends Controller {
                 List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
 
                 List<String> errores = validateContestEntry(aContest, idsList);
+
                 if (errores.isEmpty()) {
-                    if (!ContestEntry.update(theUser.userId, aContest.contestId, contestEntry.contestEntryId, idsList)) {
+                    if (MoneyUtils.isGreaterThan(aContest.entryFee, MoneyUtils.zero) &&
+                        aContest.entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+                        Money moneyNeeded = Money.zero(MoneyUtils.CURRENCY_GOLD);
+
+                        // Averiguar cuánto dinero ha usado para comprar futbolistas de nivel superior
+                        Money managerBalance = User.calculateManagerBalance(theUser.userId);
+                        List<InstanceSoccerPlayer> soccerPlayers = aContest.getInstanceSoccerPlayers(idsList);
+                        List<InstanceSoccerPlayer> playersToBuy = contestEntry.playersNotPurchased(User.playersToBuy(managerBalance, soccerPlayers));
+                        if (!playersToBuy.isEmpty()) {
+                            moneyNeeded = moneyNeeded.plus(User.moneyToBuy(managerBalance, playersToBuy));
+                            Logger.debug("editContestEntry: moneyNeeded: {}", moneyNeeded.toString());
+
+                            // Verificar que el usuario tiene dinero suficiente...
+                            if (!User.hasMoney(theUser.userId, moneyNeeded)) {
+                                errores.add(ERROR_USER_BALANCE_NEGATIVE);
+                            }
+                        }
+                    }
+                }
+
+                if (errores.isEmpty()) {
+                    if (!ContestEntry.update(theUser, aContest, contestEntry, idsList)) {
                         errores.add(ERROR_RETRY_OP);
                     }
                 }
@@ -282,7 +322,7 @@ public class ContestEntryController extends Controller {
             }
 
             // Buscar los soccerPlayers dentro de los partidos del contest
-            List<InstanceSoccerPlayer> soccerPlayers = getSoccerPlayersFromContest(objectIds, contest);
+            List<InstanceSoccerPlayer> soccerPlayers = contest.getInstanceSoccerPlayers(objectIds);
 
             // Verificar que TODOS los futbolistas seleccionados participen en los partidos del contest
             if (objectIds.size() != soccerPlayers.size()) {
@@ -308,19 +348,6 @@ public class ContestEntryController extends Controller {
         }
 
         return errores;
-    }
-
-    private static List<InstanceSoccerPlayer> getSoccerPlayersFromContest(List<ObjectId> ids, Contest contest) {
-        List<InstanceSoccerPlayer> soccerPlayers = new ArrayList<>();
-        for (ObjectId soccerPlayerId : ids) {
-            for (InstanceSoccerPlayer instancePlayer : contest.instanceSoccerPlayers) {
-                if (soccerPlayerId.equals(instancePlayer.templateSoccerPlayerId)) {
-                    soccerPlayers.add(instancePlayer);
-                    break;
-                }
-            }
-        }
-        return soccerPlayers;
     }
 
     private static int getSalaryCap(List<InstanceSoccerPlayer> soccerPlayers) {

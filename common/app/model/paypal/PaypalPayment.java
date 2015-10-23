@@ -5,7 +5,8 @@ import com.paypal.core.Constants;
 import com.paypal.core.rest.APIContext;
 import com.paypal.core.rest.OAuthTokenCredential;
 import com.paypal.core.rest.PayPalRESTException;
-import model.Product;
+import model.shop.Product;
+import model.shop.ProductMoney;
 import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
@@ -63,7 +64,7 @@ public class PaypalPayment {
      * @param product       Producto que se quiere comprar
      * @return Respuesta dada por Paypal (podría ser "aprobada", "quedarse pendiente" o "cancelada")
      */
-    public Payment createPayment(ObjectId orderId, Product product) throws PayPalRESTException {
+    public Payment createPayment(ObjectId orderId, ProductMoney product) throws PayPalRESTException {
         // Moneda usada y dinero
         Amount amount = new Amount();
         amount.setCurrency(CURRENCY);

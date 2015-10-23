@@ -6,8 +6,6 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import model.Product;
-import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 
 import java.io.IOException;
@@ -29,7 +27,7 @@ public class JacksonJodaMoney {
             }
             catch (IllegalArgumentException e) {
                 // Logger.warn("MoneyDeserializer: Versión antigua expresando el dinero como \"Int32\" o \"Double\"");
-                return MoneyUtils.of(Double.parseDouble(value));
+                return Money.of(MoneyUtils.CURRENCY_GOLD, Double.parseDouble(value));
             }
         }
     }

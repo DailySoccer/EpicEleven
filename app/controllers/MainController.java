@@ -44,6 +44,10 @@ public class MainController extends Controller {
         return new ReturnHelper(ImmutableMap.of("scoring_rules", PointsTranslation.getAllCurrent())).toResult();
     }
 
+    public static Result getLeaderboard() {
+        return new ReturnHelper(ImmutableMap.of("users", UserInfo.findAll())).toResult();
+    }
+
     /*
      * Obtener la información sobre un InstanceSoccerPlayer (estadísticas,...)
      */

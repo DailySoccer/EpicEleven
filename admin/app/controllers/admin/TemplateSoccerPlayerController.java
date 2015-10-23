@@ -9,6 +9,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class TemplateSoccerPlayerController extends Controller {
@@ -99,6 +100,20 @@ public class TemplateSoccerPlayerController extends Controller {
         optaEventList.addAll(OptaEvent.filter(templateMatchEvent.optaMatchEventId, templateSoccerPlayer.optaPlayerId));
 
         return ok(views.html.player_fantasy_points.render(templateSoccerPlayer, optaEventList));
+    }
+
+    public static Result showPlayerLiveEventsInMatchEvent(String templateMatchEventId, String playerId) {
+        HashMap<String, LiveEventInfo> events = new HashMap<>();
+
+        TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(playerId));
+        TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId));
+
+        LiveFantasyPoints liveFantasyPoints = templateMatchEvent.getLiveFantasyPointsBySoccerPlayer(templateSoccerPlayer.templateSoccerPlayerId);
+        if (liveFantasyPoints != null) {
+            events.putAll(liveFantasyPoints.events);
+        }
+
+        return ok(views.html.player_live_events.render(templateSoccerPlayer, events));
     }
 
     public static Result showStats(String playerId) {

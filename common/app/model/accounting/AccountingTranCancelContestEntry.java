@@ -12,8 +12,8 @@ public class AccountingTranCancelContestEntry extends AccountingTran {
 
     public AccountingTranCancelContestEntry() {}
 
-    public AccountingTranCancelContestEntry(ObjectId contestId, ObjectId contestEntryId) {
-        super(TransactionType.CANCEL_CONTEST_ENTRY);
+    public AccountingTranCancelContestEntry(String currencyCode, ObjectId contestId, ObjectId contestEntryId) {
+        super(currencyCode, TransactionType.CANCEL_CONTEST_ENTRY);
         this.contestId = contestId;
         this.contestEntryId = contestEntryId;
     }
@@ -24,10 +24,10 @@ public class AccountingTranCancelContestEntry extends AccountingTran {
                 .as(AccountingTranCancelContestEntry.class);
     }
 
-    static public AccountingTran create (ObjectId contestId, ObjectId contestEntryId, List<AccountOp> accounts) {
+    static public AccountingTran create (String currencyCode, ObjectId contestId, ObjectId contestEntryId, List<AccountOp> accounts) {
         AccountingTranCancelContestEntry accountingOp = findOne(contestId, contestEntryId);
         if (accountingOp == null) {
-            accountingOp = new AccountingTranCancelContestEntry(contestId, contestEntryId);
+            accountingOp = new AccountingTranCancelContestEntry(currencyCode, contestId, contestEntryId);
             accountingOp.accountOps = accounts;
             accountingOp.insertAndCommit();
         }
