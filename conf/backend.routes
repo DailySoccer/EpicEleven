@@ -38,6 +38,10 @@ POST           /reset_password                                         controlle
 
 GET            /resend_verification_email                              controllers.LoginController.resendVerificationEmail()
 
+# Crear concurso
+GET            /get_active_templatecontests                            controllers.ContestController.getActiveTemplateContests()
+POST           /create_contest                                         controllers.ContestController.createContest()
+
 # Concursos globales activos (Lobby)
 GET            /get_active_contests                                    controllers.ContestController.getActiveContests()
 GET            /get_active_contest/:contest                            controllers.ContestController.getActiveContest(contest)

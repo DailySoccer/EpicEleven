@@ -62,7 +62,7 @@ public class TemplateMatchEvent implements JongoId {
     @JsonView(JsonViews.Public.class)
     public int minutesPlayed;
 
-    @JsonView(value={JsonViews.ContestInfo.class, JsonViews.Extended.class})
+    @JsonView(value={JsonViews.ContestInfo.class, JsonViews.Extended.class, JsonViews.CreateContest.class})
     public Date startDate;
 
     @JsonView(JsonViews.NotForClient.class)
@@ -175,6 +175,16 @@ public class TemplateMatchEvent implements JongoId {
                         "]}," +
                         "$orderby: {startDate: 1}}",
                 templateSoccerTeamId, templateSoccerTeamId).as(TemplateMatchEvent.class);
+    }
+
+    public static List<TemplateMatchEvent> gatherFromTemplateContests(List<TemplateContest> templateContests) {
+        HashSet<ObjectId> matchEventsIds = new HashSet<>();
+
+        for (TemplateContest contest : templateContests) {
+            matchEventsIds.addAll(contest.templateMatchEventIds);
+        }
+
+        return findAll(new ArrayList<>(matchEventsIds));
     }
 
     public static List<TemplateMatchEvent> gatherFromContests(List<Contest> contests) {

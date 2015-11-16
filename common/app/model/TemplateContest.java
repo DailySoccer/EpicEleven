@@ -45,7 +45,7 @@ public class TemplateContest implements JongoId {
 
     public String optaCompetitionId;
 
-    @JsonView(JsonViews.Extended.class)
+    @JsonView(value = {JsonViews.Extended.class, JsonViews.CreateContest.class})
     public List<ObjectId> templateMatchEventIds;
 
     @JsonView(JsonViews.Extended.class)
@@ -156,6 +156,10 @@ public class TemplateContest implements JongoId {
 
     static public List<TemplateContest> findAllActive() {
         return ListUtils.asList(Model.templateContests().find("{state: \"ACTIVE\"}").as(TemplateContest.class));
+    }
+
+    static public List<TemplateContest> findAllActiveNotSimulations() {
+        return ListUtils.asList(Model.templateContests().find("{state: \"ACTIVE\", simulation: {$ne: true}}").as(TemplateContest.class));
     }
 
     static public List<TemplateContest> findAllFromContests(List<Contest> contests) {
