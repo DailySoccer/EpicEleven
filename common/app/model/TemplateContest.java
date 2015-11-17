@@ -63,6 +63,9 @@ public class TemplateContest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public boolean simulation = false;
 
+    @JsonView(JsonViews.NotForClient.class)
+    public boolean invitation = false;
+
     public TemplateContest() { }
 
     public TemplateContest(String name, int minInstances, int maxEntries, SalaryCap salaryCap,

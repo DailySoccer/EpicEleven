@@ -3,6 +3,7 @@ package controllers;
 import actions.AllowCors;
 import actions.UserAuthenticated;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.WriteConcern;
 import model.*;
 import model.jobs.EnterContestJob;
 import org.bson.types.ObjectId;
@@ -31,6 +32,7 @@ public class ContestController extends Controller {
     private static final String ERROR_MY_CONTEST_INVALID = "ERROR_MY_CONTEST_INVALID";
     private static final String ERROR_MY_CONTEST_ENTRY_INVALID = "ERROR_MY_CONTEST_ENTRY_INVALID";
     private static final String ERROR_TEMPLATE_CONTEST_INVALID = "ERROR_TEMPLATE_CONTEST_INVALID";
+    private static final String ERROR_TEMPLATE_CONTEST_NOT_ACTIVE = "ERROR_TEMPLATE_CONTEST_NOT_ACTIVE";
 
     /*
         Parámetros para la creación de un contest por parte de un usuario.
@@ -48,16 +50,10 @@ public class ContestController extends Controller {
         public boolean contestSimulation;
 
         @Constraints.Required
-        public String contestCompetition;
-
-        @Constraints.Required
         public String contestType;
 
         @Constraints.Required
         public Integer contestMaxEntries;
-
-        @Constraints.Required
-        public boolean contestPrivate;
 
         @Constraints.Required
         public String soccerTeam;   // JSON con la lista de futbolistas seleccionados
@@ -74,6 +70,35 @@ public class ContestController extends Controller {
 
         if (!contestEntryForm.hasErrors()) {
             CreateContestParams params = contestEntryForm.get();
+
+            List<String> errores = new ArrayList<>();
+
+            TemplateContest templateContest = TemplateContest.findOne(params.templateContestId);
+            if (!templateContest.state.isActive()) {
+                errores.add(ERROR_TEMPLATE_CONTEST_NOT_ACTIVE);
+            }
+
+            if (errores.isEmpty()) {
+                // Creamos el contest
+                Contest contest = new Contest(templateContest);
+
+                if (!params.contestName.isEmpty()) {
+                    contest.name = params.contestName;
+                }
+
+                contest.state = ContestState.ACTIVE;
+                contest.authorId = theUser.userId;
+                contest.invitation = true;
+                contest.simulation = params.contestSimulation;
+                contest.maxEntries = params.contestMaxEntries;
+                Model.contests().withWriteConcern(WriteConcern.SAFE).insert(contest);
+
+                // Añadimos el contestEntry del usuario
+                List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
+                EnterContestJob enterContestJob = EnterContestJob.create(theUser.userId, contest.contestId, idsList);
+                if (!enterContestJob.isDone()) {
+                }
+            }
         }
 
         Object result = contestEntryForm.errorsAsJson();
