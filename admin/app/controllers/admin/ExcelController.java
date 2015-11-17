@@ -5,6 +5,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import model.*;
 import model.opta.OptaCompetition;
+import model.opta.OptaTeam;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellReference;
@@ -31,11 +32,12 @@ public class ExcelController extends Controller {
     }
 
 
-    public static Result writeSoccerPlayersLog() throws IOException {
+    public static Result writeSoccerPlayersLog(int competicionId) throws IOException {
 
-        response().setHeader("Content-Disposition", "attachment; filename=ActivityLog.xlsx");
+        String fileName = competicionId == 23 ? "ActivityLog(Liga).xlsx" : "ActivityLog(Premier).xlsx";
+        response().setHeader("Content-Disposition", "attachment; filename="+fileName);
 
-        File tempFile = fillLog();
+        File tempFile = fillLog(String.valueOf(competicionId));
         FileInputStream activityLogStream = new FileInputStream(tempFile);
         assert tempFile.delete();
         return ok(activityLogStream);
@@ -166,7 +168,7 @@ public class ExcelController extends Controller {
     }
 
 
-    private static void fillSalaryRow(Row salaryRow, TemplateSoccerPlayer soccerPlayer) {
+    private static void fillSalaryRow(Row salaryRow, TemplateSoccerPlayer soccerPlayer, String teamName) {
 
         salaryRow.createCell(_SalarySheet.OPTA_PLAYER_ID.column).setCellValue(soccerPlayer.optaPlayerId);
         salaryRow.createCell(_SalarySheet.NAME.column).setCellValue(soccerPlayer.name);
@@ -178,20 +180,19 @@ public class ExcelController extends Controller {
 
         salaryRow.createCell(_SalarySheet.CURRENT_TAGS.column).setCellValue(soccerPlayer.tags.toString().substring(1, soccerPlayer.tags.toString().length() - 1));
 
-        TemplateSoccerTeam team = TemplateSoccerTeam.findOne(soccerPlayer.templateTeamId);
-        salaryRow.createCell(_SalarySheet.TEAM.column).setCellValue(team != null ? team.name : "unknown");
+        salaryRow.createCell(_SalarySheet.TEAM.column).setCellValue(teamName);
 
         salaryRow.createCell(_SalarySheet.POSITION.column).setCellValue(soccerPlayer.fieldPos.name());
     }
 
 
-    private static void fillLogRow(HashMap<String, String> optaCompetitions, Row row, TemplateSoccerPlayer soccerPlayer,
+    private static void fillLogRow(String competitionName, Row row, TemplateSoccerPlayer soccerPlayer,
                                    String teamName, SoccerPlayerStats stat) {
         row.createCell(_LogSheet.OPTA_PLAYER_ID.column).setCellValue(soccerPlayer.optaPlayerId);
         row.createCell(_LogSheet.NAME.column).setCellValue(soccerPlayer.name);
         row.createCell(_LogSheet.POSITION.column).setCellValue(soccerPlayer.fieldPos.name());
         row.createCell(_LogSheet.TEAM.column).setCellValue(teamName);
-        row.createCell(_LogSheet.COMPETITION.column).setCellValue(optaCompetitions.get(stat.optaCompetitionId));
+        row.createCell(_LogSheet.COMPETITION.column).setCellValue(competitionName);
         row.createCell(_LogSheet.DATE.column).setCellValue(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("dd/MM/yyyy")));
         row.createCell(_LogSheet.TIME.column).setCellValue(new DateTime(stat.startDate).toString(DateTimeFormat.forPattern("HH:mm")));
         row.createCell(_LogSheet.MINUTES_PLAYED.column).setCellValue(stat.playedMinutes);
@@ -210,7 +211,7 @@ public class ExcelController extends Controller {
         }
     }
 
-    private static File fillLog() {
+    private static File fillLog(String optaCompetitionId) {
 
         Workbook wb = new XSSFWorkbook();
 
@@ -244,7 +245,17 @@ public class ExcelController extends Controller {
 
         // Exportamos los futbolistas de cada equipo
         for (TemplateSoccerTeam templateSoccerTeam: teams) {
+            // Ignoramos los equipos inválidos (-unknown-)
+            if (templateSoccerTeam.optaTeamId.equals(OptaTeam.INVALID_TEAM))
+                continue;
+
             for (TemplateSoccerPlayer soccerPlayer: TemplateSoccerPlayer.findAllFromTemplateTeam(templateSoccerTeam.templateSoccerTeamId)) {
+                // No registramos los futbolistas que no hayan participado en la competición solicitada
+                boolean valid = soccerPlayer.stats.stream().filter((SoccerPlayerStats stat) -> stat.optaCompetitionId.equals(optaCompetitionId)).count() > 0;
+                if (!valid) {
+                    continue;
+                }
+
                 pivotRow = pivotSheet.createRow(playerRowCounter);
                 salaryRow = salarySheet.createRow(playerRowCounter);
                 emaRow = emaSheet.createRow(playerRowCounter++);
@@ -254,21 +265,27 @@ public class ExcelController extends Controller {
                 emaRow.createCell(_EMASheet.OPTA_PLAYER_ID.column).setCellValue(soccerPlayer.optaPlayerId);
                 emaRow.createCell(_EMASheet.EMA_FP.column).setCellValue(calcEma(soccerPlayer.stats));
 
-                fillSalaryRow(salaryRow, soccerPlayer);
-
+                String teamName = null;
                 int statCounter = 0;
                 for (SoccerPlayerStats stat : soccerPlayer.stats) {
-                    row = logSheet.createRow(rowCounter++);
+                    // Registramos únicamente las estadísticas de la competición solicitada
+                    if (stat.optaCompetitionId.equals(optaCompetitionId)) {
+                        row = logSheet.createRow(rowCounter++);
 
-                    String teamName = soccerTeamsMap.containsKey(stat.teamId.toString()) ? soccerTeamsMap.get(stat.teamId.toString()) : "unknown";
-                    fillLogRow(optaCompetitions, row, soccerPlayer, teamName, stat);
+                        teamName = soccerTeamsMap.containsKey(stat.teamId.toString()) ? soccerTeamsMap.get(stat.teamId.toString()) : "unknown";
+                        fillLogRow(optaCompetitions.get(stat.optaCompetitionId), row, soccerPlayer, teamName, stat);
 
-                    fillPivotRows(pivotRow, statCounter, stat);
+                        fillPivotRows(pivotRow, statCounter, stat);
 
-                    statCounter++;
+                        statCounter++;
+                    }
+                }
+                if (teamName != null) {
+                    // Registramos el salario del player (proporcionamos el último equipo, perteneciente a la competición solicitada, en el que jugó)
+                    fillSalaryRow(salaryRow, soccerPlayer, teamName);
                 }
 
-                maxStatNumber = (soccerPlayer.stats.size() > maxStatNumber)? soccerPlayer.stats.size(): maxStatNumber;
+                maxStatNumber = (statCounter > maxStatNumber)? statCounter: maxStatNumber;
             }
 
 

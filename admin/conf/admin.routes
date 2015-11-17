@@ -126,4 +126,4 @@ GET         /create_promos/:mockIndex                                           
 GET         /excel                                                               controllers.admin.ExcelController.index()
 POST        /excel/upload                                                        controllers.admin.ExcelController.upload()
 
-GET         /excel/write_log                                                     controllers.admin.ExcelController.writeSoccerPlayersLog()
+GET         /excel/write_log/:competitionId                                      controllers.admin.ExcelController.writeSoccerPlayersLog(competitionId: Int)
