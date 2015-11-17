@@ -180,6 +180,8 @@ public class ExcelController extends Controller {
 
         TemplateSoccerTeam team = TemplateSoccerTeam.findOne(soccerPlayer.templateTeamId);
         salaryRow.createCell(_SalarySheet.TEAM.column).setCellValue(team != null ? team.name : "unknown");
+
+        salaryRow.createCell(_SalarySheet.POSITION.column).setCellValue(soccerPlayer.fieldPos.name());
     }
 
 
@@ -228,18 +230,21 @@ public class ExcelController extends Controller {
         fillSalaryRowTitle(salarySheet);
         fillEMARowTitle(emaSheet);
 
-        HashMap<String, String> soccerTeamsMap = new HashMap<>();
-
         int playerRowCounter = 1;
         int maxStatNumber = 0;
         int rowCounter = 1;
+        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAll();
 
-        for (TemplateSoccerTeam templateSoccerTeam: TemplateSoccerTeam.findAll()) {
+        // Inicializamos el mapa con los nombres de los equipos
+        HashMap<String, String> soccerTeamsMap = new HashMap<>();
+
+        for (TemplateSoccerTeam templateSoccerTeam: teams) {
             soccerTeamsMap.put(templateSoccerTeam.templateSoccerTeamId.toString(), templateSoccerTeam.name);
+        }
 
+        // Exportamos los futbolistas de cada equipo
+        for (TemplateSoccerTeam templateSoccerTeam: teams) {
             for (TemplateSoccerPlayer soccerPlayer: TemplateSoccerPlayer.findAllFromTemplateTeam(templateSoccerTeam.templateSoccerTeamId)) {
-                String teamName = soccerTeamsMap.containsKey(soccerPlayer.templateTeamId.toString()) ? soccerTeamsMap.get(soccerPlayer.templateTeamId.toString()) : "unknown";
-
                 pivotRow = pivotSheet.createRow(playerRowCounter);
                 salaryRow = salarySheet.createRow(playerRowCounter);
                 emaRow = emaSheet.createRow(playerRowCounter++);
@@ -254,6 +259,8 @@ public class ExcelController extends Controller {
                 int statCounter = 0;
                 for (SoccerPlayerStats stat : soccerPlayer.stats) {
                     row = logSheet.createRow(rowCounter++);
+
+                    String teamName = soccerTeamsMap.containsKey(stat.teamId.toString()) ? soccerTeamsMap.get(stat.teamId.toString()) : "unknown";
                     fillLogRow(optaCompetitions, row, soccerPlayer, teamName, stat);
 
                     fillPivotRows(pivotRow, statCounter, stat);
@@ -386,12 +393,13 @@ public class ExcelController extends Controller {
         CALCULATED_SALARY   (3, _CALCULATED_SALARY),
         SALARY              (4, _SALARY),
         CURRENT_TAGS        (5, _CURRENT_TAGS),
-        TEAM                (6, _TEAM);
+        TEAM                (6, _TEAM),
+        POSITION            (7, _POSITION);
 
         public final int column;
         public final String colName;
 
-        public static final _SalarySheet lastCol = TEAM;
+        public static final _SalarySheet lastCol = POSITION;
 
         _SalarySheet(int c, String name) {
             column = c;
