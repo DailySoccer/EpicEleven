@@ -7,14 +7,12 @@ import com.mongodb.WriteConcern;
 import model.*;
 import model.jobs.EnterContestJob;
 import org.bson.types.ObjectId;
-import org.joda.money.Money;
 import play.Logger;
 import play.data.Form;
 import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
-import utils.MoneyUtils;
 import utils.ReturnHelper;
 import utils.ReturnHelperWithAttach;
 
@@ -44,16 +42,16 @@ public class ContestController extends Controller {
         public String templateContestId;
 
         @Constraints.Required
-        public String contestName;
+        public String name;
 
         @Constraints.Required
-        public boolean contestSimulation;
+        public boolean simulation;
 
         @Constraints.Required
         public String contestType;
 
         @Constraints.Required
-        public Integer contestMaxEntries;
+        public Integer maxEntries;
 
         @Constraints.Required
         public String soccerTeam;   // JSON con la lista de futbolistas seleccionados
@@ -82,15 +80,15 @@ public class ContestController extends Controller {
                 // Creamos el contest
                 Contest contest = new Contest(templateContest);
 
-                if (!params.contestName.isEmpty()) {
-                    contest.name = params.contestName;
+                if (!params.name.isEmpty()) {
+                    contest.name = params.name;
                 }
 
                 contest.state = ContestState.ACTIVE;
                 contest.authorId = theUser.userId;
                 contest.invitation = true;
-                contest.simulation = params.contestSimulation;
-                contest.maxEntries = params.contestMaxEntries;
+                contest.simulation = params.simulation;
+                contest.maxEntries = params.maxEntries;
                 Model.contests().withWriteConcern(WriteConcern.SAFE).insert(contest);
 
                 // Añadimos el contestEntry del usuario
