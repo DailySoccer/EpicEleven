@@ -16,10 +16,7 @@ import utils.ListUtils;
 import utils.ReturnHelper;
 import utils.ReturnHelperWithAttach;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static play.data.Form.form;
 
@@ -45,10 +42,15 @@ public class ContestController extends Controller {
         public String name;
 
         @Constraints.Required
-        public boolean simulation;
+        public Date startDate;
 
         @Constraints.Required
+        public boolean simulation;
+
+        /*
+        @Constraints.Required
         public String contestType;
+        */
 
         @Constraints.Required
         public Integer maxEntries;
@@ -84,12 +86,17 @@ public class ContestController extends Controller {
                     contest.name = params.name;
                 }
 
+                // Logger.debug("createContest: {} - {}", params.templateContestId, params.name);
+
                 contest.state = ContestState.ACTIVE;
                 contest.authorId = theUser.userId;
                 contest.invitation = true;
+                contest.startDate = params.startDate;
                 contest.simulation = params.simulation;
                 contest.maxEntries = params.maxEntries;
                 Model.contests().withWriteConcern(WriteConcern.SAFE).insert(contest);
+
+                // Logger.debug("createContest: contestEntry: {}", params.soccerTeam);
 
                 // Añadimos el contestEntry del usuario
                 List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
