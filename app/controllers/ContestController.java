@@ -7,12 +7,14 @@ import com.mongodb.WriteConcern;
 import model.*;
 import model.jobs.EnterContestJob;
 import org.bson.types.ObjectId;
+import org.joda.money.Money;
 import play.Logger;
 import play.data.Form;
 import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
+import utils.MoneyUtils;
 import utils.ReturnHelper;
 import utils.ReturnHelperWithAttach;
 
@@ -94,6 +96,7 @@ public class ContestController extends Controller {
                 contest.startDate = params.startDate;
                 contest.simulation = params.simulation;
                 contest.maxEntries = params.maxEntries;
+                contest.entryFee = params.simulation ? Money.zero(MoneyUtils.CURRENCY_ENERGY).plus(templateContest.entryFee.getAmount()) : templateContest.entryFee;
                 Model.contests().withWriteConcern(WriteConcern.SAFE).insert(contest);
 
                 // Logger.debug("createContest: contestEntry: {}", params.soccerTeam);
