@@ -83,6 +83,7 @@ public class ContestController extends Controller {
             if (errores.isEmpty()) {
                 // Creamos el contest
                 Contest contest = new Contest(templateContest);
+                contest.contestId = new ObjectId();
 
                 if (!params.name.isEmpty()) {
                     contest.name = params.name;
@@ -101,14 +102,23 @@ public class ContestController extends Controller {
 
                 // Logger.debug("createContest: contestEntry: {}", params.soccerTeam);
 
+                // TODO: En principio crearemos un contest...
+                // FIXME: Se podría devolver el contest creado sin incluirlo en la base de datos y
+                // FIXME:   en una query posterior en el que se proporcione la información completa (contest + contestEntry) se haría la creación y la inserción del contestEntry
+                /*
                 // Añadimos el contestEntry del usuario
                 List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
                 EnterContestJob enterContestJob = EnterContestJob.create(theUser.userId, contest.contestId, idsList);
                 if (!enterContestJob.isDone()) {
                 }
+                */
+
+                Contest contestCreated = Contest.findOne(contest.contestId);
+                return attachInfoToContest(contestCreated).toResult(JsonViews.FullContest.class);
             }
         }
 
+        Logger.debug("BAD");
         Object result = contestEntryForm.errorsAsJson();
         return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
     }
