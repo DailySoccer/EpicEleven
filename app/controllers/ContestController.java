@@ -96,7 +96,6 @@ public class ContestController extends Controller {
 
                 contest.state = ContestState.ACTIVE;
                 contest.authorId = theUser.userId;
-                contest.invitation = true;
                 contest.startDate = new DateTime(params.millisecondsSinceEpoch).withZone(DateTimeZone.UTC).toDate();
                 contest.simulation = params.simulation;
                 contest.maxEntries = params.maxEntries;
@@ -143,7 +142,7 @@ public class ContestController extends Controller {
      * Devuelve la lista de template Contests disponibles para que el usuario cree contests
      */
     public static Result getActiveTemplateContests() {
-        List<TemplateContest> templateContests = TemplateContest.findAllActiveNotSimulations();
+        List<TemplateContest> templateContests = TemplateContest.findAllCustomizable();
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests);
         List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
 

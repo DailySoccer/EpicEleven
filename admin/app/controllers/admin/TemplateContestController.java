@@ -63,7 +63,7 @@ public class TemplateContestController extends Controller {
                     case 0:
                         return templateContest.state.toString();
                     case 1:
-                        return templateContest.name;
+                        return templateContest.name + ((templateContest.customizable) ? "**" : "");
                     case 2:
                         return String.valueOf(templateContest.templateMatchEventIds.size());
                     case 3:
@@ -200,6 +200,7 @@ public class TemplateContestController extends Controller {
 
         templateContest.templateContestId = !isNew ? new ObjectId(params.id) : null;
         templateContest.state = params.state;
+        templateContest.customizable = params.typeCustomizable.equals(TemplateContestForm.SelectionYESNO.YES);
         templateContest.simulation = (params.typeContest == TypeContest.VIRTUAL);
         templateContest.name = params.name;
         templateContest.minInstances = params.minInstances;

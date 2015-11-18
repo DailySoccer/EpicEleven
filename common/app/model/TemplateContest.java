@@ -64,7 +64,7 @@ public class TemplateContest implements JongoId {
     public boolean simulation = false;
 
     @JsonView(JsonViews.NotForClient.class)
-    public boolean invitation = false;
+    public boolean customizable = false;
 
     public TemplateContest() { }
 
@@ -163,6 +163,10 @@ public class TemplateContest implements JongoId {
 
     static public List<TemplateContest> findAllActiveNotSimulations() {
         return ListUtils.asList(Model.templateContests().find("{state: \"ACTIVE\", simulation: {$ne: true}}").as(TemplateContest.class));
+    }
+
+    static public List<TemplateContest> findAllCustomizable() {
+        return ListUtils.asList(Model.templateContests().find("{state: \"ACTIVE\", simulation: {$ne: true}, customizable: true}").as(TemplateContest.class));
     }
 
     static public List<TemplateContest> findAllFromContests(List<Contest> contests) {
