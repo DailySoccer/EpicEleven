@@ -274,12 +274,7 @@ public class TemplateContest implements JongoId {
 
     public void setupSimulation() {
         Logger.debug("TemplateContest.SetupSimulation: " + templateContestId.toString());
-
-        // Crear partidos "simulados"
-        templateMatchEventIds = templateMatchEventIds.stream().map(matchEventId -> {
-            TemplateMatchEvent simulateMatchEvent = TemplateMatchEvent.createSimulationWithStartDate(matchEventId, startDate);
-            return simulateMatchEvent.templateMatchEventId;
-        }).collect(Collectors.toList());
+        templateMatchEventIds = TemplateMatchEvent.createSimulationsWithStartDate(templateMatchEventIds, startDate);
     }
 
     /**
@@ -363,18 +358,37 @@ public class TemplateContest implements JongoId {
 
     public static void actionWhenMatchEventIsFinished(TemplateMatchEvent matchEvent) {
         // Buscamos los template contests que incluyan ese partido
-        Iterable<TemplateContest> templateContests = Model.templateContests()
-                .find("{templateMatchEventIds: {$in:[#]}}", matchEvent.templateMatchEventId).as(TemplateContest.class);
+        List<TemplateContest> templateContests = ListUtils.asList(Model.templateContests()
+                .find("{templateMatchEventIds: {$in:[#]}}", matchEvent.templateMatchEventId).as(TemplateContest.class));
 
-        for (TemplateContest templateContest : templateContests) {
-            // Si el contest ha terminado (true si todos sus partidos han terminado)
-            if (templateContest.isFinished()) {
-                Model.templateContests().update("{_id: #, state: \"LIVE\"}", templateContest.templateContestId).with("{$set: {state: \"HISTORY\"}}");
+        if (!templateContests.isEmpty()) {
+            templateContests.forEach( templateContest -> {
+                // Si el contest ha terminado (true si todos sus partidos han terminado)
+                if (templateContest.isFinished()) {
+                    Model.templateContests().update("{_id: #, state: \"LIVE\"}", templateContest.templateContestId).with("{$set: {state: \"HISTORY\"}}");
 
-                Model.contests()
-                        .update("{templateContestId: #, state: \"LIVE\"}", templateContest.templateContestId)
-                        .multi()
-                        .with("{$set: {state: \"HISTORY\", finishedAt: #}}", GlobalDate.getCurrentDate());
+                    Model.contests()
+                            .update("{templateContestId: #, state: \"LIVE\"}", templateContest.templateContestId)
+                            .multi()
+                            .with("{$set: {state: \"HISTORY\", finishedAt: #}}", GlobalDate.getCurrentDate());
+                }
+            });
+        }
+        else {
+            // Puede que sea un partido de los contests creados por un usuario
+            if (matchEvent.isSimulation()) {
+                List<Contest> contests = ListUtils.asList(Model.contests()
+                        .find("{templateMatchEventIds: {$in:[#]}}", matchEvent.templateMatchEventId).as(Contest.class));
+
+                contests.forEach( contest -> {
+                    // Si el contest ha terminado (true si todos sus partidos han terminado)
+                    if (contest.isFinished()) {
+                        Model.contests()
+                                .update("{_id: #, state: \"LIVE\"}", contest.contestId)
+                                .multi()
+                                .with("{$set: {state: \"HISTORY\", finishedAt: #}}", GlobalDate.getCurrentDate());
+                    }
+                });
             }
         }
     }

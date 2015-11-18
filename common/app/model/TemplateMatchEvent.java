@@ -15,6 +15,7 @@ import utils.ListUtils;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class TemplateMatchEvent implements JongoId {
     public enum PeriodType {
@@ -554,6 +555,13 @@ public class TemplateMatchEvent implements JongoId {
             return false;
         }
         return true;
+    }
+
+    static public List<ObjectId> createSimulationsWithStartDate(List<ObjectId> templateMatchEventList, Date startDateModified) {
+        return templateMatchEventList.stream().map(matchEventId -> {
+            TemplateMatchEvent simulateMatchEvent = TemplateMatchEvent.createSimulationWithStartDate(matchEventId, startDateModified);
+            return simulateMatchEvent.templateMatchEventId;
+        }).collect(Collectors.toList());
     }
 
     static public TemplateMatchEvent createSimulationWithStartDate(ObjectId matchEventId, Date startDateModified) {

@@ -22,6 +22,7 @@ import utils.ViewProjection;
 
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Contest implements JongoId {
     @JsonIgnore
@@ -269,6 +270,18 @@ public class Contest implements JongoId {
             }
         }
         return contains;
+    }
+
+    public void setupSimulation() {
+        Logger.debug("Contest.SetupSimulation: " + contestId.toString());
+        templateMatchEventIds = TemplateMatchEvent.createSimulationsWithStartDate(templateMatchEventIds, startDate);
+    }
+
+    public boolean isFinished() {
+        // El Contest ha terminado si todos sus partidos han terminado
+        long numMatchEventsFinished = Model.templateMatchEvents()
+                .count("{_id: {$in: #}, gameFinishedDate: {$exists: 1}}", templateMatchEventIds);
+        return (numMatchEventsFinished == templateMatchEventIds.size());
     }
 
     public void closeContest() {

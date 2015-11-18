@@ -9,6 +9,7 @@ import model.jobs.EnterContestJob;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import play.Logger;
 import play.Play;
 import play.data.Form;
@@ -46,7 +47,7 @@ public class ContestController extends Controller {
         public String name;
 
         @Constraints.Required
-        public Date startDate;
+        public long millisecondsSinceEpoch;
 
         @Constraints.Required
         public boolean simulation;
@@ -96,16 +97,19 @@ public class ContestController extends Controller {
                 contest.state = ContestState.ACTIVE;
                 contest.authorId = theUser.userId;
                 contest.invitation = true;
-                contest.startDate = params.startDate;
+                contest.startDate = new DateTime(params.millisecondsSinceEpoch).withZone(DateTimeZone.UTC).toDate();
                 contest.simulation = params.simulation;
                 contest.maxEntries = params.maxEntries;
                 contest.freeSlots = params.maxEntries;
                 contest.entryFee = params.simulation ? Money.zero(MoneyUtils.CURRENCY_ENERGY).plus(templateContest.entryFee.getAmount()) : templateContest.entryFee;
+
+                if (contest.simulation) {
+                    contest.setupSimulation();
+                }
                 Model.contests().withWriteConcern(WriteConcern.SAFE).insert(contest);
 
                 // Durante el desarrollo permitimos que los mockUsers puedan entrar en un contest
                 if (Play.isDev()) {
-                    Logger.debug("mockUsers");
                     boolean mockDataUsers = contest.name.contains(TemplateContest.FILL_WITH_MOCK_USERS);
                     if (mockDataUsers) {
                         MockData.addContestEntries(contest, contest.maxEntries - 1);
