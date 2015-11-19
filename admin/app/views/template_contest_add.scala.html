@@ -4,6 +4,7 @@
 @import model._
 @import utils.EnumUtils
 @import controllers.admin.routes._
+@import controllers.admin.TemplateContestForm
 
 @if(templateContestForm.hasErrors) {
     @controllers.admin.FlashMessage.danger("Template MatchEvent Form has errors")
@@ -201,6 +202,16 @@
                 templateContestForm("name"),
                 "Name",
                 50
+            )
+
+            @mySelect(
+                templateContestForm("typeCustomizable"),
+                "Customizable By Users",
+                options(EnumUtils.toMap(classOf[TemplateContestForm.SelectionYESNO])),
+                false,
+                1,
+                true,
+                ""
             )
 
             @myInputText(

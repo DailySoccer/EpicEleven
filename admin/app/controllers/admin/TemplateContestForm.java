@@ -13,6 +13,16 @@ import java.math.BigInteger;
 import java.util.*;
 
 public class TemplateContestForm {
+    public enum SelectionYESNO {
+        NO(0),
+        YES(1);
+
+        public final int id;
+
+        SelectionYESNO(int id) {
+            this.id = id;
+        }
+    }
 
     public String id;
 
@@ -20,11 +30,12 @@ public class TemplateContestForm {
 
     // Por defecto, el formulario asumirá "Virtual" (dada su mayor frecuencia de creación)
     public TypeContest typeContest = TypeContest.VIRTUAL;
+    public SelectionYESNO typeCustomizable;
 
     @Constraints.Required
     public String name;             // Auto-gen if blank
 
-    @Constraints.Min(1)
+    @Constraints.Min(0)
     @Constraints.Required
     public int minInstances = 1;        // Minimum desired number of instances that we want running at any given moment
 
@@ -65,6 +76,7 @@ public class TemplateContestForm {
         id = templateContest.templateContestId != null ? templateContest.templateContestId.toString() : null;
         state = templateContest.state;
         typeContest = templateContest.simulation ? TypeContest.VIRTUAL : TypeContest.REAL;
+        typeCustomizable = templateContest.customizable ? SelectionYESNO.YES : SelectionYESNO.NO;
         name = templateContest.name;
         minInstances = templateContest.minInstances;
         maxEntries = templateContest.maxEntries;

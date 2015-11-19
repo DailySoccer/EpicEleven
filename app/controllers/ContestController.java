@@ -3,19 +3,26 @@ package controllers;
 import actions.AllowCors;
 import actions.UserAuthenticated;
 import com.google.common.collect.ImmutableMap;
+import com.mongodb.WriteConcern;
 import model.*;
 import org.bson.types.ObjectId;
+import org.joda.money.Money;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import play.Logger;
+import play.Play;
+import play.data.Form;
+import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ListUtils;
+import utils.MoneyUtils;
 import utils.ReturnHelper;
 import utils.ReturnHelperWithAttach;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
+import static play.data.Form.form;
 
 @AllowCors.Origin
 public class ContestController extends Controller {
@@ -24,6 +31,127 @@ public class ContestController extends Controller {
     private static final String ERROR_MY_CONTEST_INVALID = "ERROR_MY_CONTEST_INVALID";
     private static final String ERROR_MY_CONTEST_ENTRY_INVALID = "ERROR_MY_CONTEST_ENTRY_INVALID";
     private static final String ERROR_TEMPLATE_CONTEST_INVALID = "ERROR_TEMPLATE_CONTEST_INVALID";
+    private static final String ERROR_TEMPLATE_CONTEST_NOT_ACTIVE = "ERROR_TEMPLATE_CONTEST_NOT_ACTIVE";
+
+    /*
+        Parámetros para la creación de un contest por parte de un usuario.
+
+        Se requiere un fantasyTeam correspondiente al contestEntry del usuario.
+     */
+    public static class CreateContestParams {
+        @Constraints.Required
+        public String templateContestId;
+
+        @Constraints.Required
+        public String name;
+
+        @Constraints.Required
+        public long millisecondsSinceEpoch;
+
+        @Constraints.Required
+        public boolean simulation;
+
+        /*
+        @Constraints.Required
+        public String contestType;
+        */
+
+        @Constraints.Required
+        public Integer maxEntries;
+
+        @Constraints.Required
+        public String soccerTeam;   // JSON con la lista de futbolistas seleccionados
+    }
+
+    /**
+     * Create un contest por parte del usuario
+     */
+    @UserAuthenticated
+    public static Result createContest() {
+        Form<CreateContestParams> contestEntryForm = form(CreateContestParams.class).bindFromRequest();
+
+        User theUser = (User) ctx().args.get("User");
+
+        if (!contestEntryForm.hasErrors()) {
+            CreateContestParams params = contestEntryForm.get();
+
+            List<String> errores = new ArrayList<>();
+
+            TemplateContest templateContest = TemplateContest.findOne(params.templateContestId);
+            if (!templateContest.state.isActive()) {
+                errores.add(ERROR_TEMPLATE_CONTEST_NOT_ACTIVE);
+            }
+
+            if (errores.isEmpty()) {
+                boolean updatingContest = false;
+
+                // En primer lugar, intentamos reutilizar cualquier contest de este jugador que esté sin completar...
+                Contest contest = Contest.findOneWaitingAuthor(theUser.userId);
+                if (contest != null) {
+                    Logger.debug("createContest: Reutizando #{}: authorId: {}", contest.contestId, theUser.userId);
+                    contest.setupFromTemplateContest(templateContest);
+                    updatingContest = true;
+                }
+                else {
+                    // Creamos el contest
+                    contest = new Contest(templateContest);
+                    contest.contestId = new ObjectId();
+                }
+
+                if (!params.name.isEmpty()) {
+                    contest.name = params.name;
+                }
+
+                // Logger.debug("createContest: {} - {}", params.templateContestId, params.name);
+
+                // Por defecto, los contests creados por los usuarios esperarán a que el author entre un contestEntry
+                contest.state = ContestState.WAITING_AUTHOR;
+                contest.authorId = theUser.userId;
+                contest.startDate = new DateTime(params.millisecondsSinceEpoch).withZone(DateTimeZone.UTC).toDate();
+                contest.simulation = params.simulation;
+                contest.maxEntries = params.maxEntries;
+                contest.freeSlots = params.maxEntries;
+                contest.entryFee = params.simulation ? Money.zero(MoneyUtils.CURRENCY_ENERGY).plus(templateContest.entryFee.getAmount()) : templateContest.entryFee;
+
+                Model.contests().update("{_id: #}", contest.contestId).upsert().with(contest);
+
+                // Logger.debug("createContest: contestEntry: {}", params.soccerTeam);
+
+                // TODO: En principio crearemos un contest...
+                // FIXME: Se podría devolver el contest creado sin incluirlo en la base de datos y
+                // FIXME:   en una query posterior en el que se proporcione la información completa (contest + contestEntry) se haría la creación y la inserción del contestEntry
+                /*
+                // Añadimos el contestEntry del usuario
+                List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
+                EnterContestJob enterContestJob = EnterContestJob.create(theUser.userId, contest.contestId, idsList);
+                if (!enterContestJob.isDone()) {
+                }
+                */
+
+                Contest contestCreated = Contest.findOne(contest.contestId);
+                return attachInfoToContest(contestCreated).toResult(JsonViews.FullContest.class);
+            }
+        }
+
+        Logger.debug("BAD");
+        Object result = contestEntryForm.errorsAsJson();
+        return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
+    }
+
+    /*
+     * Devuelve la lista de template Contests disponibles para que el usuario cree contests
+     */
+    public static Result getActiveTemplateContests() {
+        List<TemplateContest> templateContests = TemplateContest.findAllCustomizable();
+        List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests);
+        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
+
+        return new ReturnHelper(ImmutableMap.of(
+                "template_contests", templateContests,
+                "match_events", matchEvents,
+                "soccer_teams", teams
+        )).toResult(JsonViews.CreateContest.class);
+    }
 
     /*
      * Devuelve la lista de contests activos (aquellos a los que un usuario puede apuntarse)

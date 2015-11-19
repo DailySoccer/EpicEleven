@@ -22,6 +22,7 @@ import utils.ViewProjection;
 
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Contest implements JongoId {
     @JsonIgnore
@@ -93,11 +94,18 @@ public class Contest implements JongoId {
     public boolean closed = false;
 
     public boolean simulation = false;
+
+    public ObjectId authorId;
+
     public String specialImage;
 
     public Contest() {}
 
     public Contest(TemplateContest template) {
+        setupFromTemplateContest(template);
+    }
+
+    public void setupFromTemplateContest(TemplateContest template) {
         templateContestId = template.templateContestId;
         state = template.state;
         name = template.name;
@@ -158,6 +166,10 @@ public class Contest implements JongoId {
 
     static public Contest findOneFromContestEntry(ObjectId contestEntryId) {
         return Model.contests().findOne("{'contestEntries._id' : #}", contestEntryId).as(Contest.class);
+    }
+
+    static public Contest findOneWaitingAuthor(ObjectId authorId) {
+        return Model.contests().findOne("{state: \"WAITING_AUTHOR\", authorId: #}", authorId).as(Contest.class);
     }
 
     public static List<Contest> findAllFromUser(ObjectId userId) {
@@ -264,6 +276,20 @@ public class Contest implements JongoId {
             }
         }
         return contains;
+    }
+
+    public void setupSimulation() {
+        Logger.debug("Contest.SetupSimulation: " + contestId.toString());
+        templateMatchEventIds = TemplateMatchEvent.createSimulationsWithStartDate(templateMatchEventIds, startDate);
+
+        Model.contests().update("{_id: #, state: \"ACTIVE\"}", contestId).with("{$set: {templateMatchEventIds:#}}", templateMatchEventIds);
+    }
+
+    public boolean isFinished() {
+        // El Contest ha terminado si todos sus partidos han terminado
+        long numMatchEventsFinished = Model.templateMatchEvents()
+                .count("{_id: {$in: #}, gameFinishedDate: {$exists: 1}}", templateMatchEventIds);
+        return (numMatchEventsFinished == templateMatchEventIds.size());
     }
 
     public void closeContest() {

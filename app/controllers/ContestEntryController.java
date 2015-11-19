@@ -4,19 +4,14 @@ import actions.AllowCors;
 import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import model.*;
-import model.accounting.AccountOp;
-import model.accounting.AccountingTranOrder;
 import model.jobs.CancelContestEntryJob;
 import model.jobs.EnterContestJob;
-import model.shop.Order;
-import model.shop.Product;
-import model.shop.ProductSoccerPlayer;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
 import play.Logger;
+import play.Play;
 import play.data.Form;
 import play.data.validation.Constraints;
 import play.mvc.Controller;
@@ -29,7 +24,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static play.data.Form.form;
 
@@ -134,6 +128,23 @@ public class ContestEntryController extends Controller {
             if (errores.isEmpty()) {
                 if (aContest == null) {
                     throw new RuntimeException("WTF 8639: aContest != null");
+                }
+
+                // Los contests creados por los usuarios se activan cuando el author entra un contestEntry
+                if (aContest.state.isWaitingAuthor()) {
+                    Model.contests().update("{_id: #, state: \"WAITING_AUTHOR\"}", aContest.contestId).with("{$set: {state: \"ACTIVE\"}}");
+
+                    if (aContest.simulation) {
+                        aContest.setupSimulation();
+                    }
+
+                    // Durante el desarrollo permitimos que los mockUsers puedan entrar en un contest
+                    if (Play.isDev()) {
+                        boolean mockDataUsers = aContest.name.contains(TemplateContest.FILL_WITH_MOCK_USERS);
+                        if (mockDataUsers) {
+                            MockData.addContestEntries(aContest, aContest.maxEntries - 1);
+                        }
+                    }
                 }
 
                 EnterContestJob enterContestJob = EnterContestJob.create(theUser.userId, contestIdValid, idsList);
@@ -317,7 +328,7 @@ public class ContestEntryController extends Controller {
         }
         else {
             // Verificar que el contest esté activo (ni "live" ni "history")
-            if (!contest.state.isActive()) {
+            if (!contest.state.isActive() && !contest.state.isWaitingAuthor()) {
                 errores.add(ERROR_CONTEST_NOT_ACTIVE);
             }
 
