@@ -134,6 +134,10 @@ public class ContestEntryController extends Controller {
                 if (aContest.state.isWaitingAuthor()) {
                     Model.contests().update("{_id: #, state: \"WAITING_AUTHOR\"}", aContest.contestId).with("{$set: {state: \"ACTIVE\"}}");
 
+                    if (aContest.simulation) {
+                        aContest.setupSimulation();
+                    }
+
                     // Durante el desarrollo permitimos que los mockUsers puedan entrar en un contest
                     if (Play.isDev()) {
                         boolean mockDataUsers = aContest.name.contains(TemplateContest.FILL_WITH_MOCK_USERS);

@@ -83,9 +83,20 @@ public class ContestController extends Controller {
             }
 
             if (errores.isEmpty()) {
-                // Creamos el contest
-                Contest contest = new Contest(templateContest);
-                contest.contestId = new ObjectId();
+                boolean updatingContest = false;
+
+                // En primer lugar, intentamos reutilizar cualquier contest de este jugador que esté sin completar...
+                Contest contest = Contest.findOneWaitingAuthor(theUser.userId);
+                if (contest != null) {
+                    Logger.debug("createContest: Reutizando #{}: authorId: {}", contest.contestId, theUser.userId);
+                    contest.setupFromTemplateContest(templateContest);
+                    updatingContest = true;
+                }
+                else {
+                    // Creamos el contest
+                    contest = new Contest(templateContest);
+                    contest.contestId = new ObjectId();
+                }
 
                 if (!params.name.isEmpty()) {
                     contest.name = params.name;
@@ -102,10 +113,7 @@ public class ContestController extends Controller {
                 contest.freeSlots = params.maxEntries;
                 contest.entryFee = params.simulation ? Money.zero(MoneyUtils.CURRENCY_ENERGY).plus(templateContest.entryFee.getAmount()) : templateContest.entryFee;
 
-                if (contest.simulation) {
-                    contest.setupSimulation();
-                }
-                Model.contests().withWriteConcern(WriteConcern.SAFE).insert(contest);
+                Model.contests().update("{_id: #}", contest.contestId).upsert().with(contest);
 
                 // Logger.debug("createContest: contestEntry: {}", params.soccerTeam);
 
