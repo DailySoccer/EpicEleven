@@ -5,7 +5,6 @@ import actions.UserAuthenticated;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.WriteConcern;
 import model.*;
-import model.jobs.EnterContestJob;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
 import org.joda.time.DateTime;
@@ -94,7 +93,8 @@ public class ContestController extends Controller {
 
                 // Logger.debug("createContest: {} - {}", params.templateContestId, params.name);
 
-                contest.state = ContestState.ACTIVE;
+                // Por defecto, los contests creados por los usuarios esperarán a que el author entre un contestEntry
+                contest.state = ContestState.WAITING_AUTHOR;
                 contest.authorId = theUser.userId;
                 contest.startDate = new DateTime(params.millisecondsSinceEpoch).withZone(DateTimeZone.UTC).toDate();
                 contest.simulation = params.simulation;
@@ -106,14 +106,6 @@ public class ContestController extends Controller {
                     contest.setupSimulation();
                 }
                 Model.contests().withWriteConcern(WriteConcern.SAFE).insert(contest);
-
-                // Durante el desarrollo permitimos que los mockUsers puedan entrar en un contest
-                if (Play.isDev()) {
-                    boolean mockDataUsers = contest.name.contains(TemplateContest.FILL_WITH_MOCK_USERS);
-                    if (mockDataUsers) {
-                        MockData.addContestEntries(contest, contest.maxEntries - 1);
-                    }
-                }
 
                 // Logger.debug("createContest: contestEntry: {}", params.soccerTeam);
 
