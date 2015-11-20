@@ -3,6 +3,7 @@ package model.opta;
 import model.GlobalDate;
 import model.Model;
 import org.jdom2.Element;
+import play.Logger;
 import utils.ListUtils;
 
 import java.util.ArrayList;
@@ -40,6 +41,10 @@ public class OptaTeam {
 
     static public List<OptaTeam> findAll() {
         return ListUtils.asList(Model.optaTeams().find().as(OptaTeam.class));
+    }
+
+    static public List<OptaTeam> findAllByCompetition(String competitionCode) {
+        return ListUtils.asList(Model.optaTeams().find("{seasonCompetitionIds: { $in: [#] }}", competitionCode).as(OptaTeam.class));
     }
 
     static public HashMap<String, OptaTeam> findAllAsMap(){

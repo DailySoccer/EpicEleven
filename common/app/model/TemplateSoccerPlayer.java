@@ -216,6 +216,10 @@ public class TemplateSoccerPlayer implements JongoId {
         Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).update("{optaPlayerId: #}", optaPlayerId).upsert().with(this);
     }
 
+    public Money moneyToBuy(int managerLevel) {
+        return TemplateSoccerPlayer.moneyToBuy(TemplateSoccerPlayer.levelFromSalary(salary), managerLevel);
+    }
+
     static public boolean isInvalidFromImport(OptaPlayer optaPlayer) {
         boolean invalid = (optaPlayer.teamId == null) || optaPlayer.teamId.isEmpty();
 

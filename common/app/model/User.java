@@ -28,7 +28,7 @@ public class User {
     public static final long HOURS_TO_DECAY = 48;
     public static final float PERCENT_TO_DECAY = 0.5f;
 
-    static final long[] MANAGER_POINTS = new long[] {
+    public static final long[] MANAGER_POINTS = new long[] {
       0, 65, 125, 250, 500, 1000
     };
 
