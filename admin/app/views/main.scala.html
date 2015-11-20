@@ -1,6 +1,5 @@
 @(title: String, scripts: Html = Html(""))(content: Html)
 
-
 @import controllers.admin.FlashMessage
 @import controllers.admin.routes._
 @import model._
@@ -11,7 +10,7 @@
             @if(!message.text.isEmpty) {
                 <div class="alert alert-@message.alertType alert-dismissable">
                     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                    <span class="">@message.text</span>
+                    <span class="">@Html(message.text)</span>
                 </div>
             }
         }
@@ -61,6 +60,7 @@
         <div class="col-sm-3 col-md-2 sidebar">
             <ul class="nav nav-sidebar">
                 <li><a href="@DashboardController.index">Dashboard</a></li>
+                <!--li><a href="@InfoController.index">Consultas</a></li-->
             </ul>
             <ul class="nav nav-sidebar">
                 <li><a href="@LobbyController.lobby">Lobby</a></li>

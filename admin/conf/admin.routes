@@ -12,6 +12,10 @@ GET         /berserker_bot_actors                                               
 GET         /add_money_to_bots/:amount                                           controllers.admin.DashboardController.addMoneyToBots(amount : String)
 GET         /add_money_to_tests/:amount                                          controllers.admin.DashboardController.addMoneyToTests(amount : String)
 
+GET         /consultas                                                           controllers.admin.InfoController.index()
+GET         /consulta/players                                                    controllers.admin.InfoController.queryPlayers()
+POST        /consulta/players                                                    controllers.admin.InfoController.queryPlayersSubmit()
+
 GET         /lobby                                                               controllers.admin.LobbyController.lobby()
 
 GET         /import_teams                                                        controllers.admin.ImportController.showImportTeams()

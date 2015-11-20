@@ -1,0 +1,125 @@
+@(queryPlayerForm: Form[controllers.admin.QueryPlayersForm], teamOptions: HashMap[String, String], results: HashMap[String, Integer])
+
+@import helper._
+@import model._
+@import utils.EnumUtils
+@import controllers.admin.routes._
+@import controllers.admin.QueryPlayersForm
+
+@myInputText(field: Field, _label: String = "", _size: Int = 10, _hidden: Boolean = false) = {
+<div class="form-group @if(field.hasErrors) {has-error}" title="En el nombre se pueden usar las variables: %MaxEntries, %SalaryCap, %PrizeType, %EntryFee, %StartDate" @if(_hidden){ hidden }>
+    @if(_label.nonEmpty) { <label class="control-label col-sm-3" for="@field.id">@_label</label> }
+    <div class="col-sm-7">
+        <input type="text" name="@field.id" id="@field.id" value="@field.value" size="@_size" class="form-control">
+        @if(field.hasErrors){
+        <p class="help-block">@{field.error.map { error => error.message }}</p>
+        }
+    </div>
+</div>
+}
+
+@mySelect(field: Field, label: String = "CHANGEME", options: Seq[(String, String)], isMultiple: Boolean = false, size: Int = 1, isHorizontal: Boolean = true, help: String = "", _hidden: Boolean = false) = {
+<div class="form-group @if(field.hasErrors) {has-error}" @if(_hidden){ hidden }>
+    <label @if(isHorizontal){ class="col-sm-3 control-label"} for="@field.id">@label</label>
+    <div @if(isHorizontal){ class="col-sm-7"}>
+        @defining( if( isMultiple ) "%s[]".format(field.name) else field.name ) { selectName =>
+        @defining( ( !field.indexes.isEmpty && isMultiple ) match {
+        case true => field.indexes.map( i => field("[%s]".format(i)).value ).flatten.toSet
+        case _ => field.value.toSet
+        }){ values =>
+        <select id="@field.id" name="@selectName" class="form-control" size="@size" @if(isMultiple) {multiple="true"}>
+            @options.map { v =>
+            <option value="@v._1" @if(values.contains(v._1)){selected="selected"}>@v._2</option>
+            }
+        </select>
+
+        @if(isMultiple && !field.indexes.isEmpty) {
+        <div>
+            <strong>Previously selected:</strong>
+            <ul>
+                @options.map { v =>
+                @if(values.contains(v._1)){<li><a href="/admin/template_match_event/@v._1">@v._2</a></li>}
+                }
+            </ul>
+        </div>
+        }
+        }}
+        <span class="help-block">@help</span>
+        <span class="help-block">@{field.error.map { error => error.message }}</span>
+    </div>
+</div>
+}
+
+@myInputDate(field: Field, _label: String = "", _size: Int = 10, _hidden: Boolean = false) = {
+<div class="form-group @if(field.hasErrors) {has-error}" @if(_hidden){ hidden }>
+    <label class="col-sm-3 control-label" for="@field.id">@_label</label>
+    <div class="col-sm-7">
+        <input type="date" id="@field.id" name="@field.name" class="form-control" value="@field.value">
+        @if(field.hasErrors){
+        <p class="help-block">@{field.error.map { error => error.message }}</p>
+        }
+    </div>
+</div>
+}
+
+@myInputDateTime(field: Field, _label: String = "", _size: Int = 10, _hidden: Boolean = false) = {
+<div class="form-group @if(field.hasErrors) {has-error}" @if(_hidden){ hidden }>
+    <label class="col-sm-3 control-label" for="@field.id">@_label</label>
+    <div class="col-sm-7">
+        <input type="datetime-local" id="@field.id" name="@field.name" class="form-control" value="@field.value">
+        @if(field.hasErrors){
+        <p class="help-block">@{field.error.map { error => error.message }}</p>
+        }
+    </div>
+</div>
+}
+
+@scripts = {
+<script type="text/javascript" charset="utf-8">
+
+</script>
+}
+
+@main("Consulta Players - Admin", scripts) {
+
+<h1 class="page-header">Consulta Players</h1>
+
+@helper.form(action = InfoController.queryPlayersSubmit(), 'class -> "form-horizontal") {
+<div class="col-md-12">
+
+    <div class="col-md-7">
+    </div>
+
+    <div class="col-md-5">
+        @helper.select(
+            queryPlayerForm("templateSoccerTeams"),
+            helper.options(teamOptions),
+            'size -> teamOptions.size(),
+            'class -> "col-md-5",
+            'multiple -> "multiple",
+            '_label -> "Seleccionar Equipos"
+        )
+    </div>
+
+    <button type="submit" id="ok" name="ok" class="btn btn-success">Consultar</button>
+</div>
+}
+
+@if(results.size() > 0) {
+
+<div class="col-md-12">
+    <br><br><br><br>
+
+    <h1>Results</h1>
+
+<ul>
+    @for((key, value) <- results) {
+    <li>@key (@value)</li>
+    }
+</ul>
+
+</div>
+
+}
+
+}
