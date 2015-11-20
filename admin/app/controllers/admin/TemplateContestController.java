@@ -255,26 +255,13 @@ public class TemplateContestController extends Controller {
         return redirect(routes.TemplateContestController.index());
     }
 
-    private static void printPlayerByManagerLevel(TemplateContest templateContest) {
-        StringBuffer buffer = new StringBuffer();
-
-        buffer.append("<div>\"" + templateContest.name + "\": FUTBOLISTAS DISPONIBLES (Manager Level):</div>");
-        for (int i=0; i<User.MANAGER_POINTS.length; i++) {
-            List<TemplateSoccerPlayer> availables = soccerPlayersAvailables(templateContest.templateMatchEventIds, i);
-            buffer.append("<div>");
-            buffer.append(String.format("%d => ", i));
-
-            Map<String, Long> frequency = frequencyFieldPos(availables);
-            buffer.append(String.format("GoalKeepers(%s) Defenders(%s) Middles(%s) Forwards(%s)",
-                    frequency.get(FieldPos.GOALKEEPER.name()),
-                    frequency.get(FieldPos.DEFENSE.name()),
-                    frequency.get(FieldPos.MIDDLE.name()),
-                    frequency.get(FieldPos.FORWARD.name())));
-
-            buffer.append("</div>");
-        }
-
-        FlashMessage.info(buffer.toString());
+    public static Result showManagerLevels(String templateContestId) {
+        TemplateContest templateContest = TemplateContest.findOne(new ObjectId(templateContestId));
+        printAsTablePlayerManagerLevel(templateContest);
+        return ok(views.html.template_contest.render(
+                templateContest,
+                templateContest.getTemplateMatchEvents(),
+                TemplateSoccerTeam.findAllAsMap()));
     }
 
     private static void printAsTablePlayerManagerLevel(TemplateContest templateContest) {
@@ -290,8 +277,8 @@ public class TemplateContestController extends Controller {
                 "        <td><strong>Forward<strong></td>\n" +
                 "        </tr>");
         for (int i=0; i<User.MANAGER_POINTS.length; i++) {
-            List<TemplateSoccerPlayer> availables = soccerPlayersAvailables(templateContest.templateMatchEventIds, i);
-            Map<String, Long> frequency = frequencyFieldPos(availables);
+            List<TemplateSoccerPlayer> availables = TemplateSoccerPlayer.soccerPlayersAvailables(templateContest.templateMatchEventIds, i);
+            Map<String, Long> frequency = TemplateSoccerPlayer.frequencyFieldPos(availables);
 
             buffer.append("<tr>");
             buffer.append("<td>" + i + "</td>");
@@ -305,53 +292,6 @@ public class TemplateContestController extends Controller {
         buffer.append("</table>");
 
         FlashMessage.info(buffer.toString());
-    }
-
-    private static Map<String, Long> frequencyFieldPos(List<TemplateSoccerPlayer> templateSoccerPlayers) {
-        HashMap<String, Long> result = new HashMap<>();
-
-        result.put(FieldPos.GOALKEEPER.name(), templateSoccerPlayers.stream().filter(templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.GOALKEEPER)).count());
-        result.put(FieldPos.DEFENSE.name(), templateSoccerPlayers.stream().filter(templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.DEFENSE)).count());
-        result.put(FieldPos.MIDDLE.name(), templateSoccerPlayers.stream().filter(templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.MIDDLE)).count());
-        result.put(FieldPos.FORWARD.name(), templateSoccerPlayers.stream().filter(templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.FORWARD)).count());
-
-        return result;
-    }
-
-    private static List<TemplateSoccerPlayer> filterSoccerPlayers(List<TemplateSoccerPlayer> templateSoccerPlayers, int managerLevel) {
-        /*
-        templateSoccerPlayers.stream().forEach( templateSoccerPlayer -> Logger.debug("{}: player: {} manager: {} money: {}",
-                templateSoccerPlayer.name, TemplateSoccerPlayer.levelFromSalary(templateSoccerPlayer.salary), managerLevel, templateSoccerPlayer.moneyToBuy(managerLevel).toString() ));
-        */
-        return templateSoccerPlayers.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.moneyToBuy(managerLevel).isZero()).collect(Collectors.toList() );
-    }
-
-    private static List<TemplateSoccerPlayer> soccerPlayersAvailables(TemplateMatchEvent templateMatchEvent, int managerLevel) {
-        List<TemplateSoccerPlayer> availables = new ArrayList<>();
-
-        List<TemplateSoccerPlayer> playersA = TemplateSoccerPlayer.findAllActiveFromTemplateTeam(templateMatchEvent.templateSoccerTeamAId);
-        List<TemplateSoccerPlayer> availablesA = filterSoccerPlayers(playersA, managerLevel);
-        availables.addAll(availablesA);
-
-        List<TemplateSoccerPlayer> playersB = TemplateSoccerPlayer.findAllActiveFromTemplateTeam(templateMatchEvent.templateSoccerTeamBId);
-        List<TemplateSoccerPlayer> availablesB = filterSoccerPlayers(playersB, managerLevel);
-        availables.addAll(availablesB);
-
-        //printFieldPos(String.format("%s => ", TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamAId).name), availablesA);
-        //printFieldPos(String.format("%s => ", TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamBId).name), availablesB);
-
-        return availables;
-    }
-
-    private static List<TemplateSoccerPlayer> soccerPlayersAvailables(List<ObjectId> templateMatchEventIds, int managerLevel) {
-        List<TemplateSoccerPlayer> availables = new ArrayList<>();
-
-        List<TemplateMatchEvent> templateMatchEvents = TemplateMatchEvent.findAll(templateMatchEventIds);
-        for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
-            availables.addAll(soccerPlayersAvailables(templateMatchEvent, managerLevel));
-        }
-
-        return availables;
     }
 
     private static void updateActiveContestsFromTemplate(TemplateContest templateContest) {

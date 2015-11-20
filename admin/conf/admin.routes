@@ -59,6 +59,7 @@ GET         /template_contests/clone/:templateContestId                         
 GET         /template_contest/publish/:templateContestId                         controllers.admin.TemplateContestController.publish(templateContestId : String)
 GET         /template_contest/delete/:templateContestId                          controllers.admin.TemplateContestController.destroy(templateContestId : String)
 GET         /template_contest/:templateContestId                                 controllers.admin.TemplateContestController.show(templateContestId : String)
+GET         /template_contest/managerLevels/:templateContestId                   controllers.admin.TemplateContestController.showManagerLevels(templateContestId : String)
 
 GET         /template_contest/get_prizes/:prizeType/:maxEntries/:prizePool       controllers.admin.TemplateContestController.getPrizes(prizeType : String, maxEntries : Int, prizePool : Int)
 
@@ -67,9 +68,11 @@ GET         /template_match_events/ajax                                         
 GET         /template_match_event/:templateMatchEventId                          controllers.admin.TemplateMatchEventController.show(templateMatchEventId : String)
 GET         /template_match_event/optaEvents/:matchEventId                       controllers.admin.TemplateMatchEventController.showOptaEvents(matchEventId : String)
 GET         /template_match_event/simulatedEvents/:matchEventId                  controllers.admin.TemplateMatchEventController.showSimulatedEvents(matchEventId : String)
+GET         /template_match_event/managerLevels/:templateMatchEventId            controllers.admin.TemplateMatchEventController.showManagerLevels(templateMatchEventId : String)
 
 GET         /template_soccer_teams                                               controllers.admin.TemplateSoccerTeamController.index()
 GET         /template_soccer_team/:templateSoccerTeam                            controllers.admin.TemplateSoccerTeamController.show(templateSoccerTeam : String)
+GET         /template_soccer_team/managerLevels/:templateSoccerTeam              controllers.admin.TemplateSoccerTeamController.showManagerLevels(templateSoccerTeam : String)
 
 GET         /template_soccer_players                                             controllers.admin.TemplateSoccerPlayerController.index()
 GET         /template_soccer_players/ajax                                        controllers.admin.TemplateSoccerPlayerController.indexAjax()
