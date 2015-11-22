@@ -3,8 +3,10 @@ package controllers.admin;
 import com.google.common.collect.ImmutableList;
 import org.bson.types.ObjectId;
 import model.*;
+import play.Logger;
 import play.mvc.*;
 import java.util.*;
+
 import model.opta.OptaEvent;
 import utils.ListUtils;
 
@@ -115,6 +117,25 @@ public class TemplateMatchEventController extends Controller {
         TemplateMatchEvent matchEvent = TemplateMatchEvent.findOne(new ObjectId(matchEventId));
         printAsTablePlayerManagerLevel(matchEvent);
         return ok(views.html.template_match_event.render(matchEvent, TemplateSoccerTeam.findAllAsMap()));
+    }
+
+    public static Result simulate(String templateMatchEventId, Integer num) {
+
+        TemplateMatchEvent matchEvent = TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId));
+        TemplateSoccerTeam teamHome = TemplateSoccerTeam.findOne(matchEvent.templateSoccerTeamAId);
+        TemplateSoccerTeam teamAway = TemplateSoccerTeam.findOne(matchEvent.templateSoccerTeamBId);
+        for (int i=0; i<num; i++) {
+            TemplateMatchEvent clone = matchEvent.copy();
+
+            MatchEventSimulation simulation = new MatchEventSimulation(matchEvent.templateMatchEventId);
+            clone.applySimulationEventsAtLiveFantasyPoints(simulation.simulationEvents);
+
+            Logger.info("{}: {}({}) {} vs {} {}({})", i,
+                    teamHome.name, clone.getFantasyPointsForTeam(teamHome.templateSoccerTeamId), clone.homeScore,
+                    clone.awayScore, teamAway.name, clone.getFantasyPointsForTeam(teamAway.templateSoccerTeamId));
+        }
+
+        return redirect(routes.TemplateMatchEventController.show(templateMatchEventId));
     }
 
     private static void printAsTablePlayerManagerLevel(TemplateMatchEvent templateMatchEvent) {
