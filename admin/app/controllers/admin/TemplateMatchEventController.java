@@ -122,7 +122,7 @@ public class TemplateMatchEventController extends Controller {
         return ok(views.html.template_match_event.render(matchEvent, TemplateSoccerTeam.findAllAsMap()));
     }
 
-    public static Result simulate(String templateMatchEventId, Integer num) {
+    public static Result simulationsToCSV(String templateMatchEventId, Integer num) {
 
         TemplateMatchEvent matchEvent = TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId));
         TemplateSoccerTeam teamHome = TemplateSoccerTeam.findOne(matchEvent.templateSoccerTeamAId);
@@ -143,7 +143,7 @@ public class TemplateMatchEventController extends Controller {
         if (matchEvent.isGameFinished()) {
             for (HashMap.Entry<String, LiveFantasyPoints> entry : matchEvent.liveFantasyPoints.entrySet()) {
                 body.add(String.valueOf(-1));
-                body.add(objectID2optaID.get(entry.getKey()));
+                body.add(objectID2optaID.containsKey(entry.getKey()) ? objectID2optaID.get(entry.getKey()) : entry.getKey());
                 body.add(String.valueOf(entry.getValue().points));
             }
         }
@@ -156,7 +156,7 @@ public class TemplateMatchEventController extends Controller {
 
             for (HashMap.Entry<String, LiveFantasyPoints> entry : clone.liveFantasyPoints.entrySet()) {
                 body.add(String.valueOf(i));
-                body.add(objectID2optaID.get(entry.getKey()));
+                body.add(objectID2optaID.containsKey(entry.getKey()) ? objectID2optaID.get(entry.getKey()) : entry.getKey());
                 body.add(String.valueOf(entry.getValue().points));
             }
 
