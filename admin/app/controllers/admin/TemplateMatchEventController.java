@@ -5,6 +5,9 @@ import org.bson.types.ObjectId;
 import model.*;
 import play.Logger;
 import play.mvc.*;
+
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
 
 import model.opta.OptaEvent;
@@ -124,18 +127,69 @@ public class TemplateMatchEventController extends Controller {
         TemplateMatchEvent matchEvent = TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId));
         TemplateSoccerTeam teamHome = TemplateSoccerTeam.findOne(matchEvent.templateSoccerTeamAId);
         TemplateSoccerTeam teamAway = TemplateSoccerTeam.findOne(matchEvent.templateSoccerTeamBId);
+
+        HashMap<String, String> objectID2optaID = new HashMap<>();
+        matchEvent.getTemplateSoccerPlayers().forEach(player ->
+                objectID2optaID.put(player.templateSoccerPlayerId.toString(), player.optaPlayerId));
+
+        List<String> headers = new ArrayList<>();
+        headers.add("Partido");
+        headers.add("OptaId");
+        headers.add("Fantasy Points");
+
+        List<String> body = new ArrayList<>();
+
+        // Si el partido que simulamos, ya se ha reproducido registramos sus eventos en el csv
+        if (matchEvent.isGameFinished()) {
+            for (HashMap.Entry<String, LiveFantasyPoints> entry : matchEvent.liveFantasyPoints.entrySet()) {
+                body.add(String.valueOf(-1));
+                body.add(objectID2optaID.get(entry.getKey()));
+                body.add(String.valueOf(entry.getValue().points));
+            }
+        }
+
         for (int i=0; i<num; i++) {
             TemplateMatchEvent clone = matchEvent.copy();
 
             MatchEventSimulation simulation = new MatchEventSimulation(matchEvent.templateMatchEventId);
             clone.applySimulationEventsAtLiveFantasyPoints(simulation.simulationEvents);
 
+            for (HashMap.Entry<String, LiveFantasyPoints> entry : clone.liveFantasyPoints.entrySet()) {
+                body.add(String.valueOf(i));
+                body.add(objectID2optaID.get(entry.getKey()));
+                body.add(String.valueOf(entry.getValue().points));
+            }
+
             Logger.info("{}: {}({}) {} vs {} {}({})", i,
                     teamHome.name, clone.getFantasyPointsForTeam(teamHome.templateSoccerTeamId), clone.homeScore,
                     clone.awayScore, teamAway.name, clone.getFantasyPointsForTeam(teamAway.templateSoccerTeamId));
         }
 
+        generateCsvFile(String.format("%s vs %s.csv", teamHome.shortName, teamAway.shortName), headers, body);
+
         return redirect(routes.TemplateMatchEventController.show(templateMatchEventId));
+    }
+
+    private static void generateCsvFile(String sFileName, List<String> headers, List<String> body) {
+        try {
+            FileWriter writer = new FileWriter(sFileName);
+
+            for (int i=0; i<headers.size(); i++) {
+                writer.append(headers.get(i));
+                writer.append( ((i+1) < headers.size()) ? "," : "\n" );
+            }
+
+            for (int i=0; i<body.size(); i++) {
+                writer.append(body.get(i));
+                writer.append( ((i+1) % headers.size()) != 0 ? "," : "\n" );
+            }
+
+            writer.flush();
+            writer.close();
+        }
+        catch(IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void printAsTablePlayerManagerLevel(TemplateMatchEvent templateMatchEvent) {
