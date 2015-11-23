@@ -329,20 +329,26 @@ public class Contest implements JongoId {
     }
 
     public User getWinner() {
-        ContestEntry winner = null;
-
-        for (ContestEntry contestEntry : contestEntries) {
-            if (contestEntry.position == 0) {
-                winner = contestEntry;
-                break;
-            }
-        }
+        ContestEntry winner = getContestEntryInPosition(0);
 
         if (winner == null) {
             throw new RuntimeException("WTF 7221 winner == null");
         }
 
         return User.findOne(winner.userId);
+    }
+
+    public ContestEntry getContestEntryInPosition(int position) {
+        ContestEntry result = null;
+
+        for (ContestEntry contestEntry : contestEntries) {
+            if (contestEntry.position == position) {
+                result = contestEntry;
+                break;
+            }
+        }
+
+        return result;
     }
 
     private void updateRanking(Prizes prizes) {
