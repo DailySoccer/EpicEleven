@@ -5,6 +5,29 @@ import play.Logger;
 import utils.MoneyUtils;
 
 public class Achievement {
+    static public void TrueSkillChanged(User user, Contest contest) {
+
+        //
+        // TRUE_SKILL_N
+        //
+        if (user.trueSkill > 500) {
+            user.achievedAchievement(AchievementType.TRUE_SKILL_500);
+        }
+
+        if (user.trueSkill > 600) {
+            user.achievedAchievement(AchievementType.TRUE_SKILL_600);
+        }
+
+        if (user.trueSkill > 700) {
+            user.achievedAchievement(AchievementType.TRUE_SKILL_700);
+        }
+
+        Logger.debug("TrueSkillChanged {}: User: {}: Contest: {}",
+                contest.simulation ? "Simulation" : "Official",
+                user.firstName + " " + user.lastName,
+                contest.name);
+    }
+
     static public void PlayedContest(Contest contest) {
         for (ContestEntry contestEntry : contest.contestEntries) {
             PlayedContest(contestEntry, contest);

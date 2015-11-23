@@ -28,4 +28,8 @@ public enum AchievementType {
     MANAGER_LEVEL_3,
     MANAGER_LEVEL_4,
     MANAGER_LEVEL_5,
+
+    TRUE_SKILL_500,
+    TRUE_SKILL_600,
+    TRUE_SKILL_700,
 }

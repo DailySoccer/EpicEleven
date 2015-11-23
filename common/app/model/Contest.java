@@ -382,8 +382,11 @@ public class Contest implements JongoId {
     private void updateTrueSkill() {
         // Calculamos el trueSkill de los participantes y actualizamos su información en la BDD
         Map<ObjectId, User> usersRating = TrueSkillHelper.RecomputeRatings(contestEntries);
-        for (Map.Entry<ObjectId, User> user : usersRating.entrySet()) {
-            user.getValue().updateTrueSkillByContest(contestId);
+        for (Map.Entry<ObjectId, User> entry : usersRating.entrySet()) {
+            User user = entry.getValue();
+            user.updateTrueSkillByContest(contestId);
+
+            Achievement.TrueSkillChanged(user, this);
         }
     }
 
