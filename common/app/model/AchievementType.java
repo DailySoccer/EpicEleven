@@ -32,4 +32,9 @@ public enum AchievementType {
     TRUE_SKILL_500,
     TRUE_SKILL_600,
     TRUE_SKILL_700,
+
+    SOCCER_PLAYER_WON_FP_100,
+    SOCCER_PLAYER_WON_FP_200,
+
+    ALL_SOCCER_PLAYERS_WITH_FP,
 }

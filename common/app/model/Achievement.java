@@ -3,6 +3,9 @@ package model;
 import org.joda.money.Money;
 import play.Logger;
 import utils.MoneyUtils;
+import org.bson.types.ObjectId;
+
+import java.util.List;
 
 public class Achievement {
     static public void TrueSkillChanged(User user, Contest contest) {
@@ -32,6 +35,10 @@ public class Achievement {
         for (ContestEntry contestEntry : contest.contestEntries) {
             PlayedContest(contestEntry, contest);
         }
+
+        if (!contest.simulation) {
+            PlayedSoccerPlayers(contest);
+        }
     }
 
     static private void PlayedContest(ContestEntry contestEntry, Contest contest) {
@@ -47,14 +54,13 @@ public class Achievement {
                 WonOfficialContest(user, contestEntry, contest);
             }
         }
+
+        // Achievements por Participar
+        if (contest.simulation) {
+            PlayedSimulationContest(user, contestEntry, contest);
+        }
         else {
-            // Achievements por Participar
-            if (contest.simulation) {
-                PlayedSimulationContest(user, contestEntry, contest);
-            }
-            else {
-                PlayedOfficialContest(user, contestEntry, contest);
-            }
+            PlayedOfficialContest(user, contestEntry, contest);
         }
 
         // Recibió un premio?
@@ -231,5 +237,54 @@ public class Achievement {
                 user.firstName + " " + user.lastName,
                 contest.name,
                 contestEntry.position);
+    }
+
+    static void PlayedSoccerPlayers(Contest contest) {
+        List<TemplateMatchEvent> matchEvents = contest.getTemplateMatchEvents();
+        for (ContestEntry contestEntry : contest.contestEntries) {
+            PlayedWithContestEntry(contestEntry, matchEvents);
+        }
+    }
+
+    static void PlayedWithContestEntry(ContestEntry contestEntry, List<TemplateMatchEvent> matchEvents) {
+        User user = User.findOne(contestEntry.userId);
+
+        //
+        // SOCCER_PLAYER_WON_FP_N
+        //
+        boolean allSoccerPlayersWithPoints = true;
+
+        for (ObjectId soccerPlayerId : contestEntry.soccerIds) {
+            LiveFantasyPoints liveFantasyPoints = getLiveFantasyPoints(soccerPlayerId, matchEvents);
+            if (liveFantasyPoints.points > 0) {
+
+                if (liveFantasyPoints.points > 100) {
+                    user.achievedAchievement(AchievementType.SOCCER_PLAYER_WON_FP_100);
+                }
+
+                if (liveFantasyPoints.points > 200) {
+                    user.achievedAchievement(AchievementType.SOCCER_PLAYER_WON_FP_200);
+                }
+
+            }
+            else {
+                allSoccerPlayersWithPoints = false;
+            }
+        }
+
+        if (allSoccerPlayersWithPoints) {
+            user.achievedAchievement(AchievementType.ALL_SOCCER_PLAYERS_WITH_FP);
+        }
+    }
+
+    static LiveFantasyPoints getLiveFantasyPoints(ObjectId soccerPlayerId, List<TemplateMatchEvent> matchEvents) {
+        LiveFantasyPoints result = null;
+        for (TemplateMatchEvent matchEvent : matchEvents) {
+            result = matchEvent.getLiveFantasyPointsBySoccerPlayer(soccerPlayerId);
+            if (result != null) {
+                break;
+            }
+        }
+        return result;
     }
 }
