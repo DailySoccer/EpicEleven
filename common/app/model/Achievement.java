@@ -1,6 +1,8 @@
 package model;
 
+import org.joda.money.Money;
 import play.Logger;
+import utils.MoneyUtils;
 
 public class Achievement {
     static public void PlayedContest(Contest contest) {
@@ -9,7 +11,7 @@ public class Achievement {
         }
     }
 
-    static public void PlayedContest(ContestEntry contestEntry, Contest contest) {
+    static private void PlayedContest(ContestEntry contestEntry, Contest contest) {
         User user = User.findOne(contestEntry.userId);
 
         // Ha ganado?
@@ -32,14 +34,19 @@ public class Achievement {
             }
         }
 
-        Logger.debug("PlayerContest {}: User: {}: Contest: {} Position: {}",
+        // Recibió un premio?
+        if (contestEntry.prize.isPositive()) {
+            wonPrize(user, contestEntry, contest);
+        }
+
+        Logger.debug("PlayedContest {}: User: {}: Contest: {} Position: {}",
                 contest.simulation ? "Simulation" : "Official",
                 user.firstName + " " + user.lastName,
                 contest.name,
                 contestEntry.position);
     }
 
-    static public long WonSimulationContest(User user, ContestEntry contestEntry, Contest contest) {
+    static private long WonSimulationContest(User user, ContestEntry contestEntry, Contest contest) {
         long played = Contest.countPlayedSimulations(user.userId);
 
         //
@@ -91,7 +98,7 @@ public class Achievement {
         return played;
     }
 
-    static public long PlayedSimulationContest(User user, ContestEntry contestEntry, Contest contest) {
+    static private long PlayedSimulationContest(User user, ContestEntry contestEntry, Contest contest) {
         long played = Contest.countPlayedSimulations(user.userId);
 
         //
@@ -108,7 +115,7 @@ public class Achievement {
         return played;
     }
 
-    static public long WonOfficialContest(User user, ContestEntry contestEntry, Contest contest) {
+    static private long WonOfficialContest(User user, ContestEntry contestEntry, Contest contest) {
         long played = Contest.countPlayedOfficial(user.userId);
 
         //
@@ -160,7 +167,7 @@ public class Achievement {
         return played;
     }
 
-    static public long PlayedOfficialContest(User user, ContestEntry contestEntry, Contest contest) {
+    static private long PlayedOfficialContest(User user, ContestEntry contestEntry, Contest contest) {
         long played = Contest.countPlayedOfficial(user.userId);
 
         //
@@ -175,5 +182,31 @@ public class Achievement {
         }
 
         return played;
+    }
+
+    static private void wonPrize(User user, ContestEntry contestEntry, Contest contest) {
+        // Ganó manager points?
+        if (contestEntry.prize.getCurrencyUnit().equals(MoneyUtils.CURRENCY_MANAGER)) {
+            Money managerBalance = user.calculateManagerBalance();
+            float managerLevel = user.managerLevelFromPoints(managerBalance);
+
+            if (managerLevel >= 3) {
+                user.achievedAchievement(AchievementType.MANAGER_LEVEL_3);
+            }
+
+            if (managerLevel >= 4) {
+                user.achievedAchievement(AchievementType.MANAGER_LEVEL_4);
+            }
+
+            if (managerLevel >= 5) {
+                user.achievedAchievement(AchievementType.MANAGER_LEVEL_5);
+            }
+        }
+
+        Logger.debug("WonPrize {}: User: {}: Contest: {} Position: {}",
+                contest.simulation ? "Simulation" : "Official",
+                user.firstName + " " + user.lastName,
+                contest.name,
+                contestEntry.position);
     }
 }
