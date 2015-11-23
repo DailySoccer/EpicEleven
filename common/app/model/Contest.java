@@ -203,6 +203,26 @@ public class Contest implements JongoId {
                 .count("{templateContestId: #, state: \"ACTIVE\", freeSlots: {$gt: 0}}", templateContestId);
     }
 
+    static public long countPlayedSimulations(ObjectId userId) {
+        return Model.contests()
+                .count("{'contestEntries.userId': #, state: \"HISTORY\", simulation: true}", userId);
+    }
+
+    static public long countWonSimulations(ObjectId userId) {
+        return Model.contests()
+                .count("{'contestEntries.userId': #, state: \"HISTORY\", simulation: true, contestEntries.position': 0}", userId);
+    }
+
+    static public long countPlayedOfficial(ObjectId userId) {
+        return Model.contests()
+                .count("{'contestEntries.userId': #, state: \"HISTORY\", simulation: {$ne: true}}", userId);
+    }
+
+    static public long countWonOfficial(ObjectId userId) {
+        return Model.contests()
+                .count("{'contestEntries.userId': #, state: \"HISTORY\", simulation: {$ne: true}, contestEntries.position': 0}", userId);
+    }
+
     static public List<Contest> findAllActiveFromTemplateMatchEvent(ObjectId templateMatchEventId) {
         return ListUtils.asList(Model.contests()
                 .find("{state: \"ACTIVE\", templateMatchEventIds: {$in:[#]}}", templateMatchEventId)
@@ -301,6 +321,8 @@ public class Contest implements JongoId {
             givePrizes(prizes);
             updateWinner();
             bonusToCash();
+
+            Achievement.PlayedContest(this);
         }
 
         setClosed();
