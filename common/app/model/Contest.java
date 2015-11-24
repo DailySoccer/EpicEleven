@@ -322,7 +322,7 @@ public class Contest implements JongoId {
             updateWinner();
             bonusToCash();
 
-            Achievement.PlayedContest(this);
+            Achievement.playedContest(this);
         }
 
         setClosed();
@@ -386,7 +386,7 @@ public class Contest implements JongoId {
             User user = entry.getValue();
             user.updateTrueSkillByContest(contestId);
 
-            Achievement.TrueSkillChanged(user, this);
+            Achievement.trueSkillChanged(user, this);
         }
     }
 
@@ -491,6 +491,12 @@ public class Contest implements JongoId {
         }
         return soccerPlayers;
     }
+
+    public List<InstanceSoccerPlayer> getInstanceSoccerPlayersWithFieldPos(FieldPos fieldPos, ContestEntry contestEntry) {
+        List<InstanceSoccerPlayer> instanceSoccerPlayers = getInstanceSoccerPlayers(contestEntry.soccerIds);
+        return instanceSoccerPlayers.stream().filter(instanceSoccerPlayer -> instanceSoccerPlayer.fieldPos.equals(fieldPos)).collect(Collectors.toList());
+    }
+
 
     public Contest getSameContestWithFreeSlot(ObjectId userId) {
         String query = String.format("{templateContestId: #, 'contestEntries.%s': {$exists: false}, 'contestEntries.userId': {$ne:#}}", maxEntries-1);

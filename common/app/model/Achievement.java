@@ -6,9 +6,11 @@ import utils.MoneyUtils;
 import org.bson.types.ObjectId;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import com.google.common.collect.ImmutableList;
 
 public class Achievement {
-    static public void TrueSkillChanged(User user, Contest contest) {
+    static public void trueSkillChanged(User user, Contest contest) {
 
         //
         // TRUE_SKILL_N
@@ -25,42 +27,50 @@ public class Achievement {
             user.achievedAchievement(AchievementType.TRUE_SKILL_700);
         }
 
-        Logger.debug("TrueSkillChanged {}: User: {}: Contest: {}",
+        if (user.trueSkill > 800) {
+            user.achievedAchievement(AchievementType.TRUE_SKILL_800);
+        }
+
+        if (user.trueSkill > 900) {
+            user.achievedAchievement(AchievementType.TRUE_SKILL_900);
+        }
+
+        Logger.debug("trueSkillChanged {}: User: {}: Contest: {}",
                 contest.simulation ? "Simulation" : "Official",
                 user.firstName + " " + user.lastName,
                 contest.name);
     }
 
-    static public void PlayedContest(Contest contest) {
+    static public void playedContest(Contest contest) {
         for (ContestEntry contestEntry : contest.contestEntries) {
-            PlayedContest(contestEntry, contest);
+            playedContest(contestEntry, contest);
         }
 
         if (!contest.simulation) {
-            PlayedSoccerPlayers(contest);
+            playedSoccerPlayers(contest);
         }
     }
 
-    static private void PlayedContest(ContestEntry contestEntry, Contest contest) {
+    static private void playedContest(ContestEntry contestEntry, Contest contest) {
         User user = User.findOne(contestEntry.userId);
 
         // Ha ganado?
         if (contestEntry.position == 0) {
             // Achievements por Ganar
             if (contest.simulation) {
-                WonSimulationContest(user, contestEntry, contest);
+                wonSimulationContest(user, contestEntry, contest);
             }
             else {
-                WonOfficialContest(user, contestEntry, contest);
+                wonOfficialContest(user, contestEntry, contest);
             }
         }
 
         // Achievements por Participar
         if (contest.simulation) {
-            PlayedSimulationContest(user, contestEntry, contest);
+            playedSimulationContest(user, contestEntry, contest);
         }
         else {
-            PlayedOfficialContest(user, contestEntry, contest);
+            playedOfficialContest(user, contestEntry, contest);
         }
 
         // Recibió un premio?
@@ -68,14 +78,14 @@ public class Achievement {
             wonPrize(user, contestEntry, contest);
         }
 
-        Logger.debug("PlayedContest {}: User: {}: Contest: {} Position: {}",
+        Logger.debug("playedContest {}: User: {}: Contest: {} Position: {}",
                 contest.simulation ? "Simulation" : "Official",
                 user.firstName + " " + user.lastName,
                 contest.name,
                 contestEntry.position);
     }
 
-    static private long WonSimulationContest(User user, ContestEntry contestEntry, Contest contest) {
+    static private long wonSimulationContest(User user, ContestEntry contestEntry, Contest contest) {
         long played = Contest.countPlayedSimulations(user.userId);
 
         //
@@ -127,7 +137,7 @@ public class Achievement {
         return played;
     }
 
-    static private long PlayedSimulationContest(User user, ContestEntry contestEntry, Contest contest) {
+    static private long playedSimulationContest(User user, ContestEntry contestEntry, Contest contest) {
         long played = Contest.countPlayedSimulations(user.userId);
 
         //
@@ -144,7 +154,7 @@ public class Achievement {
         return played;
     }
 
-    static private long WonOfficialContest(User user, ContestEntry contestEntry, Contest contest) {
+    static private long wonOfficialContest(User user, ContestEntry contestEntry, Contest contest) {
         long played = Contest.countPlayedOfficial(user.userId);
 
         //
@@ -196,7 +206,7 @@ public class Achievement {
         return played;
     }
 
-    static private long PlayedOfficialContest(User user, ContestEntry contestEntry, Contest contest) {
+    static private long playedOfficialContest(User user, ContestEntry contestEntry, Contest contest) {
         long played = Contest.countPlayedOfficial(user.userId);
 
         //
@@ -239,42 +249,150 @@ public class Achievement {
                 contestEntry.position);
     }
 
-    static void PlayedSoccerPlayers(Contest contest) {
+    static void playedSoccerPlayers(Contest contest) {
         List<TemplateMatchEvent> matchEvents = contest.getTemplateMatchEvents();
         for (ContestEntry contestEntry : contest.contestEntries) {
-            PlayedWithContestEntry(contestEntry, matchEvents);
+            playedWithContestEntry(contestEntry, matchEvents, contest);
         }
     }
 
-    static void PlayedWithContestEntry(ContestEntry contestEntry, List<TemplateMatchEvent> matchEvents) {
+    static void playedWithContestEntry(ContestEntry contestEntry, List<TemplateMatchEvent> matchEvents, Contest contest) {
         User user = User.findOne(contestEntry.userId);
 
-        //
-        // SOCCER_PLAYER_WON_FP_N
-        //
-        boolean allSoccerPlayersWithPoints = true;
+        // GOALKEEPER
+        List<ObjectId> goalKeeperIdList = contest.getInstanceSoccerPlayersWithFieldPos(FieldPos.GOALKEEPER, contestEntry)
+                .stream()
+                .map( instanceSoccerPlayer -> instanceSoccerPlayer.templateSoccerPlayerId )
+                .collect(Collectors.toList());
+        List<LiveFantasyPoints> goalKeeperList = getLiveFantasyPoints(goalKeeperIdList, matchEvents);
+        goalKeeperList.forEach( liveFantasyPoints -> userPlayedWithGoalKeeper(user, liveFantasyPoints) );
 
-        for (ObjectId soccerPlayerId : contestEntry.soccerIds) {
-            LiveFantasyPoints liveFantasyPoints = getLiveFantasyPoints(soccerPlayerId, matchEvents);
-            if (liveFantasyPoints.points > 0) {
+        // DEFENDER
+        List<ObjectId> defenderIdList = contest.getInstanceSoccerPlayersWithFieldPos(FieldPos.DEFENSE, contestEntry)
+                .stream()
+                .map( instanceSoccerPlayer -> instanceSoccerPlayer.templateSoccerPlayerId )
+                .collect(Collectors.toList());
+        List<LiveFantasyPoints> defenderList = getLiveFantasyPoints(defenderIdList, matchEvents);
+        defenderList.forEach( liveFantasyPoints -> userPlayedWithDefense(user, liveFantasyPoints) );
 
-                if (liveFantasyPoints.points > 100) {
-                    user.achievedAchievement(AchievementType.SOCCER_PLAYER_WON_FP_100);
-                }
+        // MIDDLE
+        List<ObjectId> middleIdList = contest.getInstanceSoccerPlayersWithFieldPos(FieldPos.MIDDLE, contestEntry)
+                .stream()
+                .map( instanceSoccerPlayer -> instanceSoccerPlayer.templateSoccerPlayerId )
+                .collect(Collectors.toList());
+        List<LiveFantasyPoints> middleList = getLiveFantasyPoints(middleIdList, matchEvents);
+        middleList.forEach( liveFantasyPoints -> userPlayedWithMiddle(user, liveFantasyPoints) );
 
-                if (liveFantasyPoints.points > 200) {
-                    user.achievedAchievement(AchievementType.SOCCER_PLAYER_WON_FP_200);
-                }
+        // FORWARD
+        List<ObjectId> forwardIdList = contest.getInstanceSoccerPlayersWithFieldPos(FieldPos.FORWARD, contestEntry)
+                .stream()
+                .map( instanceSoccerPlayer -> instanceSoccerPlayer.templateSoccerPlayerId )
+                .collect(Collectors.toList());
+        List<LiveFantasyPoints> forwardList = getLiveFantasyPoints(forwardIdList, matchEvents);
+        forwardList.forEach( liveFantasyPoints -> userPlayedWithForward(user, liveFantasyPoints) );
 
-            }
-            else {
-                allSoccerPlayersWithPoints = false;
-            }
-        }
+        // ALL SOCCER PLAYERS WITH POINTS
+        boolean allSoccerPlayersWithPoints =
+                goalKeeperList.stream().allMatch( liveFantasyPoints -> liveFantasyPoints.points > 0 ) &&
+                defenderList.stream().allMatch( liveFantasyPoints -> liveFantasyPoints.points > 0 ) &&
+                middleList.stream().allMatch( liveFantasyPoints -> liveFantasyPoints.points > 0 ) &&
+                forwardList.stream().allMatch( liveFantasyPoints -> liveFantasyPoints.points > 0 );
 
         if (allSoccerPlayersWithPoints) {
             user.achievedAchievement(AchievementType.ALL_SOCCER_PLAYERS_WITH_FP);
         }
+    }
+
+    static void userPlayedWithSoccerPlayer(User user, LiveFantasyPoints liveFantasyPoints) {
+        if (liveFantasyPoints.points > 0) {
+
+            if (liveFantasyPoints.points > 100) {
+                user.achievedAchievement(AchievementType.SOCCER_PLAYER_WON_FP_100);
+            }
+
+            if (liveFantasyPoints.points > 200) {
+                user.achievedAchievement(AchievementType.SOCCER_PLAYER_WON_FP_200);
+            }
+        }
+    }
+
+    static void userPlayedWithGoalKeeper(User user, LiveFantasyPoints liveFantasyPoints) {
+        userPlayedWithSoccerPlayer(user, liveFantasyPoints);
+
+        long savesShoots = liveFantasyPoints.countEvents(ImmutableList.of("SAVE_GOALKEEPER"));
+
+        if (savesShoots >= 10) {
+            user.achievedAchievement(AchievementType.GOALKEEPER_SAVES_10_SHOTS);
+        }
+
+        if (savesShoots >= 20) {
+            user.achievedAchievement(AchievementType.GOALKEEPER_SAVES_20_SHOTS);
+        }
+
+        long goalsReceived = liveFantasyPoints.countEvents(ImmutableList.of("GOAL_CONCEDED"));
+        if (goalsReceived == 0) {
+            user.achievedAchievement(AchievementType.GOALKEEPER_0_GOAL_RECEIVED);
+        }
+
+        long redCard = liveFantasyPoints.countEvents(ImmutableList.of("RED_CARD"));
+        if (redCard > 0) {
+            user.achievedAchievement(AchievementType.GOALKEEPER_RED_CARD);
+        }
+
+        long goals = liveFantasyPoints.countEvents(ImmutableList.of("GOAL_SCORED_BY_GOALKEEPER"));
+        if (goals > 0) {
+            user.achievedAchievement(AchievementType.GOALKEEPER_GOAL_SCORED);
+        }
+    }
+
+    static void userPlayedWithDefense(User user, LiveFantasyPoints liveFantasyPoints) {
+        userPlayedWithSoccerPlayer(user, liveFantasyPoints);
+
+        long interceptions = liveFantasyPoints.countEvents(ImmutableList.of("INTERCEPTION"));
+
+        if (interceptions >= 10) {
+            user.achievedAchievement(AchievementType.DEFENDER_10_INTERCEPTIONS);
+        }
+
+        if (interceptions >= 20) {
+            user.achievedAchievement(AchievementType.DEFENDER_20_INTERCEPTIONS);
+        }
+    }
+
+    static void userPlayedWithMiddle(User user, LiveFantasyPoints liveFantasyPoints) {
+        userPlayedWithSoccerPlayer(user, liveFantasyPoints);
+
+        long passes = liveFantasyPoints.countEvents(ImmutableList.of("PASS_SUCCESSFUL"));
+
+        if (passes >= 10) {
+            user.achievedAchievement(AchievementType.MIDDLE_10_PASS_SUCCESSFUL);
+        }
+
+        if (passes >= 20) {
+            user.achievedAchievement(AchievementType.MIDDLE_20_PASS_SUCCESSFUL);
+        }
+    }
+
+    static void userPlayedWithForward(User user, LiveFantasyPoints liveFantasyPoints) {
+        userPlayedWithSoccerPlayer(user, liveFantasyPoints);
+
+        long goals = liveFantasyPoints.countEvents(ImmutableList.of("GOAL_SCORED_BY_FORWARD"));
+
+        if (goals >= 1) {
+            user.achievedAchievement(AchievementType.FORWARD_1_GOAL);
+        }
+
+        if (goals >= 2) {
+            user.achievedAchievement(AchievementType.FORWARD_2_GOALS);
+        }
+
+        if (goals >= 3) {
+            user.achievedAchievement(AchievementType.FORWARD_3_GOALS);
+        }
+    }
+
+    static List<LiveFantasyPoints> getLiveFantasyPoints(List<ObjectId> soccerPlayerList, List<TemplateMatchEvent> matchEvents) {
+        return soccerPlayerList.stream().map(soccerPlayerId -> getLiveFantasyPoints(soccerPlayerId, matchEvents) ).collect(Collectors.toList());
     }
 
     static LiveFantasyPoints getLiveFantasyPoints(ObjectId soccerPlayerId, List<TemplateMatchEvent> matchEvents) {

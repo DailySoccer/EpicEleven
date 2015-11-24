@@ -76,7 +76,7 @@ public class User {
 
     public float managerLevel = 0;
 
-    public List<AchievementType> achievements = new ArrayList<>();
+    public List<String> achievements = new ArrayList<>();
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
@@ -297,13 +297,13 @@ public class User {
     }
 
     public boolean hasAchievement(AchievementType aAchievement) {
-        return achievements.stream().anyMatch(achievement -> achievement.equals(aAchievement));
+        return achievements.stream().anyMatch(achievement -> achievement.equals(aAchievement.toString()));
     }
 
     public void achievedAchievement(AchievementType achievementType) {
         if (!hasAchievement(achievementType)) {
-            achievements.add(achievementType);
-            Model.users().update("{_id: #}", userId).with("{$addToSet: {achievements: #}}", achievementType);
+            achievements.add(achievementType.toString());
+            Model.users().update("{_id: #}", userId).with("{$addToSet: {achievements: #}}", achievementType.toString());
         }
     }
 
