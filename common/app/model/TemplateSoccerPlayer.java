@@ -239,10 +239,7 @@ public class TemplateSoccerPlayer implements JongoId {
 
     public static List<TemplateSoccerPlayer> soccerPlayersAvailables(TemplateSoccerTeam templateSoccerTeam, int managerLevel) {
         List<TemplateSoccerPlayer> players = templateSoccerTeam.getTemplateSoccerPlayers();
-        List<TemplateSoccerPlayer> availables = filterSoccerPlayers(players, managerLevel);
-        availables.addAll(availables);
-
-        return availables;
+        return filterSoccerPlayers(players, managerLevel);
     }
 
     public static List<TemplateSoccerPlayer> soccerPlayersAvailables(TemplateMatchEvent templateMatchEvent, int managerLevel) {
@@ -261,6 +258,8 @@ public class TemplateSoccerPlayer implements JongoId {
         List<TemplateSoccerPlayer> availables = new ArrayList<>();
 
         List<TemplateMatchEvent> templateMatchEvents = TemplateMatchEvent.findAll(templateMatchEventIds);
+
+        Logger.debug("matches: {}", templateMatchEvents.size());
         for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
             availables.addAll(soccerPlayersAvailables(templateMatchEvent, managerLevel));
         }
