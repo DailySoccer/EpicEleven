@@ -1,13 +1,17 @@
 package model;
 
+import com.sun.corba.se.impl.encoding.OSFCodeSetRegistry;
 import org.joda.money.Money;
 import play.Logger;
 import utils.MoneyUtils;
 import org.bson.types.ObjectId;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 public class Achievement {
     static public void trueSkillChanged(User user, Contest contest) {
@@ -15,25 +19,13 @@ public class Achievement {
         //
         // TRUE_SKILL_N
         //
-        if (user.trueSkill >= 500) {
-            user.achievedAchievement(AchievementType.TRUE_SKILL_500);
-        }
-
-        if (user.trueSkill >= 600) {
-            user.achievedAchievement(AchievementType.TRUE_SKILL_600);
-        }
-
-        if (user.trueSkill >= 700) {
-            user.achievedAchievement(AchievementType.TRUE_SKILL_700);
-        }
-
-        if (user.trueSkill >= 800) {
-            user.achievedAchievement(AchievementType.TRUE_SKILL_800);
-        }
-
-        if (user.trueSkill >= 900) {
-            user.achievedAchievement(AchievementType.TRUE_SKILL_900);
-        }
+        evaluateAchievements(user, user.trueSkill, new HashMap<AchievementType, Integer>() {{
+            put(AchievementType.TRUE_SKILL_500, 500);
+            put(AchievementType.TRUE_SKILL_600, 600);
+            put(AchievementType.TRUE_SKILL_700, 700);
+            put(AchievementType.TRUE_SKILL_800, 800);
+            put(AchievementType.TRUE_SKILL_900, 900);
+        }});
 
         Logger.debug("trueSkillChanged {}: User: {}: Contest: {}",
                 contest.simulation ? "Simulation" : "Official",
@@ -86,35 +78,25 @@ public class Achievement {
     }
 
     static private long wonSimulationContest(User user, ContestEntry contestEntry, Contest contest) {
-        long played = Contest.countPlayedSimulations(user.userId);
+        long won = Contest.countWonSimulations(user.userId);
 
         //
         // WON_N_VIRTUAL_CONTEST
         //
-        user.achievedAchievement(AchievementType.WON_1_VIRTUAL_CONTEST);
-
-        if (played >= 5) {
-            user.achievedAchievement(AchievementType.WON_5_VIRTUAL_CONTESTS);
-        }
-
-        if (played >= 10) {
-            user.achievedAchievement(AchievementType.WON_10_VIRTUAL_CONTESTS);
-        }
+        evaluateAchievements(user, won, new HashMap<AchievementType, Integer>() {{
+            put(AchievementType.WON_1_VIRTUAL_CONTEST, 1);
+            put(AchievementType.WON_5_VIRTUAL_CONTESTS, 5);
+            put(AchievementType.WON_10_VIRTUAL_CONTESTS, 10);
+        }});
 
         //
         // FP_N_VIRTUAL_CONTEST
         //
-        if (contestEntry.fantasyPoints >= 500) {
-            user.achievedAchievement(AchievementType.FP_500_VIRTUAL_CONTEST);
-        }
-
-        if (contestEntry.fantasyPoints >= 700) {
-            user.achievedAchievement(AchievementType.FP_700_VIRTUAL_CONTEST);
-        }
-
-        if (contestEntry.fantasyPoints >= 1000) {
-            user.achievedAchievement(AchievementType.FP_1000_VIRTUAL_CONTEST);
-        }
+        evaluateAchievements(user, contestEntry.fantasyPoints, new HashMap<AchievementType, Integer>() {{
+            put(AchievementType.FP_500_VIRTUAL_CONTEST, 500);
+            put(AchievementType.FP_700_VIRTUAL_CONTEST, 700);
+            put(AchievementType.FP_1000_VIRTUAL_CONTEST, 1000);
+        }});
 
         //
         // DIFF_FP_N_VIRTUAL_CONTEST
@@ -122,19 +104,13 @@ public class Achievement {
         ContestEntry second = contest.getContestEntryInPosition(1);
         long diffFP = contestEntry.fantasyPoints - second.fantasyPoints;
 
-        if (diffFP >= 100) {
-            user.achievedAchievement(AchievementType.DIFF_FP_100_VIRTUAL_CONTEST);
-        }
+        evaluateAchievements(user, diffFP, new HashMap<AchievementType, Integer>() {{
+            put(AchievementType.DIFF_FP_100_VIRTUAL_CONTEST, 100);
+            put(AchievementType.DIFF_FP_200_VIRTUAL_CONTEST, 200);
+            put(AchievementType.DIFF_FP_300_VIRTUAL_CONTEST, 300);
+        }});
 
-        if (diffFP >= 200) {
-            user.achievedAchievement(AchievementType.DIFF_FP_200_VIRTUAL_CONTEST);
-        }
-
-        if (diffFP >= 300) {
-            user.achievedAchievement(AchievementType.DIFF_FP_300_VIRTUAL_CONTEST);
-        }
-
-        return played;
+        return won;
     }
 
     static private long playedSimulationContest(User user, ContestEntry contestEntry, Contest contest) {
@@ -143,47 +119,34 @@ public class Achievement {
         //
         // PLAYED_N_VIRTUAL_CONTESTS
         //
-        if (played >= 5) {
-            user.achievedAchievement(AchievementType.PLAYED_5_VIRTUAL_CONTESTS);
-        }
-
-        if (played >= 10) {
-            user.achievedAchievement(AchievementType.PLAYED_10_VIRTUAL_CONTESTS);
-        }
+        evaluateAchievements(user, played, new HashMap<AchievementType, Integer>() {{
+            put(AchievementType.PLAYED_5_VIRTUAL_CONTESTS, 5);
+            put(AchievementType.PLAYED_10_VIRTUAL_CONTESTS, 10);
+        }});
 
         return played;
     }
 
     static private long wonOfficialContest(User user, ContestEntry contestEntry, Contest contest) {
-        long played = Contest.countPlayedOfficial(user.userId);
+        long won = Contest.countWonOfficial(user.userId);
 
         //
         // WON_N_OFFICIAL_CONTEST
         //
-        user.achievedAchievement(AchievementType.WON_1_OFFICIAL_CONTEST);
-
-        if (played >= 5) {
-            user.achievedAchievement(AchievementType.WON_5_OFFICIAL_CONTESTS);
-        }
-
-        if (played >= 10) {
-            user.achievedAchievement(AchievementType.WON_10_OFFICIAL_CONTESTS);
-        }
+        evaluateAchievements(user, won, new HashMap<AchievementType, Integer>() {{
+            put(AchievementType.WON_1_OFFICIAL_CONTEST, 1);
+            put(AchievementType.WON_5_OFFICIAL_CONTESTS, 5);
+            put(AchievementType.WON_10_OFFICIAL_CONTESTS, 10);
+        }});
 
         //
         // FP_N_OFFICIAL_CONTEST
         //
-        if (contestEntry.fantasyPoints >= 500) {
-            user.achievedAchievement(AchievementType.FP_500_OFFICIAL_CONTEST);
-        }
-
-        if (contestEntry.fantasyPoints >= 700) {
-            user.achievedAchievement(AchievementType.FP_700_OFFICIAL_CONTEST);
-        }
-
-        if (contestEntry.fantasyPoints >= 1000) {
-            user.achievedAchievement(AchievementType.FP_1000_OFFICIAL_CONTEST);
-        }
+        evaluateAchievements(user, contestEntry.fantasyPoints, new HashMap<AchievementType, Integer>() {{
+            put(AchievementType.FP_500_OFFICIAL_CONTEST, 500);
+            put(AchievementType.FP_700_OFFICIAL_CONTEST, 700);
+            put(AchievementType.FP_1000_OFFICIAL_CONTEST, 1000);
+        }});
 
         //
         // DIFF_FP_N_OFFICIAL_CONTEST
@@ -191,19 +154,13 @@ public class Achievement {
         ContestEntry second = contest.getContestEntryInPosition(1);
         long diffFP = contestEntry.fantasyPoints - second.fantasyPoints;
 
-        if (diffFP >= 100) {
-            user.achievedAchievement(AchievementType.DIFF_FP_100_OFFICIAL_CONTEST);
-        }
+        evaluateAchievements(user, diffFP, new HashMap<AchievementType, Integer>() {{
+            put(AchievementType.DIFF_FP_100_OFFICIAL_CONTEST, 100);
+            put(AchievementType.DIFF_FP_200_OFFICIAL_CONTEST, 200);
+            put(AchievementType.DIFF_FP_300_OFFICIAL_CONTEST, 300);
+        }});
 
-        if (diffFP >= 200) {
-            user.achievedAchievement(AchievementType.DIFF_FP_200_OFFICIAL_CONTEST);
-        }
-
-        if (diffFP >= 300) {
-            user.achievedAchievement(AchievementType.DIFF_FP_300_OFFICIAL_CONTEST);
-        }
-
-        return played;
+        return won;
     }
 
     static private long playedOfficialContest(User user, ContestEntry contestEntry, Contest contest) {
@@ -212,13 +169,10 @@ public class Achievement {
         //
         // PLAYED_N_OFFICIAL_CONTESTS
         //
-        if (played >= 5) {
-            user.achievedAchievement(AchievementType.PLAYED_5_OFFICIAL_CONTESTS);
-        }
-
-        if (played >= 10) {
-            user.achievedAchievement(AchievementType.PLAYED_10_OFFICIAL_CONTESTS);
-        }
+        evaluateAchievements(user, played, new HashMap<AchievementType, Integer>() {{
+            put(AchievementType.PLAYED_5_OFFICIAL_CONTESTS, 5);
+            put(AchievementType.PLAYED_10_OFFICIAL_CONTESTS, 10);
+        }});
 
         return played;
     }
@@ -229,17 +183,11 @@ public class Achievement {
             Money managerBalance = user.calculateManagerBalance();
             float managerLevel = user.managerLevelFromPoints(managerBalance);
 
-            if (managerLevel >= 3) {
-                user.achievedAchievement(AchievementType.MANAGER_LEVEL_3);
-            }
-
-            if (managerLevel >= 4) {
-                user.achievedAchievement(AchievementType.MANAGER_LEVEL_4);
-            }
-
-            if (managerLevel >= 5) {
-                user.achievedAchievement(AchievementType.MANAGER_LEVEL_5);
-            }
+            evaluateAchievements(user, (long) managerLevel, new HashMap<AchievementType, Integer>() {{
+                put(AchievementType.MANAGER_LEVEL_3, 3);
+                put(AchievementType.MANAGER_LEVEL_4, 4);
+                put(AchievementType.MANAGER_LEVEL_5, 5);
+            }});
         }
 
         Logger.debug("WonPrize {}: User: {}: Contest: {} Position: {}",
@@ -305,14 +253,10 @@ public class Achievement {
 
     static void userPlayedWithSoccerPlayer(User user, LiveFantasyPoints liveFantasyPoints) {
         if (liveFantasyPoints.points > 0) {
-
-            if (liveFantasyPoints.points > 100) {
-                user.achievedAchievement(AchievementType.SOCCER_PLAYER_WON_FP_100);
-            }
-
-            if (liveFantasyPoints.points > 200) {
-                user.achievedAchievement(AchievementType.SOCCER_PLAYER_WON_FP_200);
-            }
+            evaluateAchievements(user, liveFantasyPoints.points, new HashMap<AchievementType, Integer>() {{
+                put(AchievementType.SOCCER_PLAYER_WON_FP_100, 100);
+                put(AchievementType.SOCCER_PLAYER_WON_FP_200, 200);
+            }});
         }
     }
 
@@ -320,14 +264,10 @@ public class Achievement {
         userPlayedWithSoccerPlayer(user, liveFantasyPoints);
 
         long savesShoots = liveFantasyPoints.countEvents(ImmutableList.of("SAVE_GOALKEEPER"));
-
-        if (savesShoots >= 10) {
-            user.achievedAchievement(AchievementType.GOALKEEPER_SAVES_10_SHOTS);
-        }
-
-        if (savesShoots >= 20) {
-            user.achievedAchievement(AchievementType.GOALKEEPER_SAVES_20_SHOTS);
-        }
+        evaluateAchievements(user, savesShoots, new HashMap<AchievementType, Integer>() {{
+            put(AchievementType.GOALKEEPER_SAVES_10_SHOTS, 10);
+            put(AchievementType.GOALKEEPER_SAVES_20_SHOTS, 20);
+        }});
 
         long goalsReceived = liveFantasyPoints.countEvents(ImmutableList.of("GOAL_CONCEDED"));
         if (goalsReceived == 0) {
@@ -349,46 +289,31 @@ public class Achievement {
         userPlayedWithSoccerPlayer(user, liveFantasyPoints);
 
         long interceptions = liveFantasyPoints.countEvents(ImmutableList.of("INTERCEPTION"));
-
-        if (interceptions >= 10) {
-            user.achievedAchievement(AchievementType.DEFENDER_10_INTERCEPTIONS);
-        }
-
-        if (interceptions >= 20) {
-            user.achievedAchievement(AchievementType.DEFENDER_20_INTERCEPTIONS);
-        }
+        evaluateAchievements(user, interceptions, new HashMap<AchievementType, Integer>() {{
+            put(AchievementType.DEFENDER_10_INTERCEPTIONS, 10);
+            put(AchievementType.DEFENDER_20_INTERCEPTIONS, 20);
+        }});
     }
 
     static void userPlayedWithMiddle(User user, LiveFantasyPoints liveFantasyPoints) {
         userPlayedWithSoccerPlayer(user, liveFantasyPoints);
 
         long passes = liveFantasyPoints.countEvents(ImmutableList.of("PASS_SUCCESSFUL"));
-
-        if (passes >= 10) {
-            user.achievedAchievement(AchievementType.MIDDLE_10_PASS_SUCCESSFUL);
-        }
-
-        if (passes >= 20) {
-            user.achievedAchievement(AchievementType.MIDDLE_20_PASS_SUCCESSFUL);
-        }
+        evaluateAchievements(user, passes, new HashMap<AchievementType, Integer>() {{
+            put(AchievementType.MIDDLE_10_PASS_SUCCESSFUL, 10);
+            put(AchievementType.MIDDLE_20_PASS_SUCCESSFUL, 20);
+        }});
     }
 
     static void userPlayedWithForward(User user, LiveFantasyPoints liveFantasyPoints) {
         userPlayedWithSoccerPlayer(user, liveFantasyPoints);
 
         long goals = liveFantasyPoints.countEvents(ImmutableList.of("GOAL_SCORED_BY_FORWARD"));
-
-        if (goals >= 1) {
-            user.achievedAchievement(AchievementType.FORWARD_1_GOAL);
-        }
-
-        if (goals >= 2) {
-            user.achievedAchievement(AchievementType.FORWARD_2_GOALS);
-        }
-
-        if (goals >= 3) {
-            user.achievedAchievement(AchievementType.FORWARD_3_GOALS);
-        }
+        evaluateAchievements(user, goals, new HashMap<AchievementType, Integer>() {{
+            put(AchievementType.FORWARD_1_GOAL, 1);
+            put(AchievementType.FORWARD_2_GOALS, 2);
+            put(AchievementType.FORWARD_3_GOALS, 3);
+        }});
     }
 
     static List<LiveFantasyPoints> getLiveFantasyPoints(List<ObjectId> soccerPlayerList, List<TemplateMatchEvent> matchEvents) {
@@ -404,5 +329,13 @@ public class Achievement {
             }
         }
         return result;
+    }
+
+    static void evaluateAchievements(User user, long points, HashMap<AchievementType, Integer> achievementsMap) {
+        achievementsMap.forEach((key, value) -> {
+            if (points >= value) {
+                user.achievedAchievement(key);
+            }
+        });
     }
 }
