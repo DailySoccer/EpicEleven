@@ -15,23 +15,23 @@ public class Achievement {
         //
         // TRUE_SKILL_N
         //
-        if (user.trueSkill > 500) {
+        if (user.trueSkill >= 500) {
             user.achievedAchievement(AchievementType.TRUE_SKILL_500);
         }
 
-        if (user.trueSkill > 600) {
+        if (user.trueSkill >= 600) {
             user.achievedAchievement(AchievementType.TRUE_SKILL_600);
         }
 
-        if (user.trueSkill > 700) {
+        if (user.trueSkill >= 700) {
             user.achievedAchievement(AchievementType.TRUE_SKILL_700);
         }
 
-        if (user.trueSkill > 800) {
+        if (user.trueSkill >= 800) {
             user.achievedAchievement(AchievementType.TRUE_SKILL_800);
         }
 
-        if (user.trueSkill > 900) {
+        if (user.trueSkill >= 900) {
             user.achievedAchievement(AchievementType.TRUE_SKILL_900);
         }
 
