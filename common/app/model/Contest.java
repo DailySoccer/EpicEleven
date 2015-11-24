@@ -203,6 +203,26 @@ public class Contest implements JongoId {
                 .count("{templateContestId: #, state: \"ACTIVE\", freeSlots: {$gt: 0}}", templateContestId);
     }
 
+    static public long countPlayedSimulations(ObjectId userId) {
+        return Model.contests()
+                .count("{'contestEntries.userId': #, state: \"HISTORY\", simulation: true}", userId);
+    }
+
+    static public long countWonSimulations(ObjectId userId) {
+        return Model.contests()
+                .count("{'contestEntries.userId': #, state: \"HISTORY\", simulation: true, contestEntries.position': 0}", userId);
+    }
+
+    static public long countPlayedOfficial(ObjectId userId) {
+        return Model.contests()
+                .count("{'contestEntries.userId': #, state: \"HISTORY\", simulation: {$ne: true}}", userId);
+    }
+
+    static public long countWonOfficial(ObjectId userId) {
+        return Model.contests()
+                .count("{'contestEntries.userId': #, state: \"HISTORY\", simulation: {$ne: true}, contestEntries.position': 0}", userId);
+    }
+
     static public List<Contest> findAllActiveFromTemplateMatchEvent(ObjectId templateMatchEventId) {
         return ListUtils.asList(Model.contests()
                 .find("{state: \"ACTIVE\", templateMatchEventIds: {$in:[#]}}", templateMatchEventId)
@@ -301,26 +321,34 @@ public class Contest implements JongoId {
             givePrizes(prizes);
             updateWinner();
             bonusToCash();
+
+            Achievement.playedContest(this);
         }
 
         setClosed();
     }
 
     public User getWinner() {
-        ContestEntry winner = null;
-
-        for (ContestEntry contestEntry : contestEntries) {
-            if (contestEntry.position == 0) {
-                winner = contestEntry;
-                break;
-            }
-        }
+        ContestEntry winner = getContestEntryInPosition(0);
 
         if (winner == null) {
             throw new RuntimeException("WTF 7221 winner == null");
         }
 
         return User.findOne(winner.userId);
+    }
+
+    public ContestEntry getContestEntryInPosition(int position) {
+        ContestEntry result = null;
+
+        for (ContestEntry contestEntry : contestEntries) {
+            if (contestEntry.position == position) {
+                result = contestEntry;
+                break;
+            }
+        }
+
+        return result;
     }
 
     private void updateRanking(Prizes prizes) {
@@ -354,8 +382,11 @@ public class Contest implements JongoId {
     private void updateTrueSkill() {
         // Calculamos el trueSkill de los participantes y actualizamos su información en la BDD
         Map<ObjectId, User> usersRating = TrueSkillHelper.RecomputeRatings(contestEntries);
-        for (Map.Entry<ObjectId, User> user : usersRating.entrySet()) {
-            user.getValue().updateTrueSkillByContest(contestId);
+        for (Map.Entry<ObjectId, User> entry : usersRating.entrySet()) {
+            User user = entry.getValue();
+            user.updateTrueSkillByContest(contestId);
+
+            Achievement.trueSkillChanged(user, this);
         }
     }
 
@@ -460,6 +491,12 @@ public class Contest implements JongoId {
         }
         return soccerPlayers;
     }
+
+    public List<InstanceSoccerPlayer> getInstanceSoccerPlayersWithFieldPos(FieldPos fieldPos, ContestEntry contestEntry) {
+        List<InstanceSoccerPlayer> instanceSoccerPlayers = getInstanceSoccerPlayers(contestEntry.soccerIds);
+        return instanceSoccerPlayers.stream().filter(instanceSoccerPlayer -> instanceSoccerPlayer.fieldPos.equals(fieldPos)).collect(Collectors.toList());
+    }
+
 
     public Contest getSameContestWithFreeSlot(ObjectId userId) {
         String query = String.format("{templateContestId: #, 'contestEntries.%s': {$exists: false}, 'contestEntries.userId': {$ne:#}}", maxEntries-1);
