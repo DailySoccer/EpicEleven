@@ -265,7 +265,7 @@ public class Achievement {
                 .map( instanceSoccerPlayer -> instanceSoccerPlayer.templateSoccerPlayerId )
                 .collect(Collectors.toList());
         List<LiveFantasyPoints> goalKeeperList = getLiveFantasyPoints(goalKeeperIdList, matchEvents);
-        goalKeeperList.forEach( liveFantasyPoints -> userPlayedWithGoalKeeper(user, liveFantasyPoints) );
+        goalKeeperList.stream().filter(liveFantasyPoints -> liveFantasyPoints != null).forEach(liveFantasyPoints -> userPlayedWithGoalKeeper(user, liveFantasyPoints));
 
         // DEFENDER
         List<ObjectId> defenderIdList = contest.getInstanceSoccerPlayersWithFieldPos(FieldPos.DEFENSE, contestEntry)
@@ -273,7 +273,7 @@ public class Achievement {
                 .map( instanceSoccerPlayer -> instanceSoccerPlayer.templateSoccerPlayerId )
                 .collect(Collectors.toList());
         List<LiveFantasyPoints> defenderList = getLiveFantasyPoints(defenderIdList, matchEvents);
-        defenderList.forEach( liveFantasyPoints -> userPlayedWithDefense(user, liveFantasyPoints) );
+        defenderList.stream().filter(liveFantasyPoints -> liveFantasyPoints != null).forEach(liveFantasyPoints -> userPlayedWithDefense(user, liveFantasyPoints));
 
         // MIDDLE
         List<ObjectId> middleIdList = contest.getInstanceSoccerPlayersWithFieldPos(FieldPos.MIDDLE, contestEntry)
@@ -281,7 +281,7 @@ public class Achievement {
                 .map( instanceSoccerPlayer -> instanceSoccerPlayer.templateSoccerPlayerId )
                 .collect(Collectors.toList());
         List<LiveFantasyPoints> middleList = getLiveFantasyPoints(middleIdList, matchEvents);
-        middleList.forEach( liveFantasyPoints -> userPlayedWithMiddle(user, liveFantasyPoints) );
+        middleList.stream().filter( liveFantasyPoints -> liveFantasyPoints != null ).forEach(liveFantasyPoints -> userPlayedWithMiddle(user, liveFantasyPoints));
 
         // FORWARD
         List<ObjectId> forwardIdList = contest.getInstanceSoccerPlayersWithFieldPos(FieldPos.FORWARD, contestEntry)
@@ -289,14 +289,14 @@ public class Achievement {
                 .map( instanceSoccerPlayer -> instanceSoccerPlayer.templateSoccerPlayerId )
                 .collect(Collectors.toList());
         List<LiveFantasyPoints> forwardList = getLiveFantasyPoints(forwardIdList, matchEvents);
-        forwardList.forEach( liveFantasyPoints -> userPlayedWithForward(user, liveFantasyPoints) );
+        forwardList.stream().filter( liveFantasyPoints -> liveFantasyPoints != null ).forEach(liveFantasyPoints -> userPlayedWithForward(user, liveFantasyPoints));
 
         // ALL SOCCER PLAYERS WITH POINTS
         boolean allSoccerPlayersWithPoints =
-                goalKeeperList.stream().allMatch( liveFantasyPoints -> liveFantasyPoints.points > 0 ) &&
-                defenderList.stream().allMatch( liveFantasyPoints -> liveFantasyPoints.points > 0 ) &&
-                middleList.stream().allMatch( liveFantasyPoints -> liveFantasyPoints.points > 0 ) &&
-                forwardList.stream().allMatch( liveFantasyPoints -> liveFantasyPoints.points > 0 );
+                goalKeeperList.stream().allMatch( liveFantasyPoints -> liveFantasyPoints != null && liveFantasyPoints.points > 0 ) &&
+                defenderList.stream().allMatch( liveFantasyPoints -> liveFantasyPoints != null && liveFantasyPoints.points > 0 ) &&
+                middleList.stream().allMatch( liveFantasyPoints -> liveFantasyPoints != null && liveFantasyPoints.points > 0 ) &&
+                forwardList.stream().allMatch( liveFantasyPoints -> liveFantasyPoints != null && liveFantasyPoints.points > 0 );
 
         if (allSoccerPlayersWithPoints) {
             user.achievedAchievement(AchievementType.ALL_SOCCER_PLAYERS_WITH_FP);
