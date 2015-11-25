@@ -8,11 +8,19 @@ import utils.ListUtils;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 
 public class Notification {
 
     public enum Topic {
+        CONTEST_FINISHED,
+        DUEL_FINISHED,
+        CONTEST_CANCELLED,
+        MANAGER_LEVEL_UP,
+        MANAGER_LEVEL_DOWN,
+        ACHIEVEMENT_OWNED,
+
         CONTEST_NEXT_HOUR,
         CONTEST_WINNER;
     }
@@ -22,6 +30,9 @@ public class Notification {
     public Topic topic;
     public String reason;
     public ObjectId userId;
+    public Map<String, String> info;
+    public boolean readed;
+
     public Date createdAt;
     public Date dateSent;
 
@@ -32,6 +43,11 @@ public class Notification {
         this.reason = reason;
         this.userId = recipientId;
         this.createdAt = GlobalDate.getCurrentDate();
+    }
+
+    public Notification(Topic topic, String reason, ObjectId recipientId, Map info) {
+        this(topic, reason, recipientId);
+        this.info = info;
     }
 
     public void insertAsSent() {
