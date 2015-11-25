@@ -14,6 +14,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public class Achievement {
+    // Los fantasyPoints están expresados como "coma fija" (con un decimal)
+    static public int FantasyPoints(int points) {
+        return points * 10;
+    }
+
     static public void trueSkillChanged(User user, Contest contest) {
 
         //
@@ -92,7 +97,7 @@ public class Achievement {
         // FP_N_VIRTUAL_CONTEST
         //
         evaluateAchievements(user, contestEntry.fantasyPoints, new HashMap<AchievementType, Integer>() {{
-            put(AchievementType.FP_1000_VIRTUAL_CONTEST, 1000);
+            put(AchievementType.FP_1000_VIRTUAL_CONTEST, FantasyPoints(1000));
         }});
 
         //
@@ -102,7 +107,7 @@ public class Achievement {
         long diffFP = contestEntry.fantasyPoints - second.fantasyPoints;
 
         evaluateAchievements(user, diffFP, new HashMap<AchievementType, Integer>() {{
-            put(AchievementType.DIFF_FP_200_VIRTUAL_CONTEST, 200);
+            put(AchievementType.DIFF_FP_200_VIRTUAL_CONTEST, FantasyPoints(200));
         }});
 
         return won;
@@ -136,7 +141,7 @@ public class Achievement {
         // FP_N_OFFICIAL_CONTEST
         //
         evaluateAchievements(user, contestEntry.fantasyPoints, new HashMap<AchievementType, Integer>() {{
-            put(AchievementType.FP_1000_OFFICIAL_CONTEST, 1000);
+            put(AchievementType.FP_1000_OFFICIAL_CONTEST, FantasyPoints(1000));
         }});
 
         //
@@ -146,7 +151,7 @@ public class Achievement {
         long diffFP = contestEntry.fantasyPoints - second.fantasyPoints;
 
         evaluateAchievements(user, diffFP, new HashMap<AchievementType, Integer>() {{
-            put(AchievementType.DIFF_FP_200_OFFICIAL_CONTEST, 200);
+            put(AchievementType.DIFF_FP_200_OFFICIAL_CONTEST, FantasyPoints(200));
         }});
 
         return won;
@@ -242,7 +247,7 @@ public class Achievement {
     static void userPlayedWithSoccerPlayer(User user, LiveFantasyPoints liveFantasyPoints) {
         if (liveFantasyPoints.points > 0) {
             evaluateAchievements(user, liveFantasyPoints.points, new HashMap<AchievementType, Integer>() {{
-                put(AchievementType.SOCCER_PLAYER_WON_FP_200, 200);
+                put(AchievementType.SOCCER_PLAYER_WON_FP_200, FantasyPoints(200));    // Los fantasyPoints están expresados como "coma fija" (con un decimal)
             }});
         }
     }
