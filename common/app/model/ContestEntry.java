@@ -10,7 +10,6 @@ import model.shop.Order;
 import model.shop.Product;
 import model.shop.ProductSoccerPlayer;
 import org.bson.types.ObjectId;
-import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
@@ -23,11 +22,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ContestEntry implements JongoId {
-    public static final String FORMATION_442 = "442";
-    public static final String FORMATION_352 = "352";
-    public static final String FORMATION_433 = "433";
-    public static final String FORMATION_343 = "343";
-    public static final String FORMATION_451 = "451";
+    public static final List<String> FORMATIONS = ImmutableList.of( "442", "352", "433", "343", "451" );
+    public static final String FORMATION_DEFAULT = FORMATIONS.get(0);
 
     @Id
     public ObjectId contestEntryId;

@@ -381,31 +381,19 @@ public class ContestEntryController extends Controller {
     }
 
     private static boolean isFormationValid(String formation, List<InstanceSoccerPlayer> soccerPlayers) {
-        int defenses, middles, forward;
-        defenses = middles = forward = -1;
+        boolean result = ContestEntry.FORMATIONS.stream().anyMatch( value -> value.equals(formation) );
+        if (result) {
+            int defenses = Character.getNumericValue(formation.charAt(0));
+            int middles = Character.getNumericValue(formation.charAt(1));
+            int forwards = Character.getNumericValue(formation.charAt(2));
+            // Logger.debug("defenses: {} middles: {} forward: {}", defenses, middles, forwards);
 
-        switch (formation) {
-            case ContestEntry.FORMATION_442:
-                defenses = 4; middles = 4; forward = 2;
-                break;
-            case ContestEntry.FORMATION_352:
-                defenses = 3; middles = 5; forward = 2;
-                break;
-            case ContestEntry.FORMATION_433:
-                defenses = 4; middles = 3; forward = 3;
-                break;
-            case ContestEntry.FORMATION_343:
-                defenses = 3; middles = 4; forward = 3;
-                break;
-            case ContestEntry.FORMATION_451:
-                defenses = 4; middles = 5; forward = 1;
-                break;
+            result = (countFieldPos(FieldPos.GOALKEEPER, soccerPlayers) == 1) &&
+                    (countFieldPos(FieldPos.DEFENSE, soccerPlayers) == defenses) &&
+                    (countFieldPos(FieldPos.MIDDLE, soccerPlayers) == middles) &&
+                    (countFieldPos(FieldPos.FORWARD, soccerPlayers) == forwards);
         }
-
-        return (countFieldPos(FieldPos.GOALKEEPER, soccerPlayers) == 1) &&
-                (countFieldPos(FieldPos.DEFENSE, soccerPlayers) == defenses) &&
-                (countFieldPos(FieldPos.MIDDLE, soccerPlayers) == middles) &&
-                (countFieldPos(FieldPos.FORWARD, soccerPlayers) == forward);
+        return result;
     }
 
     private static boolean isMaxPlayersFromSameTeamValid(Contest contest, List<InstanceSoccerPlayer> soccerPlayers) {
