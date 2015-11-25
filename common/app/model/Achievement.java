@@ -21,10 +21,10 @@ public class Achievement {
         //
         evaluateAchievements(user, user.trueSkill, new HashMap<AchievementType, Integer>() {{
             put(AchievementType.TRUE_SKILL_500, 500);
-            put(AchievementType.TRUE_SKILL_600, 600);
-            put(AchievementType.TRUE_SKILL_700, 700);
-            put(AchievementType.TRUE_SKILL_800, 800);
-            put(AchievementType.TRUE_SKILL_900, 900);
+            put(AchievementType.TRUE_SKILL_1000, 1000);
+            put(AchievementType.TRUE_SKILL_2000, 2000);
+            put(AchievementType.TRUE_SKILL_3000, 3000);
+            put(AchievementType.TRUE_SKILL_4000, 4000);
         }});
 
         Logger.debug("trueSkillChanged {}: User: {}: Contest: {}",
@@ -85,7 +85,6 @@ public class Achievement {
         //
         evaluateAchievements(user, won, new HashMap<AchievementType, Integer>() {{
             put(AchievementType.WON_1_VIRTUAL_CONTEST, 1);
-            put(AchievementType.WON_5_VIRTUAL_CONTESTS, 5);
             put(AchievementType.WON_10_VIRTUAL_CONTESTS, 10);
         }});
 
@@ -93,8 +92,6 @@ public class Achievement {
         // FP_N_VIRTUAL_CONTEST
         //
         evaluateAchievements(user, contestEntry.fantasyPoints, new HashMap<AchievementType, Integer>() {{
-            put(AchievementType.FP_500_VIRTUAL_CONTEST, 500);
-            put(AchievementType.FP_700_VIRTUAL_CONTEST, 700);
             put(AchievementType.FP_1000_VIRTUAL_CONTEST, 1000);
         }});
 
@@ -105,9 +102,7 @@ public class Achievement {
         long diffFP = contestEntry.fantasyPoints - second.fantasyPoints;
 
         evaluateAchievements(user, diffFP, new HashMap<AchievementType, Integer>() {{
-            put(AchievementType.DIFF_FP_100_VIRTUAL_CONTEST, 100);
             put(AchievementType.DIFF_FP_200_VIRTUAL_CONTEST, 200);
-            put(AchievementType.DIFF_FP_300_VIRTUAL_CONTEST, 300);
         }});
 
         return won;
@@ -120,7 +115,6 @@ public class Achievement {
         // PLAYED_N_VIRTUAL_CONTESTS
         //
         evaluateAchievements(user, played, new HashMap<AchievementType, Integer>() {{
-            put(AchievementType.PLAYED_5_VIRTUAL_CONTESTS, 5);
             put(AchievementType.PLAYED_10_VIRTUAL_CONTESTS, 10);
         }});
 
@@ -135,7 +129,6 @@ public class Achievement {
         //
         evaluateAchievements(user, won, new HashMap<AchievementType, Integer>() {{
             put(AchievementType.WON_1_OFFICIAL_CONTEST, 1);
-            put(AchievementType.WON_5_OFFICIAL_CONTESTS, 5);
             put(AchievementType.WON_10_OFFICIAL_CONTESTS, 10);
         }});
 
@@ -143,8 +136,6 @@ public class Achievement {
         // FP_N_OFFICIAL_CONTEST
         //
         evaluateAchievements(user, contestEntry.fantasyPoints, new HashMap<AchievementType, Integer>() {{
-            put(AchievementType.FP_500_OFFICIAL_CONTEST, 500);
-            put(AchievementType.FP_700_OFFICIAL_CONTEST, 700);
             put(AchievementType.FP_1000_OFFICIAL_CONTEST, 1000);
         }});
 
@@ -155,9 +146,7 @@ public class Achievement {
         long diffFP = contestEntry.fantasyPoints - second.fantasyPoints;
 
         evaluateAchievements(user, diffFP, new HashMap<AchievementType, Integer>() {{
-            put(AchievementType.DIFF_FP_100_OFFICIAL_CONTEST, 100);
             put(AchievementType.DIFF_FP_200_OFFICIAL_CONTEST, 200);
-            put(AchievementType.DIFF_FP_300_OFFICIAL_CONTEST, 300);
         }});
 
         return won;
@@ -170,7 +159,6 @@ public class Achievement {
         // PLAYED_N_OFFICIAL_CONTESTS
         //
         evaluateAchievements(user, played, new HashMap<AchievementType, Integer>() {{
-            put(AchievementType.PLAYED_5_OFFICIAL_CONTESTS, 5);
             put(AchievementType.PLAYED_10_OFFICIAL_CONTESTS, 10);
         }});
 
@@ -254,7 +242,6 @@ public class Achievement {
     static void userPlayedWithSoccerPlayer(User user, LiveFantasyPoints liveFantasyPoints) {
         if (liveFantasyPoints.points > 0) {
             evaluateAchievements(user, liveFantasyPoints.points, new HashMap<AchievementType, Integer>() {{
-                put(AchievementType.SOCCER_PLAYER_WON_FP_100, 100);
                 put(AchievementType.SOCCER_PLAYER_WON_FP_200, 200);
             }});
         }
@@ -265,7 +252,6 @@ public class Achievement {
 
         long savesShoots = liveFantasyPoints.countEvents(ImmutableList.of("SAVE_GOALKEEPER"));
         evaluateAchievements(user, savesShoots, new HashMap<AchievementType, Integer>() {{
-            put(AchievementType.GOALKEEPER_SAVES_10_SHOTS, 10);
             put(AchievementType.GOALKEEPER_SAVES_20_SHOTS, 20);
         }});
 
@@ -290,8 +276,7 @@ public class Achievement {
 
         long interceptions = liveFantasyPoints.countEvents(ImmutableList.of("INTERCEPTION"));
         evaluateAchievements(user, interceptions, new HashMap<AchievementType, Integer>() {{
-            put(AchievementType.DEFENDER_10_INTERCEPTIONS, 10);
-            put(AchievementType.DEFENDER_20_INTERCEPTIONS, 20);
+            put(AchievementType.DEFENDER_30_INTERCEPTIONS, 30);
         }});
     }
 
@@ -300,8 +285,7 @@ public class Achievement {
 
         long passes = liveFantasyPoints.countEvents(ImmutableList.of("PASS_SUCCESSFUL"));
         evaluateAchievements(user, passes, new HashMap<AchievementType, Integer>() {{
-            put(AchievementType.MIDDLE_10_PASS_SUCCESSFUL, 10);
-            put(AchievementType.MIDDLE_20_PASS_SUCCESSFUL, 20);
+            put(AchievementType.MIDDLE_70_PASS_SUCCESSFUL, 70);
         }});
     }
 
@@ -310,9 +294,7 @@ public class Achievement {
 
         long goals = liveFantasyPoints.countEvents(ImmutableList.of("GOAL_SCORED_BY_FORWARD"));
         evaluateAchievements(user, goals, new HashMap<AchievementType, Integer>() {{
-            put(AchievementType.FORWARD_1_GOAL, 1);
-            put(AchievementType.FORWARD_2_GOALS, 2);
-            put(AchievementType.FORWARD_3_GOALS, 3);
+            put(AchievementType.FORWARD_4_GOALS, 4);
         }});
     }
 
