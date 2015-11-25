@@ -1,21 +1,23 @@
 package model.notification;
 
+import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableMap;
+import model.Contest;
+import model.ContestEntry;
 import model.GlobalDate;
 import model.Model;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import utils.ListUtils;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class Notification {
 
     public enum Topic {
         CONTEST_FINISHED,
-        DUEL_FINISHED,
         CONTEST_CANCELLED,
         MANAGER_LEVEL_UP,
         MANAGER_LEVEL_DOWN,
@@ -29,25 +31,39 @@ public class Notification {
     public ObjectId notificationId;
     public Topic topic;
     public String reason;
-    public ObjectId userId;
+    public ObjectId recipientId;
     public Map<String, String> info;
-    public boolean readed;
+    public boolean readed = false;
 
     public Date createdAt;
     public Date dateSent;
 
     public Notification() {}
 
-    public Notification(Topic topic, String reason, ObjectId recipientId) {
+    public Notification(Topic topic, Map info) {
         this.topic = topic;
-        this.reason = reason;
-        this.userId = recipientId;
+        this.info = info;
         this.createdAt = GlobalDate.getCurrentDate();
     }
 
-    public Notification(Topic topic, String reason, ObjectId recipientId, Map info) {
+    public Notification(Topic topic, String reason, ObjectId recipientId) {
+        this.topic = topic;
+        this.reason = reason;
+        this.recipientId = recipientId;
+        this.createdAt = GlobalDate.getCurrentDate();
+    }
+
+    public Notification(Topic topic, String reason, ObjectId recipientId, Map<String, String> info) {
         this(topic, reason, recipientId);
         this.info = info;
+    }
+
+    public void notifyTo(ObjectId recipientId) {
+        this.recipientId = recipientId;
+    }
+
+    public void insert() {
+        Model.notifications().insert(this);
     }
 
     public void insertAsSent() {
@@ -60,6 +76,13 @@ public class Notification {
         Model.notifications().update("{_id: #}", notificationId).with(this);
     }
 
+    public static void contestFinished(Contest contest) {
+        Notification notification = new Notification(Topic.CONTEST_FINISHED, new HashMap<String, String>() {{
+            put("contestId", contest.contestId.toString());
+        }});
+        // notification.notifyTo( contest.contestEntries.stream().map( contestEntry -> contestEntry.userId ).collect(Collectors.toList()) );
+        notification.insert();
+    }
 
     public static Notification findLastNotification(Topic topic, ObjectId recipientId) {
         Iterable<Notification> notifications = Model.notifications().find("{topic: #, userId: #}", topic, recipientId).sort("{createdAt: -1}").limit(1).as(Notification.class);

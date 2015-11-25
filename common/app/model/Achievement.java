@@ -1,6 +1,7 @@
 package model;
 
 import com.sun.corba.se.impl.encoding.OSFCodeSetRegistry;
+import model.notification.Notification;
 import org.joda.money.Money;
 import play.Logger;
 import utils.MoneyUtils;
@@ -39,6 +40,8 @@ public class Achievement {
     }
 
     static public void playedContest(Contest contest) {
+        Notification.contestFinished(contest);
+
         for (ContestEntry contestEntry : contest.contestEntries) {
             playedContest(contestEntry, contest);
         }

@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class User {
@@ -77,6 +78,8 @@ public class User {
     public float managerLevel = 0;
 
     public List<String> achievements = new ArrayList<>();
+
+    public List<UserNotification> notifications = new ArrayList();
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
