@@ -222,6 +222,10 @@ public class OptaEvent {
         return ListUtils.asList(Model.optaEvents().find("{optaPlayerId: #, gameId: #}", optaPlayerId, optaMatchId).as(OptaEvent.class));
     }
 
+    static public List<OptaEvent> filterByOptaPlayer(String optaPlayerId) {
+        return ListUtils.asList(Model.optaEvents().find("{optaPlayerId: #}", optaPlayerId).as(OptaEvent.class));
+    }
+
     public static boolean isGameStarted(String gameId) {
         return (Model.optaEvents().findOne("{gameId: #, typeId: #, periodId: 1}", gameId, OptaEventType.PERIOD_BEGINS.code).as(OptaEvent.class) != null);
     }

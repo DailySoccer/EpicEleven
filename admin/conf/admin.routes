@@ -77,6 +77,7 @@ GET         /template_soccer_team/managerLevels/:templateSoccerTeam             
 
 GET         /template_soccer_players                                             controllers.admin.TemplateSoccerPlayerController.index()
 GET         /template_soccer_players/ajax                                        controllers.admin.TemplateSoccerPlayerController.indexAjax()
+GET         /template_soccer_player/statistics_to_csv/:templateSoccerPlayerId    controllers.admin.TemplateSoccerPlayerController.statisticsToCSV(templateSoccerPlayerId : String)
 
 GET         /opta_competitions                                                   controllers.admin.OptaController.optaCompetitions()
 GET         /opta_competitions/:competition/activated/:state                     controllers.admin.OptaController.changeCompetitionState(competition : String, state : String)

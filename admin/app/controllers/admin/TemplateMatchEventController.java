@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.*;
 
 import model.opta.OptaEvent;
+import utils.FileUtils;
 import utils.ListUtils;
 
 public class TemplateMatchEventController extends Controller {
@@ -132,10 +133,11 @@ public class TemplateMatchEventController extends Controller {
         matchEvent.getTemplateSoccerPlayers().forEach(player ->
                 objectID2optaID.put(player.templateSoccerPlayerId.toString(), player.optaPlayerId));
 
-        List<String> headers = new ArrayList<>();
-        headers.add("Partido");
-        headers.add("OptaId");
-        headers.add("Fantasy Points");
+        List<String> headers = new ArrayList<String>() {{
+            add("Partido");
+            add("OptaId");
+            add("Fantasy Points");
+        }};
 
         List<String> body = new ArrayList<>();
 
@@ -165,31 +167,12 @@ public class TemplateMatchEventController extends Controller {
                     clone.awayScore, teamAway.name, clone.getFantasyPointsForTeam(teamAway.templateSoccerTeamId));
         }
 
-        generateCsvFile(String.format("%s vs %s.csv", teamHome.shortName, teamAway.shortName), headers, body);
+        String fileName = String.format("%s vs %s.csv", teamHome.shortName, teamAway.shortName);
+        FileUtils.generateCsv(fileName, headers, body);
+
+        FlashMessage.info(fileName);
 
         return redirect(routes.TemplateMatchEventController.show(templateMatchEventId));
-    }
-
-    private static void generateCsvFile(String sFileName, List<String> headers, List<String> body) {
-        try {
-            FileWriter writer = new FileWriter(sFileName);
-
-            for (int i=0; i<headers.size(); i++) {
-                writer.append(headers.get(i));
-                writer.append( ((i+1) < headers.size()) ? "," : "\n" );
-            }
-
-            for (int i=0; i<body.size(); i++) {
-                writer.append(body.get(i));
-                writer.append( ((i+1) % headers.size()) != 0 ? "," : "\n" );
-            }
-
-            writer.flush();
-            writer.close();
-        }
-        catch(IOException e) {
-            e.printStackTrace();
-        }
     }
 
     private static void printAsTablePlayerManagerLevel(TemplateMatchEvent templateMatchEvent) {
