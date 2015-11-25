@@ -5,6 +5,7 @@ import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import model.*;
 import model.jobs.CancelContestEntryJob;
 import model.jobs.EnterContestJob;
@@ -357,7 +358,7 @@ public class ContestEntryController extends Controller {
                 }
 
                 // Verificar que todos las posiciones del team están completas
-                if (!isFormationValid(soccerPlayers)) {
+                if (!isFormationValid(formation, soccerPlayers)) {
                     errores.add(ERROR_FORMATION_INVALID);
                 }
 
@@ -379,11 +380,32 @@ public class ContestEntryController extends Controller {
         return salaryCapTeam;
     }
 
-    private static boolean isFormationValid(List<InstanceSoccerPlayer> soccerPlayers) {
-        return  (countFieldPos(FieldPos.GOALKEEPER, soccerPlayers) == 1) &&
-                (countFieldPos(FieldPos.DEFENSE, soccerPlayers) == 4) &&
-                (countFieldPos(FieldPos.MIDDLE, soccerPlayers) == 4) &&
-                (countFieldPos(FieldPos.FORWARD, soccerPlayers) == 2);
+    private static boolean isFormationValid(String formation, List<InstanceSoccerPlayer> soccerPlayers) {
+        int defenses, middles, forward;
+        defenses = middles = forward = -1;
+
+        switch (formation) {
+            case ContestEntry.FORMATION_442:
+                defenses = 4; middles = 4; forward = 2;
+                break;
+            case ContestEntry.FORMATION_352:
+                defenses = 3; middles = 5; forward = 2;
+                break;
+            case ContestEntry.FORMATION_433:
+                defenses = 4; middles = 3; forward = 3;
+                break;
+            case ContestEntry.FORMATION_343:
+                defenses = 3; middles = 4; forward = 3;
+                break;
+            case ContestEntry.FORMATION_451:
+                defenses = 4; middles = 5; forward = 1;
+                break;
+        }
+
+        return (countFieldPos(FieldPos.GOALKEEPER, soccerPlayers) == 1) &&
+                (countFieldPos(FieldPos.DEFENSE, soccerPlayers) == defenses) &&
+                (countFieldPos(FieldPos.MIDDLE, soccerPlayers) == middles) &&
+                (countFieldPos(FieldPos.FORWARD, soccerPlayers) == forward);
     }
 
     private static boolean isMaxPlayersFromSameTeamValid(Contest contest, List<InstanceSoccerPlayer> soccerPlayers) {

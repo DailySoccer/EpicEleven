@@ -23,11 +23,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ContestEntry implements JongoId {
-    static final String FORMATION_442 = "442";
-    static final String FORMATION_352 = "352";
-    static final String FORMATION_433 = "433";
-    static final String FORMATION_343 = "343";
-    static final String FORMATION_451 = "451";
+    public static final String FORMATION_442 = "442";
+    public static final String FORMATION_352 = "352";
+    public static final String FORMATION_433 = "433";
+    public static final String FORMATION_343 = "343";
+    public static final String FORMATION_451 = "451";
 
     @Id
     public ObjectId contestEntryId;
