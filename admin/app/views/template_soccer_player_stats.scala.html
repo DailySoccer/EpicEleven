@@ -7,7 +7,8 @@
 
 <h1 class="page-header">Template Soccer Player Stats</h1>
 
-<a href="@TemplateSoccerPlayerController.statisticsToCSV(soccer_player.templateSoccerPlayerId.toString())"><button class="btn btn-success">Statistics to CSV</button></a>
+<a href="@TemplateSoccerPlayerController.matchStatisticsToCSV(soccer_player.templateSoccerPlayerId.toString())"><button class="btn btn-success">CSV</button></a>
+<a href="@TemplateSoccerPlayerController.statisticsToCSV(soccer_player.templateSoccerPlayerId.toString())"><button class="btn btn-success">All Statistics to CSV</button></a>
 
 <h2 class="sub-header">@soccer_player.name: @soccer_player.fieldPos</h2>
 <div class="table-responsive">

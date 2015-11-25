@@ -159,7 +159,33 @@ public class TemplateSoccerPlayerController extends Controller {
         });
 
         String fileName = String.format("%s.csv", templateSoccerPlayer.name);
-        FileUtils.generateCsv(String.format("%s.csv", templateSoccerPlayer.name), headers, body);
+        FileUtils.generateCsv(String.format(fileName, templateSoccerPlayer.name), headers, body);
+
+        FlashMessage.info(fileName);
+
+        return redirect(routes.TemplateSoccerPlayerController.showStats(templateSoccerPlayerId));
+    }
+
+    public static Result matchStatisticsToCSV(String templateSoccerPlayerId) {
+
+        TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(templateSoccerPlayerId));
+
+        List<OptaEvent> optaEventList = OptaEvent.filterByOptaPlayer(templateSoccerPlayer.optaPlayerId);
+
+        List<String> headers = new ArrayList<String>() {{
+            add("GameId");
+            add("FantasyPoints");
+        }};
+
+        List<String> body = new ArrayList<>();
+
+        templateSoccerPlayer.stats.forEach(stats -> {
+            body.add(stats.optaMatchEventId);
+            body.add(String.valueOf(stats.fantasyPoints));
+        });
+
+        String fileName = String.format("%s resumen.csv", templateSoccerPlayer.name);
+        FileUtils.generateCsv(String.format(fileName, templateSoccerPlayer.name), headers, body);
 
         FlashMessage.info(fileName);
 
