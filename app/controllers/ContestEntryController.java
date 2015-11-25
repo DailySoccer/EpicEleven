@@ -46,6 +46,9 @@ public class ContestEntryController extends Controller {
 
     public static class AddContestEntryParams {
         @Constraints.Required
+        public String formation;
+
+        @Constraints.Required
         public String contestId;
 
         @Constraints.Required
@@ -67,11 +70,13 @@ public class ContestEntryController extends Controller {
 
         // Id del contest que hemos encontrado
         ObjectId contestIdValid = null;
+        String formation;
 
         if (!contestEntryForm.hasErrors()) {
             AddContestEntryParams params = contestEntryForm.get();
 
             contestIdRequested = params.contestId;
+            formation = params.formation;
 
             // Buscar el contest : ObjectId
             Contest aContest = Contest.findOne(contestIdRequested);
@@ -102,7 +107,7 @@ public class ContestEntryController extends Controller {
             }
 
             if (errores.isEmpty()) {
-                errores = validateContestEntry(aContest, idsList);
+                errores = validateContestEntry(aContest, formation, idsList);
             }
 
             if (errores.isEmpty()) {
@@ -147,7 +152,7 @@ public class ContestEntryController extends Controller {
                     }
                 }
 
-                EnterContestJob enterContestJob = EnterContestJob.create(theUser.userId, contestIdValid, idsList);
+                EnterContestJob enterContestJob = EnterContestJob.create(theUser.userId, contestIdValid, formation, idsList);
 
                 // Al intentar aplicar el job puede que nos encontremos con algún conflicto (de última hora),
                 //  lo volvemos a intentar para poder informar del error (con los tests anteriores)
@@ -187,6 +192,9 @@ public class ContestEntryController extends Controller {
 
     public static class EditContestEntryParams {
         @Constraints.Required
+        public String formation;
+
+        @Constraints.Required
         public String contestEntryId;
 
         @Constraints.Required
@@ -200,6 +208,8 @@ public class ContestEntryController extends Controller {
         if (!contestEntryForm.hasErrors()) {
             EditContestEntryParams params = contestEntryForm.get();
 
+            String formation = params.formation;
+
             Logger.info("editContestEntry: contestEntryId({}) soccerTeam({})", params.contestEntryId, params.soccerTeam);
 
             User theUser = (User) ctx().args.get("User");
@@ -212,7 +222,7 @@ public class ContestEntryController extends Controller {
                 // Obtener los soccerIds de los futbolistas : List<ObjectId>
                 List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
 
-                List<String> errores = validateContestEntry(aContest, idsList);
+                List<String> errores = validateContestEntry(aContest, formation, idsList);
 
                 if (errores.isEmpty()) {
                     if (MoneyUtils.isGreaterThan(aContest.entryFee, MoneyUtils.zero) &&
@@ -236,7 +246,7 @@ public class ContestEntryController extends Controller {
                 }
 
                 if (errores.isEmpty()) {
-                    if (!ContestEntry.update(theUser, aContest, contestEntry, idsList)) {
+                    if (!ContestEntry.update(theUser, aContest, contestEntry, formation, idsList)) {
                         errores.add(ERROR_RETRY_OP);
                     }
                 }
@@ -319,7 +329,7 @@ public class ContestEntryController extends Controller {
         return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
     }
 
-    private static List<String> validateContestEntry (Contest contest, List<ObjectId> objectIds) {
+    private static List<String> validateContestEntry (Contest contest, String formation, List<ObjectId> objectIds) {
         List<String> errores = new ArrayList<>();
 
         // Verificar que el contest sea válido

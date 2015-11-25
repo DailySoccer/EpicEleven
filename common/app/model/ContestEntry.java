@@ -23,11 +23,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ContestEntry implements JongoId {
+    static final String FORMATION_442 = "442";
+    static final String FORMATION_352 = "352";
+    static final String FORMATION_433 = "433";
+    static final String FORMATION_343 = "343";
+    static final String FORMATION_451 = "451";
+
     @Id
     public ObjectId contestEntryId;
 
     @JsonView(value={JsonViews.Public.class, JsonViews.AllContests.class})
     public ObjectId userId;             // Usuario que creo el equipo
+
+    @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class})
+    public String formation;    // Formación del fantasyTeam creado
 
     @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class})
     public List<ObjectId> soccerIds;    // Fantasy team
@@ -49,9 +58,10 @@ public class ContestEntry implements JongoId {
 
     public ContestEntry() {}
 
-    public ContestEntry(ObjectId userId, List<ObjectId> soccerIds) {
+    public ContestEntry(ObjectId userId, String formation, List<ObjectId> soccerIds) {
         this.contestEntryId = new ObjectId();
         this.userId = userId;
+        this.formation = formation;
         this.soccerIds = soccerIds;
         this.createdAt = GlobalDate.getCurrentDate();
     }
@@ -109,7 +119,7 @@ public class ContestEntry implements JongoId {
         return contestEntries;
     }
 
-    public static boolean update(User user, Contest contest, ContestEntry contestEntry, List<ObjectId> playerIds) {
+    public static boolean update(User user, Contest contest, ContestEntry contestEntry, String formation, List<ObjectId> playerIds) {
 
         boolean bRet = false;
 

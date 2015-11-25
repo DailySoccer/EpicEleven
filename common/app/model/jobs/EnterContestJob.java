@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class EnterContestJob extends Job {
     public ObjectId userId;
     public ObjectId contestId;
+    public String formation;
     public List<ObjectId> soccerIds;
 
     // ContestEntry generado por este Job
@@ -26,9 +27,10 @@ public class EnterContestJob extends Job {
 
     public EnterContestJob() {}
 
-    private EnterContestJob(ObjectId userId, ObjectId contestId, List<ObjectId> soccersIds) {
+    private EnterContestJob(ObjectId userId, ObjectId contestId, String formation, List<ObjectId> soccersIds) {
         this.userId = userId;
         this.contestId = contestId;
+        this.formation = formation;
         this.soccerIds = soccersIds;
     }
 
@@ -198,15 +200,15 @@ public class EnterContestJob extends Job {
 
         // Si va bien, creamos el contestEntry
         if (result.getN() > 0) {
-            contestEntry = new ContestEntry(userId, soccerIds);
+            contestEntry = new ContestEntry(userId, formation, soccerIds);
             contestEntry.contestEntryId = contestEntryId;
         }
 
         return contestEntry;
     }
 
-    public static EnterContestJob create(ObjectId userId, ObjectId contestId, List<ObjectId> soccersIds) {
-        EnterContestJob job = new EnterContestJob(userId, contestId, soccersIds);
+    public static EnterContestJob create(ObjectId userId, ObjectId contestId, String formation, List<ObjectId> soccersIds) {
+        EnterContestJob job = new EnterContestJob(userId, contestId, formation, soccersIds);
         insert(JobType.ENTER_CONTEST, job);
         job.apply();
         return job;
