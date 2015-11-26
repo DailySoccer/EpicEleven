@@ -23,6 +23,7 @@ public class UserNotification implements JongoId {
     public Date createdAt;
 
     public UserNotification(Topic topic) {
+        this.userNotificationId = new ObjectId();
         this.topic = topic;
         this.createdAt = GlobalDate.getCurrentDate();
     }
