@@ -557,7 +557,7 @@ public class LoginController extends Controller {
     public static Result removeNotification(String notificationId) {
         User theUser = (User)ctx().args.get("User");
         UserNotification.remove(theUser.userId, new ObjectId(notificationId));
-        return new ReturnHelper().toResult();
+        return new ReturnHelper(true, ImmutableMap.of()).toResult();
     }
 
 
