@@ -6,6 +6,8 @@ import model.*;
 import model.opta.OptaEvent;
 import model.opta.OptaEventType;
 import org.bson.types.ObjectId;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
 import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -155,7 +157,8 @@ public class TemplateSoccerPlayerController extends Controller {
             body.add(String.valueOf(optaEvent.eventId));
             body.add(optaEvent.homeTeamId);
             body.add(optaEvent.awayTeamId);
-            body.add(GlobalDate.formatDate(optaEvent.timestamp));
+            //body.add(GlobalDate.formatDate(optaEvent.timestamp));
+            body.add(new DateTime(optaEvent.timestamp).toString(DateTimeFormat.forPattern("yyyy/MM/dd").withZoneUTC()));
         });
 
         String fileName = String.format("%s.csv", templateSoccerPlayer.name);
