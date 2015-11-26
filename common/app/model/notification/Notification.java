@@ -17,12 +17,6 @@ import java.util.stream.Collectors;
 public class Notification {
 
     public enum Topic {
-        CONTEST_FINISHED,
-        CONTEST_CANCELLED,
-        MANAGER_LEVEL_UP,
-        MANAGER_LEVEL_DOWN,
-        ACHIEVEMENT_OWNED,
-
         CONTEST_NEXT_HOUR,
         CONTEST_WINNER;
     }
@@ -32,34 +26,17 @@ public class Notification {
     public Topic topic;
     public String reason;
     public ObjectId recipientId;
-    public Map<String, String> info;
-    public boolean readed = false;
 
     public Date createdAt;
     public Date dateSent;
 
     public Notification() {}
 
-    public Notification(Topic topic, Map info) {
-        this.topic = topic;
-        this.info = info;
-        this.createdAt = GlobalDate.getCurrentDate();
-    }
-
     public Notification(Topic topic, String reason, ObjectId recipientId) {
         this.topic = topic;
         this.reason = reason;
         this.recipientId = recipientId;
         this.createdAt = GlobalDate.getCurrentDate();
-    }
-
-    public Notification(Topic topic, String reason, ObjectId recipientId, Map<String, String> info) {
-        this(topic, reason, recipientId);
-        this.info = info;
-    }
-
-    public void notifyTo(ObjectId recipientId) {
-        this.recipientId = recipientId;
     }
 
     public void insert() {
@@ -74,14 +51,6 @@ public class Notification {
     public void updateAsSent() {
         dateSent = GlobalDate.getCurrentDate();
         Model.notifications().update("{_id: #}", notificationId).with(this);
-    }
-
-    public static void contestFinished(Contest contest) {
-        Notification notification = new Notification(Topic.CONTEST_FINISHED, new HashMap<String, String>() {{
-            put("contestId", contest.contestId.toString());
-        }});
-        // notification.notifyTo( contest.contestEntries.stream().map( contestEntry -> contestEntry.userId ).collect(Collectors.toList()) );
-        notification.insert();
     }
 
     public static Notification findLastNotification(Topic topic, ObjectId recipientId) {

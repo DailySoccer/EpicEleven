@@ -79,7 +79,7 @@ public class User {
 
     public List<String> achievements = new ArrayList<>();
 
-    public List<UserNotification> notifications = new ArrayList();
+    public List<UserNotification> notifications = new ArrayList<>();
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
@@ -306,7 +306,9 @@ public class User {
     public void achievedAchievement(AchievementType achievementType) {
         if (!hasAchievement(achievementType)) {
             achievements.add(achievementType.toString());
-            Model.users().update("{_id: #}", userId).with("{$addToSet: {achievements: #}}", achievementType.toString());
+
+            // Incluimos el achievement en la ficha del usuario y le enviamos una notificación
+            Model.users().update("{_id: #}", userId).with("{$addToSet: {achievements: #, notifications: #}}", achievementType.toString(), UserNotification.achievementEarned(achievementType));
         }
     }
 

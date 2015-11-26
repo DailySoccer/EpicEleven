@@ -40,7 +40,8 @@ public class Achievement {
     }
 
     static public void playedContest(Contest contest) {
-        Notification.contestFinished(contest);
+        // Enviamos avisos de torneo finalizado
+        UserNotification.contestFinished(contest).sendTo(contest.contestEntries.stream().map(contestEntry -> contestEntry.userId).collect(Collectors.toList()));
 
         for (ContestEntry contestEntry : contest.contestEntries) {
             playedContest(contestEntry, contest);
