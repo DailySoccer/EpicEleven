@@ -76,4 +76,8 @@ public class UserNotification implements JongoId {
             put("achievement", achievementType.toString());
         }});
     }
+
+    public static void remove(ObjectId userId, ObjectId notificationId) {
+        Model.users().update("{_id: #}", userId).with("{$pull: {notifications: {_id: #}}}", notificationId);
+    }
 }
