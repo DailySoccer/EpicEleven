@@ -5,7 +5,7 @@ import org.jongo.marshall.jackson.oid.Id;
 import utils.ListUtils;
 import java.util.*;
 
-public class UserNotification {
+public class UserNotification implements JongoId {
 
     public enum Topic {
         CONTEST_FINISHED,
@@ -22,8 +22,6 @@ public class UserNotification {
 
     public Date createdAt;
 
-    public UserNotification() {}
-
     public UserNotification(Topic topic) {
         this.topic = topic;
         this.createdAt = GlobalDate.getCurrentDate();
@@ -33,6 +31,12 @@ public class UserNotification {
         this(topic);
         this.info = info;
     }
+
+    public ObjectId getId() {
+        return userNotificationId;
+    }
+
+    public UserNotification() {}
 
     public void sendTo(ObjectId userId) {
         Model.users().update("{_id: #}", userId).with("{$addToSet: {notifications: #}}", this);
