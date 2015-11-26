@@ -175,6 +175,7 @@ public class TemplateSoccerPlayerController extends Controller {
         List<String> headers = new ArrayList<String>() {{
             add("GameId");
             add("FantasyPoints");
+            add("PlayedMinutes");
         }};
 
         List<String> body = new ArrayList<>();
@@ -182,6 +183,7 @@ public class TemplateSoccerPlayerController extends Controller {
         templateSoccerPlayer.stats.forEach(stats -> {
             body.add(stats.optaMatchEventId);
             body.add(String.valueOf(stats.fantasyPoints));
+            body.add(String.valueOf(stats.playedMinutes));
         });
 
         String fileName = String.format("%s resumen.csv", templateSoccerPlayer.name);
