@@ -1,6 +1,5 @@
 package model;
 
-import com.sun.corba.se.impl.encoding.OSFCodeSetRegistry;
 import org.joda.money.Money;
 import play.Logger;
 import utils.MoneyUtils;
@@ -8,10 +7,8 @@ import org.bson.types.ObjectId;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 public class Achievement {
     // Los fantasyPoints están expresados como "coma fija" (con un decimal)

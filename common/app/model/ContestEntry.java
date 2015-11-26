@@ -10,7 +10,6 @@ import model.shop.Order;
 import model.shop.Product;
 import model.shop.ProductSoccerPlayer;
 import org.bson.types.ObjectId;
-import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
@@ -23,11 +22,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ContestEntry implements JongoId {
+    public static final List<String> FORMATIONS = ImmutableList.of( "442", "352", "433", "343", "451" );
+    public static final String FORMATION_DEFAULT = FORMATIONS.get(0);
+
     @Id
     public ObjectId contestEntryId;
 
     @JsonView(value={JsonViews.Public.class, JsonViews.AllContests.class})
     public ObjectId userId;             // Usuario que creo el equipo
+
+    @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class})
+    public String formation;    // Formación del fantasyTeam creado
 
     @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class})
     public List<ObjectId> soccerIds;    // Fantasy team
@@ -49,9 +54,10 @@ public class ContestEntry implements JongoId {
 
     public ContestEntry() {}
 
-    public ContestEntry(ObjectId userId, List<ObjectId> soccerIds) {
+    public ContestEntry(ObjectId userId, String formation, List<ObjectId> soccerIds) {
         this.contestEntryId = new ObjectId();
         this.userId = userId;
+        this.formation = formation;
         this.soccerIds = soccerIds;
         this.createdAt = GlobalDate.getCurrentDate();
     }
@@ -109,7 +115,7 @@ public class ContestEntry implements JongoId {
         return contestEntries;
     }
 
-    public static boolean update(User user, Contest contest, ContestEntry contestEntry, List<ObjectId> playerIds) {
+    public static boolean update(User user, Contest contest, ContestEntry contestEntry, String formation, List<ObjectId> playerIds) {
 
         boolean bRet = false;
 

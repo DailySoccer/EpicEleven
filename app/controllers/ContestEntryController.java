@@ -5,6 +5,7 @@ import actions.UserAuthenticated;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import model.*;
 import model.jobs.CancelContestEntryJob;
 import model.jobs.EnterContestJob;
@@ -46,6 +47,9 @@ public class ContestEntryController extends Controller {
 
     public static class AddContestEntryParams {
         @Constraints.Required
+        public String formation;
+
+        @Constraints.Required
         public String contestId;
 
         @Constraints.Required
@@ -67,11 +71,13 @@ public class ContestEntryController extends Controller {
 
         // Id del contest que hemos encontrado
         ObjectId contestIdValid = null;
+        String formation;
 
         if (!contestEntryForm.hasErrors()) {
             AddContestEntryParams params = contestEntryForm.get();
 
             contestIdRequested = params.contestId;
+            formation = params.formation;
 
             // Buscar el contest : ObjectId
             Contest aContest = Contest.findOne(contestIdRequested);
@@ -102,7 +108,7 @@ public class ContestEntryController extends Controller {
             }
 
             if (errores.isEmpty()) {
-                errores = validateContestEntry(aContest, idsList);
+                errores = validateContestEntry(aContest, formation, idsList);
             }
 
             if (errores.isEmpty()) {
@@ -147,7 +153,7 @@ public class ContestEntryController extends Controller {
                     }
                 }
 
-                EnterContestJob enterContestJob = EnterContestJob.create(theUser.userId, contestIdValid, idsList);
+                EnterContestJob enterContestJob = EnterContestJob.create(theUser.userId, contestIdValid, formation, idsList);
 
                 // Al intentar aplicar el job puede que nos encontremos con algún conflicto (de última hora),
                 //  lo volvemos a intentar para poder informar del error (con los tests anteriores)
@@ -187,6 +193,9 @@ public class ContestEntryController extends Controller {
 
     public static class EditContestEntryParams {
         @Constraints.Required
+        public String formation;
+
+        @Constraints.Required
         public String contestEntryId;
 
         @Constraints.Required
@@ -200,6 +209,8 @@ public class ContestEntryController extends Controller {
         if (!contestEntryForm.hasErrors()) {
             EditContestEntryParams params = contestEntryForm.get();
 
+            String formation = params.formation;
+
             Logger.info("editContestEntry: contestEntryId({}) soccerTeam({})", params.contestEntryId, params.soccerTeam);
 
             User theUser = (User) ctx().args.get("User");
@@ -212,7 +223,7 @@ public class ContestEntryController extends Controller {
                 // Obtener los soccerIds de los futbolistas : List<ObjectId>
                 List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
 
-                List<String> errores = validateContestEntry(aContest, idsList);
+                List<String> errores = validateContestEntry(aContest, formation, idsList);
 
                 if (errores.isEmpty()) {
                     if (MoneyUtils.isGreaterThan(aContest.entryFee, MoneyUtils.zero) &&
@@ -236,7 +247,7 @@ public class ContestEntryController extends Controller {
                 }
 
                 if (errores.isEmpty()) {
-                    if (!ContestEntry.update(theUser, aContest, contestEntry, idsList)) {
+                    if (!ContestEntry.update(theUser, aContest, contestEntry, formation, idsList)) {
                         errores.add(ERROR_RETRY_OP);
                     }
                 }
@@ -319,7 +330,7 @@ public class ContestEntryController extends Controller {
         return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
     }
 
-    private static List<String> validateContestEntry (Contest contest, List<ObjectId> objectIds) {
+    private static List<String> validateContestEntry (Contest contest, String formation, List<ObjectId> objectIds) {
         List<String> errores = new ArrayList<>();
 
         // Verificar que el contest sea válido
@@ -347,7 +358,7 @@ public class ContestEntryController extends Controller {
                 }
 
                 // Verificar que todos las posiciones del team están completas
-                if (!isFormationValid(soccerPlayers)) {
+                if (!isFormationValid(formation, soccerPlayers)) {
                     errores.add(ERROR_FORMATION_INVALID);
                 }
 
@@ -369,11 +380,20 @@ public class ContestEntryController extends Controller {
         return salaryCapTeam;
     }
 
-    private static boolean isFormationValid(List<InstanceSoccerPlayer> soccerPlayers) {
-        return  (countFieldPos(FieldPos.GOALKEEPER, soccerPlayers) == 1) &&
-                (countFieldPos(FieldPos.DEFENSE, soccerPlayers) == 4) &&
-                (countFieldPos(FieldPos.MIDDLE, soccerPlayers) == 4) &&
-                (countFieldPos(FieldPos.FORWARD, soccerPlayers) == 2);
+    private static boolean isFormationValid(String formation, List<InstanceSoccerPlayer> soccerPlayers) {
+        boolean result = ContestEntry.FORMATIONS.stream().anyMatch( value -> value.equals(formation) );
+        if (result) {
+            int defenses = Character.getNumericValue(formation.charAt(0));
+            int middles = Character.getNumericValue(formation.charAt(1));
+            int forwards = Character.getNumericValue(formation.charAt(2));
+            // Logger.debug("defenses: {} middles: {} forward: {}", defenses, middles, forwards);
+
+            result = (countFieldPos(FieldPos.GOALKEEPER, soccerPlayers) == 1) &&
+                    (countFieldPos(FieldPos.DEFENSE, soccerPlayers) == defenses) &&
+                    (countFieldPos(FieldPos.MIDDLE, soccerPlayers) == middles) &&
+                    (countFieldPos(FieldPos.FORWARD, soccerPlayers) == forwards);
+        }
+        return result;
     }
 
     private static boolean isMaxPlayersFromSameTeamValid(Contest contest, List<InstanceSoccerPlayer> soccerPlayers) {

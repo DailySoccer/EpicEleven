@@ -3,9 +3,7 @@ package model;
 import model.jobs.EnterContestJob;
 import model.opta.OptaCompetition;
 import org.bson.types.ObjectId;
-import org.joda.money.Money;
 import utils.ListUtils;
-import utils.MoneyUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,7 +105,7 @@ public final class MockData {
             for (TemplateSoccerPlayer soccer : ListUtils.randomElements(forwards, 2))
                 soccerIds.add(soccer.templateSoccerPlayerId);
 
-            EnterContestJob.create(user.userId, contest.contestId, soccerIds);
+            EnterContestJob.create(user.userId, contest.contestId, ContestEntry.FORMATION_DEFAULT, soccerIds);
         }
 
     }
