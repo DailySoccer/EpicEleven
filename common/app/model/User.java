@@ -303,6 +303,10 @@ public class User {
         return achievements.stream().anyMatch(achievement -> achievement.equals(aAchievement.toString()));
     }
 
+    public boolean hasContestNotification(UserNotification.Topic topic, ObjectId contestId) {
+        return notifications.stream().anyMatch(notification -> (notification.topic == topic) && notification.info.containsValue(contestId.toString()));
+    }
+
     public void achievedAchievement(AchievementType achievementType) {
         if (!hasAchievement(achievementType)) {
             achievements.add(achievementType.toString());

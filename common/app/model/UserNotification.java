@@ -22,6 +22,8 @@ public class UserNotification implements JongoId {
 
     public Date createdAt;
 
+    public UserNotification() {}
+
     public UserNotification(Topic topic) {
         this.userNotificationId = new ObjectId();
         this.topic = topic;
@@ -37,9 +39,12 @@ public class UserNotification implements JongoId {
         return userNotificationId;
     }
 
-    public UserNotification() {}
-
     public void sendTo(ObjectId userId) {
+        if (topic.equals(Topic.CONTEST_FINISHED) && _context instanceof Contest) {
+            Contest contest = (Contest) _context;
+            ContestEntry contestEntry = contest.getContestEntryWithUser(userId);
+            info.put("position", String.valueOf(contestEntry.position));
+        }
         Model.users().update("{_id: #}", userId).with("{$addToSet: {notifications: #}}", this);
     }
 
@@ -48,14 +53,19 @@ public class UserNotification implements JongoId {
     }
 
     public static UserNotification contestFinished(Contest contest) {
+        _context = contest;
         return new UserNotification(Topic.CONTEST_FINISHED, new HashMap<String, String>() {{
             put("contestId", contest.contestId.toString());
+            put("contestName", contest.translatedName());
+            put("numEntries", String.valueOf(contest.getNumEntries()));
         }});
     }
 
     public static UserNotification contestCancelled(Contest contest) {
+        _context = contest;
         return new UserNotification(Topic.CONTEST_CANCELLED, new HashMap<String, String>() {{
             put("contestId", contest.contestId.toString());
+            put("contestName", contest.translatedName());
         }});
     }
 
@@ -80,4 +90,6 @@ public class UserNotification implements JongoId {
     public static void remove(ObjectId userId, ObjectId notificationId) {
         Model.users().update("{_id: #}", userId).with("{$pull: {notifications: {_id: #}}}", notificationId);
     }
+
+    private static Object _context;
 }
