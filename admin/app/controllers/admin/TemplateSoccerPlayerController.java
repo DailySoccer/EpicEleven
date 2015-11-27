@@ -162,7 +162,7 @@ public class TemplateSoccerPlayerController extends Controller {
         });
 
         String fileName = String.format("%s.csv", templateSoccerPlayer.name);
-        FileUtils.generateCsv(String.format(fileName, templateSoccerPlayer.name), headers, body);
+        FileUtils.generateCsv(fileName, headers, body);
 
         FlashMessage.info(fileName);
 

@@ -74,6 +74,7 @@ GET         /template_match_event/simulations_to_csv/:templateMatchEventId/:num 
 GET         /template_soccer_teams                                               controllers.admin.TemplateSoccerTeamController.index()
 GET         /template_soccer_team/:templateSoccerTeam                            controllers.admin.TemplateSoccerTeamController.show(templateSoccerTeam : String)
 GET         /template_soccer_team/managerLevels/:templateSoccerTeam              controllers.admin.TemplateSoccerTeamController.showManagerLevels(templateSoccerTeam : String)
+GET         /template_soccer_team/statistics_to_csv/:templateSoccerTeam          controllers.admin.TemplateSoccerTeamController.statisticsToCSV(templateSoccerTeam : String)
 
 GET         /template_soccer_players                                             controllers.admin.TemplateSoccerPlayerController.index()
 GET         /template_soccer_players/ajax                                        controllers.admin.TemplateSoccerPlayerController.indexAjax()
