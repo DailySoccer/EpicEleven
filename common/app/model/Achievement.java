@@ -29,10 +29,12 @@ public class Achievement {
             put(AchievementType.TRUE_SKILL_4000, 4000);
         }});
 
+        /*
         Logger.debug("trueSkillChanged {}: User: {}: Contest: {}",
                 contest.simulation ? "Simulation" : "Official",
                 user.firstName + " " + user.lastName,
                 contest.name);
+         */
     }
 
     static public void playedContest(Contest contest) {
@@ -75,11 +77,13 @@ public class Achievement {
             wonPrize(user, contestEntry, contest);
         }
 
+        /*
         Logger.debug("playedContest {}: User: {}: Contest: {} Position: {}",
                 contest.simulation ? "Simulation" : "Official",
                 user.firstName + " " + user.lastName,
                 contest.name,
                 contestEntry.position);
+         */
     }
 
     static private long wonSimulationContest(User user, ContestEntry contestEntry, Contest contest) {
@@ -183,11 +187,13 @@ public class Achievement {
             }});
         }
 
+        /*
         Logger.debug("WonPrize {}: User: {}: Contest: {} Position: {}",
                 contest.simulation ? "Simulation" : "Official",
                 user.firstName + " " + user.lastName,
                 contest.name,
                 contestEntry.position);
+         */
     }
 
     static void playedSoccerPlayers(Contest contest) {

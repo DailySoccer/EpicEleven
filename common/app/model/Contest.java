@@ -407,6 +407,18 @@ public class Contest implements JongoId {
             for (ContestEntry contestEntry : contestEntries) {
                 Money prize = prizes.getValue(contestEntry.position);
                 if (prize.getAmount().floatValue() > 0) {
+
+                    // Va a mejorar su nivel de manager?
+                    if (simulation) {
+                        // Cuando reciba el premio, subirá su nivel de manager?
+                        Money managerBalance = User.calculateManagerBalance(contestEntry.userId);
+                        int managerLevel = (int) User.managerLevelFromPoints(managerBalance);
+                        int managerLevelUpdated = (int) User.managerLevelFromPoints(managerBalance.plus(prize));
+                        if (managerLevelUpdated > managerLevel) {
+                            UserNotification.managerLevelUp(managerLevelUpdated).sendTo(contestEntry.userId);
+                        }
+                    }
+
                     accounts.add(new AccountOp(contestEntry.userId, prize, User.getSeqId(contestEntry.userId) + 1));
                 }
             }
