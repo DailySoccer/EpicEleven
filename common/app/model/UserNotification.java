@@ -2,6 +2,7 @@ package model;
 
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
+import play.Logger;
 import utils.ListUtils;
 import java.util.*;
 
@@ -44,6 +45,7 @@ public class UserNotification implements JongoId {
             Contest contest = (Contest) _context;
             ContestEntry contestEntry = contest.getContestEntryWithUser(userId);
             info.put("position", String.valueOf(contestEntry.position));
+            // Logger.debug("Notificacion: Contest Finished: {} ({}): Position: {}", contest.name, contest.contestId, contestEntry.position);
         }
         Model.users().update("{_id: #}", userId).with("{$addToSet: {notifications: #}}", this);
     }
