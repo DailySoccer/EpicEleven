@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class User {
@@ -77,6 +78,8 @@ public class User {
     public float managerLevel = 0;
 
     public List<String> achievements = new ArrayList<>();
+
+    public List<UserNotification> notifications = new ArrayList<>();
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
@@ -300,10 +303,16 @@ public class User {
         return achievements.stream().anyMatch(achievement -> achievement.equals(aAchievement.toString()));
     }
 
+    public boolean hasContestNotification(UserNotification.Topic topic, ObjectId contestId) {
+        return notifications.stream().anyMatch(notification -> (notification.topic == topic) && notification.info.containsValue(contestId.toString()));
+    }
+
     public void achievedAchievement(AchievementType achievementType) {
         if (!hasAchievement(achievementType)) {
             achievements.add(achievementType.toString());
-            Model.users().update("{_id: #}", userId).with("{$addToSet: {achievements: #}}", achievementType.toString());
+
+            // Incluimos el achievement en la ficha del usuario y le enviamos una notificación
+            Model.users().update("{_id: #}", userId).with("{$addToSet: {achievements: #, notifications: #}}", achievementType.toString(), UserNotification.achievementEarned(achievementType));
         }
     }
 

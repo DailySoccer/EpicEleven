@@ -345,7 +345,8 @@ public class Model {
             DBCollection notifications = theMongoDB.createCollection("notifications", new BasicDBObject());
             notifications.createIndex(new BasicDBObject("topic", 1));
             notifications.createIndex(new BasicDBObject("reason", 1));
-            notifications.createIndex(new BasicDBObject("userId", 1));
+            notifications.createIndex(new BasicDBObject("recipients", 1));
+            notifications.createIndex(new BasicDBObject("readed", 1));
         }
     }
 

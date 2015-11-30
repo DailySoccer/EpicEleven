@@ -12,6 +12,7 @@ import utils.MoneyUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CancelContestJob extends Job {
     ObjectId contestId;
@@ -59,6 +60,9 @@ public class CancelContestJob extends Job {
                         AccountingTran accountingTran = AccountingTranCancelContest.create(contest.entryFee.getCurrencyUnit().getCode(), contestId, accounts);
                         bValid = (accountingTran != null);
                     }
+
+                    // Enviamos avisos de cancelación
+                    UserNotification.contestCancelled(contest).sendTo(contest.contestEntries.stream().map(contestEntry -> contestEntry.userId).collect(Collectors.toList()));
 
                     // Quitar la tarea pendiente
                     Model.contests().update("{_id: #}", contestId).with("{$pull: {pendingJobs: #}}", jobId);

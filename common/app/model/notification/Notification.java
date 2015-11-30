@@ -1,13 +1,17 @@
 package model.notification;
 
+import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableMap;
+import model.Contest;
+import model.ContestEntry;
 import model.GlobalDate;
 import model.Model;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
 import utils.ListUtils;
 
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class Notification {
@@ -21,7 +25,8 @@ public class Notification {
     public ObjectId notificationId;
     public Topic topic;
     public String reason;
-    public ObjectId userId;
+    public ObjectId recipientId;
+
     public Date createdAt;
     public Date dateSent;
 
@@ -30,8 +35,12 @@ public class Notification {
     public Notification(Topic topic, String reason, ObjectId recipientId) {
         this.topic = topic;
         this.reason = reason;
-        this.userId = recipientId;
+        this.recipientId = recipientId;
         this.createdAt = GlobalDate.getCurrentDate();
+    }
+
+    public void insert() {
+        Model.notifications().insert(this);
     }
 
     public void insertAsSent() {
@@ -43,7 +52,6 @@ public class Notification {
         dateSent = GlobalDate.getCurrentDate();
         Model.notifications().update("{_id: #}", notificationId).with(this);
     }
-
 
     public static Notification findLastNotification(Topic topic, ObjectId recipientId) {
         Iterable<Notification> notifications = Model.notifications().find("{topic: #, userId: #}", topic, recipientId).sort("{createdAt: -1}").limit(1).as(Notification.class);

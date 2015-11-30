@@ -9,14 +9,12 @@ import com.google.common.collect.ImmutableMap;
 import com.mongodb.DuplicateKeyException;
 import com.stormpath.sdk.account.Account;
 import com.stormpath.sdk.directory.CustomData;
-import model.GlobalDate;
-import model.Model;
-import model.Session;
-import model.User;
+import model.*;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.accounting.AccountingTranBonus;
 import model.bonus.SignupBonus;
+import org.bson.types.ObjectId;
 import org.joda.money.Money;
 import play.Logger;
 import play.Play;
@@ -553,6 +551,13 @@ public class LoginController extends Controller {
             StormPathClient.instance().resendVerificationEmail(theUser.email);
         }
         return ok();
+    }
+
+    @UserAuthenticated
+    public static Result removeNotification(String notificationId) {
+        User theUser = (User)ctx().args.get("User");
+        UserNotification.remove(theUser.userId, new ObjectId(notificationId));
+        return new ReturnHelper(true, ImmutableMap.of()).toResult();
     }
 
 
