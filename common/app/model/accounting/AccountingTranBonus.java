@@ -15,14 +15,12 @@ public class AccountingTranBonus extends AccountingTran {
     // Identificador de bonus mediante el que podremos saber si ya se ha aplicado o no
     //   Puede ser un ObjectId (p.ej. orderId), un concepto ("SIGN UP")...
     public String bonusId;
-    public Money bonus;
 
     public AccountingTranBonus() {}
 
-    public AccountingTranBonus(String currencyCode, TransactionType bonusType, String bonusId, Money bonus) {
+    public AccountingTranBonus(String currencyCode, TransactionType bonusType, String bonusId) {
         super(currencyCode, bonusType);
         this.bonusId = bonusId;
-        this.bonus = bonus;
     }
 
     static public AccountingTranBonus findOne (TransactionType bonusType, String bonusId) {
@@ -31,10 +29,10 @@ public class AccountingTranBonus extends AccountingTran {
                 .as(AccountingTranBonus.class);
     }
 
-    static public AccountingTran create(String currencyCode, TransactionType bonusType, String bonusId, Money bonus, List<AccountOp> accounts) {
+    static public AccountingTran create(String currencyCode, TransactionType bonusType, String bonusId, List<AccountOp> accounts) {
         AccountingTranBonus accountingOp = findOne(bonusType, bonusId);
         if (accountingOp == null) {
-            accountingOp = new AccountingTranBonus(currencyCode, bonusType, bonusId, bonus);
+            accountingOp = new AccountingTranBonus(currencyCode, bonusType, bonusId);
             accountingOp.accountOps = accounts;
             accountingOp.insertAndCommit();
         }

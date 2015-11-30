@@ -99,23 +99,6 @@ public class DashboardController extends Controller {
             accountingTran.accountOps = accountOps;
             accountingTran.insertAndCommit();
         }
-
-        // Damos un bonus a cada usuario
-        // addBonus(users, money);
-    }
-
-    static private void addBonus(List<User> users, Money money) {
-        if (!users.isEmpty()) {
-            List<AccountOp> accountOps = users.stream()
-                    .map((user) -> new AccountOp(user.userId, MoneyUtils.zero, user.getSeqId() + 1))
-                    .collect(Collectors.toList());
-
-            String bonusId = String.format("FREE_MONEY#%s", new ObjectId().toString());
-            AccountingTranBonus.create(money.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS,
-                    bonusId,
-                    money,
-                    accountOps);
-        }
     }
 
     static private BotSystemActor.ChildrenState getBotsState() {
