@@ -26,7 +26,7 @@ import java.util.List;
 
 public class ContestController extends Controller {
     static final String SEPARATOR_CSV = ";";
-    static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy/MM/dd");
+    static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy/MM/dd HH:mm");
 
     public static Result index() {
         return ok(views.html.contest_list.render());
@@ -54,13 +54,22 @@ public class ContestController extends Controller {
             public String getFieldByIndex(Object data, Integer index) {
                 Contest contest = (Contest) data;
                 switch (index) {
-                    case 0: return contest.name;
-                    case 1: return String.valueOf(contest.contestEntries.size());
-                    case 2: return String.valueOf(contest.maxEntries);
-                    case 3: return MoneyUtils.asString(contest.getPrizePool());
-                    case 4: return contest.templateContestId.toString();
-                    case 5: return contest.optaCompetitionId;
-                    case 6: if(contest.state.isHistory()) {
+                    case 0:
+                        return contest.name;
+                    case 1:
+                        return String.valueOf(contest.contestEntries.size());
+                    case 2:
+                        return String.valueOf(contest.maxEntries);
+                    case 3:
+                        return MoneyUtils.asString(contest.getPrizePool());
+                    case 4:
+                        return contest.templateContestId.toString();
+                    case 5:
+                        return contest.optaCompetitionId;
+                    case 6:
+                            if (contest.state.isOff()) {
+                                return "Off";
+                            } else if(contest.state.isHistory()) {
                                 return "Finished";
                             } else if(contest.state.isCanceled()) {
                                 return "Canceled";
@@ -81,7 +90,9 @@ public class ContestController extends Controller {
                                 routes.TemplateContestController.show(fieldValue).url(),
                                 fieldValue);
                     case 6:
-                        if(fieldValue.equals("Finished")) {
+                        if(fieldValue.equals("Off")) {
+                            return "<button class=\"btn btn-warning disabled\">Off</button>";
+                        } else if(fieldValue.equals("Finished")) {
                             return "<button class=\"btn btn-danger\">Finished</button>";
                         } else if(fieldValue.equals("Canceled")) {
                             return "<button class=\"btn btn-danger\">Canceled</button>";
@@ -114,7 +125,8 @@ public class ContestController extends Controller {
         PRIZE_TYPE(6),
         PRIZE_MULTIPLIER(7),
         START_DATE(8),
-        SPECIAL_IMAGE(9);
+        ACTIVATION_AT(9),
+        SPECIAL_IMAGE(10);
 
         public final int id;
 
@@ -131,7 +143,7 @@ public class ContestController extends Controller {
 
         List<String> body = new ArrayList<>();
 
-        List<TemplateContest> templateContest = TemplateContest.findAllActive();
+        List<TemplateContest> templateContest = TemplateContest.findAllDraft();
 
         templateContest.forEach( template -> {
             body.add(template.templateContestId.toString());
@@ -143,6 +155,7 @@ public class ContestController extends Controller {
             body.add(template.prizeType.toString());
             body.add(String.valueOf(template.prizeMultiplier));
             body.add(new DateTime(template.startDate).toString(dateTimeFormatter.withZoneUTC()));
+            body.add(new DateTime(template.activationAt).toString(dateTimeFormatter.withZoneUTC()));
             body.add(template.specialImage);
         });
 
@@ -198,24 +211,13 @@ public class ContestController extends Controller {
                 contest.prizeType = PrizeType.valueOf(params[FieldCSV.PRIZE_TYPE.id]);
                 contest.prizeMultiplier = Float.valueOf(params[FieldCSV.PRIZE_MULTIPLIER.id]);
                 contest.startDate = DateTime.parse(params[FieldCSV.START_DATE.id], dateTimeFormatter.withZoneUTC()).toDate();
+                contest.activationAt = DateTime.parse(params[FieldCSV.ACTIVATION_AT.id], dateTimeFormatter.withZoneUTC()).toDate();
 
                 if (params.length > FieldCSV.SPECIAL_IMAGE.id)
                     contest.specialImage = params[FieldCSV.SPECIAL_IMAGE.id];
 
-                contest.instantiate();
-
-                if (contest.simulation) {
-                    contest.setupSimulation();
-                }
-
-                // Durante el desarrollo permitimos que los mockUsers puedan entrar en un contest
-                if (Play.isDev()) {
-                    boolean mockDataUsers = contest.name.contains(TemplateContest.FILL_WITH_MOCK_USERS);
-                    if (mockDataUsers) {
-                        MockData.addContestEntries(contest, contest.maxEntries - 1);
-                    }
-                }
-
+                contest.state = ContestState.OFF;
+                contest.insert();
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();

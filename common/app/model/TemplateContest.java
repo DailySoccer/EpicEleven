@@ -157,6 +157,10 @@ public class TemplateContest implements JongoId {
         return ListUtils.asList(Model.templateContests().find().as(TemplateContest.class));
     }
 
+    static public List<TemplateContest> findAllDraft() {
+        return ListUtils.asList(Model.templateContests().find("{state: \"DRAFT\"}").as(TemplateContest.class));
+    }
+
     static public List<TemplateContest> findAllActive() {
         return ListUtils.asList(Model.templateContests().find("{state: \"ACTIVE\"}").as(TemplateContest.class));
     }
@@ -224,7 +228,8 @@ public class TemplateContest implements JongoId {
 
     public Contest instantiateContest() {
         Contest contest = new Contest(this);
-        contest.instantiate();
+        state = ContestState.ACTIVE;
+        contest.insert();
         return contest;
     }
 
@@ -236,7 +241,7 @@ public class TemplateContest implements JongoId {
             setupSimulation();
         }
 
-        registerSoccerPlayers();
+        instanceSoccerPlayers = TemplateSoccerPlayer.instanceSoccerPlayersFromMatchEvents(getTemplateMatchEvents());
 
         // Cuantas instancias tenemos creadas?
         long instances = Model.contests().count("{templateContestId: #}", templateContestId);
@@ -261,18 +266,6 @@ public class TemplateContest implements JongoId {
 
         // Ya estamos activos!
         state = ContestState.ACTIVE;
-    }
-
-    private void registerSoccerPlayers() {
-        instanceSoccerPlayers = new ArrayList<>();
-
-        List<TemplateMatchEvent> templateMatchEvents = getTemplateMatchEvents();
-        for (TemplateMatchEvent templateMatchEvent: templateMatchEvents) {
-            List<TemplateSoccerPlayer> templateSoccerPlayers = templateMatchEvent.getTemplateSoccerPlayersActives();
-            for (TemplateSoccerPlayer templateSoccerPlayer: templateSoccerPlayers) {
-                instanceSoccerPlayers.add(new InstanceSoccerPlayer(templateSoccerPlayer));
-            }
-        }
     }
 
     public void setupSimulation() {

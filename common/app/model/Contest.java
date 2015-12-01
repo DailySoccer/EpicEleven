@@ -24,6 +24,9 @@ import java.util.stream.Collectors;
 
 public class Contest implements JongoId {
     @JsonIgnore
+    public static final String FILL_WITH_MOCK_USERS = "%MockUsers";
+
+    @JsonIgnore
     final int MAX_PLAYERS_SAME_TEAM = 4;
 
     @Id
@@ -77,6 +80,9 @@ public class Contest implements JongoId {
 
     public Date startDate;
 
+    @JsonView(JsonViews.NotForClient.class)
+    public Date activationAt;
+
     public String optaCompetitionId;
 
     @JsonView(value={JsonViews.ContestInfo.class, JsonViews.Extended.class, JsonViews.MyLiveContests.class})
@@ -114,6 +120,7 @@ public class Contest implements JongoId {
         prizeMultiplier = template.prizeMultiplier;
         prizeType = template.prizeType;
         startDate = template.startDate;
+        activationAt = template.activationAt;
         optaCompetitionId = template.optaCompetitionId;
         templateMatchEventIds = template.templateMatchEventIds;
         instanceSoccerPlayers = template.instanceSoccerPlayers;
@@ -135,9 +142,36 @@ public class Contest implements JongoId {
         return MAX_PLAYERS_SAME_TEAM;
     }
 
-    public void instantiate() {
-        state = ContestState.ACTIVE;
+    public void insert() {
         Model.contests().withWriteConcern(WriteConcern.SAFE).insert(this);
+    }
+
+    public void instantiate() {
+
+        Logger.info("Contest.instantiate: {}: activationAt: {}", name, GlobalDate.formatDate(activationAt));
+
+        if (simulation) {
+            setupSimulation();
+        }
+
+        instanceSoccerPlayers = TemplateSoccerPlayer.instanceSoccerPlayersFromMatchEvents(getTemplateMatchEvents());
+
+        // Cuando hemos acabado de instanciar nuestras dependencias, nos ponemos en activo
+        if (simulation) {
+            // Con la simulación también hay que actualizar la lista de partidos "virtuales"
+            Model.contests().update("{_id: #, state: \"OFF\"}", contestId).with("{$set: {state: \"ACTIVE\", instanceSoccerPlayers:#, templateMatchEventIds:#}}",
+                    instanceSoccerPlayers, templateMatchEventIds);
+        }
+        else {
+            Model.contests().update("{_id: #, state: \"OFF\"}", contestId).with("{$set: {state: \"ACTIVE\", instanceSoccerPlayers:#}}", instanceSoccerPlayers);
+        }
+
+        if (name.contains(FILL_WITH_MOCK_USERS)) {
+            MockData.addContestEntries(this, this.maxEntries - 1);
+        }
+
+        // Ya estamos activos!
+        state = ContestState.ACTIVE;
     }
 
     public ContestEntry findContestEntry(ObjectId contestEntryId) {
@@ -181,6 +215,12 @@ public class Contest implements JongoId {
 
     static public List<Contest> findAllFromTemplateContest(ObjectId templateContestId) {
         return ListUtils.asList(Model.contests().find("{templateContestId: #}", templateContestId).as(Contest.class));
+    }
+
+    static public List<Contest> findAllByActivationAt(Date activationAt) {
+        return ListUtils.asList(Model.contests()
+                .find("{state: \"OFF\", activationAt: {$lte: #}, startDate: {$gte: #}}", activationAt, GlobalDate.getCurrentDate())
+                .as(Contest.class));
     }
 
     static public List<Contest> findAllStartingIn(int hours) {

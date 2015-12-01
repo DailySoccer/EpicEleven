@@ -62,6 +62,7 @@ public class ContestsActor extends TickableActor {
         try {
             // El TemplateContest instanciara sus Contests y MatchEvents asociados
             TemplateContest.findAllByActivationAt(GlobalDate.getCurrentDate()).forEach(TemplateContest::instantiate);
+            Contest.findAllByActivationAt(GlobalDate.getCurrentDate()).forEach(Contest::instantiate);
 
             Contest.findAllHistoryNotClosed().forEach(Contest::closeContest);
         }
