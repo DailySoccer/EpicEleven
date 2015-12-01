@@ -22,14 +22,14 @@ public class ImportController extends Controller {
     public static Result showImportTeams() {
         List<String> competitionsActivated = OptaCompetition.asIds(OptaCompetition.findAllActive());
 
-        return ok(views.html.import_teams.render(evaluateDirtyTeams(competitionsActivated), "*", OptaCompetition.asMap(OptaCompetition.findAllActive())));
+        return ok(views.html.import_teams.render(evaluateDirtyTeams(competitionsActivated), "*", OptaCompetition.asSeasonCompetitionMap(OptaCompetition.findAllActive())));
     }
 
     public static Result showImportTeamsFromCompetition(String competitionId) {
         List<String> competitionsSelected = new ArrayList<>();
         competitionsSelected.add(competitionId);
 
-        return ok(views.html.import_teams.render(evaluateDirtyTeams(competitionsSelected), competitionId, OptaCompetition.asMap(OptaCompetition.findAllActive())));
+        return ok(views.html.import_teams.render(evaluateDirtyTeams(competitionsSelected), competitionId, OptaCompetition.asSeasonCompetitionMap(OptaCompetition.findAllActive())));
     }
 
     /**

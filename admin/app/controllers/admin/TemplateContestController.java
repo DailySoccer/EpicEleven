@@ -1,21 +1,18 @@
 package controllers.admin;
 
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import actions.CheckTargetEnvironment;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.mongodb.WriteConcern;
 import model.*;
+import model.opta.OptaCompetition;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import play.Logger;
-import play.api.mvc.Flash;
 import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -32,11 +29,23 @@ public class TemplateContestController extends Controller {
             "Just 4 Fun", "Weekly", "Experts Only", "Friends", "Pro Level", "Friday Only", "Amateur", "Weekend Only", "For Fame & Glory"};
 
     public static Result index() {
-        return ok(views.html.template_contest_list.render(getCreatingTemplateContestsState()));
+        return ok(views.html.template_contest_list.render(getCreatingTemplateContestsState(), "*", OptaCompetition.asMap(OptaCompetition.findAllActive())));
     }
 
-    public static Result indexAjax() {
-        return PaginationData.withAjax(request().queryString(), Model.templateContests(), TemplateContest.class, new PaginationData() {
+    public static Result showFilterByCompetition(String optaCompetitionId) {
+        return ok(views.html.template_contest_list.render(getCreatingTemplateContestsState(), optaCompetitionId, OptaCompetition.asMap(OptaCompetition.findAllActive())));
+    }
+
+    public static Result indexAjax(String seasonCompetitionId) {
+        HashMap<String, OptaCompetition> optaCompetitions = OptaCompetition.asMap(OptaCompetition.findAllActive());
+
+        String query = null;
+        if (optaCompetitions.containsKey(seasonCompetitionId)) {
+            OptaCompetition optaCompetition = optaCompetitions.get(seasonCompetitionId);
+            query = String.format("{optaCompetitionId: '%s'}", optaCompetition.competitionId);
+        }
+
+        return PaginationData.withAjaxAndQuery(request().queryString(), Model.templateContests(), query, TemplateContest.class, new PaginationData() {
             public List<String> getFieldNames() {
                 return ImmutableList.of(
                         "state",
@@ -103,10 +112,10 @@ public class TemplateContestController extends Controller {
                 switch (index) {
                     case 0:
                         String classStyle = "btn btn-warning";
-                        if (templateContest.state.isDraft())            classStyle = "btn btn-default";
-                        else if (templateContest.state.isHistory())     classStyle = "btn btn-danger";
-                        else if (templateContest.state.isLive())        classStyle = "btn btn-success";
-                        else if (templateContest.state.isActive())      classStyle = "btn btn-warning";
+                        if (templateContest.state.isDraft()) classStyle = "btn btn-default";
+                        else if (templateContest.state.isHistory()) classStyle = "btn btn-danger";
+                        else if (templateContest.state.isLive()) classStyle = "btn btn-success";
+                        else if (templateContest.state.isActive()) classStyle = "btn btn-warning";
                         return String.format("<a href=\"%s\"><button class=\"%s\">%s</button></a>",
                                 routes.TemplateContestController.createClone(templateContest.templateContestId.toString()), classStyle, templateContest.state);
                     case 1:
