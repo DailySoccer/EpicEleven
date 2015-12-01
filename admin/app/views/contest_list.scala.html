@@ -67,6 +67,15 @@
 }
 
 <h1 class="page-header">Contests</h1>
+<div style="float: right; margin-right:100px;">
+    <a href="@ContestController.defaultCSV"><button class="btn btn-success">Default CSV</button></a>
+</div>
+<p>
+    @helper.form(action = ContestController.importFromCSV, 'enctype -> "multipart/form-data") {
+        <input class="btn btn-primary" type="submit" value="Import from CSV">
+        <input type="file" name="csv" style="display: inline;">
+    }
+</p>
 
 <h2 class="sub-header"></h2>
 <div class="table-responsive">

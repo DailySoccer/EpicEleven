@@ -224,8 +224,7 @@ public class TemplateContest implements JongoId {
 
     public Contest instantiateContest() {
         Contest contest = new Contest(this);
-        contest.state = ContestState.ACTIVE;
-        Model.contests().withWriteConcern(WriteConcern.SAFE).insert(contest);
+        contest.instantiate();
         return contest;
     }
 

@@ -2,6 +2,7 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.mongodb.WriteConcern;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTranPrize;
 import org.apache.commons.lang3.StringUtils;
@@ -132,6 +133,11 @@ public class Contest implements JongoId {
 
     public int getMaxPlayersFromSameTeam() {
         return MAX_PLAYERS_SAME_TEAM;
+    }
+
+    public void instantiate() {
+        state = ContestState.ACTIVE;
+        Model.contests().withWriteConcern(WriteConcern.SAFE).insert(this);
     }
 
     public ContestEntry findContestEntry(ObjectId contestEntryId) {
