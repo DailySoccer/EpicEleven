@@ -9,14 +9,12 @@ import com.google.common.collect.ImmutableMap;
 import com.mongodb.DuplicateKeyException;
 import com.stormpath.sdk.account.Account;
 import com.stormpath.sdk.directory.CustomData;
-import model.GlobalDate;
-import model.Model;
-import model.Session;
-import model.User;
+import model.*;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.accounting.AccountingTranBonus;
 import model.bonus.SignupBonus;
+import org.bson.types.ObjectId;
 import org.joda.money.Money;
 import play.Logger;
 import play.Play;
@@ -206,11 +204,18 @@ public class LoginController extends Controller {
                     Model.users().insert(theUser);
 
                     // Existe un bonus por registrarse?
-                    Money bonus = SignupBonus.getMoney();
-                    if (bonus != null) {
-                        AccountingTranBonus.create(bonus.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, "SIGNUP", bonus, ImmutableList.of(
-                                new AccountOp(theUser.userId, bonus, User.getSeqId(theUser.userId) + 1)
-                        ));
+                    SignupBonus bonus = SignupBonus.findOne();
+                    if (bonus != null && bonus.activated) {
+                        if (bonus.gold.isPositive()) {
+                            AccountingTranBonus.create(bonus.gold.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, "SIGNUP-GOLD", ImmutableList.of(
+                                    new AccountOp(theUser.userId, bonus.gold, User.getSeqId(theUser.userId) + 1)
+                            ));
+                        }
+                        if (bonus.manager.isPositive()) {
+                            AccountingTranBonus.create(bonus.manager.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, "SIGNUP-MANAGER", ImmutableList.of(
+                                    new AccountOp(theUser.userId, bonus.manager, User.getSeqId(theUser.userId) + 1)
+                            ));
+                        }
                     }
                 } catch (DuplicateKeyException exc) {
                     int mongoError = 0; //"Hubo un problema en la creación de tu usuario");
@@ -553,6 +558,13 @@ public class LoginController extends Controller {
             StormPathClient.instance().resendVerificationEmail(theUser.email);
         }
         return ok();
+    }
+
+    @UserAuthenticated
+    public static Result removeNotification(String notificationId) {
+        User theUser = (User)ctx().args.get("User");
+        UserNotification.remove(theUser.userId, new ObjectId(notificationId));
+        return new ReturnHelper(true, ImmutableMap.of()).toResult();
     }
 
 

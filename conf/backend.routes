@@ -31,12 +31,17 @@ POST           /signup                                                 controlle
 GET            /get_user_profile                                       controllers.LoginController.getUserProfile()
 POST           /change_user_profile                                    controllers.LoginController.changeUserProfile()
 GET            /get_transaction_history                                controllers.LoginController.getTransactionHistory()
+GET            /remove_notification/:notificationId                    controllers.LoginController.removeNotification(notificationId : String)
 
 POST           /ask_for_password_reset                                 controllers.LoginController.askForPasswordReset()
 POST           /verify_password_reset_token                            controllers.LoginController.verifyPasswordResetToken()
 POST           /reset_password                                         controllers.LoginController.resetPasswordWithToken()
 
 GET            /resend_verification_email                              controllers.LoginController.resendVerificationEmail()
+
+# Crear concurso
+GET            /get_active_templatecontests                            controllers.ContestController.getActiveTemplateContests()
+POST           /create_contest                                         controllers.ContestController.createContest()
 
 # Concursos globales activos (Lobby)
 GET            /get_active_contests                                    controllers.ContestController.getActiveContests()

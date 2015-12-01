@@ -11,6 +11,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class StatsSimulation {
+    final int ELO_DEFAULT = 1500;
+
     public enum TEAM {
         HOME,
         AWAY,
@@ -339,35 +341,46 @@ public class StatsSimulation {
             new TeamELO("31", 1642), // Crystal Palace
             new TeamELO("35", 1610), // West Bromwich Albion
             new TeamELO("43", 1858), // Manchester City
+            new TeamELO("45", 1586), // Norwich City
             new TeamELO("52", 1548), // Queens Park Rangers
             new TeamELO("56", 1538), // Sunderland
+            new TeamELO("57", 1597), // Watford
             new TeamELO("80", 1650), // Swansea City
             new TeamELO("88", 1542), // Hull City
             new TeamELO("90", 1543), // Burnley
             new TeamELO("110", 1660), // Stoke City
             new TeamELO("121", 1753), // Roma
             new TeamELO("128", 1890), // Juventus
+            new TeamELO("143", 1693), // Lyon
             new TeamELO("146", 1719), // Monaco
             new TeamELO("149", 1889), // Paris Saint Germain
             new TeamELO("156", 2007), // FC Bayern München
             new TeamELO("157", 1813), // Borussia Dortmund
             new TeamELO("164", 1798), // Bayer 04 Leverkusen
             new TeamELO("167", 1728), // FC Schalke 04
+            new TeamELO("172", 1779), // VfL Wolfsburg
+            new TeamELO("194", ELO_DEFAULT), // Dynamo Kyiv
             new TeamELO("201", 1823), // FC Porto
             new TeamELO("202", 1254), // Olympiakos
+            new TeamELO("204", 1672), // PSV
             new TeamELO("208", 1623), // Galatasaray
             new TeamELO("215", 1652), // Ajax
             new TeamELO("241", 1572), // RSC Anderlecht
             new TeamELO("251", 1825), // Benfica
             new TeamELO("255", 1689), // Sporting Lisbon
+            new TeamELO("394", 1567), // Dinamo Zagreb
             new TeamELO("455", 1548), // Shakhtar Donetsk
             new TeamELO("479", 1548), // APOEL Nicosia
             new TeamELO("481", 1695), // FC Basel
+            new TeamELO("678", 1591), // KAA Gent
+            new TeamELO("683", ELO_DEFAULT), // Borussia Mönchengladbach
             new TeamELO("993", 1537), // Malmö FF
+            new TeamELO("1007", ELO_DEFAULT), // Maccabi Tel Aviv
             new TeamELO("1340", 1548), // CSKA Moscow
             new TeamELO("1341", 1548), // Zenit St Petersburg
             new TeamELO("2155", 1548), // BATE Borisov
             new TeamELO("3033", 1441), // NK Maribor
+            new TeamELO("3751", ELO_DEFAULT), // FC Astana
             new TeamELO("6128", 1548), // Ludogorets Razgrad
     };
 

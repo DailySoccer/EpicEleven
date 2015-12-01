@@ -28,10 +28,12 @@ public class BonusController extends Controller {
 
         BonusForm params = bonusForm.get();
 
-        SignupBonus.create(params.signupBonus_activated, Money.of(MoneyUtils.CURRENCY_GOLD, params.signupBonus_money));
+        SignupBonus.create(params.signupBonus_activated, Money.of(MoneyUtils.CURRENCY_GOLD, params.signupBonus_gold), Money.of(MoneyUtils.CURRENCY_MANAGER, params.signupBonus_manager));
         AddFundsBonus.create(params.addFundsBonus_activated,
                 Money.of(MoneyUtils.CURRENCY_GOLD, params.addFundsBonus_minMoney), Money.of(MoneyUtils.CURRENCY_GOLD, params.addFundsBonus_maxMoney),
                 params.addFundsBonus_percent);
+
+        FlashMessage.info("Bonus saved");
 
         return redirect(routes.BonusController.index());
     }

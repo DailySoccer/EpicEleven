@@ -3,9 +3,15 @@ package controllers.admin;
 import com.google.common.collect.ImmutableList;
 import org.bson.types.ObjectId;
 import model.*;
+import play.Logger;
 import play.mvc.*;
+
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.*;
+
 import model.opta.OptaEvent;
+import utils.FileUtils;
 import utils.ListUtils;
 
 public class TemplateMatchEventController extends Controller {
@@ -109,6 +115,97 @@ public class TemplateMatchEventController extends Controller {
     public static Result showSimulatedEvents(String matchEventId) {
         TemplateMatchEvent matchEvent = TemplateMatchEvent.findOne(new ObjectId(matchEventId));
         return ok(views.html.match_event_simulated_events_list.render(matchEvent.simulationEvents, getTemplateSoccerPlayersInfo(matchEvent)));
+    }
+
+    public static Result showManagerLevels(String matchEventId) {
+        TemplateMatchEvent matchEvent = TemplateMatchEvent.findOne(new ObjectId(matchEventId));
+        printAsTablePlayerManagerLevel(matchEvent);
+        return ok(views.html.template_match_event.render(matchEvent, TemplateSoccerTeam.findAllAsMap()));
+    }
+
+    public static Result simulationsToCSV(String templateMatchEventId, Integer num) {
+
+        TemplateMatchEvent matchEvent = TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId));
+        TemplateSoccerTeam teamHome = TemplateSoccerTeam.findOne(matchEvent.templateSoccerTeamAId);
+        TemplateSoccerTeam teamAway = TemplateSoccerTeam.findOne(matchEvent.templateSoccerTeamBId);
+
+        HashMap<String, String> objectID2optaID = new HashMap<>();
+        matchEvent.getTemplateSoccerPlayers().forEach(player ->
+                objectID2optaID.put(player.templateSoccerPlayerId.toString(), player.optaPlayerId));
+
+        List<String> headers = new ArrayList<String>() {{
+            add("Partido");
+            add("OptaId");
+            add("Fantasy Points");
+        }};
+
+        List<String> body = new ArrayList<>();
+
+        // Si el partido que simulamos, ya se ha reproducido registramos sus eventos en el csv
+        if (matchEvent.isGameFinished()) {
+            for (HashMap.Entry<String, LiveFantasyPoints> entry : matchEvent.liveFantasyPoints.entrySet()) {
+                body.add(String.valueOf(-1));
+                body.add(objectID2optaID.containsKey(entry.getKey()) ? objectID2optaID.get(entry.getKey()) : entry.getKey());
+                body.add(String.valueOf(entry.getValue().points));
+            }
+        }
+
+        for (int i=0; i<num; i++) {
+            TemplateMatchEvent clone = matchEvent.copy();
+
+            MatchEventSimulation simulation = new MatchEventSimulation(matchEvent.templateMatchEventId);
+            clone.applySimulationEventsAtLiveFantasyPoints(simulation.simulationEvents);
+
+            for (HashMap.Entry<String, LiveFantasyPoints> entry : clone.liveFantasyPoints.entrySet()) {
+                body.add(String.valueOf(i));
+                body.add(objectID2optaID.containsKey(entry.getKey()) ? objectID2optaID.get(entry.getKey()) : entry.getKey());
+                body.add(String.valueOf(entry.getValue().points));
+            }
+
+            Logger.info("{}: {}({}) {} vs {} {}({})", i,
+                    teamHome.name, clone.getFantasyPointsForTeam(teamHome.templateSoccerTeamId), clone.homeScore,
+                    clone.awayScore, teamAway.name, clone.getFantasyPointsForTeam(teamAway.templateSoccerTeamId));
+        }
+
+        String fileName = String.format("%s vs %s.csv", teamHome.shortName, teamAway.shortName);
+        FileUtils.generateCsv(fileName, headers, body);
+
+        FlashMessage.info(fileName);
+
+        return redirect(routes.TemplateMatchEventController.show(templateMatchEventId));
+    }
+
+    private static void printAsTablePlayerManagerLevel(TemplateMatchEvent templateMatchEvent) {
+        StringBuffer buffer = new StringBuffer();
+
+        TemplateSoccerTeam teamA = TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamAId);
+        TemplateSoccerTeam teamB = TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamBId);
+
+        buffer.append("<h3>" + teamA.name + " vs " + teamB.name + "</h3>");
+        buffer.append("<table border=\"1\" style=\"width:40%; text-align: center; \">\n" +
+                "        <tr>\n" +
+                "        <td><strong>Manager Level<strong></td>\n" +
+                "        <td><strong>GoalKeepers<strong></td>\n" +
+                "        <td><strong>Defense<strong></td>\n" +
+                "        <td><strong>Middle<strong></td>\n" +
+                "        <td><strong>Forward<strong></td>\n" +
+                "        </tr>");
+        for (int i=0; i<User.MANAGER_POINTS.length; i++) {
+            List<TemplateSoccerPlayer> availables = TemplateSoccerPlayer.soccerPlayersAvailables(templateMatchEvent, i);
+            Map<String, Long> frequency = TemplateSoccerPlayer.frequencyFieldPos(availables);
+
+            buffer.append("<tr>");
+            buffer.append("<td>" + i + "</td>");
+            buffer.append("<td>" + frequency.get(FieldPos.GOALKEEPER.name()) + "</td>");
+            buffer.append("<td>" + frequency.get(FieldPos.DEFENSE.name()) +"</td>");
+            buffer.append("<td>" + frequency.get(FieldPos.MIDDLE.name()) +"</td>");
+            buffer.append("<td>" + frequency.get(FieldPos.FORWARD.name()) +"</td>");
+
+            buffer.append("</tr>");
+        }
+        buffer.append("</table>");
+
+        FlashMessage.info(buffer.toString());
     }
 
     private static HashMap<String, String> getTemplateSoccerPlayersInfo(TemplateMatchEvent matchEvent){

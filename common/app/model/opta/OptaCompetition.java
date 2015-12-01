@@ -4,6 +4,7 @@ import model.GlobalDate;
 import model.JongoId;
 import model.Model;
 import org.bson.types.ObjectId;
+import play.Logger;
 import utils.ListUtils;
 
 import java.util.ArrayList;
@@ -55,6 +56,12 @@ public class OptaCompetition implements JongoId {
 
     static public List<OptaCompetition> findAllActive() {
         return ListUtils.asList(Model.optaCompetitions().find("{activated: #}", true).as(OptaCompetition.class));
+    }
+
+    static public List<OptaTeam> findTeamsByCompetitionCode(String code) {
+        List<OptaCompetition> competitions = ListUtils.asList(Model.optaCompetitions().find("{activated: true, competitionCode: #}", code).as(OptaCompetition.class));
+        OptaCompetition competition = competitions.get(competitions.size()-1);
+        return OptaTeam.findAllByCompetition(createId(competition.seasonId, competition.competitionId));
     }
 
     static public List<String> asIds(List<OptaCompetition> optaCompetitions) {

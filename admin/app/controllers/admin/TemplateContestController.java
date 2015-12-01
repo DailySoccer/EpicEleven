@@ -3,6 +3,7 @@ package controllers.admin;
 import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import actions.CheckTargetEnvironment;
 import com.google.common.collect.ImmutableList;
@@ -14,6 +15,7 @@ import org.joda.money.Money;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import play.Logger;
+import play.api.mvc.Flash;
 import play.data.Form;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -63,7 +65,7 @@ public class TemplateContestController extends Controller {
                     case 0:
                         return templateContest.state.toString();
                     case 1:
-                        return templateContest.name;
+                        return templateContest.name + ((templateContest.customizable) ? "**" : "");
                     case 2:
                         return String.valueOf(templateContest.templateMatchEventIds.size());
                     case 3:
@@ -200,6 +202,7 @@ public class TemplateContestController extends Controller {
 
         templateContest.templateContestId = !isNew ? new ObjectId(params.id) : null;
         templateContest.state = params.state;
+        templateContest.customizable = params.typeCustomizable.equals(TemplateContestForm.SelectionYESNO.YES);
         templateContest.simulation = (params.typeContest == TypeContest.VIRTUAL);
         templateContest.name = params.name;
         templateContest.minInstances = params.minInstances;
@@ -247,7 +250,48 @@ public class TemplateContestController extends Controller {
             OpsLog.onChange(templateContest);
         }
 
+        printAsTablePlayerManagerLevel(templateContest);
+
         return redirect(routes.TemplateContestController.index());
+    }
+
+    public static Result showManagerLevels(String templateContestId) {
+        TemplateContest templateContest = TemplateContest.findOne(new ObjectId(templateContestId));
+        printAsTablePlayerManagerLevel(templateContest);
+        return ok(views.html.template_contest.render(
+                templateContest,
+                templateContest.getTemplateMatchEvents(),
+                TemplateSoccerTeam.findAllAsMap()));
+    }
+
+    private static void printAsTablePlayerManagerLevel(TemplateContest templateContest) {
+        StringBuffer buffer = new StringBuffer();
+
+        buffer.append("<h3>" + templateContest.name + "</h3>");
+        buffer.append("<table border=\"1\" style=\"width:40%; text-align: center; \">\n" +
+                "        <tr>\n" +
+                "        <td><strong>Manager Level<strong></td>\n" +
+                "        <td><strong>GoalKeepers<strong></td>\n" +
+                "        <td><strong>Defense<strong></td>\n" +
+                "        <td><strong>Middle<strong></td>\n" +
+                "        <td><strong>Forward<strong></td>\n" +
+                "        </tr>");
+        for (int i=0; i<User.MANAGER_POINTS.length; i++) {
+            List<TemplateSoccerPlayer> availables = TemplateSoccerPlayer.soccerPlayersAvailables(templateContest.templateMatchEventIds, i);
+            Map<String, Long> frequency = TemplateSoccerPlayer.frequencyFieldPos(availables);
+
+            buffer.append("<tr>");
+            buffer.append("<td>" + i + "</td>");
+            buffer.append("<td>" + frequency.get(FieldPos.GOALKEEPER.name()) + "</td>");
+            buffer.append("<td>" + frequency.get(FieldPos.DEFENSE.name()) +"</td>");
+            buffer.append("<td>" + frequency.get(FieldPos.MIDDLE.name()) +"</td>");
+            buffer.append("<td>" + frequency.get(FieldPos.FORWARD.name()) +"</td>");
+
+            buffer.append("</tr>");
+        }
+        buffer.append("</table>");
+
+        FlashMessage.info(buffer.toString());
     }
 
     private static void updateActiveContestsFromTemplate(TemplateContest templateContest) {

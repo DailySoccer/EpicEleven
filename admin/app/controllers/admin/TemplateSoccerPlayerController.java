@@ -4,9 +4,14 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import model.*;
 import model.opta.OptaEvent;
+import model.opta.OptaEventType;
 import org.bson.types.ObjectId;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import play.Logger;
 import play.mvc.Controller;
 import play.mvc.Result;
+import utils.FileUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -119,5 +124,76 @@ public class TemplateSoccerPlayerController extends Controller {
     public static Result showStats(String playerId) {
         TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(playerId));
         return ok(views.html.template_soccer_player_stats.render(templateSoccerPlayer));
+    }
+
+    public static Result statisticsToCSV(String templateSoccerPlayerId) {
+
+        TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(templateSoccerPlayerId));
+
+        List<OptaEvent> optaEventList = OptaEvent.filterByOptaPlayer(templateSoccerPlayer.optaPlayerId);
+
+        List<String> headers = new ArrayList<String>() {{
+            add("GameId");
+            add("Type");
+            add("TypeId");
+            add("Points");
+            add("OptaPlayerId");
+            add("CompetitionId");
+            add("EventId");
+            add("HomeTeamId");
+            add("AwayTeamId");
+            add("TimeStamp");
+        }};
+
+        List<String> body = new ArrayList<>();
+
+        optaEventList.forEach( optaEvent -> {
+            body.add(optaEvent.gameId);
+            body.add(OptaEventType.getEnum(optaEvent.typeId).name());
+            body.add(String.valueOf(optaEvent.typeId));
+            body.add(String.valueOf(optaEvent.points));
+            body.add(optaEvent.optaPlayerId);
+            body.add(optaEvent.competitionId);
+            body.add(String.valueOf(optaEvent.eventId));
+            body.add(optaEvent.homeTeamId);
+            body.add(optaEvent.awayTeamId);
+            //body.add(GlobalDate.formatDate(optaEvent.timestamp));
+            body.add(new DateTime(optaEvent.timestamp).toString(DateTimeFormat.forPattern("yyyy/MM/dd").withZoneUTC()));
+        });
+
+        String fileName = String.format("%s.csv", templateSoccerPlayer.name);
+        FileUtils.generateCsv(fileName, headers, body);
+
+        FlashMessage.info(fileName);
+
+        return redirect(routes.TemplateSoccerPlayerController.showStats(templateSoccerPlayerId));
+    }
+
+    public static Result matchStatisticsToCSV(String templateSoccerPlayerId) {
+
+        TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(templateSoccerPlayerId));
+
+        List<OptaEvent> optaEventList = OptaEvent.filterByOptaPlayer(templateSoccerPlayer.optaPlayerId);
+
+        List<String> headers = new ArrayList<String>() {{
+            add("GameId");
+            add("FantasyPoints");
+            add("PlayedMinutes");
+        }};
+
+        List<String> body = new ArrayList<>();
+
+        templateSoccerPlayer.stats.forEach(stats -> {
+            body.add(stats.optaMatchEventId);
+            body.add(String.valueOf(stats.fantasyPoints));
+            body.add(String.valueOf(stats.playedMinutes));
+        });
+
+        String fileName = String.format("%s resumen.csv", templateSoccerPlayer.name);
+        FileUtils.generateCsv(String.format(fileName, templateSoccerPlayer.name), headers, body);
+
+        FlashMessage.info(fileName);
+
+        return redirect(routes.TemplateSoccerPlayerController.showStats(templateSoccerPlayerId));
     }
 }

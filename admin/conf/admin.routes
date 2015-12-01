@@ -12,6 +12,10 @@ GET         /berserker_bot_actors                                               
 GET         /add_money_to_bots/:amount                                           controllers.admin.DashboardController.addMoneyToBots(amount : String)
 GET         /add_money_to_tests/:amount                                          controllers.admin.DashboardController.addMoneyToTests(amount : String)
 
+GET         /consultas                                                           controllers.admin.InfoController.index()
+GET         /consulta/players                                                    controllers.admin.InfoController.queryPlayers()
+POST        /consulta/players                                                    controllers.admin.InfoController.queryPlayersSubmit()
+
 GET         /lobby                                                               controllers.admin.LobbyController.lobby()
 
 GET         /import_teams                                                        controllers.admin.ImportController.showImportTeams()
@@ -55,6 +59,7 @@ GET         /template_contests/clone/:templateContestId                         
 GET         /template_contest/publish/:templateContestId                         controllers.admin.TemplateContestController.publish(templateContestId : String)
 GET         /template_contest/delete/:templateContestId                          controllers.admin.TemplateContestController.destroy(templateContestId : String)
 GET         /template_contest/:templateContestId                                 controllers.admin.TemplateContestController.show(templateContestId : String)
+GET         /template_contest/managerLevels/:templateContestId                   controllers.admin.TemplateContestController.showManagerLevels(templateContestId : String)
 
 GET         /template_contest/get_prizes/:prizeType/:maxEntries/:prizePool       controllers.admin.TemplateContestController.getPrizes(prizeType : String, maxEntries : Int, prizePool : Int)
 
@@ -63,12 +68,18 @@ GET         /template_match_events/ajax                                         
 GET         /template_match_event/:templateMatchEventId                          controllers.admin.TemplateMatchEventController.show(templateMatchEventId : String)
 GET         /template_match_event/optaEvents/:matchEventId                       controllers.admin.TemplateMatchEventController.showOptaEvents(matchEventId : String)
 GET         /template_match_event/simulatedEvents/:matchEventId                  controllers.admin.TemplateMatchEventController.showSimulatedEvents(matchEventId : String)
+GET         /template_match_event/managerLevels/:templateMatchEventId            controllers.admin.TemplateMatchEventController.showManagerLevels(templateMatchEventId : String)
+GET         /template_match_event/simulations_to_csv/:templateMatchEventId/:num  controllers.admin.TemplateMatchEventController.simulationsToCSV(templateMatchEventId : String, num : Int)
 
 GET         /template_soccer_teams                                               controllers.admin.TemplateSoccerTeamController.index()
 GET         /template_soccer_team/:templateSoccerTeam                            controllers.admin.TemplateSoccerTeamController.show(templateSoccerTeam : String)
+GET         /template_soccer_team/managerLevels/:templateSoccerTeam              controllers.admin.TemplateSoccerTeamController.showManagerLevels(templateSoccerTeam : String)
+GET         /template_soccer_team/statistics_to_csv/:templateSoccerTeam          controllers.admin.TemplateSoccerTeamController.statisticsToCSV(templateSoccerTeam : String)
 
 GET         /template_soccer_players                                             controllers.admin.TemplateSoccerPlayerController.index()
 GET         /template_soccer_players/ajax                                        controllers.admin.TemplateSoccerPlayerController.indexAjax()
+GET         /template_soccer_player/statistics_to_csv/:templateSoccerPlayerId    controllers.admin.TemplateSoccerPlayerController.statisticsToCSV(templateSoccerPlayerId : String)
+GET         /template_soccer_player/matchstatistics_to_csv/:templateSoccerPlayerId  controllers.admin.TemplateSoccerPlayerController.matchStatisticsToCSV(templateSoccerPlayerId : String)
 
 GET         /opta_competitions                                                   controllers.admin.OptaController.optaCompetitions()
 GET         /opta_competitions/:competition/activated/:state                     controllers.admin.OptaController.changeCompetitionState(competition : String, state : String)
@@ -126,4 +137,4 @@ GET         /create_promos/:mockIndex                                           
 GET         /excel                                                               controllers.admin.ExcelController.index()
 POST        /excel/upload                                                        controllers.admin.ExcelController.upload()
 
-GET         /excel/write_log                                                     controllers.admin.ExcelController.writeSoccerPlayersLog()
+GET         /excel/write_log/:competitionId                                      controllers.admin.ExcelController.writeSoccerPlayersLog(competitionId: Int)

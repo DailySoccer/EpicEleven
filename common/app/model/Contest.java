@@ -3,10 +3,7 @@ package model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import model.accounting.AccountOp;
-import model.accounting.AccountingTran;
-import model.accounting.AccountingTranBonus;
 import model.accounting.AccountingTranPrize;
-import model.bonus.Bonus;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
@@ -22,6 +19,7 @@ import utils.ViewProjection;
 
 import java.math.RoundingMode;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Contest implements JongoId {
     @JsonIgnore
@@ -93,11 +91,18 @@ public class Contest implements JongoId {
     public boolean closed = false;
 
     public boolean simulation = false;
+
+    public ObjectId authorId;
+
     public String specialImage;
 
     public Contest() {}
 
     public Contest(TemplateContest template) {
+        setupFromTemplateContest(template);
+    }
+
+    public void setupFromTemplateContest(TemplateContest template) {
         templateContestId = template.templateContestId;
         state = template.state;
         name = template.name;
@@ -160,6 +165,10 @@ public class Contest implements JongoId {
         return Model.contests().findOne("{'contestEntries._id' : #}", contestEntryId).as(Contest.class);
     }
 
+    static public Contest findOneWaitingAuthor(ObjectId authorId) {
+        return Model.contests().findOne("{state: \"WAITING_AUTHOR\", authorId: #}", authorId).as(Contest.class);
+    }
+
     public static List<Contest> findAllFromUser(ObjectId userId) {
         return ListUtils.asList(Model.contests().find("{'contestEntries.userId': #}", userId).as(Contest.class));
     }
@@ -189,6 +198,26 @@ public class Contest implements JongoId {
     static public long countActiveNotFullFromTemplateContest(ObjectId templateContestId) {
         return Model.contests()
                 .count("{templateContestId: #, state: \"ACTIVE\", freeSlots: {$gt: 0}}", templateContestId);
+    }
+
+    static public long countPlayedSimulations(ObjectId userId) {
+        return Model.contests()
+                .count("{'contestEntries.userId': #, state: \"HISTORY\", simulation: true}", userId);
+    }
+
+    static public long countWonSimulations(ObjectId userId) {
+        return Model.contests()
+                .count("{'contestEntries.userId': #, state: \"HISTORY\", simulation: true, 'contestEntries.position': 0}", userId);
+    }
+
+    static public long countPlayedOfficial(ObjectId userId) {
+        return Model.contests()
+                .count("{'contestEntries.userId': #, state: \"HISTORY\", simulation: {$ne: true}}", userId);
+    }
+
+    static public long countWonOfficial(ObjectId userId) {
+        return Model.contests()
+                .count("{'contestEntries.userId': #, state: \"HISTORY\", simulation: {$ne: true}, 'contestEntries.position': 0}", userId);
     }
 
     static public List<Contest> findAllActiveFromTemplateMatchEvent(ObjectId templateMatchEventId) {
@@ -266,6 +295,20 @@ public class Contest implements JongoId {
         return contains;
     }
 
+    public void setupSimulation() {
+        Logger.debug("Contest.SetupSimulation: " + contestId.toString());
+        templateMatchEventIds = TemplateMatchEvent.createSimulationsWithStartDate(templateMatchEventIds, startDate);
+
+        Model.contests().update("{_id: #, state: \"ACTIVE\"}", contestId).with("{$set: {templateMatchEventIds:#}}", templateMatchEventIds);
+    }
+
+    public boolean isFinished() {
+        // El Contest ha terminado si todos sus partidos han terminado
+        long numMatchEventsFinished = Model.templateMatchEvents()
+                .count("{_id: {$in: #}, gameFinishedDate: {$exists: 1}}", templateMatchEventIds);
+        return (numMatchEventsFinished == templateMatchEventIds.size());
+    }
+
     public void closeContest() {
 
         if (!contestEntries.isEmpty()) {
@@ -274,27 +317,34 @@ public class Contest implements JongoId {
             updateRanking(prizes);
             givePrizes(prizes);
             updateWinner();
-            bonusToCash();
+
+            Achievement.playedContest(this);
         }
 
         setClosed();
     }
 
     public User getWinner() {
-        ContestEntry winner = null;
-
-        for (ContestEntry contestEntry : contestEntries) {
-            if (contestEntry.position == 0) {
-                winner = contestEntry;
-                break;
-            }
-        }
+        ContestEntry winner = getContestEntryInPosition(0);
 
         if (winner == null) {
             throw new RuntimeException("WTF 7221 winner == null");
         }
 
         return User.findOne(winner.userId);
+    }
+
+    public ContestEntry getContestEntryInPosition(int position) {
+        ContestEntry result = null;
+
+        for (ContestEntry contestEntry : contestEntries) {
+            if (contestEntry.position == position) {
+                result = contestEntry;
+                break;
+            }
+        }
+
+        return result;
     }
 
     private void updateRanking(Prizes prizes) {
@@ -328,8 +378,11 @@ public class Contest implements JongoId {
     private void updateTrueSkill() {
         // Calculamos el trueSkill de los participantes y actualizamos su información en la BDD
         Map<ObjectId, User> usersRating = TrueSkillHelper.RecomputeRatings(contestEntries);
-        for (Map.Entry<ObjectId, User> user : usersRating.entrySet()) {
-            user.getValue().updateTrueSkillByContest(contestId);
+        for (Map.Entry<ObjectId, User> entry : usersRating.entrySet()) {
+            User user = entry.getValue();
+            user.updateTrueSkillByContest(contestId);
+
+            Achievement.trueSkillChanged(user, this);
         }
     }
 
@@ -350,6 +403,18 @@ public class Contest implements JongoId {
             for (ContestEntry contestEntry : contestEntries) {
                 Money prize = prizes.getValue(contestEntry.position);
                 if (prize.getAmount().floatValue() > 0) {
+
+                    // Va a mejorar su nivel de manager?
+                    if (simulation) {
+                        // Cuando reciba el premio, subirá su nivel de manager?
+                        Money managerBalance = User.calculateManagerBalance(contestEntry.userId);
+                        int managerLevel = (int) User.managerLevelFromPoints(managerBalance);
+                        int managerLevelUpdated = (int) User.managerLevelFromPoints(managerBalance.plus(prize));
+                        if (managerLevelUpdated > managerLevel) {
+                            UserNotification.managerLevelUp(managerLevelUpdated).sendTo(contestEntry.userId);
+                        }
+                    }
+
                     accounts.add(new AccountOp(contestEntry.userId, prize, User.getSeqId(contestEntry.userId) + 1));
                 }
             }
@@ -370,37 +435,6 @@ public class Contest implements JongoId {
     private void updateWinner() {
         // Actualizamos las estadísticas de torneos ganados
         getWinner().updateStats();
-    }
-
-    private void bonusToCash() {
-        // Si el contest tenía entryFee
-        if (MoneyUtils.isGreaterThan(entryFee, MoneyUtils.zero)) {
-            for (ContestEntry contestEntry : contestEntries) {
-                Integer userSeqId = User.getSeqId(contestEntry.userId) + 1;
-
-                // Buscamos si el usuario tiene algún bonus pendiente
-                Money userBonus = User.calculateBonus(contestEntry.userId);
-                if (MoneyUtils.isGreaterThan(userBonus, MoneyUtils.zero)) {
-
-                    // Cuánto sería el dinero a convertir de bonus a cash?
-                    Money bonus = entryFee.multipliedBy(Bonus.MULT_BONUS_TO_CASH, RoundingMode.FLOOR);
-                    if (MoneyUtils.isGreaterThan(bonus, userBonus)) {
-                        bonus = userBonus;
-                    }
-
-                    // Le damos dinero al usuario
-                    List<AccountOp> accounts = new ArrayList<>();
-                    accounts.add(new AccountOp(contestEntry.userId, bonus, userSeqId));
-
-                    // Se lo quitamos del bonus
-                    AccountingTranBonus.create(bonus.getCurrencyUnit().getCode(),
-                                                AccountingTran.TransactionType.BONUS_TO_CASH,
-                                                AccountingTranBonus.bonusToCashId(contestId, contestEntry.userId),
-                                                bonus.negated(),
-                                                accounts);
-                }
-            }
-        }
     }
 
     private void setClosed() {
@@ -434,6 +468,12 @@ public class Contest implements JongoId {
         }
         return soccerPlayers;
     }
+
+    public List<InstanceSoccerPlayer> getInstanceSoccerPlayersWithFieldPos(FieldPos fieldPos, ContestEntry contestEntry) {
+        List<InstanceSoccerPlayer> instanceSoccerPlayers = getInstanceSoccerPlayers(contestEntry.soccerIds);
+        return instanceSoccerPlayers.stream().filter(instanceSoccerPlayer -> instanceSoccerPlayer.fieldPos.equals(fieldPos)).collect(Collectors.toList());
+    }
+
 
     public Contest getSameContestWithFreeSlot(ObjectId userId) {
         String query = String.format("{templateContestId: #, 'contestEntries.%s': {$exists: false}, 'contestEntries.userId': {$ne:#}}", maxEntries-1);

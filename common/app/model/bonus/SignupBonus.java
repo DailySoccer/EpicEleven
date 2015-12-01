@@ -4,33 +4,24 @@ import model.Model;
 import org.joda.money.Money;
 
 public class SignupBonus extends Bonus {
-    public Money value;
+    public Money gold;
+    public Money manager;
 
     public SignupBonus() {
     }
 
-    public SignupBonus(Money money) {
+    public SignupBonus(Money gold, Money manager) {
         super(BonusType.SIGNUP);
-        this.value = money;
+        this.gold = gold;
+        this.manager = manager;
     }
 
     static public SignupBonus findOne() {
         return Model.bonus().findOne("{type: \"SIGNUP\"}").as(SignupBonus.class);
     }
 
-    static public Money getMoney() {
-        Money bonus = null;
-
-        SignupBonus signupBonus = findOne();
-        if (signupBonus != null && signupBonus.activated) {
-            bonus = signupBonus.value;
-        }
-
-        return bonus;
-    }
-
-    static public SignupBonus create(boolean activated, Money money) {
-        SignupBonus bonus = new SignupBonus(money);
+    static public SignupBonus create(boolean activated, Money gold, Money manager) {
+        SignupBonus bonus = new SignupBonus(gold, manager);
         bonus.activated = activated;
         bonus.save();
         return bonus;

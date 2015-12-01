@@ -8,7 +8,8 @@ import java.math.BigDecimal;
 
 public class BonusForm {
     public boolean signupBonus_activated;
-    public BigDecimal signupBonus_money = new BigDecimal(0);
+    public BigDecimal signupBonus_gold = new BigDecimal(0);
+    public BigDecimal signupBonus_manager = new BigDecimal(0);
 
     public boolean addFundsBonus_activated;
     public BigDecimal addFundsBonus_minMoney = new BigDecimal(0);
@@ -21,7 +22,8 @@ public class BonusForm {
     public BonusForm (SignupBonus signupBonus, AddFundsBonus addFundsBonus) {
         if (signupBonus != null) {
             signupBonus_activated = signupBonus.activated;
-            signupBonus_money = signupBonus.value.getAmount();
+            signupBonus_gold = signupBonus.gold.getAmount();
+            signupBonus_manager = signupBonus.manager.getAmount();
         }
 
         if (addFundsBonus != null) {

@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class User {
@@ -28,7 +29,7 @@ public class User {
     public static final long HOURS_TO_DECAY = 48;
     public static final float PERCENT_TO_DECAY = 0.5f;
 
-    static final long[] MANAGER_POINTS = new long[] {
+    public static final long[] MANAGER_POINTS = new long[] {
       0, 65, 125, 250, 500, 1000
     };
 
@@ -65,7 +66,6 @@ public class User {
 
     // TODO: De momento no es realmente un "cache", siempre lo recalculamos
     public Money cachedBalance;
-    public Money cachedBonus;
 
     public Money goldBalance        = Money.zero(MoneyUtils.CURRENCY_GOLD);
     public Money managerBalance     = Money.zero(MoneyUtils.CURRENCY_MANAGER);
@@ -75,6 +75,10 @@ public class User {
     public Date lastUpdatedEnergy;
 
     public float managerLevel = 0;
+
+    public List<String> achievements = new ArrayList<>();
+
+    public List<UserNotification> notifications = new ArrayList<>();
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
@@ -96,7 +100,6 @@ public class User {
 
     public User getProfile() {
         cachedBalance = calculateBalance();
-        cachedBonus = calculateBonus();
         goldBalance = calculateGoldBalance();
         managerBalance = calculateManagerBalance();
         energyBalance = calculateEnergyBalance();
@@ -214,10 +217,6 @@ public class User {
         return energyBalance;
     }
 
-    public Money calculateBonus() {
-        return User.calculateBonus(userId);
-    }
-
     public Money calculatePrizes(CurrencyUnit currenctyUnit) {
         return User.calculatePrizes(userId, currenctyUnit);
     }
@@ -292,6 +291,23 @@ public class User {
 
     public boolean hasMoney(Money money) {
         return hasMoney(userId, money);
+    }
+
+    public boolean hasAchievement(AchievementType aAchievement) {
+        return achievements.stream().anyMatch(achievement -> achievement.equals(aAchievement.toString()));
+    }
+
+    public boolean hasContestNotification(UserNotification.Topic topic, ObjectId contestId) {
+        return notifications.stream().anyMatch(notification -> (notification.topic == topic) && notification.info.containsValue(contestId.toString()));
+    }
+
+    public void achievedAchievement(AchievementType achievementType) {
+        if (!hasAchievement(achievementType)) {
+            achievements.add(achievementType.toString());
+
+            // Incluimos el achievement en la ficha del usuario y le enviamos una notificación
+            Model.users().update("{_id: #}", userId).with("{$addToSet: {achievements: #, notifications: #}}", achievementType.toString(), UserNotification.achievementEarned(achievementType));
+        }
     }
 
     static public Integer getSeqId(ObjectId userId) {
@@ -463,24 +479,6 @@ public class User {
         // La energía no lo controlaremos con las transacciones, sino por medio del valor actual y el tiempo transcurrido desde que se usó la última vez (lastUpdatedEnergy)
         User user = User.findOne(userId);
         return user.calculateEnergyBalance();
-    }
-
-    static public Money calculateBonus(ObjectId userId, Date toDate) {
-        List<AccountingTranBonus> transactions = ListUtils.asList(Model.accountingTransactions()
-                .find("{ \"accountOps.accountId\": #, state: \"VALID\", type: { $in: [\"BONUS\", \"BONUS_TO_CASH\"] }, createdAt: {$lte: #} }", userId, toDate)
-                .as(AccountingTranBonus.class));
-
-        Money balance = MoneyUtils.zero;
-        if (!transactions.isEmpty()) {
-            for (AccountingTranBonus transaction : transactions) {
-                balance = balance.plus(transaction.bonus);
-            }
-        }
-        return balance;
-    }
-
-    static public Money calculateBonus(ObjectId userId) {
-        return calculateBonus(userId, GlobalDate.getCurrentDate());
     }
 
     static public Money getBalance(ObjectId userId, CurrencyUnit currencyUnit) {

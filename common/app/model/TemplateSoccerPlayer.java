@@ -9,13 +9,13 @@ import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import play.Play;
+import play.mvc.Result;
+import utils.FileUtils;
 import utils.ListUtils;
 import utils.MoneyUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class TemplateSoccerPlayer implements JongoId {
     @Id
@@ -214,6 +214,59 @@ public class TemplateSoccerPlayer implements JongoId {
 
     public void updateDocument() {
         Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).update("{optaPlayerId: #}", optaPlayerId).upsert().with(this);
+    }
+
+    public Money moneyToBuy(int managerLevel) {
+        return TemplateSoccerPlayer.moneyToBuy(TemplateSoccerPlayer.levelFromSalary(salary), managerLevel);
+    }
+
+    public static Map<String, Long> frequencyFieldPos(List<TemplateSoccerPlayer> templateSoccerPlayers) {
+        HashMap<String, Long> result = new HashMap<>();
+
+        result.put(FieldPos.GOALKEEPER.name(), templateSoccerPlayers.stream().filter(templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.GOALKEEPER)).count());
+        result.put(FieldPos.DEFENSE.name(), templateSoccerPlayers.stream().filter(templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.DEFENSE)).count());
+        result.put(FieldPos.MIDDLE.name(), templateSoccerPlayers.stream().filter(templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.MIDDLE)).count());
+        result.put(FieldPos.FORWARD.name(), templateSoccerPlayers.stream().filter(templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.FORWARD)).count());
+
+        return result;
+    }
+
+    private static List<TemplateSoccerPlayer> filterSoccerPlayers(List<TemplateSoccerPlayer> templateSoccerPlayers, int managerLevel) {
+        /*
+        templateSoccerPlayers.stream().forEach( templateSoccerPlayer -> Logger.debug("{}: player: {} manager: {} money: {}",
+                templateSoccerPlayer.name, TemplateSoccerPlayer.levelFromSalary(templateSoccerPlayer.salary), managerLevel, templateSoccerPlayer.moneyToBuy(managerLevel).toString() ));
+        */
+        return templateSoccerPlayers.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.moneyToBuy(managerLevel).isZero()).collect(Collectors.toList() );
+    }
+
+    public static List<TemplateSoccerPlayer> soccerPlayersAvailables(TemplateSoccerTeam templateSoccerTeam, int managerLevel) {
+        List<TemplateSoccerPlayer> players = templateSoccerTeam.getTemplateSoccerPlayers();
+        return filterSoccerPlayers(players, managerLevel);
+    }
+
+    public static List<TemplateSoccerPlayer> soccerPlayersAvailables(TemplateMatchEvent templateMatchEvent, int managerLevel) {
+        List<TemplateSoccerPlayer> availables = new ArrayList<>();
+
+        availables.addAll(soccerPlayersAvailables(TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamAId), managerLevel));
+        availables.addAll(soccerPlayersAvailables(TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamBId), managerLevel));
+
+        //printFieldPos(String.format("%s => ", TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamAId).name), availablesA);
+        //printFieldPos(String.format("%s => ", TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamBId).name), availablesB);
+
+        return availables;
+    }
+
+    public static List<TemplateSoccerPlayer> soccerPlayersAvailables(List<ObjectId> templateMatchEventIds, int managerLevel) {
+        List<TemplateSoccerPlayer> availables = new ArrayList<>();
+
+        List<TemplateMatchEvent> templateMatchEvents = TemplateMatchEvent.findAll(templateMatchEventIds);
+
+        Logger.debug("matches: {}", templateMatchEvents.size());
+        for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
+            availables.addAll(soccerPlayersAvailables(templateMatchEvent, managerLevel));
+        }
+
+        return availables;
     }
 
     static public boolean isInvalidFromImport(OptaPlayer optaPlayer) {

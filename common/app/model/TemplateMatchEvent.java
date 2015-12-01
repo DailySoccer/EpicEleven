@@ -15,6 +15,8 @@ import utils.ListUtils;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class TemplateMatchEvent implements JongoId {
     public enum PeriodType {
@@ -62,7 +64,7 @@ public class TemplateMatchEvent implements JongoId {
     @JsonView(JsonViews.Public.class)
     public int minutesPlayed;
 
-    @JsonView(value={JsonViews.ContestInfo.class, JsonViews.Extended.class})
+    @JsonView(value={JsonViews.ContestInfo.class, JsonViews.Extended.class, JsonViews.CreateContest.class})
     public Date startDate;
 
     @JsonView(JsonViews.NotForClient.class)
@@ -175,6 +177,16 @@ public class TemplateMatchEvent implements JongoId {
                         "]}," +
                         "$orderby: {startDate: 1}}",
                 templateSoccerTeamId, templateSoccerTeamId).as(TemplateMatchEvent.class);
+    }
+
+    public static List<TemplateMatchEvent> gatherFromTemplateContests(List<TemplateContest> templateContests) {
+        HashSet<ObjectId> matchEventsIds = new HashSet<>();
+
+        for (TemplateContest contest : templateContests) {
+            matchEventsIds.addAll(contest.templateMatchEventIds);
+        }
+
+        return findAll(new ArrayList<>(matchEventsIds));
     }
 
     public static List<TemplateMatchEvent> gatherFromContests(List<Contest> contests) {
@@ -305,19 +317,10 @@ public class TemplateMatchEvent implements JongoId {
         // Si el partido ya tiene calculada la simulación para el momento actual...
         if (minutes > 0 && minutes != minutesPlayed) {
 
-            // Limpiamos todos los fantasyPoints (vamos a regenerarlos)
-            liveFantasyPoints = new HashMap<>();
-
             // Logger.debug("TemplateMatchEvent: Simulando: {} min: {}", templateMatchEventId.toString(), minutes);
 
-            // Generar los fantasyPoints y registrar los goles
-            simulationEvents.forEach(event -> {
-                if (event.min < minutes) {
-                    updateLiveFantasyPointFromSimulationEvent(event);
-                    homeScore = event.homeScore;
-                    awayScore = event.awayScore;
-                }
-            });
+            // Generar los fantasyPoints y registrar los goles (para los eventos anteriores a los minutos de partido)
+            applySimulationEventsAtLiveFantasyPoints(simulationEvents.stream().filter(event -> event.min < minutes).collect(Collectors.toList()));
 
             // Actualizar los liveFantasyPoints del partido
             Model.templateMatchEvents()
@@ -341,7 +344,20 @@ public class TemplateMatchEvent implements JongoId {
         }
     }
 
-    void updateLiveFantasyPointFromSimulationEvent(SimulationEvent event) {
+    // Actualizar los datos de liveFantasyPoints
+    public void applySimulationEventsAtLiveFantasyPoints(List<SimulationEvent> simulationEvents) {
+        // Limpiamos todos los fantasyPoints (vamos a regenerarlos)
+        liveFantasyPoints = new HashMap<>();
+
+        // Generar los fantasyPoints y registrar los goles
+        simulationEvents.forEach(event -> {
+            applySimulationEventAtLiveFantasyPoints(event, liveFantasyPoints);
+            homeScore = event.homeScore;
+            awayScore = event.awayScore;
+        });
+    }
+
+    static public void applySimulationEventAtLiveFantasyPoints(SimulationEvent event, Map<String, LiveFantasyPoints> liveFantasyPoints) {
         String soccerPlayerIdStr = event.templateSoccerPlayerId.toString();
 
         // Crear/Obtener los fantasyPoints del soccerPlayer
@@ -544,6 +560,13 @@ public class TemplateMatchEvent implements JongoId {
             return false;
         }
         return true;
+    }
+
+    static public List<ObjectId> createSimulationsWithStartDate(List<ObjectId> templateMatchEventList, Date startDateModified) {
+        return templateMatchEventList.stream().map(matchEventId -> {
+            TemplateMatchEvent simulateMatchEvent = TemplateMatchEvent.createSimulationWithStartDate(matchEventId, startDateModified);
+            return simulateMatchEvent.templateMatchEventId;
+        }).collect(Collectors.toList());
     }
 
     static public TemplateMatchEvent createSimulationWithStartDate(ObjectId matchEventId, Date startDateModified) {
