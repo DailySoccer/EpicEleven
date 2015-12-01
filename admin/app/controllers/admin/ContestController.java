@@ -11,6 +11,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.bson.types.ObjectId;
 import org.joda.time.format.DateTimeFormatter;
 import play.Logger;
+import play.Play;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
@@ -202,6 +203,19 @@ public class ContestController extends Controller {
                     contest.specialImage = params[FieldCSV.SPECIAL_IMAGE.id];
 
                 contest.instantiate();
+
+                if (contest.simulation) {
+                    contest.setupSimulation();
+                }
+
+                // Durante el desarrollo permitimos que los mockUsers puedan entrar en un contest
+                if (Play.isDev()) {
+                    boolean mockDataUsers = contest.name.contains(TemplateContest.FILL_WITH_MOCK_USERS);
+                    if (mockDataUsers) {
+                        MockData.addContestEntries(contest, contest.maxEntries - 1);
+                    }
+                }
+
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
