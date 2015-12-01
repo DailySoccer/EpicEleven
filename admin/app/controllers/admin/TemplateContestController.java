@@ -145,11 +145,12 @@ public class TemplateContestController extends Controller {
                 TemplateSoccerTeam.findAllAsMap()));
     }
 
-    public static Result newForm() {
+    public static Result newForm(int competitionId) {
         TemplateContestForm params = new TemplateContestForm();
+        params.optaCompetitionId = String.valueOf(competitionId);
 
         Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
-        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.createdAt), false));
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.optaCompetitionId, params.createdAt), false));
     }
 
     public static Result edit(String templateContestId) {
@@ -165,7 +166,7 @@ public class TemplateContestController extends Controller {
             List<TemplateMatchEvent> templateMatchEvents = templateContest.getTemplateMatchEvents();
             return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(templateMatchEvents), templateContest.state.isActive()));
         }
-        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.createdAt), templateContest.state.isActive()));
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(templateContest.optaCompetitionId, params.createdAt), templateContest.state.isActive()));
     }
 
     public static Result createClone(String templateContestId) {
@@ -191,7 +192,8 @@ public class TemplateContestController extends Controller {
         Form<TemplateContestForm> templateContestForm = form(TemplateContestForm.class).bindFromRequest();
         if (templateContestForm.hasErrors()) {
             String createdAt = templateContestForm.field("createdAt").valueOr("0");
-            return badRequest(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(Long.parseLong(createdAt)), false));
+            String optaCompetitionId = templateContestForm.field("optaCompetitionId").valueOr("23");
+            return badRequest(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(optaCompetitionId, Long.parseLong(createdAt)), false));
         }
 
         TemplateContestForm params = templateContestForm.get();
