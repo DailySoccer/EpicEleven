@@ -3,10 +3,7 @@ package model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import model.accounting.AccountOp;
-import model.accounting.AccountingTran;
-import model.accounting.AccountingTranBonus;
 import model.accounting.AccountingTranPrize;
-import model.bonus.Bonus;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
@@ -320,7 +317,6 @@ public class Contest implements JongoId {
             updateRanking(prizes);
             givePrizes(prizes);
             updateWinner();
-            bonusToCash();
 
             Achievement.playedContest(this);
         }
@@ -439,37 +435,6 @@ public class Contest implements JongoId {
     private void updateWinner() {
         // Actualizamos las estadísticas de torneos ganados
         getWinner().updateStats();
-    }
-
-    private void bonusToCash() {
-        // Si el contest tenía entryFee
-        if (MoneyUtils.isGreaterThan(entryFee, MoneyUtils.zero)) {
-            for (ContestEntry contestEntry : contestEntries) {
-                Integer userSeqId = User.getSeqId(contestEntry.userId) + 1;
-
-                // Buscamos si el usuario tiene algún bonus pendiente
-                Money userBonus = User.calculateBonus(contestEntry.userId);
-                if (MoneyUtils.isGreaterThan(userBonus, MoneyUtils.zero)) {
-
-                    // Cuánto sería el dinero a convertir de bonus a cash?
-                    Money bonus = entryFee.multipliedBy(Bonus.MULT_BONUS_TO_CASH, RoundingMode.FLOOR);
-                    if (MoneyUtils.isGreaterThan(bonus, userBonus)) {
-                        bonus = userBonus;
-                    }
-
-                    // Le damos dinero al usuario
-                    List<AccountOp> accounts = new ArrayList<>();
-                    accounts.add(new AccountOp(contestEntry.userId, bonus, userSeqId));
-
-                    // Se lo quitamos del bonus
-                    AccountingTranBonus.create(bonus.getCurrencyUnit().getCode(),
-                                                AccountingTran.TransactionType.BONUS_TO_CASH,
-                                                AccountingTranBonus.bonusToCashId(contestId, contestEntry.userId),
-                                                bonus.negated(),
-                                                accounts);
-                }
-            }
-        }
     }
 
     private void setClosed() {

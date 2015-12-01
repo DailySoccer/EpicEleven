@@ -204,11 +204,18 @@ public class LoginController extends Controller {
                     Model.users().insert(theUser);
 
                     // Existe un bonus por registrarse?
-                    Money bonus = SignupBonus.getMoney();
-                    if (bonus != null) {
-                        AccountingTranBonus.create(bonus.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, "SIGNUP", bonus, ImmutableList.of(
-                                new AccountOp(theUser.userId, bonus, User.getSeqId(theUser.userId) + 1)
-                        ));
+                    SignupBonus bonus = SignupBonus.findOne();
+                    if (bonus != null && bonus.activated) {
+                        if (bonus.gold.isPositive()) {
+                            AccountingTranBonus.create(bonus.gold.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, "SIGNUP-GOLD", ImmutableList.of(
+                                    new AccountOp(theUser.userId, bonus.gold, User.getSeqId(theUser.userId) + 1)
+                            ));
+                        }
+                        if (bonus.manager.isPositive()) {
+                            AccountingTranBonus.create(bonus.manager.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, "SIGNUP-MANAGER", ImmutableList.of(
+                                    new AccountOp(theUser.userId, bonus.manager, User.getSeqId(theUser.userId) + 1)
+                            ));
+                        }
                     }
                 } catch (DuplicateKeyException exc) {
                     int mongoError = 0; //"Hubo un problema en la creación de tu usuario");

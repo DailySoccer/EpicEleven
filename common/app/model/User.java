@@ -66,7 +66,6 @@ public class User {
 
     // TODO: De momento no es realmente un "cache", siempre lo recalculamos
     public Money cachedBalance;
-    public Money cachedBonus;
 
     public Money goldBalance        = Money.zero(MoneyUtils.CURRENCY_GOLD);
     public Money managerBalance     = Money.zero(MoneyUtils.CURRENCY_MANAGER);
@@ -101,7 +100,6 @@ public class User {
 
     public User getProfile() {
         cachedBalance = calculateBalance();
-        cachedBonus = calculateBonus();
         goldBalance = calculateGoldBalance();
         managerBalance = calculateManagerBalance();
         energyBalance = calculateEnergyBalance();
@@ -217,10 +215,6 @@ public class User {
         }
 
         return energyBalance;
-    }
-
-    public Money calculateBonus() {
-        return User.calculateBonus(userId);
     }
 
     public Money calculatePrizes(CurrencyUnit currenctyUnit) {
@@ -485,24 +479,6 @@ public class User {
         // La energía no lo controlaremos con las transacciones, sino por medio del valor actual y el tiempo transcurrido desde que se usó la última vez (lastUpdatedEnergy)
         User user = User.findOne(userId);
         return user.calculateEnergyBalance();
-    }
-
-    static public Money calculateBonus(ObjectId userId, Date toDate) {
-        List<AccountingTranBonus> transactions = ListUtils.asList(Model.accountingTransactions()
-                .find("{ \"accountOps.accountId\": #, state: \"VALID\", type: { $in: [\"BONUS\", \"BONUS_TO_CASH\"] }, createdAt: {$lte: #} }", userId, toDate)
-                .as(AccountingTranBonus.class));
-
-        Money balance = MoneyUtils.zero;
-        if (!transactions.isEmpty()) {
-            for (AccountingTranBonus transaction : transactions) {
-                balance = balance.plus(transaction.bonus);
-            }
-        }
-        return balance;
-    }
-
-    static public Money calculateBonus(ObjectId userId) {
-        return calculateBonus(userId, GlobalDate.getCurrentDate());
     }
 
     static public Money getBalance(ObjectId userId, CurrencyUnit currencyUnit) {
