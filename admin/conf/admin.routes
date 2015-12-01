@@ -49,7 +49,9 @@ GET         /contests/verify_prizes                                             
 GET         /contests/verify_entry_fee                                           controllers.admin.ContestController.verifyEntryFee()
 
 GET         /template_contests                                                   controllers.admin.TemplateContestController.index()
-GET         /template_contests/ajax                                              controllers.admin.TemplateContestController.indexAjax()
+GET         /template_contests/filterBy/:competitionId                           controllers.admin.TemplateContestController.showFilterByCompetition(competitionId : String)
+
+GET         /template_contests/ajax/:competitionId                               controllers.admin.TemplateContestController.indexAjax(competitionId : String)
 GET         /template_contest/create_all                                         controllers.admin.TemplateContestController.createAll()
 GET         /template_contest/enable_creating/:state                             controllers.admin.TemplateContestController.setCreatingTemplateContestsState(state : Boolean)
 GET         /template_contest/new/:competitionId                                 controllers.admin.TemplateContestController.newForm(competitionId : Int)

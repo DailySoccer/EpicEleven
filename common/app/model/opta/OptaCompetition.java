@@ -75,6 +75,16 @@ public class OptaCompetition implements JongoId {
     static public HashMap<String, OptaCompetition> asMap(List<OptaCompetition> optaCompetitions){
         HashMap<String, OptaCompetition> map = new HashMap<>();
         for (OptaCompetition optaCompetition: optaCompetitions) {
+            if (!map.containsKey(optaCompetition.competitionId)) {
+                map.put(optaCompetition.competitionId, optaCompetition);
+            }
+        }
+        return map;
+    }
+
+    static public HashMap<String, OptaCompetition> asSeasonCompetitionMap(List<OptaCompetition> optaCompetitions){
+        HashMap<String, OptaCompetition> map = new HashMap<>();
+        for (OptaCompetition optaCompetition: optaCompetitions) {
             map.put(optaCompetition.seasonCompetitionId, optaCompetition);
         }
         return map;
