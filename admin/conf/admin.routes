@@ -47,9 +47,13 @@ GET         /contests/ajax                                                      
 GET         /contest/:contestId                                                  controllers.admin.ContestController.show(contestId : String)
 GET         /contests/verify_prizes                                              controllers.admin.ContestController.verifyPrizes()
 GET         /contests/verify_entry_fee                                           controllers.admin.ContestController.verifyEntryFee()
+POST        /contests/import_from_csv                                            controllers.admin.ContestController.importFromCSV()
+GET         /contests/default_csv                                                controllers.admin.ContestController.defaultCSV()
 
 GET         /template_contests                                                   controllers.admin.TemplateContestController.index()
 GET         /template_contests/filterBy/:competitionId                           controllers.admin.TemplateContestController.showFilterByCompetition(competitionId : String)
+POST        /template_contests/import_from_csv                                   controllers.admin.TemplateContestController.importFromCSV()
+GET         /template_contests/default_csv                                       controllers.admin.TemplateContestController.defaultCSV()
 
 GET         /template_contests/ajax/:competitionId                               controllers.admin.TemplateContestController.indexAjax(competitionId : String)
 GET         /template_contest/create_all                                         controllers.admin.TemplateContestController.createAll()

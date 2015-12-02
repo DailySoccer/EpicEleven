@@ -231,6 +231,19 @@ public class TemplateSoccerPlayer implements JongoId {
         return result;
     }
 
+    public static List<InstanceSoccerPlayer> instanceSoccerPlayersFromMatchEvents(List<TemplateMatchEvent> templateMatchEvents) {
+        List<InstanceSoccerPlayer> result = new ArrayList<>();
+
+        for (TemplateMatchEvent templateMatchEvent: templateMatchEvents) {
+            List<TemplateSoccerPlayer> templateSoccerPlayers = templateMatchEvent.getTemplateSoccerPlayersActives();
+            for (TemplateSoccerPlayer templateSoccerPlayer: templateSoccerPlayers) {
+                result.add(new InstanceSoccerPlayer(templateSoccerPlayer));
+            }
+        }
+
+        return result;
+    }
+
     private static List<TemplateSoccerPlayer> filterSoccerPlayers(List<TemplateSoccerPlayer> templateSoccerPlayers, int managerLevel) {
         /*
         templateSoccerPlayers.stream().forEach( templateSoccerPlayer -> Logger.debug("{}: player: {} manager: {} money: {}",

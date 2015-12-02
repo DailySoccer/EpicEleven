@@ -1,9 +1,12 @@
 package controllers.admin;
 
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BooleanSupplier;
 
 import actions.CheckTargetEnvironment;
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.mongodb.WriteConcern;
 import model.*;
@@ -12,16 +15,23 @@ import org.bson.types.ObjectId;
 import org.joda.money.Money;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import play.Logger;
 import play.data.Form;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
+import utils.FileUtils;
 import utils.MoneyUtils;
 import utils.ReturnHelper;
 
 import static play.data.Form.form;
 
 public class TemplateContestController extends Controller {
+
+    static final String SEPARATOR_CSV = ";";
+    static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy/MM/dd HH:mm");
 
     // Test purposes
     public static int templateCount = 0;
@@ -273,6 +283,127 @@ public class TemplateContestController extends Controller {
                 templateContest,
                 templateContest.getTemplateMatchEvents(),
                 TemplateSoccerTeam.findAllAsMap()));
+    }
+
+    public enum FieldCSV {
+        ID(0),
+        NAME(1),
+        STATE(2),
+        SIMULATION(3),
+        CUSTOMIZABLE(4),
+        MIN_INSTANCES(5),
+        MAX_ENTRIES(6),
+        SALARY_CAP(7),
+        ENTRY_FEE(8),
+        PRIZE_TYPE(9),
+        PRIZE_MULTIPLIER(10),
+        START_DATE(11),
+        ACTIVATION_AT(12),
+        SPECIAL_IMAGE(13);
+
+        public final int id;
+
+        FieldCSV(int id) {
+            this.id = id;
+        }
+    }
+
+    public static Result defaultCSV() {
+        List<String> headers = new ArrayList<>();
+        for (FieldCSV fieldCSV : FieldCSV.values()) {
+            headers.add(fieldCSV.toString());
+        }
+
+        List<String> body = new ArrayList<>();
+
+        List<TemplateContest> templateContest = TemplateContest.findAllDraft();
+
+        templateContest.forEach( template -> {
+            body.add(template.templateContestId.toString());
+            body.add(template.name);
+            body.add(template.state.toString());
+            body.add(String.valueOf(template.simulation));
+            body.add(String.valueOf(template.customizable));
+            body.add(String.valueOf(template.minInstances));
+            body.add(String.valueOf(template.maxEntries));
+            body.add(String.valueOf(template.salaryCap));
+            body.add(template.entryFee.toString());
+            body.add(template.prizeType.toString());
+            body.add(String.valueOf(template.prizeMultiplier));
+            body.add(new DateTime(template.startDate).toString(dateTimeFormatter.withZoneUTC()));
+            body.add(new DateTime(template.activationAt).toString(dateTimeFormatter.withZoneUTC()));
+            body.add(template.specialImage);
+        });
+
+        String fileName = String.format("template-contests.csv");
+        FileUtils.generateCsv(fileName, headers, body, SEPARATOR_CSV);
+
+        FlashMessage.info(fileName);
+
+        return redirect(routes.TemplateContestController.index());
+    }
+
+    public static Result importFromCSV() {
+        Http.MultipartFormData body = request().body().asMultipartFormData();
+        Http.MultipartFormData.FilePart httpFile = body.getFile("csv");
+        if (httpFile != null && importFromFileCSV(httpFile.getFile())) {
+            FlashMessage.success("CSV read successfully");
+            return redirect(routes.TemplateContestController.index());
+        } else {
+            FlashMessage.danger("Missing file, select one through \"Choose file\"");
+            return redirect(routes.TemplateContestController.index());
+        }
+    }
+
+    public static boolean importFromFileCSV(File file) {
+        try {
+            String line = "";
+
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            while ((line = br.readLine()) != null) {
+
+                String[] params = line.split(SEPARATOR_CSV);
+
+                List<String> data = Arrays.asList(params);
+                System.out.println(String.format("[%s]", Joiner.on(SEPARATOR_CSV).join(data)));
+
+                // Cabecera?
+                if (params[FieldCSV.ID.id].equals(FieldCSV.ID.toString())) {
+                    continue;
+                }
+
+                ObjectId templateContestId = new ObjectId(params[FieldCSV.ID.id]);
+                TemplateContest templateContestMaster = TemplateContest.findOne(templateContestId);
+
+                TemplateContest templateContest = templateContestMaster.copy();
+
+                templateContest.templateContestId = new ObjectId();
+                templateContest.name = params[FieldCSV.NAME.id];
+                templateContest.state = ContestState.valueOf(params[FieldCSV.STATE.id]);
+                templateContest.simulation = Boolean.valueOf(params[FieldCSV.SIMULATION.id]);
+                templateContest.customizable = Boolean.valueOf(params[FieldCSV.CUSTOMIZABLE.id]);
+                templateContest.minInstances = Integer.valueOf(params[FieldCSV.MIN_INSTANCES.id]);
+                templateContest.maxEntries = Integer.valueOf(params[FieldCSV.MAX_ENTRIES.id]);
+                templateContest.salaryCap = Integer.valueOf(params[FieldCSV.SALARY_CAP.id]);
+                templateContest.entryFee = Money.parse(params[FieldCSV.ENTRY_FEE.id]);
+                templateContest.prizeType = PrizeType.valueOf(params[FieldCSV.PRIZE_TYPE.id]);
+                templateContest.prizeMultiplier = Float.valueOf(params[FieldCSV.PRIZE_MULTIPLIER.id]);
+                templateContest.startDate = DateTime.parse(params[FieldCSV.START_DATE.id], dateTimeFormatter.withZoneUTC()).toDate();
+                templateContest.activationAt = DateTime.parse(params[FieldCSV.ACTIVATION_AT.id], dateTimeFormatter.withZoneUTC()).toDate();
+
+                if (params.length > FieldCSV.SPECIAL_IMAGE.id)
+                    templateContest.specialImage = params[FieldCSV.SPECIAL_IMAGE.id];
+
+                templateContest.insert();
+                OpsLog.onNew(templateContest);
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return true;
     }
 
     private static void printAsTablePlayerManagerLevel(TemplateContest templateContest) {
