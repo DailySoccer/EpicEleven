@@ -61,6 +61,7 @@ GET            /get_my_contest_entry/:contest                          controlle
 
 # Live contests asociados a usuario
 GET            /get_live_match_events/template_contest/:contest        controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)
+GET            /get_live_match_events/contest/:contest                 controllers.ContestController.getLiveMatchEventsFromContest(contest)
 
 # Entrar/Salir concurso
 POST           /add_contest_entry                                      controllers.ContestEntryController.addContestEntry()

@@ -423,4 +423,20 @@ public class ContestController extends Controller {
 
         return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
     }
+
+    @UserAuthenticated
+    public static Result getLiveMatchEventsFromContest(String contestId) {
+
+        // Obtenemos el Contest
+        Contest contest = Contest.findOne(contestId);
+
+        if (contest == null) {
+            return new ReturnHelper(false, ERROR_TEMPLATE_CONTEST_INVALID).toResult();
+        }
+
+        // Consultar por los partidos del TemplateContest (queremos su version "live")
+        List<TemplateMatchEvent> liveMatchEventList = TemplateMatchEvent.findAllPlaying(contest.templateMatchEventIds);
+
+        return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
+    }
 }
