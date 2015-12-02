@@ -34,6 +34,7 @@ public class TemplateContest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public int minInstances;        // Minimum desired number of instances that we want running at any given moment
 
+    public int minEntries;
     public int maxEntries;
 
     public int salaryCap;

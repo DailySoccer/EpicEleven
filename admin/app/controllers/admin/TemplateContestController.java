@@ -227,6 +227,7 @@ public class TemplateContestController extends Controller {
         templateContest.simulation = (params.typeContest == TypeContest.VIRTUAL);
         templateContest.name = params.name;
         templateContest.minInstances = params.minInstances;
+        templateContest.minEntries = params.minEntries;
         templateContest.maxEntries = params.maxEntries;
         templateContest.salaryCap = params.salaryCap.money;
 
@@ -292,10 +293,11 @@ public class TemplateContestController extends Controller {
         SIMULATION(3),
         CUSTOMIZABLE(4),
         MIN_INSTANCES(5),
-        MAX_ENTRIES(6),
-        SALARY_CAP(7),
-        ENTRY_FEE(8),
-        PRIZE_TYPE(9),
+        MIN_ENTRIES(6),
+        MAX_ENTRIES(7),
+        SALARY_CAP(8),
+        ENTRY_FEE(9),
+        PRIZE_TYPE(10),
         PRIZE_MULTIPLIER(10),
         START_DATE(11),
         ACTIVATION_AT(12),
@@ -325,6 +327,7 @@ public class TemplateContestController extends Controller {
             body.add(String.valueOf(template.simulation));
             body.add(String.valueOf(template.customizable));
             body.add(String.valueOf(template.minInstances));
+            body.add(String.valueOf(template.minEntries));
             body.add(String.valueOf(template.maxEntries));
             body.add(String.valueOf(template.salaryCap));
             body.add(template.entryFee.toString());
@@ -392,6 +395,7 @@ public class TemplateContestController extends Controller {
                 templateContest.simulation = Boolean.valueOf(params[FieldCSV.SIMULATION.id]);
                 templateContest.customizable = Boolean.valueOf(params[FieldCSV.CUSTOMIZABLE.id]);
                 templateContest.minInstances = Integer.valueOf(params[FieldCSV.MIN_INSTANCES.id]);
+                templateContest.minEntries = Integer.valueOf(params[FieldCSV.MIN_ENTRIES.id]);
                 templateContest.maxEntries = Integer.valueOf(params[FieldCSV.MAX_ENTRIES.id]);
                 templateContest.salaryCap = Integer.valueOf(params[FieldCSV.SALARY_CAP.id]);
                 templateContest.entryFee = Money.parse(params[FieldCSV.ENTRY_FEE.id]);
