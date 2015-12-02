@@ -105,8 +105,32 @@ public class Contest implements JongoId {
 
     public Contest() {}
 
+    public Contest(Contest template) {
+        setupFromContest(template);
+    }
+
     public Contest(TemplateContest template) {
         setupFromTemplateContest(template);
+    }
+
+    public void setupFromContest(Contest template) {
+        templateContestId = template.templateContestId;
+        state = template.state;
+        name = template.name;
+        maxEntries = template.maxEntries;
+        freeSlots = template.maxEntries;
+        salaryCap = template.salaryCap;
+        entryFee = template.entryFee;
+        prizeMultiplier = template.prizeMultiplier;
+        prizeType = template.prizeType;
+        startDate = template.startDate;
+        activationAt = template.activationAt;
+        optaCompetitionId = template.optaCompetitionId;
+        templateMatchEventIds = template.templateMatchEventIds;
+        instanceSoccerPlayers = template.instanceSoccerPlayers;
+        simulation = template.simulation;
+        specialImage = template.specialImage;
+        createdAt = GlobalDate.getCurrentDate();
     }
 
     public void setupFromTemplateContest(TemplateContest template) {
@@ -127,6 +151,13 @@ public class Contest implements JongoId {
         simulation = template.simulation;
         specialImage = template.specialImage;
         createdAt = GlobalDate.getCurrentDate();
+    }
+
+    public Contest duplicate() {
+        Contest contest = new Contest(this);
+        contest.state = ContestState.ACTIVE;
+        contest.insert();
+        return contest;
     }
 
     public ObjectId getId() { return contestId; }
