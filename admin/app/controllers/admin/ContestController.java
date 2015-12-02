@@ -117,16 +117,15 @@ public class ContestController extends Controller {
 
     public enum FieldCSV {
         ID(0),
-        SIMULATION(1),
-        NAME(2),
-        MAX_ENTRIES(3),
-        SALARY_CAP(4),
-        ENTRY_FEE(5),
-        PRIZE_TYPE(6),
-        PRIZE_MULTIPLIER(7),
-        START_DATE(8),
-        ACTIVATION_AT(9),
-        SPECIAL_IMAGE(10);
+        NAME(1),
+        MAX_ENTRIES(2),
+        SALARY_CAP(3),
+        ENTRY_FEE(4),
+        PRIZE_TYPE(5),
+        PRIZE_MULTIPLIER(6),
+        START_DATE(7),
+        ACTIVATION_AT(8),
+        SPECIAL_IMAGE(9);
 
         public final int id;
 
@@ -143,11 +142,10 @@ public class ContestController extends Controller {
 
         List<String> body = new ArrayList<>();
 
-        List<TemplateContest> templateContest = TemplateContest.findAllDraft();
+        List<TemplateContest> templateContest = TemplateContest.findAllDraftSimulations();
 
         templateContest.forEach( template -> {
             body.add(template.templateContestId.toString());
-            body.add(String.valueOf(template.simulation));
             body.add(template.name);
             body.add(String.valueOf(template.maxEntries));
             body.add(String.valueOf(template.salaryCap));
@@ -159,7 +157,7 @@ public class ContestController extends Controller {
             body.add(template.specialImage);
         });
 
-        String fileName = String.format("templateContests.csv");
+        String fileName = String.format("simulation-contests.csv");
         FileUtils.generateCsv(fileName, headers, body, SEPARATOR_CSV);
 
         FlashMessage.info(fileName);
@@ -203,7 +201,7 @@ public class ContestController extends Controller {
                 contest.setupFromTemplateContest(templateContest);
 
                 contest.templateContestId = templateContestId;
-                contest.simulation = Boolean.valueOf(params[FieldCSV.SIMULATION.id]);
+                contest.simulation = true;
                 contest.name = params[FieldCSV.NAME.id];
                 contest.maxEntries = Integer.valueOf(params[FieldCSV.MAX_ENTRIES.id]);
                 contest.salaryCap = Integer.valueOf(params[FieldCSV.SALARY_CAP.id]);
