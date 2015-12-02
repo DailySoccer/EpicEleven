@@ -346,8 +346,13 @@ public class TemplateContestController extends Controller {
     public static Result importFromCSV() {
         Http.MultipartFormData body = request().body().asMultipartFormData();
         Http.MultipartFormData.FilePart httpFile = body.getFile("csv");
-        if (httpFile != null && importFromFileCSV(httpFile.getFile())) {
-            FlashMessage.success("CSV read successfully");
+        if (httpFile != null) {
+            if (importFromFileCSV(httpFile.getFile())) {
+                FlashMessage.success("CSV read successfully");
+            }
+            else {
+                FlashMessage.danger("CSV error");
+            }
             return redirect(routes.TemplateContestController.index());
         } else {
             FlashMessage.danger("Missing file, select one through \"Choose file\"");
@@ -356,6 +361,10 @@ public class TemplateContestController extends Controller {
     }
 
     public static boolean importFromFileCSV(File file) {
+        boolean result = false;
+
+        List<TemplateContest> templateContests = new ArrayList<>();
+
         try {
             String line = "";
 
@@ -394,16 +403,24 @@ public class TemplateContestController extends Controller {
                 if (params.length > FieldCSV.SPECIAL_IMAGE.id)
                     templateContest.specialImage = params[FieldCSV.SPECIAL_IMAGE.id];
 
-                templateContest.insert();
-                OpsLog.onNew(templateContest);
+                templateContests.add(templateContest);
             }
-        } catch (FileNotFoundException e) {
+
+            result = true;
+        } catch (IllegalArgumentException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return true;
+        if (result) {
+            templateContests.forEach(templateContest -> {
+                templateContest.insert();
+                OpsLog.onNew(templateContest);
+            });
+        }
+
+        return result;
     }
 
     private static void printAsTablePlayerManagerLevel(TemplateContest templateContest) {

@@ -21,6 +21,7 @@ import java.util.*;
 public class ContestsActor extends TickableActor {
 
     @Override public void preStart() {
+        super.preStart();
         /*
         List<TemplateMatchEvent> matchEventsToSimulate = TemplateMatchEvent.findAllSimulated();
         matchEventsToSimulate.forEach(matchEvent -> {
