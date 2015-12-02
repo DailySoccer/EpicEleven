@@ -1,7 +1,23 @@
-@(automaticallyCreateEnabled : Boolean)
+@(automaticallyCreateEnabled : Boolean, competitionFilter: String = "*", competitionMap: HashMap[String, model.opta.OptaCompetition])
 
 @import model._
 @import controllers.admin.routes._
+
+@competition_names(competitionIds : List[String]) = @{
+    competitionIds.filter( (p) => competitionMap.contains(p) ).map( (p) => competition_name(p) ).mkString(", ")
+}
+
+@competition_name(competitionId : String) = @{
+    if(competitionId == "*") {
+        "All Competitions"
+    } else {
+        if(competitionMap.contains(competitionId)) {
+            competitionMap(competitionId).competitionName
+        } else {
+            competitionId
+        }
+    }
+}
 
 @scripts = {
     <script type="text/javascript">
@@ -46,7 +62,7 @@
               "stateSave": true,
               "bJQueryUI": true,
               "sPaginationType": "full_numbers",
-              "sAjaxSource": "/admin/template_contests/ajax"
+              "sAjaxSource": "/admin/template_contests/ajax/@competitionFilter"
             });
         })
 
@@ -55,23 +71,52 @@
 
 @main("Template Contests - Admin", scripts) {
 
-<h1 class="page-header">Template Contests</h1>
+    <h1 class="page-header">Template Contests
+    <span class="dropdown">
+        <a data-toggle="dropdown" href="#">@competition_name(competitionFilter)</a><span class="caret"></span>
+        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+            @if(competitionFilter != "*") {
+                <li><a href='@TemplateContestController.index'>All Competitions</a></li>
+            }
+            @for((key, competition) <- competitionMap) {
+                @if(competitionFilter != key) {
+                    <li><a href='@TemplateContestController.showFilterByCompetition(key)'>@competition.competitionName</a></li>
+                }
+            }
+        </ul>
+    </span>
+    </h1>
 
-<a href="@TemplateContestController.newForm"><button class="btn btn-success">Add Contest</button></a>
+    <div style="float: right; margin-right:100px;">
+        <a href="@TemplateContestController.defaultCSV"><button class="btn btn-success">Default CSV</button></a>
+    </div>
+    <p>
+        @helper.form(action = TemplateContestController.importFromCSV, 'enctype -> "multipart/form-data") {
+        <input class="btn btn-primary" type="submit" value="Import from CSV">
+        <input type="file" name="csv" style="display: inline;">
+        }
+    </p>
 
-@if(model.Model.isLocalHostTargetEnvironment()) {
-<div style="float: right; margin-right:100px;">
-    @if(!automaticallyCreateEnabled) {
-        <a href="@TemplateContestController.setCreatingTemplateContestsState(true)"><button class="btn btn-danger">Start Creating Template Contests</button></a>
+    @if(competitionFilter == "*") {
+        <a href="@TemplateContestController.newForm(23)"><button class="btn btn-success">[@competition_name("23")] Add Contest</button></a>
+        <a href="@TemplateContestController.newForm(8)"><button class="btn btn-success">[@competition_name("8")] Add Contest</button></a>
     } else {
-        <a href="@TemplateContestController.setCreatingTemplateContestsState(false)"><button class="btn btn-warning">Stop Creating Template Contests</button></a>
+        <a href="@TemplateContestController.newForm(competitionFilter.toInt)"><button class="btn btn-success">[@competition_name(competitionFilter)] Add Contest</button></a>
     }
-    <a href="@TemplateContestController.createAll"><button class="btn btn-danger">Create All Contests</button></a>
-</div>
-}
 
-<h2 class="sub-header"></h2>
-<div class="table-responsive">
-    <table id="ajax_table_id" class="table table-striped"></table>
-</div>
+    @if(model.Model.isLocalHostTargetEnvironment()) {
+    <div style="float: right; margin-right:100px;">
+        @if(!automaticallyCreateEnabled) {
+            <a href="@TemplateContestController.setCreatingTemplateContestsState(true)"><button class="btn btn-danger">Start Creating Template Contests</button></a>
+        } else {
+            <a href="@TemplateContestController.setCreatingTemplateContestsState(false)"><button class="btn btn-warning">Stop Creating Template Contests</button></a>
+        }
+        <a href="@TemplateContestController.createAll"><button class="btn btn-danger">Create All Contests</button></a>
+    </div>
+    }
+
+    <h2 class="sub-header"></h2>
+    <div class="table-responsive">
+        <table id="ajax_table_id" class="table table-striped"></table>
+    </div>
 }

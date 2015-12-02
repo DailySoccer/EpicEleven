@@ -168,8 +168,7 @@
 
 @main("Template Contest - Admin", scripts) {
 
-<h1 class="page-header">Template Contest</h1>
-
+<h1 class="page-header">Template Contest: [@templateContestForm("id").value]</h1>
 <h2 class="sub-header"></h2>
 
 @helper.form(action = TemplateContestController.create, 'class -> "form-horizontal") {
@@ -180,6 +179,7 @@
 
     <input type="hidden" name="id" value='@templateContestForm("id").value' >
     <input type="hidden" name="createdAt" value='@templateContestForm("createdAt").value' >
+    <input type="hidden" name="optaCompetitionId" value='@templateContestForm("optaCompetitionId").value' >
     <input type="hidden" name="state" value='@templateContestForm("state").value' >
 
     <div class="col-md-12">

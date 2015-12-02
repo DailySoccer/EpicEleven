@@ -1,19 +1,33 @@
 package controllers.admin;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import model.*;
 import model.accounting.*;
+import model.opta.OptaEventType;
 import org.joda.money.Money;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.bson.types.ObjectId;
+import org.joda.time.format.DateTimeFormatter;
 import play.Logger;
+import play.Play;
 import play.mvc.Controller;
+import play.mvc.Http;
 import play.mvc.Result;
+import utils.FileUtils;
 import utils.MoneyUtils;
 import utils.ReturnHelper;
 
+import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ContestController extends Controller {
+    static final String SEPARATOR_CSV = ";";
+    static final DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern("yyyy/MM/dd HH:mm");
+
     public static Result index() {
         return ok(views.html.contest_list.render());
     }
@@ -40,13 +54,22 @@ public class ContestController extends Controller {
             public String getFieldByIndex(Object data, Integer index) {
                 Contest contest = (Contest) data;
                 switch (index) {
-                    case 0: return contest.name;
-                    case 1: return String.valueOf(contest.contestEntries.size());
-                    case 2: return String.valueOf(contest.maxEntries);
-                    case 3: return MoneyUtils.asString(contest.getPrizePool());
-                    case 4: return contest.templateContestId.toString();
-                    case 5: return contest.optaCompetitionId;
-                    case 6: if(contest.state.isHistory()) {
+                    case 0:
+                        return contest.name;
+                    case 1:
+                        return String.valueOf(contest.contestEntries.size());
+                    case 2:
+                        return String.valueOf(contest.maxEntries);
+                    case 3:
+                        return MoneyUtils.asString(contest.getPrizePool());
+                    case 4:
+                        return contest.templateContestId.toString();
+                    case 5:
+                        return contest.optaCompetitionId;
+                    case 6:
+                            if (contest.state.isOff()) {
+                                return "Off";
+                            } else if(contest.state.isHistory()) {
                                 return "Finished";
                             } else if(contest.state.isCanceled()) {
                                 return "Canceled";
@@ -67,7 +90,9 @@ public class ContestController extends Controller {
                                 routes.TemplateContestController.show(fieldValue).url(),
                                 fieldValue);
                     case 6:
-                        if(fieldValue.equals("Finished")) {
+                        if(fieldValue.equals("Off")) {
+                            return "<button class=\"btn btn-warning disabled\">Off</button>";
+                        } else if(fieldValue.equals("Finished")) {
                             return "<button class=\"btn btn-danger\">Finished</button>";
                         } else if(fieldValue.equals("Canceled")) {
                             return "<button class=\"btn btn-danger\">Canceled</button>";
@@ -90,6 +115,116 @@ public class ContestController extends Controller {
         return ok(views.html.contest.render(Contest.findOne(contestId)));
     }
 
+    public enum FieldCSV {
+        ID(0),
+        NAME(1),
+        MAX_ENTRIES(2),
+        SALARY_CAP(3),
+        ENTRY_FEE(4),
+        PRIZE_TYPE(5),
+        PRIZE_MULTIPLIER(6),
+        START_DATE(7),
+        ACTIVATION_AT(8),
+        SPECIAL_IMAGE(9);
+
+        public final int id;
+
+        FieldCSV(int id) {
+            this.id = id;
+        }
+    }
+
+    public static Result defaultCSV() {
+        List<String> headers = new ArrayList<>();
+        for (FieldCSV fieldCSV : FieldCSV.values()) {
+            headers.add(fieldCSV.toString());
+        }
+
+        List<String> body = new ArrayList<>();
+
+        List<TemplateContest> templateContest = TemplateContest.findAllDraftSimulations();
+
+        templateContest.forEach( template -> {
+            body.add(template.templateContestId.toString());
+            body.add(template.name);
+            body.add(String.valueOf(template.maxEntries));
+            body.add(String.valueOf(template.salaryCap));
+            body.add(template.entryFee.toString());
+            body.add(template.prizeType.toString());
+            body.add(String.valueOf(template.prizeMultiplier));
+            body.add(new DateTime(template.startDate).toString(dateTimeFormatter.withZoneUTC()));
+            body.add(new DateTime(template.activationAt).toString(dateTimeFormatter.withZoneUTC()));
+            body.add(template.specialImage);
+        });
+
+        String fileName = String.format("simulation-contests.csv");
+        FileUtils.generateCsv(fileName, headers, body, SEPARATOR_CSV);
+
+        FlashMessage.info(fileName);
+
+        return redirect(routes.ContestController.index());
+    }
+
+    public static Result importFromCSV() {
+        Http.MultipartFormData body = request().body().asMultipartFormData();
+        Http.MultipartFormData.FilePart httpFile = body.getFile("csv");
+        if (httpFile != null && importFromFileCSV(httpFile.getFile())) {
+            FlashMessage.success("CSV read successfully");
+            return redirect(routes.ContestController.index());
+        } else {
+            FlashMessage.danger("Missing file, select one through \"Choose file\"");
+            return redirect(routes.ContestController.index());
+        }
+    }
+
+    public static boolean importFromFileCSV(File file) {
+        try {
+            String line = "";
+
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            while ((line = br.readLine()) != null) {
+
+                String[] params = line.split(SEPARATOR_CSV);
+
+                List<String> data = Arrays.asList(params);
+                System.out.println(String.format("[%s]", Joiner.on(SEPARATOR_CSV).join(data)));
+
+                // Cabecera?
+                if (params[FieldCSV.ID.id].equals(FieldCSV.ID.toString())) {
+                    continue;
+                }
+
+                ObjectId templateContestId = new ObjectId(params[FieldCSV.ID.id]);
+                TemplateContest templateContest = TemplateContest.findOne(templateContestId);
+
+                Contest contest = new Contest();
+                contest.setupFromTemplateContest(templateContest);
+
+                contest.templateContestId = templateContestId;
+                contest.simulation = true;
+                contest.name = params[FieldCSV.NAME.id];
+                contest.maxEntries = Integer.valueOf(params[FieldCSV.MAX_ENTRIES.id]);
+                contest.salaryCap = Integer.valueOf(params[FieldCSV.SALARY_CAP.id]);
+                contest.entryFee = Money.parse(params[FieldCSV.ENTRY_FEE.id]);
+                contest.prizeType = PrizeType.valueOf(params[FieldCSV.PRIZE_TYPE.id]);
+                contest.prizeMultiplier = Float.valueOf(params[FieldCSV.PRIZE_MULTIPLIER.id]);
+                contest.startDate = DateTime.parse(params[FieldCSV.START_DATE.id], dateTimeFormatter.withZoneUTC()).toDate();
+                contest.activationAt = DateTime.parse(params[FieldCSV.ACTIVATION_AT.id], dateTimeFormatter.withZoneUTC()).toDate();
+
+                if (params.length > FieldCSV.SPECIAL_IMAGE.id)
+                    contest.specialImage = params[FieldCSV.SPECIAL_IMAGE.id];
+
+                contest.state = ContestState.OFF;
+                contest.insert();
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return true;
+    }
 
     static public Result verifyPrizes() {
         boolean ret = true;
