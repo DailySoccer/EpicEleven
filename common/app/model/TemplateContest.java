@@ -157,6 +157,10 @@ public class TemplateContest implements JongoId {
         return ListUtils.asList(Model.templateContests().find().as(TemplateContest.class));
     }
 
+    static public List<TemplateContest> findAllDraft() {
+        return ListUtils.asList(Model.templateContests().find("{state: \"DRAFT\"}").as(TemplateContest.class));
+    }
+
     static public List<TemplateContest> findAllDraftSimulations() {
         return ListUtils.asList(Model.templateContests().find("{state: \"DRAFT\", simulation: true}").as(TemplateContest.class));
     }
