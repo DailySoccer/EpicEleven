@@ -62,7 +62,7 @@ public class Contest implements JongoId {
     }
     private void setNumEntries(int blah) { }    // Para poder deserializar lo que nos llega por la red sin usar FAIL_ON_UNKNOWN_PROPERTIES
 
-    public int minEntries;
+    public int minEntries = 2;
     public int maxEntries;
 
     @JsonView(JsonViews.NotForClient.class)
@@ -165,7 +165,7 @@ public class Contest implements JongoId {
 
     public ObjectId getId() { return contestId; }
 
-    public boolean isFull() { return getNumEntries() >= maxEntries; }
+    public boolean isFull() { return maxEntries > 0 && getNumEntries() >= maxEntries; }
 
 
     public List<TemplateMatchEvent> getTemplateMatchEvents() {
