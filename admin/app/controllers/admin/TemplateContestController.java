@@ -132,6 +132,8 @@ public class TemplateContestController extends Controller {
                         return String.format("<a href=\"%s\" style=\"white-space: nowrap\">%s</a>",
                                 routes.TemplateContestController.show(templateContest.templateContestId.toString()),
                                 fieldValue);
+                    case 5:
+                        return String.format("%d/%d", templateContest.minEntries, templateContest.maxEntries);
                     case 13:
                         return (templateContest.state.isDraft() || templateContest.state.isOff() || templateContest.state.isActive())
                                 ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">Edit</button></a>",
@@ -298,10 +300,10 @@ public class TemplateContestController extends Controller {
         SALARY_CAP(8),
         ENTRY_FEE(9),
         PRIZE_TYPE(10),
-        PRIZE_MULTIPLIER(10),
-        START_DATE(11),
-        ACTIVATION_AT(12),
-        SPECIAL_IMAGE(13);
+        PRIZE_MULTIPLIER(11),
+        START_DATE(12),
+        ACTIVATION_AT(13),
+        SPECIAL_IMAGE(14);
 
         public final int id;
 
