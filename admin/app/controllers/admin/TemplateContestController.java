@@ -388,6 +388,8 @@ public class TemplateContestController extends Controller {
 
                 ObjectId templateContestId = new ObjectId(params[FieldCSV.ID.id]);
                 TemplateContest templateContestMaster = TemplateContest.findOne(templateContestId);
+                if (templateContestMaster == null)
+                    throw new IllegalArgumentException();
 
                 TemplateContest templateContest = templateContestMaster.copy();
 

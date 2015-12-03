@@ -201,7 +201,7 @@ public class Contest implements JongoId {
         }
 
         if (name.contains(FILL_WITH_MOCK_USERS)) {
-            MockData.addContestEntries(this, this.maxEntries - 1);
+            MockData.addContestEntries(this, (maxEntries > 0) ? maxEntries - 1 : 50);
         }
 
         // Ya estamos activos!

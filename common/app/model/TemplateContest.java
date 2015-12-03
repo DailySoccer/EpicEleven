@@ -257,7 +257,7 @@ public class TemplateContest implements JongoId {
         for (long i=instances; i < minInstances; i++) {
             Contest contest = instantiateContest();
             if (mockDataUsers) {
-                MockData.addContestEntries(contest, contest.maxEntries - 1);
+                MockData.addContestEntries(contest, (contest.maxEntries > 0) ? contest.maxEntries - 1 : 50);
             }
         }
 
