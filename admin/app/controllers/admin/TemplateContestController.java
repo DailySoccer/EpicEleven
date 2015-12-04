@@ -132,6 +132,8 @@ public class TemplateContestController extends Controller {
                         return String.format("<a href=\"%s\" style=\"white-space: nowrap\">%s</a>",
                                 routes.TemplateContestController.show(templateContest.templateContestId.toString()),
                                 fieldValue);
+                    case 5:
+                        return String.format("%d/%d", templateContest.minEntries, templateContest.maxEntries);
                     case 13:
                         return (templateContest.state.isDraft() || templateContest.state.isOff() || templateContest.state.isActive())
                                 ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">Edit</button></a>",
@@ -227,6 +229,7 @@ public class TemplateContestController extends Controller {
         templateContest.simulation = (params.typeContest == TypeContest.VIRTUAL);
         templateContest.name = params.name;
         templateContest.minInstances = params.minInstances;
+        templateContest.minEntries = params.minEntries;
         templateContest.maxEntries = params.maxEntries;
         templateContest.salaryCap = params.salaryCap.money;
 
@@ -286,26 +289,21 @@ public class TemplateContestController extends Controller {
     }
 
     public enum FieldCSV {
-        ID(0),
-        NAME(1),
-        STATE(2),
-        SIMULATION(3),
-        CUSTOMIZABLE(4),
-        MIN_INSTANCES(5),
-        MAX_ENTRIES(6),
-        SALARY_CAP(7),
-        ENTRY_FEE(8),
-        PRIZE_TYPE(9),
-        PRIZE_MULTIPLIER(10),
-        START_DATE(11),
-        ACTIVATION_AT(12),
-        SPECIAL_IMAGE(13);
-
-        public final int id;
-
-        FieldCSV(int id) {
-            this.id = id;
-        }
+        ID,
+        NAME,
+        STATE,
+        SIMULATION,
+        CUSTOMIZABLE,
+        MIN_INSTANCES,
+        MIN_ENTRIES,
+        MAX_ENTRIES,
+        SALARY_CAP,
+        ENTRY_FEE,
+        PRIZE_TYPE,
+        PRIZE_MULTIPLIER,
+        START_DATE,
+        ACTIVATION_AT,
+        SPECIAL_IMAGE
     }
 
     public static Result defaultCSV() {
@@ -325,6 +323,7 @@ public class TemplateContestController extends Controller {
             body.add(String.valueOf(template.simulation));
             body.add(String.valueOf(template.customizable));
             body.add(String.valueOf(template.minInstances));
+            body.add(String.valueOf(template.minEntries));
             body.add(String.valueOf(template.maxEntries));
             body.add(String.valueOf(template.salaryCap));
             body.add(template.entryFee.toString());
@@ -367,6 +366,7 @@ public class TemplateContestController extends Controller {
 
         try {
             String line = "";
+            String[] headers = null;
 
             BufferedReader br = new BufferedReader(new FileReader(file));
             while ((line = br.readLine()) != null) {
@@ -377,31 +377,41 @@ public class TemplateContestController extends Controller {
                 System.out.println(String.format("[%s]", Joiner.on(SEPARATOR_CSV).join(data)));
 
                 // Cabecera?
-                if (params[FieldCSV.ID.id].equals(FieldCSV.ID.toString())) {
+                if (params[0].equals(FieldCSV.ID.toString())) {
+                    headers = params;
                     continue;
                 }
 
-                ObjectId templateContestId = new ObjectId(params[FieldCSV.ID.id]);
+                if (headers == null)
+                    continue;
+
+                ObjectId templateContestId = new ObjectId(params[0]);
                 TemplateContest templateContestMaster = TemplateContest.findOne(templateContestId);
+                if (templateContestMaster == null)
+                    throw new IllegalArgumentException();
 
                 TemplateContest templateContest = templateContestMaster.copy();
 
                 templateContest.templateContestId = new ObjectId();
-                templateContest.name = params[FieldCSV.NAME.id];
-                templateContest.state = ContestState.valueOf(params[FieldCSV.STATE.id]);
-                templateContest.simulation = Boolean.valueOf(params[FieldCSV.SIMULATION.id]);
-                templateContest.customizable = Boolean.valueOf(params[FieldCSV.CUSTOMIZABLE.id]);
-                templateContest.minInstances = Integer.valueOf(params[FieldCSV.MIN_INSTANCES.id]);
-                templateContest.maxEntries = Integer.valueOf(params[FieldCSV.MAX_ENTRIES.id]);
-                templateContest.salaryCap = Integer.valueOf(params[FieldCSV.SALARY_CAP.id]);
-                templateContest.entryFee = Money.parse(params[FieldCSV.ENTRY_FEE.id]);
-                templateContest.prizeType = PrizeType.valueOf(params[FieldCSV.PRIZE_TYPE.id]);
-                templateContest.prizeMultiplier = Float.valueOf(params[FieldCSV.PRIZE_MULTIPLIER.id]);
-                templateContest.startDate = DateTime.parse(params[FieldCSV.START_DATE.id], dateTimeFormatter.withZoneUTC()).toDate();
-                templateContest.activationAt = DateTime.parse(params[FieldCSV.ACTIVATION_AT.id], dateTimeFormatter.withZoneUTC()).toDate();
 
-                if (params.length > FieldCSV.SPECIAL_IMAGE.id)
-                    templateContest.specialImage = params[FieldCSV.SPECIAL_IMAGE.id];
+                for (int i=0; i<params.length; i++) {
+                    switch(FieldCSV.valueOf(headers[i])) {
+                        case NAME:              templateContest.name = params[i]; break;
+                        case STATE:             templateContest.state = ContestState.valueOf(params[i]); break;
+                        case SIMULATION:        templateContest.simulation = Boolean.valueOf(params[i]);
+                        case CUSTOMIZABLE:      templateContest.customizable = Boolean.valueOf(params[i]); break;
+                        case MIN_INSTANCES:     templateContest.minInstances = Integer.valueOf(params[i]); break;
+                        case MIN_ENTRIES:       templateContest.minEntries = Integer.valueOf(params[i]); break;
+                        case MAX_ENTRIES:       templateContest.maxEntries = Integer.valueOf(params[i]);
+                        case SALARY_CAP:        templateContest.salaryCap = Integer.valueOf(params[i]); break;
+                        case ENTRY_FEE:         templateContest.entryFee = Money.parse(params[i]); break;
+                        case PRIZE_TYPE:        templateContest.prizeType = PrizeType.valueOf(params[i]); break;
+                        case PRIZE_MULTIPLIER:  templateContest.prizeMultiplier = Float.valueOf(params[i]); break;
+                        case START_DATE:        templateContest.startDate = DateTime.parse(params[i], dateTimeFormatter.withZoneUTC()).toDate(); break;
+                        case ACTIVATION_AT:     templateContest.activationAt = DateTime.parse(params[i], dateTimeFormatter.withZoneUTC()).toDate(); break;
+                        case SPECIAL_IMAGE:     templateContest.specialImage = params[i]; break;
+                    }
+                }
 
                 templateContests.add(templateContest);
             }

@@ -1,7 +1,6 @@
 package utils;
 
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 
 public class FileUtils {
@@ -11,20 +10,20 @@ public class FileUtils {
 
     public static void generateCsv(String sFileName, List<String> headers, List<String> body, String separator) {
         try {
-            FileWriter writer = new FileWriter(sFileName);
+            Writer out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(sFileName), "UTF-8"));
 
             for (int i=0; i<headers.size(); i++) {
-                writer.append(headers.get(i));
-                writer.append( ((i+1) < headers.size()) ? separator : "\n" );
+                out.append(headers.get(i));
+                out.append( ((i+1) < headers.size()) ? separator : "\n" );
             }
 
             for (int i=0; i<body.size(); i++) {
-                writer.append(body.get(i));
-                writer.append( ((i+1) % headers.size()) != 0 ? separator : "\n" );
+                out.append(body.get(i));
+                out.append( ((i+1) % headers.size()) != 0 ? separator : "\n" );
             }
 
-            writer.flush();
-            writer.close();
+            out.flush();
+            out.close();
         }
         catch(IOException e) {
             e.printStackTrace();

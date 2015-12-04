@@ -41,6 +41,10 @@ public class TemplateContestForm {
     @Constraints.Required
     public int minInstances = 1;        // Minimum desired number of instances that we want running at any given moment
 
+    @Constraints.Min(2)
+    @Constraints.Required
+    public int minEntries = 2;
+
     @Constraints.Required
     public int maxEntries = 10;
 
@@ -82,6 +86,7 @@ public class TemplateContestForm {
         typeCustomizable = templateContest.customizable ? SelectionYESNO.YES : SelectionYESNO.NO;
         name = templateContest.name;
         minInstances = templateContest.minInstances;
+        minEntries = templateContest.minEntries;
         maxEntries = templateContest.maxEntries;
         salaryCap = SalaryCap.findByMoney(templateContest.salaryCap);
         entryFee = templateContest.entryFee.getAmount().intValue();

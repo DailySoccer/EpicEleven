@@ -90,8 +90,8 @@ public class ContestEntryController extends Controller {
                 if (aContest.containsContestEntryWithUser(theUser.userId)) {
                     errores.add(ERROR_USER_ALREADY_INCLUDED);
                 }
-                // Verificar que el contest no esté lleno
-                else if (aContest.contestEntries.size() >= aContest.maxEntries) {
+                // Verificar que el contest no esté lleno (<= 0 : Ilimitado número de participantes)
+                else if (aContest.maxEntries >= 0 && aContest.contestEntries.size() >= aContest.maxEntries) {
                     // Buscar otro contest de características similares
                     aContest = aContest.getSameContestWithFreeSlot(theUser.userId);
                     if (aContest == null) {
@@ -148,7 +148,7 @@ public class ContestEntryController extends Controller {
                     if (Play.isDev()) {
                         boolean mockDataUsers = aContest.name.contains(TemplateContest.FILL_WITH_MOCK_USERS);
                         if (mockDataUsers) {
-                            MockData.addContestEntries(aContest, aContest.maxEntries - 1);
+                            MockData.addContestEntries(aContest, (aContest.maxEntries > 0) ? aContest.maxEntries - 1 : 50);
                         }
                     }
                 }

@@ -321,7 +321,7 @@ public class ContestController extends Controller {
                 .put("match_events", matchEvents)
                 .put("soccer_teams", teams)
                 .put("soccer_players", players)
-                .put("prizes", Prizes.findOne(contest))
+                .put("prizes", Prizes.findOne(contest.prizeType, contest.getNumEntries(), contest.getPrizePool()))
                 .build())
                 .toResult(JsonViews.FullContest.class);
     }

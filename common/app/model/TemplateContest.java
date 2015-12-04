@@ -34,6 +34,7 @@ public class TemplateContest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public int minInstances;        // Minimum desired number of instances that we want running at any given moment
 
+    public int minEntries = 2;
     public int maxEntries;
 
     public int salaryCap;
@@ -80,6 +81,7 @@ public class TemplateContest implements JongoId {
 
         this.name = name;
         this.minInstances = minInstances;
+        this.minEntries = 2;
         this.maxEntries = maxEntries;
         this.salaryCap = salaryCap.money;
         this.entryFee = entryFee;
@@ -108,6 +110,7 @@ public class TemplateContest implements JongoId {
         cloned.state = state;
         cloned.name = name;
         cloned.minInstances = minInstances;
+        cloned.minEntries = minEntries;
         cloned.maxEntries = maxEntries;
 
         cloned.salaryCap = salaryCap;
@@ -254,7 +257,7 @@ public class TemplateContest implements JongoId {
         for (long i=instances; i < minInstances; i++) {
             Contest contest = instantiateContest();
             if (mockDataUsers) {
-                MockData.addContestEntries(contest, contest.maxEntries - 1);
+                MockData.addContestEntries(contest, (contest.maxEntries > 0) ? contest.maxEntries - 1 : 50);
             }
         }
 
@@ -321,35 +324,26 @@ public class TemplateContest implements JongoId {
                 .multi()
                 .with("{$set: {state: \"LIVE\"}}");
 
-        // Los Contests válidos pasarán a "live"
-        // Válido = Los que al menos tengan 2 participantes
-        Model.contests()
-                .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\", \"contestEntries.1\": {$exists: true}}", matchEvent.templateMatchEventId)
-                .multi()
-                .with("{$set: {state: \"LIVE\", startedAt: #}}", GlobalDate.getCurrentDate());
-
-        // Se cancelaban los contests que tenían premio
-        // OLD: Válido = (Gratuitos AND entries > 1) OR Llenos
-        /*
-        Model.contests()
-                .update("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"," +
-                        "$or: [" +
-                        "  {prizeType: {$eq: \"FREE\"}, \"contestEntries.1\": {$exists: true}}," +
-                        "  {freeSlots: 0}" +
-                        "]}", matchEvent.templateMatchEventId)
-                .multi()
-                .with("{$set: {state: \"LIVE\", startedAt: #}}", GlobalDate.getCurrentDate());
-        */
-
         try {
-            // Cancelamos aquellos contests que aún permanezcan activos
-            //  deben ser los inválidos, dado que en la query anterior se han cambiado de estado a los válidos
-            for (Contest contest : Contest.findAllActiveFromTemplateMatchEvent(matchEvent.templateMatchEventId)) {
-                Job job = CancelContestJob.create(contest.contestId);
-                if (!job.isDone()) {
-                    Logger.error("CancelContestJob {} error", contest.contestId);
+            // Los Contests válidos pasarán a "live" O serán "cancelados"
+            // Válido = Los que tengan un número válido de participantes
+            List<Contest> contests = ListUtils.asList(Model.contests()
+                    .find("{templateMatchEventIds: {$in:[#]}, state: \"ACTIVE\"}", matchEvent.templateMatchEventId).as(Contest.class));
+            contests.forEach(contest -> {
+                if (contest.getNumEntries() >= contest.minEntries) {
+                    Model.contests()
+                            .update("{_id: #, state: \"ACTIVE\"}", contest.contestId)
+                            .multi()
+                            .with("{$set: {state: \"LIVE\", startedAt: #}}", GlobalDate.getCurrentDate());
                 }
-            }
+                else {
+                    // Cancelamos aquellos contests que no tengan el mínimo número de participantes
+                    Job job = CancelContestJob.create(contest.contestId);
+                    if (!job.isDone()) {
+                        Logger.error("CancelContestJob {} error", contest.contestId);
+                    }
+                }
+            });
         }
         catch(DuplicateKeyException e) {
             play.Logger.error("WTF 3333: actionWhenMatchEventIsStarted: {}", e.toString());
