@@ -163,8 +163,8 @@ public class EnterContestJob extends Job {
 
     private Contest transactionInsertContestEntry(Contest contest, ContestEntry contestEntry) {
         // Insertamos el contestEntry en el contest
-        //  Comprobamos que el contest siga ACTIVE, que el usuario no esté ya inscrito y que existan Huecos Libres
-        String query = String.format("{_id: #, state: \"ACTIVE\", contestEntries.userId: {$ne: #}, contestEntries.%s: {$exists: false}}", contest.maxEntries - 1);
+        //  Comprobamos que el contest siga ACTIVE, que el usuario no esté ya inscrito y que existan Huecos Libres (maxEntries <= 0 : Ilimitado número de participantes)
+        String query = String.format("{_id: #, state: \"ACTIVE\", contestEntries.userId: {$ne: #}, $or: [{maxEntries: {$lte: 0}}, {contestEntries.%s: {$exists: false}}]}", contest.maxEntries - 1);
         return Model.contests().findAndModify(query, contestId, userId)
                 .with("{$push: {contestEntries: #}, $inc: {freeSlots : -1}}", contestEntry)
                 .returnNew()

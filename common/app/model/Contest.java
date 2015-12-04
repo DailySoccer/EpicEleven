@@ -62,6 +62,7 @@ public class Contest implements JongoId {
     }
     private void setNumEntries(int blah) { }    // Para poder deserializar lo que nos llega por la red sin usar FAIL_ON_UNKNOWN_PROPERTIES
 
+    public int minEntries = 2;
     public int maxEntries;
 
     @JsonView(JsonViews.NotForClient.class)
@@ -117,6 +118,7 @@ public class Contest implements JongoId {
         templateContestId = template.templateContestId;
         state = template.state;
         name = template.name;
+        minEntries = template.minEntries;
         maxEntries = template.maxEntries;
         freeSlots = template.maxEntries;
         salaryCap = template.salaryCap;
@@ -137,6 +139,7 @@ public class Contest implements JongoId {
         templateContestId = template.templateContestId;
         state = template.state;
         name = template.name;
+        minEntries = template.minEntries;
         maxEntries = template.maxEntries;
         freeSlots = template.maxEntries;
         salaryCap = template.salaryCap;
@@ -162,7 +165,7 @@ public class Contest implements JongoId {
 
     public ObjectId getId() { return contestId; }
 
-    public boolean isFull() { return getNumEntries() >= maxEntries; }
+    public boolean isFull() { return maxEntries > 0 && getNumEntries() >= maxEntries; }
 
 
     public List<TemplateMatchEvent> getTemplateMatchEvents() {
@@ -198,7 +201,7 @@ public class Contest implements JongoId {
         }
 
         if (name.contains(FILL_WITH_MOCK_USERS)) {
-            MockData.addContestEntries(this, this.maxEntries - 1);
+            MockData.addContestEntries(this, (maxEntries > 0) ? maxEntries - 1 : 50);
         }
 
         // Ya estamos activos!
@@ -389,7 +392,7 @@ public class Contest implements JongoId {
     public void closeContest() {
 
         if (!contestEntries.isEmpty()) {
-            Prizes prizes = Prizes.findOne(this);
+            Prizes prizes = Prizes.findOne(prizeType, getNumEntries(), getPrizePool());
 
             updateRanking(prizes);
             givePrizes(prizes);

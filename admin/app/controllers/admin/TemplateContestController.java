@@ -132,6 +132,8 @@ public class TemplateContestController extends Controller {
                         return String.format("<a href=\"%s\" style=\"white-space: nowrap\">%s</a>",
                                 routes.TemplateContestController.show(templateContest.templateContestId.toString()),
                                 fieldValue);
+                    case 5:
+                        return String.format("%d/%d", templateContest.minEntries, templateContest.maxEntries);
                     case 13:
                         return (templateContest.state.isDraft() || templateContest.state.isOff() || templateContest.state.isActive())
                                 ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">Edit</button></a>",
@@ -227,6 +229,7 @@ public class TemplateContestController extends Controller {
         templateContest.simulation = (params.typeContest == TypeContest.VIRTUAL);
         templateContest.name = params.name;
         templateContest.minInstances = params.minInstances;
+        templateContest.minEntries = params.minEntries;
         templateContest.maxEntries = params.maxEntries;
         templateContest.salaryCap = params.salaryCap.money;
 
@@ -292,14 +295,15 @@ public class TemplateContestController extends Controller {
         SIMULATION(3),
         CUSTOMIZABLE(4),
         MIN_INSTANCES(5),
-        MAX_ENTRIES(6),
-        SALARY_CAP(7),
-        ENTRY_FEE(8),
-        PRIZE_TYPE(9),
-        PRIZE_MULTIPLIER(10),
-        START_DATE(11),
-        ACTIVATION_AT(12),
-        SPECIAL_IMAGE(13);
+        MIN_ENTRIES(6),
+        MAX_ENTRIES(7),
+        SALARY_CAP(8),
+        ENTRY_FEE(9),
+        PRIZE_TYPE(10),
+        PRIZE_MULTIPLIER(11),
+        START_DATE(12),
+        ACTIVATION_AT(13),
+        SPECIAL_IMAGE(14);
 
         public final int id;
 
@@ -325,6 +329,7 @@ public class TemplateContestController extends Controller {
             body.add(String.valueOf(template.simulation));
             body.add(String.valueOf(template.customizable));
             body.add(String.valueOf(template.minInstances));
+            body.add(String.valueOf(template.minEntries));
             body.add(String.valueOf(template.maxEntries));
             body.add(String.valueOf(template.salaryCap));
             body.add(template.entryFee.toString());
@@ -383,6 +388,8 @@ public class TemplateContestController extends Controller {
 
                 ObjectId templateContestId = new ObjectId(params[FieldCSV.ID.id]);
                 TemplateContest templateContestMaster = TemplateContest.findOne(templateContestId);
+                if (templateContestMaster == null)
+                    throw new IllegalArgumentException();
 
                 TemplateContest templateContest = templateContestMaster.copy();
 
@@ -392,6 +399,7 @@ public class TemplateContestController extends Controller {
                 templateContest.simulation = Boolean.valueOf(params[FieldCSV.SIMULATION.id]);
                 templateContest.customizable = Boolean.valueOf(params[FieldCSV.CUSTOMIZABLE.id]);
                 templateContest.minInstances = Integer.valueOf(params[FieldCSV.MIN_INSTANCES.id]);
+                templateContest.minEntries = Integer.valueOf(params[FieldCSV.MIN_ENTRIES.id]);
                 templateContest.maxEntries = Integer.valueOf(params[FieldCSV.MAX_ENTRIES.id]);
                 templateContest.salaryCap = Integer.valueOf(params[FieldCSV.SALARY_CAP.id]);
                 templateContest.entryFee = Money.parse(params[FieldCSV.ENTRY_FEE.id]);
