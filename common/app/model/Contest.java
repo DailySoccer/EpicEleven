@@ -219,6 +219,10 @@ public class Contest implements JongoId {
         return ret;
     }
 
+    public boolean isCreatedByUser() {
+        return authorId != null;
+    }
+
     static public Contest findOne(ObjectId contestId) {
         return Model.contests().findOne("{_id : #}", contestId).as(Contest.class);
     }

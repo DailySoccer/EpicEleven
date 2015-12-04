@@ -59,14 +59,9 @@ public class EnterContestJob extends Job {
                             bValid = true;
 
                             // Crear instancias automáticamente según se vayan llenando las anteriores
-                            if (contestModified.isFull()) {
-                                // Los torneos virtuales serán automáticamente "duplicados" según se vayan llenando
-                                if (contestModified.simulation) {
-                                    contestModified.duplicate();
-                                }
-                                else {
-                                    TemplateContest.maintainingMinimumNumberOfInstances(contest.templateContestId);
-                                }
+                            // (salvo que sea un contest creado por un usuario)
+                            if (contestModified.isFull() && !contestModified.isCreatedByUser()) {
+                                TemplateContest.maintainingMinimumNumberOfInstances(contest.templateContestId);
                             }
                         }
                     }
