@@ -16,7 +16,7 @@ public class Prizes {
     public static final float PRIZE_MULTIPLIER_FOR_REAL_CONTEST = 0.9f;
 
     public PrizeType prizeType;
-    public int maxEntries;
+    public int numEntries;
     public Money prizePool;
     // public List<Float> multipliers = new ArrayList<>();
     public List<Money> values = new ArrayList<>();
@@ -24,19 +24,19 @@ public class Prizes {
     private Prizes() {
     }
 
-    private Prizes(PrizeType prizeType, int maxEntries, Money prizePool) {
+    private Prizes(PrizeType prizeType, int numEntries, Money prizePool) {
         this.prizeType = prizeType;
-        this.maxEntries = maxEntries;
+        this.numEntries = numEntries;
         this.prizePool = prizePool;
-        // this.multipliers = getMultipliers(prizeType, maxEntries);
+        // this.multipliers = getMultipliers(prizeType, numEntries);
 
-        this.values = getPrizesApplyingMultipliers(prizePool, getMultipliers(prizeType, maxEntries));
+        this.values = getPrizesApplyingMultipliers(prizePool, getMultipliers(prizeType, numEntries));
     }
 
     public Money getValue(int position) {
         Money ret;
         if (prizeType.equals(PrizeType.FIFTY_FIFTY)) {
-            ret = (position < (maxEntries / 2)) ? values.get(0) : Money.zero(prizePool.getCurrencyUnit());
+            ret = (position < (numEntries / 2)) ? values.get(0) : Money.zero(prizePool.getCurrencyUnit());
         }
         else {
             ret = (position < values.size()) ? values.get(position) : Money.zero(prizePool.getCurrencyUnit());
@@ -48,7 +48,7 @@ public class Prizes {
         List<Money> ret = new ArrayList<>();
 
         if (prizeType == PrizeType.FIFTY_FIFTY) {
-            for (int i=0; i<maxEntries / 2; i++) {
+            for (int i=0; i<numEntries / 2; i++) {
                 ret.add(values.get(0));
             }
         }
@@ -60,11 +60,11 @@ public class Prizes {
     }
 
     public static Prizes findOne(Contest contest) {
-        return findOne(contest.prizeType, contest.maxEntries, contest.getPrizePool());
+        return findOne(contest.prizeType, contest.getNumEntries(), contest.getPrizePool());
     }
 
-    public static Prizes findOne(PrizeType prizeType, int maxEntries, Money prizePool) {
-        return new Prizes(prizeType, maxEntries, prizePool);
+    public static Prizes findOne(PrizeType prizeType, int numEntries, Money prizePool) {
+        return new Prizes(prizeType, numEntries, prizePool);
     }
 
     public static List<Prizes> findAllByContests(List<Contest>... elements) {
@@ -87,17 +87,19 @@ public class Prizes {
     }
 
     private static String getKeyFromContest(Contest contest) {
-        return contest.prizeType.toString() + "_" + contest.maxEntries + "_" + contest.entryFee;
+        return contest.prizeType.toString() + "_" + contest.getNumEntries() + "_" + contest.entryFee;
     }
 
-    static private List<Float> getMultipliers(PrizeType prizeType, int maxEntries) {
+    static private List<Float> getMultipliers(PrizeType prizeType, int numEntries) {
         List<Float> multipliers = new ArrayList<>();
 
         if (prizeType == PrizeType.WINNER_TAKES_ALL) {
             multipliers.add(1f);
         }
         else if (prizeType == PrizeType.TOP_3_GET_PRIZES) {
-            switch(maxEntries) {
+            multipliers = ImmutableList.of(0.5f, 0.3f, 0.2f);
+            /*
+            switch(numEntries) {
                 case 3: multipliers = ImmutableList.of(0.62963f, 0.37037f); break;
                 case 4: multipliers = ImmutableList.of(0.44444f,0.33333f,0.22222f); break;
                 case 5: multipliers = ImmutableList.of(0.44444f,0.33333f,0.22222f); break;
@@ -120,9 +122,21 @@ public class Prizes {
                 default:
                     multipliers = ImmutableList.of(0.5f,0.3f,0.2f);
             }
+            */
         }
         else if (prizeType == PrizeType.TOP_THIRD_GET_PRIZES) {
-            switch (maxEntries) {
+            // Reparto directamente proporcional entre los n primeros
+            int third = numEntries / 3;
+            float total = 0;
+            for (int i=0; i<third; i++)
+                total += (i+1);
+
+            for (int i=0; i<third; i++) {
+                multipliers.add((third - i) / total);
+            }
+
+            /*
+            switch (numEntries) {
                 case 3: multipliers = ImmutableList.of(1f); break;
                 case 4: multipliers = ImmutableList.of(0.72222f,0.27778f); break;
                 case 5: multipliers = ImmutableList.of(0.68889f,0.31111f); break;
@@ -145,9 +159,10 @@ public class Prizes {
                 default:
                     multipliers = ImmutableList.of(0f);
             }
+            */
         }
         else if (prizeType == PrizeType.FIFTY_FIFTY) {
-            float mid = maxEntries / 2;
+            float mid = numEntries / 2;
             if (mid > 0f) {
                 multipliers  = ImmutableList.of(1f / mid);
             }
@@ -186,9 +201,9 @@ public class Prizes {
         return prizes;
     }
 
-    static public Money getPool(CurrencyUnit currencyUnit, Money entryFee, int maxEntries, float prizeMultiplier) {
+    static public Money getPool(CurrencyUnit currencyUnit, Money entryFee, int numEntries, float prizeMultiplier) {
         Money money = Money.zero(currencyUnit);
-        return money.plus(entryFee.getAmount()).multipliedBy(maxEntries * prizeMultiplier, RoundingMode.HALF_UP);
+        return money.plus(entryFee.getAmount()).multipliedBy(numEntries * prizeMultiplier, RoundingMode.HALF_UP);
     }
 }
 

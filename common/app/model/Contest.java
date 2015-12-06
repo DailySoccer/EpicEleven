@@ -565,7 +565,7 @@ public class Contest implements JongoId {
     }
 
     public Money getPrizePool() {
-        return Prizes.getPool(simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD, entryFee, maxEntries, prizeMultiplier);
+        return Prizes.getPool(simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD, entryFee, getNumEntries(), prizeMultiplier);
     }
 
     class ContestEntryComparable implements Comparator<ContestEntry>{
