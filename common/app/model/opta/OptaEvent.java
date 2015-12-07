@@ -77,6 +77,8 @@ public class OptaEvent {
         final int TYPEID_PENALTY_FACED = 58;
         final int TYPEID_OFFSIDE_PASS = 2;
         final int TYPEID_DELETED_EVENT = 43;
+        final int QUALIFIER_HEAD = 15;
+        final int QUALIFIER_ASSISTED_ATTEMPT = 29;
         final int QUALIFIER_ASSIST = 210;
         final int QUALIFIER_SECOND_YELLOW_CARD = 32;
         final int QUALIFIER_RED_CARD = 33;
@@ -139,10 +141,22 @@ public class OptaEvent {
                 this.typeId = OptaEventType.RED_CARD.code;
             }
         }
-        // Penalty miss -> 1410
-        else if ((this.typeId == OptaEventType.MISS.code || this.typeId == OptaEventType.POST.code || this.typeId == OptaEventType.ATTEMPT_SAVED.code) &&
-                outcome == 0 && qualifiers.contains(QUALIFIER_PENALTY)) {
-            this.typeId = OptaEventType.PENALTY_FAILED.code;
+        else if (this.typeId == OptaEventType.MISS.code || this.typeId == OptaEventType.POST.code || this.typeId == OptaEventType.ATTEMPT_SAVED.code) {
+            // Penalty miss -> 1410
+            if (outcome == 0 && qualifiers.contains(QUALIFIER_PENALTY)) {
+                this.typeId = OptaEventType.PENALTY_FAILED.code;
+            }
+            else {
+                // Tiro utilizando la cabeza?
+                boolean head = qualifiers.contains(QUALIFIER_HEAD);
+                if (head) {
+                    // Logger.info("-----> Tiro: HEAD <----------------------------------------------------------");
+                }
+                boolean assisted = qualifiers.contains(QUALIFIER_ASSISTED_ATTEMPT);
+                if (assisted) {
+                    // Logger.info("-----> Tiro: ASSISTED <----------------------------------------------------------");
+                }
+            }
         } else if (this.typeId == TYPEID_GOAL && outcome == 1) {
             // Gol en contra -> 1699
             if (qualifiers.contains(QUALIFIER_OWN_GOAL)) {
@@ -163,6 +177,18 @@ public class OptaEvent {
                     } else if (scorer.position.equals("Forward")) {
                         // Gol del delantero
                         this.typeId = OptaEventType.GOAL_SCORED_BY_FORWARD.code;
+                    }
+                    boolean head = qualifiers.contains(QUALIFIER_HEAD);
+                    if (head) {
+                        // Logger.info("-----> Gol: HEAD <----------------------------------------------------------");
+                    }
+                    boolean assisted = qualifiers.contains(QUALIFIER_ASSISTED_ATTEMPT);
+                    if (assisted) {
+                        // Logger.info("-----> Gol: ASSISTED <----------------------------------------------------------");
+                    }
+                    boolean penalty = qualifiers.contains(QUALIFIER_PENALTY);
+                    if (penalty) {
+                        // Logger.info("-----> Gol: PENALTY <----------------------------------------------------------");
                     }
                 } catch (NullPointerException e) {
                     Logger.info("Player not found: " + this.optaPlayerId);

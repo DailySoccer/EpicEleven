@@ -33,8 +33,8 @@ public class PaypalController extends Controller {
     static final String SELLER_EMAIL = "epiceleven@business.com";
 
     // Las rutas relativas al CLIENT a las que enviaremos las respuestas proporcionadas por Paypal
-    static final String CLIENT_CANCEL_PATH = "#/add_funds/response/canceled";
-    static final String CLIENT_SUCCESS_PATH = "#/add_funds/response/success";
+    static final String CLIENT_CANCEL_PATH = "#/shop/response/canceled";
+    static final String CLIENT_SUCCESS_PATH = "#/shop/response/success";
 
     // Las keys que incluimos en las urls de respuesta de Paypal
     static final String QUERY_STRING_SUCCESS_KEY = "success";

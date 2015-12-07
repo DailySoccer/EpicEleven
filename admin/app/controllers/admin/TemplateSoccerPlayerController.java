@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import model.*;
 import model.opta.OptaEvent;
 import model.opta.OptaEventType;
+import model.opta.OptaMatchEventStats;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -16,6 +17,7 @@ import utils.FileUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TemplateSoccerPlayerController extends Controller {
     public static Result index() {
@@ -138,13 +140,17 @@ public class TemplateSoccerPlayerController extends Controller {
             add("TypeId");
             add("Points");
             add("OptaPlayerId");
+            add("PlayerMinutes");
             add("CompetitionId");
             add("EventId");
             add("HomeTeamId");
+            add("HomeTeamELO");
             add("AwayTeamId");
+            add("AwayTeamELO");
             add("TimeStamp");
         }};
 
+        Map<String, OptaMatchEventStats> matchEventStatsMap = new HashMap<>();
         List<String> body = new ArrayList<>();
 
         optaEventList.forEach( optaEvent -> {
@@ -153,10 +159,26 @@ public class TemplateSoccerPlayerController extends Controller {
             body.add(String.valueOf(optaEvent.typeId));
             body.add(String.valueOf(optaEvent.points));
             body.add(optaEvent.optaPlayerId);
+
+            OptaMatchEventStats matchEventStats = null;
+            int playedMinutes = 0;
+
+            if (matchEventStatsMap.containsKey(optaEvent.gameId)) {
+                matchEventStats = matchEventStatsMap.get(optaEvent.gameId);
+            }
+            else {
+                matchEventStats = OptaMatchEventStats.findOne(optaEvent.gameId);
+                matchEventStatsMap.put(optaEvent.gameId, matchEventStats);
+            }
+            playedMinutes = (matchEventStats != null) ? matchEventStats.getPlayedMinutes(optaEvent.optaPlayerId) : 0;
+            body.add(String.valueOf(playedMinutes));
+
             body.add(optaEvent.competitionId);
             body.add(String.valueOf(optaEvent.eventId));
             body.add(optaEvent.homeTeamId);
+            body.add(String.valueOf(TemplateSoccerTeam.getELO(optaEvent.homeTeamId)));
             body.add(optaEvent.awayTeamId);
+            body.add(String.valueOf(TemplateSoccerTeam.getELO(optaEvent.awayTeamId)));
             //body.add(GlobalDate.formatDate(optaEvent.timestamp));
             body.add(new DateTime(optaEvent.timestamp).toString(DateTimeFormat.forPattern("yyyy/MM/dd").withZoneUTC()));
         });

@@ -8,6 +8,8 @@ import com.paypal.core.rest.PayPalRESTException;
 import model.shop.Product;
 import model.shop.ProductMoney;
 import org.bson.types.ObjectId;
+import org.joda.money.CurrencyUnit;
+import org.joda.money.Money;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +42,7 @@ public class PaypalPayment {
     static final String SANDBOX_CANCEL_URL = "https://devtools-paypal.com/guide/pay_paypal?cancel=true&orderId=";
     static final String SANDBOX_RETURN_URL = "https://devtools-paypal.com/guide/pay_paypal?success=true&orderId=";
 
-    static final String CURRENCY = "USD";
+    static final String CURRENCY = CurrencyUnit.EUR.getCurrencyCode();
 
     static final String TRANSACTION_DESCRIPTION = "Creating a payment";
 
