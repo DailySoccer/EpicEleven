@@ -62,6 +62,7 @@
     });
 
     function refreshStateFromServer() {
+        @if(model.Model.isLocalHostTargetEnvironment()) {
         $.ajax({
             dataType: "json",
             url: "/admin/get_simulator_state",
@@ -72,6 +73,7 @@
                 window.setTimeout(refreshStateFromServer, 200);
             }
         });
+        }
     }
 
 
