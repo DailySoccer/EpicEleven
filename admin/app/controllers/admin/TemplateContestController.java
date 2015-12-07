@@ -302,6 +302,7 @@ public class TemplateContestController extends Controller {
         ENTRY_FEE,
         PRIZE_TYPE,
         PRIZE_MULTIPLIER,
+        PRIZE_POOL,
         START_DATE,
         ACTIVATION_AT,
         SPECIAL_IMAGE
@@ -330,6 +331,9 @@ public class TemplateContestController extends Controller {
             body.add(template.entryFee.toString());
             body.add(template.prizeType.toString());
             body.add(String.valueOf(template.prizeMultiplier));
+            body.add(template.prizePool != null
+                    ? template.prizePool.toString()
+                    : (template.simulation ? MoneyUtils.zero(MoneyUtils.CURRENCY_MANAGER.getCurrencyCode()) : MoneyUtils.zero(MoneyUtils.CURRENCY_GOLD.getCurrencyCode())).toString() );
             body.add(new DateTime(template.startDate).toString(dateTimeFormatter.withZoneUTC()));
             body.add(new DateTime(template.activationAt).toString(dateTimeFormatter.withZoneUTC()));
             body.add(template.specialImage);
@@ -408,6 +412,7 @@ public class TemplateContestController extends Controller {
                         case ENTRY_FEE:         templateContest.entryFee = Money.parse(params[i]); break;
                         case PRIZE_TYPE:        templateContest.prizeType = PrizeType.valueOf(params[i]); break;
                         case PRIZE_MULTIPLIER:  templateContest.prizeMultiplier = Float.valueOf(params[i]); break;
+                        case PRIZE_POOL:        templateContest.prizePool = Money.parse(params[i]); break;
                         case START_DATE:        templateContest.startDate = DateTime.parse(params[i], dateTimeFormatter.withZoneUTC()).toDate(); break;
                         case ACTIVATION_AT:     templateContest.activationAt = DateTime.parse(params[i], dateTimeFormatter.withZoneUTC()).toDate(); break;
                         case SPECIAL_IMAGE:     templateContest.specialImage = params[i]; break;
