@@ -237,6 +237,7 @@ public class TemplateContestController extends Controller {
         templateContest.entryFee = Money.zero(templateContest.simulation ? MoneyUtils.CURRENCY_ENERGY : MoneyUtils.CURRENCY_GOLD).plus(params.entryFee);
         templateContest.prizeType = params.prizeType;
         templateContest.prizeMultiplier = templateContest.simulation ? params.prizeMultiplier : Prizes.PRIZE_MULTIPLIER_FOR_REAL_CONTEST;
+        templateContest.prizePool = Money.zero(templateContest.simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD).plus(params.prizePool);
 
         templateContest.specialImage = params.specialImage;
 

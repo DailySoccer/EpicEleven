@@ -40,6 +40,7 @@ public class TemplateContest implements JongoId {
     public int salaryCap;
     public Money entryFee;
     public PrizeType prizeType;
+    public Money prizePool;
     public float prizeMultiplier = 1.0f;
 
     public Date startDate;
@@ -116,6 +117,7 @@ public class TemplateContest implements JongoId {
         cloned.salaryCap = salaryCap;
         cloned.entryFee = entryFee;
         cloned.prizeMultiplier = prizeMultiplier;
+        cloned.prizePool = prizePool;
         cloned.prizeType = prizeType;
 
         cloned.startDate = startDate;
@@ -314,7 +316,9 @@ public class TemplateContest implements JongoId {
     }
 
     public Money getPrizePool() {
-        return Prizes.getPool(simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD, entryFee, maxEntries, prizeMultiplier);
+        return (prizePool != null && prizePool.isPositive())
+                ? prizePool
+                : Prizes.getPool(simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD, entryFee, maxEntries, prizeMultiplier);
     }
 
     public static void actionWhenMatchEventIsStarted(TemplateMatchEvent matchEvent) {

@@ -77,6 +77,9 @@ public class Contest implements JongoId {
     public float prizeMultiplier = 0.9f;
 
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
+    public Money prizePool;
+
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public PrizeType prizeType;
 
     public Date startDate;
@@ -124,6 +127,7 @@ public class Contest implements JongoId {
         salaryCap = template.salaryCap;
         entryFee = template.entryFee;
         prizeMultiplier = template.prizeMultiplier;
+        prizePool = template.prizePool;
         prizeType = template.prizeType;
         startDate = template.startDate;
         activationAt = template.activationAt;
@@ -145,6 +149,7 @@ public class Contest implements JongoId {
         salaryCap = template.salaryCap;
         entryFee = template.entryFee;
         prizeMultiplier = template.prizeMultiplier;
+        prizePool = template.prizePool != null && template.prizePool.isPositive() ? template.prizePool : null;
         prizeType = template.prizeType;
         startDate = template.startDate;
         activationAt = template.activationAt;
@@ -565,7 +570,9 @@ public class Contest implements JongoId {
     }
 
     public Money getPrizePool() {
-        return Prizes.getPool(simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD, entryFee, getNumEntries(), prizeMultiplier);
+        return (prizePool != null && prizePool.isPositive())
+                ? prizePool
+                : Prizes.getPool(simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD, entryFee, getNumEntries(), prizeMultiplier);
     }
 
     class ContestEntryComparable implements Comparator<ContestEntry>{

@@ -55,6 +55,8 @@ public class TemplateContestForm {
     @Constraints.Required
     public float prizeMultiplier = 1.0f;
     @Constraints.Required
+    public int prizePool = 0;
+    @Constraints.Required
     public PrizeType prizeType = PrizeType.WINNER_TAKES_ALL;
 
     @Constraints.Required
@@ -91,6 +93,7 @@ public class TemplateContestForm {
         salaryCap = SalaryCap.findByMoney(templateContest.salaryCap);
         entryFee = templateContest.entryFee.getAmount().intValue();
         prizeMultiplier = templateContest.prizeMultiplier;
+        prizePool = templateContest.prizePool != null ? templateContest.prizePool.getAmount().intValue() : 0;
         prizeType = templateContest.prizeType;
 
         for(TemplateMatchEvent matchEvent : TemplateMatchEvent.findAll(templateContest.templateMatchEventIds)) {
