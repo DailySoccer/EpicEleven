@@ -123,6 +123,11 @@ public class TemplateMatchEventController extends Controller {
         return ok(views.html.template_match_event.render(matchEvent, TemplateSoccerTeam.findAllAsMap()));
     }
 
+    public static Result simulate(String templateMatchEventId) {
+        new LiveMatchEventSimulation(new ObjectId(templateMatchEventId));
+        return redirect(routes.TemplateMatchEventController.show(templateMatchEventId));
+    }
+
     public static Result simulationsToCSV(String templateMatchEventId, Integer num) {
 
         TemplateMatchEvent matchEvent = TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId));
