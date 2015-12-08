@@ -3,6 +3,9 @@ package actors;
 import model.*;
 import play.Logger;
 import play.Play;
+import utils.ListUtils;
+
+import java.util.List;
 
 public class VirtualMatchEventActor extends TickableActor {
     public VirtualMatchEventActor() {
@@ -25,6 +28,13 @@ public class VirtualMatchEventActor extends TickableActor {
 
     @Override protected void onTick() {
         long startTime = System.currentTimeMillis();
+
+        // Buscar los templateSoccerPlayers sin estadísticas de eventsCount actualizadas
+        List<TemplateSoccerPlayer> templateSoccerPlayerList = ListUtils.asList(
+                Model.templateSoccerPlayers().find("{stats: { $elemMatch: { playedMinutes: {$gt: 0}, eventsCount: {$exists: false} }}}")
+                        .as(TemplateSoccerPlayer.class));
+        Logger.debug("TemplateSoccerPlayer: EventsCount = NULL: {} players", templateSoccerPlayerList.size());
+        templateSoccerPlayerList.forEach(TemplateSoccerPlayer::updateEventStats);
 
         // Activamos los partidos simulados que deberían haber comenzado
         TemplateMatchEvent.findAllSimulationsByStartDate().forEach(TemplateMatchEvent::startSimulation);

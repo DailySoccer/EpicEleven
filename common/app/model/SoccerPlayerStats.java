@@ -1,8 +1,10 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import model.opta.OptaEventType;
 import model.opta.OptaMatchEventStats;
 import org.bson.types.ObjectId;
+import play.Logger;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -35,6 +37,9 @@ public class SoccerPlayerStats {
     @JsonView(JsonViews.Statistics.class)
     public HashMap<String, Integer> statsCount = new HashMap<>();   // SoccerPlayerStatType => num de veces que ha ocurrido
 
+    @JsonView(JsonViews.NotForClient.class)
+    public HashMap<String, Integer> eventsCount = null;   // OptaEventType => num de veces que ha ocurrido
+
     public SoccerPlayerStats() { }
 
     public SoccerPlayerStats(Date startDate, String optaPlayerId, String optaCompetitionId, String optaMatchEventId, ObjectId teamId, ObjectId opponentTeamId, int fantasyPoints) {
@@ -61,6 +66,19 @@ public class SoccerPlayerStats {
         return (playedMinutes > 0 || fantasyPoints > 0 || !statsCount.isEmpty());
     }
 
+    public void updateEventStats() {
+        eventsCount = new HashMap<>();
+        for (OptaEventType optaEventType : OptaEventType.values()) {
+            int count = countStat(optaEventType.code);
+            if (count > 0) {
+                eventsCount.put(optaEventType.toString(), count);
+            }
+        }
+        Model.templateSoccerPlayers().update("{stats: { $elemMatch: { optaPlayerId: #, optaMatchEventId: # } } }", optaPlayerId, optaMatchEventId)
+                .with("{$set: {\"stats.$.eventsCount\": #}}", eventsCount);
+        // Logger.debug("EventStats: {} optaMatchEventId: {}", optaPlayerId, optaMatchEventId);
+    }
+
     private void init() {
         // Logger.debug("Stats: {} -----", optaPlayerId);
 
@@ -81,5 +99,9 @@ public class SoccerPlayerStats {
 
     private int countStat(List<Integer> eventsTypes) {
         return (int) Model.optaEvents().count("{optaPlayerId: #, gameId: #, typeId:  {$in: #}}", optaPlayerId, optaMatchEventId, eventsTypes);
+    }
+
+    private int countStat(Integer eventType) {
+        return (int) Model.optaEvents().count("{optaPlayerId: #, gameId: #, typeId: #}", optaPlayerId, optaMatchEventId, eventType);
     }
 }
