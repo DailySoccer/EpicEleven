@@ -168,7 +168,7 @@ public class ContestController extends Controller {
         // Filtrar los contests que ya están completos
         List<Contest> contestsNotFull = new ArrayList<>(contests.size());
         for (Contest contest: contests) {
-            if (!contest.isFull()) {
+            if (!contest.isFull() && !contest.isCreatedByUser()) {
                 contestsNotFull.add(contest);
             }
         }
