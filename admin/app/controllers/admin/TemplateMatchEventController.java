@@ -124,7 +124,8 @@ public class TemplateMatchEventController extends Controller {
     }
 
     public static Result simulate(String templateMatchEventId) {
-        new LiveMatchEventSimulation(new ObjectId(templateMatchEventId));
+        TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findOne(new ObjectId(templateMatchEventId));
+        templateMatchEvent.startSimulation();
         return redirect(routes.TemplateMatchEventController.show(templateMatchEventId));
     }
 
@@ -158,10 +159,9 @@ public class TemplateMatchEventController extends Controller {
         for (int i=0; i<num; i++) {
             TemplateMatchEvent clone = matchEvent.copy();
 
-            MatchEventSimulation simulation = new MatchEventSimulation(matchEvent.templateMatchEventId);
-            clone.applySimulationEventsAtLiveFantasyPoints(simulation.simulationEvents);
+            LiveMatchEventSimulation simulation = new LiveMatchEventSimulation(matchEvent.templateMatchEventId);
 
-            for (HashMap.Entry<String, LiveFantasyPoints> entry : clone.liveFantasyPoints.entrySet()) {
+            for (HashMap.Entry<String, LiveFantasyPoints> entry : simulation.liveFantasyPoints.entrySet()) {
                 body.add(String.valueOf(i));
                 body.add(objectID2optaID.containsKey(entry.getKey()) ? objectID2optaID.get(entry.getKey()) : entry.getKey());
                 body.add(String.valueOf(entry.getValue().points));

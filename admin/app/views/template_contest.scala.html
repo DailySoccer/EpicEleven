@@ -31,6 +31,39 @@
     }
 }
 
+@match_event_name(p : model.TemplateMatchEvent) = @{
+    var teamA = ""
+    var teamB = ""
+    if(p.isGameStarted()) {
+        if(templateSoccerTeamMap.containsKey(p.templateSoccerTeamAId)) {
+            teamA = templateSoccerTeamMap(p.templateSoccerTeamAId).name + "(" + p.getFantasyPointsForTeam(p.templateSoccerTeamAId) + ")"
+        } else {
+            teamA = p.templateSoccerTeamAId.toString
+        }
+        if(templateSoccerTeamMap.containsKey(p.templateSoccerTeamBId)) {
+            teamB = templateSoccerTeamMap(p.templateSoccerTeamBId).name + "(" + p.getFantasyPointsForTeam(p.templateSoccerTeamBId) + ")"
+        } else {
+            teamB = p.templateSoccerTeamBId.toString
+        }
+    } else {
+        if(templateSoccerTeamMap.containsKey(p.templateSoccerTeamAId)) {
+            teamA = templateSoccerTeamMap(p.templateSoccerTeamAId).name
+        } else {
+            teamA = p.templateSoccerTeamAId.toString
+        }
+        if(templateSoccerTeamMap.containsKey(p.templateSoccerTeamBId)) {
+            teamB = templateSoccerTeamMap(p.templateSoccerTeamBId).name
+        } else {
+            teamB = p.templateSoccerTeamBId.toString
+        }
+    }
+    if (p.homeScore != -1 && p.awayScore != -1) {
+        teamA + " vS " + teamB + " (" + p.homeScore + " - " + p.awayScore + ")"
+    } else {
+        teamA + " vS " + teamB
+    }
+}
+
 @main("Template Contest - Admin") {
 
 <h1 class="page-header">Template Contest</h1>
@@ -59,16 +92,8 @@
             <td>@p.optaMatchEventId</td>
             <td>@p.optaTeamAId</td>
             <td>@p.optaTeamBId</td>
-            <td>
-                <a href="@TemplateSoccerTeamController.show(p.templateSoccerTeamAId.toString())">
-                    @templateSoccerTeamMap(p.templateSoccerTeamAId).name
-                </a>
-                vs
-                <a href="@TemplateSoccerTeamController.show(p.templateSoccerTeamBId.toString())">
-                    @templateSoccerTeamMap(p.templateSoccerTeamBId).name
-                </a>
-            </td>
-          <td>@GlobalDate.formatDate(p.startDate)</td>
+            <td><a href="@TemplateMatchEventController.show(p.templateMatchEventId.toString())">@match_event_name(p)</a></td>
+            <td>@GlobalDate.formatDate(p.startDate)</td>
             <td>@match_event_state(p)</td>
         </tr>
         }
