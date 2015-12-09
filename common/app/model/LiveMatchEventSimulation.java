@@ -2,6 +2,7 @@ package model;
 
 import model.opta.OptaEventType;
 import org.bson.types.ObjectId;
+import org.apache.commons.math3.distribution.NormalDistribution;
 import play.Logger;
 
 import java.util.*;
@@ -91,13 +92,13 @@ public class LiveMatchEventSimulation {
             float average = numEvents / numMatches;
             double stdev = calculateStDev(templateSoccerPlayer, optaEventType, average);
 
-            Logger.debug("Player: {} Matches: {} Event: {} * {} Min: {} Max: {}, Average: {} StDev: {}",
-                    templateSoccerPlayer.name, numMatches, optaEventType, numEvents, min, max, average, stdev);
+            // NORM.INV
+            NormalDistribution normalDistribution = new NormalDistribution(average, stdev);
+            double value = normalDistribution.inverseCumulativeProbability(Math.random());
 
-            double base = average - stdev;
+            Logger.debug("Player: {} Matches: {} Event: {} * {} Min: {} Max: {}, Average: {} StDev: {} Norm.Inv: {}",
+                    templateSoccerPlayer.name, numMatches, optaEventType, numEvents, min, max, average, stdev, value);
 
-            // FIX: NORM.INV
-            double value = base + (stdev * 2) * Math.random();
             value = Math.round(value);
             value = Math.min(value, max);
             value = Math.max(value, min);
