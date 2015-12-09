@@ -40,4 +40,16 @@ public class MoneyUtils {
     static public boolean equals(Money aMoney, Money amount) {
         return aMoney.withCurrencyUnit(CURRENCY_DEFAULT).compareTo(amount.withCurrencyUnit(CURRENCY_DEFAULT)) == 0;
     }
+
+    static public boolean isGold(Money aMoney) {
+        return aMoney.getCurrencyUnit().equals(CURRENCY_GOLD);
+    }
+
+    static public boolean isManager(Money aMoney) {
+        return aMoney.getCurrencyUnit().equals(CURRENCY_MANAGER);
+    }
+
+    static public boolean isEnergy(Money aMoney) {
+        return aMoney.getCurrencyUnit().equals(CURRENCY_ENERGY);
+    }
 }

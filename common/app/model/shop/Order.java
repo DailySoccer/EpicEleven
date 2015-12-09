@@ -96,6 +96,21 @@ public class Order {
         return result;
     }
 
+    public Money gained() {
+        Money result = null;
+        for(Product product : products) {
+            if (product instanceof ProductMoney) {
+                ProductMoney productMoney = (ProductMoney) product;
+                if (result == null) {
+                    result = productMoney.gained;
+                } else {
+                    result.plus(productMoney.gained);
+                }
+            }
+        }
+        return result;
+    }
+
     static public Order findOne(String orderId) {
         return ObjectId.isValid(orderId) ? Model.orders().findOne("{_id : #}", new ObjectId(orderId)).as(Order.class) : null;
     }
