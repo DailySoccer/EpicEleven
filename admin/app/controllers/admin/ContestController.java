@@ -35,7 +35,7 @@ public class ContestController extends Controller {
     public static Result indexAjax() {
         return PaginationData.withAjax(request().queryString(), Model.contests(), Contest.class, new PaginationData() {
             public String projection() {
-                return "{name: 1, 'contestEntries.userId': 1, maxEntries: 1, entryFee: 1, prizeMultiplier: 1, prizePool: 1, templateContestId: 1, optaCompetitionId: 1, state: 1, simulation: 1}";
+                return "{name: 1, 'contestEntries.userId': 1, maxEntries: 1, entryFee: 1, prizeMultiplier: 1, prizePool: 1, templateContestId: 1, optaCompetitionId: 1, startDate: 1, state: 1, simulation: 1}";
             }
 
             public List<String> getFieldNames() {
@@ -46,6 +46,7 @@ public class ContestController extends Controller {
                     "",                     // prize Pool
                     "templateContestId",
                     "optaCompetitionId",
+                    "startDate",
                     "",                     // templateContest.state
                     ""                      // Simulation
                 );
@@ -67,6 +68,8 @@ public class ContestController extends Controller {
                     case 5:
                         return contest.optaCompetitionId;
                     case 6:
+                        return GlobalDate.formatDate(contest.startDate);
+                    case 7:
                             if (contest.state.isOff()) {
                                 return "Off";
                             } else if(contest.state.isHistory()) {
@@ -78,7 +81,7 @@ public class ContestController extends Controller {
                             } else {
                                 return "Waiting";
                             }
-                    case 7: return "";
+                    case 8: return "";
                 }
                 return "<invalid value>";
             }
@@ -89,7 +92,7 @@ public class ContestController extends Controller {
                     case 4: return String.format("<a href=\"%s\">%s</a>",
                                 routes.TemplateContestController.show(fieldValue).url(),
                                 fieldValue);
-                    case 6:
+                    case 7:
                         if(fieldValue.equals("Off")) {
                             return "<button class=\"btn btn-warning disabled\">Off</button>";
                         } else if(fieldValue.equals("Finished")) {
@@ -101,7 +104,7 @@ public class ContestController extends Controller {
                         } else {
                             return "<button class=\"btn btn-warning\">Waiting</button>";
                         }
-                    case 7:
+                    case 8:
                         return contest.simulation
                                 ? "<button class=\"btn btn-success\">Simulation</button>"
                                 : "";
