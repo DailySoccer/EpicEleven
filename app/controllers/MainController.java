@@ -135,7 +135,13 @@ public class MainController extends Controller {
             templateSoccerPlayers.addAll(templateSoccerTeam.getTemplateSoccerPlayers());
         }
 
+        List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
+        for (TemplateSoccerPlayer templateSoccerPlayer : templateSoccerPlayers) {
+            instanceSoccerPlayers.add( new InstanceSoccerPlayer(templateSoccerPlayer) );
+        }
+
         return new ReturnHelper(ImmutableMap.builder()
+                .put("instanceSoccerPlayers", instanceSoccerPlayers)
                 .put("soccer_teams", templateSoccerTeamList)
                 .put("soccer_players", templateSoccerPlayers)
                 .build())
