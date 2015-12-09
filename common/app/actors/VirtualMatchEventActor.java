@@ -40,7 +40,7 @@ public class VirtualMatchEventActor extends TickableActor {
         TemplateMatchEvent.findAllSimulationsByStartDate().forEach(TemplateMatchEvent::startSimulation);
 
         // Actualizamos el estado de los partidos simulados para que se actualicen poco a poco ("live")
-        TemplateMatchEvent.findAllSimulationsToUpdate().forEach(matchEvent -> matchEvent.updateSimulationState(_timeMultiplier));
+        // TemplateMatchEvent.findAllSimulationsToUpdate().forEach(matchEvent -> matchEvent.updateSimulationState(_timeMultiplier));
 
         Logger.debug("Virtual MatchEvent: elapsed: {}", System.currentTimeMillis() - startTime);
     }

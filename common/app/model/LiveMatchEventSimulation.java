@@ -7,11 +7,8 @@ import play.Logger;
 import java.util.*;
 
 public class LiveMatchEventSimulation {
-    final int TICK_SECONDS = 5;
-
     public int homeScore = 0;
     public int awayScore = 0;
-    public ArrayList<SimulationEvent> simulationEvents = new ArrayList<>();
     HashMap<String, LiveFantasyPoints> liveFantasyPoints = new HashMap<>();
 
     public LiveMatchEventSimulation(ObjectId aTemplateMatchEventId) {
@@ -33,12 +30,12 @@ public class LiveMatchEventSimulation {
 
         List<TemplateSoccerPlayer> playersInHome = TemplateSoccerPlayer.findAllFromTemplateTeam(templateMatchEvent.templateSoccerTeamAId);
         for (TemplateSoccerPlayer templateSoccerPlayer : playersInHome) {
-            calculateLiveFantasyPoints(templateSoccerPlayer);
+            liveFantasyPoints.put(templateSoccerPlayer.templateSoccerPlayerId.toString(), calculateLiveFantasyPoints(templateSoccerPlayer));
         }
 
-        List<TemplateSoccerPlayer> playersInAway = TemplateSoccerPlayer.findAllFromTemplateTeam(templateMatchEvent.templateSoccerTeamAId);
+        List<TemplateSoccerPlayer> playersInAway = TemplateSoccerPlayer.findAllFromTemplateTeam(templateMatchEvent.templateSoccerTeamBId);
         for (TemplateSoccerPlayer templateSoccerPlayer : playersInAway) {
-            calculateLiveFantasyPoints(templateSoccerPlayer);
+            liveFantasyPoints.put(templateSoccerPlayer.templateSoccerPlayerId.toString(), calculateLiveFantasyPoints(templateSoccerPlayer));
         }
 
         Logger.debug("LiveMatchEventSimulation {}: elapsed: {}", aTemplateMatchEventId, System.currentTimeMillis() - startTime);
@@ -58,7 +55,7 @@ public class LiveMatchEventSimulation {
                 liveEventInfo.count = estimation;
                 liveEventInfo.points = estimation * points;
 
-                liveFantasyPoints.events.put(optaMatchEventId.toString(), liveEventInfo);
+                liveFantasyPoints.events.put(optaEventType.toString(), liveEventInfo);
                 liveFantasyPoints.points += liveEventInfo.points;
 
                 Logger.debug("Player: {} Event: {} Estimation: {}", templateSoccerPlayer.name, optaEventType, estimation);
