@@ -7,6 +7,8 @@ import model.*;
 import model.opta.OptaTeam;
 import org.bson.types.ObjectId;
 import play.Logger;
+import play.data.Form;
+import play.data.validation.Constraints;
 import play.libs.F;
 import play.libs.ws.WS;
 import play.mvc.Controller;
@@ -15,6 +17,8 @@ import utils.ListUtils;
 import utils.ReturnHelper;
 
 import java.util.*;
+
+import static play.data.Form.form;
 
 @AllowCors.Origin
 public class MainController extends Controller {
@@ -144,8 +148,32 @@ public class MainController extends Controller {
                 .put("instanceSoccerPlayers", instanceSoccerPlayers)
                 .put("soccer_teams", templateSoccerTeamList)
                 .put("soccer_players", templateSoccerPlayers)
+                .put("profile", theUser.getProfile())
                 .build())
                 .toResult(JsonViews.FullContest.class);
+    }
+
+    public static class FavoritesParams {
+        @Constraints.Required
+        public String soccerPlayers;   // JSON con la lista de futbolistas seleccionados
+    }
+
+    @UserAuthenticated
+    public static Result setFavorites() {
+        Form<FavoritesParams> form = form(FavoritesParams.class).bindFromRequest();
+
+        User theUser = (User) ctx().args.get("User");
+
+        if (!form.hasErrors()) {
+            FavoritesParams params = form.get();
+
+            // Obtener los soccerIds de los futbolistas : List<ObjectId>
+            List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerPlayers);
+            theUser.setFavorites(idsList);
+        }
+
+        Object result = form.errorsAsJson();
+        return new ReturnHelper(!form.hasErrors(), result).toResult();
     }
 
     public static F.Promise<Result> getShortUrl() {
