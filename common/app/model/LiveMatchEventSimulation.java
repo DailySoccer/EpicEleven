@@ -59,7 +59,7 @@ public class LiveMatchEventSimulation {
                 liveFantasyPoints.events.put(optaEventType.toString(), liveEventInfo);
                 liveFantasyPoints.points += liveEventInfo.points;
 
-                Logger.debug("Player: {} Event: {} Estimation: {}", templateSoccerPlayer.name, optaEventType, estimation);
+                // Logger.debug("Player: {} Event: {} Estimation: {}", templateSoccerPlayer.name, optaEventType, estimation);
             }
         }
 
@@ -96,14 +96,16 @@ public class LiveMatchEventSimulation {
             NormalDistribution normalDistribution = new NormalDistribution(average, stdev);
             double value = normalDistribution.inverseCumulativeProbability(Math.random());
 
-            Logger.debug("Player: {} Matches: {} Event: {} * {} Min: {} Max: {}, Average: {} StDev: {} Norm.Inv: {}",
-                    templateSoccerPlayer.name, numMatches, optaEventType, numEvents, min, max, average, stdev, value);
-
             value = Math.round(value);
             value = Math.min(value, max);
             value = Math.max(value, min);
 
             result = (int) value;
+
+            if (result > 0) {
+                Logger.debug("Player: {} Matches: {} Event: {} * {} Min: {} Max: {}, Average: {} StDev: {} Norm.Inv: {} => {}",
+                        templateSoccerPlayer.name, numMatches, optaEventType, numEvents, min, max, average, stdev, value, result);
+            }
         }
 
         return result;
