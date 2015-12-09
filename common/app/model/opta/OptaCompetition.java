@@ -58,6 +58,12 @@ public class OptaCompetition implements JongoId {
         return ListUtils.asList(Model.optaCompetitions().find("{activated: #}", true).as(OptaCompetition.class));
     }
 
+    static public List<OptaTeam> findTeamsByCompetitionId(String competitionId) {
+        List<OptaCompetition> competitions = ListUtils.asList(Model.optaCompetitions().find("{activated: true, competitionId: #}", competitionId).as(OptaCompetition.class));
+        OptaCompetition competition = competitions.get(competitions.size()-1);
+        return OptaTeam.findAllByCompetition(createId(competition.seasonId, competition.competitionId));
+    }
+
     static public List<OptaTeam> findTeamsByCompetitionCode(String code) {
         List<OptaCompetition> competitions = ListUtils.asList(Model.optaCompetitions().find("{activated: true, competitionCode: #}", code).as(OptaCompetition.class));
         OptaCompetition competition = competitions.get(competitions.size()-1);

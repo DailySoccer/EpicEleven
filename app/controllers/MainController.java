@@ -1,9 +1,12 @@
 package controllers;
 
 import actions.AllowCors;
+import actions.UserAuthenticated;
 import com.google.common.collect.ImmutableMap;
 import model.*;
+import model.opta.OptaTeam;
 import org.bson.types.ObjectId;
+import play.Logger;
 import play.libs.F;
 import play.libs.ws.WS;
 import play.mvc.Controller;
@@ -121,6 +124,23 @@ public class MainController extends Controller {
         return new ReturnHelper(data).toResult(JsonViews.Statistics.class);
     }
 
+    @UserAuthenticated
+    public static Result getSoccerPlayersByCompetition(String competitionId) {
+        User theUser = (User)ctx().args.get("User");
+
+        List<TemplateSoccerTeam> templateSoccerTeamList = TemplateSoccerTeam.findAllByCompetition(competitionId);
+
+        List<TemplateSoccerPlayer> templateSoccerPlayers = new ArrayList<>();
+        for (TemplateSoccerTeam templateSoccerTeam : templateSoccerTeamList) {
+            templateSoccerPlayers.addAll(templateSoccerTeam.getTemplateSoccerPlayers());
+        }
+
+        return new ReturnHelper(ImmutableMap.builder()
+                .put("soccer_teams", templateSoccerTeamList)
+                .put("soccer_players", templateSoccerPlayers)
+                .build())
+                .toResult(JsonViews.FullContest.class);
+    }
 
     public static F.Promise<Result> getShortUrl() {
         String url = request().body().asJson().get("url").asText();

@@ -4,9 +4,11 @@ package model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.WriteConcern;
+import model.opta.OptaCompetition;
 import model.opta.OptaTeam;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
+import play.Logger;
 import utils.ListUtils;
 
 import java.util.*;
@@ -68,6 +70,17 @@ public class TemplateSoccerTeam implements JongoId {
             teamIds.add(matchEvent.templateSoccerTeamBId);
         }
         return findAll(teamIds);
+    }
+
+    static public List<TemplateSoccerTeam> findAllByCompetition(String competitionId) {
+        List<TemplateSoccerTeam> result = new ArrayList<>();
+
+        List<OptaTeam> optaTeams = OptaCompetition.findTeamsByCompetitionId(competitionId);
+        for (OptaTeam optaTeam : optaTeams) {
+            result.add( findOneFromOptaId(optaTeam.optaTeamId) );
+        }
+
+        return result;
     }
 
     static public HashMap<ObjectId, TemplateSoccerTeam> findAllAsMap(){
