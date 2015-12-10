@@ -49,7 +49,11 @@ public class LiveMatchEventSimulation {
     private LiveFantasyPoints calculateLiveFantasyPoints(TemplateMatchEvent templateMatchEvent, ObjectId templateSoccerTeamId, TemplateSoccerPlayer templateSoccerPlayer) {
         LiveFantasyPoints liveFantasyPoints = new LiveFantasyPoints();
 
-        if (templateSoccerPlayer.stats.size() > 0) {
+        List<SoccerPlayerStats> playerStats = templateSoccerPlayer.stats.stream()
+                .filter(stats -> stats.playedMinutes > 0)
+                .collect(Collectors.toList());
+
+        if (playerStats.size() > 0) {
             // Logger.debug("LiveFantasyPoints: {} : {}", templateSoccerPlayer.templateSoccerPlayerId.toString(), templateSoccerPlayer.name);
 
             // Obtener el ELO del oponente
@@ -57,7 +61,7 @@ public class LiveMatchEventSimulation {
             int opponentELO = templateSoccerTeamsELO.get(opponentTeamId);
 
             // Ordenar nuestras estadísticas por comparación al ELO de nuestro contrincante actual
-            List<SoccerPlayerStats> statsSorted = sortByELODistance(templateSoccerPlayer.stats, opponentELO);
+            List<SoccerPlayerStats> statsSorted = sortByELODistance(playerStats, opponentELO);
             for (OptaEventType optaEventType : GenericEventsSet) {
                 int estimation = calculateEstimation(statsSorted, optaEventType);
                 if (estimation > 0) {
@@ -250,6 +254,10 @@ public class LiveMatchEventSimulation {
         add(OptaEventType.PENALTY_COMMITTED);
         add(OptaEventType.PENALTY_FAILED);
         add(OptaEventType.GOALKEEPER_SAVES_PENALTY);
+
+        // TODO: ¿?
+        // add(OptaEventType.CLEAN_SHEET);
+        // add(OptaEventType.GOAL_CONCEDED);
     }};
 }
 
