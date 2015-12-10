@@ -6,6 +6,8 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 import play.Logger;
 
 import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class LiveMatchEventSimulation {
     public int homeScore = 0;
@@ -29,57 +31,110 @@ public class LiveMatchEventSimulation {
             pointsTranslationMap.put(pointTranslation.eventTypeId, pointTranslation);
         }
 
+        templateSoccerTeamsELO = TemplateSoccerTeam.getTemplateSoccerTeamsELO();
+
         List<TemplateSoccerPlayer> playersInHome = TemplateSoccerPlayer.findAllFromTemplateTeam(templateMatchEvent.templateSoccerTeamAId);
         for (TemplateSoccerPlayer templateSoccerPlayer : playersInHome) {
-            liveFantasyPoints.put(templateSoccerPlayer.templateSoccerPlayerId.toString(), calculateLiveFantasyPoints(templateMatchEvent.templateSoccerTeamAId, templateSoccerPlayer));
+            liveFantasyPoints.put(templateSoccerPlayer.templateSoccerPlayerId.toString(), calculateLiveFantasyPoints(templateMatchEvent, templateMatchEvent.templateSoccerTeamAId, templateSoccerPlayer));
         }
 
         List<TemplateSoccerPlayer> playersInAway = TemplateSoccerPlayer.findAllFromTemplateTeam(templateMatchEvent.templateSoccerTeamBId);
         for (TemplateSoccerPlayer templateSoccerPlayer : playersInAway) {
-            liveFantasyPoints.put(templateSoccerPlayer.templateSoccerPlayerId.toString(), calculateLiveFantasyPoints(templateMatchEvent.templateSoccerTeamBId, templateSoccerPlayer));
+            liveFantasyPoints.put(templateSoccerPlayer.templateSoccerPlayerId.toString(), calculateLiveFantasyPoints(templateMatchEvent, templateMatchEvent.templateSoccerTeamBId, templateSoccerPlayer));
         }
 
         Logger.debug("LiveMatchEventSimulation {}: elapsed: {}", aTemplateMatchEventId, System.currentTimeMillis() - startTime);
     }
 
-    private LiveFantasyPoints calculateLiveFantasyPoints(ObjectId templateSoccerTeamId, TemplateSoccerPlayer templateSoccerPlayer) {
+    private LiveFantasyPoints calculateLiveFantasyPoints(TemplateMatchEvent templateMatchEvent, ObjectId templateSoccerTeamId, TemplateSoccerPlayer templateSoccerPlayer) {
         LiveFantasyPoints liveFantasyPoints = new LiveFantasyPoints();
 
-        List<SoccerPlayerStats> stats = new ArrayList<>();
-        // stats = templateSoccerPlayer.stats.stream().filter( stat)
+        if (templateSoccerPlayer.stats.size() > 0) {
+            // Logger.debug("LiveFantasyPoints: {} : {}", templateSoccerPlayer.templateSoccerPlayerId.toString(), templateSoccerPlayer.name);
 
-        for (OptaEventType optaEventType : GenericEventsSet) {
-            int estimation = calculateEstimation(templateSoccerPlayer, optaEventType);
-            if (estimation > 0) {
-                // Obtenemos los puntos que vale el evento
-                PointsTranslation pointsTranslation = pointsTranslationMap.get(optaEventType.code);
-                int points = (pointsTranslation != null) ? pointsTranslation.points : 0;
+            // Obtener el ELO del oponente
+            ObjectId opponentTeamId = templateMatchEvent.templateSoccerTeamAId.equals(templateSoccerTeamId) ? templateMatchEvent.templateSoccerTeamBId : templateMatchEvent.templateSoccerTeamAId;
+            int opponentELO = templateSoccerTeamsELO.get(opponentTeamId);
 
-                LiveEventInfo liveEventInfo = new LiveEventInfo();
-                liveEventInfo.count = estimation;
-                liveEventInfo.points = estimation * points;
+            // Ordenar nuestras estadísticas por comparación al ELO de nuestro contrincante actual
+            List<SoccerPlayerStats> statsSorted = sortByELODistance(templateSoccerPlayer.stats, opponentELO);
+            for (OptaEventType optaEventType : GenericEventsSet) {
+                int estimation = calculateEstimation(statsSorted, optaEventType);
+                if (estimation > 0) {
+                    // Obtenemos los puntos que vale el evento
+                    PointsTranslation pointsTranslation = pointsTranslationMap.get(optaEventType.code);
+                    int points = (pointsTranslation != null) ? pointsTranslation.points : 0;
 
-                liveFantasyPoints.events.put(optaEventType.toString(), liveEventInfo);
-                liveFantasyPoints.points += liveEventInfo.points;
+                    LiveEventInfo liveEventInfo = new LiveEventInfo();
+                    liveEventInfo.count = estimation;
+                    liveEventInfo.points = estimation * points;
 
-                // Logger.debug("Player: {} Event: {} Estimation: {}", templateSoccerPlayer.name, optaEventType, estimation);
+                    liveFantasyPoints.events.put(optaEventType.toString(), liveEventInfo);
+                    liveFantasyPoints.points += liveEventInfo.points;
+
+                    // Logger.debug("Player: {} Event: {} Estimation: {}", templateSoccerPlayer.name, optaEventType, estimation);
+                }
             }
         }
 
         return liveFantasyPoints;
     }
 
-    private int calculateEstimation(TemplateSoccerPlayer templateSoccerPlayer, OptaEventType optaEventType) {
-        return estimationUsingMatchRandom(templateSoccerPlayer, optaEventType);
-        // return estimattionUsingNormalDistribution(templateSoccerPlayer, optaEventType);
+    final int MAX_ELO_DIFFERENCE = 200;
+
+    private List<SoccerPlayerStats> sortByELODistance(List<SoccerPlayerStats> statsList, int opponentELO) {
+        class StatsELO {
+            public SoccerPlayerStats stats;
+            public int distance;
+            public StatsELO(SoccerPlayerStats stats, int distance) {
+                this.stats = stats;
+                this.distance = distance;
+            }
+        }
+
+        Comparator<StatsELO> byDistance = (StatsELO o1, StatsELO o2) -> o1.distance - o2.distance;
+
+        List<StatsELO> statsELOList = statsList.stream()
+                .map(stats -> new StatsELO(stats, Math.abs(opponentELO - templateSoccerTeamsELO.get(stats.opponentTeamId))))
+                .collect(Collectors.toList());
+
+        List<StatsELO> statsFiltered = statsELOList.stream()
+                .filter(stats -> stats.distance <= MAX_ELO_DIFFERENCE)
+                .collect(Collectors.toList());
+
+        // Logger.debug("Ignoring Matches: {}", statsList.size() - statsFiltered.size());
+
+        // Si nos hemos quedado con pocos partidos de los que obtener estadísticas, ignoramos el filtro y cogemos n partidos
+        if (statsFiltered.size() < 3) {
+            statsFiltered = statsELOList.stream()
+                    .limit(5)
+                    .collect(Collectors.toList());
+            // Logger.warn("sortByELODistance ---> {}", statsFiltered.size());
+        }
+
+        if (statsFiltered.isEmpty()) {
+            Logger.error("WTF 9911");
+        }
+
+        statsFiltered.sort(byDistance);
+        // Logger.debug("[{}]", String.join(", ", statsFiltered.stream().map(statsELO -> String.valueOf(statsELO.distance)).collect(Collectors.toList())));
+
+        return statsFiltered.stream().map(statsELO -> {
+            return statsELO.stats;
+        }).collect(Collectors.toList());
     }
 
-    private int estimationUsingMatchRandom(TemplateSoccerPlayer templateSoccerPlayer, OptaEventType optaEventType) {
+    private int calculateEstimation(List<SoccerPlayerStats> stats, OptaEventType optaEventType) {
+        return estimationUsingMatchRandom(stats, optaEventType);
+        // return estimationUsingNormalDistribution(templateSoccerPlayer, optaEventType);
+    }
+
+    private int estimationUsingMatchRandom(List<SoccerPlayerStats> stats, OptaEventType optaEventType) {
         int result = 0;
-        if (templateSoccerPlayer.stats.size() > 0) {
-            int match = rn.nextInt(templateSoccerPlayer.stats.size());
+        if (stats.size() > 0) {
+            int match = rn.nextInt(stats.size());
             // Logger.debug("TemplateSoccerPlayer: {} Random: {} Size: {}", templateSoccerPlayer.templateSoccerPlayerId, match, templateSoccerPlayer.stats.size());
-            SoccerPlayerStats matchStats = templateSoccerPlayer.stats.get(match);
+            SoccerPlayerStats matchStats = stats.get(match);
             if (matchStats.eventsCount != null && matchStats.eventsCount.containsKey(optaEventType.toString())) {
                 result = matchStats.eventsCount.get(optaEventType.toString());
             }
@@ -87,12 +142,12 @@ public class LiveMatchEventSimulation {
         return result;
     }
 
-    private int estimattionUsingNormalDistribution(TemplateSoccerPlayer templateSoccerPlayer, OptaEventType optaEventType) {
+    private int estimationUsingNormalDistribution(List<SoccerPlayerStats> stats, OptaEventType optaEventType) {
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
         float numEvents = 0;
         int numMatches = 0;
-        for (SoccerPlayerStats stat : templateSoccerPlayer.stats) {
+        for (SoccerPlayerStats stat : stats) {
             if (stat.eventsCount != null && stat.playedMinutes > 0) {
                 int count = stat.eventsCount.containsKey(optaEventType.toString()) ? stat.eventsCount.get(optaEventType.toString()) : 0;
                 if (count > max) {
@@ -111,7 +166,7 @@ public class LiveMatchEventSimulation {
 
         if (numEvents > 0) {
             float average = numEvents / numMatches;
-            double stdev = calculateStDev(templateSoccerPlayer, optaEventType, average);
+            double stdev = calculateStDev(stats, optaEventType, average);
 
             // NORM.INV
             NormalDistribution normalDistribution = new NormalDistribution(average, stdev);
@@ -124,18 +179,18 @@ public class LiveMatchEventSimulation {
             result = (int) value;
 
             if (result > 0) {
-                Logger.debug("Player: {} Matches: {} Event: {} * {} Min: {} Max: {}, Average: {} StDev: {} Norm.Inv: {} => {}",
-                        templateSoccerPlayer.name, numMatches, optaEventType, numEvents, min, max, average, stdev, value, result);
+                Logger.debug("Matches: {} Event: {} * {} Min: {} Max: {}, Average: {} StDev: {} Norm.Inv: {} => {}",
+                        numMatches, optaEventType, numEvents, min, max, average, stdev, value, result);
             }
         }
 
         return result;
     }
 
-    private double calculateStDev(TemplateSoccerPlayer templateSoccerPlayer, OptaEventType optaEventType, float average) {
+    private double calculateStDev(List<SoccerPlayerStats> stats, OptaEventType optaEventType, float average) {
         float sum = 0;
         int numMatches = 0;
-        for (SoccerPlayerStats stat : templateSoccerPlayer.stats) {
+        for (SoccerPlayerStats stat : stats) {
             if (stat.eventsCount != null && stat.playedMinutes > 0) {
                 float count = stat.eventsCount.containsKey(optaEventType.toString()) ? stat.eventsCount.get(optaEventType.toString()) : 0;
                 float countNormalized = count * 90 / stat.playedMinutes;
@@ -152,14 +207,15 @@ public class LiveMatchEventSimulation {
 
     Random rn = new Random();
 
-    public ObjectId templateMatchEventId;
-    public String optaMatchEventId;
-    public String homeTeamId;
-    public String awayTeamId;
-    public String competitionId;
-    public String seasonId;
+    ObjectId templateMatchEventId;
+    String optaMatchEventId;
+    String homeTeamId;
+    String awayTeamId;
+    String competitionId;
+    String seasonId;
 
     HashMap<Integer, PointsTranslation> pointsTranslationMap;
+    Map<ObjectId, Integer> templateSoccerTeamsELO;
 
     public static Set<OptaEventType> GenericEventsSet = new HashSet<OptaEventType>() {{
         add(OptaEventType.PASS_SUCCESSFUL);

@@ -133,6 +133,17 @@ public class TemplateSoccerTeam implements JongoId {
         return ELO.containsKey(optaTeamId) ? ELO.get(optaTeamId) : ELO_DEFAULT;
     }
 
+    static Map<ObjectId, Integer> getTemplateSoccerTeamsELO() {
+        Map<ObjectId, Integer> result = new HashMap<>();
+
+        List<TemplateSoccerTeam> templateSoccerTeamList = TemplateSoccerTeam.findAll();
+        for (TemplateSoccerTeam templateSoccerTeam : templateSoccerTeamList) {
+            result.put(templateSoccerTeam.templateSoccerTeamId, ELO.containsKey(templateSoccerTeam.optaTeamId) ? ELO.get(templateSoccerTeam.optaTeamId) : ELO_DEFAULT);
+        }
+
+        return result;
+    }
+
     @JsonIgnore
     static final int ELO_DEFAULT = 1500;
 
