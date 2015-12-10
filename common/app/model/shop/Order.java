@@ -8,7 +8,8 @@ import org.jongo.marshall.jackson.oid.Id;
 import java.util.List;
 
 public class Order {
-    static final String REFERER_URL_DEFAULT = "epiceleven.com";
+    // La url a la que redirigimos al usuario cuando el proceso de pago se complete (con éxito o cancelación)
+    public static final String REFERER_URL_DEFAULT = "jugar.epiceleven.com";
 
     public enum TransactionType {
         IN_GAME,
@@ -122,7 +123,7 @@ public class Order {
     static public Order create (ObjectId orderId, ObjectId userId, TransactionType transactionType, String paymentId, List<Product> products, String refererUrl) {
         Order order = new Order(orderId, userId, transactionType, paymentId, products);
         // No almacenamos el referer si es el "por defecto"
-        if (!refererUrl.contains(REFERER_URL_DEFAULT) && !refererUrl.contains("staging")) {
+        if (!refererUrl.contains(REFERER_URL_DEFAULT)) {
             order.referer = refererUrl;
         }
         Model.orders().insert(order);
