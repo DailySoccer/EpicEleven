@@ -172,8 +172,10 @@ public class MainController extends Controller {
             theUser.setFavorites(idsList);
         }
 
-        Object result = form.errorsAsJson();
-        return new ReturnHelper(!form.hasErrors(), result).toResult();
+        return new ReturnHelper(!form.hasErrors(), ImmutableMap.builder()
+                .put("profile", theUser.getProfile())
+                .build())
+                .toResult(JsonViews.FullContest.class);
     }
 
     public static F.Promise<Result> getShortUrl() {
