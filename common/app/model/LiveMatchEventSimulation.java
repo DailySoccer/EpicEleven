@@ -31,19 +31,22 @@ public class LiveMatchEventSimulation {
 
         List<TemplateSoccerPlayer> playersInHome = TemplateSoccerPlayer.findAllFromTemplateTeam(templateMatchEvent.templateSoccerTeamAId);
         for (TemplateSoccerPlayer templateSoccerPlayer : playersInHome) {
-            liveFantasyPoints.put(templateSoccerPlayer.templateSoccerPlayerId.toString(), calculateLiveFantasyPoints(templateSoccerPlayer));
+            liveFantasyPoints.put(templateSoccerPlayer.templateSoccerPlayerId.toString(), calculateLiveFantasyPoints(templateMatchEvent.templateSoccerTeamAId, templateSoccerPlayer));
         }
 
         List<TemplateSoccerPlayer> playersInAway = TemplateSoccerPlayer.findAllFromTemplateTeam(templateMatchEvent.templateSoccerTeamBId);
         for (TemplateSoccerPlayer templateSoccerPlayer : playersInAway) {
-            liveFantasyPoints.put(templateSoccerPlayer.templateSoccerPlayerId.toString(), calculateLiveFantasyPoints(templateSoccerPlayer));
+            liveFantasyPoints.put(templateSoccerPlayer.templateSoccerPlayerId.toString(), calculateLiveFantasyPoints(templateMatchEvent.templateSoccerTeamBId, templateSoccerPlayer));
         }
 
         Logger.debug("LiveMatchEventSimulation {}: elapsed: {}", aTemplateMatchEventId, System.currentTimeMillis() - startTime);
     }
 
-    private LiveFantasyPoints calculateLiveFantasyPoints(TemplateSoccerPlayer templateSoccerPlayer) {
+    private LiveFantasyPoints calculateLiveFantasyPoints(ObjectId templateSoccerTeamId, TemplateSoccerPlayer templateSoccerPlayer) {
         LiveFantasyPoints liveFantasyPoints = new LiveFantasyPoints();
+
+        List<SoccerPlayerStats> stats = new ArrayList<>();
+        // stats = templateSoccerPlayer.stats.stream().filter( stat)
 
         for (OptaEventType optaEventType : GenericEventsSet) {
             int estimation = calculateEstimation(templateSoccerPlayer, optaEventType);
@@ -67,6 +70,24 @@ public class LiveMatchEventSimulation {
     }
 
     private int calculateEstimation(TemplateSoccerPlayer templateSoccerPlayer, OptaEventType optaEventType) {
+        return estimationUsingMatchRandom(templateSoccerPlayer, optaEventType);
+        // return estimattionUsingNormalDistribution(templateSoccerPlayer, optaEventType);
+    }
+
+    private int estimationUsingMatchRandom(TemplateSoccerPlayer templateSoccerPlayer, OptaEventType optaEventType) {
+        int result = 0;
+        if (templateSoccerPlayer.stats.size() > 0) {
+            int match = rn.nextInt(templateSoccerPlayer.stats.size());
+            // Logger.debug("TemplateSoccerPlayer: {} Random: {} Size: {}", templateSoccerPlayer.templateSoccerPlayerId, match, templateSoccerPlayer.stats.size());
+            SoccerPlayerStats matchStats = templateSoccerPlayer.stats.get(match);
+            if (matchStats.eventsCount != null && matchStats.eventsCount.containsKey(optaEventType.toString())) {
+                result = matchStats.eventsCount.get(optaEventType.toString());
+            }
+        }
+        return result;
+    }
+
+    private int estimattionUsingNormalDistribution(TemplateSoccerPlayer templateSoccerPlayer, OptaEventType optaEventType) {
         int min = Integer.MAX_VALUE;
         int max = Integer.MIN_VALUE;
         float numEvents = 0;
@@ -128,6 +149,8 @@ public class LiveMatchEventSimulation {
         }
         return Math.sqrt(sum);
     }
+
+    Random rn = new Random();
 
     public ObjectId templateMatchEventId;
     public String optaMatchEventId;
