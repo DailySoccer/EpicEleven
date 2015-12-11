@@ -25,7 +25,7 @@ public class VirtualSetupActor extends TickableActor {
         long startTime = System.currentTimeMillis();
 
         // Creamos los resultados de la simulación
-        TemplateMatchEvent.findAllSimulationsToSetup().forEach(TemplateMatchEvent::setupSimulation);
+        // TemplateMatchEvent.findAllSimulationsToSetup().forEach(TemplateMatchEvent::setupSimulation);
 
         Logger.debug("Virtual Setup: elapsed: {}", System.currentTimeMillis() - startTime);
     }

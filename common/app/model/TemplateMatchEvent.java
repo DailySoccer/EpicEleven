@@ -303,10 +303,20 @@ public class TemplateMatchEvent implements JongoId {
         Logger.debug("TemplateMatchEvent: startSimulation: " + templateMatchEventId.toString());
 
         // Damos el partido como iniciado
-        // IMPORTANTE: El orden de las acciones es importante!
         setGameStarted();
         TemplateContest.actionWhenMatchEventIsStarted(this);
         updateMatchEventTime(PeriodType.FIRST_HALF, 0);
+
+        LiveMatchEventSimulation simulation = new LiveMatchEventSimulation(templateMatchEventId);
+        liveFantasyPoints = simulation.liveFantasyPoints;
+        Model.templateMatchEvents()
+                .update("{_id: #}", templateMatchEventId)
+                .with("{$set: {liveFantasyPoints: #}}", liveFantasyPoints);
+
+        // Damos el partido por finalizado
+        setGameFinished();
+        TemplateContest.actionWhenMatchEventIsFinished(this);
+        updateMatchEventTime(PeriodType.POST_GAME, 90);
     }
 
     public void updateSimulationState(long timeMultiplier) {

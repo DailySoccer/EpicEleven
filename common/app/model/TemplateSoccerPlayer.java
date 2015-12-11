@@ -163,6 +163,14 @@ public class TemplateSoccerPlayer implements JongoId {
         }
     }
 
+    public void updateEventStats() {
+        stats.forEach( stat -> {
+            if (stat.eventsCount == null) {
+                stat.updateEventStats();
+            }
+        });
+    }
+
     private int calculateFantasyPointsFromStats() {
         int numPlayedMatches = 0;
         int fantasyPointsMedia = 0;

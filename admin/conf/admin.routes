@@ -76,6 +76,7 @@ GET         /template_match_event/optaEvents/:matchEventId                      
 GET         /template_match_event/simulatedEvents/:matchEventId                  controllers.admin.TemplateMatchEventController.showSimulatedEvents(matchEventId : String)
 GET         /template_match_event/managerLevels/:templateMatchEventId            controllers.admin.TemplateMatchEventController.showManagerLevels(templateMatchEventId : String)
 GET         /template_match_event/simulations_to_csv/:templateMatchEventId/:num  controllers.admin.TemplateMatchEventController.simulationsToCSV(templateMatchEventId : String, num : Int)
+GET         /template_match_event/simulate/:matchEventId                         controllers.admin.TemplateMatchEventController.simulate(matchEventId : String)
 
 GET         /template_soccer_teams                                               controllers.admin.TemplateSoccerTeamController.index()
 GET         /template_soccer_team/:templateSoccerTeam                            controllers.admin.TemplateSoccerTeamController.show(templateSoccerTeam : String)
