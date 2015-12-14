@@ -340,8 +340,6 @@ public class Actors {
     }
 
     private void initRabbitMQ(TargetEnvironment env) {
-        Logger.warn("Actors no pudo conectar con RabbitMq");
-        /*
         try {
             ConnectionFactory factory = new ConnectionFactory();
             factory.setUri(readRabbitMQUriForEnvironment(env));
@@ -364,7 +362,6 @@ public class Actors {
         catch (Exception exc) {
             Logger.warn("Actors no pudo conectar con RabbitMq");
         }
-        */
     }
 
     public void shutdown() {
