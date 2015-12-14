@@ -65,6 +65,7 @@ public class TemplateContestController extends Controller {
                         "minInstances",
                         "maxEntries",
                         "salaryCap",
+                        "",             // Filters: ManagerLevel && TrueSkill
                         "entryFee",
                         "prizeMultiplier",
                         "",             // Prize Pool
@@ -96,22 +97,28 @@ public class TemplateContestController extends Controller {
                     case 6:
                         return String.valueOf(templateContest.salaryCap);
                     case 7:
-                        return MoneyUtils.asString(templateContest.entryFee);
+                        return String.format("[%s:%s] [%s:%s]",
+                                templateContest.minManagerLevel != null ? templateContest.minManagerLevel : "0",
+                                templateContest.maxManagerLevel != null ? templateContest.maxManagerLevel : User.MANAGER_POINTS.length - 1,
+                                templateContest.minTrueSkill != null && templateContest.minTrueSkill != -1 ? templateContest.minTrueSkill : "-",
+                                templateContest.maxTrueSkill != null && templateContest.maxTrueSkill != -1 ? templateContest.maxTrueSkill : "-" );
                     case 8:
-                        return String.valueOf(templateContest.prizeMultiplier);
+                        return MoneyUtils.asString(templateContest.entryFee);
                     case 9:
-                        return MoneyUtils.asString(templateContest.getPrizePool());
+                        return String.valueOf(templateContest.prizeMultiplier);
                     case 10:
-                        return String.valueOf(templateContest.prizeType);
+                        return MoneyUtils.asString(templateContest.getPrizePool());
                     case 11:
-                        return GlobalDate.formatDate(templateContest.startDate);
+                        return String.valueOf(templateContest.prizeType);
                     case 12:
-                        return GlobalDate.formatDate(templateContest.activationAt);
+                        return GlobalDate.formatDate(templateContest.startDate);
                     case 13:
-                        return "";
+                        return GlobalDate.formatDate(templateContest.activationAt);
                     case 14:
                         return "";
                     case 15:
+                        return "";
+                    case 16:
                         return templateContest.simulation ? "Simulation" : "Real";
                 }
                 return "<invalid value>";
@@ -134,12 +141,12 @@ public class TemplateContestController extends Controller {
                                 fieldValue);
                     case 5:
                         return String.format("%d/%d", templateContest.minEntries, templateContest.maxEntries);
-                    case 13:
+                    case 14:
                         return (templateContest.state.isDraft() || templateContest.state.isOff() || templateContest.state.isActive())
                                 ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">Edit</button></a>",
                                 routes.TemplateContestController.edit(templateContest.templateContestId.toString()))
                                 : "";
-                    case 14:
+                    case 15:
                         return templateContest.state.isDraft()
                                 ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">+</button></a> <a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
                                 routes.TemplateContestController.publish(templateContest.templateContestId.toString()),
@@ -148,7 +155,7 @@ public class TemplateContestController extends Controller {
                                 String.format("<a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
                                         routes.TemplateContestController.destroy(templateContest.templateContestId.toString()))
                                 : "";
-                    case 15:
+                    case 16:
                         return templateContest.simulation
                                 ? String.format("<button class=\"btn btn-success\">Simulation</button>")
                                 : "";

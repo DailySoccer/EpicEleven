@@ -35,7 +35,21 @@ public class ContestController extends Controller {
     public static Result indexAjax() {
         return PaginationData.withAjax(request().queryString(), Model.contests(), Contest.class, new PaginationData() {
             public String projection() {
-                return "{name: 1, 'contestEntries.userId': 1, maxEntries: 1, entryFee: 1, prizeMultiplier: 1, prizePool: 1, templateContestId: 1, optaCompetitionId: 1, startDate: 1, state: 1, simulation: 1}";
+                return "{" +
+                        "name: 1, " +
+                        "'contestEntries.userId': 1, " +
+                        "maxEntries: 1, " +
+                        "minManagerLevel: 1, maxManagerLevel: 1, " +
+                        "minTrueSkill: 1, maxTrueSkill: 1, " +
+                        "entryFee: 1, " +
+                        "prizeMultiplier: 1, " +
+                        "prizePool: 1, " +
+                        "templateContestId: 1, " +
+                        "optaCompetitionId: 1, " +
+                        "startDate: 1, " +
+                        "state: 1, " +
+                        "simulation: 1" +
+                        "}";
             }
 
             public List<String> getFieldNames() {
@@ -43,6 +57,7 @@ public class ContestController extends Controller {
                     "name",
                     "",                     // contestEntries.size
                     "maxEntries",
+                    "",                     // Filters: ManagerLevel && TrueSkill
                     "",                     // prize Pool
                     "templateContestId",
                     "optaCompetitionId",
@@ -62,14 +77,20 @@ public class ContestController extends Controller {
                     case 2:
                         return String.valueOf(contest.maxEntries);
                     case 3:
-                        return MoneyUtils.asString(contest.getPrizePool());
+                        return String.format("[%s:%s] [%s:%s]",
+                                contest.minManagerLevel != null ? contest.minManagerLevel : "0",
+                                contest.maxManagerLevel != null ? contest.maxManagerLevel : User.MANAGER_POINTS.length - 1,
+                                (contest.minTrueSkill != null && contest.minTrueSkill != -1) ? contest.minTrueSkill : "-",
+                                (contest.maxTrueSkill != null && contest.maxTrueSkill != -1) ? contest.maxTrueSkill : "-" );
                     case 4:
-                        return contest.templateContestId.toString();
+                        return MoneyUtils.asString(contest.getPrizePool());
                     case 5:
-                        return contest.optaCompetitionId;
+                        return contest.templateContestId.toString();
                     case 6:
-                        return GlobalDate.formatDate(contest.startDate);
+                        return contest.optaCompetitionId;
                     case 7:
+                        return GlobalDate.formatDate(contest.startDate);
+                    case 8:
                             if (contest.state.isOff()) {
                                 return "Off";
                             } else if(contest.state.isHistory()) {
@@ -81,7 +102,7 @@ public class ContestController extends Controller {
                             } else {
                                 return "Waiting";
                             }
-                    case 8: return "";
+                    case 9: return "";
                 }
                 return "<invalid value>";
             }
@@ -89,10 +110,10 @@ public class ContestController extends Controller {
             public String getRenderFieldByIndex(Object data, String fieldValue, Integer index) {
                 Contest contest = (Contest) data;
                 switch (index) {
-                    case 4: return String.format("<a href=\"%s\">%s</a>",
+                    case 5: return String.format("<a href=\"%s\">%s</a>",
                                 routes.TemplateContestController.show(fieldValue).url(),
                                 fieldValue);
-                    case 7:
+                    case 8:
                         if(fieldValue.equals("Off")) {
                             return "<button class=\"btn btn-warning disabled\">Off</button>";
                         } else if(fieldValue.equals("Finished")) {
@@ -104,7 +125,7 @@ public class ContestController extends Controller {
                         } else {
                             return "<button class=\"btn btn-warning\">Waiting</button>";
                         }
-                    case 8:
+                    case 9:
                         return contest.simulation
                                 ? "<button class=\"btn btn-success\">Simulation</button>"
                                 : "";
