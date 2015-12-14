@@ -241,6 +241,22 @@ public class Contest implements JongoId {
         return authorId != null;
     }
 
+    public boolean hasManagerLevelConditions() {
+        return (minManagerLevel != 0 || maxManagerLevel != User.MANAGER_POINTS.length);
+    }
+
+    public boolean managerLevelValid(int managerLevel) {
+        return (managerLevel >= minManagerLevel && managerLevel <= maxManagerLevel);
+    }
+
+    public boolean hasTrueSkillConditions() {
+        return (minTrueSkill != null && minTrueSkill != -1) || (maxTrueSkill != null && maxTrueSkill != -1);
+    }
+
+    public boolean trueSkillValid(int trueSkill) {
+        return !hasTrueSkillConditions() || (trueSkill >= minTrueSkill && trueSkill <= maxTrueSkill);
+    }
+
     static public Contest findOne(ObjectId contestId) {
         return Model.contests().findOne("{_id : #}", contestId).as(Contest.class);
     }
