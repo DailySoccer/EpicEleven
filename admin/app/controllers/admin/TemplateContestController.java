@@ -233,6 +233,12 @@ public class TemplateContestController extends Controller {
         templateContest.maxEntries = params.maxEntries;
         templateContest.salaryCap = params.salaryCap.money;
 
+        templateContest.minManagerLevel = params.minManagerLevel;
+        templateContest.maxManagerLevel = params.maxManagerLevel;
+
+        templateContest.minTrueSkill = params.minTrueSkill != -1 ? params.minTrueSkill : null;
+        templateContest.maxTrueSkill = params.maxTrueSkill != -1 ? params.maxTrueSkill : null;
+
         // En la simulación usaremos ENERGY, en los reales GOLD
         templateContest.entryFee = Money.zero(templateContest.simulation ? MoneyUtils.CURRENCY_ENERGY : MoneyUtils.CURRENCY_GOLD).plus(params.entryFee);
         templateContest.prizeType = params.prizeType;
@@ -474,7 +480,10 @@ public class TemplateContestController extends Controller {
         Model.contests().withWriteConcern(WriteConcern.SAFE)
                 .update("{templateContestId: #}", templateContest.getId())
                 .multi()
-                .with("{$set: {name: #, specialImage: #}}", templateContest.name, templateContest.specialImage);
+                .with("{$set: {name: #, specialImage: #, minManagerLevel: #, maxManagerLevel: #, minTrueSkill: #, maxTrueSkill: #}}",
+                        templateContest.name, templateContest.specialImage,
+                        templateContest.minManagerLevel, templateContest.maxManagerLevel,
+                        templateContest.minTrueSkill, templateContest.maxTrueSkill);
     }
 
     @CheckTargetEnvironment
