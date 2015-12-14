@@ -30,7 +30,7 @@ public class User {
     public static final float PERCENT_TO_DECAY = 0.5f;
 
     public static final long[] MANAGER_POINTS = new long[] {
-      0, 65, 125, 250, 500, 1000
+      0, 65, 125, 250, 500, 1000, 1065, 10125, 10250, 10500, 11000
     };
 
     public class Rating {
