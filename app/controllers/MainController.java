@@ -122,6 +122,7 @@ public class MainController extends Controller {
         Map<String, Object> data = new HashMap<>();
         data.put("soccer_teams", templateSoccerTeams);
         data.put("soccer_player", templateSoccerPlayer);
+        data.put("instance_soccer_player", new InstanceSoccerPlayer(templateSoccerPlayer));
         if (templateMatchEvent != null) {
             data.put("match_event", templateMatchEvent);
         }
