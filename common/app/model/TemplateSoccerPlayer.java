@@ -313,13 +313,15 @@ public class TemplateSoccerPlayer implements JongoId {
     }
 
     static Integer[] LEVEL_PRICE = new Integer[]{
-        0, 8, 19, 33, 51, 88, 160, 269, 414, 632, 1068
+        0, 7, 16, 28, 43, 74, 135, 228, 350, 534, 903
     };
 
-    static public Money moneyToBuy(int playerLevel, int managerLevel) {
+    static public Money moneyToBuy(int playerLevel, int userManagerLevel) {
         Money result = Money.zero(MoneyUtils.CURRENCY_GOLD);
-        if (managerLevel < playerLevel) {
-            result = result.plus( (playerLevel - managerLevel) * LEVEL_PRICE[playerLevel] );
+        if (userManagerLevel < playerLevel) {
+            for (int i = userManagerLevel + 1; i <= playerLevel; i++) {
+                result = result.plus(LEVEL_PRICE[i]);
+            }
         }
         return result;
     }
