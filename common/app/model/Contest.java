@@ -242,7 +242,7 @@ public class Contest implements JongoId {
     }
 
     public boolean hasManagerLevelConditions() {
-        return (minManagerLevel != 0 || maxManagerLevel != User.MANAGER_POINTS.length);
+        return (minManagerLevel != null && maxManagerLevel != null) && (minManagerLevel != 0 || maxManagerLevel != User.MANAGER_POINTS.length);
     }
 
     public boolean managerLevelValid(int managerLevel) {
