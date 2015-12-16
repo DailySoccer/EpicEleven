@@ -22,8 +22,8 @@ public class Catalog {
             .put("GOLD_4", new ProductMoney("GOLD_4", Money.of(CurrencyUnit.EUR, 12.90), "product_gold_4", "images/icon-BuyGold4.png", Money.of(MoneyUtils.CURRENCY_GOLD, 250), Money.of(MoneyUtils.CURRENCY_GOLD, 50), false))
             .put("GOLD_5", new ProductMoney("GOLD_5", Money.of(CurrencyUnit.EUR, 32), "product_gold_5", "images/icon-BuyGold5.png", Money.of(MoneyUtils.CURRENCY_GOLD, 900), Money.of(MoneyUtils.CURRENCY_GOLD, 400), false))
             .put("GOLD_6", new ProductMoney("GOLD_6", Money.of(CurrencyUnit.EUR, 99.95), "product_gold_6", "images/icon-BuyGold6.png", Money.of(MoneyUtils.CURRENCY_GOLD, 1650), Money.of(MoneyUtils.CURRENCY_GOLD, 650), false))
-            .put("ENERGY_1", new ProductMoney("ENERGY_1", Money.of(MoneyUtils.CURRENCY_GOLD, 1), "product_energy_1", "images/icon-FullEnergy.png", Money.zero(MoneyUtils.CURRENCY_ENERGY).plus(1)))
-            .put("ENERGY_ALL", new ProductMoney("ENERGY_ALL", Money.of(MoneyUtils.CURRENCY_GOLD, 3), "product_maxrefill", "images/icon-FullEnergy.png", Money.of(MoneyUtils.CURRENCY_ENERGY, User.MAX_ENERGY)))
+            .put("ENERGY_1", new ProductMoney("ENERGY_1", Money.of(MoneyUtils.CURRENCY_GOLD, 1), "product_energy_1", "images/1pRefill.png", Money.zero(MoneyUtils.CURRENCY_ENERGY).plus(1)))
+            .put("ENERGY_ALL", new ProductMoney("ENERGY_ALL", Money.of(MoneyUtils.CURRENCY_GOLD, 3), "product_maxrefill", "images/fullRefill.png", Money.of(MoneyUtils.CURRENCY_ENERGY, User.MAX_ENERGY)))
             .build();
 
     static public List<Product> Products = ImmutableList.<Product>builder()
