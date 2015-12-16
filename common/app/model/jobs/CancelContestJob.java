@@ -5,6 +5,7 @@ import model.*;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.accounting.AccountingTranCancelContest;
+import model.shop.Order;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -55,7 +56,17 @@ public class CancelContestJob extends Job {
                     if (contest.entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD) && MoneyUtils.isGreaterThan(contest.entryFee, MoneyUtils.zero) && !contest.contestEntries.isEmpty()) {
                         List<AccountOp> accounts = new ArrayList<>();
                         for (ContestEntry contestEntry : contest.contestEntries) {
-                            accounts.add(new AccountOp(contestEntry.userId, contest.entryFee, User.getSeqId(contestEntry.userId) + 1));
+                            Money money = AccountingTran.moneySpentOnContest(contestEntry.userId, contestId);
+                            // Queremos devolver el dinero que se gastó al entrar en el contest
+                            money = money.negated();
+
+                            // Queremos devolver el dinero adicional que se gastó en comprar futbolistas
+                            Money moneySpent = Order.moneySpentOnContest(contestEntry.userId, contestId);
+                            if (moneySpent.isPositive()) {
+                                money = money.plus(moneySpent);
+                            }
+
+                            accounts.add(new AccountOp(contestEntry.userId, money, User.getSeqId(contestEntry.userId) + 1));
                         }
                         AccountingTran accountingTran = AccountingTranCancelContest.create(contest.entryFee.getCurrencyUnit().getCode(), contestId, accounts);
                         bValid = (accountingTran != null);
