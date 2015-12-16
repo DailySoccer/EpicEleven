@@ -222,14 +222,14 @@ public class ContestEntryController extends Controller {
     public static Result editContestEntry() {
         Form<EditContestEntryParams> contestEntryForm = form(EditContestEntryParams.class).bindFromRequest();
 
+        User theUser = (User) ctx().args.get("User");
+
         if (!contestEntryForm.hasErrors()) {
             EditContestEntryParams params = contestEntryForm.get();
 
             String formation = params.formation;
 
             Logger.info("editContestEntry: contestEntryId({}) soccerTeam({})", params.contestEntryId, params.soccerTeam);
-
-            User theUser = (User) ctx().args.get("User");
 
             ContestEntry contestEntry = ContestEntry.findOne(params.contestEntryId);
             if (contestEntry != null) {
@@ -278,10 +278,12 @@ public class ContestEntryController extends Controller {
             }
         }
 
-        JsonNode result = contestEntryForm.errorsAsJson();
+        Object result = contestEntryForm.errorsAsJson();
 
         if (!contestEntryForm.hasErrors()) {
-            result = new ObjectMapper().createObjectNode().put("result", "ok");
+            result = ImmutableMap.of(
+                    "result", "ok",
+                    "profile", theUser.getProfile());
         }
         else {
             Logger.error("WTF 7240: editContestEntry: {}", contestEntryForm.errorsAsJson());

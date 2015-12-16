@@ -4,6 +4,9 @@ import model.Model;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
+import play.Logger;
+import utils.ListUtils;
+import utils.MoneyUtils;
 
 import java.util.List;
 
@@ -118,6 +121,25 @@ public class Order {
 
     static public Order findOneFromPayment(String paymentId) {
         return Model.orders().findOne("{paymentId : #}", paymentId).as(Order.class);
+    }
+
+    static public List<Order> findAllInContest(ObjectId userId, ObjectId contestId) {
+        return ListUtils.asList(Model.orders().find("{userId : #, state: #, \"products.contestId\": #}", userId, State.COMPLETED, contestId).as(Order.class));
+    }
+
+    static public Money moneySpentOnContest(ObjectId userId, ObjectId contestId) {
+        Money money = Money.zero(MoneyUtils.CURRENCY_GOLD);
+
+        List<Order> ordersToBuy = findAllInContest(userId, contestId);
+        for (Order order : ordersToBuy) {
+            Money price = order.price();
+            if (price.getCurrencyUnit().equals(money.getCurrencyUnit())) {
+                money = money.plus(price);
+            }
+        }
+
+        // Logger.debug("MoneySpentOnContest: {} Orders: {}", money.toString(), ordersToBuy.size());
+        return money;
     }
 
     static public Order create (ObjectId orderId, ObjectId userId, TransactionType transactionType, String paymentId, List<Product> products, String refererUrl) {

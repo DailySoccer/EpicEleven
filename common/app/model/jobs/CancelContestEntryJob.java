@@ -9,9 +9,12 @@ import model.User;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.accounting.AccountingTranCancelContestEntry;
+import model.shop.Order;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
 import play.Logger;
+
+import java.util.List;
 
 public class CancelContestEntryJob extends Job {
     ObjectId userId;
@@ -101,10 +104,21 @@ public class CancelContestEntryJob extends Job {
     }
 
     private boolean transactionReturnPayment(Money entryFee) {
+        Money money = entryFee;
+
+        // Logger.debug("{userId : %s, state: COMPLETED, products.contestId: %s}", userId.toString(), contestId.toString());
+
+        // Añadir el dinero invertido 'a posteriori' en el contest que se está cancelando (principalmente compra de futbolistas)
+        Money moneySpent = Order.moneySpentOnContest(userId, contestId);
+        if (moneySpent.isPositive()) {
+            money = money.plus(moneySpent);
+        }
+
         // Crear la transacción de Abandonar un Contest
-        AccountingTran accountingTran = AccountingTranCancelContestEntry.create(entryFee.getCurrencyUnit().getCode(), contestId, contestEntryId, ImmutableList.of(
-                new AccountOp(userId, entryFee, User.getSeqId(userId) + 1)
+        AccountingTran accountingTran = AccountingTranCancelContestEntry.create(money.getCurrencyUnit().getCode(), contestId, contestEntryId, ImmutableList.of(
+                new AccountOp(userId, money, User.getSeqId(userId) + 1)
         ));
+
         return accountingTran != null;
     }
 
