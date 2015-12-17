@@ -65,6 +65,7 @@ public class TemplateContestController extends Controller {
                         "minInstances",
                         "maxEntries",
                         "salaryCap",
+                        "",             // Filters: ManagerLevel && TrueSkill
                         "entryFee",
                         "prizeMultiplier",
                         "",             // Prize Pool
@@ -96,22 +97,28 @@ public class TemplateContestController extends Controller {
                     case 6:
                         return String.valueOf(templateContest.salaryCap);
                     case 7:
-                        return MoneyUtils.asString(templateContest.entryFee);
+                        return String.format("[%s:%s] [%s:%s]",
+                                templateContest.minManagerLevel != null ? templateContest.minManagerLevel : "0",
+                                templateContest.maxManagerLevel != null ? templateContest.maxManagerLevel : User.MANAGER_POINTS.length - 1,
+                                templateContest.minTrueSkill != null && templateContest.minTrueSkill != -1 ? templateContest.minTrueSkill : "-",
+                                templateContest.maxTrueSkill != null && templateContest.maxTrueSkill != -1 ? templateContest.maxTrueSkill : "-" );
                     case 8:
-                        return String.valueOf(templateContest.prizeMultiplier);
+                        return MoneyUtils.asString(templateContest.entryFee);
                     case 9:
-                        return MoneyUtils.asString(templateContest.getPrizePool());
+                        return String.valueOf(templateContest.prizeMultiplier);
                     case 10:
-                        return String.valueOf(templateContest.prizeType);
+                        return MoneyUtils.asString(templateContest.getPrizePool());
                     case 11:
-                        return GlobalDate.formatDate(templateContest.startDate);
+                        return String.valueOf(templateContest.prizeType);
                     case 12:
-                        return GlobalDate.formatDate(templateContest.activationAt);
+                        return GlobalDate.formatDate(templateContest.startDate);
                     case 13:
-                        return "";
+                        return GlobalDate.formatDate(templateContest.activationAt);
                     case 14:
                         return "";
                     case 15:
+                        return "";
+                    case 16:
                         return templateContest.simulation ? "Simulation" : "Real";
                 }
                 return "<invalid value>";
@@ -134,12 +141,12 @@ public class TemplateContestController extends Controller {
                                 fieldValue);
                     case 5:
                         return String.format("%d/%d", templateContest.minEntries, templateContest.maxEntries);
-                    case 13:
+                    case 14:
                         return (templateContest.state.isDraft() || templateContest.state.isOff() || templateContest.state.isActive())
                                 ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">Edit</button></a>",
                                 routes.TemplateContestController.edit(templateContest.templateContestId.toString()))
                                 : "";
-                    case 14:
+                    case 15:
                         return templateContest.state.isDraft()
                                 ? String.format("<a href=\"%s\"><button class=\"btn btn-success\">+</button></a> <a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
                                 routes.TemplateContestController.publish(templateContest.templateContestId.toString()),
@@ -148,7 +155,7 @@ public class TemplateContestController extends Controller {
                                 String.format("<a href=\"%s\"><button class=\"btn btn-danger\">-</button></a>",
                                         routes.TemplateContestController.destroy(templateContest.templateContestId.toString()))
                                 : "";
-                    case 15:
+                    case 16:
                         return templateContest.simulation
                                 ? String.format("<button class=\"btn btn-success\">Simulation</button>")
                                 : "";
@@ -233,6 +240,12 @@ public class TemplateContestController extends Controller {
         templateContest.maxEntries = params.maxEntries;
         templateContest.salaryCap = params.salaryCap.money;
 
+        templateContest.minManagerLevel = params.minManagerLevel;
+        templateContest.maxManagerLevel = params.maxManagerLevel;
+
+        templateContest.minTrueSkill = params.minTrueSkill != -1 ? params.minTrueSkill : null;
+        templateContest.maxTrueSkill = params.maxTrueSkill != -1 ? params.maxTrueSkill : null;
+
         // En la simulación usaremos ENERGY, en los reales GOLD
         templateContest.entryFee = Money.zero(templateContest.simulation ? MoneyUtils.CURRENCY_ENERGY : MoneyUtils.CURRENCY_GOLD).plus(params.entryFee);
         templateContest.prizeType = params.prizeType;
@@ -300,6 +313,10 @@ public class TemplateContestController extends Controller {
         MAX_ENTRIES,
         SALARY_CAP,
         ENTRY_FEE,
+        MIN_MANAGERLEVEL,
+        MAX_MANAGERLEVEL,
+        MIN_TRUESKILL,
+        MAX_TRUESKILL,
         PRIZE_TYPE,
         PRIZE_MULTIPLIER,
         PRIZE_POOL,
@@ -329,6 +346,10 @@ public class TemplateContestController extends Controller {
             body.add(String.valueOf(template.maxEntries));
             body.add(String.valueOf(template.salaryCap));
             body.add(template.entryFee.toString());
+            body.add(String.valueOf(template.minManagerLevel != null ? template.minManagerLevel : 0));
+            body.add(String.valueOf(template.maxManagerLevel != null ? template.maxManagerLevel : 0));
+            body.add(String.valueOf(template.minTrueSkill != null ? template.minTrueSkill : -1));
+            body.add(String.valueOf(template.maxTrueSkill != null ? template.maxTrueSkill : -1));
             body.add(template.prizeType.toString());
             body.add(String.valueOf(template.prizeMultiplier));
             body.add(template.prizePool != null
@@ -409,6 +430,10 @@ public class TemplateContestController extends Controller {
                         case MIN_ENTRIES:       templateContest.minEntries = Integer.valueOf(params[i]); break;
                         case MAX_ENTRIES:       templateContest.maxEntries = Integer.valueOf(params[i]);
                         case SALARY_CAP:        templateContest.salaryCap = Integer.valueOf(params[i]); break;
+                        case MIN_MANAGERLEVEL:  templateContest.minManagerLevel = Integer.valueOf(params[i]); break;
+                        case MAX_MANAGERLEVEL:  templateContest.maxManagerLevel = Integer.valueOf(params[i]); break;
+                        case MIN_TRUESKILL:     templateContest.minTrueSkill = Integer.valueOf(params[i]) != -1 ? Integer.valueOf(params[i]) : null; break;
+                        case MAX_TRUESKILL:     templateContest.maxTrueSkill = Integer.valueOf(params[i]) != -1 ? Integer.valueOf(params[i]) : null; break;
                         case ENTRY_FEE:         templateContest.entryFee = Money.parse(params[i]); break;
                         case PRIZE_TYPE:        templateContest.prizeType = PrizeType.valueOf(params[i]); break;
                         case PRIZE_MULTIPLIER:  templateContest.prizeMultiplier = Float.valueOf(params[i]); break;
@@ -474,7 +499,10 @@ public class TemplateContestController extends Controller {
         Model.contests().withWriteConcern(WriteConcern.SAFE)
                 .update("{templateContestId: #}", templateContest.getId())
                 .multi()
-                .with("{$set: {name: #, specialImage: #}}", templateContest.name, templateContest.specialImage);
+                .with("{$set: {name: #, specialImage: #, minManagerLevel: #, maxManagerLevel: #, minTrueSkill: #, maxTrueSkill: #}}",
+                        templateContest.name, templateContest.specialImage,
+                        templateContest.minManagerLevel, templateContest.maxManagerLevel,
+                        templateContest.minTrueSkill, templateContest.maxTrueSkill);
     }
 
     @CheckTargetEnvironment

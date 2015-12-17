@@ -30,7 +30,7 @@ public class User {
     public static final float PERCENT_TO_DECAY = 0.5f;
 
     public static final long[] MANAGER_POINTS = new long[] {
-      0, 65, 125, 250, 500, 1000
+      0, 50, 125, 225, 350, 600, 1100, 1850, 2850, 4350, 7350
     };
 
     public class Rating {
@@ -79,6 +79,7 @@ public class User {
     public List<String> achievements = new ArrayList<>();
 
     public List<UserNotification> notifications = new ArrayList<>();
+    public List<ObjectId> favorites = new ArrayList<>();
 
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
@@ -172,6 +173,11 @@ public class User {
             // Model.users().update(userId).with("{$set: {energyBalance: #}}", balance.toString());
         }
         // Model.users().update(userId).with("{$set: {cachedBalance: #}}", balance.toString());
+    }
+
+    public void setFavorites(List<ObjectId> soccerPlayers) {
+        favorites = soccerPlayers;
+        Model.users().update(userId).with("{$set: {favorites: #}}", favorites);
     }
 
     public void updateStats() {

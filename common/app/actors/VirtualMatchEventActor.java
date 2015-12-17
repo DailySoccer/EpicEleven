@@ -3,6 +3,9 @@ package actors;
 import model.*;
 import play.Logger;
 import play.Play;
+import utils.ListUtils;
+
+import java.util.List;
 
 public class VirtualMatchEventActor extends TickableActor {
     public VirtualMatchEventActor() {
@@ -26,11 +29,23 @@ public class VirtualMatchEventActor extends TickableActor {
     @Override protected void onTick() {
         long startTime = System.currentTimeMillis();
 
+        // Buscar los templateSoccerPlayers sin estadísticas de eventsCount actualizadas
+        List<TemplateSoccerPlayer> templateSoccerPlayerList = ListUtils.asList(
+                Model.templateSoccerPlayers().find("{stats: { $elemMatch: { playedMinutes: {$gt: 0}, eventsCount: {$exists: false} }}}")
+                        .as(TemplateSoccerPlayer.class));
+        if (templateSoccerPlayerList.size() > 0) {
+            Logger.debug("TemplateSoccerPlayer: EventsCount = NULL: {} players", templateSoccerPlayerList.size());
+            templateSoccerPlayerList.forEach(templateSoccerPlayer -> {
+                templateSoccerPlayer.updateEventStats();
+                Logger.debug("EventStats: OptaPlayerId: {}: {}: {} Matches", templateSoccerPlayer.optaPlayerId, templateSoccerPlayer.name, templateSoccerPlayer.stats.size());
+            });
+        }
+
         // Activamos los partidos simulados que deberían haber comenzado
         TemplateMatchEvent.findAllSimulationsByStartDate().forEach(TemplateMatchEvent::startSimulation);
 
         // Actualizamos el estado de los partidos simulados para que se actualicen poco a poco ("live")
-        TemplateMatchEvent.findAllSimulationsToUpdate().forEach(matchEvent -> matchEvent.updateSimulationState(_timeMultiplier));
+        // TemplateMatchEvent.findAllSimulationsToUpdate().forEach(matchEvent -> matchEvent.updateSimulationState(_timeMultiplier));
 
         Logger.debug("Virtual MatchEvent: elapsed: {}", System.currentTimeMillis() - startTime);
     }

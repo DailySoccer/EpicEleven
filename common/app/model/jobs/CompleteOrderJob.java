@@ -32,9 +32,20 @@ public class CompleteOrderJob extends Job {
             Order order = Order.findOne(orderId.toString());
             Money orderPrice = order.price();
 
+            int seqId = User.getSeqId(order.userId);
+
+            // Registrar el GASTO
             AccountingTranOrder.create(orderPrice.getCurrencyUnit().getCode(), orderId, order.paymentId, ImmutableList.of(
-                    new AccountOp(order.userId, orderPrice, User.getSeqId(order.userId) + 1)
+                    new AccountOp(order.userId, orderPrice, seqId + 1)
             ));
+
+            // Registrar la GANANCIA
+            Money gained = order.gained();
+            if (!gained.isZero() && (MoneyUtils.isGold(gained) || MoneyUtils.isManager(gained))) {
+                AccountingTranOrder.create(gained.getCurrencyUnit().getCode(), orderId, order.paymentId, ImmutableList.of(
+                        new AccountOp(order.userId, gained, seqId + 2)
+                ));
+            }
 
             order.setCompleted();
 

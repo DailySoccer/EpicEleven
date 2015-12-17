@@ -82,6 +82,11 @@ public class Contest implements JongoId {
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public PrizeType prizeType;
 
+    public Integer minManagerLevel;
+    public Integer maxManagerLevel;
+    public Integer minTrueSkill;
+    public Integer maxTrueSkill;
+
     public Date startDate;
 
     @JsonView(JsonViews.NotForClient.class)
@@ -129,6 +134,10 @@ public class Contest implements JongoId {
         prizeMultiplier = template.prizeMultiplier;
         prizePool = template.prizePool;
         prizeType = template.prizeType;
+        minManagerLevel = template.minManagerLevel;
+        maxManagerLevel = template.maxManagerLevel;
+        minTrueSkill = template.minTrueSkill;
+        maxTrueSkill = template.maxTrueSkill;
         startDate = template.startDate;
         activationAt = template.activationAt;
         optaCompetitionId = template.optaCompetitionId;
@@ -151,6 +160,10 @@ public class Contest implements JongoId {
         prizeMultiplier = template.prizeMultiplier;
         prizePool = template.prizePool != null && template.prizePool.isPositive() ? template.prizePool : null;
         prizeType = template.prizeType;
+        minManagerLevel = template.minManagerLevel;
+        maxManagerLevel = template.maxManagerLevel;
+        minTrueSkill = template.minTrueSkill;
+        maxTrueSkill = template.maxTrueSkill;
         startDate = template.startDate;
         activationAt = template.activationAt;
         optaCompetitionId = template.optaCompetitionId;
@@ -226,6 +239,22 @@ public class Contest implements JongoId {
 
     public boolean isCreatedByUser() {
         return authorId != null;
+    }
+
+    public boolean hasManagerLevelConditions() {
+        return (minManagerLevel != null && maxManagerLevel != null) && (minManagerLevel != 0 || maxManagerLevel != User.MANAGER_POINTS.length);
+    }
+
+    public boolean managerLevelValid(int managerLevel) {
+        return (managerLevel >= minManagerLevel && managerLevel <= maxManagerLevel);
+    }
+
+    public boolean hasTrueSkillConditions() {
+        return (minTrueSkill != null && minTrueSkill != -1) || (maxTrueSkill != null && maxTrueSkill != -1);
+    }
+
+    public boolean trueSkillValid(int trueSkill) {
+        return !hasTrueSkillConditions() || (trueSkill >= minTrueSkill && trueSkill <= maxTrueSkill);
     }
 
     static public Contest findOne(ObjectId contestId) {

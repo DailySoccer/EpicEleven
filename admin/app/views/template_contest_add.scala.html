@@ -14,10 +14,10 @@
     templateContestForm("id").value.toString()
 }
 
-@myInputText(field: Field, _label: String = "", _size: Int = 10, _hidden: Boolean = false) = {
+@myInputText(field: Field, _label: String = "", _size: Int = 10, _hidden: Boolean = false, _class: String = "col-sm-7") = {
 <div class="form-group @if(field.hasErrors) {has-error}" title="En el nombre se pueden usar las variables: %MaxEntries, %SalaryCap, %PrizeType, %EntryFee, %StartDate" @if(_hidden){ hidden }>
     @if(_label.nonEmpty) { <label class="control-label col-sm-3" for="@field.id">@_label</label> }
-    <div class="col-sm-7">
+    <div class="@_class">
         <input type="text" name="@field.id" id="@field.id" value="@field.value" size="@_size" class="form-control">
         @if(field.hasErrors){
         <p class="help-block">@{field.error.map { error => error.message }}</p>
@@ -297,8 +297,37 @@
                 50
             )
 
+            <h3>Filters: </h3>
+
+            @myInputText(
+                templateContestForm("minManagerLevel"),
+                "Manager Level Min.",
+                10,
+                false
+            )
+
+            @myInputText(
+                templateContestForm("maxManagerLevel"),
+                "Manager Level Max.",
+                10,
+                false
+            )
+
+            @myInputText(
+                templateContestForm("minTrueSkill"),
+                "True Skill Min.",
+                10
+            )
+
+            @myInputText(
+                templateContestForm("maxTrueSkill"),
+                "True Skill Max.",
+                10
+            )
+
             </form>
 
+            <br/><br/>
             <h4>TABLA DE PREMIOS <span id="prize-pool"></span></h4>
             <div id="prizes"></div>
         </div>

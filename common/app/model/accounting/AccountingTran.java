@@ -7,8 +7,11 @@ import com.google.common.collect.ImmutableMap;
 import model.GlobalDate;
 import model.Model;
 import org.bson.types.ObjectId;
+import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
+import play.Logger;
 import utils.ListUtils;
+import utils.MoneyUtils;
 import utils.ObjectIdMapper;
 
 import java.util.*;
@@ -89,6 +92,27 @@ public class AccountingTran {
 
     public static List<AccountingTran> findAllFromUserId(ObjectId userId) {
         return ListUtils.asList(Model.accountingTransactions().find("{state: \"VALID\", \"accountOps.accountId\": #}", userId).as(AccountingTran.class));
+    }
+
+    public static List<AccountingTran> findAllInContest(ObjectId userId, ObjectId contestId) {
+        return ListUtils.asList(Model.accountingTransactions().find("{state: \"VALID\", \"accountOps.accountId\": #, contestId: #}", userId, contestId).as(AccountingTran.class));
+    }
+
+    static public Money moneySpentOnContest(ObjectId userId, ObjectId contestId) {
+        Money money = Money.zero(MoneyUtils.CURRENCY_GOLD);
+
+        List<AccountingTran> transactionsList = findAllInContest(userId, contestId);
+        for (AccountingTran trans : transactionsList) {
+            for (AccountOp op : trans.accountOps) {
+                if (op.accountId.equals(userId)) {
+                    Money price = op.value;
+                    if (price.getCurrencyUnit().equals(money.getCurrencyUnit())) {
+                        money = money.plus(price);
+                    }
+                }
+            }
+        }
+        return money;
     }
 
     public void insertAndCommit() {

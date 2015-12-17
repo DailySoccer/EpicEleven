@@ -184,6 +184,11 @@ public class Achievement {
                 put(AchievementType.MANAGER_LEVEL_3, 3);
                 put(AchievementType.MANAGER_LEVEL_4, 4);
                 put(AchievementType.MANAGER_LEVEL_5, 5);
+                put(AchievementType.MANAGER_LEVEL_6, 6);
+                put(AchievementType.MANAGER_LEVEL_7, 7);
+                put(AchievementType.MANAGER_LEVEL_8, 8);
+                put(AchievementType.MANAGER_LEVEL_9, 9);
+                put(AchievementType.MANAGER_LEVEL_10, 10);
             }});
         }
 

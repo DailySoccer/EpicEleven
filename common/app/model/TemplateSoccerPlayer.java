@@ -163,6 +163,14 @@ public class TemplateSoccerPlayer implements JongoId {
         }
     }
 
+    public void updateEventStats() {
+        stats.forEach( stat -> {
+            if (stat.eventsCount == null) {
+                stat.updateEventStats();
+            }
+        });
+    }
+
     private int calculateFantasyPointsFromStats() {
         int numPlayedMatches = 0;
         int fantasyPointsMedia = 0;
@@ -294,7 +302,7 @@ public class TemplateSoccerPlayer implements JongoId {
     }
 
     static Integer[] LEVEL_SALARY = new Integer[]{
-        6100, 6500, 6900, 7300, 8000, 100000
+        5600, 5700, 5800, 5900, 6000, 6200, 6400, 6700, 7500, 8000, 13000
     };
 
     static public int levelFromSalary(int salary) {
@@ -305,13 +313,15 @@ public class TemplateSoccerPlayer implements JongoId {
     }
 
     static Integer[] LEVEL_PRICE = new Integer[]{
-        0, 3, 7, 15, 30, 59
+        0, 7, 16, 28, 43, 74, 135, 228, 350, 534, 903
     };
 
-    static public Money moneyToBuy(int playerLevel, int managerLevel) {
+    static public Money moneyToBuy(int playerLevel, int userManagerLevel) {
         Money result = Money.zero(MoneyUtils.CURRENCY_GOLD);
-        if (managerLevel < playerLevel) {
-            result = result.plus( (playerLevel - managerLevel) * LEVEL_PRICE[playerLevel] );
+        if (userManagerLevel < playerLevel) {
+            for (int i = userManagerLevel + 1; i <= playerLevel; i++) {
+                result = result.plus(LEVEL_PRICE[i]);
+            }
         }
         return result;
     }

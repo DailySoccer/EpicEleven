@@ -4,9 +4,11 @@ package model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.WriteConcern;
+import model.opta.OptaCompetition;
 import model.opta.OptaTeam;
 import org.bson.types.ObjectId;
 import org.jongo.marshall.jackson.oid.Id;
+import play.Logger;
 import utils.ListUtils;
 
 import java.util.*;
@@ -70,6 +72,17 @@ public class TemplateSoccerTeam implements JongoId {
         return findAll(teamIds);
     }
 
+    static public List<TemplateSoccerTeam> findAllByCompetition(String competitionId) {
+        List<TemplateSoccerTeam> result = new ArrayList<>();
+
+        List<OptaTeam> optaTeams = OptaCompetition.findTeamsByCompetitionId(competitionId);
+        for (OptaTeam optaTeam : optaTeams) {
+            result.add( findOneFromOptaId(optaTeam.optaTeamId) );
+        }
+
+        return result;
+    }
+
     static public HashMap<ObjectId, TemplateSoccerTeam> findAllAsMap(){
         HashMap<ObjectId, TemplateSoccerTeam> map = new HashMap<>();
         for (TemplateSoccerTeam templateSoccerTeam: findAll()) {
@@ -131,6 +144,17 @@ public class TemplateSoccerTeam implements JongoId {
 
     static public int getELO (String optaTeamId) {
         return ELO.containsKey(optaTeamId) ? ELO.get(optaTeamId) : ELO_DEFAULT;
+    }
+
+    static Map<ObjectId, Integer> getTemplateSoccerTeamsELO() {
+        Map<ObjectId, Integer> result = new HashMap<>();
+
+        List<TemplateSoccerTeam> templateSoccerTeamList = TemplateSoccerTeam.findAll();
+        for (TemplateSoccerTeam templateSoccerTeam : templateSoccerTeamList) {
+            result.put(templateSoccerTeam.templateSoccerTeamId, ELO.containsKey(templateSoccerTeam.optaTeamId) ? ELO.get(templateSoccerTeam.optaTeamId) : ELO_DEFAULT);
+        }
+
+        return result;
     }
 
     @JsonIgnore

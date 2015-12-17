@@ -1,9 +1,14 @@
 package controllers;
 
 import actions.AllowCors;
+import actions.UserAuthenticated;
 import com.google.common.collect.ImmutableMap;
 import model.*;
+import model.opta.OptaTeam;
 import org.bson.types.ObjectId;
+import play.Logger;
+import play.data.Form;
+import play.data.validation.Constraints;
 import play.libs.F;
 import play.libs.ws.WS;
 import play.mvc.Controller;
@@ -12,6 +17,8 @@ import utils.ListUtils;
 import utils.ReturnHelper;
 
 import java.util.*;
+
+import static play.data.Form.form;
 
 @AllowCors.Origin
 public class MainController extends Controller {
@@ -115,12 +122,62 @@ public class MainController extends Controller {
         Map<String, Object> data = new HashMap<>();
         data.put("soccer_teams", templateSoccerTeams);
         data.put("soccer_player", templateSoccerPlayer);
+        data.put("instance_soccer_player", new InstanceSoccerPlayer(templateSoccerPlayer));
         if (templateMatchEvent != null) {
             data.put("match_event", templateMatchEvent);
         }
         return new ReturnHelper(data).toResult(JsonViews.Statistics.class);
     }
 
+    @UserAuthenticated
+    public static Result getSoccerPlayersByCompetition(String competitionId) {
+        User theUser = (User)ctx().args.get("User");
+
+        List<TemplateSoccerTeam> templateSoccerTeamList = TemplateSoccerTeam.findAllByCompetition(competitionId);
+
+        List<TemplateSoccerPlayer> templateSoccerPlayers = new ArrayList<>();
+        for (TemplateSoccerTeam templateSoccerTeam : templateSoccerTeamList) {
+            templateSoccerPlayers.addAll(templateSoccerTeam.getTemplateSoccerPlayers());
+        }
+
+        List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
+        for (TemplateSoccerPlayer templateSoccerPlayer : templateSoccerPlayers) {
+            instanceSoccerPlayers.add( new InstanceSoccerPlayer(templateSoccerPlayer) );
+        }
+
+        return new ReturnHelper(ImmutableMap.builder()
+                .put("instanceSoccerPlayers", instanceSoccerPlayers)
+                .put("soccer_teams", templateSoccerTeamList)
+                .put("soccer_players", templateSoccerPlayers)
+                .put("profile", theUser.getProfile())
+                .build())
+                .toResult(JsonViews.FullContest.class);
+    }
+
+    public static class FavoritesParams {
+        @Constraints.Required
+        public String soccerPlayers;   // JSON con la lista de futbolistas seleccionados
+    }
+
+    @UserAuthenticated
+    public static Result setFavorites() {
+        Form<FavoritesParams> form = form(FavoritesParams.class).bindFromRequest();
+
+        User theUser = (User) ctx().args.get("User");
+
+        if (!form.hasErrors()) {
+            FavoritesParams params = form.get();
+
+            // Obtener los soccerIds de los futbolistas : List<ObjectId>
+            List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerPlayers);
+            theUser.setFavorites(idsList);
+        }
+
+        return new ReturnHelper(!form.hasErrors(), ImmutableMap.builder()
+                .put("profile", theUser.getProfile())
+                .build())
+                .toResult(JsonViews.FullContest.class);
+    }
 
     public static F.Promise<Result> getShortUrl() {
         String url = request().body().asJson().get("url").asText();

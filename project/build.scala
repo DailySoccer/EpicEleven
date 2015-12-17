@@ -75,6 +75,7 @@ object build extends Build {
                     ,"com.paypal.sdk" % "rest-api-sdk" % "0.12.2" intransitive()
                     ,"com.rabbitmq" % "amqp-client" % "3.4.3"
                     ,"org.ejml" % "all" % "0.28"
+                    ,"org.apache.commons" % "commons-math3" % "3.5"
                   ))
                 .settings(resourceDirectory in Assets := baseDirectory.value / "app")
                 .enablePlugins(PlayJava)

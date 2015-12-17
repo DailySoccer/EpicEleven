@@ -52,12 +52,9 @@ public class PaypalController extends Controller {
     static final String EVENT_PAYMENT_SALE_COMPLETED = "PAYMENT.SALE.COMPLETED";
     static final String EVENT_PAYMENT_SALE_REVERSED = "PAYMENT.SALE.REVERSED";
 
-    // La url a la que redirigimos al usuario cuando el proceso de pago se complete (con éxito o cancelación)
-    static final String REFERER_URL_DEFAULT = "epiceleven.com";
-
     public static Result approvalPayment(String userId, Double amount) {
         // Obtenemos desde qué url están haciendo la solicitud
-        String refererUrl = request().hasHeader("Referer") ? request().getHeader("Referer") : REFERER_URL_DEFAULT;
+        String refererUrl = request().hasHeader("Referer") ? request().getHeader("Referer") : Order.REFERER_URL_DEFAULT;
 
         // Si Paypal no responde con un adecuado "approval url", cancelaremos la solicitud
         Result result = null;
@@ -103,7 +100,7 @@ public class PaypalController extends Controller {
 
     public static Result approvalBuy(String userId, String productId) {
         // Obtenemos desde qué url están haciendo la solicitud
-        String refererUrl = request().hasHeader("Referer") ? request().getHeader("Referer") : REFERER_URL_DEFAULT;
+        String refererUrl = request().hasHeader("Referer") ? request().getHeader("Referer") : Order.REFERER_URL_DEFAULT;
 
         // Si Paypal no responde con un adecuado "approval url", cancelaremos la solicitud
         Result result = null;
@@ -208,7 +205,7 @@ public class PaypalController extends Controller {
             }
         }
 
-        String refererUrl = order.referer != null ? order.referer : REFERER_URL_DEFAULT;
+        String refererUrl = order.referer != null ? order.referer : Order.REFERER_URL_DEFAULT;
         return redirect(refererUrl + (success ? CLIENT_SUCCESS_PATH : CLIENT_CANCEL_PATH));
     }
 

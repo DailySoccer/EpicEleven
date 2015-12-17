@@ -48,6 +48,17 @@ public class TemplateContestForm {
     @Constraints.Required
     public int maxEntries = 10;
 
+    @Constraints.Min(0)
+    @Constraints.Max(10)
+    public int minManagerLevel = 0;
+
+    @Constraints.Min(0)
+    @Constraints.Max(10)
+    public int maxManagerLevel = User.MANAGER_POINTS.length - 1;
+
+    public int minTrueSkill = -1;
+    public int maxTrueSkill = -1;
+
     @Constraints.Required
     public SalaryCap salaryCap = SalaryCap.STANDARD;
     @Constraints.Required
@@ -95,6 +106,11 @@ public class TemplateContestForm {
         prizeMultiplier = templateContest.prizeMultiplier;
         prizePool = templateContest.prizePool != null ? templateContest.prizePool.getAmount().intValue() : 0;
         prizeType = templateContest.prizeType;
+
+        minManagerLevel = templateContest.minManagerLevel;
+        maxManagerLevel = templateContest.maxManagerLevel;
+        minTrueSkill = templateContest.minTrueSkill != null ? templateContest.minTrueSkill : -1;
+        maxTrueSkill = templateContest.maxTrueSkill != null ? templateContest.maxTrueSkill : -1;
 
         for(TemplateMatchEvent matchEvent : TemplateMatchEvent.findAll(templateContest.templateMatchEventIds)) {
             templateMatchEvents.add(matchEvent.templateMatchEventId.toString());

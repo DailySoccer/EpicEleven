@@ -43,6 +43,11 @@ public class TemplateContest implements JongoId {
     public Money prizePool;
     public float prizeMultiplier = 1.0f;
 
+    public Integer minManagerLevel;
+    public Integer maxManagerLevel;
+    public Integer minTrueSkill;
+    public Integer maxTrueSkill;
+
     public Date startDate;
 
     public String optaCompetitionId;
@@ -119,6 +124,11 @@ public class TemplateContest implements JongoId {
         cloned.prizeMultiplier = prizeMultiplier;
         cloned.prizePool = prizePool;
         cloned.prizeType = prizeType;
+
+        cloned.minManagerLevel = minManagerLevel;
+        cloned.maxManagerLevel = maxManagerLevel;
+        cloned.minTrueSkill = minTrueSkill;
+        cloned.maxTrueSkill = maxTrueSkill;
 
         cloned.startDate = startDate;
         cloned.optaCompetitionId = optaCompetitionId;
