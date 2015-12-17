@@ -170,7 +170,9 @@ public class MainController extends Controller {
 
             // Obtener los soccerIds de los futbolistas : List<ObjectId>
             List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerPlayers);
-            theUser.setFavorites(idsList);
+            if (idsList != null) {
+                theUser.setFavorites(idsList);
+            }
         }
 
         return new ReturnHelper(!form.hasErrors(), ImmutableMap.builder()
