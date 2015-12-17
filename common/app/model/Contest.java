@@ -537,15 +537,21 @@ public class Contest implements JongoId {
                 }
             }
 
-            CurrencyUnit prizeCurrency = simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD;
-            AccountingTranPrize.create(prizeCurrency.getCode(), contestId, accounts);
+            // Alguién tendría que recibir un premio
+            if (accounts.size() > 0) {
+                CurrencyUnit prizeCurrency = simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD;
+                AccountingTranPrize.create(prizeCurrency.getCode(), contestId, accounts);
 
-            // Si se jugaba con GOLD, se actualizarán las estadísticas de los ganadores
-            if (getPrizePool().getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
-                for (AccountOp op : accounts) {
-                    User winner = User.findOne(op.accountId);
-                    winner.updateStats();
+                // Si se jugaba con GOLD, se actualizarán las estadísticas de los ganadores
+                if (getPrizePool().getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+                    for (AccountOp op : accounts) {
+                        User winner = User.findOne(op.accountId);
+                        winner.updateStats();
+                    }
                 }
+            }
+            else {
+                Logger.error("WTF 2309: ContestId: {}", contestId.toString());
             }
         }
     }
