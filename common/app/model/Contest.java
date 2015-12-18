@@ -520,19 +520,22 @@ public class Contest implements JongoId {
             List<AccountOp> accounts = new ArrayList<>();
             for (ContestEntry contestEntry : contestEntries) {
                 Money prize = prizes.getValue(contestEntry.position);
-                if (prize.getAmount().floatValue() > 0) {
+                boolean amountPositive = (prize.getAmount().floatValue() > 0);
 
-                    // Va a mejorar su nivel de manager?
-                    if (simulation) {
-                        // Cuando reciba el premio, subirá su nivel de manager?
-                        Money managerBalance = User.calculateManagerBalance(contestEntry.userId);
-                        int managerLevel = (int) User.managerLevelFromPoints(managerBalance);
-                        int managerLevelUpdated = (int) User.managerLevelFromPoints(managerBalance.plus(prize));
-                        if (managerLevelUpdated > managerLevel) {
-                            UserNotification.managerLevelUp(managerLevelUpdated).sendTo(contestEntry.userId);
-                        }
+                // En los torneos de simulación, se puede mejorar el nivel de manager
+                if (simulation && amountPositive) {
+                    // Cuando reciba el premio, subirá su nivel de manager?
+                    Money managerBalance = User.calculateManagerBalance(contestEntry.userId);
+                    int managerLevel = (int) User.managerLevelFromPoints(managerBalance);
+                    int managerLevelUpdated = (int) User.managerLevelFromPoints(managerBalance.plus(prize));
+                    if (managerLevelUpdated > managerLevel) {
+                        UserNotification.managerLevelUp(managerLevelUpdated).sendTo(contestEntry.userId);
                     }
+                }
 
+                // En los torneos de Simulación queremos incluir a todos los usuarios que han participado
+                // En los torneos Oficiales únicamente queremos incluir a los usuarios que ganen dinero
+                if (simulation || amountPositive) {
                     accounts.add(new AccountOp(contestEntry.userId, prize, User.getSeqId(contestEntry.userId) + 1));
                 }
             }
