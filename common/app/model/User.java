@@ -27,7 +27,9 @@ public class User {
     public static final int MINUTES_TO_RELOAD_ENERGY = 60;
     public static final BigDecimal MAX_ENERGY = new BigDecimal(10);
     public static final long HOURS_TO_DECAY = 48;
-    public static final float PERCENT_TO_DECAY = 0.5f;
+    public static final float[] PERCENT_TO_DECAY = new float[] {
+        0, 0, 0.1f, 0.25f, 0.75f, 1.5f, 3f, 4.4f
+    };
 
     public static final long[] MANAGER_POINTS = new long[] {
       0, 50, 125, 225, 350, 600, 1100, 1850, 2850, 4350, 7350
@@ -71,6 +73,9 @@ public class User {
     public Money managerBalance     = Money.zero(MoneyUtils.CURRENCY_MANAGER);
     public Money energyBalance      = Money.of(MoneyUtils.CURRENCY_ENERGY, MAX_ENERGY);
 
+    // La última fecha en la que se participó en un contest de simulación
+    public Date lastUpdatedManager;
+
     // La última fecha en la que se recalculó la energía
     public Date lastUpdatedEnergy;
 
@@ -108,6 +113,10 @@ public class User {
         managerLevel = managerLevelFromPoints(managerBalance);
         // Logger.debug("gold: {} manager: {} energy: {}", goldBalance, managerBalance, energyBalance);
         return this;
+    }
+
+    public void saveManagerBalance() {
+        Model.users().update(userId).with("{$set: {managerBalance: #, lastUpdatedManager: #}}", managerBalance.toString(), lastUpdatedManager);
     }
 
     public void saveEnergy() {
@@ -165,7 +174,7 @@ public class User {
             Model.users().update(userId).with("{$set: {goldBalance: #}}", balance.toString());
         }
         else if (balance.getCurrencyUnit().equals(MoneyUtils.CURRENCY_MANAGER)) {
-            Model.users().update(userId).with("{$set: {managerBalance: #}}", balance.toString());
+            Model.users().update(userId).with("{$set: {managerBalance: #, lastUpdatedManager: #}}", balance.toString(), GlobalDate.getCurrentDate());
         }
         else if (balance.getCurrencyUnit().equals(MoneyUtils.CURRENCY_ENERGY)) {
             // No actualizaremos la ENERGíA con ninguna transacción
@@ -203,12 +212,30 @@ public class User {
         return User.getSeqId(userId);
     }
 
+    public Duration timeOfDecay() {
+        Duration result = new Duration(0);
+        if (lastUpdatedManager != null) {
+            DateTime now = new DateTime(GlobalDate.getCurrentDate());
+
+            // Obtenemos el tiempo transcurrido desde la última actualizacion del managerBalance
+            DateTime dateTime = new DateTime(lastUpdatedManager);
+            result = new Duration(dateTime, now);
+        }
+        return result;
+    }
+
     public Money calculateBalance() {
         return User.calculateGoldBalance(userId);
     }
     public Money calculateGoldBalance() { return User.calculateGoldBalance(userId); }
     public Money calculateManagerBalance() {
-        return User.calculateManagerBalance(userId);
+        // Los managerPoints no lo controlaremos con las transacciones,
+        // sino por medio del valor actual y el tiempo transcurrido desde que se participó en un torneo de simulación (lastUpdatedManager)
+
+        // Aplicamos el decay actual al balance
+        managerBalance = decayManagerPoints(timeOfDecay(), managerBalance);
+
+        return managerBalance;
     }
 
     public Money calculateEnergyBalance() {
@@ -229,6 +256,16 @@ public class User {
 
     public Money calculateGoldPrizes() {
         return calculatePrizes(MoneyUtils.CURRENCY_GOLD);
+    }
+
+    public void addManagerBalance(Money managerPoints) {
+        // Actualizar el managerBalance con los nuevos puntos obtenidos
+        managerBalance = calculateManagerBalance().plus(managerPoints);
+
+        // Registramos el momento actual el que se actualiza el managerLevel
+        lastUpdatedManager = GlobalDate.getCurrentDate();
+
+        saveManagerBalance();
     }
 
     public boolean useEnergy(Money energy) {
@@ -356,11 +393,6 @@ public class User {
         public Money value;
     }
 
-    // Para registrar los premios conseguidos de Manager Points
-    static public class ManagerBalanceOp extends BalanceOp {
-        public Date createdAt;
-    }
-
     static public Money calculateBalance(ObjectId userId, String currencyUnit) {
 
         List<BalanceOp> accountingOps = Model.accountingTransactions()
@@ -384,44 +416,7 @@ public class User {
     }
 
     static public Money calculateManagerBalance(ObjectId userId) {
-        String currencyUnit = MoneyUtils.CURRENCY_MANAGER.getCode();
-
-        // Queremos las operaciones sobre los Manager Points ordenadas por tiempo, dado que existe un factor de "decay" a lo largo del tiempo
-        List<ManagerBalanceOp> managerOps = Model.accountingTransactions()
-                .aggregate("{$match: { \"accountOps.accountId\": #, currencyCode: #, state: \"VALID\"}}", userId, currencyUnit)
-                .and("{$sort : { createdAt : 1 }}")
-                .and("{$unwind: \"$accountOps\"}")
-                .and("{$match: {\"accountOps.accountId\": #}}", userId)
-                .and("{$project: {createdAt: 1, value: \"$accountOps.value\"}}")
-                .as(ManagerBalanceOp.class);
-
-        Money balance = MoneyUtils.zero(currencyUnit);
-        if (!managerOps.isEmpty()) {
-            Logger.debug("-------------> Manager Points: UserId: {}", userId);
-
-            // Decay de  los Manager Points entre tiempo (ganancias)
-            DateTime lastDate = null;
-            for (ManagerBalanceOp op : managerOps) {
-                DateTime dateTime = new DateTime(op.createdAt);
-                if (lastDate != null) {
-                    Duration duration = new Duration(lastDate, dateTime);
-                    balance = decayManagerPoints(duration, balance);
-                }
-                balance = balance.plus(op.value);
-                lastDate = dateTime;
-            }
-
-            // Decay hasta el día de hoy
-            Duration duration = new Duration(lastDate, new DateTime(GlobalDate.getCurrentDate()));
-            balance = decayManagerPoints(duration, balance);
-
-            // Asegurarnos de que no superamos el máximo permitido
-            if (balance.getAmount().intValue() > MANAGER_POINTS[MANAGER_POINTS.length-1]) {
-                balance = Money.of(MoneyUtils.CURRENCY_MANAGER, MANAGER_POINTS[MANAGER_POINTS.length-1]);
-            }
-        }
-
-        return balance;
+        return User.findOne(userId).managerBalance;
     }
 
     static private Money pointsFromManagerLevel(float managerLevel) {
@@ -460,8 +455,6 @@ public class User {
 
         // Volver a convertir el nivel a manager Points
         managerPoints = pointsFromManagerLevel(level);
-
-        Logger.debug(">> decay: manager: {} level: {}", managerPoints.getAmount().longValue(), level);
         return managerPoints;
     }
 
@@ -469,11 +462,20 @@ public class User {
         long horas = duration.getStandardHours();
         if (horas > HOURS_TO_DECAY) {
             // Cuántas veces tenemos que aplicar la penalización
-            long penalizations = horas / HOURS_TO_DECAY;
+            long days = horas / 24;
+            if (days >= PERCENT_TO_DECAY.length) {
+                days = PERCENT_TO_DECAY.length - 1;
+            }
+            float percentToDecay = PERCENT_TO_DECAY[(int)days];
 
-            Logger.debug("horas: {} balance: {} level: {} penalization: {}", horas, managerPoints.getAmount(), managerLevelFromPoints(managerPoints), -PERCENT_TO_DECAY * penalizations);
+            Money managerPointsCopy = Money.of(managerPoints);
 
-            managerPoints = decayManagerPoints(managerPoints, PERCENT_TO_DECAY * penalizations);
+            managerPoints = decayManagerPoints(managerPoints, percentToDecay);
+
+            Logger.debug("decay: manager: {} level: {} [horas: {} balance: {} level: {} penalization: {}]",
+                    managerPoints.getAmount().longValue(), managerLevelFromPoints(managerPoints),
+                    horas, managerPointsCopy.getAmount(), managerLevelFromPoints(managerPointsCopy), -percentToDecay);
+
         }
         else {
             Logger.debug("horas: {} balance: {} level: {}", horas, managerPoints.getAmount(), managerLevelFromPoints(managerPoints));
@@ -530,31 +532,5 @@ public class User {
         return instanceSoccerPlayers.stream().filter( instanceSoccerPlayer ->
                 TemplateSoccerPlayer.levelFromSalary(instanceSoccerPlayer.salary) > (int) managerLevel
         ).collect(Collectors.toList());
-    }
-
-    static public List<AccountingTran> includeDecayTransactions(List<AccountingTran> accountingTrans) {
-        List<AccountingTran> result = new ArrayList<>();
-
-        /*
-        for (ManagerBalanceOp op : managerOps) {
-            DateTime dateTime = new DateTime(op.createdAt);
-            if (lastDate != null) {
-                Duration duration = new Duration(lastDate, dateTime);
-                balance = decayManagerPoints(duration, balance);
-            }
-            balance = MoneyUtils.plus(balance, op.value);
-            lastDate = dateTime;
-        }
-        */
-
-        DateTime lastDate = null;
-        for (AccountingTran accountingTran : accountingTrans) {
-            if (accountingTran.type == AccountingTran.TransactionType.PRIZE) {
-
-            }
-            result.add(accountingTran);
-        }
-
-        return result;
     }
 }

@@ -18,7 +18,6 @@ import utils.MoneyUtils;
 import utils.TrueSkillHelper;
 import utils.ViewProjection;
 
-import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -517,44 +516,61 @@ public class Contest implements JongoId {
     private void givePrizes(Prizes prizes) {
         // Si el contest tiene premios para repartir...
         if (!prizeType.equals(PrizeType.FREE)) {
-            List<AccountOp> accounts = new ArrayList<>();
-            for (ContestEntry contestEntry : contestEntries) {
-                Money prize = prizes.getValue(contestEntry.position);
-                boolean amountPositive = (prize.getAmount().floatValue() > 0);
 
-                // En los torneos de simulación, se puede mejorar el nivel de manager
-                if (simulation && amountPositive) {
-                    // Cuando reciba el premio, subirá su nivel de manager?
-                    Money managerBalance = User.calculateManagerBalance(contestEntry.userId);
-                    int managerLevel = (int) User.managerLevelFromPoints(managerBalance);
-                    int managerLevelUpdated = (int) User.managerLevelFromPoints(managerBalance.plus(prize));
-                    if (managerLevelUpdated > managerLevel) {
-                        UserNotification.managerLevelUp(managerLevelUpdated).sendTo(contestEntry.userId);
-                    }
-                }
+            // Si el premio es de Manager Points, lo gestionamos de forma diferente al GOLD
+            if (simulation) {
+                for (ContestEntry contestEntry : contestEntries) {
+                    Money prize = prizes.getValue(contestEntry.position);
+                    boolean amountPositive = (prize.getAmount().floatValue() > 0);
 
-                // En los torneos de Simulación queremos incluir a todos los usuarios que han participado
-                // En los torneos Oficiales únicamente queremos incluir a los usuarios que ganen dinero
-                if (simulation || amountPositive) {
-                    accounts.add(new AccountOp(contestEntry.userId, prize, User.getSeqId(contestEntry.userId) + 1));
-                }
-            }
+                    // Si el premio es de Manager Points, lo gestionamos de forma diferente al GOLD
+                    if (prize.getCurrencyUnit().equals(MoneyUtils.CURRENCY_MANAGER)) {
+                        User user = User.findOne(contestEntry.userId);
 
-            // Alguién tendría que recibir un premio
-            if (accounts.size() > 0) {
-                CurrencyUnit prizeCurrency = simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD;
-                AccountingTranPrize.create(prizeCurrency.getCode(), contestId, accounts);
+                        // En los torneos de simulación, se puede mejorar el nivel de manager
+                        if (simulation && amountPositive) {
+                            // Cuando reciba el premio, subirá su nivel de manager?
+                            Money managerBalance = user.managerBalance;
+                            int managerLevel = (int) User.managerLevelFromPoints(managerBalance);
+                            int managerLevelUpdated = (int) User.managerLevelFromPoints(managerBalance.plus(prize));
+                            if (managerLevelUpdated > managerLevel) {
+                                UserNotification.managerLevelUp(managerLevelUpdated).sendTo(contestEntry.userId);
+                            }
+                        }
 
-                // Si se jugaba con GOLD, se actualizarán las estadísticas de los ganadores
-                if (getPrizePool().getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
-                    for (AccountOp op : accounts) {
-                        User winner = User.findOne(op.accountId);
-                        winner.updateStats();
+                        // En los torneos de Simulación hemos de actualizar los ManagerPoints de todos los participantes
+                        user.addManagerBalance(prize);
                     }
                 }
             }
             else {
-                Logger.error("WTF 2309: ContestId: {}", contestId.toString());
+                List<AccountOp> accounts = new ArrayList<>();
+                for (ContestEntry contestEntry : contestEntries) {
+                    Money prize = prizes.getValue(contestEntry.position);
+                    boolean amountPositive = (prize.getAmount().floatValue() > 0);
+
+                    // En los torneos Oficiales únicamente queremos incluir a los usuarios que ganen dinero
+                    if (amountPositive) {
+                        accounts.add(new AccountOp(contestEntry.userId, prize, User.getSeqId(contestEntry.userId) + 1));
+                    }
+                }
+
+                // Alguién tendría que recibir un premio
+                if (!accounts.isEmpty()) {
+                    CurrencyUnit prizeCurrency = simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD;
+                    AccountingTranPrize.create(prizeCurrency.getCode(), contestId, accounts);
+
+                    // Si se jugaba con GOLD, se actualizarán las estadísticas de los ganadores
+                    if (getPrizePool().getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+                        for (AccountOp op : accounts) {
+                            User winner = User.findOne(op.accountId);
+                            winner.updateStats();
+                        }
+                    }
+                }
+                else {
+                    Logger.error("WTF 2309: ContestId: {}", contestId.toString());
+                }
             }
         }
     }

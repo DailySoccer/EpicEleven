@@ -81,7 +81,7 @@ public class DashboardController extends Controller {
     }
 
     static public Result addMoneyToTests(String amount) {
-        Logger.info("Ejecutando addMoneyToTests...");
+        Logger.info("Ejecutando addMoneyToTests... {}", amount);
         addMoney(User.findTests(), amount);
         Logger.info("addMoneyToTests OK");
         return ok("");
@@ -91,13 +91,21 @@ public class DashboardController extends Controller {
         Money money = Money.parse(amount);
 
         if (!users.isEmpty()) {
-            List<AccountOp> accountOps = users.stream()
-                    .map((user) -> new AccountOp(user.userId, money, user.getSeqId() + 1))
-                    .collect(Collectors.toList());
+            if (money.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+                List<AccountOp> accountOps = users.stream()
+                        .map((user) -> new AccountOp(user.userId, money, user.getSeqId() + 1))
+                        .collect(Collectors.toList());
 
-            AccountingTran accountingTran = new AccountingTran(money.getCurrencyUnit().getCode(), AccountingTran.TransactionType.FREE_MONEY);
-            accountingTran.accountOps = accountOps;
-            accountingTran.insertAndCommit();
+                AccountingTran accountingTran = new AccountingTran(money.getCurrencyUnit().getCode(), AccountingTran.TransactionType.FREE_MONEY);
+                accountingTran.accountOps = accountOps;
+                accountingTran.insertAndCommit();
+            }
+            else if (money.getCurrencyUnit().equals(MoneyUtils.CURRENCY_MANAGER)) {
+                users.forEach( user -> user.addManagerBalance(money) );
+            }
+            else if (money.getCurrencyUnit().equals(MoneyUtils.CURRENCY_ENERGY)) {
+                users.forEach( user -> user.addEnergy(money) );
+            }
         }
     }
 
