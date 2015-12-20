@@ -33,7 +33,7 @@
                             "@GlobalDate.formatDate(p.createdAt)",
                             "@p.wins",
                             "@MoneyUtils.asString(p.calculateGoldBalance())",
-                            "@MoneyUtils.asString(p.calculateManagerBalance())",
+                            "@MoneyUtils.asString(p.calculateManagerBalance()) [@p.timeOfDecay().getStandardHours()h]",
                             "@MoneyUtils.asString(p.calculateEnergyBalance())",
                             "@MoneyUtils.asString(p.earnedMoney)",
                             "@p.trueSkill"
@@ -41,7 +41,7 @@
                     }
                 ],
                 "columnDefs": [ {
-                    "targets": [7, 8],
+                    "targets": [7],
                     "mRender": function (data, type, full) {
                         return '<a href="user/' + full[0] + '/transactions">' + data + '</a>';
                     }

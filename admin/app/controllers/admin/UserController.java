@@ -22,6 +22,6 @@ public class UserController extends Controller {
         ObjectId userId = new ObjectId(userIdStr);
         User user = User.findOne(userId);
         List<AccountingTran> accountingTrans = AccountingTran.findAllFromUserId(userId);
-        return ok(views.html.user_transactions.render(user, User.includeDecayTransactions(accountingTrans)));
+        return ok(views.html.user_transactions.render(user, AccountingTran.findAllFromUserId(userId)));
     }
 }
