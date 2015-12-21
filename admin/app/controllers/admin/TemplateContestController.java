@@ -347,7 +347,7 @@ public class TemplateContestController extends Controller {
             body.add(String.valueOf(template.salaryCap));
             body.add(template.entryFee.toString());
             body.add(String.valueOf(template.minManagerLevel != null ? template.minManagerLevel : 0));
-            body.add(String.valueOf(template.maxManagerLevel != null ? template.maxManagerLevel : 0));
+            body.add(String.valueOf(template.maxManagerLevel != null ? template.maxManagerLevel : User.MAX_MANAGER_LEVEL));
             body.add(String.valueOf(template.minTrueSkill != null ? template.minTrueSkill : -1));
             body.add(String.valueOf(template.maxTrueSkill != null ? template.maxTrueSkill : -1));
             body.add(template.prizeType.toString());

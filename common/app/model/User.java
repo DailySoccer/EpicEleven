@@ -35,6 +35,8 @@ public class User {
       0, 50, 125, 225, 350, 600, 1100, 1850, 2850, 4350, 7350
     };
 
+    public static final long MAX_MANAGER_LEVEL = MANAGER_POINTS.length - 1;
+
     public class Rating {
         public double Mean;
         public double StandardDeviation;
@@ -422,7 +424,7 @@ public class User {
     static private Money pointsFromManagerLevel(float managerLevel) {
         int level = (int) managerLevel;
         int acc = 0;
-        if (level < 5) {
+        if (level < MAX_MANAGER_LEVEL) {
             float pointsToLevelUp = (float) (MANAGER_POINTS[level+1] - MANAGER_POINTS[level]);
             float remainder = managerLevel - level;
             acc = (int) (remainder * pointsToLevelUp);
@@ -438,7 +440,7 @@ public class User {
         }
 
         float acc = 0;
-        if (level < 5) {
+        if (level < MAX_MANAGER_LEVEL) {
             float pointsToLevelUp = (float) (MANAGER_POINTS[level+1] - MANAGER_POINTS[level]);
             float remainder = (float) (points - MANAGER_POINTS[level]);
             acc = remainder / pointsToLevelUp;
