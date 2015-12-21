@@ -467,7 +467,7 @@ public class TemplateContestController extends Controller {
     private static void printAsTablePlayerManagerLevel(TemplateContest templateContest) {
         StringBuffer buffer = new StringBuffer();
 
-        buffer.append("<h3>" + templateContest.name + "</h3>");
+        buffer.append("<h3>" + templateContest.name + "</h3>" + "<h5>Conditions: DFP >= 1 | PlayedMatches >= 1 | Days <= 30</h5>");
         buffer.append("<table border=\"1\" style=\"width:40%; text-align: center; \">\n" +
                 "        <tr>\n" +
                 "        <td><strong>Manager Level<strong></td>\n" +

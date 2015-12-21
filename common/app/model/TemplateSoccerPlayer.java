@@ -6,6 +6,7 @@ import com.mongodb.WriteConcern;
 import model.opta.OptaPlayer;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
+import org.joda.time.DateTime;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import play.Play;
@@ -261,7 +262,8 @@ public class TemplateSoccerPlayer implements JongoId {
     }
 
     public static List<TemplateSoccerPlayer> soccerPlayersAvailables(TemplateSoccerTeam templateSoccerTeam, int managerLevel) {
-        List<TemplateSoccerPlayer> players = templateSoccerTeam.getTemplateSoccerPlayers();
+        DateTime dateTime = new DateTime(GlobalDate.getCurrentDate()).minusDays(30);
+        List<TemplateSoccerPlayer> players = templateSoccerTeam.getTemplateSoccerPlayersFilterBy(1, 1, dateTime.toDate());
         return filterSoccerPlayers(players, managerLevel);
     }
 
