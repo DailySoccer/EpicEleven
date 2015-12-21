@@ -84,6 +84,15 @@ public class TemplateContestForm {
     // Fecha expresada en Time (para que sea más fácil volverla a convertir en Date; se usa para filtrar por fecha)
     public long createdAt;
 
+    @Constraints.Min(0)
+    public int filterByDFP = TemplateSoccerPlayer.FILTER_BY_DFP;
+
+    @Constraints.Min(0)
+    public int filterByPlayedMatches = TemplateSoccerPlayer.FILTER_BY_PLAYED_MATCHES;
+
+    @Constraints.Min(0)
+    public int filterByDays = TemplateSoccerPlayer.FILTER_BY_DAYS;
+
     public TemplateContestForm() {
         this.state = ContestState.DRAFT;
         this.activationAt = GlobalDate.getCurrentDate();

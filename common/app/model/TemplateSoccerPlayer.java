@@ -6,6 +6,7 @@ import com.mongodb.WriteConcern;
 import model.opta.OptaPlayer;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
+import org.joda.time.DateTime;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import play.Play;
@@ -18,6 +19,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class TemplateSoccerPlayer implements JongoId {
+    public static final int FILTER_BY_DFP = 1;
+    public static final int FILTER_BY_PLAYED_MATCHES = 1;
+    public static final int FILTER_BY_DAYS = 0;
+
     @Id
     public ObjectId templateSoccerPlayerId;
 
@@ -260,16 +265,17 @@ public class TemplateSoccerPlayer implements JongoId {
         return templateSoccerPlayers.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.moneyToBuy(managerLevel).isZero()).collect(Collectors.toList() );
     }
 
-    public static List<TemplateSoccerPlayer> soccerPlayersAvailables(TemplateSoccerTeam templateSoccerTeam, int managerLevel) {
-        List<TemplateSoccerPlayer> players = templateSoccerTeam.getTemplateSoccerPlayers();
+    public static List<TemplateSoccerPlayer> soccerPlayersAvailables(TemplateSoccerTeam templateSoccerTeam, int managerLevel, int filterByDFP, int filterByPlayedMatches, int filterByDays) {
+        DateTime dateTime = filterByDays > 0 ? new DateTime(GlobalDate.getCurrentDate()).minusDays(filterByDays) : new DateTime(new Date(0L));
+        List<TemplateSoccerPlayer> players = templateSoccerTeam.getTemplateSoccerPlayersFilterBy(filterByDFP, filterByPlayedMatches, dateTime.toDate());
         return filterSoccerPlayers(players, managerLevel);
     }
 
-    public static List<TemplateSoccerPlayer> soccerPlayersAvailables(TemplateMatchEvent templateMatchEvent, int managerLevel) {
+    public static List<TemplateSoccerPlayer> soccerPlayersAvailables(TemplateMatchEvent templateMatchEvent, int managerLevel, int filterByDFP, int filterByPlayedMatches, int filterByDays) {
         List<TemplateSoccerPlayer> availables = new ArrayList<>();
 
-        availables.addAll(soccerPlayersAvailables(TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamAId), managerLevel));
-        availables.addAll(soccerPlayersAvailables(TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamBId), managerLevel));
+        availables.addAll(soccerPlayersAvailables(TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamAId), managerLevel, filterByDFP, filterByPlayedMatches, filterByDays));
+        availables.addAll(soccerPlayersAvailables(TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamBId), managerLevel, filterByDFP, filterByPlayedMatches, filterByDays));
 
         //printFieldPos(String.format("%s => ", TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamAId).name), availablesA);
         //printFieldPos(String.format("%s => ", TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamBId).name), availablesB);
@@ -277,14 +283,14 @@ public class TemplateSoccerPlayer implements JongoId {
         return availables;
     }
 
-    public static List<TemplateSoccerPlayer> soccerPlayersAvailables(List<ObjectId> templateMatchEventIds, int managerLevel) {
+    public static List<TemplateSoccerPlayer> soccerPlayersAvailables(List<ObjectId> templateMatchEventIds, int managerLevel, int filterByDFP, int filterByPlayedMatches, int filterByDays) {
         List<TemplateSoccerPlayer> availables = new ArrayList<>();
 
         List<TemplateMatchEvent> templateMatchEvents = TemplateMatchEvent.findAll(templateMatchEventIds);
 
         Logger.debug("matches: {}", templateMatchEvents.size());
         for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
-            availables.addAll(soccerPlayersAvailables(templateMatchEvent, managerLevel));
+            availables.addAll(soccerPlayersAvailables(templateMatchEvent, managerLevel, filterByDFP, filterByPlayedMatches, filterByDays));
         }
 
         return availables;

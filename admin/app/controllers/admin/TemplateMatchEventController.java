@@ -196,7 +196,9 @@ public class TemplateMatchEventController extends Controller {
                 "        <td><strong>Forward<strong></td>\n" +
                 "        </tr>");
         for (int i=0; i<User.MANAGER_POINTS.length; i++) {
-            List<TemplateSoccerPlayer> availables = TemplateSoccerPlayer.soccerPlayersAvailables(templateMatchEvent, i);
+            List<TemplateSoccerPlayer> availables = TemplateSoccerPlayer.soccerPlayersAvailables(
+                    templateMatchEvent, i,
+                    TemplateSoccerPlayer.FILTER_BY_DFP, TemplateSoccerPlayer.FILTER_BY_PLAYED_MATCHES, TemplateSoccerPlayer.FILTER_BY_DAYS);
             Map<String, Long> frequency = TemplateSoccerPlayer.frequencyFieldPos(availables);
 
             buffer.append("<tr>");
