@@ -427,7 +427,7 @@ public class User {
     }
 
     static public Money calculateManagerBalance(ObjectId userId) {
-        return User.findOne(userId).managerBalance;
+        return User.findOne(userId).calculateManagerBalance();
     }
 
     static private Money pointsFromManagerLevel(float managerLevel) {
@@ -524,14 +524,14 @@ public class User {
         return MoneyUtils.compareTo(balance, money) >= 0;
     }
 
-    static public Money moneyToBuy(Money managerBalance, List<InstanceSoccerPlayer> instanceSoccerPlayers) {
+    static public Money moneyToBuy(Contest contest, Money managerBalance, List<InstanceSoccerPlayer> instanceSoccerPlayers) {
         Money price = Money.zero(MoneyUtils.CURRENCY_GOLD);
 
         float managerLevel = managerLevelFromPoints(managerBalance);
 
         for (InstanceSoccerPlayer instanceSoccerPlayer : instanceSoccerPlayers) {
             int soccerPlayerLevel = TemplateSoccerPlayer.levelFromSalary(instanceSoccerPlayer.salary);
-            price = price.plus(TemplateSoccerPlayer.moneyToBuy(soccerPlayerLevel, (int) managerLevel));
+            price = price.plus(TemplateSoccerPlayer.moneyToBuy(contest, soccerPlayerLevel, (int) managerLevel));
         }
 
         return price;

@@ -631,6 +631,10 @@ public class Contest implements JongoId {
                 : Prizes.getPool(simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD, entryFee, getNumEntries(), prizeMultiplier);
     }
 
+    public Money getPrizePoolMin() {
+        return Prizes.getPool(simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD, entryFee, minEntries, prizeMultiplier);
+    }
+
     class ContestEntryComparable implements Comparator<ContestEntry>{
         @Override
         public int compare(ContestEntry o1, ContestEntry o2) {
