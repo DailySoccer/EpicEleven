@@ -400,7 +400,7 @@ public class LoginController extends Controller {
                 Logger.warn("facebookLogin: isDev");
 
                 // Buscamos si tenemos un usuario con ese email
-                User theUser = User.findByEmail(loginParams.facebookEmail);
+                User theUser = User.findByEmail(loginParams.facebookEmail.toLowerCase());
                 if (theUser == null) {
                     // Creamos el usuario
                     theUser = new User(loginParams.facebookName, "", loginParams.facebookName, loginParams.facebookEmail.toLowerCase());
