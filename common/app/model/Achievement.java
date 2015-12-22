@@ -22,11 +22,11 @@ public class Achievement {
         // TRUE_SKILL_N
         //
         evaluateAchievements(user, user.trueSkill, new HashMap<AchievementType, Integer>() {{
-            put(AchievementType.TRUE_SKILL_500, 500);
-            put(AchievementType.TRUE_SKILL_1000, 1000);
-            put(AchievementType.TRUE_SKILL_2000, 2000);
-            put(AchievementType.TRUE_SKILL_3000, 3000);
-            put(AchievementType.TRUE_SKILL_4000, 4000);
+            put(AchievementType.TRUE_SKILL_500, 2000);
+            put(AchievementType.TRUE_SKILL_1000, 4000);
+            put(AchievementType.TRUE_SKILL_2000, 6000);
+            put(AchievementType.TRUE_SKILL_3000, 8000);
+            put(AchievementType.TRUE_SKILL_4000, 10000);
         }});
 
         /*
