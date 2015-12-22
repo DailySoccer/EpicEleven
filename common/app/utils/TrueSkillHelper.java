@@ -1,10 +1,12 @@
 package utils;
 
+import com.google.common.collect.ImmutableMap;
 import org.bson.types.ObjectId;
 import java.util.*;
 import jskills.*;
 import model.ContestEntry;
 import model.User;
+import play.Logger;
 
 public class TrueSkillHelper {
     static public final double INITIAL_MEAN = 25.0;
@@ -50,6 +52,8 @@ public class TrueSkillHelper {
         List<ITeam> teams = new ArrayList<>();
         Map<ObjectId, IPlayer> players = new HashMap<>();
 
+        Map<ObjectId, Map> evolution = new HashMap<>();
+
         // Creamos la lista de equipos que se han enfrentado (únicamente compuesto por un usuario)
         for(ContestEntry contestEntry : contestEntries) {
             User user = User.findOne(contestEntry.userId);
@@ -66,6 +70,17 @@ public class TrueSkillHelper {
             players.put(contestEntry.userId, player);
             result.put(contestEntry.userId, user);
 
+            evolution.put(user.userId, ImmutableMap.builder()
+                    .put("position", contestEntry.position)
+                    .put("fantasyPoints", contestEntry.fantasyPoints)
+                    .put("trueSkill", user.trueSkill)
+                    .put("mean", user.rating.Mean)
+                    .put("deviation", user.rating.StandardDeviation)
+                    .build());
+            /*
+            Logger.debug("BEGIN: User: {} Position: {} DFP: {} TrueSkill: {} Mean: {} StandarDeviation: {}",
+                    contestEntry.position, contestEntry.fantasyPoints, user.nickName, user.trueSkill, user.rating.Mean, user.rating.StandardDeviation);
+            */
         }
 
         // Los rankings (actualmente sin empates)
@@ -90,6 +105,16 @@ public class TrueSkillHelper {
             user.trueSkill = (int)(MyConservativeTrueSkill(rating) * MULTIPLIER);
             user.rating.Mean = rating.getMean();
             user.rating.StandardDeviation = rating.getStandardDeviation();
+
+            if (evolution.containsKey(user.userId)) {
+                Map userEvolution = evolution.get(user.userId);
+                Logger.debug("--> User: {} Position: {} DFP: {} TrueSkill: {}/{} Mean: {}/{} StandarDeviation: {}/{}",
+                        user.nickName, userEvolution.get("position"), userEvolution.get("fantasyPoints"),
+                        userEvolution.get("trueSkill"), user.trueSkill,
+                        userEvolution.get("mean"), user.rating.Mean,
+                        userEvolution.get("deviation"), user.rating.StandardDeviation);
+                // Logger.debug("END: User: {} TrueSkill: {} Mean: {} StandarDeviation: {}", user.nickName, user.trueSkill, user.rating.Mean, user.rating.StandardDeviation);
+            }
         }
 
         return result;
