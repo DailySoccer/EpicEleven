@@ -123,7 +123,7 @@ public class ShopController extends Controller {
 
         User userUpdated = theUser.getProfile();
         if (userUpdated.managerLevel < levelSoccerPlayer) {
-            Money goldNeeded = TemplateSoccerPlayer.moneyToBuy(levelSoccerPlayer, (int) userUpdated.managerLevel);
+            Money goldNeeded = TemplateSoccerPlayer.moneyToBuy(contest, levelSoccerPlayer, (int) userUpdated.managerLevel);
             Logger.debug("buySoccerPlayer: {} contestId: {} gold: {} user: {}", templateSoccerPlayerId, contestId, goldNeeded.toString(), theUser.userId.toString());
 
             // Creamos el producto de comprar al futbolista

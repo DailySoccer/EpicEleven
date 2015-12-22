@@ -142,7 +142,7 @@ public class ContestEntry implements JongoId {
                 float managerLevel = User.managerLevelFromPoints(managerBalance);
 
                 for (InstanceSoccerPlayer instanceSoccerPlayer : playersToBuy) {
-                    Money price = TemplateSoccerPlayer.moneyToBuy(TemplateSoccerPlayer.levelFromSalary(instanceSoccerPlayer.salary), (int) managerLevel);
+                    Money price = TemplateSoccerPlayer.moneyToBuy(contest, TemplateSoccerPlayer.levelFromSalary(instanceSoccerPlayer.salary), (int) managerLevel);
                     ProductSoccerPlayer product = new ProductSoccerPlayer(price, contest.contestId, instanceSoccerPlayer.templateSoccerPlayerId);
                     productSoccerPlayers.add(product);
                 }
