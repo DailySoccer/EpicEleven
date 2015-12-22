@@ -10,12 +10,22 @@ import java.util.List;
 public class UserInfo {
     public ObjectId userId;
     public String nickName;
+    public String facebookID;
 
     public int wins;
     public int trueSkill = 0;
     public Money earnedMoney = MoneyUtils.zero;
 
     public UserInfo() {}
+
+    public UserInfo(User theUser) {
+        this.userId = theUser.userId;
+        this.nickName = theUser.nickName;
+        this.wins = theUser.wins;
+        this.trueSkill = theUser.trueSkill;
+        this.earnedMoney = theUser.earnedMoney;
+        this.facebookID = theUser.facebookID;
+    }
 
     public UserInfo(ObjectId userId, String nickName, int wins, int trueSkill, Money earnedMoney) {
         this.userId = userId;

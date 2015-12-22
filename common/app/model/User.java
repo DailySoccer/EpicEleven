@@ -12,6 +12,7 @@ import org.joda.time.Duration;
 import org.joda.time.Minutes;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
+import play.data.validation.Constraints;
 import utils.ListUtils;
 import utils.MoneyUtils;
 import utils.TrueSkillHelper;
@@ -56,6 +57,14 @@ public class User {
 	public String lastName;
     public String nickName;
 	public String email;
+
+    public String facebookID;
+
+    @JsonView(JsonViews.NotForClient.class)
+    public String facebookName;
+
+    @JsonView(JsonViews.NotForClient.class)
+    public String facebookEmail;
 
     public int wins;
 
@@ -103,7 +112,7 @@ public class User {
 	}
 
     public UserInfo info() {
-        return new UserInfo(userId, nickName, wins, trueSkill, earnedMoney);
+        return new UserInfo(this);
     }
 
     public User getProfile() {

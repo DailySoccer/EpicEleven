@@ -63,6 +63,9 @@ public class LoginController extends Controller {
 
     public static class FBLoginParams {
         @Required public String accessToken;
+        @Required public String facebookID;
+        @Required public String facebookName;
+        @Required public String facebookEmail;
     }
 
     public static class AskForPasswordResetParams {
@@ -378,7 +381,17 @@ public class LoginController extends Controller {
 
                 if (theUser == null) {
                     theUser = new User(account.getGivenName(), account.getSurname(), getOrSetNickname(account), account.getEmail().toLowerCase());
+                    theUser.facebookID = loginParams.facebookID;
+                    theUser.facebookName = loginParams.facebookName;
+                    theUser.facebookEmail = loginParams.facebookEmail;
                     insertUser(theUser);
+                }
+                else {
+                    // Actualizar la información de Facebook
+                    theUser.facebookID = loginParams.facebookID;
+                    theUser.facebookName = loginParams.facebookName;
+                    theUser.facebookEmail = loginParams.facebookEmail;
+                    updateFacebookInfo(theUser);
                 }
 
                 setSession(returnHelper, theUser);
@@ -591,5 +604,11 @@ public class LoginController extends Controller {
     private static void insertUser(User theUser) {
         Logger.debug("Creamos el usuario al no estar en nuestra DB pero si en Stormpath: {}", theUser.email);
         Model.users().insert(theUser);
+    }
+
+    private static void updateFacebookInfo(User theUser) {
+        Logger.debug("Update FacebookInfo: {} | {} | {}", theUser.facebookID, theUser.facebookName, theUser.facebookEmail);
+        Model.users().update(theUser.userId).with("{$set: {facebookID: #, facebookName: #, facebookEmail: #}}",
+                theUser.facebookID, theUser.facebookName, theUser.facebookEmail);
     }
 }
