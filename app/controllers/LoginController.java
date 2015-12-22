@@ -367,39 +367,50 @@ public class LoginController extends Controller {
 
 
     public static Result facebookLogin() {
-
         Form<FBLoginParams> loginParamsForm = Form.form(FBLoginParams.class).bindFromRequest();
         ReturnHelper returnHelper = new ReturnHelper();
 
         if (!loginParamsForm.hasErrors()) {
             FBLoginParams loginParams = loginParamsForm.get();
 
-            Account account = StormPathClient.instance().facebookLogin(loginParams.accessToken);
-            User theUser;
-            if (account != null) {
-                theUser = User.findByEmail(account.getEmail().toLowerCase());
+            if (StormPathClient.instance().isConnected()) {
+                Account account = StormPathClient.instance().facebookLogin(loginParams.accessToken);
+                User theUser;
+                if (account != null) {
+                    theUser = User.findByEmail(account.getEmail().toLowerCase());
 
-                if (theUser == null) {
-                    theUser = new User(account.getGivenName(), account.getSurname(), getOrSetNickname(account), account.getEmail().toLowerCase());
-                    theUser.facebookID = loginParams.facebookID;
-                    theUser.facebookName = loginParams.facebookName;
-                    theUser.facebookEmail = loginParams.facebookEmail;
-                    insertUser(theUser);
-                }
-                else {
+                    if (theUser == null) {
+                        theUser = new User(account.getGivenName(), account.getSurname(), getOrSetNickname(account), account.getEmail().toLowerCase());
+                        insertUser(theUser);
+                    }
                     // Actualizar la información de Facebook
                     theUser.facebookID = loginParams.facebookID;
                     theUser.facebookName = loginParams.facebookName;
-                    theUser.facebookEmail = loginParams.facebookEmail;
+                    theUser.facebookEmail = loginParams.facebookEmail.toLowerCase();
                     updateFacebookInfo(theUser);
+
+                    setSession(returnHelper, theUser);
+
+                } else {
+                    loginParamsForm.reject("email", "Wrong Token");
+                    returnHelper.setKO(loginParamsForm.errorsAsJson());
                 }
-
-                setSession(returnHelper, theUser);
-
             }
             else {
-                loginParamsForm.reject("email", "Wrong Token");
-                returnHelper.setKO(loginParamsForm.errorsAsJson());
+                // Buscamos si tenemos un usuario con ese email
+                User theUser = User.findByEmail(loginParams.facebookEmail);
+                if (theUser == null) {
+                    // Creamos el usuario
+                    theUser = new User(loginParams.facebookName, "", loginParams.facebookName, loginParams.facebookEmail.toLowerCase());
+                    insertUser(theUser);
+                }
+                // Actualizar la información de Facebook
+                theUser.facebookID = loginParams.facebookID;
+                theUser.facebookName = loginParams.facebookName;
+                theUser.facebookEmail = loginParams.facebookEmail.toLowerCase();
+                updateFacebookInfo(theUser);
+
+                setSession(returnHelper, theUser);
             }
         }
         return returnHelper.toResult();
