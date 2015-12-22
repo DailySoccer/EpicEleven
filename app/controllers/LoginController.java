@@ -396,7 +396,9 @@ public class LoginController extends Controller {
                     returnHelper.setKO(loginParamsForm.errorsAsJson());
                 }
             }
-            else {
+            else if (Play.isDev()) {
+                Logger.warn("facebookLogin: isDev");
+
                 // Buscamos si tenemos un usuario con ese email
                 User theUser = User.findByEmail(loginParams.facebookEmail);
                 if (theUser == null) {
@@ -411,6 +413,10 @@ public class LoginController extends Controller {
                 updateFacebookInfo(theUser);
 
                 setSession(returnHelper, theUser);
+            }
+            else {
+                loginParamsForm.reject("email", "Wrong Token");
+                returnHelper.setKO(loginParamsForm.errorsAsJson());
             }
         }
         return returnHelper.toResult();
@@ -618,7 +624,7 @@ public class LoginController extends Controller {
     }
 
     private static void updateFacebookInfo(User theUser) {
-        Logger.debug("Update FacebookInfo: {} | {} | {}", theUser.facebookID, theUser.facebookName, theUser.facebookEmail);
+        Logger.debug("FacebookInfo: {} | {} | {}", theUser.facebookID, theUser.facebookName, theUser.facebookEmail);
         Model.users().update(theUser.userId).with("{$set: {facebookID: #, facebookName: #, facebookEmail: #}}",
                 theUser.facebookID, theUser.facebookName, theUser.facebookEmail);
     }
