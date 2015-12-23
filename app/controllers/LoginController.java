@@ -19,6 +19,7 @@ import org.joda.money.Money;
 import play.Logger;
 import play.Play;
 import play.data.Form;
+import play.data.validation.Constraints;
 import play.data.validation.Constraints.Email;
 import play.data.validation.Constraints.MinLength;
 import play.data.validation.Constraints.Required;
@@ -27,6 +28,7 @@ import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import stormpath.StormPathClient;
+import utils.ListUtils;
 import utils.MoneyUtils;
 import utils.ReturnHelper;
 
@@ -34,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static play.data.Form.form;
 
@@ -480,6 +483,37 @@ public class LoginController extends Controller {
     @UserAuthenticated
     public static Result getUserProfile() {
         return new ReturnHelper(((User)ctx().args.get("User")).getProfile()).toResult();
+    }
+
+    public static class UserProfilesFacebookParams {
+        @Constraints.Required
+        public String facebookIds;
+    }
+
+    @UserAuthenticated
+    public static Result getFacebookProfiles() {
+        Form<UserProfilesFacebookParams> form = form(UserProfilesFacebookParams.class).bindFromRequest();
+
+        List<UserInfo> usersInfo = new ArrayList<>();
+
+        if (!form.hasErrors()) {
+            UserProfilesFacebookParams params = form.get();
+
+            List<String> facebookIds = ListUtils.stringListFromJson(params.facebookIds);
+            usersInfo = User.findByFacebook(facebookIds).stream().map( user -> user.info() ).collect(Collectors.toList());
+        }
+
+        Object result = form.errorsAsJson();
+
+        if (!form.hasErrors()) {
+            result = ImmutableMap.of(
+                    "result", "ok",
+                    "users_info", usersInfo);
+        }
+        else {
+            Logger.error("WTF 7277: getFacebookProfiles: {}", form.errorsAsJson());
+        }
+        return new ReturnHelper(!form.hasErrors(), result).toResult();
     }
 
     @UserAuthenticated
