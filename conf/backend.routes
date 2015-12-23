@@ -29,6 +29,7 @@ POST           /facebooklogin                                          controlle
 
 POST           /signup                                                 controllers.LoginController.signup()
 GET            /get_user_profile                                       controllers.LoginController.getUserProfile()
+POST           /get_facebook_profiles                                  controllers.LoginController.getFacebookProfiles()
 POST           /change_user_profile                                    controllers.LoginController.changeUserProfile()
 GET            /get_transaction_history                                controllers.LoginController.getTransactionHistory()
 GET            /remove_notification/:notificationId                    controllers.LoginController.removeNotification(notificationId : String)

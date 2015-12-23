@@ -50,10 +50,16 @@ public class ShopController extends Controller {
 
         ProductMoney product = (ProductMoney) Catalog.findOne(productId);
 
-        if (product.price.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD) ||
-            product.price.getCurrencyUnit().equals(MoneyUtils.CURRENCY_MANAGER)) {
-            if (!theUser.hasMoney(product.price)) {
-                errores.add(ERROR_USER_BALANCE_NEGATIVE);
+        if (product.price.getCurrencyUnit().equals(MoneyUtils.CURRENCY_REAL)) {
+            errores.add(ERROR_USER_BALANCE_NEGATIVE);
+        }
+
+        if (errores.isEmpty()) {
+            if (product.price.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD) ||
+                    product.price.getCurrencyUnit().equals(MoneyUtils.CURRENCY_MANAGER)) {
+                if (!theUser.hasMoney(product.price)) {
+                    errores.add(ERROR_USER_BALANCE_NEGATIVE);
+                }
             }
         }
 
@@ -72,9 +78,8 @@ public class ShopController extends Controller {
             // --------
             // Registramos la operación de PAGO del pedido
 
-            if (product.price.getCurrencyUnit().equals(CurrencyUnit.EUR) ||
-                    product.price.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD) ||
-                    product.price.getCurrencyUnit().equals(MoneyUtils.CURRENCY_MANAGER)) {
+            if (product.price.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD) ||
+                product.price.getCurrencyUnit().equals(MoneyUtils.CURRENCY_MANAGER)) {
                 AccountingTranOrder.create(product.price.getCurrencyUnit().getCode(), orderId, productId, ImmutableList.of(
                         new AccountOp(theUser.userId, product.price.negated(), User.getSeqId(theUser.userId) + 1)
                 ));
@@ -118,7 +123,7 @@ public class ShopController extends Controller {
 
         User userUpdated = theUser.getProfile();
         if (userUpdated.managerLevel < levelSoccerPlayer) {
-            Money goldNeeded = TemplateSoccerPlayer.moneyToBuy(levelSoccerPlayer, (int) userUpdated.managerLevel);
+            Money goldNeeded = TemplateSoccerPlayer.moneyToBuy(contest, levelSoccerPlayer, (int) userUpdated.managerLevel);
             Logger.debug("buySoccerPlayer: {} contestId: {} gold: {} user: {}", templateSoccerPlayerId, contestId, goldNeeded.toString(), theUser.userId.toString());
 
             // Creamos el producto de comprar al futbolista

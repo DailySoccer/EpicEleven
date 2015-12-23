@@ -19,6 +19,7 @@ import org.joda.money.Money;
 import play.Logger;
 import play.Play;
 import play.data.Form;
+import play.data.validation.Constraints;
 import play.data.validation.Constraints.Email;
 import play.data.validation.Constraints.MinLength;
 import play.data.validation.Constraints.Required;
@@ -27,6 +28,7 @@ import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import stormpath.StormPathClient;
+import utils.ListUtils;
 import utils.MoneyUtils;
 import utils.ReturnHelper;
 
@@ -34,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static play.data.Form.form;
 
@@ -63,6 +66,9 @@ public class LoginController extends Controller {
 
     public static class FBLoginParams {
         @Required public String accessToken;
+        @Required public String facebookID;
+        @Required public String facebookName;
+        @Required public String facebookEmail;
     }
 
     public static class AskForPasswordResetParams {
@@ -364,25 +370,52 @@ public class LoginController extends Controller {
 
 
     public static Result facebookLogin() {
-
         Form<FBLoginParams> loginParamsForm = Form.form(FBLoginParams.class).bindFromRequest();
         ReturnHelper returnHelper = new ReturnHelper();
 
         if (!loginParamsForm.hasErrors()) {
             FBLoginParams loginParams = loginParamsForm.get();
 
-            Account account = StormPathClient.instance().facebookLogin(loginParams.accessToken);
-            User theUser;
-            if (account != null) {
-                theUser = User.findByEmail(account.getEmail().toLowerCase());
+            if (StormPathClient.instance().isConnected()) {
+                Account account = StormPathClient.instance().facebookLogin(loginParams.accessToken);
+                User theUser;
+                if (account != null) {
+                    theUser = User.findByEmail(account.getEmail().toLowerCase());
 
+                    if (theUser == null) {
+                        theUser = new User(account.getGivenName(), account.getSurname(), getOrSetNickname(account), account.getEmail().toLowerCase());
+                        insertUser(theUser);
+                    }
+                    // Actualizar la información de Facebook
+                    theUser.facebookID = loginParams.facebookID;
+                    theUser.facebookName = loginParams.facebookName;
+                    theUser.facebookEmail = loginParams.facebookEmail.toLowerCase();
+                    updateFacebookInfo(theUser);
+
+                    setSession(returnHelper, theUser);
+
+                } else {
+                    loginParamsForm.reject("email", "Wrong Token");
+                    returnHelper.setKO(loginParamsForm.errorsAsJson());
+                }
+            }
+            else if (Play.isDev()) {
+                Logger.warn("facebookLogin: isDev");
+
+                // Buscamos si tenemos un usuario con ese email
+                User theUser = User.findByEmail(loginParams.facebookEmail.toLowerCase());
                 if (theUser == null) {
-                    theUser = new User(account.getGivenName(), account.getSurname(), getOrSetNickname(account), account.getEmail().toLowerCase());
+                    // Creamos el usuario
+                    theUser = new User(loginParams.facebookName, "", loginParams.facebookName, loginParams.facebookEmail.toLowerCase());
                     insertUser(theUser);
                 }
+                // Actualizar la información de Facebook
+                theUser.facebookID = loginParams.facebookID;
+                theUser.facebookName = loginParams.facebookName;
+                theUser.facebookEmail = loginParams.facebookEmail.toLowerCase();
+                updateFacebookInfo(theUser);
 
                 setSession(returnHelper, theUser);
-
             }
             else {
                 loginParamsForm.reject("email", "Wrong Token");
@@ -450,6 +483,37 @@ public class LoginController extends Controller {
     @UserAuthenticated
     public static Result getUserProfile() {
         return new ReturnHelper(((User)ctx().args.get("User")).getProfile()).toResult();
+    }
+
+    public static class UserProfilesFacebookParams {
+        @Constraints.Required
+        public String facebookIds;
+    }
+
+    @UserAuthenticated
+    public static Result getFacebookProfiles() {
+        Form<UserProfilesFacebookParams> form = form(UserProfilesFacebookParams.class).bindFromRequest();
+
+        List<UserInfo> usersInfo = new ArrayList<>();
+
+        if (!form.hasErrors()) {
+            UserProfilesFacebookParams params = form.get();
+
+            List<String> facebookIds = ListUtils.stringListFromJson(params.facebookIds);
+            usersInfo = User.findByFacebook(facebookIds).stream().map( user -> user.info() ).collect(Collectors.toList());
+        }
+
+        Object result = form.errorsAsJson();
+
+        if (!form.hasErrors()) {
+            result = ImmutableMap.of(
+                    "result", "ok",
+                    "users_info", usersInfo);
+        }
+        else {
+            Logger.error("WTF 7277: getFacebookProfiles: {}", form.errorsAsJson());
+        }
+        return new ReturnHelper(!form.hasErrors(), result).toResult();
     }
 
     @UserAuthenticated
@@ -591,5 +655,11 @@ public class LoginController extends Controller {
     private static void insertUser(User theUser) {
         Logger.debug("Creamos el usuario al no estar en nuestra DB pero si en Stormpath: {}", theUser.email);
         Model.users().insert(theUser);
+    }
+
+    private static void updateFacebookInfo(User theUser) {
+        Logger.debug("FacebookInfo: {} | {} | {}", theUser.facebookID, theUser.facebookName, theUser.facebookEmail);
+        Model.users().update(theUser.userId).with("{$set: {facebookID: #, facebookName: #, facebookEmail: #}}",
+                theUser.facebookID, theUser.facebookName, theUser.facebookEmail);
     }
 }

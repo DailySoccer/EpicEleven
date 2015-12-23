@@ -4,6 +4,8 @@ import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 
 public class MoneyUtils {
+    static public CurrencyUnit CURRENCY_REAL    = CurrencyUnit.EUR;
+
     static public CurrencyUnit CURRENCY_GOLD    = CurrencyUnit.AUD;
     static public CurrencyUnit CURRENCY_MANAGER = CurrencyUnit.CHF;
     static public CurrencyUnit CURRENCY_ENERGY  = CurrencyUnit.JPY;

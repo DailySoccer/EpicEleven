@@ -135,7 +135,7 @@ public class EnterContestJob extends Job {
                                 instanceSoccerPlayer.templateSoccerPlayerId
                 ).collect(Collectors.toList());
 
-                moneyNeeded = moneyNeeded.plus(User.moneyToBuy(managerBalance, playersToBuy));
+                moneyNeeded = moneyNeeded.plus(User.moneyToBuy(contest, managerBalance, playersToBuy));
             }
 
             // El usuario tiene dinero suficiente?

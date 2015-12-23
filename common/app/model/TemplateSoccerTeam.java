@@ -39,6 +39,11 @@ public class TemplateSoccerTeam implements JongoId {
         return templateSoccerTeamId;
     }
 
+    public List<TemplateSoccerPlayer> getTemplateSoccerPlayersFilterBy(long fantasyPoints, long playedMatches, Date startDate) {
+        return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: #, fantasyPoints: {$gte: #}, playedMatches: {$gte: #}, \"stats.startDate\": {$gte: #} }",
+                templateSoccerTeamId, fantasyPoints, playedMatches, startDate).as(TemplateSoccerPlayer.class));
+    }
+
     public List<TemplateSoccerPlayer> getTemplateSoccerPlayers() {
         return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: # }", templateSoccerTeamId).as(TemplateSoccerPlayer.class));
     }

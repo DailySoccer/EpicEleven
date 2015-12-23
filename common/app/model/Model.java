@@ -373,6 +373,10 @@ public class Model {
         return collection.find(String.format("{%s: {$in: #}}", fieldId), objectIds);
     }
 
+    public static Find findFields(MongoCollection collection, String fieldId, List<String> values) {
+        return collection.find(String.format("{\"%s\": {$in: #}}", fieldId), values);
+    }
+
     static private TargetEnvironment _targetEnvironment;
     static private InstanceRole _instanceRole;
 

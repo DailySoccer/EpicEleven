@@ -6,6 +6,7 @@ import com.mongodb.WriteConcern;
 import model.opta.OptaPlayer;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
+import org.joda.time.DateTime;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import play.Play;
@@ -18,6 +19,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class TemplateSoccerPlayer implements JongoId {
+    public static final int FILTER_BY_DFP = 1;
+    public static final int FILTER_BY_PLAYED_MATCHES = 1;
+    public static final int FILTER_BY_DAYS = 0;
+
     @Id
     public ObjectId templateSoccerPlayerId;
 
@@ -43,16 +48,19 @@ public class TemplateSoccerPlayer implements JongoId {
     @JsonView(JsonViews.Public.class)
     public int getPlayedMatches() {
         int numPlayed = 0;
-        for (SoccerPlayerStats stat: stats) {
+        for (SoccerPlayerStats stat : stats) {
             if (stat.hasPlayed()) {
                 numPlayed++;
             }
         }
         return numPlayed;
     }
-    private void setPlayedMatches(int blah) { }    // Para poder deserializar lo que nos llega por la red sin usar FAIL_ON_UNKNOWN_PROPERTIES
 
-    public TemplateSoccerPlayer() { }
+    private void setPlayedMatches(int blah) {
+    }    // Para poder deserializar lo que nos llega por la red sin usar FAIL_ON_UNKNOWN_PROPERTIES
+
+    public TemplateSoccerPlayer() {
+    }
 
     public TemplateSoccerPlayer(OptaPlayer optaPlayer, ObjectId aTemplateTeamId) {
         optaPlayerId = optaPlayer.optaPlayerId;
@@ -72,10 +80,10 @@ public class TemplateSoccerPlayer implements JongoId {
     static FieldPos transformToFieldPosFromOptaPos(String optaPosition) {
         FieldPos optaFieldPos = FieldPos.FORWARD;
 
-        if      (optaPosition.startsWith("G"))  optaFieldPos = FieldPos.GOALKEEPER;
-        else if (optaPosition.startsWith("D"))  optaFieldPos = FieldPos.DEFENSE;
-        else if (optaPosition.startsWith("M"))  optaFieldPos = FieldPos.MIDDLE;
-        else if (optaPosition.startsWith("F"))  optaFieldPos = FieldPos.FORWARD;
+        if (optaPosition.startsWith("G")) optaFieldPos = FieldPos.GOALKEEPER;
+        else if (optaPosition.startsWith("D")) optaFieldPos = FieldPos.DEFENSE;
+        else if (optaPosition.startsWith("M")) optaFieldPos = FieldPos.MIDDLE;
+        else if (optaPosition.startsWith("F")) optaFieldPos = FieldPos.FORWARD;
         else {
             Logger.error("Opta Position not registered yet: {}", optaPosition);
         }
@@ -102,9 +110,9 @@ public class TemplateSoccerPlayer implements JongoId {
         return ListUtils.asList(Model.findObjectIds(Model.templateSoccerPlayers(), "_id", idList).as(TemplateSoccerPlayer.class));
     }
 
-    static public HashMap<String, TemplateSoccerPlayer> findAllAsMap(){
+    static public HashMap<String, TemplateSoccerPlayer> findAllAsMap() {
         HashMap<String, TemplateSoccerPlayer> map = new HashMap<>();
-        for (TemplateSoccerPlayer optaPlayer: findAll()) {
+        for (TemplateSoccerPlayer optaPlayer : findAll()) {
             map.put(optaPlayer.optaPlayerId, optaPlayer);
         }
         return map;
@@ -120,7 +128,7 @@ public class TemplateSoccerPlayer implements JongoId {
 
     static public List<TemplateSoccerPlayer> findAllFromInstances(List<InstanceSoccerPlayer> instanceSoccerPlayers) {
         List<ObjectId> templateSoccerPlayerIds = new ArrayList<>();
-        for (InstanceSoccerPlayer instanceSoccerPlayer: instanceSoccerPlayers) {
+        for (InstanceSoccerPlayer instanceSoccerPlayer : instanceSoccerPlayers) {
             templateSoccerPlayerIds.add(instanceSoccerPlayer.templateSoccerPlayerId);
         }
         return findAll(templateSoccerPlayerIds);
@@ -128,7 +136,7 @@ public class TemplateSoccerPlayer implements JongoId {
 
     static public List<TemplateSoccerPlayer> findAllActiveFromTeams(List<TemplateSoccerTeam> templateSoccerTeams) {
         List<ObjectId> teamIds = new ArrayList<>();
-        for (TemplateSoccerTeam team: templateSoccerTeams) {
+        for (TemplateSoccerTeam team : templateSoccerTeams) {
             teamIds.add(team.templateSoccerTeamId);
         }
         return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: {$in: #}, tags: {$elemMatch: {$eq: #}} }", teamIds, TemplateSoccerPlayerTag.ACTIVE).as(TemplateSoccerPlayer.class));
@@ -143,8 +151,7 @@ public class TemplateSoccerPlayer implements JongoId {
         if (index == -1) {
             // Añadimos una nueva estadística
             stats.add(soccerPlayerStats);
-        }
-        else {
+        } else {
             // Actualizar las estadísticas
             stats.set(index, soccerPlayerStats);
         }
@@ -155,8 +162,7 @@ public class TemplateSoccerPlayer implements JongoId {
             Model.templateSoccerPlayers()
                     .update("{optaPlayerId: #}", soccerPlayerStats.optaPlayerId)
                     .with("{$set: {fantasyPoints: #}, $push: {stats: #}}", fantasyPoints, soccerPlayerStats);
-        }
-        else {
+        } else {
             Model.templateSoccerPlayers()
                     .update("{optaPlayerId: #, \"stats.optaMatchEventId\":#}", soccerPlayerStats.optaPlayerId, soccerPlayerStats.optaMatchEventId)
                     .with("{$set: {fantasyPoints: #, \"stats.$\": #}}", fantasyPoints, soccerPlayerStats);
@@ -164,7 +170,7 @@ public class TemplateSoccerPlayer implements JongoId {
     }
 
     public void updateEventStats() {
-        stats.forEach( stat -> {
+        stats.forEach(stat -> {
             if (stat.eventsCount == null) {
                 stat.updateEventStats();
             }
@@ -188,7 +194,7 @@ public class TemplateSoccerPlayer implements JongoId {
 
     private int searchIndexForMatchEvent(String optaMatchEventId) {
         int index = -1;
-        for (int i=0; i<stats.size(); i++) {
+        for (int i = 0; i < stats.size(); i++) {
             SoccerPlayerStats stat = stats.get(i);
             if (stat.optaMatchEventId.equals(optaMatchEventId)) {
                 index = i;
@@ -200,9 +206,9 @@ public class TemplateSoccerPlayer implements JongoId {
 
     public boolean hasChanged(OptaPlayer optaPlayer) {
         return !optaPlayerId.equals(optaPlayer.optaPlayerId) ||
-               !name.equals(optaPlayer.name) ||
-               !fieldPos.equals(transformToFieldPosFromOptaPos(optaPlayer.position)) ||
-               (TemplateSoccerTeam.findOne(templateTeamId, optaPlayer.teamId) == null);
+                !name.equals(optaPlayer.name) ||
+                !fieldPos.equals(transformToFieldPosFromOptaPos(optaPlayer.position)) ||
+                (TemplateSoccerTeam.findOne(templateTeamId, optaPlayer.teamId) == null);
     }
 
     public void changeDocument(OptaPlayer optaPlayer) {
@@ -214,18 +220,13 @@ public class TemplateSoccerPlayer implements JongoId {
         if (templateSoccerTeam != null) {
             templateTeamId = templateSoccerTeam.templateSoccerTeamId;
             updateDocument();
-        }
-        else {
+        } else {
             Logger.error("WTF 8791: TeamID({}) inválido", optaPlayer.teamId);
         }
     }
 
     public void updateDocument() {
         Model.templateSoccerPlayers().withWriteConcern(WriteConcern.SAFE).update("{optaPlayerId: #}", optaPlayerId).upsert().with(this);
-    }
-
-    public Money moneyToBuy(int managerLevel) {
-        return TemplateSoccerPlayer.moneyToBuy(TemplateSoccerPlayer.levelFromSalary(salary), managerLevel);
     }
 
     public static Map<String, Long> frequencyFieldPos(List<TemplateSoccerPlayer> templateSoccerPlayers) {
@@ -242,9 +243,9 @@ public class TemplateSoccerPlayer implements JongoId {
     public static List<InstanceSoccerPlayer> instanceSoccerPlayersFromMatchEvents(List<TemplateMatchEvent> templateMatchEvents) {
         List<InstanceSoccerPlayer> result = new ArrayList<>();
 
-        for (TemplateMatchEvent templateMatchEvent: templateMatchEvents) {
+        for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
             List<TemplateSoccerPlayer> templateSoccerPlayers = templateMatchEvent.getTemplateSoccerPlayersActives();
-            for (TemplateSoccerPlayer templateSoccerPlayer: templateSoccerPlayers) {
+            for (TemplateSoccerPlayer templateSoccerPlayer : templateSoccerPlayers) {
                 result.add(new InstanceSoccerPlayer(templateSoccerPlayer));
             }
         }
@@ -257,19 +258,20 @@ public class TemplateSoccerPlayer implements JongoId {
         templateSoccerPlayers.stream().forEach( templateSoccerPlayer -> Logger.debug("{}: player: {} manager: {} money: {}",
                 templateSoccerPlayer.name, TemplateSoccerPlayer.levelFromSalary(templateSoccerPlayer.salary), managerLevel, templateSoccerPlayer.moneyToBuy(managerLevel).toString() ));
         */
-        return templateSoccerPlayers.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.moneyToBuy(managerLevel).isZero()).collect(Collectors.toList() );
+        return templateSoccerPlayers.stream().filter(templateSoccerPlayer -> TemplateSoccerPlayer.levelFromSalary(templateSoccerPlayer.salary) <= managerLevel).collect(Collectors.toList());
     }
 
-    public static List<TemplateSoccerPlayer> soccerPlayersAvailables(TemplateSoccerTeam templateSoccerTeam, int managerLevel) {
-        List<TemplateSoccerPlayer> players = templateSoccerTeam.getTemplateSoccerPlayers();
+    public static List<TemplateSoccerPlayer> soccerPlayersAvailables(TemplateSoccerTeam templateSoccerTeam, int managerLevel, int filterByDFP, int filterByPlayedMatches, int filterByDays) {
+        DateTime dateTime = filterByDays > 0 ? new DateTime(GlobalDate.getCurrentDate()).minusDays(filterByDays) : new DateTime(new Date(0L));
+        List<TemplateSoccerPlayer> players = templateSoccerTeam.getTemplateSoccerPlayersFilterBy(filterByDFP, filterByPlayedMatches, dateTime.toDate());
         return filterSoccerPlayers(players, managerLevel);
     }
 
-    public static List<TemplateSoccerPlayer> soccerPlayersAvailables(TemplateMatchEvent templateMatchEvent, int managerLevel) {
+    public static List<TemplateSoccerPlayer> soccerPlayersAvailables(TemplateMatchEvent templateMatchEvent, int managerLevel, int filterByDFP, int filterByPlayedMatches, int filterByDays) {
         List<TemplateSoccerPlayer> availables = new ArrayList<>();
 
-        availables.addAll(soccerPlayersAvailables(TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamAId), managerLevel));
-        availables.addAll(soccerPlayersAvailables(TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamBId), managerLevel));
+        availables.addAll(soccerPlayersAvailables(TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamAId), managerLevel, filterByDFP, filterByPlayedMatches, filterByDays));
+        availables.addAll(soccerPlayersAvailables(TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamBId), managerLevel, filterByDFP, filterByPlayedMatches, filterByDays));
 
         //printFieldPos(String.format("%s => ", TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamAId).name), availablesA);
         //printFieldPos(String.format("%s => ", TemplateSoccerTeam.findOne(templateMatchEvent.templateSoccerTeamBId).name), availablesB);
@@ -277,14 +279,14 @@ public class TemplateSoccerPlayer implements JongoId {
         return availables;
     }
 
-    public static List<TemplateSoccerPlayer> soccerPlayersAvailables(List<ObjectId> templateMatchEventIds, int managerLevel) {
+    public static List<TemplateSoccerPlayer> soccerPlayersAvailables(List<ObjectId> templateMatchEventIds, int managerLevel, int filterByDFP, int filterByPlayedMatches, int filterByDays) {
         List<TemplateSoccerPlayer> availables = new ArrayList<>();
 
         List<TemplateMatchEvent> templateMatchEvents = TemplateMatchEvent.findAll(templateMatchEventIds);
 
         Logger.debug("matches: {}", templateMatchEvents.size());
         for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
-            availables.addAll(soccerPlayersAvailables(templateMatchEvent, managerLevel));
+            availables.addAll(soccerPlayersAvailables(templateMatchEvent, managerLevel, filterByDFP, filterByPlayedMatches, filterByDays));
         }
 
         return availables;
@@ -302,26 +304,33 @@ public class TemplateSoccerPlayer implements JongoId {
     }
 
     static Integer[] LEVEL_SALARY = new Integer[]{
-        5600, 5700, 5800, 5900, 6000, 6200, 6400, 6700, 7500, 8000, 13000
+            5600, 5700, 5800, 5900, 6000, 6200, 6400, 6700, 7500, 8000, 13000
     };
 
     static public int levelFromSalary(int salary) {
         int level;
-        for (level = 0; level<LEVEL_SALARY.length && salary>LEVEL_SALARY[level]; level++) {
+        for (level = 0; level < LEVEL_SALARY.length && salary > LEVEL_SALARY[level]; level++) {
         }
         return level;
     }
 
     static Integer[] LEVEL_PRICE = new Integer[]{
-        0, 7, 16, 28, 43, 74, 135, 228, 350, 534, 903
+            0, 7, 16, 28, 43, 74, 135, 228, 350, 534, 903
     };
 
-    static public Money moneyToBuy(int playerLevel, int userManagerLevel) {
+    static Double[] LEVEL_MULTIPLIER = new Double[]{
+        0.0, 0.04378283713, 0.05429071804, 0.06654991243, 0.08143607706, 0.09894921191, 0.1204028021, 0.1457968476, 0.1760070053, 0.2127845884
+    };
+
+    static public Money moneyToBuy(Contest contest, int playerLevel, int userManagerLevel) {
         Money result = Money.zero(MoneyUtils.CURRENCY_GOLD);
         if (userManagerLevel < playerLevel) {
-            for (int i = userManagerLevel + 1; i <= playerLevel; i++) {
-                result = result.plus(LEVEL_PRICE[i]);
+            double prize = contest.getPrizePoolMin().getAmount().doubleValue() - contest.entryFee.getAmount().doubleValue();
+            double sum = 0;
+            for (int i=userManagerLevel; i<playerLevel; i++) {
+                sum += LEVEL_MULTIPLIER[i] * prize;
             }
+            result = result.plus( Math.round(contest.entryFee.getAmount().doubleValue() + sum) );
         }
         return result;
     }

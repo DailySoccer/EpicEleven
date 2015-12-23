@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class OptaCompetition implements JongoId {
+    static final String CURRENT_SEASON = "2015";
 
     public ObjectId _id;
     public boolean activated;
@@ -59,15 +60,13 @@ public class OptaCompetition implements JongoId {
     }
 
     static public List<OptaTeam> findTeamsByCompetitionId(String competitionId) {
-        List<OptaCompetition> competitions = ListUtils.asList(Model.optaCompetitions().find("{activated: true, competitionId: #}", competitionId).as(OptaCompetition.class));
-        OptaCompetition competition = competitions.get(competitions.size()-1);
-        return OptaTeam.findAllByCompetition(createId(competition.seasonId, competition.competitionId));
+        return OptaTeam.findAllByCompetition(createId(CURRENT_SEASON, competitionId));
     }
 
     static public List<OptaTeam> findTeamsByCompetitionCode(String code) {
         List<OptaCompetition> competitions = ListUtils.asList(Model.optaCompetitions().find("{activated: true, competitionCode: #}", code).as(OptaCompetition.class));
         OptaCompetition competition = competitions.get(competitions.size()-1);
-        return OptaTeam.findAllByCompetition(createId(competition.seasonId, competition.competitionId));
+        return OptaTeam.findAllByCompetition(createId(CURRENT_SEASON, competition.competitionId));
     }
 
     static public List<String> asIds(List<OptaCompetition> optaCompetitions) {

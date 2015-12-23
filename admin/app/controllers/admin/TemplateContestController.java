@@ -288,14 +288,14 @@ public class TemplateContestController extends Controller {
             OpsLog.onChange(templateContest);
         }
 
-        printAsTablePlayerManagerLevel(templateContest);
+        printAsTablePlayerManagerLevel(templateContest, params.filterByDFP, params.filterByPlayedMatches, params.filterByDays);
 
         return redirect(routes.TemplateContestController.index());
     }
 
     public static Result showManagerLevels(String templateContestId) {
         TemplateContest templateContest = TemplateContest.findOne(new ObjectId(templateContestId));
-        printAsTablePlayerManagerLevel(templateContest);
+        printAsTablePlayerManagerLevel(templateContest, TemplateSoccerPlayer.FILTER_BY_DFP, TemplateSoccerPlayer.FILTER_BY_PLAYED_MATCHES, TemplateSoccerPlayer.FILTER_BY_DAYS);
         return ok(views.html.template_contest.render(
                 templateContest,
                 templateContest.getTemplateMatchEvents(),
@@ -347,7 +347,7 @@ public class TemplateContestController extends Controller {
             body.add(String.valueOf(template.salaryCap));
             body.add(template.entryFee.toString());
             body.add(String.valueOf(template.minManagerLevel != null ? template.minManagerLevel : 0));
-            body.add(String.valueOf(template.maxManagerLevel != null ? template.maxManagerLevel : 0));
+            body.add(String.valueOf(template.maxManagerLevel != null ? template.maxManagerLevel : User.MAX_MANAGER_LEVEL));
             body.add(String.valueOf(template.minTrueSkill != null ? template.minTrueSkill : -1));
             body.add(String.valueOf(template.maxTrueSkill != null ? template.maxTrueSkill : -1));
             body.add(template.prizeType.toString());
@@ -464,10 +464,11 @@ public class TemplateContestController extends Controller {
         return result;
     }
 
-    private static void printAsTablePlayerManagerLevel(TemplateContest templateContest) {
+    private static void printAsTablePlayerManagerLevel(TemplateContest templateContest, int filterByDFP, int filterByPlayedMatches, int filterByDays) {
         StringBuffer buffer = new StringBuffer();
 
         buffer.append("<h3>" + templateContest.name + "</h3>");
+        buffer.append("<h5>Conditions: DFP >= " + filterByDFP + " | PlayedMatches >= " + filterByPlayedMatches + " | Days <= " + ((filterByDays > 0) ? filterByDays : "~") + "</h5>");
         buffer.append("<table border=\"1\" style=\"width:40%; text-align: center; \">\n" +
                 "        <tr>\n" +
                 "        <td><strong>Manager Level<strong></td>\n" +
@@ -477,7 +478,7 @@ public class TemplateContestController extends Controller {
                 "        <td><strong>Forward<strong></td>\n" +
                 "        </tr>");
         for (int i=0; i<User.MANAGER_POINTS.length; i++) {
-            List<TemplateSoccerPlayer> availables = TemplateSoccerPlayer.soccerPlayersAvailables(templateContest.templateMatchEventIds, i);
+            List<TemplateSoccerPlayer> availables = TemplateSoccerPlayer.soccerPlayersAvailables(templateContest.templateMatchEventIds, i, filterByDFP, filterByPlayedMatches, filterByDays);
             Map<String, Long> frequency = TemplateSoccerPlayer.frequencyFieldPos(availables);
 
             buffer.append("<tr>");

@@ -122,7 +122,7 @@ public class ContestEntryController extends Controller {
                         Money managerBalance = User.calculateManagerBalance(theUser.userId);
 
                         List<InstanceSoccerPlayer> soccerPlayers = aContest.getInstanceSoccerPlayers(idsList);
-                        moneyNeeded = moneyNeeded.plus(User.moneyToBuy(managerBalance, soccerPlayers));
+                        moneyNeeded = moneyNeeded.plus(User.moneyToBuy(aContest, managerBalance, soccerPlayers));
                         Logger.debug("addContestEntry: moneyNeeded: {}", moneyNeeded.toString());
                     }
 
@@ -251,7 +251,7 @@ public class ContestEntryController extends Controller {
                         List<InstanceSoccerPlayer> soccerPlayers = aContest.getInstanceSoccerPlayers(idsList);
                         List<InstanceSoccerPlayer> playersToBuy = contestEntry.playersNotPurchased(User.playersToBuy(managerBalance, soccerPlayers));
                         if (!playersToBuy.isEmpty()) {
-                            moneyNeeded = moneyNeeded.plus(User.moneyToBuy(managerBalance, playersToBuy));
+                            moneyNeeded = moneyNeeded.plus(User.moneyToBuy(aContest, managerBalance, playersToBuy));
                             Logger.debug("editContestEntry: moneyNeeded: {}", moneyNeeded.toString());
 
                             // Verificar que el usuario tiene dinero suficiente...
