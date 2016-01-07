@@ -67,7 +67,6 @@ public class TemplateContest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public String specialImage;
 
-    @JsonView(JsonViews.NotForClient.class)
     public boolean simulation = false;
 
     @JsonView(JsonViews.NotForClient.class)
@@ -189,7 +188,8 @@ public class TemplateContest implements JongoId {
     }
 
     static public List<TemplateContest> findAllCustomizable() {
-        return ListUtils.asList(Model.templateContests().find("{state: \"ACTIVE\", simulation: {$ne: true}, customizable: true}").as(TemplateContest.class));
+        // return ListUtils.asList(Model.templateContests().find("{state: \"ACTIVE\", simulation: {$ne: true}, customizable: true}").as(TemplateContest.class));
+        return ListUtils.asList(Model.templateContests().find("{state: \"ACTIVE\", customizable: true}").as(TemplateContest.class));
     }
 
     static public List<TemplateContest> findAllFromContests(List<Contest> contests) {
