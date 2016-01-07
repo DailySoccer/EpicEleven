@@ -48,6 +48,10 @@ public class TemplateSoccerTeam implements JongoId {
         return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: # }", templateSoccerTeamId).as(TemplateSoccerPlayer.class));
     }
 
+    public List<TemplateSoccerPlayer> getTemplateSoccerPlayersWithSalary() {
+        return ListUtils.asList(Model.templateSoccerPlayers().find("{ templateTeamId: #, salary: {$gt: 0} }", templateSoccerTeamId).as(TemplateSoccerPlayer.class));
+    }
+
     static public TemplateSoccerTeam findOne(ObjectId templateSoccerTeamId) {
         return Model.templateSoccerTeams().findOne("{_id : #}", templateSoccerTeamId).as(TemplateSoccerTeam.class);
     }
