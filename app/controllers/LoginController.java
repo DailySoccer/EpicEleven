@@ -212,14 +212,16 @@ public class LoginController extends Controller {
                     // Existe un bonus por registrarse?
                     SignupBonus bonus = SignupBonus.findOne();
                     if (bonus != null && bonus.activated) {
+                        int seqId = User.getSeqId(theUser.userId);
+
                         if (bonus.gold.isPositive()) {
-                            AccountingTranBonus.create(bonus.gold.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, "SIGNUP-GOLD", ImmutableList.of(
-                                    new AccountOp(theUser.userId, bonus.gold, User.getSeqId(theUser.userId) + 1)
+                            AccountingTranBonus.create(bonus.gold.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, theUser.userId.toString()+"-SIGNUP-GOLD", ImmutableList.of(
+                                    new AccountOp(theUser.userId, bonus.gold, ++seqId)
                             ));
                         }
                         if (bonus.manager.isPositive()) {
-                            AccountingTranBonus.create(bonus.manager.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, "SIGNUP-MANAGER", ImmutableList.of(
-                                    new AccountOp(theUser.userId, bonus.manager, User.getSeqId(theUser.userId) + 1)
+                            AccountingTranBonus.create(bonus.manager.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, theUser.userId.toString()+"-SIGNUP-MANAGER", ImmutableList.of(
+                                    new AccountOp(theUser.userId, bonus.manager, ++seqId)
                             ));
                         }
                     }
