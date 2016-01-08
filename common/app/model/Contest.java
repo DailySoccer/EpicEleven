@@ -324,7 +324,7 @@ public class Contest implements JongoId {
 
     static public long countWonSimulations(ObjectId userId) {
         return Model.contests()
-                .count("{'contestEntries.userId': #, state: \"HISTORY\", simulation: true, 'contestEntries.position': 0}", userId);
+                .count("{contestEntries: { $elemMatch: { userId: #, position: 0 } }, state: \"HISTORY\", simulation: true }", userId);
     }
 
     static public long countPlayedOfficial(ObjectId userId) {
@@ -334,7 +334,7 @@ public class Contest implements JongoId {
 
     static public long countWonOfficial(ObjectId userId) {
         return Model.contests()
-                .count("{'contestEntries.userId': #, state: \"HISTORY\", simulation: {$ne: true}, 'contestEntries.position': 0}", userId);
+                .count("{contestEntries: { $elemMatch: { userId: #, position: 0 } }, state: \"HISTORY\", simulation: {$ne: true}}", userId);
     }
 
     static public List<Contest> findAllActiveFromTemplateMatchEvent(ObjectId templateMatchEventId) {

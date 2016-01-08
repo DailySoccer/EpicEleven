@@ -360,6 +360,7 @@ public class Actors {
             Logger.info("RabbitMq inicializado en TargetEnvironment.{}", env.toString());
         }
         catch (Exception exc) {
+            _connection = null;
             Logger.warn("Actors no pudo conectar con RabbitMq");
         }
     }

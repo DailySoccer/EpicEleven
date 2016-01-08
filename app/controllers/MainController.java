@@ -137,7 +137,7 @@ public class MainController extends Controller {
 
         List<TemplateSoccerPlayer> templateSoccerPlayers = new ArrayList<>();
         for (TemplateSoccerTeam templateSoccerTeam : templateSoccerTeamList) {
-            templateSoccerPlayers.addAll(templateSoccerTeam.getTemplateSoccerPlayers());
+            templateSoccerPlayers.addAll(templateSoccerTeam.getTemplateSoccerPlayersWithSalary());
         }
 
         List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
