@@ -145,10 +145,7 @@ public class Order {
 
     static public Order create (ObjectId orderId, ObjectId userId, TransactionType transactionType, String paymentId, List<Product> products, String refererUrl) {
         Order order = new Order(orderId, userId, transactionType, paymentId, products);
-        // No almacenamos el referer si es el "por defecto" (salvo que estemos en staging)
-        if (!refererUrl.contains(REFERER_URL_DEFAULT) || refererUrl.contains(STAGING_URL)) {
-            order.referer = refererUrl;
-        }
+        order.referer = refererUrl;
         Model.orders().insert(order);
         return order;
     }
