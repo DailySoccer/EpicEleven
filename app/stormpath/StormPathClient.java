@@ -232,8 +232,12 @@ public class StormPathClient {
             customData.save();
 
             if (usersAccount.getDirectory().getProvider().getProviderId().equals("stormpath")) {
-                usersAccount.setGivenName(firstName);
-                usersAccount.setSurname(lastName);
+                if (firstName != null && !firstName.isEmpty())
+                    usersAccount.setGivenName(firstName);
+
+                if (lastName != null && !lastName.isEmpty())
+                    usersAccount.setSurname(lastName);
+
                 usersAccount.setEmail(email);
                 usersAccount.setUsername(nickName);
                 try {
