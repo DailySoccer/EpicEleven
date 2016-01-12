@@ -1,0 +1,79 @@
+<div id="loginRoot" ng-show="!loadingService.isLoading" ng-class="{'air':!isModal}">
+  <div id="loginBox" class="main-box" ng-class="{'air':!isModal}">
+
+    <div class="panel">
+
+      <!-- Header -->
+      <div class="panel-heading">
+        <div class="panel-title">{{GetLocalizedText('title')}}</div>
+        <button type="button" class="close" ng-click="onAction('CANCEL', $event)">
+          <span class="glyphicon glyphicon-remove"></span>
+        </button>
+      </div>
+
+      <div class="panel-body" >
+
+        <form id="loginForm" class="form-horizontal" ng-submit="onAction('SUBMIT')" role="form" formAutofillFix>
+          <div class="form-description">{{GetLocalizedText('description')}}</div>
+
+          <!-- LOGIN FIELDS -->
+          <div class="user-form-field">
+            <!-- MAIL -->
+            <div class="input-group  bottom-separation-10">
+              <span class="input-group-addon"><span class="glyphicon glyphicon-user"></span></span>
+              <input id="login-mail" ng-model="emailOrUsername" type="email" name="Email" placeholder="{{GetLocalizedText('email')}}" class="form-control" tabindex="1" autocapitalize="off" auto-focus>
+            </div>
+            <!-- PÂSSWORD -->
+            <div class="input-group">
+              <span class="input-group-addon"><div class="glyphicon glyphicon-lock"></div></span>
+              <input id="login-password" type="password" ng-model="password" name="password" placeholder="{{GetLocalizedText('pass')}}" class="form-control" tabindex="2" autocapitalize="off">
+            </div>
+
+            <!-- Error de login/pass -->
+            <div id="loginErrorSection" class="new-row">
+              <div id="loginErrorLabel" class="login-err-text">{{GetLocalizedText('loginerror')}}</div>
+            </div>
+
+          </div>
+
+          <!-- REMEMBER PASS -->
+          <div class="user-form-field-righted">
+            <a id="rememberPasswordLink" class="small-link-righted" ng-click="onAction('REMEMBER_PASSWORD', $event)">{{GetLocalizedText('forgotpass')}}</a>
+          </div>
+
+          <!-- BUTTONS -->
+          <div class="user-form-field">
+            <div class="new-row">
+              <div class="buttons-wrapper">
+                <button type="submit" id="btnSubmit" name="JoinNow" ng-disabled="!enabledSubmit" class="enter-button-half">{{GetLocalizedText('buttonlogin')}}</button>
+                <button id="btnCancelLogin" ng-click="onAction('CANCEL', $event)" class="cancel-button-half">{{GetLocalizedText('buttoncancel')}}</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- GOTO REGISTER -->
+          <div class="user-form-field">
+            <div class="new-row">
+              <div class="small-text">{{GetLocalizedText('unregistered')}} <a id="gotoRegisterLink" ng-click="onAction('JOIN', $event)"> {{GetLocalizedText('signuphere')}} </a></div>
+            </div>
+          </div>
+
+          <!--Facebook stuff-->
+          <div  class="user-form-field">
+            <div class="fb-button-wrapper">
+              <fb:login-button scope="public_profile,email,user_friends" size="large" onlogin="jsLoginFB()">
+              </fb:login-button>
+            </div>
+          </div>
+          <!-- -->
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+ <script>
+   if (typeof FB !== "undefined" && FB != null) {
+     FB.XFBML.parse();
+   }
+ </script>

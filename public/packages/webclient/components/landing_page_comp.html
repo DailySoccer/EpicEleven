@@ -1,0 +1,156 @@
+<div id="landingPageRoot">
+  <!-- Portada Versión Desktop -->
+  <div id="desktopContent" ng-if="!scrDet.isXsScreen" class="first-screen" style="height:{{screenHeight}}px">
+    <div class="screen-pattern" src="images/pattern.png"></div>
+
+    <div class="main-title-wrapper">
+
+      <div class="main-title">DAILY FANTASY<br>LEAGUES</div>
+      <div class="separator-wrapper">
+        <img src="images/separator.png"/>
+      </div>
+      <div class="modules-wrapper">
+
+        <div class="module-column">
+          <img class="icono" src="images/icon1.png"/>
+          <p class="icono-text">Create your lineup in seconds</p>
+        </div>
+
+        <div class="module-column">
+          <img class="icono" src="images/icon2.png"/>
+          <p class="icono-text">Play in as many leagues as you want</p>
+        </div>
+
+        <div class="module-column">
+          <img class="icono" src="images/icon3.png"/>
+          <p class="icono-text">And win money</p>
+        </div>
+
+      </div>
+
+      <div class="button-wrap">
+        <button type="button" class="button-play"  ng-click="buttonPressed('join')" id="playButton1">PLAY</button>
+      </div>
+
+    </div>
+    <div class="beta-label"><img src="images/beta.png"/></div>
+
+    <!-- Separador -->
+    <a class="wrapping-link" ng-click="smoothScrollTo('#screen2')">
+      <span id="screenSeparator1" class="more-info-section-light">
+        <span>KNOW MORE</span>
+        <span class="go-down-icon"></span>
+      </span>
+    </a>
+  </div>
+  <!-- END Portada Versión Desktop -->
+
+
+  <!-- Portada Versión Móvil -->
+  <div id="mobileContent" class="screen">
+    <div class="content">
+      <p class="main-title-mobile">DAILY FANTASY <br> LEAGUES</p>
+      <p class="title-sup-text-mobile">CREATE YOUR LINEUP IN SECONDS</p>
+      <p class="title-sup-text-mobile">PLAY IN AS MANY LEAGUES AS YOU WANT</p>
+      <p class="title-sup-text-mobile">AND WIN MONEY</p>
+      <div class="button-wrap">
+        <button type="button" class="button-play-mobile" ng-click="buttonPressed('join')" id="playButtonMobile">PLAY</button>
+      </div>
+    </div>
+    <!-- Separador -->
+    <a class="wrapping-link"  ng-click="smoothScrollTo('#screen2')">
+      <span id="screenSeparator1" class="more-info-section-light">
+        <span>KNOW MORE</span>
+        <span class="go-down-icon"></span>
+      </span>
+    </a>
+    <div class="beta-label"><img src="images/beta.png"/></div>
+  </div>
+  <!-- END Portada Versión Móvil -->
+
+
+
+  <div id="screen2" class="screen">
+      <div class="slider-wrapper">
+        <img class="screen-background" src="images/landing02.jpg" />
+        <div class="screen-pattern"></div>
+      </div>
+      <div class="content-wrapper">
+        <div class="content-container">
+          <div class="screen-image-block">
+            <img class="screen-logo" src="images/landingLogo1.png" />
+          </div>
+          <div class="screen-text-block">
+            <p class="title-text-dark">NEW CONTESTS EVERY DAY</p>
+            <p class="description-text">
+                Spanish La Liga, Champions, Europa League: contests in the most important competitions every day. You can play in as many as you want
+            </p>
+            <div class="button-wrap">
+              <button type="button" class="button-play"  ng-click="buttonPressed('join')" id="playButton2">PLAY</button>
+            </div>
+          </div>
+        </div>
+      </div>
+  </div>
+
+  <a class="wrapping-link" ng-click="smoothScrollTo('#screen3')">
+    <span id="screenSeparator2" class="more-info-section-light">
+      <span>KNOW MORE</span>
+      <span class="go-down-icon"></span>
+    </span>
+  </a>
+
+  <div id="screen3" class="screen">
+      <div class="slider-wrapper">
+        <img class="screen-background" src="images/landing03.jpg" />
+        <div class="screen-pattern"></div>
+      </div>
+      <div class="content-wrapper">
+        <div class="content-container">
+          <div class="screen-image-block">
+            <img class="screen-logo" src="images/landingLogo2.png" />
+          </div>
+          <div class="screen-text-block">
+            <p class="title-text-dark">CREATE YOUR IDEAL TEAM</p>
+            <p class="description-text">
+                Each player has a salary according to his real life performance. Choose wisely, you'll have to stay under the salary cap.
+            </p>
+            <div class="button-wrap">
+              <button type="button" class="button-play"  ng-click="buttonPressed('join')" id="playButton3">PLAY</button>
+            </div>
+          </div>
+        </div>
+      </div>
+  </div>
+
+  <a class="wrapping-link" ng-click="smoothScrollTo('#screen4')">
+    <span id="screenSeparator3" class="more-info-section-dark">
+      <span>KNOW MORE</span>
+      <span class="go-down-icon"></span>
+    </span>
+  </a>
+
+  <div id="screen4" class="screen">
+      <div class="slider-wrapper">
+        <img class="screen-background" src="images/landing04.jpg" />
+        <div class="screen-pattern"></div>
+      </div>
+      <div class="content-wrapper">
+        <div class="content-container">
+          <div class="screen-image-block">
+            <img class="screen-logo" src="images/landingLogo3.png" />
+          </div>
+          <div class="screen-text-block">
+            <p class="title-text-dark">SCORE AND WIN</p>
+            <p class="description-text">
+                When real life's matches start, your players will earn points according to their actions. You can see their score in real time from anywhere and compare it with rival teams.
+            </p>
+            <div class="button-wrap">
+              <button type="button" class="button-play"  ng-click="buttonPressed('join')" id="playButton4">PLAY</button>
+            </div>
+          </div>
+        </div>
+      </div>
+  </div>
+
+</div>

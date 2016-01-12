@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Epic Eleven</title>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+
+    <link rel="shortcut icon" href="images/icono16x16.ico" />
+
+    <!-- Fuentes -->
+    <link href='http://fonts.googleapis.com/css?family=Exo:300,600' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <script type="text/javascript">(function(f,b){if(!b.__SV){var a,e,i,g;window.mixpanel=b;b._i=[];b.init=function(a,e,d){function f(b,h){var a=h.split(".");2==a.length&&(b=b[a[0]],h=a[1]);b[h]=function(){b.push([h].concat(Array.prototype.slice.call(arguments,0)))}}var c=b;"undefined"!==typeof d?c=b[d]=[]:d="mixpanel";c.people=c.people||[];c.toString=function(b){var a="mixpanel";"mixpanel"!==d&&(a+="."+d);b||(a+=" (stub)");return a};c.people.toString=function(){return c.toString(1)+".people (stub)"};i="disable track track_pageview track_links track_forms register register_once alias unregister identify name_tag set_config people.set people.set_once people.increment people.append people.track_charge people.clear_charges people.delete_user".split(" ");for(g=0;g<i.length;g++)f(c,i[g]);b._i.push([a,e,d])};b.__SV=1.2;a=f.createElement("script");a.type="text/javascript";a.async=!0;a.src="//cdn.mxpnl.com/libs/mixpanel-2.2.min.js";e=f.getElementsByTagName("script")[0];e.parentNode.insertBefore(a,e)}})(document,window.mixpanel||[]);</script>
+    <script type="text/javascript">
+    var mixpanelCode = (window.location.hostname.indexOf("epiceleven") > 0)?
+                        "a1889b53bda6b6348f60a570f658c157":
+                        "f627312247ce937f807ce4b9d786314b";
+
+    mixpanel.init(mixpanelCode, {api_host: "https://api.mixpanel.com"});
+    mixpanel.track("Unsupported Browser", {"UnsupportedBrowser": navigator.userAgent});
+    console.log("Unsupported Browser");
+    </script>
+
+  </head>
+
+  <body>
+    <img src="images/landingBackground.jpg" class="simulated-fallback-background">
+    <div class="screen-pattern" src="images/pattern.png"></div>
+
+    <div id="mainApp" class="obsoleteBrowserPage">
+      <div id="mainMenu" class="navbar navbar-default">
+        <div id="menuNotLoggedIn">
+          <div id="brandLogoNotLogged" class="navbar-brand"></div>
+        </div>
+      </div>
+
+      <div id="mainWrapper" class="wrapper-content-container">
+        <div id="mainContent" class="main-content-container">
+          <div id="obsoleteBrowserPageRoot">
+            <!-- Portada Versión Desktop -->
+            <div id="desktopContent" class="first-screen">
+              <div class="main-title-wrapper">
+
+                <div class="main-title">YOUR BROWSER IS NOT SUPPORTED</div>
+                <div class="main-sub-title">
+                  In order to play Epic Eleven, you need to use
+                  one of these free, updated web browsers.
+                </div>
+
+                <div class="modules-wrapper">
+                  <div class="module-column chrome">
+                    <a href="http://www.google.com/chrome/">
+                      <img src="images/iconBrowserChrome.png">
+                      <p>Google Chrome</p>
+                    </a>
+                  </div>
+                  <div class="module-column ie">
+                    <a href="http://www.microsoft.com/download/internet-explorer.aspx">
+                      <img src="images/iconBrowserExplorer.png">
+                      <p>Internet Explorer</p>
+                    </a>
+                  </div>
+                  <div class="module-column firefox">
+                    <a href="https://www.mozilla.org/firefox/new/">
+                      <img src="images/iconBrowserFirefox.png">
+                      <p>Mozilla Firefox</p>
+                    </a>
+                  </div>
+                  <div class="module-column opera">
+                    <a href="http://www.opera.com">
+                      <img src="images/iconBrowserOpera.png">
+                      <p>Opera</p>
+                    </a>
+                  </div>
+                  <div class="module-column safari">
+                    <a href="http://support.apple.com/downloads/#safari">
+                      <img src="images/iconBrowserSafari.png">
+                      <p>Safari</p>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- END Portada Versión Desktop -->
+
+          </div>
+        </div>
+      </div>
+      <footer></footer>
+    </div>
+
+
+
+  </body>
+</html>

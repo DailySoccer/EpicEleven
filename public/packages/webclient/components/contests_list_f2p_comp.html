@@ -1,0 +1,59 @@
+<div class="contests-list-f2p-root" ng-if="contestsListOriginal.isNotEmpty">
+  <div ng-repeat="contest in contestsListOrdered">
+    <div class="contestSlot" ng-class="{'special' : getContestMorfology(contest) == 'special'}" ng-click="onRow(contest)">
+
+      <div class="special-image-section" ng-if="getContestMorfology(contest) == 'special'">
+        <img ng-src="{{getContestImage(contest)}}"></img>
+      </div>
+
+      <div class="time-section">
+        <div class="fake-time-column"></div>
+        <div class="column-start-time">
+          <div class="column-start-hour" ng-class="{'start-soon' : isSoon(contest.startDate)}" ng-bind-html="timeInfo(contest.startDate)"></div>
+          <div class="column-start-date" ng-if="showDate && !isSoon(contest.startDate)" ng-bind-html="dateInfo(contest.startDate)"></div>
+        </div>
+      </div>
+
+      <!-- margen arriba -->
+      <div class="name-section">
+        <div class="contest-name">{{contest.name}}</div>
+        <div class="contest-description">{{contest.description}}</div>
+      </div>
+
+      <div class="conditions-section">
+      
+        <div class="player-position" ng-if="contest.isLive || contest.isHistory">
+          <div class="condition-name"><span>{{getLocalizedText("position")}}</span></div>
+          <div class="condition-amount"><span class="current-position">{{printableMyPosition(contest)}}</span>/{{contest.numEntries}}</div>
+        </div>
+        
+        <div class="entry-fee-box" ng-if="!(contest.isLive || contest.isHistory)">
+          <span class="condition-name">{{getLocalizedText("entryfee")}}</span>
+          <span class="condition-amount" ng-class="{'entry-fee-coin':getContestTypeIcon(contest) == 'real', 'entry-fee-energy':getContestTypeIcon(contest) == 'train'}">{{contest.entryFee}}</span>
+        </div>
+        <div class="prize-box" ng-if="!contest.isLive">
+          <span class="condition-name">{{getLocalizedText("prize")}}</span>
+          <span class="condition-amount" ng-class="{'prize-coin':getContestTypeIcon(contest) == 'real', 'prize-managerpoints':getContestTypeIcon(contest) == 'train'}">{{getPrizeToShow(contest)}}</span>
+        </div>
+        <div class="points-box" ng-if="contest.isLive">
+          <span class="condition-name">{{getLocalizedText("points")}}</span>
+          <span class="condition-amount">{{getPointsToShow(contest)}}</span>
+        </div>
+      </div>
+
+      <div class="action-section" ng-click="onAction(contest, $event)">
+        <img class="ticket" ng-src="images/arrow{{getContestMorfology(contest) == 'normal' ? 'Black' : 'White'}}.png">
+        <!--div class="button-wrapper" ng-if="contest.isLive">
+          <button type="button" class="action-button" ng-click="onAction(contest, $event)">{{actionButtonTitle}}</button>
+        </div-->
+      </div>
+
+      <div class="tournament-and-type-section">
+        <span class="{{getSourceFlag(contest)}}"></span>
+        <span class="contest-type {{getContestTypeIcon(contest)}}"></span>
+        <span class="friends-in" ng-if="(!userIsRegistered(contest)) && friendsCount(contest) > 0"><span class="count">{{friendsCount(contest)}}</span></span>
+      </div>
+      
+    </div>
+  </div>
+</div>

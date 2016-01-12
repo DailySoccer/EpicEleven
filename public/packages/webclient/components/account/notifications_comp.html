@@ -1,0 +1,40 @@
+<div id="notificationsComp">
+
+  <div class="default-section-header">{{getLocalizedText('name')}}</div>
+
+  <div class="notification-list-wrapper">
+
+    <!-- Notificaciones tipo logro -->
+    <div class="notification"  ng-repeat="notification in notificationList" ng-class="{'uncommon': notification.type == 'ACHIEVEMENT_EARNED'}">
+
+      <div class="main-info" ng-click="onAction(notification.id)">
+        <div class="wrapper">
+          <achievement ng-if="notification.type == 'ACHIEVEMENT_EARNED'" enabled="true" key="notification['info'].achievement"></achievement>
+          <span class="name">{{notification.name}}</span>
+          <span class="date">{{notification.date}}</span>
+        </div>
+      </div>
+      <div ng-class="{'clearfix': notification.type == 'ACHIEVEMENT_EARNED'}"></div>
+      <!--social-share parameters-by-map="sharingInfo(notification)" show-like="false" inline ng-show="shareEnabled(notification)"></social-share-->
+      
+      <div class="additional-info">
+        <div class="wrapper">
+          <div class="description">{{notification.description}}</div>
+          <div class="button-wrapper" ng-show="notification.link.name != '' || shareEnabled(notification)">
+            <button class="btn-primary" ng-if="notification.link.name != ''" ng-click="goToLink(notification.link.url)">{{notification.link.name}}</button>
+            <social-share parameters-by-map="sharingInfo(notification)" show-like="false" inline ng-show="shareEnabled(notification)"></social-share>
+          </div>
+        </div>
+      </div>
+
+      <span class="close-button" ng-click="closeNotification(notification.id)"><img src="images/alertCloseButton.png"></span>
+
+    </div>
+    
+    <div class="notification-list-empty" ng-if="notificationList.length == 0">
+      {{getLocalizedText('notification-list-empty')}}
+    </div>
+
+  </div>
+
+</div>

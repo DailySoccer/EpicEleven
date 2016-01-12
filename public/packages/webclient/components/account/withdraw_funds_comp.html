@@ -1,0 +1,23 @@
+<div id="withdrawFundsContent">
+  <!-- header title -->
+  <div class="default-section-header">{{getLocalizedText("title")}}</div>
+
+  <div class="top-separation">
+    <div class="withdraw-founds-box">
+      <div class="data-header">
+        <span class="data-header-title">{{getLocalizedText("balance")}}<span class="money"><span id="moneyAmount">{{userData.balance}}</span></span></span>
+      </div>
+
+      <p>{{getLocalizedText("withdrawdesc1")}}</p>
+      <div class="money-element">
+        <input type="number" id="customEurosAmount"><label for="customEuros">{{formatCurrency("")}}</label>
+      </div>
+      <p class="paypal-info">{{getLocalizedText("withdrawdesc2")}}{{formatCurrency("20")}}</p>
+      <div class="button-wrapper"><button class="withdraw-funds-button" id="withdrawFundsButton">{{getLocalizedText("withdrawfunds")}}</button></div>
+    </div>
+  </div>
+  <div class="need-help-box">
+    <p id="need-help-text">{{getLocalizedText("needhelp")}}</p>
+    <p id="need-help-email">support@epiceleven.com</p>
+  </div>
+</div>

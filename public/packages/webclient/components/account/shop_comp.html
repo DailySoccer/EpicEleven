@@ -1,0 +1,75 @@
+<div id="mainShopCompWrapper">
+
+  <div class="default-section-header">{{getLocalizedText('name')}}</div>
+  
+  <div class="content">
+  
+    <div class="money-layout">        
+      <div class="money-tile-wrapper" ng-repeat="item in goldProducts">
+        <div class="tile">
+          <div class="header">
+            <span class="title">{{item.description}}</span>
+          </div>
+          <div class="content">
+            <img class="gold-icon" ng-src="{{item.captionImage}}">
+            <div class="content-info">
+              <span class="gold-quantity">{{item.quantity}}</span>
+              <div class="price-wrapper">
+                <!--div class="free-increment" ng-if="item.freeIncrement > 0">
+                  <span class="free-increment-count">{{item.freeIncrement}}</span>
+                  <span class="free-increment-desc">{{getLocalizedText('free')}}</span>
+                </div-->
+                <div class="button-wrapper">
+                  <button class="price" ng-click="buyGold(item.id)">{{item.price}}</button>
+                </div>
+              </div>                
+            </div>
+            <img ng-src="{{getLocalizedText('mostpopularimagesource')}}" class="gold-item-popular" ng-if="item.isMostPopular">
+          </div>            
+        </div>
+      </div>
+    </div>
+    
+    <div class="energy-layout">
+      <div class="energy-tiles-wrapper">
+        <div class="tile">
+          <div class="energy-item">
+            <!--div class="energy-separator" ng-if="$index > 0"></div-->
+            
+            <div class="item-title">
+              <span>RECARGA</span>
+              <div><img class="energy-icon" src="images/icon-FullEnergy.png"></div>
+              <span>ENERGÍA</span>
+            </div>
+            <div class="product" ng-repeat="energyItem in energyProducts">
+              <div class="energy-description">{{energyItem.description}}</div>
+              <img class="product-image" ng-src="{{energyItem.captionImage}}">
+              <div ng-switch="energyItem.purchasable">
+                <div class="button-wrapper" ng-switch-when="true">
+                  <button class="refill-button" ng-class="{'disabled': !canBuyEnergy}" ng-click="buyEnergy(energyItem.id)">
+                    <span class="quantity">{{energyItem.price}}</span>
+                  </button>
+                </div>
+              </div>
+              
+            </div>
+          </div>
+          
+          <div class="energy-refill-counter">
+            <div class="product">
+              <img class="energy-icon" src="images/iconEnergyLevelUp.png">
+              <div class="energy-description">{{timeLeft != '' ? getLocalizedText("refillable") :  getLocalizedText("no-refillable")}}</div>
+              <div>
+                <div class="button-wrapper">
+                  <span  class="product-time-left" ng-if="timeLeft != ''">{{timeLeft}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 
+
+<ng-view></ng-view>

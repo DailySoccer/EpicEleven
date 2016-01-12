@@ -1,0 +1,20 @@
+<div class="leaderboard-table">
+  <div class="leaderboard-table-header" ng-show="isHeaded">
+    <div class="leaderboard-table-element">
+      <span class="leaderboard-column leaderboard-table-position">{{getLocalizedText("abrevposition")}}</span>
+      <span class="leaderboard-column leaderboard-table-name">{{getLocalizedText("name")}}</span>
+      <span class="leaderboard-column leaderboard-table-hint"> </span>
+      <span class="leaderboard-column leaderboard-table-skillpoints">{{pointsColumnName}}</span>
+    </div>
+  </div>
+  <div class="leaderboard-table-data">
+    <div class="leaderboard-table-element {{isThePlayer(element['id'])? 'player-position' : ''}}" ng-repeat="element in shownElements">
+      <span class="leaderboard-column leaderboard-table-position">{{element['position']}} </span>
+      <span class="leaderboard-column leaderboard-table-name">{{element['name']}} </span>
+      <span class="leaderboard-column leaderboard-table-hint">
+        <social-share parameters-by-map="sharingInfo" show-like="false" inline ng-if="isThePlayer(element['id']) && sharingInfo != null"></social-share>
+      </span>
+      <span class="leaderboard-column leaderboard-table-skillpoints">{{element['points']}} </span>
+    </div>
+  </div>
+</div>

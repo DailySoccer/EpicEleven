@@ -1,0 +1,1184 @@
+{
+  "_comment"                            : "i18n Spanish",
+  "version"                             : "0.0.1",
+  "modified"                            : "2015-09-21",
+  "language"                            : "Spanish",
+  "locale"                              : "es",
+  "translations" :
+  {
+    "currency"                          : "$",
+    "locale"                            : "es_ES",
+    "common"                            :
+    {
+      "day"                             : " DÍA ",
+      "days"                            : " DÍAS ",
+      "points"                          : " Puntos ",
+      "abrevpoints"                     : " PTOS. "
+    }
+    ,"date"                             :
+    {
+      "datewithdayofthemonth"           : "EEE, d MMM",
+      "dateshort"                       : "dd/MM",
+      "timeshort"                       : "HH:mm",
+      "datetimeshort"                   : "E, HH:mm",
+      "datetimelong"                    : "E, dd/MM/yy HH:mm",
+      "datetimedayhour"                 : "dd/MM/yy HH:mm"
+    }
+    ,"weekcalendar"                     :
+    {
+      "1"                               : "L",
+      "2"                               : "M",
+      "3"                               : "X",
+      "4"                               : "J",
+      "5"                               : "V",
+      "6"                               : "S",
+      "7"                               : "D"
+    }
+    ,"landing"                          :
+    {
+      "title"                           : "LIGAS FANTÁSTICAS DIARIAS",
+      "subtitle"                        : "Juega siempre que quieras, donde tú quieras y gana premios cada jornada.",
+      "buttonplay"                      : "JUEGA AHORA",
+      "info1"                           : "Compite contra tus amigos en la Liga, Premier y Champions.",
+      "info2"                           : "Crea tu alineación desde tu ordenador, tablet o móvil en segundos.",
+      "info3"                           : "Recoge tus recompensas al instante."
+    }
+    ,"join"                             :
+    {
+      "title"                           : "REGÍSTRATE",
+      "description"                     : "¿No estás registrado aún? <br> Rellena el formulario.",
+      "nickrequires"                    : "Tu nombre debe tener entre @MIN_NICKNAME_LENGTH y @MAX_NICKNAME_LENGTH caracteres.",
+      "nick"                            : "Nombre de usuario",
+      "invalidnick"                     : "Nombre inválido.",
+      "email"                           : "Correo electrónico",
+      "invalidemail"                    : "Correo electrónico inválido.",
+      "passrequires"                    : "Contraseña: Debe tener al menos @MIN_PASSWORD_LENGTH caracteres (escríbela 2 veces).",
+      "pass"                            : "Contraseña",
+      "repass"                          : "Repite la contraseña",
+      "invalidpass"                     : "Contraseña inválida.",
+      "buttonsignup"                    : "REGÍSTRATE",
+      "buttoncancel"                    : "CANCELAR",
+      "registered"                      : "¿Ya estás registrado?",
+      "loginhere"                       : "¡Accede desde aquí!",
+      "defaulterror"                    : "Ha ocurrido un error. Por favor, inténtalo de nuevo más tarde.",
+      "nicknametaken"                   : "Ese nombre ya ha sido registrado",
+      "emailtaken"                      : "Ese email ya ha sido registrado"
+    }
+    ,"login"                            :
+    {
+      "title"                           : "ENTRAR",
+      "description"                     : "Introduce tu correo electrónico y contraseña",
+      "email"                           : "Correo electrónico",
+      "pass"                            : "Contraseña",
+      "loginerror"                      : "El correo electrónico o la contraseña no son válidos. Por favor, revisa los datos.",
+      "defaulterror"                    : "Ha ocurrido un error. Por favor, inténtalo de nuevo más tarde.",
+      "forgotpass"                      : "¿Olvidaste tu contraseña?",
+      "buttonlogin"                     : "CONTINUAR",
+      "buttoncancel"                    : "CANCELAR",
+      "unregistered"                    : "¿Aún no estás registrado?",
+      "signuphere"                      : "¡Regístrate aquí!"
+    }
+    ,"changepass"                       :
+    {
+      "error503"                        : "ERROR 503",
+      "changepass"                      : "CAMBIO DE CONTRASEÑA",
+      "unavailable"                     : "Esta página no está disponible",
+      "tokenexpired"                    : "El token proporcionado no es válido o ha expirado.",
+      "createpass"                      : "Crea una nueva contraseña.",
+      "passrequires"                    : "Contraseña: Debe tener al menos @MIN_PASSWORD_LENGTH caracteres. (Escríbela 2 veces).",
+      "pass"                            : "Contraseña",
+      "repass"                          : "Repite contraseña",
+      "buttoncontinue"                  : "CONTINUAR",
+      "buttoncancel"                    : "CANCELAR"
+    }
+    ,"rememberpass"                      :
+    {
+      "title"                           : "RECORDAR CONTRASEÑA",
+      "confirm_part_1"                  : "Te hemos mandado un correo electrónico a",
+      "confirm_part_2"                  : "Revisa la bandeja de entrada de tu correo electrónico y sigue las instrucciones del correo.",
+      "description"                     : "¿Olvidaste tu contraseña? Introduce tu correo electrónico para recuperarla",
+      "emailrequires"                   : "Introduce la dirección de correo electrónico con la que te registraste en EPIC ELEVEN                  :",
+      "email"                           : "Correo electrónico",
+      "buttoncontinue"                  : "CONTINUAR",
+      "buttoncancel"                    : "CANCELAR",
+      "unregistered"                    : "¿Aún no estás registrado?",
+      "signuphere"                      : "¡Regístrate aquí!"
+    }
+    ,"addfunds"                         :
+    {
+      "status"                          : "----DEPRECATED----",
+      "title"                           : "AÑADIR FONDOS",
+      "description1"                    : "Para jugar a EPIC ELEVEN con Oro, necesitas añadir fondos a tu cuenta.",
+      "description2"                    : "No te preocupes, podrás retirar los fondos cuando tú quieras de forma gratuita.",
+      "minfunds"                        : "El mínimo permitido es de ",
+      "addfunds"                        : "Añadir",
+      "via"                             : "vía",
+      "paypalinfo"                      : "Puedes añadir fondos utilizando tu cuenta de PayPal. El dinero será trasnferido a Fantasy Sports Games S.L.",
+      "buttonaddfunds"                  : "Añadir fondos",
+      "needhelp"                        : "¿Necesitas ayuda?"
+    }
+    ,"editprofile"                      :
+    {
+      "title"                           : "EDITAR PERFIL",
+      "name"                            : "Nombre",
+      "lastname"                        : "Primer apellido",
+      "username"                        : "Nombre de usuario",
+      "mail"                            : "Correo electrónico",
+      "passrequires"                    : "Contraseña (Rellena ambos campos para actualizar tu contraseña)",
+      "pass"                            : "Contraseña",
+      "repass"                          : "Repite la contraseña",
+      "notifications"                   : "NOTIFICACIONES",
+      "newletternotifications"                        : "ÚLTIMAS NOTICIAS/OFERTAS ESPECIALES",
+      "gamenotifications"                             : "NOTIFICACIONES DE JUEGO",
+      "transfernotifications"                         : "TRANSFERENCIA DE JUGADORES PROPIAS",
+      "buttonsave"                      : "GUARDAR",
+      "buttoncancel"                    : "CANCELAR"
+    }
+    ,"paymentresponse"                  :
+    {
+      "resultok"                        : "Pago completado",
+      "resultnook"                      : "Pago cancelado",
+      "resultokdesc"                    : "¡Gracias! Tu petición se ha completado con éxito.",
+      "resultnookdesc"                  : "La transacción no se ha podido completar. Por favor, revisa los datos introducidos e inténtalo de nuevo."
+    }
+    ,"transactionhistory"               :
+    {
+      "status"                          : "----DEPRECATED----",
+      "title"                           : "HISTORIAL DE TRANSACCIONES",
+      "date"                            : "FECHA",
+      "id"                              : "ID",
+      "subject"                         : "ASUNTO",
+      "value"                           : "CANTIDAD",
+      "balance"                         : "BALANCE"
+    }
+    ,"userprofile"                      :
+    {
+      "title"                           : "Mi cuenta",
+      "buttonedit"                      : "EDITAR",
+      "fullname"                        : "Nombre completo",
+      "nick"                            : "Nombre de usuario",
+      "email"                           : "Correo Electrónico",
+      "pass"                            : "Contraseña",
+      "wallet"                          : "Oro",
+      "buttonbuy"                       : "Comprar",
+      "ranking"                         : "Clasificación",
+      "buttonrankingtable"              : "Ver en la tabla"
+    }
+    ,"leaderboard"                      :
+    {
+      "title"                           : "Logros y Clasificaciones",
+      "trueskill_tab"                   : "Habilidad (@PLAYER_POSITIONº)",
+      "gold_tab"                        : "Monedas (@PLAYER_POSITIONº)",
+      "achievements_tab"                : "Logros (@PLAYER_ACHIEVEMENTS de @TOTAL_ACHIEVEMENTS)",
+      "trueskill"                       : "Habilidad",
+      "gold"                            : "Monedas",
+      "topgold"                         : "RÁNKING ORO",
+      "topskill"                        : "RÁNKING HABILIDAD",
+      "abrevposition"                   : "Pos.",
+      "name"                            : "Nombre"
+    }
+    ,"achievements"                     :
+    {
+      "name_won_virtual_contests_level_1"     : "El Principiante",
+      "desc_won_virtual_contests_level_1"     : "Ganar el primer torneo virtual",
+      "name_won_virtual_contests_level_2"     : "El Hacha",
+      "desc_won_virtual_contests_level_2"     : "Ganar 10 torneos virtuales",
+      "name_played_virtual_contests_level_1"  : "Superentreno",
+      "desc_played_virtual_contests_level_1"  : "Jugar 10 torneos virtuales",
+      "name_fp_virtual_contest_level_1"       : "El Resultón",
+      "desc_fp_virtual_contest_level_1"       : "Puntuar más de 1000 FP con un equipo en un torneo virtual",
+      "name_diff_fp_virtual_contest_level_1"  : "El Míster",
+      "desc_diff_fp_virtual_contest_level_1"  : "Ganar un torneo virtual por más de 200 FP de diferencia",
+      "name_won_official_contests_level_1"    : "El Debutante",
+      "desc_won_official_contests_level_1"    : "Ganar el primer torneo oficial",
+      "name_played_official_contests_level_1" : "La Reválida",
+      "desc_played_official_contests_level_1" : "Jugar 10 torneos oficiales",
+      "name_played_official_contests_level_2" : "La Consolidación",
+      "desc_played_official_contests_level_2" : "Ganar 10 torneos oficiales",
+      "name_fp_official_contest_level_1"      : "La Gloria",
+      "desc_fp_official_contest_level_1"      : "Puntuar más de 1000 FP con un equipo en un torneo oficial",
+      "name_diff_fp_official_contest_level_1" : "Máster",
+      "desc_diff_fp_official_contest_level_1" : "Ganar un torneo oficial por más de 200 FP de diferencia",
+      "name_soccer_player_won_fp_level_1"     : "El Crack",
+      "desc_soccer_player_won_fp_level_1"     : "Un futbolista consigue más de 200 FP en un torneo oficial",
+      "name_goalkeeper_saves_shots_level_1"   : "El Santo",
+      "desc_goalkeeper_saves_shots_level_1"   : "Portero hace más de 20 paradas en un torneo oficial",
+      "name_goalkeeper_0_goal_received"       : "El Autobús",
+      "desc_goalkeeper_0_goal_received"       : "Portero recibe 0 goles en un torneo oficial",
+      "name_goalkeeper_red_card"              : "El Leñero",
+      "desc_goalkeeper_red_card"              : "Portero expulsado en un torneo oficial",
+      "name_goalkeeper_goal_scored"           : "Al Ataque",
+      "desc_goalkeeper_goal_scored"           : "Portero hace gol en un torneo oficial",
+      "name_defender_interceptions_level_1"   : "El Muro",
+      "desc_defender_interceptions_level_1"   : "Un defensa hace más de 30 intercepciones en un torneo oficial ",
+      "name_middle_pass_successful_level_1"   : "El Jugón",
+      "desc_middle_pass_successful_level_1"   : "Un centrocampista hace más de 70 pases en un torneo oficial",
+      "name_forward_goal_level_1"             : "El Pistolero",
+      "desc_forward_goal_level_1"             : "Un delantero hace más de 4 goles en un torneo oficial",
+      "name_all_soccer_players_with_fp"       : "El Equipo",
+      "desc_all_soccer_players_with_fp"       : "Todos los futbolistas puntúan positivo en un torneo oficial",
+      "name_true_skill_level_1"               : "Nivel de Skill 1",
+      "desc_true_skill_level_1"               : "Nivel de Skill 1",
+      "name_true_skill_level_2"               : "Nivel de Skill 2",
+      "desc_true_skill_level_2"               : "Nivel de Skill 2",
+      "name_true_skill_level_3"               : "Nivel de Skill 3",
+      "desc_true_skill_level_3"               : "Nivel de Skill 3",
+      "name_true_skill_level_4"               : "Nivel de Skill 4",
+      "desc_true_skill_level_4"               : "Nivel de Skill 4",
+      "name_true_skill_level_5"               : "Nivel de Skill 5",
+      "desc_true_skill_level_5"               : "Nivel de Skill 5",
+      "name_manager_level_3"                  : "Nivel de Manager 3",
+      "desc_manager_level_3"                  : "Nivel de Manager 3",
+      "name_manager_level_4"                  : "Nivel de Manager 4",
+      "desc_manager_level_4"                  : "Nivel de Manager 4",
+      "name_manager_level_5"                  : "Nivel de Manager 5",
+      "desc_manager_level_5"                  : "Nivel de Manager 5",
+      "name_manager_level_6"                  : "Nivel de Manager 6",
+      "desc_manager_level_6"                  : "Nivel de Manager 6",
+      "name_manager_level_7"                  : "Nivel de Manager 7",
+      "desc_manager_level_7"                  : "Nivel de Manager 7",
+      "name_manager_level_8"                  : "Nivel de Manager 8",
+      "desc_manager_level_8"                  : "Nivel de Manager 8",
+      "name_manager_level_9"                  : "Nivel de Manager 9",
+      "desc_manager_level_9"                  : "Nivel de Manager 9",
+      "name_manager_level_10"                 : "Nivel de Manager 10",
+      "desc_manager_level_10"                 : "Nivel de Manager 10"
+    }
+    ,"withdrawfunds"                    :
+    {
+      "status"                          : "----DEPRECATED----",
+      "title"                           : "RETIRAR FONDOS",
+      "balance"                         : "TU BALANCE ES",
+      "withdrawdesc1"                   : "¿Cuánto dinero quieres retirar?",
+      "withdrawdesc2"                   : "Solo puedes retirar cantidades superiores a",
+      "withdrawfunds"                   : "Retirar fondos",
+      "needhelp"                        : "¿Necesitas ayuda?"
+    }
+    ,"entercontest"                     :
+    {
+      "tablineup"                       : "Tu alineación",
+      "tabcontestinfo"                  : "Información del torneo",
+      "buttoncancel"                    : "CANCELAR",
+      "yourlineup"                      : "TU ALINEACIÓN",
+      "remainsalary"                    : "SALARIO RESTANTE",
+      "buttonclean"                     : "LIMPIAR",
+      "buttoncontinue"                  : "CONTINUAR",
+      "tip"                             : "Recuerda que puedes editar tu alineación todas las veces que quieras hasta que el torneo comience",
+      "lineupsavedmsg"                  : "Alineación guardada",
+      "errorcontestnotactivetitle"      : "Torneo en Directo",
+      "errorcontestnotactivegeneric"    : "No es posible entrar al concurso en directo",
+      "errorcontestnotactiveediting"    : "No es posible modificar tu alineación cuando el torneo ya haya empezado",
+      "error-managerlevel-invalid-title"    : "Manager Level Inválido",
+      "error-managerlevel-invalid-generic"  : "No cumples las condiciones de Manager Level necesarias.",
+      "error-trueskill-invalid-title"   : "Nivel de Habilidad Inválido",
+      "error-trueskill-invalid-generic" : "No cumples las condiciones de Nivel de Habilidad necesarias.",
+      "errormaxplayerssameteamtitle"    : "Jugadores del mismo equipo",
+      "errormaxplayerssameteamgeneric"  : "No es posible...",
+      "erroruserbalancenegativetitle"   : "No tienes Oro suficiente",
+      "erroruserbalancenegativegeneric" : "No tienes Oro suficiente para entrar a este concurso. Por favor, compra ORO para poder continuar",
+      "errordefaulttitle"               : "Atención",
+      "errordefaultgeneric"             : "Ha ocurrido un error. No puedes acceder a este torneo en este momento. Inténtalo más tarde.",
+      "errordefaultediting"             : "Ha ocurrido un error. No puedes modificar tu alineación en este momento. Inténtalo más tarde.",
+      "alert-no-energy-title"           : "Sin ENERGÍA suficiente",
+      "alert-no-gold-title"             : "¡No hay Oro!",
+      "alert-no-energy-message"         : "No tienes ENERGÍA para entrar en el torneo",
+      "alert-no-gold-message"           : "No tienes ORO para entrar en el torneo",
+      "alert-no-gold-to-buy-message"    : "Tu Nivel de Manager es insuficiente y no tienes el oro necesario para alinear este jugador",
+      "resource-gold"                   : "ORO",
+      "resource-energy"                 : "ENERGÍA",
+      "buy-gold-button"                 : "IR A LA TIENDA",
+      "buy-energy-button"               : "IR A LA TIENDA",
+      "alert-user-gold-message"         : "Tienes actualmente: @MONEY",
+      "alert-no-energy-message_1"       : "No tienes energía para entrar en este torneo",
+      "alert-no-energy-message_2"       : "Actualmente tienes: @ENERGY"
+    }
+    ,"lineupselector"                   :
+    {
+      "wastedsalarycap"                 : "<strong>Has gastado más presupuesto del permitido</strong><br> Por favor, cambia la alineación para no superar el límite.",
+      "maxplayersteam"                  : "<strong>Tienes demasiados jugadores del mismo equipo.</strong><br>No superes el límite de @MAX_PLAYERS_SAME_TEAM jugadores.",
+      "not-enough-resources"            : "<strong>¡ATENCIÓN! Algo está fallando...</strong><br> Te falta @RESOURCE para entrar en este torneo.",
+      "add"                             : "AÑADIR ",
+      "formation"                       : "Formación",
+      "change"                          : "Cambiar"
+    }
+    ,"matchesfilter"                     :
+    {
+      "all-matches"                     : "Todos<br>los encuentros",
+      "allmatches"                      : "Todos los encuentros",
+      "all"                             : "todos"
+    }
+    ,"soccerplayerlist"                 :
+    {
+      "positionabrev"                   : "Pos.",
+      "name"                            : "Nombre",
+      "dfp"                             : "DFP",
+      "numMatchesAbrev"                 : "PJ.",
+      "salary"                          : "Salario",
+      "search-player"                   : "Buscar jugador...",
+      "players"                         : "Jugadores",
+      "empty-favorites"                 : "No tienes jugadores favoritos.",
+      "empty-filtered-favorites"        : "No tienes jugadores favoritos que cumplan las condiciones de filtrado.",
+      "go-scouting-tip"                 : "Puedes elegir jugadores favoritos en el <a href='/#/scouting'>Ojeador.</a>",
+      "empty-filtered"                  : "No tienes jugadores que cumplan las condiciones de filtrado."
+    }
+    ,"soccerplayerpositions"            :
+    {
+      "goalkeeper"                      : "PORTERO",
+      "gk"                              : "POR",
+      "defense"                         : "DEFENSA",
+      "def"                             : "DEF",
+      "middle"                          : "MEDIO",
+      "mid"                             : "MED",
+      "forward"                         : "DELANTERO",
+      "for"                             : "DEL",
+      "all"                             : "TODOS"
+    }
+    ,"soccerplayerstats"                :
+    {
+      "buttoncancel"                    : "CANCELAR",
+      "buttonadd"                       : "AÑADIR",
+      "tittle"                          : "ESTADÍSTICAS PERSONALES",
+      "dfp"                             : "DFP",
+      "matches"                         : "PARTIDOS",
+      "salary"                          : "SALARIO",
+      "next-match"                      : "PRÓXIMO PARTIDO",
+      "seasondata"                      : "Datos de temporada",
+      "matchbymatch"                    : "Partido a partido",
+      "seasonstats"                     : "ESTADÍSTICAS DE TEMPORADA <span>(DATOS POR PARTIDO)</span>",
+      "noseasonstats"                   : "No ha jugado ningún partido esta temporada",
+      "season"                          : "Season",
+      "keypasses"                       : "PASES",
+      "abrevpasses"                     : "P",
+      "descpasses"                      : "Pases",
+      "keyrecovers"                     : "RECUPERACIONES",
+      "abrevrecovers"                   : "R",
+      "descrecovers"                    : "Recuperaciones",
+      "keyposslost"                     : "PÉRDIDAS_BALON",
+      "abrevposslost"                   : "PB",
+      "descposslost"                    : "Pérdidas de balón",
+      "keyfoulscommited"                : "FALTAS_COMETIDAS",
+      "abrevfoulscommited"              : "F",
+      "descfoulscommited"               : "Faltas cometidas",
+      "keyyellowcards"                  : "TARJETAS_AMARILLAS",
+      "abrevyellowcards"                : "TA",
+      "descyellowcards"                 : "Tarjetas amarillas",
+      "keyredcards"                     : "TARJETAS_ROJAS",
+      "abrevredcards"                   : "TR",
+      "descredcards"                    : "Tarjetas rojas",
+      "keygoalsconceded"                : "GOLES_ENCAJADOS",
+      "abrevgoalsconceded"              : "GC",
+      "descgoalsconceded"               : "Goles encajados",
+      "keysaves"                        : "PARADAS",
+      "abrevsaves"                      : "P",
+      "descsaves"                       : "Paradas",
+      "keyclearances"                   : "DESPEJES",
+      "abrevclearances"                 : "D",
+      "descclearances"                  : "Despejes",
+      "keypenaltiessaved"               : "PENALTIS_DETENIDOS",
+      "abrevpenaltiessaved"             : "PD",
+      "descpenaltiessaved"              : "Penaltis detenidos",
+      "keygoals"                        : "GOLES",
+      "abrevgoals"                      : "G",
+      "descgoals"                       : "Goles",
+      "keyshots"                        : "TIROS",
+      "abrevshots"                      : "T",
+      "descshots"                       : "Tiros",
+      "keychancescreated"               : "ASISTENCIAS",
+      "abrevchancescreated"             : "A",
+      "descchancescreated"              : "Asistencias",
+      "keytakeons"                      : "REGATES",
+      "abrevtakeons"                    : "R",
+      "desctakeons"                     : "Regates",
+      "keyfoulsconceded"                : "FALTAS_RECIBIDAS",
+      "abrevfoulsconceded"              : "FR",
+      "descfoulsconceded"               : "Faltas recibidas",
+      "keyplayedminutes"                : "MINUTOS_JUGADOS",
+      "keyfantasypoints"                : "PUNTOS_FANTASY",
+      "date"                            : "Fecha",
+      "opponent"                        : "Oponente",
+      "dailyfantasypoints"              : "Daily Fantasy Points",
+      "minutes"                         : "Minutos",
+      "posessionlost"                   : "Perdidas de balón"
+    }
+    ,"footer"                           :
+    {
+      "help"                            : "AYUDA",
+      "legal"                           : "LEGAL",
+      "terms"                           : "TÉRMINOS<span> DE USO</span>",
+      "privacy"                         : "POLÍTICAS<span> DE PRIVACIDAD</span>",
+      "data-provided-by"                : "Datos provistos por"
+    }
+    ,"mainmenu"                         :
+    {
+      "home"                            : "Inicio",
+      "lobby"                           : "Torneos",
+      "mycontest"                       : "Mis torneos",
+      "leaderboard"                     : "Clasificación",
+      "notifications"                   : "Notificaciones",
+      "howitworks"                      : "Ayuda",
+      "myaccount"                       : "Mi Cuenta",
+      "shop"                            : "Tienda",
+
+      "addfunds"                        : "Añadir Fondos",
+      "transactions"                    : "Historial de transacciones",
+      "referral"                        : "Centro de usuarios referidos",
+      "classification"                  : "Clasificación",
+      "howitworks2"                     : "Cómo funciona",
+      "logout"                          : "Salir",
+      "login"                           : "Entrar",
+      "signup"                          : "Regístrate",
+
+
+      "beta"                          : "Versión Beta"
+    }
+    ,"contestlist"                      :
+    {
+      "entryfee"                        : "Precio:",
+      "of"                              : "DE",
+      "prize"                           : "Premio:",
+      "points"                          : "Puntos",
+      "position"                        : "Puesto:",
+      "today"                           : "Hoy",
+      "soonHint"                        : "Faltan<br>@TIME min",
+      "verySoonHint"                    : "Faltan<br>@TIME"
+    }
+    ,"contestfilters"                   :
+    {
+      "filters"                         : "FILTROS",
+      "competition"                     : "COMPETICIÓN",
+      "contests"                        : "TORNEOS",
+      "salarycap"                       : "LÍMITE DE SALARIO",
+      "entryfee"                        : "CUOTA DE ENTRADA",
+      "min"                             : "MIN",
+      "max"                             : "MAX",
+      "clearfilters"                    : "LIMPIAR FILTROS",
+      "buttonaccept"                    : "ACEPTAR",
+      "sortby"                          : "Ordenar por",
+      "search"                          : "Buscar torneo",
+      "availabletip"                    : "Torneos disponibles ",
+      "competitionlaliga"               : "La Liga BBVA",
+      "competitionpremier"              : "Barclays Premier League",
+      "competitionchampions"            : "UEFA Champions League",
+      "contestfree"                     : "Gratuito",
+      "contestheadtohead"               : "1 contra 1",
+      "contestleague"                   : "Liga",
+      "contestfifty"                    : "50 / 50",
+      "salarycapbegginer"               : "Principiante",
+      "salarycapstandard"               : "Normal",
+      "salarycapskilled"                : "Experto",
+      "sortbyname"                      : "Nombre",
+      "sortbyentryfee"                  : "Cuota",
+      "sortbystartdate"                 : "Fecha"
+    }
+    ,"fantasyteam"                      :
+    {
+      "editlineup"                      : "EDITAR ALINEACIÓN",
+      "pos"                             : "POS",
+      "points"                          : "PUNTOS",
+      "remainingtime"                   : "TIEMPO RESTANTE",
+      "close"                           : "CERRAR",
+      "owned"                           : "SELECCIONADO"
+    }
+    ,"teamspanel"                       :
+    {
+      "showmatches"                     : "VER PARTIDOS",
+      "firsthalf"                       : "1ª Parte - ",
+      "secondhalf"                      : "2ª Parte - ",
+      "error"                           : "-Err-",
+      "finished"                        : "Terminado"
+    }
+    ,"userlist"                         :
+    {
+      "title"                           : "PARTICIPANTES DEL TORNEO",
+      "desc"                            : "Elige un participante para comparar su alineación",
+      "pos"                             : "POS",
+      "player"                          : "JUGADOR",
+      "rt"                              : "T.R.",
+      "points"                          : "PUNTOS",
+      "prizes"                          : "PREMIOS"
+    }
+    ,"viewcontest"                      :
+    {
+      "yourlineup"                      : "Tu alineación",
+      "users"                           : "Usuarios",
+      "opponent"                        : "Adversario"
+    }
+    ,"viewcontestentry":
+    {
+      "created"                         : "¡ENHORABUENA! HAS COMPLETADO TU ALINEACIÓN.",
+      "edited"                          : "¡ENHORABUENA! HAS EDITADO TU ALINEACIÓN.",
+      "swapped"                         : "EL TORNEO ESTÁ LLENO, ASÍ QUE TE HEMOS PUESTO EN OTRO EQUIVALENTE. COMPETIRÁS CON OTROS USUARIOS",
+      "tip"                             : "Recuerda que puedes editar tu alineación tantas veces como quieras hasta que el torneo comience",
+      "yourlineup"                      : "Tu alineación",
+      "users"                           : "Usuarios",
+      "backtocontests"                  : "VUELVE A LOS TORNEOS",
+      "cancel"                          : "SALIR DEL TORNEO",
+      "invite_text"                     : "Invitar amigos",
+      "alertcanceltitle"                : "¡Atención!",
+      "alertcancelpaidcontest"          : "Estás a punto de cancelar tu participación en este concurso.<br><br>La entrada que abonaste de @PRICE será devuelta.<br><br>¿Estás seguro de querer abandonar este concurso?<br><br>",
+      "alertcancelcontest"              : "Estás a punto de cancelar tu participación en este concurso.<br><br>¿Estás seguro de querer abandonar este concurso?<br><br>",
+      "alertbuttonno"                   : "No",
+      "alertbuttonyes"                  : "Sí"
+    }
+    ,"contestheader"                    :
+    {
+      "entryfee"                        : "CUOTA",
+      "prizes"                          : "PREMIOS",
+      "finished"                        : "TERMINADO",
+      "startedon"                       : "EMPEZÓ EL ",
+      "startson"                        : "EMPIEZA EL ",
+      "verysoon"                        : "EMPIEZA MUY PRONTO ",
+      "startsin"                        : "EMPIEZA EN ",
+      "salarycap"                       : "participantes - cuota",
+      "entryfee"                        : "Precio:",
+      "prize"                           : "Premio:",
+      "position"                        : "Posición:"
+    }
+    ,"contest"                          :
+    {
+      "contestfree"                     : "Gratuito",
+      "contestheadtohead"               : "1 contra 1",
+      "contestleague"                   : "Liga",
+      "contestfifty"                    : "50 / 50",
+      "salarycap"                       : "Cuota",
+      "contenders"                      : "participantes",
+      "of"                              : "de",
+      "minimum-contenders"              : "Mín. @NUMERO"
+    }
+    ,"contestinfo"                      :
+    {
+      "matches"                         : "Partidos",
+      "prizes"                          : "Premios",
+      "contenders"                      : "Participantes",
+      "scoringrules"                    : "Reglas",
+      "buttonenter"                     : "ENTRAR",
+      "nocontenders"                    : "Aún no hay participantes en este concurso. <br> Anímate a ser el primero.",
+      "skill"                           : "Puntos",
+      "prizes2"                         : "PREMIOS",
+      "contenders2"                     : "CONCURSANTES",
+      "rulestip"                        : "Elige un equipo de 11 jugadores de los siguientes encuentros.",
+      "winnertakesall"                  : "El ganador de lo lleva todo"
+    }
+    ,"prizes"                           :
+    {
+      "free"                            : "Concurso gratuito. No hay premios",
+      "winnertakesall"                  : "El ganador se lo lleva todo",
+      "first3"                          : "Los 3 primeros consiguen premio",
+      "firstthird"                      : "El tercio superior de participantes tiene premio",
+      "fifty"                           : "La primera mitad de participantes tiene premio"
+    }
+    ,"lobby"                            :
+    {
+      "nextcontest"                     : "PRÓXIMOS TORNEOS"
+    }
+    ,"mycontest"                        :
+    {
+      "title"                           : "MIS TORNEOS",
+      "tablive"                         : "En Directo",
+      "tabupcoming"                     : "Próximos",
+      "tabhistory"                      : "Histórico",
+      "nolives"                         : "NO ESTÁS JUGANDO NINGÚN TORNEO EN ESTE MOMENTO",
+      "nolivestip1"                     : "ÉCHALE UN VISTAZO A LA LISTA DE TUS ",
+      "nolivestip2"                     : "PRÓXIMOS TORNEOS",
+      "nolivestip3"                     : " PARA VER CUÁNDO EMPIEZAN",
+      "tocontest"                       : "IR A LOS TORNEOS",
+      "noupcomings"                     : "NO TIENES ALINEACIONES PARA NINGÚN TORNEO<br>EN ESTE MOMENTO",
+      "noupcomingstip1"                 : "VE A LA LISTA DE TORNEOS, ELIGE UNO Y EMPIEZA A JUGAR",
+      "nohistorys"                      : "AÚN NO HAS JUGADO NINGÚN TORNEO<br>¿A QUÉ ESPERAS PARA EMPEZAR A GANAR?",
+      "nohistoryestip"                  : "VE A LA LISTA DE TORNEOS, ELIGE UNO Y EMPIEZA A JUGAR",
+      "hasLivecontests1"                : "TORNEOS EN DIRECTO",
+      "hasLivecontests2"                : "PUEDES SEGUIR EN DIRECTO TUS TORNEOS DESDE AQUÍ",
+      "haswaitingcontests1"             : "TE HAS INSCRITO EN",
+      "haswaitingcontests2"             : "TORNEOS",
+      "haswaitingcontests3"             : "AQUÍ PUEDES VER TUS PRÓXIMOS TORNEOS Y EDITAR TUS ALINEACIONES",
+      "hasHistoryContests1"             : "JUGADOS",
+      "hasHistoryContests2"             : "GANADOS",
+      "hasHistoryContests3"             : "AQUÍ PUEDES CONSULTAR LOS TORNEOS QUE JUGASTE: ALINEACIONES, PARTICIPANTES, PUNTUACIONES…"
+    }
+    ,"tutorial"                         :
+    {
+      "skip-tutorial"                   : "Saltar tutorial",
+      "title-lobby"                     : "SELECCIONA UN TORNEO",
+      "title-entercontest"              : "SELECCIONA TU ALINEACIÓN",
+      "title-viewcontestentry"          : "BIENVENIDO A EPIC ELEVEN",
+      "text-lobby"                      : "Puedes participar en todos los torneos que quieras de La Liga BBVA, Barclays Premier League y UEFA Champions League.",
+      "text-entercontest"               : "Elije 11 jugadores de la lista sin pasarte del presupuesto.",
+      "text-viewcontestentry"           : "Ve a “<b>Mis Concursos</b>” para editar tus alineaciones, ver a tu equipo puntuando en directo o para ver tu histórico de concursos. <br> <br> <p class=\"subtitle\">Recuerda: puedes jugar a todos los concursos que quieras y elegir tantas alineaciones como quieras.</p>",
+      "next"                            : "Continuar"
+    }
+    ,"tutorial_iniciacion"              :
+    {
+      "msg-01"                          : "<span class='modal-body-title'>Bienvenido a Epic Eleven.</span><span class='modal-body-text'> Haz tu equipo ideal alineando futbolistas de la Liga o la Premier y enfréntate en torneos contra otros jugadores.</span>",
+      "msg-02"                          : "<span class='modal-body-text'>Comienza eligiendo un torneo oficial. Participar en los torneos oficiales cuesta oro, pero no te preocupes al registrate recibirás 10 monedas de oro.</span>",
+      "msg-02a"                         : "Selecciona este torneo",
+      "msg-02b"                         : "<span class='modal-body-text'>Los torneos oficiales se basan en partidos de la vida real.</span>",
+      "msg-02c"                         : "<span class='modal-body-text'>Elige tu alineación ideal entre todos los jugadores que participarán en esos partidos.</span>",
+      "msg-02d"                         : "Esta es la lista de partidos de este torneo.",
+
+      "msg-02e"                         : "Aquí puedes desplegar la lista de formaciones",
+      "msg-02f"                         : "Estas son las formaciones disponibles, por defecto está seleccionada la 4-4-2",
+      "msg-02g"                         : "Selecciona una formación 4-3-3",
+      "msg-02h"                         : "Al cambiar de formación, cambia el número de jugadores por posición.",
+      "msg-02i"                         : "Por último tenemos la lista de jugadores disponibles para el torneo.",
+
+      "msg-03"                          : "Añade este jugador a tu alineación",
+      "msg-03a"                         : "Bien, ya has añadido tu primer jugador",
+      "msg-03b"                         : "Cuando añades un jugador, su salario se descuenta de tu presupuesto.",
+      "msg-03c"                         : "Cada jugador, además de su salario, requiere un nivel de manager.",
+      "msg-03d"                         : "Si no tienes nivel suficiente, puedes alinearlos pagando oro.",
+      "msg-03e"                         : "Intenta seleccionar un jugador marcado en rojo",
+      "msg-03f"                         : "<span class='modal-body-text'>Necesitas subir tu nivel de manager compitiendo en torneos virtuales.</span>",
+      "msg-04a"                         : "<span class='modal-body-text'>Puedes participar en torneos virtuales siempre que tengas energía.</span>",
+      "msg-04"                          : "<span class='modal-body-text'>Participa en los torneos virtuales para ganar puntos de manager, que harán subir tu nivel de manager.</span>",
+      "msg-05"                          : "Cada torneo virtual tiene un coste de energía.",
+      "msg-06"                          : "Selecciona este torneo",
+      "msg-07"                          : "<span class='modal-body-text'>A diferencia de los torneos oficiales, en los torneos virtuales no existe limitación por nivel de manager. Tu única limitación será tu presupuesto.</span>",
+      "msg-08"                          : "<span class='modal-body-text'>Esta vez hemos hecho la alineación por ti, sólo falta un delantero.</span>",
+      "msg-09"                          : "Añade un delantero",
+      "msg-10"                          : "Una vez completada la alineación se activa el botón de continuar.",
+      "msg-10a"                         : "Si no tienes energía, siempre podrás comprarla en la tienda.",
+      "msg-10b"                         : "Compra una recarga de energía, esta vez es gratis.",
+      "msg-10c"                         : "Púlsalo para completar tu entrada en el torneo.",
+      "msg-11"                          : "<span class='modal-body-text'> Acabas de apuntarte a un torneo virtual. Los Torneos virtuales se resuelven de manera inmediata en su hora predefinida.</span>",
+      "msg-12"                          : "<span class='modal-body-text'>Vamos a ver los resultados. Aqui podrás ver, una vez acabado el torneo, la puntuación de tus jugadores, las alineaciones de los rivales y tu clasificación frente a ellos.</span>",
+
+      "msg-13"                          : "Aquí puedes ver los puntos conseguidos por tus jugadores.",
+      "msg-14"                          : "Esta es la ventana de resultados. Como puedes ver, has logrado la primera posición. Haz clic para continuar.",
+      "msg-15"                          : "Fíjate, uno de tus jugadores acaba de conseguir sus primeros puntos.",
+      "msg-16"                          : "<span class='modal-body-title'>¡Enhorabuena, has ganado tu primer torneo!</span><img class=\"capital-icon\" src=\"images/TutorialManagerLevelUp.png\"><span class='modal-body-text'> Has conseguido 50 puntos de manager y has subido tu nivel de manager.</span>",
+      "msg-17"                          : "<span class='modal-body-title'>Ya estás preparado. </span><span class='modal-body-text'>Regístrate ahora y consigue tus primeras 10 monedas de oro para comenzar tu carrera como manager.</span><img class=\"capital-icon\" src=\"images/icon-BuyGold1.png\">"
+    }
+    , "tutorial_entrenamiento"          :
+    {
+      "title-lobby"                     : "[ENTRENAMIENTO] SELECCIONA UN TORNEO",
+      "title-entercontest"              : "[ENTRENAMIENTO] SELECCIONA TU ALINEACIÓN",
+      "title-viewcontestentry"          : "[ENTRENAMIENTO] BIENVENIDO A EPIC ELEVEN",
+      "text-lobby"                      : "Puedes participar en todos los torneos que quieras de La Liga BBVA, Barclays Premier League y UEFA Champions League.",
+      "text-entercontest"               : "Elije 11 jugadores de la lista sin pasarte del presupuesto.",
+      "text-viewcontestentry"           : "Ve a “<b>Mis Concursos</b>” para editar tus alineaciones, ver a tu equipo puntuando en directo o para ver tu histórico de concursos. <br> <br> <p class=\"subtitle\">Recuerda: puedes jugar a todos los concursos que quieras y elegir tantas alineaciones como quieras.</p>"
+    }
+    ,"tutorial_oficial"                 :
+    {
+      "title-lobby"                     : "[OFICIAL] SELECCIONA UN TORNEO",
+      "title-entercontest"              : "[OFICIAL] SELECCIONA TU ALINEACIÓN",
+      "title-viewcontestentry"          : "[OFICIAL] BIENVENIDO A EPIC ELEVEN",
+      "text-lobby"                      : "Puedes participar en todos los torneos que quieras de La Liga BBVA, Barclays Premier League y UEFA Champions League.",
+      "text-entercontest"               : "Elije 11 jugadores de la lista sin pasarte del presupuesto.",
+      "text-viewcontestentry"           : "Ve a “<b>Mis Concursos</b>” para editar tus alineaciones, ver a tu equipo puntuando en directo o para ver tu histórico de concursos. <br> <br> <p class=\"subtitle\">Recuerda: puedes jugar a todos los concursos que quieras y elegir tantas alineaciones como quieras.</p>"
+    }
+    ,"restricted"                       :
+    {
+      "desc"                            : "Lo sentimos, está prohibido comprar Oro desde el pais en el que estás.<br><br>Si piensas que esto se debe a un error y necesitas asistencia, por favor contacta con nosotros a través de <a href=\"mailto:support@epiceleven.com\">support@epiceleven.com</a>",
+      "gotolobby"                       : "Volver a los concursos"
+    }
+    ,"scoringrules"                     :
+    {
+      "all"                             : "TODOS LOS JUGADORES",
+      "goalkeepers"                     : "PORTEROS",
+      "defenders"                       : "DEFENSAS",
+      "middles"                         : "MEDIOS",
+      "forwards"                        : "DELANTEROS",
+      "successpass"                     : "Pase exitoso",
+      "unsuccesspass"                   : "Pase fallido",
+      "takeon"                          : "Regate",
+      "foulreceived"                    : "Falta recibida",
+      "tackle"                          : "Entrada",
+      "interception"                    : "Intercepción",
+      "save"                            : "Parada",
+      "saveshot"                        : "Bloqueo de tiro",
+      "claim"                           : "Anticipación",
+      "clearance"                       : "Despeje",
+      "miss"                            : "Tiro fallado",
+      "post"                            : "Tiro al poste",
+      "asaved"                          : "Tiro detenido",
+      "ycard"                           : "Tarjeta amarilla",
+      "punch"                           : "Despeje de puños",
+      "dispossessed"                    : "Pérdida de balón",
+      "error"                           : "Error",
+      "decisiveerror"                   : "Error decisivo",
+      "assist"                          : "Oportunidad",
+      "tacklecomplete"                  : "Entrada exitosa",
+      "goalbygk"                        : "Gol",
+      "goalbydef"                       : "Gol",
+      "goalbymid"                       : "Gol",
+      "goalbyfor"                       : "Gol",
+      "owngoal"                         : "Gol en propia meta",
+      "foulcommited"                    : "Faltas cometidas",
+      "ycard2"                          : "Segunda tarjeta amarilla",
+      "rcard"                           : "Tarjeta roja",
+      "offside"                         : "Fuera de juego",
+      "penaltyconceded"                 : "Penalti cometido",
+      "penaltyfailed"                   : "Penalti fallado",
+      "penaltysaved"                    : "Penalti parado",
+      "clean"                           : "Portería a cero",
+      "goalconceded"                    : "Gol recibido"
+    }
+    ,"shop"                             :
+    {
+      "name"                            : "TIENDA",
+      "goldshopdescription"             : "Compra Oro y accede a <strong>Torneos Oficiales</strong>",
+      "trainerpointsshopdescription"    : "Aumenta tu Nivel de manager y ficha a los <strong>mejores jugadores</strong>",
+      "energyshopdescription"           : "Recárgate de energía para acceder a <strong>Torneos Virtuales</strong>",
+      "free"                            : "GRATIS",
+      "mostpopularimagesource"          : "images/icon-mas-popular.png",
+      "product_gold_1"                  : "Pack Calderilla",
+      "product_gold_2"                  : "Pack Utillero",
+      "product_gold_3"                  : "Pack Ojeador",
+      "product_gold_4"                  : "Pack Manager",
+      "product_gold_5"                  : "Pack Director deportivo",
+      "product_gold_6"                  : "Pack Presidente",
+      "product_energy_1"                : "+1:",
+      "product_maxrefill"               : "Completa",
+      "refillable"                      : "Recarga +1 automáticamente en:",
+      "no-refillable"                   : "Tienes la energía a tope",
+      "alert-user-gold-message"         : "Tienes actualmente @MONEY",
+      "buy-gold-button"                 : "COMPRAR ORO",
+      "alert-no-gold-message"           : "No tienes ORO suficiente.",
+
+      "errordefaulttitle"               : "Atención",
+      "errordefaultgeneric"             : "Ha ocurrido un error. Inténtalo mas tarde."
+    }
+    ,"goldshop"                         :
+    {
+      "buttonback"                      : "Volver"
+    }
+    ,"energyshop"                       :
+    {
+      "buttonback"                      : "Volver",
+
+
+      "erroruserbalancenegativetitle"   : "No tienes Oro suficiente",
+      "erroruserbalancenegativegeneric" : "No tienes Oro suficiente. Por favor, compra Oro para poder continuar",
+      "errordefaulttitle"               : "Atención",
+      "errordefaultgeneric"             : "Ha ocurrido un error. Inténtalo mas tarde."
+    }
+    , "facebook_service"                :
+    {
+      "challenge"                       : "Retar",
+
+      "contest_inscription_hastag"      : "EpicEleven",
+      "contest_inscription_title"       : "¡Acabo de inscribirme en un torneo!",
+      "contest_inscription_description" : "Me he apuntado a este torneo, date prisa y unete.",
+      "contest_inscription_img"         : "social/InscribirseTorneo.jpg",
+
+      "contest_win_hastag"              : "EpicEleven",
+      "contest_win_title"               : "He ganado",
+      "contest_win_description"         : "¡He ganado un torneo en Epic Eleven!",
+      "contest_win_img"                 : "social/TorenoGanado.jpg",
+
+      "contest_history_hastag"          : "EpicEleven",
+      "contest_history_title"           : "Resultado",
+      "contest_history_description"     : "¡He quedado @USER_POS! Juega conmigo en Epic Eleven y demuestra si puedes superarme.",
+      "contest_history_img"             : "social/ClasifTorneoTerminado.jpg",
+
+      "contest_live_hastag"             : "EpicEleven",
+      "contest_live_title"              : "¡Sigue el torneo en directo!",
+      "contest_live_description"        : "Estoy jugando en un torneo de Epic Eleven, ¡fíjate en cómo lo estoy haciendo!",
+      "contest_live_img"                : "social/Live.jpg",
+
+      "win_achievement_hastag"          : "EpicEleven",
+      "win_achievement_title"           : "Logro Conseguido",
+      "win_achievement_description"     : "¡He conseguido el Logro @ACHIEV_NAME!",
+      "win_achievement_img"             : "social/@ACHIEV_IMG_KEY",
+
+      "manager_level_up_hastag"         : "EpicEleven",
+      "manager_level_up_title"          : "¡He subido de Nivel de Manager!",
+      "manager_level_up_description"    : "Ahora puedo jugar con mejores jugadores en Epic Eleven. ¿Crees que puedes derrotarme?",
+      "manager_level_up_img"            : "social/ManagerLevel@MANAGER_LEVEL.jpg",
+
+      "created_contest_hastag"          : "EpicEleven",
+      "created_contest_title"           : "Torneo creado",
+      "created_contest_description"     : "He creado un torneo en Epic Eleven, apuntate e intententa ganarme.",
+      "created_contest_img"             : "social/CreaTorneo.jpg",
+
+      "leadeboard_gold_hastag"          : "EpicEleven",
+      "leadeboard_gold_title"           : "Leaderboard Oro",
+      "leadeboard_gold_description"     : "¡Mira cómo me va en las clasificaciones!",
+      "leadeboard_gold_img"             : "social/ClasifORO.jpg",
+
+      "leadeboard_trueskill_hastag"     : "EpicEleven",
+      "leadeboard_trueskill_title"      : "Leaderboard TrueSkill",
+      "leadeboard_trueskill_description": "¡Mira cómo me va en las clasificaciones!",
+      "leadeboard_trueskill_img"        : "social/ClasifTrueSkill.jpg"
+
+    }
+    ,"createcontest"                    :
+    {
+      "select_event"                    : "Selecciona Evento",
+      "select_competition_first"        : "Selecciona antes una competición",
+      "name"                            : "Nombre",
+      "create_contest"                  : "Crear torneo",
+      "contest_name_placeholder"        : "Nombre del torneo",
+      "contest_type"                    : "Tipo de torneo",
+      "oficial"                         : "Oficial",
+      "training"                        : "Virtual",
+      "competition"                     : "Competición",
+      "spanish_league"                  : "La liga",
+      "premier_league"                  : "Premier",
+      "event"                           : "Evento",
+      "rivals"                          : "Rivales",
+      "head_to_head"                    : "Uno contra uno",
+      "league"                          : "Liga",
+      "no_limit"                        : "Sin límite",
+      "date"                            : "Fecha",
+      "fixed_hour_warning"              : "La fecha de los torneos oficiales es fija",
+      "create_contest_btt"              : "Crear torneo",
+      "matches_title"                   : "Partidos"
+    }
+    ,"home"                             :
+    {
+      "play"                            : "Jugar",
+      "learn_to_play"                   : "Aprende a ganar<br>y comienza tu carrera de manager",
+      "create_contest_title"            : "Reta a tus amigos",
+      "create_contest_text_nolog"       : "Debes estar registrado",
+      "create_contest_text_notut"       : "Primero debes aprender a jugar",
+      "create_contest_text_logNtut"     : "Demuestra quien manda",
+
+      "scouting_title"                  : "Ojeador",
+      "scouting_info"                   : "Encuentra tu 11 ideal",
+
+      "upcoming_title"                  : "Próximos torneos",
+      "live_title"                      : "Torneos en vivo",
+      "history_title"                   : "Histórico",
+      "mycontest_disabled_info"         : "Todavía no has participado",
+
+      "blog_title"                      : "Palabra de Míster",
+      "blog_info"                       : "EPIC ELEVEN SEASON REVIEW: PREMIER LEAGUE",
+      "blog_author"                     : "Por Salva Carmona",
+
+      "help_title"                      : "Cómo jugar",
+      "help_info"                       : "Aprende a jugar"
+    }
+    ,"notifications"                    :
+    {
+      "name"                            : "NOTIFICACIONES",
+
+      "notification-list-empty"         : "No hay notificaciones pendientes",
+
+      "NEW_SPECIAL_EVENT_ACTIVE"        : "NEW_SPECIAL_EVENT_ACTIVE",
+      "NEW_SPECIAL_EVENT_ACTIVE_BTN"    : "Participar",
+
+      "NEW_OFFER_ACTIVE"                : "NEW_OFFER_ACTIVE",
+      "NEW_OFFER_ACTIVE_BTN"            : "Mas información",
+
+      "CONTEST_FINISHED"                : "TORNEO TERMINADO",
+      "CONTEST_FINISHED_DESCRIPTION"    : "Torneo '@NAME' terminado, consulta tus resultados.",
+      "CONTEST_FINISHED_BTN"            : "Ver resultado",
+
+      "DUEL_FINISHED"                   : "DUELO TERMINADO",
+      "DUEL_FINISHED_DESCRIPTION"       : "Duelo '@NAME' terminado, consulta tus resultados.",
+      "DUEL_FINISHED_BTN"               : "Ver resultado",
+
+      "CONTEST_CANCELLED"               : "TORNEO CANCELADO",
+      "CONTEST_CANCELLED_DESCRIPTION"   : "El torneo '@NAME' ha sido cancelado.",
+      "CONTEST_CANCELLED_BTN"           : "Participar en otro",
+
+      "DAILY_CHALLENGE_ENABLED"         : "DAILY_CHALLENGE_ENABLED",
+      "DAILY_CHALLENGE_ENABLED_BTN"     : "Entrar",
+
+      "OFICIAL_CONTEST_START"           : "OFICIAL_CONTEST_START",
+      "OFICIAL_CONTEST_START_BTN"       : "Ver en vivo",
+
+      "CONTEST_INVITATIONS"             : "CONTEST_INVITATIONS",
+      "CONTEST_INVITATIONS_BTN"         : "Ver",
+
+      "SKILL_LEVEL_UP"                  : "SKILL_LEVEL_UP",
+      "SKILL_LEVEL_UP_BTN"              : "",
+
+      "SKILL_LEVEL_DOWN"                : "SKILL_LEVEL_DOWN",
+      "SKILL_LEVEL_DOWN_BTN"            : "",
+
+      "MANAGER_LEVEL_UP"                : "HAS SUBIDO TU NIVEL DE MANAGER",
+      "MANAGER_LEVEL_UP_DESCRIPTION"    : "¡Enhorabuena! ha subido tu nivel de Manager.",
+      "MANAGER_LEVEL_UP_BTN"            : "",
+
+      "MANAGER_LEVEL_DOWN"              : "HAS BAJADO TU NIVEL DE MANAGER",
+      "MANAGER_LEVEL_DOWN_DESCRIPTION"  : "¡Ooops! ha bajado tu nivel de Manager.",
+      "MANAGER_LEVEL_DOWN_BTN"          : "",
+
+      "ACHIEVEMENT_EARNED"              : "HAS CONSEGUIDO @NAME",
+      "ACHIEVEMENT_EARNED_DESCRIPTION"  : "",
+      "ACHIEVEMENT_EARNED_BTN"          : ""
+    }
+    ,"howitworks"                       :
+    {
+      "point1title"                     : "<span class=\"help-point\">1</span> Elige un torneo",
+      "point1content"                   : "<img class=\"capital-icon\" src=\"images/iconTrophyGold.png\"><br><strong>Torneos oficiales</strong><br>Cuestan y dan oro y se juegan cuando se celebran los partidos reales asociados<br><img class=\"capital-icon\" src=\"images/iconTrainerBlue.png\"><br><strong>Torneos Virtuales</strong><br>Cuestan energía y dan Manager Points. Comienzan a la hora anunciada",
+      "point2title"                     : "<span class=\"help-point\">2</span> Haz tu equipo",
+      "point2content"                   : "<strong>A continuación, selecciona los 11 jugadores de tu equipo sin pasarte del límite salarial. Recuerda:</strong><br><br><br>No puedes escoger a más de 4 jugadores del mismo equipo.<br>Puedes cambiar tu alineación hasta la hora de comienzo del torneo",
+      "point3title"                     : "<span class=\"help-point\">3</span> Puntúa y gana",
+      "point3content"                   : "<strong>En los torneos oficiales, sigue la evolución de tu equipo</strong> en tiempo real cuando hayan comenzado los partidos asociados al torneo. Una vez hayan terminado, puedes consultar el resultado en \"Mis torneos\"",
+      "point3content2"                  : "<strong>Los torneos virtuales se resuelven de forma automática en pocos segundos</strong>",
+      "point4title"                     : "Juega desde donde quieras",
+      "point4description"               : "Es muy fácil jugar a Epic Eleven desde cualquier lugar y con cualquier dispositivo. Puedes seguir la evolución de tu alineación desde tu ordenador, tablet o smartphone con un diseño adaptado a cada dispositivo.",
+      "button-play"                     : "Jugar"
+    }
+    ,"howtocreatecontest"               :
+    {
+      "point1title"                     : "<span class=\"help-point\">1</span> Reta a tus amigos",
+      "point1content"                   : "Para comenzar, haz clic en la sección \"Reta a tus amigos\" de la pantalla de inicio",
+      "point2title"                     : "<span class=\"help-point\">2</span> Configura el torneo",
+      "point2content"                   : "Elige entre las diferentes opciones que ofrecemos: torneos oficiales o virtuales, Liga o Premier, duelo o formato liga…",
+      "point3title"                     : "<span class=\"help-point\">3</span> Elige tu equipo",
+      "point3content"                   : "<strong>A continuación, selecciona los 11 jugadores de tu equipo sin pasarte del límite salarial. Recuerda:</strong><br><br><br>No puedes escoger a más de 4 jugadores del mismo equipo.<br>Puedes cambiar tu alineación hasta la hora de comienzo del torneo",
+      "point4title"                     : "<span class=\"help-point\">4</span> INVITA A TUS AMIGOS",
+      "point4content"                   : "Haz clic en “Invitar amigos” y comparte el enlace de tu torneo",
+      "button-back"                     : "Volver"
+    }
+    ,"rules"                            :
+    {
+      "rules-title"                     : "Reglas",
+      "num-rules"                       : "14",
+      "1-title"                         : "1. Nivel de mánager",
+      "1-text"                          : "<p>El nivel de mánager de un usuario determina el nivel de los futbolistas que puede alinear en los torneos oficiales, aunque puede usar oro para alinear a los que requieran más nivel. Cuanto mayor sea el nivel de manager de un usuario, mejores futbolistas podrá alinear en los torneos oficiales. Además, el coste en oro de los futbolistas cuyo nivel sea mayor que el nivel de manager del usuario se vera reducido.</p><p>Si el usuario deja de jugar torneos durante dos días consecutivos, empezará a perder nivel de manager. Cuantos más días esté sin jugar, mayor será su pérdida de nivel de mánager.</p><p>El nivel de mánager se consigue ganado puntos de mánager en los torneos virtuales.</p>",
+      "2-title"                         : "2. Torneos Virtuales",
+      "2-text"                          : "<p>Los torneos virtuales permiten al usuario elgir una alineación de 11 futbolistas, entre todos los futbolistas que participan en los partidos predefinidos para el torneo.</p><p>Los conjuntos de partidos ofrecidos en los distintos torneos están basados en partidos del pasado y, mediante un algoritmo de simulación basado en las estadísticas <strong>actuales</strong> de los futbolistas, se obtiene un resultado sumando los puntos fantasy conseguidos por todos los futbolistas alineados.</p><p>Para poder participar en los torneos virtuales, el usuario deberá tener tanta energía disponible como requiera el torneo.</p><p>Los torneos virtuales otorgan como premio puntos de mánager.</p><p>Los torneos virtuales estarán disponibles todos los días de la semana.</p>",
+      "3-title"                         : "3. Torneos Oficiales",
+      "3-text"                          : "<p>Los torneos oficiales permiten al usuario elegir una alineacion de 11 futbolistas entre un subconjunto de los futbolistas que participan en los partidos predefinidos para el torneo. La composición del subcojunto de futbolistas estara determinada por el nivel del torneo y el nivel de manager del usuario.</p> Los conjuntos de partidos ofrecidos en los distintos torneos son los partidos de las proximas jornadas de La Liga y La Premier.</p><p>Durante el torneo, recibimos informacion en tiempo real de todas las acciones que realizan los futbolistas en los distintos partidos. En función de esa información real, evaluamos el desempeño de los futbolistas y les vamos otrorgando, en tiempo real, una puntuanción en puntos fantasy. Una vez terminados todos los partidos del torneo se obtiene el resultado sumando los puntos fantasy conseguidos por todos los futbolistas alineados.</p><p>Para poder participar en los torneos oficiales, el usuario debera tener tanto oro disponible como requiera el torneo</p><p>Los torneos oficiales otorgan como premio oro y se contabilizan para el ranking de habilidad.</p> <p>Los torneos oficiales estaran disponibles siempre que haya una jornada de La liga o La Premier.</p>",
+      "4-title"                         : "4. Alineaciones",
+      "4-text"                          : "<p>Al relizar una alineación, el usuario deberá seleccionar 11 futbolistas del conjunto total de futbolistas ofrecidos. El usuario, además, puede cambiar la formacion, variando así el número de huecos disponibles por tipo de futbolista (Defensa, Medio, Delantero), permitiendo elegir alineaciones defensivas, ofensivas o equilibradas</p><p>A la hora de hacer una alineación, el usuario tendrá dos limitaciones: la primera el limite salarial; la suma de los salarios de los 11 futbolistas nunca podrá superar el límite salarial predefinido en el torneo. La segunda es que no es posible seleccionar más de cuatro futbolistas del mismo equipo.</p><p> Las alineaciones podran ser modificadas tantas veces como se quiera, siempre y cuando el torneo no haya empezado. Estos cambios de alineación no suponen coste alguno, excepto si se alinean futbolistas con coste en oro. </p>",
+      "5-title"                         : "5. Resultados",
+      "5-text"                          : "<p>El resultado de un usuario en un torneo se determinará sumando los puntos fantasy obtenidos por sus 11 futbolistas.</p><p>En los torneos virtuales el resultado estará disponible pocos minutos despues del cierre de las inscripciones y se podrá consultar en: <a href=\"#/my_contests/history/\" target=\"_blank\">Mis Torneos / Histórico.</a></p> A diferencia de los torneos virtuales, en los torneos oficiales los partidos no se resuelven de manera inmediata, sino que se resuelven en tiempo real y no terminará el torneo hasta que se terminen todos los partidos asociados al torneo. El desarrollo de los torneos oficales puede ser consultado en <a href=\"#/my_contests/live/\" target=\"_blank\">Mis Torneos / Directo.</a>. Una vez terminado un torneo oficial se podra consultar en:<a href=\"#/my_contests/history/\" target=\"_blank\">Mis Torneos / Histórico.</a></p><p>Cuando dos o más usuarios obtienen la misma puntuación en un torneo, el usuario que primero completó el registro será el ganador.</p>",
+      "6-title"                         : "6. Coste dinámico de los futbolistas",
+      "6-text"                          : "<p>Despues de cada jornada, en función de los puntos fantasy conseguidos, se actualizarán los salarios de los futbolistas. Como consecuencia de estas modificaciones de salario, los futbolistas podrán subir o bajar de nivel</p><p>En los torneos oficiales, el coste en oro de alinear futbolistas dependerá del nivel de manager del usuario y de la cuantía de los premios a ganar en el torneo.</p>",
+      "7-title"                         : "7. Torneos sin Participación",
+      "7-text"                          : "<p>Todos los torneos abiertos que se realicen en Epic Eleven tienen un premio determinado y un número de participantes mínimo. Si no se alcanza este mínimo de participantes al inicio del torneo, éste podrá anularse. Por ejemplo, una competición \"Uno contra Uno\" sin 2 competidores y una liga de 10 personas con sólo 2 participantes podrán no celebrarse.</p>",
+      "8-title"                         : "8. Juegos Pospuestos",
+      "8-text"                          : "<p>Las reglas que especifican el tratamiento de los juegos pospuestos varían en función del tipo de torneo. Epic Eleven se reserva el derecho de actuar a este respecto en función de cada circunstancia particular.</p>",
+      "9-title"                         : "9. Partidos Suspendidos",
+      "9-text"                          : "<p>Las reglas que se refieren a partidos que hayan sido suspendidos tienen un tratamiento determinado en función del tipo de torneo. Se considera que un partido ha quedado suspendido cuando queda sin concluir, pero con perspectivas de finalizarse en el futuro. Como mínimo, las estadísticas recopiladas antes de la finalización del periodo del torneo serán tenidas en cuenta entre los partidos.</p>",
+      "10-title"                        : "10. Futbolistas en proceso de negociación",
+      "10-text"                         : "<p>Los futbolistas inmersos en procesos de negociación pueden afectar al desarrollo de los torneos que ya hayan sido planificados teniendo en cuenta a estos futbolistas en sus antiguos equipos. Los listados de jugadores de los equipos en Epic Eleven se actualizan una vez al día (por la noche). Hay que tener en cuenta que los torneos se crean con un adelanto de 5 a 6 días previos al partido, por lo que los jugadores que estén en proceso de negociación pueden no estar disponibles para torneos que incluyan un partido con su equipo nuevo, pero no con su antiguo equipo. También hay que tener en cuenta que, en algunos casos, un jugador que se ha seleccionado ya no esté disponible para un torneo que vaya a disputar su antiguo equipo ni su nuevo equipo. En este caso, el usuario deberá seleccionar un suplente o será acreditado con cero puntos para este jugador en cuestión.</p><p>Ten en cuenta que, el mismo día que un jugador es objeto de negociación, aún puede aparecer en el listado de jugadores de su antiguo equipo. Si la negociación se está produciendo, precisamente, con el equipo rival del jugador en negociaciones en el mismo partido en el que estás participando, todavía podrás recibir puntos por su participación en la competición. Estos puntos no se podrán reflejar con exactitud durante la puntuación en vivo, pero se tendrán en cuenta en el momento en que finalice el partido. Asimismo, ten en cuenta que la liquidación del torneo puede sufrir retrasos con el fin de asegurar la máxima exactitud.</p><p>En casos muy raros, un jugador se traspasa lo suficientemente temprano en el día como para poder jugar un partido para su nuevo equipo esa misma jornada. Si se traspasa desde un equipo que juega un partido tarde a un equipo que va a jugar un partido temprano, podrás seleccionar este jugador para el juego que tenga lugar de manera tardía aun sabiendo que el traspaso se ha realizado de facto antes del partido. Si este fuera el caso, se te asignarán cero puntos por su desempeño.</p>",
+      "11-title"                        : "11. Las revisiones de puntuación",
+      "11-text"                         : "<p>Durante el partido recibimos las puntuaciones en directo desde nuestro proveedor de Estadísticas, Opta. Al finalizar el juego, nos envía el documento final con las estadísticas completas del partido. Una vez recibidas y confirmadas las estadísticas de todos los partidos de la jornada, comenzamos a gestionar la liquidación de todas las participaciones. Sin embargo, en contadas ocasiones, las ligas y estadísticas revisadas por el proveedor sufren alguna modificación posterior a la publicación del cuadro de puntuación final. En caso de que esto ocurra, no se actualizará la puntuación del jugador en Epic Eleven. Ten en cuenta que esta situación no es la misma que un caso en que una corrección deba hacerse después del cierre debido a un problema con la fuente de datos o al proceso de resolución.</p>",
+      "12-title"                        : "12. Servicio de Acceso y Edición de Problemas",
+      "12-text"                         : "<p>Aunque tratamos de asegurar que Epic Eleven funciona sin problemas en todo momento, al igual que cualquier servicio online, en ocasiones podemos experimentar períodos de interrupción o rendimiento lento. A veces, se producen problemas para acceder al servicio, para editar alineaciones o para entrar en nuevos torneos. Si no puedes acceder al Servicio, por favor, infórmanos de los problemas escribiendo a nuestro correo electrónico <a href='mailto:support@epiceleven.com'>support@epiceleven.com</a>.</p>",
+      "13-title"                    	: "13. Cancelación de Torneos",
+      "13-text"                      	: "<p>Epic Eleven también se reserva el derecho de cancelar los torneos a su criterio, sin ningún tipo de restricciones. Normalmente, esto se llevará a cabo sólo en los casos en los que creemos que, debido a problemas en el servicio o hechos que afecten a los eventos deportivos, no habría un impacto generalizado en la mayor parte de las competiciones.</p>",
+      "14-title"                        : "14. Legalidad",
+      "14-text"                         : "<p>Para jugar en cualquiera de nuestros torneos, debes tener 13 años o más y ser residente en España. Para más información sobre bases legales, por favor, consulta nuestros <a href=\"#/terminus_info\" target=\"_blank\">Términos de Uso.</a> <a href=\"#/policy_info\" target=\"_blank\">Políticas de Privacidad.</a>.</p>"
+
+    }
+    ,"tutorials"                        :
+    {
+      "go-tutorial"                     : "Ir al tutorial",
+      "go-to-help"                      : "Ver Ayuda",
+      "incoming"                        : "Proximamente",
+      "learn-to-play"                   : "Aprende a jugar a epic eleven",
+      "rankings"                        : "Clasificaciones",
+      "how-to-create-contest"           : "Como crear torneos"
+    }
+    ,"help"                             :
+    {
+      "title"                           : "Ayuda",
+      "tutorials"                       : "Tutoriales",
+      "how-it-works"                    : "Cómo funciona",
+      "rules"                           : "Reglas"
+    }
+    ,"terminus"                         :
+    {
+
+
+      "point-0-title"                   : "Bases",
+      "point-0-content"                 : "<p>Fecha de entrada en vigor: 15 de diciembre de 2015</p><p>El Titular del sitio web y la Compañía que presta el Servicio es Unusual Wonder Studios SL compañía con sede en España (CIF B85445716), Avda de Brasil, 23, 5-A, 28020 Madrid, España.</p> <p>Las condiciones del presente contrato (\"Condiciones del Servicio\") regirán la relación entre usted y Unusual Wonder Studios y sus filiales (en lo sucesivo \"Unusual Wonder Studios\" o \"Nosotros\") respecto al uso que usted haga de los juegos, sitios web y servicios relacionados de Unusual Wonder Studios (el \"Servicio\"). El uso del Servicio también se regirá por la Política de Privacidad y Cookies de Unusual Wonder Studios, que se incorpora a las presentes Condiciones del Servicio por remisión.</p><p>Antes de acceder al Servicio o de usarlo, incluyendo la navegación por cualquier sitio web de Unusual Wonder Studios o el acceso a un juego, deberá aceptar estas Condiciones del Servicio y la Política de Privacidad y Cookies. También será preciso que se registre en una cuenta en el Servicio (una \"Cuenta\"). Al registrarse en una Cuenta o usar el Servicio de cualquier otro modo, usted garantiza tener, al menos, 14 años de edad y entender y aceptar estas Condiciones del Servicio. Si tiene entre 14 y 18 años, garantiza que su tutor legal ha revisado y aceptado las presentes Condiciones. Si accede al Servicio desde un Sitio de Redes Sociales (\"SRS\"), como Facebook o Google+, deberá cumplir sus condiciones de servicio o uso, además de estas Condiciones del Servicio.</p><p>AL INSTALAR, USAR O ACCEDER DE OTRO MODO AL SERVICIO ACEPTA LAS PRESENTES CONDICIONES DEL SERVICIO. DE NO ACEPTAR LAS PRESENTES CONDICIONES DEL SERVICIO, ABSTÉNGASE DE INSTALAR, USAR O ACCEDER DE OTRO MODO AL SERVICIO. EL USO DEL SERVICIO SERÁ NULO EN LOS LUGARES DONDE ESTÉ PROHIBIDO.</p><p>Unusual Wonder Studios se reserva el derecho, a su discreción, de cambiar, modificar, añadir o eliminar partes de estas Condiciones del Servicio y de su Política de Privacidad y Cookies en cualquier momento. Se considerará que ha aceptado estos cambios si sigue usando el Servicio. Si realizamos cualquier cambio importante en las Condiciones del Servicio se lo notificaremos por correo electrónico (enviado a la dirección de correo electrónico especificada en su cuenta) o a través de una notificación en este Sitio Web antes de que el cambio entre en vigor. Le recomendamos que revise esta página periódicamente para obtener la información más reciente sobre nuestras Condiciones del Servicio.</p><p>Si en cualquier momento usted no estuviera de acuerdo con cualquier parte de la versión vigente de nuestras Condiciones del Servicio, la Política de Privacidad y Cookies de Unusual Wonder Studios o cualquier otra política, reglamento o código de conducta de Unusual Wonder Studios respecto a su uso del Servicio, su licencia de uso del Servicio finalizará inmediatamente y deberá abstenerse de usar el Servicio de inmediato.</p>",
+
+
+      "point-1-title"                   : "1. Licencia",
+      "point-1-subtitle"                : "1.1. Concesión de una Licencia Limitada de Uso del Servicio",
+      "point-1-content"                 : "<p>Sujeto a la aceptación y al cumplimiento continuado por su parte de las presentes Condiciones del Servicio y cualquier otra política relevante de Unusual Wonder Studios, así como a las limitaciones que se exponen a continuación, Unusual Wonder Studios le concede una licencia limitada no exclusiva, no transferible, sin posibilidad de sublicencias y revocable a fin de  acceder al Servicio y usarlo para sus propios fines de entretenimiento y sin carácter comercial. Usted se compromete a no usar el Servicio para ningún otro fin.</p><p>Se aplicarán al uso del Servicio las siguientes restricciones:</p><ul><li>No creará una Cuenta ni accederá al Servicio si es menor de 14 años; restringirá el uso por parte de menores y no permitirá el acceso a niños menores de 14 años. Acepta la plena responsabilidad por cualquier uso no autorizado del Servicio por parte de menores. Será responsable de cualquier uso de su tarjeta de crédito u otro instrumento de pago (por ejemplo paypal) por parte de menores.</li><li> No venderá, alquilará ni revelará su Cuenta, ni creará una Cuenta usando información o una identidad falsa ni en nombre de otra persona que no sea usted mismo; no usará el Servicio si ha sido previamente expulsado por Unusual Wonder Studios o si se le ha prohibido previamente jugar a cualquier juego de Unusual Wonder Studios.</li><li>Solo usará su Cuenta con fines que no sean de carácter comercial; no usará el Servicio para anunciar, ofrecer ni transmitir ningún tipo de publicidad a nadie, incluyendo cartas en cadena, correos electrónicos no deseados o mensajes repetitivos.</li></ul><p>Información de Inicio de Sesión y Su Cuenta</p><p>Durante el proceso de creación de la Cuenta se le pedirá que seleccione una contraseña (\"Información de Inicio de Sesión\"). No compartirá la Cuenta ni la Información de Inicio de Sesión, ni permitirá que ninguna otra persona acceda a Su Cuenta o haga cualquier otra cosa que pueda perjudicar la seguridad de Su Cuenta. En caso de que tenga conocimiento o sospechas razonables de que se haya producido un fallo en la seguridad, incluyendo, entre otros, cualquier pérdida, robo o divulgación no autorizada de la Información de Inicio de Sesión, se lo deberá notificar a Unusual Wonder Studios de inmediato y modificar su Información de Inicio de Sesión. Usted será el único responsable de mantener la confidencialidad de la Información de Inicio de Sesión y será responsable de todos los usos de la Información de Inicio de Sesión, incluyendo las compras, con independencia de que usted las haya autorizado o no. Usted será responsable de todo lo que suceda a través de Su Cuenta.</p><p>Unusual Wonder Studios se reserva el derecho a eliminar o a reclamar cualquier nombre de usuario en cualquier momento y por cualquier motivo, incluyendo, entre otros, si un tercero alega que un nombre de usuario viola sus derechos.</p><p>El Servicio solo soporta una Cuenta por juego en un dispositivo compatible.</p>",
+
+      "point-2-title"                   : "Limitaciones de la Licencia",
+      "point-2-content"                 : "<p>Queda estrictamente prohibido cualquier uso del Servicio que contravenga las siguientes Limitaciones de la Licencia, pudiendo dicho incumplimiento conllevar la revocación inmediata de su Licencia Limitada y la consiguiente responsabilidad por infringir la ley. Usted acuerda abstenerse en todo caso de:</p><ul><li>Llevar a cabo cualquier acción que a juicio de Unusual Wonder Studios entre en conflicto con el espíritu o la finalidad del Servicio o de hacer cualquier uso inadecuado de los servicios de soporte de Unusual Wonder Studios.</li><li>Usar trucos, vulnerabilidades, software de automatización, usuarios fantasma (bots), ataques (hacks), nuevos parámetros (mods) o cualquier software de un tercero no autorizado diseñado para modificar o afectar el Servicio, cualquier juego de Unusual Wonder Studios o cualquier experiencia de juego de Unusual Wonder Studios, o para  modificar o instar a que se modifique cualquier archivo que forme parte del Servicio o cualquier juego de Unusual Wonder Studios sin el consentimiento expreso por escrito de Unusual Wonder Studios.</li><li>Interrumpir, sobrecargar o prestar ayuda o asistencia para la interrupción o sobrecarga de cualquier ordenador o servidor (\"Servidor\") usado para prestar u ofrecer el Servicio o cualquier entorno de juego de Unusual Wonder Studios.</li><li>Iniciar, ayudar o participar en cualquier tipo de ataque, incluyendo, entre otros, la distribución de un virus, ataques de denegación de servicio respecto al Servicio u otros intentos de interrumpir el Servicio o el uso o disfrute del Servicio de cualquier otra persona.</li><li>Intentar obtener acceso no autorizado al Servicio, a Cuentas registradas a nombre de otros o a los ordenadores, Servidores o redes conectados al Servicio por cualquier medio que no sea la interfaz de usuario proporcionada por Unusual Wonder Studios, incluyendo, entre otros, la elusión o modificación, intento de elusión o modificación, el estímulo o la ayuda a cualquier otra persona para eludir o modificar cualquier elemento de seguridad, tecnología, dispositivo o software que forme parte del Servicio.</li><li>Publicar cualquier información que resulte insultante, intimidatoria, obscena, difamatoria, injuriosa u ofensiva desde el punto de vista racial, sexual o religioso o que resulte inaceptable por otros motivos.</li><li>Publicar cualquier información que contenga desnudos, violencia excesiva o temas ofensivos o que contenga un enlace a contenido de este tipo.</li><li>Hostigar, agredir, perjudicar a terceros o intentarlo, o propugnar o incitar el hostigamiento, la agresión o el perjuicio de otra persona o grupo, incluyendo los empleados de Unusual Wonder Studios y los agentes de atención al cliente de Unusual Wonder Studios.</li><li>Poner a disposición a través del Servicio cualquier material o información que infrinja cualquier derecho de autor, marca, patente, secreto comercial, derecho a la privacidad, derecho a la publicidad o cualquier otro derecho de cualquier persona o entidad, o de suplantar a cualquier otra persona, incluyendo, entre otros, un empleado de Unusual Wonder Studios.</li><li>Descompilar, desmontar, descifrar, realizar ingeniería inversa de o intentar derivar de otro modo el código fuente de cualquier software subyacente o de otra propiedad intelectual usados para proporcionar el Servicio o cualquier juego de Unusual Wonder Studios, u obtener cualquier información del Servicio o de cualquier juego de Unusual Wonder Studios usando cualquier método que Unusual Wonder Studios no haya permitido expresamente.</li><li>Solicitar o intentar solicitar información personal de otros usuarios del Servicio o de cualquier juego de Unusual Wonder Studios o de recoger o publicar la información privada de cualquier persona, incluyendo información identificable personalmente (ya sea en forma de texto, imagen o vídeo), documentos identificativos o información financiera a través del Servicio.</li></ul><p>Unusual Wonder Studios se reserva el derecho a determinar qué conducta contraviene a su juicio las normas de uso o no se ajusta a la finalidad o al espíritu de las presentes Condiciones del Servicio o del propio Servicio. Unusual Wonder Studios se reserva el derecho a emprender acciones en consecuencia, lo que podrá incluir la finalización de Su Cuenta y la prohibición de usar el Servicio.</p>",
+
+
+      "point-3-subtitle"                : "1.2. Suspensión y Finalización de la Cuenta y del Servicio",
+      "point-3-content"                 : "<p>SIN PERJUICIO DE OTRAS MEDIDAS LEGALES, UNUSUAL WONDER STUDIOS PODRÁ, CON O SIN PREVIO AVISO, LIMITAR, SUSPENDER, FINALIZAR, MODIFICAR O ELIMINAR CUENTAS O EL ACCESO A LOS SERVICIOS DE UNUSUAL WONDER STUDIOS O A PARTE DE LOS MISMOS SI USTED INCUMPLE, O UNUSUAL WONDER STUDIOS SOSPECHA QUE HA INCUMPLIDO, CUALQUIERA DE LAS PRESENTES CONDICIONES DEL SERVICIO O CON MOTIVO DE CUALQUIER USO ILEGAL O INADECUADO, REAL O PRESUNTO, DEL SERVICIO. USTED PODRÁ PERDER SU NOMBRE DE USUARIO Y SU PERSONAJE COMO CONSECUENCIA DE LA FINALIZACIÓN O LA LIMITACIÓN DE LA CUENTA, ASÍ COMO TODOS LOS BENEFICIOS, PRIVILEGIOS, OBJETOS CONSEGUIDOS Y OBJETOS ADQUIRIDOS RELACIONADOS CON SU USO DEL SERVICIO, Y UNUSUAL WONDER STUDIOS NO TENDRÁ NINGUNA OBLIGACIÓN DE COMPENSARLE POR ESTAS PÉRDIDAS O CONSECUENCIAS.</p><p>SIN PERJUICIO DE OTRAS MEDIDAS LEGALES A LAS QUE PODAMOS ACUDIR, PODREMOS LIMITAR, SUSPENDER O FINALIZAR EL SERVICIO Y LAS CUENTAS DE USUARIOS O PARTES DE LAS MISMAS, PROHIBIR EL ACCESO A NUESTROS JUEGOS Y SITIOS, ASÍ COMO A SU CONTENIDO, SERVICIOS Y HERRAMIENTAS, RETRASAR O ELIMINAR CONTENIDO ALOJADO Y EMPRENDER MEDIDAS TÉCNICAS Y LEGALES PARA IMPEDIR QUE LOS USUARIOS ACCEDAN AL SERVICIO SI CREEMOS QUE LOS USUARIOS SON SUSCEPTIBLES DE CONSTITUIR UN RIESGO O DE INCURRIR EN POSIBLES RESPONSABILIDADES LEGALES, QUE INFRINGEN LOS DERECHOS DE PROPIEDAD INTELECTUAL DE TERCEROS O QUE CON SUS ACTUACIONES CONTRAVIENEN EL CONTENIDO O EL ESPÍRITU DE NUESTRAS CONDICIONES O POLÍTICAS. ASIMISMO, CUANDO LAS CIRCUNSTANCIAS LO PERMITAN Y A NUESTRA ÚNICA DISCRECIÓN, PODREMOS SUSPENDER O FINALIZAR CUENTAS DE USUARIOS QUE SEAN INFRACTORES REINCIDENTES DE DERECHOS DE PROPIEDAD INTELECTUAL DE TERCEROS.</p><p>UNUSUAL WONDER STUDIOS SE RESERVA EL DERECHO A FINALIZAR CUALQUIER CUENTA QUE LLEVE INACTIVA 180 DÍAS.</p><p>Unusual Wonder Studios se reserva el derecho a dejar de ofrecer o prestar el Servicio o un juego determinado o parte del Servicio en cualquier momento, en cuyo caso su licencia para usar el Servicio o una parte del mismo finalizará automáticamente. En este caso, Unusual Wonder Studios no estará obligado a realizar reembolsos, proporcionar beneficios ni ninguna otra compensación a los usuarios en relación con estos Servicios interrumpidos. La finalización de Su Cuenta puede incluir la deshabilitación de su acceso al Servicio o a cualquier parte del mismo, incluyendo cualquier contenido que usted u otros hubieran enviado.</p><p>Podrá finalizar Su Cuenta en cualquier momento y por cualquier motivo mediante el proceso que se describe en nuestra página de soporte, que podrá consultar en https://support.unusualwonder.com/, e informando a Unusual Wonder Studios de que desea finalizar su Cuenta.</p>",
+
+
+      "point-4-title"                   : "2. Titularidad",
+      "point-4-subtitle"                : "2.1. Juegos y Servicio",
+      "point-4-content"                 : "<p>Todos los derechos sobre el Servicio son titularidad de Unusual Wonder Studios (incluyendo, entre otros, todos los juegos, títulos, códigos informáticos, temas, objetos, historias, diálogos, eslóganes, diseños, material gráfico, animaciones, sonidos, composiciones musicales, efectos audiovisuales, métodos de funcionamiento, derechos morales, documentación, transcripciones de conversaciones dentro del juego, información de perfil del personaje, grabaciones de juegos jugados usando un cliente de juego de Unusual Wonder Studios, así como el software del servidor y de los clientes de juego de Unusual Wonder Studios). Unusual Wonder Studios se reserva todos los derechos, incluyendo, entre otros, todos los derechos de propiedad intelectual u otros derechos de propiedad en relación con sus juegos y el Servicio.</p>",
+
+
+      "point-5-subtitle"                : "2.2. Cuentas",
+      "point-5-content"                 : "<p>SIN PERJUICIO DE LO ESTABLECIDO EN LAS PRESENTES CONDICIONES, USTED RECONOCE Y CONVIENE EN QUE NO TENDRÁ NINGUNA TITULARIDAD NI NINGÚN OTRO DERECHO SOBRE LA CUENTA Y, ASIMISMO, RECONOCE Y CONVIENE EN QUE TODOS LOS DERECHOS EN Y SOBRE LA CUENTA SON Y SERÁN SIEMPRE PROPIEDAD DE UNUSUAL WONDER STUDIOS Y REDUNDARÁN EN SU BENEFICIO.</p>",
+
+      "point-6-subtitle"                : "2.3. Objetos virtuales",
+      "point-6-content"                 : "<p>Unusual Wonder Studios es titular, licenciatario o tiene derecho a usar todo el contenido que aparece en el Servicio o en los juegos de Unusual Wonder Studios. Sin perjuicio de lo dispuesto en cualquier disposición en contrario, usted conviene en que no posee ningún derecho ni titularidad en y sobre ningún contenido que aparece en el Servicio incluyendo, entre otros, los productos o monedas virtuales que aparecen o se originan en cualquier juego de Unusual Wonder Studios, tanto si se han ganado en un juego como si se han comprado a Unusual Wonder Studios, o cualquier otro atributo asociado con una Cuenta o almacenado en el Servicio.</p>",
+
+      "point-7-subtitle"                : "2.4. Contenido de Usuario",
+      "point-7-content"                 : "<p>Por \"Contenido de Usuario\" se entenderá cualquier comunicación, imagen, sonido y todo el material, datos e información que se suba o transmita a través de un cliente de un juego de Unusual Wonder Studios o del Servicio, o que otros usuarios suban o transmitan incluyendo, entre otros, el texto de cualquier conversación. Al transmitir o enviar cualquier Contenido de Usuario mientras se usa el Servicio, usted declara, manifiesta y garantiza que dicha transmisión o envío es (a) exacta y no confidencial; (b) no contraviene ninguna ley, restricción contractual ni derechos de terceros, y que cuenta con el permiso de cualquier tercero cuya información personal o propiedad intelectual se incluya en el Contenido de Usuario; (c) sin virus, adware, programas espía, gusanos u otro código malicioso; y (d) usted reconoce y conviene en que toda su información personal incluida en este contenido será tratada en todo momento por Unusual Wonder Studios de conformidad con su Política de Privacidad y Cookies. Unusual Wonder Studios se reserva el derecho, a su única discreción, a revisar, supervisar, prohibir, editar, borrar, deshabilitar el acceso o inhabilitar de otro modo cualquier Contenido de Usuario (incluyendo, entre otros, su Contenido de Usuario) sin previo aviso, por cualquier motivo o por ninguno en concreto, en cualquier momento.</p>",
+
+      "point-8-title"                   : "3. Contenido de Usuario",
+      "point-8-subtitle"                : "3.1. Filtración de contenido",
+
+        "point-8-content"                 : "<p>Unusual Wonder Studios no asume ninguna responsabilidad por el comportamiento de ningún usuario a la hora de enviar cualquier Contenido de Usuario ni asume ninguna responsabilidad por la supervisión de contenidos o comportamientos inadecuados en el Servicio. No podemos filtrar y por tanto no filtramos ni supervisamos todo el Contenido de Usuario. La utilización que usted haga del Servicio es por tanto por su cuenta y riesgo. Al usar el Servicio puede estar expuesto a Contenido de Usuario ofensivo, indecente o que no cumpla sus expectativas. Usted asume todos los riesgos derivados del uso de cualquier Contenido de Usuario disponible en relación con el Servicio. A nuestra discreción, nuestros agentes o nuestra tecnología podrán supervisar o registrar su interacción con el Servicio o las comunicaciones (incluyendo, entre otros, el texto de conversaciones) cuando esté utilizando el Servicio.</p><p>Al aceptar estas Condiciones del Servicio, otorga su consentimiento irrevocable para dicha supervisión y grabación. Reconoce y convienen en que no existen garantías de privacidad respecto a la transmisión de cualquier Contenido de Usuario incluyendo, entre otros, el texto de conversaciones o comunicaciones por voz.</p><p>Si en algún momento Unusual Wonder Studios decidiera, a su entera discreción, supervisar el Servicio, Unusual Wonder Studios no asumiría ninguna responsabilidad por el Contenido de Usuario ni asumiría ninguna obligación de modificar o eliminar cualquier Contenido de Usuario que resulte inadecuado. Unusual Wonder Studios podrá, a su entera discreción, editar, negarse a publicar o eliminar cualquier Contenido de Usuario.</p>",
+
+      "point-9-subtitle"                : "3.2. Uso de la información por otros miembros del Servicio",
+      "point-9-3title"                  : "3.2.1 Diálogo público",
+      "point-9-content"                 : "<p>El Servicio podrá incluir diversos foros, blogs y mecanismos de chat donde puede publicar Contenido de Usuario, incluyendo sus observaciones y comentarios sobre temas específicos. Unusual Wonder Studios no puede garantizar que otros miembros no vayan a usar las ideas y la información que comparta. Por lo tanto, si quiere que su idea o información siga siendo confidencial o no desea que otros la utilicen, no la publique en el Servicio. Unusual Wonder Studios no será responsable ante usted de valorar, usar o compensarle por cualquier idea o información que decida enviar.</p>",
+
+      "point-10-3title"                 : "3.2.2. Responsable de su propio contenido",
+      "point-10-content"                : "<p>Usted es el único responsable de la información que publique en el Servicio, mediante este o en relación con el mismo y que proporcione a terceros. Unusual Wonder Studios podrá rechazar, negarse a publicar o eliminar cualquier Contenido de Usuario por cualquier motivo o sin motivo alguno incluyendo, entre otros, Contenido de Usuario que según la opinión exclusiva de Unusual Wonder Studios contravenga las presentes Condiciones del Servicio.</p>",
+
+      "point-11-subtitle"               : "3.3. Licencia",
+      "point-11-content"                : "<p>Por la presente usted otorga a Unusual Wonder Studios una licencia irrevocable, perpetua, transferible, pagada en su totalidad, libre de cánones y para todo el mundo (incluyendo el derecho a otorgar sublicencias y de cesión a un tercero) y el derecho a copiar, reproducir, arreglar, adaptar, modificar, crear obras derivadas, fabricar, comercializar, publicar, distribuir, vender, otorgar licencias, otorgar sublicencias, transferir, arrendar, transmitir, exhibir públicamente, representar públicamente o proporcionar acceso electrónicamente, retransmitir, comunicar al público por medios de telecomunicación, exhibir, representar, introducir en una memoria informática y usar y emplear, de cualquier modo, su Contenido de Usuario, así como todas las obras modificadas y derivadas del mismo en relación con nuestra prestación del Servicio, incluyendo marketing y promociones del Servicio. Por la presente usted también otorga a Unusual Wonder Studios el derecho a autorizar a otros para que ejerzan cualesquiera de los derechos otorgados a Unusual Wonder Studios en virtud de las presentes Condiciones del Servicio. Asimismo, por la presente usted otorga a Unusual Wonder Studios el derecho incondicional e irrevocable de usar y explotar su nombre y apellidos, apariencia y cualquier otra información o material que se incluyan en cualquier Contenido de Usuario y en relación con cualquier Contenido de Usuario, sin tener ninguna obligación con respecto a usted. Excepto cuando lo prohíba la legislación aplicable, usted renuncia a todos los derechos de atribución o derechos morales que pueda tener en su Contenido de Usuario, independientemente de si el Contenido de Usuario se ha modificado o cambiado de cualquier manera. Unusual Wonder Studios no reivindica ningún derecho de titularidad en su Contenido de Usuario y nada de lo contenido en las presentes Condiciones del Servicio está destinado a restringir ningún derecho que pueda tener para usar y explotar su Contenido de Usuario. Unusual Wonder Studios no tiene ninguna obligación de supervisar o hacer valer sus derechos de propiedad intelectual en o sobre su Contenido de Usuario.</p>",
+
+      "point-12-subtitle"               : "3.4. Interacciones del usuario",
+      "point-12-content"                : "<p>Usted es el único responsable de sus interacciones con otros usuarios del Servicio y con cualquier otra parte con la que interactúe a través del Servicio o los juegos de Unusual Wonder Studios. Unusual Wonder Studios se reserva el derecho, si bien no tiene ninguna obligación, de participar de cualquier modo en estos conflictos. Usted cooperará plenamente con Unusual Wonder Studios en la investigación de cualquier presunta actividad ilegal, fraudulenta o inadecuada, lo que incluirá, entre otros, otorgar a Unusual Wonder Studios acceso a cualquier parte protegida con contraseña de Su Cuenta.Si tiene un conflicto con uno o más usuarios, nos eximirá a nosotros (y a nuestros directivos, consejeros, agentes, filiales, empresas conjuntas y empleados) de reclamaciones, demandas y daños y perjuicios (reales y emergentes) de toda índole, conocidos o desconocidos, que se deriven de estos conflictos o estén relacionados de cualquier modo con los mismos.</p>",
+
+
+      "point-13-title"                  : "4. Tarifas y condiciones de compra",
+      "point-13-subtitle"               : "4.1. Compras",
+      "point-13-content"                : "<p>En el Servicio podrá comprar con dinero \"del mundo real\", una licencia limitada, personal, intransferible, sin posibilidad de otorgar sublicencias y revocable para usar (a) \"moneda virtual\" incluyendo, entre otros, dinero o diamantes virtuales, todos para usar en juegos de Unusual Wonder Studios; (b) \"objetos virtuales dentro del juego\" (junto con la \"moneda virtual\", \"Objetos Virtuales\"); y (c) otros productos o servicios. Se obtiene una licencia para usar Objetos Virtuales través de nosotros o nuestros socios autorizados por el Servicio, y no por otro medio.Unusual Wonder Studios podrá gestionar, regular, controlar, modificar o eliminar Objetos Virtuales o Mercancías en cualquier momento, con o sin previo aviso. Unusual Wonder Studios estará exento de responsabilidad ante usted y ante cualquier tercero en caso de que Unusual Wonder Studios decida ejercer estos derechos.</p><p>Se prohíbe la transferencia de Objetos Virtuales y Mercancías salvo cuando esté autorizado expresamente en el Servicio. Salvo los casos en los que esté expresamente autorizado en el Servicio, usted no podrá vender, canjear ni transferir de otro modo Objetos Virtuales ni Mercancías a ninguna persona o entidad incluyendo, entre otros, a Unusual Wonder Studios, a otro usuario o a cualquier tercero.</p><p>TODAS LAS COMPRAS Y CANJES DE MONEDA VIRTUAL DE TERCEROS QUE SE REALICEN A TRAVÉS DEL SERVICIO SON DEFINITIVOS Y NO SON REEMBOLSABLES.</p><p>Proporcionar Objetos Virtuales para usar en juegos de Unusual Wonder Studios es un servicio que Unusual Wonder Studios presta inmediatamente en el momento en que Unusual Wonder Studios acepta su compra.</p>",
+
+
+      "point-14-subtitle"               : "4.2. Pago de tarifas",
+      "point-14-content"                : "<p>Usted acepta pagar todas las tarifas e impuestos aplicables en los que usted (o cualquiera que use una Cuenta registrada a su nombre) haya incurrido. Unusual Wonder Studios podrá revisar los precios de los productos y servicios ofrecidos a través del Servicio en cualquier momento.</p><p>USTED ACEPTA QUE Unusual Wonder Studios NO TIENE OBLIGACIÓN DE REALIZAR REEMBOLSOS POR NINGÚN MOTIVO Y QUE NO RECIBIRÁ DINERO NI NINGUNA OTRA COMPENSACIÓN POR OBJETOS VIRTUALES SIN USAR CUANDO SE CIERRE UNA CUENTA, CON INDEPENDENCIA DE QUE EL CIERRE SEA VOLUNTARIO O INVOLUNTARIO.</p>",
+
+
+      "point-15-title"                  : "5. Actualizaciones del Servicio",
+      "point-15-content"                : "<p>Usted entiende que el Servicio es evolutivo. Unusual Wonder Studios podrá exigirle que acepte actualizaciones del Servicio y de los juegos de Unusual Wonder Studios que tenga instalados en su ordenador. Usted reconoce y conviene en que Unusual Wonder Studios podrá actualizar el Servicio y los juegos de Unusual Wonder Studios, con o sin previo aviso. Puede que necesite actualizar software de terceros ocasionalmente para recibir el Servicio y jugar a los juegos de Unusual Wonder Studios.</p>",
+
+
+      "point-16-title"                  : "6. Exclusión de garantías",
+      "point-16-content"                : "<p>SIN LIMITAR LA RESPONSABILIDAD DE UNUSUAL WONDER STUDIOS CON ARREGLO AL ARTÍCULO 7 INFRA, Y CON EL MÁXIMO ALCANCE PERMITIDO POR LA LEY APLICABLE, EL SERVICIO SE PROPORCIONA PARA SU USO SEGÚN SU CONDICIÓN ACTUAL Y SU DISPONIBILIDAD, SIN GARANTÍAS DE NINGÚN TIPO, EXPLÍCITAS O IMPLÍCITAS, INCLUYENDO, ENTRE OTRAS, LAS GARANTÍAS DE COMERCIALIDAD, IDONEIDAD PARA UN FIN PARTICULAR, TITULARIDAD, NO INFRACCIÓN Y AQUELLAS PROVENIENTES DE LAS TRANSACCIONES O COSTUMBRES DEL COMERCIO. UNUSUAL WONDER STUDIOS NO GARANTIZA QUE USTED PUEDA USAR O ACCEDER AL SERVICIO EN LOS MOMENTOS O LUGARES QUE USTED ELIJA, QUE EL SERVICIO SERÁ ININTERRUMPIDO O ESTARÁ LIBRE DE ERRORES, QUE SE CORREGIRÁN LOS DEFECTOS, O QUE EL JUEGO O EL SERVICIO ESTÉN LIBRES DE VIRUS U OTROS COMPONENTES DAÑINOS.</p>",
+
+      "point-17-title"                  : "7. Limitación de responsabilidad; Solución jurídica única y exclusiva; Indemnización",
+      "point-17-content"                : "<p>UNUSUAL WONDER STUDIOS NO SERÁ RESPONSABLE ANTE USTED POR NINGÚN DAÑO INDIRECTO, SECUNDARIO, EMERGENTE, ESPECIAL, PUNITIVO O DE UNA ÍNDOLE SIMILAR, INCLUYENDO, ENTRE OTROS, DAÑOS POR PÉRDIDAS DE INGRESOS, LUCRO CESANTE, PÉRDIDAS DE DATOS O INTERRUPCIÓN DE LA ACTIVIDAD COMERCIAL U OTRAS PÉRDIDAS INTANGIBLES (CON INDEPENDENCIA DEL MODO EN QUE SE CALIFIQUEN), QUE SE DERIVEN O SE RELACIONEN DE CUALQUIER MANERA CON ESTAS CONDICIONES DEL SERVICIO O EL PROPIO SERVICIO, Y CON INDEPENDENCIA DE QUE SE BASEN EN UN CONTRATO, UN ACTO ILÍCITO EXTRACONTRACTUAL O EN CUALQUIER OTRA TEORÍA LEGAL, Y TANTO COMO SI Unusual Wonder Studios HA SIDO ADVERTIDA DE LA POSIBILIDAD DE ESTOS DAÑOS COMO SI NO. UNUSUAL WONDER STUDIOS SOLO SERÁ RESPONSABLE ANTE USTED POR LA CANTIDAD QUE USTED HAYA PAGADO A UNUSUAL WONDER STUDIOS DE ACUERDO CON ESTAS CONDICIONES DEL SERVICIO EN LOS SEIS (6) MESES INMEDIATAMENTE ANTERIORES A LA FECHA EN QUE PRESENTE UNA RECLAMACIÓN POR PRIMERA VEZ. USTED RECONOCE Y CONVIENE EN QUE SI NO HA PAGADO NADA A Unusual Wonder Studios DURANTE ESTE PERIODO DE TIEMPO, LA ÚNICA SOLUCIÓN JURÍDICA A SU DISPOSICIÓN (Y LA RESPONSABILIDAD EXCLUSIVA DE Unusual Wonder Studios) POR CUALQUIER CONFLICTO CON Unusual Wonder Studios SERÁ DEJAR DE USAR EL SERVICIO Y CANCELAR SU CUENTA.</p><p>Algunas jurisdicciones no permiten la exclusión de determinadas garantías o la limitación o exclusión de responsabilidad por determinados tipos de daños. Por consiguiente, es posible que algunas de las exenciones y limitaciones anteriores no sean aplicables para usted. Cuando, en virtud de la legislación aplicable, Unusual Wonder Studios no pueda excluir alguna garantía o limitar su responsabilidad tal y como se establece en la presente cláusula, el alcance de esta garantía y de la responsabilidad de Unusual Wonder Studios será el mínimo permitido de conformidad con esa legislación aplicable. EN PARTICULAR, NADA DE LO CONTENIDO EN ESTAS CONDICIONES DEL SERVICIO AFECTARÁ A LOS DERECHOS LEGALES DE NINGÚN CONSUMIDOR NI EXCLUIRÁ NI RESTRINGIRÁ NINGUNA RESPONSABILIDAD POR FALLECIMIENTO O DAÑOS PERSONALES QUE SEAN CONSECUENCIA DE CUALQUIER NEGLIGENCIA O FRAUDE DE Unusual Wonder Studios.</p><p>Usted acepta indemnizar, defender y exonerar a Unusual Wonder Studios de cualquier reclamación, demanda, daños, perjuicios u otras pérdidas, incluyendo los honorarios de abogados razonables, reivindicados por cualquier tercero como consecuencia del uso que usted haya realizado del Servicio, o cualquier incumplimiento por su parte de las presentes Condiciones del Servicio, si bien lo que antecede no será de aplicación si la infracción de derechos no es atribuible a su comportamiento intencionado o negligente.</p>",
+
+      "point-18-title"                  : "8. Resolución de conflictos y legislación",
+      "point-18-content"                : "<p>En caso de producirse un conflicto entre usted y Unusual Wonder Studios, le recomendamos encarecidamente que, en primer lugar, se ponga en contacto con nosotros de forma directa para alcanzar un acuerdo a través de nuestra página de servicios de atención al cliente en https://support.unusualwonder.com/. Excepto donde esté prohibido, usted acepta que cualquier reclamación o conflicto que pueda tener contra Unusual Wonder Studios deberá ser resuelto exclusivamente por un tribunal situado en Madrid (España).</p>",
+
+      "point-19-title"                  : "9. Divisibilidad",
+      "point-19-content"                : "<p>Usted y Unusual Wonder Studios convienen en que si un tribunal de una jurisdicción competente dictara que cualquier parte de las presentes Condiciones del Servicio o de la Política de Privacidad y de Cookies de Unusual Wonder Studios fuera ilegal o no aplicable, en su totalidad o en parte, en esa jurisdicción dicha disposición carecerá de efectividad únicamente en el alcance comprendido en la resolución de nulidad o inaplicabilidad, sin que afecte a su validez y aplicabilidad de ninguna otra manera o en ninguna otra jurisdicción y sin que afecte a las disposiciones restantes de las Condiciones, que seguirán teniendo plena validez y vigencia.</p>",
+
+      "point-20-title"                  : "10. Disposiciones generales",
+      "point-20-subtitle"               : "10.1. Cesión",
+      "point-20-content"                : "<p>Unusual Wonder Studios podrá ceder o delegar estas Condiciones del Servicio o la Política de Privacidad y Cookies de Unusual Wonder Studios, en su totalidad o en parte, a cualquier persona o entidad en cualquier momento, con o sin su consentimiento. Usted no podrá ceder ni delegar ningún derecho ni obligación con arreglo a las Condiciones del Servicio o a la Política de Privacidad y Cookies sin el consentimiento previo por escrito de Unusual Wonder Studios y, por lo tanto, no tendrá efecto ninguna cesión y delegación que usted realice sin autorización.</p>",
+
+
+      "point-21-subtitle"               : "10.2. Políticas complementarias",
+      "point-21-content"                : "<p>Unusual Wonder Studios podrá publicar políticas adicionales en relación con servicios específicos como foros, concursos o programas de fidelidad. Su derecho a usar estos servicios estará sujeto a estas políticas específicas y a las presentes Condiciones del Servicio.</p>",
+
+      "point-22-subtitle"               : "10.3. Totalidad del Contrato",
+      "point-22-content"                : "<p>Las presentes Condiciones del Servicio, cualquier Política complementaria y cualquier documento que se incorpore expresamente al presente por remisión (incluyendo la Política de Privacidad y Cookies de Unusual Wonder Studios), contienen la totalidad del acuerdo entre usted y Unusual Wonder Studios, y sustituyen a todos los acuerdos previos de las partes con respecto al objeto del presente, ya sean electrónicos, orales o escritos, o se hayan entablado conforme a la costumbre, la práctica, la política o los precedentes, entre usted y nosotros respecto al Servicio.</p>",
+
+
+      "point-23-subtitle"               : "10.4. Ausencia de renuncia",
+      "point-23-content"                : "<p>Si Unusual Wonder Studios no le exige o no le aplica el estricto cumplimiento de cualquier disposición de las presentes Condiciones del Servicio o la Política de Privacidad y Cookies de Unusual Wonder Studios o no hace valer ningún derecho con arreglo a las mismas, esto no se interpretará como una renuncia o abandono del derecho de Unusual Wonder Studios a reivindicar o basarse en esta disposición o derechos en este o en cualquier otro caso.</p><p>La renuncia expresa de Unusual Wonder Studios a cualquier disposición, condición o requisito de las presentes Condiciones del Servicio o la Política de Privacidad y Cookies de Unusual Wonder Studios no constituirá una renuncia a ninguna obligación futura de cumplir esta disposición, condición o requisito.</p><p>Salvo que se establezca expresa y específicamente en las presentes Condiciones del Servicio, ninguna manifestación, declaración, consentimiento, renuncia, ni cualquier acción u omisión de Unusual Wonder Studios se considerará una modificación de estas Condiciones del Servicio ni será vinculante legalmente, salvo que esté documentada por escrito y haya sido firmada por usted y un directivo debidamente nombrado de Unusual Wonder Studios.</p>",
+
+
+      "point-24-subtitle"               : "10.5. Notificaciones",
+      "point-24-content"                : "<p>Las notificaciones se podrán realizar mediante publicaciones en www.unusualstudios.com, por correo electrónico o a través de cualquier otro medio de comunicación de información de contacto que nos haya facilitado. Todas las comunicaciones efectuadas por usted o que se le soliciten en relación con las presentes Condiciones del Servicio o la Política de Privacidad y Cookies de Unusual Wonder Studios deberán realizarse por escrito y enviarse a: Unusual Wonder Studios SL. Atención: Legal, Avda de Brasil, 23, 5-A, 28020 Madrid, España. Las notificaciones que no cumplan lo establecido en este apartado sobre Notificaciones carecerán de efecto jurídico.</p>",
+
+      "point-25-subtitle"               : "10.6. Medidas cautelares",
+      "point-25-content"                : "<p>Usted reconoce que los derechos otorgados y las obligaciones asumidas en virtud de las presentes Condiciones del Servicio a y con Unusual Wonder Studios son de carácter único e insustituible, cuya pérdida dañará irreparablemente a Unusual Wonder Studios y no se podrán remediar solamente mediante daños y perjuicios monetarios, por lo que Unusual Wonder Studios tendrá derecho a obtener medidas cautelares u otras soluciones de este tipo (sin la obligación de pagar ninguna fianza o garantía ni de presentar una justificación de daños) en caso de producirse cualquier incumplimiento o incumplimiento anticipado por su parte.</p><p>En la medida de lo máximo posible de conformidad con la ley aplicable, usted renuncia irrevocablemente a todos los derechos de obtener medidas cautelares u otras soluciones de este tipo, o de prohibir o restringir el funcionamiento del Servicio o de cualquier juego de Unusual Wonder Studios, la explotación de cualquier anuncio o de otros materiales emitidos en relación con el mismo o la explotación del Servicio, así como cualquier contenido u otro material usado o exhibido a través del Servicio y acepta limitar sus reclamaciones a reclamaciones por daños monetarios, con las limitaciones establecidas en la cláusula 7 (de ser el caso).</p>",
+
+
+      "point-26-subtitle"               : "10.7. Fuerza mayor",
+      "point-26-content"                : "<p>Unusual Wonder Studios no será responsable de ningún retraso o incumplimiento a consecuencia de causas fuera del control razonable de Unusual Wonder Studios incluyendo, entre otros, cualquier incumplimiento de las presentes debido a circunstancias imprevistas o ajenas al control de Unusual Wonder Studios, como actos fortuitos, guerra, terrorismo, embargos, acciones de autoridades civiles o militares, incendios, inundaciones, accidentes, huelgas, o carencias de instalaciones de transporte, de combustible, de energía, de mano de obra o de materiales.</p>"
+
+    }
+    ,"privacy"                          :
+    {
+      "title"                           : "Políticas de Privacidad",
+      "point-0-title"                   : "Bases",
+      "point-0-content"                 : "<p>Actualizado el 27 de julio de 2015 <br><br>Bienvenido a Unusual Wonder Studios SL. Su privacidad es importante para nosotros.<br> <br>Unusual Wonder Studios SL y sus filiales («Unusual Studios», «nosotros», «nuestro(-s)» o «nos») estamos comprometidos con la protección del derecho a la privacidad de nuestros usuarios («usuarios» o «usted(-es)»). La presente política de privacidad (la «Política») describe las formas en que recopilamos, almacenamos, usamos y gestionamos la información, incluida la información personal, que usted nos proporciona o que nosotros recopilamos en relación con nuestros sitios web, incluyendo www.unusualwonder.com, www.epiceleven.com, www.unusualstudios.com (los «Sitios Web») o cualquier juego de Unusual Wonder Studios facilitado en una plataforma móvil (por ejemplo, iOS y Android) (en conjunto, el «Servicio»). Tenga en cuenta que el alcance de esta Política se limita a la información recopilada o recibida por Unusual Wonder Studios mediante el uso que usted haga del Servicio. Unusual Wonder Studios no es responsable de las acciones de terceros, sean personas o empresas, del contenido de los sitios web de estos, del uso de la información que usted les proporcione, ni de ningún producto o servicio que estos puedan ofrecer. Los enlaces a estos sitios web no representan nuestro patrocinio de estas personas o empresas ni nuestra afiliación a tales personas o empresas.<br><br> Al usar el Servicio, usted acepta expresamente esta Política y el procesamiento de sus datos, incluida su información personal, del modo dispuesto en esta Política. Si no está de acuerdo con estos términos, no use el Servicio.<br> Si tiene dudas o preguntas sobre nuestras prácticas o política de privacidad, póngase en contacto con nosotros en privacy@unusualwonder.com. Si tiene algún asunto pendiente sobre privacidad o sobre el uso de datos que no hayamos resuelto satisfactoriamente, póngase en contacto con TRUSTe en  https://feedback-form.truste.com/watchdog/request.</p>",
+      "point-1-title"                   : "Recopilación y tratamiento de la información",
+      "point-1-content"                 : "<p>Unusual Wonder Studios recopila información del modo descrito a continuación. Los objetivos principales para los que Unusual Wonder Studios recopila y usa la información son crear su cuenta, prestarle los Servicios, mejorar nuestro Servicio, ponernos en contacto con usted, realizar investigaciones y crear informes para uso interno. Almacenamos información en servidores situados en Irlanda a través de Amazon Web Services y podemos almacenar información en servidores y equipos en otros países.<br><br>Para usar su foro comunitario, debe registrarse y proporcionar un nombre de usuario, una contraseña y una dirección de correo electrónico.<br><br>Si desea enviar un currículum vítae, le ofrecemos la opción de subirlo a la página web y recopilaremos su nombre, dirección de correo electrónico y número de teléfono celular. Usamos esta información para ponernos en contacto con usted con el fin de programar una entrevista o determinar si es apto para el puesto que solicitó.</p>",
+      "point-2-title"                   : "Sitios Web de Unusual Wonder Studios",
+      "point-2-content"                 : "<p>Nuestro Sitio Web ofrece blogs de acceso público, mensajes privados o foros comunitarios. Tenga en cuenta que cualquier información que usted proporcione en estas áreas puede ser leída, recopilada y usada por terceros que tengan acceso a dichas áreas. Si desea la eliminación de su información personal de nuestro blog o foro comunitario, póngase en contacto con nosotros en privacy@unusualwonder.com.  En los casos en que no sea posible eliminar su información personal, se lo comunicaremos junto con el motivo.<br><br>Si usted elige usar Facebook Connect para utilizar nuestro blog o foros comunitarios, la información que proporcione se liga a su cuenta de Facebook. Se deberá poner en contacto directamente con Facebook para solicitar la eliminación de información personal de nuestro blog o foro comunitario.</p>",
+      "point-3-title"                   : "Foros/Mensajes privados",
+      "point-3-content"                 : "<p>EPIC ELEVEN se compromete a cumplir con el deber de secreto respecto a los datos de carácter personal. A su vez, dichos datos serán guardados adoptando las medidas de índole técnica y organizativa necesarias que garanticen la seguridad de los datos de carácter personal. Todo ello, con la finalidad de evitar su alteración, pérdida, tratamiento o acceso no autorizado, teniendo siempre en cuenta el estado de la tecnología, de acuerdo con lo establecido por el RLOPD.</p>",
+      "point-4-title"                   : "Redes sociales (funciones) y miniprogramas (widgets)",
+      "point-4-content"                 : "<p>Nuestro Sitio Web incluye funciones de redes sociales, como el botón «Me gusta» de Facebook y miniprogramas como el botón «Compartir» u otros miniprogramas interactivos que funcionan en nuestro Sitio Web. Es posible que estas funciones recopilen su dirección de protocolo de Internet (IP, por sus siglas en inglés), la página que está visitando en nuestro Sitio Web y pueden instalar una cookie para permitir que la función se desempeñe adecuadamente. Las funciones de redes sociales y los miniprogramas están alojados ya sea con un tercero o directamente en nuestro Sitio Web. Las interacciones que usted realiza con estas funciones se rigen por las políticas de privacidad de las empresas que las proporcionen.</p>",
+      "point-5-title"                   : "Plataformas iOS y Android",
+      "point-5-content"                 : "<p>Cuando usted usa cualquiera de los juegos o las aplicaciones de Unusual Wonder Studios en una plataforma móvil, podemos recopilar y registrar determinada información como el identificador único de su dispositivo (persistente / no persistente), el tipo de hardware, la dirección de control de acceso al medio (MAC, por sus siglas en inglés), la identidad internacional de equipo móvil (IMEI, por sus siglas en inglés), la versión de su sistema operativo (OS, por sus siglas en inglés), el nombre de su dispositivo, su dirección de correo electrónico (si se ha conectado a Facebook o Google+) y su ubicación (a partir de su dirección de protocolo de Internet [IP, por sus siglas en inglés]). Esta información nos resulta útil para solucionar problemas y nos ayuda a entender las tendencias de uso.<br><br> Podemos recopilar información sobre su ubicación para proporcionarle la versión correcta de la aplicación. No compartiremos esta información con ningún tercero. Si ya no desea permitir que usemos esta información o realicemos el seguimiento de la misma, puede desactivarlo a nivel dispositivo. Tenga en cuenta que es posible que la aplicación no funcione adecuadamente si no podemos determinar dónde se encuentra (en qué país en concreto).<br><br> Asimismo, creamos una identificación (ID) de usuario única para realizar el seguimiento de su uso de nuestro Servicio. Esta ID de usuario única se almacena junto con la información de su perfil a fin de realizar el seguimiento de los juegos de Unusual Wonder Studios a los que usted juega.<br><br> Puede iniciar sesión en nuestro Sitio Web utilizando servicios de inicio de sesión (SN, por sus siglas en inglés), como Facebook Connect, LinkedIn, Game Center de Apple o un proveedor de Open ID. Estos servicios autenticarán su identidad y le darán la opción de compartir determinada información personal con nosotros, como su nombre, dirección de correo electrónico y curriculum vitae para el llenado previo de nuestro formulario de inscripción. Los servicios como Facebook Connect le ofrecen la opción de publicar información sobre sus actividades en este sitio web en su página de perfil para compartirla con otras personas de su red.<br><br> Podemos recopilar y registrar información a través del servicio SN, de conformidad con las políticas y condiciones de dicho servicio SN. La información que recopilamos cuando conecta su cuenta de usuario con un servicio SN puede incluir: (1) su nombre, (2) su número de identificación de usuario o su nombre de usuario con su servicio SN, (3) zona, ciudad, estado y país, (4) sexo, (5) fecha de nacimiento, (6) dirección de correo electrónico, (7) foto de perfil o su localizador uniforme de recursos (URL, por su siglas en inglés) y (8) los números de identificación de usuario del servicio SN de sus amigos que también estén conectados a los juegos de Unusual Wonder Studios.<br><br> Si desea que eliminemos la información que recibimos sobre usted de Facebook, Game Center o Google+ póngase en contacto con nosotros en  privacy@unusualwonder.com.</p>",
+      "point-6-title"                   : "Invitaciones a amigos",
+      "point-6-content"                 : "<p>Unusual Wonder Studios puede ofrecerle la oportunidad de invitar a sus contactos de un servicio SN (como sus amigos de Facebook) para que se pueda encontrar a estos contactos en juegos de Unusual Wonder Studios o para que usted pueda invitarles a que se unan a usted en juegos de Unusual Wonder Studios. Esta información de contacto solo se usará para enviar comunicaciones al destinatario. Tanto usted como el tercero pueden ponerse en contacto con nosotros en privacy@unusualwonder.com para solicitar que eliminemos esa información de nuestra base de datos en la medida en que Unusual Wonder Studios almacena tal información.</p>",
+      "point-7-title"                   : "Atención al cliente",
+      "point-7-content"                 : "<p>Podemos recopilar su dirección de correo electrónico cuando se pone en contacto con nuestro grupo de atención al cliente y podemos usar esa dirección de correo electrónico para comunicarnos con usted en relación a su experiencia como participante de juegos Unusual Wonder Studios y avisarle sobre noticias y promociones de la empresa. Si ya no desea recibir determinados avisos vía correo electrónico, en cualquier momento puede optar por dejar de recibirlas haciendo clic en el enlace de cancelación de suscripción que se encuentra al pie de cada correo electrónico o enviándonos un correo electrónico a privacy@unusualwonder.com.</p>",
+      "point-8-title"                   : "Notificaciones automáticas",
+      "point-8-content"                 : "<p>De vez en cuando, es posible que le enviemos notificaciones automáticas a través de nuestras aplicaciones móviles para hacerle llegar actualizaciones de juegos, puntuaciones altas y otras notificaciones relacionadas con el servicio que pueden ser importantes para usted. En cualquier momento puede optar por dejar de recibir este tipo de notificaciones desactivándolas en la configuración a nivel dispositivo.</p>",
+      "point-9-title"                   : "Recopilación de datos de juegos",
+      "point-9-content"                 : "<p>Cada vez que usted participa en nuestros juegos recopilamos datos sobre todas sus interacciones con el juego y con los otros participantes del juego a través de archivos de registro del servidor. Esta información puede estar asociada con su identificación (ID) de jugador, su dirección de protocolo de Internet (IP, por sus siglas en inglés) o la identificación de su dispositivo con el fin de prestar nuestros Servicios y mejorarlos. Estos datos se almacenan en Amazon Web Services.</p>",
+      "point-10-title"                  : "Recopilación de otra información",
+      "point-10-content"                : "<p>También podemos obtener información a través de (1) su acceso y participación en foros del Servicio, (2) su participación en encuestas relacionadas al Servicio o (3) su participación en un sorteo o un concurso a través del Servicio.<br><br>Podemos ofrecerle la oportunidad de participar en sorteos o concursos a través de nuestro Servicio. Si participa, le pediremos que nos proporcione determinada información personal. La participación en estos sorteos y concursos es voluntaria y, por lo tanto, puede decidir revelar o no esta información. La información solicitada normalmente incluye información de contacto (como nombre y dirección de envío) e información demográfica (como el código postal).<br>Usamos esta información para notificar a los ganadores y sobre los premios, supervisar el tráfico o personalizar el Servicio. Podemos usar un proveedor de servicios externo para llevar a cabo estos sorteos o concursos; dicha empresa tiene prohibido usar la información personal de los usuarios para cualquier otro fin. </p>",
+      "point-11-title"                  : "Tecnologías de rastreo",
+      "point-11-content"                : "<p>Nosotros y nuestros socios de mercadotecnia y de subcontratación, filiales o proveedores de servicios de análisis utilizamos tecnologías como cookies, contadores de visitas, secuencias de comandos, y etiquetas para identificar una computadora/dispositivo de un usuario y para «recordar» información sobre su visita, como sus preferencias o un nombre de usuario y una contraseña. La información contenida en una cookie puede estar vinculada a su información personal, como su identificación (ID) de usuario, y su finalidad puede consistir en mejorar la calidad de nuestro Servicio, personalizar recomendaciones en función de sus intereses y facilitarle el uso del Servicio. Puede deshabilitar las cookies en cualquier momento, aunque es posible que no pueda usar o tener acceso a funciones del Servicio.</p> <p>Podemos mostrar anuncios de terceros que envíen cookies a su computadora/dispositivo para poder realizar un seguimiento del contenido al que accede y de los anuncios que ve. Puesto que las empresas de publicidad externas asocian su computadora/dispositivo con un número, podrán reconocer esta computadora/dispositivo cada vez que le envíen un anuncio. Estos anunciantes pueden usar información sobre sus visitas a nuestro Servicio y a sitios web y aplicaciones de terceros para evaluar el desempeño publicitario y mostrar anuncios sobre productos o servicios que le pueden interesar. La presente Política no es aplicable a las prácticas sobre la recopilación de datos de estos anunciantes externos y no nos hacemos responsables de ellas; además, le recomendamos que consulte las políticas de la privacidad de estos anunciantes para obtener más información sobre su uso de cookies y demás tecnología. </p>",
+      "point-12-title"                  : "Análisis móviles",
+      "point-12-content"                : "<p>Utilizamos software de análisis móvil que nos permite entender mejor el funcionamiento de nuestro software móvil en su dispositivo. Este software puede registrar información como la frecuencia con que usted utiliza la aplicación, la actividad que tiene lugar dentro de la aplicación, el uso agregado, datos de rendimiento y el lugar desde donde se descargó la aplicación. No vinculamos la información que almacenamos con el software de análisis a ninguna información personal que usted envíe por la aplicación móvil.</p>",
+      "point-13-title"                  : "Servicios de terceros",
+      "point-13-content"                : "<p>Nuestros servicios pueden contener herramientas de seguimiento de terceros de parte de nuestros proveedores de servicios, como por ejemplo Google Analytics y Mixpanel. Estos terceros pueden usar cookies, interfaces de programación de aplicaciones (API, por sus siglas en inglés) y kits de desarrollo de software (SDK, por sus siglas en inglés) en nuestros servicios que les permiten recopilar y analizar la información de usuarios en nuestro nombre. Estos terceros pueden tener acceso a información como su identificador de dispositivo, dirección de control de acceso al medio (MAC, por sus siglas en inglés), identidad internacional de equipo móvil (IMEI, por sus siglas en inglés), zona (ubicación específica donde se habla un idioma determinado), información de geolocalización y dirección de protocolo de Internet (IP, por sus siglas en inglés) con el fin de prestar sus servicios bajo sus respectivas políticas de privacidad. Nuestra política de privacidad no cubre el uso de herramientas de seguimiento de terceros. No tenemos acceso a estos terceros ni control sobre dichos terceros.</p>",
+      "point-14-title"                  : "Redes publicitarias",
+      "point-14-content"                : "<p>Podemos mostrar anuncios en nuestro Servicio. Los anunciantes pueden recopilar y usar información sobre usted, como su actividad en la sesión del Servicio, el identificador del dispositivo, la dirección de control de acceso al medio (MAC, por sus siglas en inglés), la identidad internacional de equipo móvil (IMEI, por sus siglas en inglés), información de geolocalización y la dirección de protocolo de Internet (IP, por sus siglas en inglés). Pueden usar esta información para mostrar anuncios que pueden ser de su interés.</p> <p>Asimismo, es posible que usted vea nuestros juegos anunciados en otros servicios. Tras hacer clic en uno de estos anuncios e instalar nuestro juego, usted se convertirá en un usuario de nuestro Servicio. Para verificar las instalaciones, es posible que se comparta un identificador de dispositivo con el anunciante. </p>",
+      "point-15-title"                  : "Cómo usamos la información",
+      "point-15-content"                : "<p>Usamos la información recopilada a través de nuestro Servicio para los fines descritos en esta Política o que se le comuniquen en relación con nuestro Servicio. Por ejemplo, podemos usar su información para:</p> <ul><li>Crear cuentas de juegos y permitir que los usuarios participen en nuestros juegos;</li><li>Identificar y sugerir conexiones con otros usuarios de Unusual Wonder Studios;</li><li>Operar y mejorar nuestro Servicio;</li> <li>Conocerle a usted y entender sus preferencias para mejorar su experiencia y gozo al usar nuestro Servicio;</li><li>Responder sus comentarios y preguntas, y prestar servicio de atención al cliente;</li><li>Proporcionar y entregar los productos y servicios que usted solicite;</li><li> Enviarle información relacionada con el servicio, incluyendo confirmaciones, facturas, notificaciones técnicas, actualizaciones, alertas de seguridad y mensajes administrativos y de apoyo técnico;</li><li> Informarle acerca de promociones, premios, próximos eventos y otras novedades sobre los productos y servicios ofrecidos por Unusual Wonder Studios y nuestros socios seleccionados;</li> <li>Permitir que se comunique con otros usuarios;</li><li> Vincularla o combinarla con otra información que obtengamos de terceros para ayudarnos a entender sus preferencias y prestarle mejores servicios.</li></ul></p> ",
+      "point-16-title"                  : "Divulgación de su información",
+      "point-16-content"                : "<p>Unusual Wonder Studios no comparte su información personal salvo que usted lo haya autorizado o salvo del modo descrito a continuación:</p><p>Con su consentimiento, por ejemplo, cuando acepte que compartamos su información con terceros para los fines de mercadotecnia de estos, de conformidad con lo establecido en sus políticas de privacidad independientes. Si ya no desea darnos permiso de compartir su información con terceros, póngase en contacto con nosotros en privacy@unusualwonder.com.</p><p>Si ya no desea recibir dichas comunicaciones de terceros, póngase en contacto directamente con ese tercero.</p><p>Unusual Wonder Studios puede contratar a otras empresas o personas para prestar servicios en su nombre. Un ejemplo de estos servicios incluye análisis de datos y prestación de servicios de atención al cliente. Estos agentes y proveedores de servicios pueden tener acceso a toda su información personal en relación con la prestación de servicios de Unusual Wonder Studios.</p><p>Podemos revelar su información según lo permitido por la ley, por ejemplo para dar cumplimiento a una citación o cuando creamos que su comunicación es conveniente al objeto del cumplimiento de la ley; investigar fraudes, responder a una solicitud de algún órgano gubernamental, hacer valer o aplicar nuestros derechos; o proteger nuestros derechos, propiedad o seguridad, o la de nuestros usuarios o terceros. Esto incluye intercambiar información con otras empresas y organizaciones para la protección contra el fraude.</p><p>Unusual Wonder Studios puede compartir su información con otra empresa en relación con cualquier fusión, con cualquier venta de nuestros activos o con algún financiamiento o adquisición de la totalidad o una parte de nuestra compañía. Se le notificará por correo electrónico o mediante un aviso en nuestro Sitio Web sobre cualquier cambio que se produzca en la titularidad o en los usuarios de su información personal.</p><> Podemos compartir información anónima o general sobre usted con anunciantes, editores, socios comerciales, patrocinadores y otros terceros.</p> ",
+      "point-17-title"                  : "Cambios en la Política",
+      "point-17-content"                : "<p>Podemos actualizar esta política de privacidad para reflejar los cambios en nuestras prácticas relacionadas con el tratamiento de la información. Si realizamos algún cambio importante, se lo notificaremos por correo electrónico (enviado a la dirección de correo electrónico especificada en su cuenta) o a través de un aviso en este sitio web antes de que el cambio entre en vigor. Le recomendamos que revise esta página periódicamente para obtener la información más reciente sobre nuestras prácticas de privacidad.</p>",
+      "point-18-title"                  : "Seguridad",
+      "point-18-content"                : "<p>Unusual Wonder Studios adopta medidas razonables para proteger su información ante un acceso no autorizado o contra el extravío, el uso indebido o la alteración de la información por parte de terceros.</p><p> Aunque nos esforzamos de buena fe en almacenar la información recopilada en el Servicio en un entorno de funcionamiento seguro no disponible al público, no podemos garantizar la seguridad absoluta de esta información durante su transmisión o su almacenamiento en nuestros sistemas. Además, si bien intentamos garantizar la integridad y la seguridad de nuestra red y de nuestros sistemas, no podemos garantizar que nuestras medidas de seguridad impidan que los piratas informáticos obtengan acceso a esta información de forma ilegal. No garantizamos ni declaramos que su información estará protegida contra extravío, uso indebido o alteración por parte de terceros. Ningún método de transmisión por Internet ni ningún método de almacenamiento electrónico es 100 % seguro. En consecuencia, no podemos garantizar su seguridad absoluta.</p>",
+      "point-19-title"                  : "Acceso a su información personal",
+      "point-19-content"                : "<p>Si su información personal cambia, o si ya no desea nuestro servicio, puede corregir, actualizar o eliminar errores realizando el cambio en la configuración de su cuenta o poniéndose en contacto con nosotros en privacy@unusualwonder.com.  Responderemos a su solicitud de acceso en un plazo de 30 días.</p>",
+      "point-20-title"                  : "Conservación de datos",
+      "point-20-content"                : "<p>Conservaremos su información mientras su cuenta esté activa o mientras resulte necesario para prestarle los servicios. Si desea cancelar su cuenta o solicitar que ya no usemos su información para prestarle los servicios, póngase en contacto con nosotros en privacy@unusualwonder.com.  Conservaremos y usaremos su información según sea necesario para cumplir nuestras obligaciones legales, resolver conflictos y hacer valer nuestros acuerdos.</p>",
+      "point-21-title"                  : "Nuestra Política respecto a los niños",
+      "point-21-content"                : "<p>No recopilamos ni solicitamos información personal de forma intencionada a ningún menor de 13 años de edad ni permitimos a estas personas, a sabiendas, el uso de nuestro Servicio. Si usted es menor de 13 años de edad, no nos envíe ninguna información sobre usted, incluyendo su nombre, dirección, número de teléfono o dirección de correo electrónico. Nadie menor de 13 años de edad puede proporcionar ninguna información personal. En dado caso que tengamos conocimiento de haber recopilado información personal de un niño menor de 13 años de edad, eliminaremos esta información tan rápido como sea posible. Si cree que es posible que tengamos alguna información de o sobre un niño menor de 13 años de edad, póngase en contacto con nosotros en privacy@unusualwonder.com.</p>",
+      "point-22-title"                  : "Cancelación de opciones de mercadotecnia",
+      "point-22-content"                : "<p>Usted puede cancelar las opciones de envío de correos electrónicos promocionales de parte de nosotros siguiendo las instrucciones especificadas en dichos correos electrónicos o enviándonos un correo electrónico a privacy@unusualwonder.com.  Si cancela estas opciones, es posible que le sigamos enviado correos electrónicos no promocionales, como correos electrónicos sobre sus cuentas o sobre nuestras relaciones comerciales en curso.</p><p>También puede cancelar las opciones de envío de notificaciones mediante servicio de envío de mensajes de texto breves (SMS, por sus siglas en inglés), ya sea mediante un SMS o enviándonos un correo a privacy@unusualwonder.com.</p>",
+      "point-23-title"                  : "Información de contacto",
+      "point-23-content"                : "<p>Unusual Wonder Studios SL (identificación comercial B85445716),<br>Avda. Brasil, 23, 5-A.<br> Si tiene alguna pregunta respecto a esta Política, póngase en contacto con nosotros en privacy@unusualwonder.com.</p>"
+
+
+
+    }
+    ,"legals"                           :
+    {
+      "point-1-title"                   : "Datos de identificación",
+      "point-1-content"                 : "<p>Usted está visitando la página web <a href=\"http://www.epiceleven.com\" target=\"_blank\">www.epiceleven.com</a>, titularidad de FANTASY SPORTS GAMES, S.L (en adelante EPIC ELEVEN). La misma está domiciliada en la Avenida de Brasil, 23, Oficinal 5-A, 28020, Madrid, siendo su e-mail de contacto: <a href=\"mailto:support@epiceleven.com\">support@epiceleven.com</a> identificada con C.I.F. B-87028445.</p>",
+
+      "point-2-title"                   : "Aceptación del Usuario",
+      "point-2-content"                 : "<p>Este Aviso Legal regula el acceso y utilización de la página web <a href=\"http://www.epiceleven.com\" target=\"_blank\">www.epiceleven.com</a> (en adelante la “Web”) que EPIC ELEVEN pone a disposición de los usuarios de Internet. El acceso a la misma implica la aceptación sin reservas del presente Aviso Legal. Asimismo, EPIC ELEVEN puede ofrecer a través de la Web, servicios que podrán encontrarse sometidos a unas condiciones particulares propias sobre las cuales se informará al Usuario en cada caso concreto.</p>",
+
+      "point-3-title"                   : "Acceso a la Web y Contraseñas",
+      "point-3-content"                 : "<p>Al acceder a la página web de EPIC ELEVEN el usuario declara tener capacidad suficiente para navegar por la mencionada página web, esto es ser mayor de dieciocho años y no estar incapacitado. A su vez, de manera general no se exige la previa suscripción o registro como Usuario para el acceso y uso de la Web, sin perjuicio de que para la utilización de determinados servicios o contenidos de la misma se deba realizar dicha suscripción o registro. Los datos de los Usuarios obtenidos a través de la suscripción o registro a la presente Web, están protegidos mediante contraseñas elegidas por ellos mismos. El Usuario se compromete a mantener su contraseña en secreto y a protegerla de usos no autorizados por terceros. El Usuario deberá notificar a EPIC ELEVEN inmediatamente cualquier uso no consentido de su cuenta o cualquier violación de la seguridad relacionada con el servicio de la Web, de la que haya tenido conocimiento. EPIC ELEVEN adopta las medidas técnicas y organizativas necesarias para garantizar la protección de los datos de carácter personal y evitar su alteración, pérdida, tratamiento y/o acceso no autorizado, habida cuenta del estado de la técnica, la naturaleza de los datos almacenados y los riesgos a que están expuestos, todo ello, conforme a lo establecido por la legislación española de Protección de Datos de Carácter Personal. EPIC ELEVEN no se hace responsable frente a los Usuarios, por la revelación de sus datos personales a terceros que no sea debida a causas directamente imputables a EPIC ELEVEN, ni por el uso que de tales datos hagan terceros ajenos a EPIC ELEVEN.</p>",
+      "point-4-title"                   : "Uso correcto de la Web",
+      "point-4-content"                 : "<p>El Usuario se compromete a utilizar la Web, los contenidos y servicios de conformidad con la Ley, el presente Aviso Legal, las buenas costumbres y el orden público. Del mismo modo el Usuario se obliga a no utilizar la Web o los servicios que se presten a través de ésta con fines o efectos ilícitos o contrarios al contenido del presente Aviso Legal, lesivos de los intereses o derechos de terceros, o que de cualquier forma pueda dañar, inutilizar o deteriorar la Web o sus servicios o impedir un normal disfrute de la Web por otros Usuarios. Sin perjuicio de lo anterior, EPIC ELEVEN puede ofrecer a través de la web servicios adicionales que cuenten con su propia regulación adicional. En estos casos, se informará adecuadamente a los Usuarios en cada caso concreto. Asimismo, el Usuario se compromete expresamente a no destruir, alterar, inutilizar o, de cualquier otra forma, dañar los datos, programas o documentos electrónicos que se encuentren en la Web. El Usuario se compromete a no obstaculizar el acceso de otros Usuarios al servicio de acceso mediante el consumo masivo de los recursos informáticos a través de los cuales EPIC ELEVEN presta el servicio, así como realizar acciones que dañen, interrumpan o generen errores en dichos sistemas. El Usuario se compromete a no introducir programas, virus, macros, applets, controles ActiveX o cualquier otro dispositivo lógico o secuencia de caracteres que causen o sean susceptibles de causar cualquier tipo de alteración en los sistemas informáticos de EPIC ELEVEN o de terceros.</p>",
+      "point-5-title"                   : "Enlaces de terceros",
+      "point-5-content"                 : "<p>El presente Aviso Legal se refiere únicamente a la Web y contenidos de EPIC ELEVEN, y no se aplica a los enlaces o a las páginas web de terceros accesibles a través de la Web. Los destinos de dichos enlaces no están bajo el control de EPIC ELEVEN, y el mismo no es responsable del contenido de ninguna de las páginas Web de destino de un enlace, ni de ningún enlace incluido en una página Web a la que se llegue desde la Web de EPIC ELEVEN, ni de ningún cambio o actualización de dichas páginas. Estos enlaces se proporcionan únicamente para informar al Usuario sobre la existencia de otras fuentes de información sobre un tema concreto, y la inclusión de un enlace no implica la aprobación de la página Web enlazada por parte de EPIC ELEVEN.</p>",
+      "point-6-title"                   : "Propiedad intelectual",
+      "point-6-content"                 : "<p>EPIC ELEVEN advierte que los derechos de propiedad intelectual de la Web, su código fuente, diseño, estructura de navegación, bases de datos y los distintos elementos en ésta contenidos son titularidad exclusiva de EPIC ELEVEN, a quien corresponde el ejercicio exclusivo de los derechos de explotación de los mismos en cualquier forma y, en especial, con carácter enunciativo que no limitado, los derechos de reproducción, copia, distribución, transformación, comercialización, y comunicación pública. La reproducción, copia, distribución, transformación, comercialización, y comunicación pública parcial o total de la información contenida en esta Web, queda estrictamente prohibida sin la previa autorización expresa y por escrito de EPIC ELEVEN, y constituye una infracción de los derechos de propiedad intelectual e industrial.</p>",
+      "point-7-title"                   : "Foros, Blogs e imágenes",
+      "point-7-content"                 : "<p>EPIC ELEVEN ofrece a los Usuarios la posibilidad de introducir comentarios y/o de remitir fotografías, para incorporarlos en las secciones correspondientes. La publicación de los comentarios y/o las fotografías está sujeta al presente Aviso Legal. La persona identificada en cada caso como la que ha realizado los comentarios y/o ha enviado las fotografías, es responsable de los mismos. Los comentarios y/o las fotografías, no reflejan la opinión de EPIC ELEVEN, ni el mismo hace declaraciones a este respecto. EPIC ELEVEN no se hará responsable, a no ser en aquellos extremos a los que le obligue la Ley, de los errores, inexactitudes o irregularidades que puedan contener los comentarios y/o las fotografías, así como de los daños o perjuicios que se pudieran ocasionar por la inserción de los comentarios y/o las fotografías en el Foro o en las demás secciones de la Web que permitan esta clase de servicios.El Usuario suministrador del texto y/o fotografías cede a EPIC ELEVEN los derechos para su reproducción, uso, distribución, comunicación pública en formato electrónico, en el marco de las actividades para esta web. Y, en especial, el Usuario cede dichos derechos para el emplazamiento del texto y/o las fotografías en la Web, con el fin de que los demás Usuarios del sitio Web puedan acceder a los mismos. El Usuario suministrador declara ser el titular de los derechos sobre los textos o fotografías o, en su caso, garantiza que dispone de los derechos y autorizaciones necesarios del autor o propietario del texto y/o fotografías, para su utilización por parte de EPIC ELEVEN a través de la Web. EPIC ELEVEN no se hará responsable, a no ser en aquellos extremos a los que obligue la Ley, de los daños o perjuicios que se pudieran ocasionar por el uso, reproducción, distribución o comunicación pública o cualquier tipo de actividad que realice sobre los textos y/o fotografías que se encuentren protegidos por derechos de propiedad intelectual pertenecientes a terceros, sin que el Usuario haya obtenido previamente de sus titulares la autorización necesaria para llevar a cabo el uso que efectúa o pretende efectuar. Asimismo, EPIC ELEVEN se reserva el derecho de retirar de forma unilateral los comentarios y/o fotografías albergados en cualquier otra sección de la Web, cuando EPIC ELEVEN lo estime oportuno. EPIC ELEVEN no será responsable por la información enviada por el Usuario cuando no tenga conocimiento efectivo de que la información almacenada es ilícita o de que lesiona bienes o derechos de un tercero susceptibles de indemnización. En el momento que EPIC ELEVEN tenga conocimiento efectivo de que aloja datos como los anteriormente referidos, se compromete a actuar con diligencia para retirarlos o hacer imposible el acceso a ellos. En todo caso, para interponer cualquier reclamación relacionada con los contenidos insertados en el Foro o secciones análogas, puede hacerlo dirigiéndose a la siguiente dirección de correo electrónico: <a href=\"mailto:support@epiceleven.com\">support@epiceleven.com</a>.</p>",
+      "point-8-title"                   : "Modificaciones de las condiciones de uso",
+      "point-8-content"                 : "<p>EPIC ELEVEN se reserva el derecho de modificar, desarrollar o actualizar en cualquier momento y sin previa notificación las condiciones de uso de la mencionada página web. El usuario quedará obligado automáticamente por las condiciones de uso que se hallen vigentes en el momento en que acceda a la web, por lo que deberá leer periódicamente dichas condiciones de uso.</p>",
+      "point-9-title"                   : "Régimen de responsabilidad",
+      "point-9-content"                 : "<p>La utilización de la página web es responsabilidad única y exclusiva de cada Usuario, por lo que será responsabilidad suya cualquier infracción o cualquier perjuicio que pueda causar por el uso de dicha página. EPIC ELEVEN, sus socios, colaboradores, empleados y cualquier otro representante o tercero quedan pues exonerados de cualquier responsabilidad que pudiera conllevar las acciones del Usuario. EPIC ELEVEN, aún cuando ponga todo su esfuerzo en facilitar siempre información actualizada mediante su página web, no garantiza la inexistencia de errores o inexactitudes en ninguno de los contenidos, siempre que sea por razones no imputables de forma directa a EPIC ELEVEN. Por lo anterior, será el Usuario el único responsable frente a todas aquellas reclamaciones o acciones legales iniciadas contra EPIC ELEVEN basadas en el uso de la página web o sus contenidos por parte del usuario, siempre que esta utilización se haya realizado de forma ilícita, vulnerando derechos de terceros, o causando cualquier tipo de perjuicio, asumiendo por ello cuantos gastos, costes o indemnizaciones en los que pueda incurrir EPIC ELEVEN.</p>",
+      "point-10-title"                  : "Ley aplicable y Jurisdicción",
+      "point-10-content"                : "<p>Esta Web se rige por la legislación española. EPIC ELEVEN y el Usuario, con renuncia expresa a su propio fuero, si lo tuvieren, se someten a la jurisdicción de los juzgados y tribunales de la ciudad de Madrid (España). Esto siempre que este no sea un usuario final, siendo el foro que la ley estipula el domicilio del demandado.</p>"
+    }
+    ,"favorites"                        :
+    {
+      "title"                           : "Ojeador",
+      "spanish-league"                  : "La Liga",
+      "premier-league"                  : "Premier"
+    }
+    ,"teamsfilter"                      :
+    {
+      "all-teams"                       : "Todos los<br>Equipos",
+      "show-teams"                      : "Mostrar equipos",
+      "hide-teams"                      : "Ocultar equipos"
+    }
+    ,"notificationsmodal"               :
+    {
+      "congratulations"                 : "¡Enhorabuena!",
+      "you-earned"                      : "Has conseguido...",
+      "aditional-achievement-single"    : "Has ganado 1 logro más...",
+      "aditional-achievements"          : "Has ganado @NUM_ACHIEVEMENTS logros más...",
+      "go-notifications"                : "Ir a notificaciones"
+    }
+  }
+}

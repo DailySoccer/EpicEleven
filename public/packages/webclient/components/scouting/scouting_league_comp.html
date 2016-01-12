@@ -1,0 +1,16 @@
+<!-- Este sera el selector de partidos en "grande", con botones-->
+<teams-filter team-list="teamList" selected-option="teamFilter" id-sufix="idSufix"></teams-filter>
+
+<div class="enter-contest-soccer-players-wrapper">
+  <div class="enter-contest-soccer-players">
+
+    <soccer-players-filter name-filter="nameFilter" field-pos-filter="fieldPosFilter" only-favorites="onlyFavorites"></soccer-players-filter>
+
+    <soccer-players-list soccer-players="allSoccerPlayers"
+                         lineup-filter="favoritesPlayers" manager-level="10" 
+                         favorites-list="favoritesPlayers" only-favorites="onlyFavorites"
+                         field-pos-filter="fieldPosFilter" name-filter="nameFilter" match-filter="teamFilter"
+                         on-row-click="onRowClick(soccerPlayerId)"
+                         on-action-click="onSoccerPlayerActionButton(soccerPlayer)"></soccer-players-list>
+  </div>
+</div>

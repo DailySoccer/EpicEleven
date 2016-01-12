@@ -1,0 +1,34 @@
+<div id="leaderboard-wrapper">
+
+  <div class="default-section-header">{{getLocalizedText('title')}}</div>
+
+  <ul id="#leaderboardTabs" class="leaderboard-tabs" role="tablist">
+    <li id="points-tab" class="active"><a class="leaderboard-tab top-points-tab"   role="tab" data-toggle="tab" ng-click="gotoSection('points')">{{trueskillTabTitle}}</a></li>
+    <li id="money-tab">                <a class="leaderboard-tab top-money-tab"    role="tab" data-toggle="tab" ng-click="gotoSection('money')">{{goldTabTitle}}</a></li>
+    <li id="achievements-tab">         <a class="leaderboard-tab achievements-tab" role="tab" data-toggle="tab" ng-click="gotoSection('achievements')">{{achievementsTabTitle}}</a></li>
+  </ul>
+
+  <div class="tabs">
+    <div class="tab-content">
+
+      <div class="tab-pane active" id="points-content">
+
+        <leaderboard-table share-info="sharingInfoTrueSkill" show-header="true" highlight-element="playerPointsInfo" table-elements="pointsUserList" rows="USERS_TO_SHOW" points-column-label="pointsColumnName" hint="playerPointsHint" ng-show="!loadingService.isLoading"></leaderboard-table>
+
+      </div>
+
+      <div class="tab-pane" id="money-content">
+
+        <leaderboard-table share-info="sharingInfoGold" show-header="true" highlight-element="playerMoneyInfo" table-elements="moneyUserList" rows="USERS_TO_SHOW" points-column-label="moneyColumnName" hint="playerMoneyHint" ng-show="!loadingService.isLoading"></leaderboard-table>
+
+      </div>
+
+      <div class="tab-pane" id="achievements-content">
+
+        <achievement-list ng-show="!loadingService.isLoading"></achievement-list>
+
+      </div>
+    </div>
+  </div>
+
+</div>

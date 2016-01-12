@@ -1,0 +1,33 @@
+<section>
+
+  <contest-header-f2p id="contestHeader" contest="contest" contest-id="contestId"></contest-header-f2p>
+
+  <div id="viewContestRoot" ng-switch="scrDet.isXsScreen" >
+    <div ng-switch-when="true">
+     <!-- Tabs de la versión XS -->
+      <ul class="view-contest-tabs" id="liveContestTab" >
+        <li class="active"> <a id="userFantasyTeamTab" ng-click="tabChange('userFantasyTeam')">{{getLocalizedText("yourlineup")}}</a></li>
+        <li>                <a id="usersListTab" ng-click="tabChange('usersList')">{{getLocalizedText("users")}}</a></li>
+        <li ng-disabled="!isOpponentSelected"><a id="opponentFantasyTeamTab" ng-click="tabChange('opponentFantasyTeam')">{{lastOpponentSelected}}</a></li>
+      </ul>
+
+      <div class="tab-content" id="liveContestTabContent">
+        <fantasy-team class="tab-pane active" id="userFantasyTeam" contest-entry="mainPlayer" watch="updatedDate" is-opponent="false"></fantasy-team>
+        <users-list class="tab-pane" id="usersList" contest-entries="contestEntries" on-row-click="onUserClick(contestEntry)" watch="updatedDate"></users-list>
+        <fantasy-team class="tab-pane" is-opponent="true" id="opponentFantasyTeam" parent="ctrl" contest-entry="selectedOpponent" watch="updatedDate"></fantasy-team>
+      </div>
+    </div>
+
+    <div ng-switch-when="false">
+      <fantasy-team id="userFantasyTeam" contest-entry="mainPlayer" watch="updatedDate" is-opponent="false"></fantasy-team>
+      <users-list id="usersList" ng-show="selectedOpponent == null" contest-entries="contestEntries" on-row-click="onUserClick(contestEntry)" watch="updatedDate"></users-list>
+      <fantasy-team id="opponentFantasyTeam" contest-entry="selectedOpponent" is-opponent="true" ng-show="selectedOpponent != null"
+                    show-close-button="true" on-close="selectedOpponent=null" watch="updatedDate"></fantasy-team>
+    </div>
+    <div class="contest-id-bar">
+      <div class="contest-id">ID: {{contest.contestId.toUpperCase()}}</div>
+    </div>
+    <div class="clear-fix-bottom"></div>
+  </div>
+
+</section>

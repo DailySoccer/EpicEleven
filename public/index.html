@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es" xml:lang="es">
+  <head>
+  <!--
+    <script src="http://google.github.io/tracing-framework/bin/wtf_trace_web_js_compiled.js"></script>
+    <script>
+      wtf.remote.connect({
+        'wtf.remote.target': 'ws://localhost:8084'
+      });
+      wtf.trace.start();
+    </script>
+  -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+    <meta property="og:url"          content="http://jugar.epiceleven.com/" />
+    <meta property="og:type"         content="article" />
+    <meta property="og:title"        content="Epic Eleven" />
+    <meta property="og:description"  content="Play football fantasy leagues" />
+    <meta property="og:image"        content="http://jugar.epiceleven.com/images/logoEpic11-2x.png" />
+
+    <title>Epic Eleven</title>
+
+    <!-- Nuestros estilos compilados con less. Cuando compilamos nuestro styles.less (para dar nuestro styles.css) arrastramos
+         todo bootstrap.css, asi que no nos hace falta incluirlo otra vez.
+         Tambien incluimos los css de los plugins (jasny, nouislider...) -->
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+
+    <link rel="shortcut icon" href="images/icono16x16.ico" />
+
+    <!-- 57x57 (precomposed) for iPhone 3GS, 2011 iPod Touch and older Android devices -->
+    <link rel="apple-touch-icon-precomposed" href="images/apple-touch-icon-precomposed.png"/>
+    <!-- 72x72 (precomposed) for 1st generation iPad, iPad 2 and iPad mini -->
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="images/apple-touch-icon-72x72-precomposed.png"/>
+    <!-- 114x114 (precomposed) for iPhone 4, 4S, 5 and 2012 iPod Touch -->
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="images/apple-touch-icon-114x114-precomposed.png"/>
+    <!-- 144x144 (precomposed) for iPad 3rd and 4th generation -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="images/apple-touch-icon-144x144-precomposed.png"/>
+    <!-- 512x512 (precomposed) for iPad 3rd and 4th generation -->
+    <link rel="apple-touch-icon-precomposed" sizes="512x512" href="images/apple-touch-icon-512x512-precomposed.png"/>
+
+    <!-- Because the Shadow DOM polyfill does extensive DOM patching, platform.js should be included before other script tags.
+    <script src="packages/web_components/platform.js"></script>
+    <script src="packages/web_components/dart_support.js"></script>
+    -->
+
+    <!-- Utilidad para recompilar less al vuelo al recargar la pagina (o incluso monitorizado, leer documentacion). Solo permitido durante desarrollo.
+    <link rel="stylesheet/less" type="text/css" href="less/styles.less" />
+    <script src="js/less-1.7.0.min.js" type="text/javascript"></script>-->
+
+    <!-- start Mixpanel -->
+    <script type="text/javascript">(function(f,b){if(!b.__SV){var a,e,i,g;window.mixpanel=b;b._i=[];b.init=function(a,e,d){function f(b,h){var a=h.split(".");2==a.length&&(b=b[a[0]],h=a[1]);b[h]=function(){b.push([h].concat(Array.prototype.slice.call(arguments,0)))}}var c=b;"undefined"!==typeof d?c=b[d]=[]:d="mixpanel";c.people=c.people||[];c.toString=function(b){var a="mixpanel";"mixpanel"!==d&&(a+="."+d);b||(a+=" (stub)");return a};c.people.toString=function(){return c.toString(1)+".people (stub)"};i="disable track track_pageview track_links track_forms register register_once alias unregister identify name_tag set_config people.set people.set_once people.increment people.append people.track_charge people.clear_charges people.delete_user".split(" ");for(g=0;g<i.length;g++)f(c,i[g]);b._i.push([a,e,d])};b.__SV=1.2;a=f.createElement("script");a.type="text/javascript";a.async=!0;a.src="//cdn.mxpnl.com/libs/mixpanel-2.2.min.js";e=f.getElementsByTagName("script")[0];e.parentNode.insertBefore(a,e)}})(document,window.mixpanel||[]);</script>
+    <script type="text/javascript" src="js/mixpanel_init.js"></script>
+    <!-- end Mixpanel -->
+
+    <!-- start Browser detect -->
+    <script type="text/javascript" src="js/ua-parser.min.js"></script>
+    <script type="text/javascript" src="js/browser-action.js"></script>
+    <!-- end Browser detect -->
+
+    <!-- Start Visual Website Optimizer Asynchronous Code
+    <script type='text/javascript'>
+    var _vwo_code=(function(){
+    var account_id=107691,
+    settings_tolerance=2000,
+    library_tolerance=2500,
+    use_existing_jquery=false,
+    // DO NOT EDIT BELOW THIS LINE
+    f=false,d=document;return{use_existing_jquery:function(){return use_existing_jquery;},library_tolerance:function(){return library_tolerance;},finish:function(){if(!f){f=true;var a=d.getElementById('_vis_opt_path_hides');if(a)a.parentNode.removeChild(a);}},finished:function(){return f;},load:function(a){var b=d.createElement('script');b.src=a;b.type='text/javascript';b.innerText;b.onerror=function(){_vwo_code.finish();};d.getElementsByTagName('head')[0].appendChild(b);},init:function(){settings_timer=setTimeout('_vwo_code.finish()',settings_tolerance);this.load('//dev.visualwebsiteoptimizer.com/j.php?a='+account_id+'&u='+encodeURIComponent(d.URL)+'&r='+Math.random());var a=d.createElement('style'),b='body{opacity:0 !important;filter:alpha(opacity=0) !important;background:none !important;}',h=d.getElementsByTagName('head')[0];a.setAttribute('id','_vis_opt_path_hides');a.setAttribute('type','text/css');if(a.styleSheet)a.styleSheet.cssText=b;else a.appendChild(d.createTextNode(b));h.appendChild(a);return settings_timer;}};}());_vwo_settings_timer=_vwo_code.init();
+    </script>
+    -->
+    <!-- End Visual Website Optimizer Asynchronous Code -->
+
+    <!-- El huevo loco Start
+    <script type="text/javascript">
+    setTimeout(function(){var a=document.createElement("script");
+    var b=document.getElementsByTagName("script")[0];
+    a.src=document.location.protocol+"//dnn506yrbagrg.cloudfront.net/pages/scripts/0027/6461.js?"+Math.floor(new Date().getTime()/3600000);
+    a.async=true;a.type="text/javascript";b.parentNode.insertBefore(a,b)}, 1);
+    </script>
+    -->
+    <!-- El huevo loco End -->
+  </head>
+
+  <body>
+    <div id="spinnerIcon"></div>
+    <!-- start js/spinner.js -->
+    <script>!function(a,b){"object"==typeof exports?module.exports=b():"function"==typeof define&&define.amd?define(b):a.Spinner=b()}(this,function(){"use strict";function a(a,b){var c,d=document.createElement(a||"div");for(c in b)d[c]=b[c];return d}function b(a){for(var b=1,c=arguments.length;c>b;b++)a.appendChild(arguments[b]);return a}function c(a,b,c,d){var e=["opacity",b,~~(100*a),c,d].join("-"),f=.01+c/d*100,g=Math.max(1-(1-a)/b*(100-f),a),h=j.substring(0,j.indexOf("Animation")).toLowerCase(),i=h&&"-"+h+"-"||"";return l[e]||(m.insertRule("@"+i+"keyframes "+e+"{0%{opacity:"+g+"}"+f+"%{opacity:"+a+"}"+(f+.01)+"%{opacity:1}"+(f+b)%100+"%{opacity:"+a+"}100%{opacity:"+g+"}}",m.cssRules.length),l[e]=1),e}function d(a,b){var c,d,e=a.style;for(b=b.charAt(0).toUpperCase()+b.slice(1),d=0;d<k.length;d++)if(c=k[d]+b,void 0!==e[c])return c;return void 0!==e[b]?b:void 0}function e(a,b){for(var c in b)a.style[d(a,c)||c]=b[c];return a}function f(a){for(var b=1;b<arguments.length;b++){var c=arguments[b];for(var d in c)void 0===a[d]&&(a[d]=c[d])}return a}function g(a,b){return"string"==typeof a?a:a[b%a.length]}function h(a){this.opts=f(a||{},h.defaults,n)}function i(){function c(b,c){return a("<"+b+' xmlns="urn:schemas-microsoft.com:vml" class="spin-vml">',c)}m.addRule(".spin-vml","behavior:url(#default#VML)"),h.prototype.lines=function(a,d){function f(){return e(c("group",{coordsize:k+" "+k,coordorigin:-j+" "+-j}),{width:k,height:k})}function h(a,h,i){b(m,b(e(f(),{rotation:360/d.lines*a+"deg",left:~~h}),b(e(c("roundrect",{arcsize:d.corners}),{width:j,height:d.width,left:d.radius,top:-d.width>>1,filter:i}),c("fill",{color:g(d.color,a),opacity:d.opacity}),c("stroke",{opacity:0}))))}var i,j=d.length+d.width,k=2*j,l=2*-(d.width+d.length)+"px",m=e(f(),{position:"absolute",top:l,left:l});if(d.shadow)for(i=1;i<=d.lines;i++)h(i,-2,"progid:DXImageTransform.Microsoft.Blur(pixelradius=2,makeshadow=1,shadowopacity=.3)");for(i=1;i<=d.lines;i++)h(i);return b(a,m)},h.prototype.opacity=function(a,b,c,d){var e=a.firstChild;d=d.shadow&&d.lines||0,e&&b+d<e.childNodes.length&&(e=e.childNodes[b+d],e=e&&e.firstChild,e=e&&e.firstChild,e&&(e.opacity=c))}}var j,k=["webkit","Moz","ms","O"],l={},m=function(){var c=a("style",{type:"text/css"});return b(document.getElementsByTagName("head")[0],c),c.sheet||c.styleSheet}(),n={lines:12,length:7,width:5,radius:10,rotate:0,corners:1,color:"#000",direction:1,speed:1,trail:100,opacity:.25,fps:20,zIndex:2e9,className:"spinner",top:"50%",left:"50%",position:"absolute"};h.defaults={},f(h.prototype,{spin:function(b){this.stop();{var c=this,d=c.opts,f=c.el=e(a(0,{className:d.className}),{position:d.position,width:0,zIndex:d.zIndex});d.radius+d.length+d.width}if(e(f,{left:d.left,top:d.top}),b&&b.insertBefore(f,b.firstChild||null),f.setAttribute("role","progressbar"),c.lines(f,c.opts),!j){var g,h=0,i=(d.lines-1)*(1-d.direction)/2,k=d.fps,l=k/d.speed,m=(1-d.opacity)/(l*d.trail/100),n=l/d.lines;!function o(){h++;for(var a=0;a<d.lines;a++)g=Math.max(1-(h+(d.lines-a)*n)%l*m,d.opacity),c.opacity(f,a*d.direction+i,g,d);c.timeout=c.el&&setTimeout(o,~~(1e3/k))}()}return c},stop:function(){var a=this.el;return a&&(clearTimeout(this.timeout),a.parentNode&&a.parentNode.removeChild(a),this.el=void 0),this},lines:function(d,f){function h(b,c){return e(a(),{position:"absolute",width:f.length+f.width+"px",height:f.width+"px",background:b,boxShadow:c,transformOrigin:"left",transform:"rotate("+~~(360/f.lines*k+f.rotate)+"deg) translate("+f.radius+"px,0)",borderRadius:(f.corners*f.width>>1)+"px"})}for(var i,k=0,l=(f.lines-1)*(1-f.direction)/2;k<f.lines;k++)i=e(a(),{position:"absolute",top:1+~(f.width/2)+"px",transform:f.hwaccel?"translate3d(0,0,0)":"",opacity:f.opacity,animation:j&&c(f.opacity,f.trail,l+k*f.direction,f.lines)+" "+1/f.speed+"s linear infinite"}),f.shadow&&b(i,e(h("#000","0 0 4px #000"),{top:"2px"})),b(d,b(i,h(g(f.color,k),"0 0 1px rgba(0,0,0,.1)")));return d},opacity:function(a,b,c){b<a.childNodes.length&&(a.childNodes[b].style.opacity=c)}});var o=e(a("group"),{behavior:"url(#default#VML)"});return!d(o,"transform")&&o.adj?i():j=d(o,"animation"),h});</script>
+    <!-- end js/spinner.js -->
+    <script>
+      var spinner = null;
+      var spinnerDiv = null;
+
+      function showSpinner() {
+        if (spinner != null)
+          spinner.stop(spinnerDiv);
+
+        var opts = {
+          lines: 13, // The number of lines to draw
+          length: 6, // The length of each line
+          width: 2, // The line thickness
+          radius: 7, // The radius of the inner circle
+          corners: 1, // Corner roundness (0..1)
+          rotate: 0, // The rotation offset
+          direction: 1, // 1: clockwise, -1: counterclockwise
+          color: '#000', // #rgb or #rrggbb or array of colors
+          speed: 1, // Rounds per second
+          trail: 60, // Afterglow percentage
+          shadow: false, // Whether to render a shadow
+          hwaccel: false, // Whether to use hardware acceleration
+          className: 'spinner', // The CSS class to assign to the spinner
+          zIndex: 2e9, // The z-index (defaults to 2000000000)
+          top: '50%', // Top position relative to parent
+          left: '50%' // Left position relative to parent
+        };
+        spinnerDiv = document.querySelector('#spinnerIcon');
+        spinner = new Spinner(opts).spin(spinnerDiv);
+      }
+
+      function hideSpinner() {
+        spinner.stop(spinnerDiv);
+      }
+
+      // Lo mostramos la primera vez
+      showSpinner();
+    </script>
+
+    <div id="mainApp" ng-app>
+      <main-menu-f2p id="mainAppMenu"></main-menu-f2p>
+      <div id="mainWrapper" class="wrapper-content-container">
+        <!--div id="mainMenu"-->
+        <div id="mainContent" class="main-content-container">
+          <flash-messages></flash-messages>
+          <ng-view></ng-view>
+          <div id="modalWindow"></div>
+        </div>
+      </div>
+      <footer></footer>
+    </div>
+
+    <script src="js/jquery.min.js"></script>
+    <script>
+      // facebook sdk
+      // https://developers.facebook.com/docs/javascript/examples
+
+      function facebookLogin(callback) {
+        console.log("js facebook login");
+        FB.login(callback, {scope: 'email, user_likes, user_friends'});
+      }
+
+      function facebookProfileInfo(callback) {
+        FB.api('/me', {fields: 'id, name, email'},
+           function(response) {
+             if (response && !response.error) {
+               response['error'] = false;
+             }
+             callback(response);
+           }
+        );
+      }
+
+      function facebookProfilePhoto(facebookId, callback) {
+        FB.api('/' + facebookId + '/picture',
+           function(response) {
+             if (response && !response.error) {
+               callback({ error: false,
+                          imageUrl: response.data.url,
+                          isDefault: response.data.is_silhouette
+                         });
+             } else {
+               callback({error: response.error});
+             }
+           }
+        );
+      }
+
+      function facebookFriends(facebookId, callback) {
+
+        waitForFacebookAuthResponse(function() {
+
+          FB.api('/' + facebookId + '/friends',
+              function (response) {
+                if (response && !response.error) {
+                  var idList = [];
+                  for(var i = 0; i < response.data.length; i++) {
+                    idList[i] = response.data[i].id;
+                  }
+                  callback({ error: false,
+                             idList: idList });
+                } else {
+                  callback({error: response.error});
+                }
+              });
+        });
+      }
+
+      function facebookShare(params) {
+        dartCallback = params.dartCallback || function() {};
+        FB.ui({ method: 'share',
+                name: 'Facebook Dialogs',
+                href: params.url || $(location).attr('href'),
+                link: params.url || $(location).attr('href'),
+                picture: params.imageUrl,
+                caption: params.caption || '',
+                description: params.description || '',
+                title: params.title
+              }, function(response) { dartCallback(); });
+      }
+
+      function onjQueryReady(dartCallback) {
+        $().ready(function() {
+          dartCallback();
+        });
+      }
+
+      function conversion(remarketing_only) {
+        if (typeof window.google_trackConversion == 'function') {
+          window.google_trackConversion(remarketing_only?
+                                        { google_conversion_id: 957611754,
+                                          google_custom_params: {},
+                                          google_remarketing_only: true
+                                        } :
+                                        { google_conversion_id: 957611754,
+                                          google_conversion_language: "en",
+                                          google_conversion_format: "2",
+                                          google_conversion_color: "ffffff",
+                                          google_conversion_label: "ouQSCJrYx1cQ6v3PyAM",
+                                          google_remarketing_only: false
+                                        }
+                                        );
+        }
+      }
+    </script>
+
+    <!-- Script principal. Sera substituido por main.dart.js en el transformer -->
+    <script src="main.dart.js" id="mainDart"></script>
+
+    <!-- El resto de js -->
+    <script src="js/bootstrap.min.js"></script>
+    <script src="nouislider/jquery.nouislider.min.js"></script>
+    <script src="bootstrap-switch/js/bootstrap-switch.min.js"></script>
+
+    <!-- Facebook Stuff -->
+    <script>
+     function waitForFacebookAuthResponse(callback) {
+       if (FB.getAuthResponse() == null) {
+         var onAuthResponse;
+
+         onAuthResponse = function() {
+           FB.Event.unsubscribe('auth.authResponseChange', onAuthResponse);
+           callback();
+         }
+
+         FB.Event.subscribe('auth.authResponseChange', onAuthResponse);
+       } else {
+         callback();
+       }
+     }
+
+     window.fbAsyncInit = function() {
+       FB.init({
+         appId      : '865176766847011',
+         //appId      : '1043008439063842', // TestAPP
+         xfbml      : true,
+         //frictionlessRequests : true,
+         version    : 'v2.5'
+       });
+     };
+
+     (function(d, s, id){
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement(s); js.id = id;
+        js.src = "https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.5";
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));
+
+    </script>
+    <script>
+      window.twitterShare = window.twitterShare || function(event) {
+        if (typeof twitterShareCB !== "undefined" && twitterShareCB != null) {
+          twitterShareCB();
+        }
+      };
+      window.twitterFollow = window.twitterFollow || function(event) {
+        if (typeof twitterFollowCB !== "undefined" && twitterFollowCB != null) {
+          twitterFollowCB();
+        }
+      };
+      var twitterLoaderProcess = null;
+      function loadTwitterWidgets(options) {
+        var generalWrapperSelector = options['selector-prefix'] || '';
+        var shareWrapper = document.querySelectorAll(generalWrapperSelector + " .twitter-share-button-wrapper"); //document.getElementsById('twitterShareButton');
+        var followWrapper = document.querySelectorAll(generalWrapperSelector + " .twitter-follow-button-wrapper"); //document.getElementById('twitterFollowButton');
+
+        if (followWrapper.length != 0 && shareWrapper.length != 0 && typeof twttr !== "undefined" && twttr != null) {
+
+          for (var i = 0; i < shareWrapper.length; i++) {
+            var l = 0;
+            var wrapper = shareWrapper[i];
+            while (wrapper.children.length > 0) {
+              wrapper.children[0].remove();
+            }
+            twttr.widgets.createShareButton(
+              options['url'],
+              wrapper,
+              {
+                text: options['text'],
+                hashtags: options['hashtags'],
+                via: options['via']
+              }
+            );
+          }
+
+          for (var i = 0; i < followWrapper.length; i++) {
+            var l = 0;
+            var wrapper = followWrapper[i];
+            while (wrapper.children.length > 0) {
+              wrapper.children[0].remove();
+            }
+            twttr.widgets.createFollowButton(
+              'EpicEleven',
+              wrapper,
+              { showScreenName: 'false' }
+            );
+          }
+        }
+
+        if (followWrapper.length == 0 && shareWrapper.length == 0 || typeof twttr === "undefined" || twttr == null) {
+          setTimeout(function () {
+            loadTwitterWidgets(options);
+          }, 100);
+        }
+      }
+      window.twttr = (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0],
+          t = window.twttr || {};
+        if (d.getElementById(id)) return t;
+        js = d.createElement(s); js.id = id;
+        js.src = "https://platform.twitter.com/widgets.js";
+        fjs.parentNode.insertBefore(js, fjs);
+        t._e = []; t.ready = function(f) {t._e.push(f);};
+        return t;
+      }(document, "script", "twitter-wjs"));
+
+      twttr.ready(function (twttr) {
+        // Now bind our custom intent events
+        twttr.events.bind('tweet', window.twitterShare);
+        twttr.events.bind('follow', window.twitterFollow);
+        /*
+        twttr.events.bind('click', window.twitterShare);
+        twttr.events.bind('retweet', retweetIntentToAnalytics);
+        twttr.events.bind('like', likeIntentToAnalytics);
+        */
+      });
+    </script>
+    <!--script>
+      !function(d,s,id){
+        var js,fjs=d.getElementsByTagName(s)[0],
+            p=/^http:/.test(d.location)?'http':'https';
+        if(!d.getElementById(id)){js=d.createElement(s);
+        js.id=id;js.src=p+'://platform.twitter.com/widgets.js';
+        fjs.parentNode.insertBefore(js,fjs);}}
+      (document, 'script', 'twitter-wjs');
+    </script-->
+
+
+    <!-- Google Remarketing codes -->
+    <script type="text/javascript" src="https://www.googleadservices.com/pagead/conversion_async.js" charset="utf-8"></script>
+
+    <!-- Fuentes -->
+    <link href='https://fonts.googleapis.com/css?family=Exo:300,600' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+
+  </body>
+</html>
