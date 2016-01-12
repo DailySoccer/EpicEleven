@@ -5,6 +5,7 @@ import com.paypal.core.Constants;
 import com.paypal.core.rest.APIContext;
 import com.paypal.core.rest.OAuthTokenCredential;
 import com.paypal.core.rest.PayPalRESTException;
+import model.shop.Catalog;
 import model.shop.Product;
 import model.shop.ProductMoney;
 import org.bson.types.ObjectId;
@@ -76,7 +77,7 @@ public class PaypalPayment {
         List<Item> items = new ArrayList<>();
         Item item = new Item();
         item.setQuantity(String.valueOf(1));
-        item.setName(product.name);
+        item.setName( Catalog.PaypalNames.containsKey(product.productId) ? Catalog.PaypalNames.get(product.productId) : "Pack" );
         item.setPrice(String.valueOf(product.price.getAmount()));
         item.setCurrency(CURRENCY);
         items.add(item);

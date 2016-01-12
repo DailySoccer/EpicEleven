@@ -26,6 +26,15 @@ public class Catalog {
             .put("ENERGY_ALL", new ProductMoney("ENERGY_ALL", Money.of(MoneyUtils.CURRENCY_GOLD, 3), "product_maxrefill", "images/fullRefill.png", Money.of(MoneyUtils.CURRENCY_ENERGY, User.MAX_ENERGY)))
             .build();
 
+    static public Map<String, String> PaypalNames = ImmutableMap.<String, String>builder()
+            .put("GOLD_1", "Pack Calderilla")
+            .put("GOLD_2", "Pack Utillero")
+            .put("GOLD_3", "Pack Ojeador")
+            .put("GOLD_4", "Pack Manager")
+            .put("GOLD_5", "Pack Director Deportivo")
+            .put("GOLD_6", "Pack Presidente")
+            .build();
+
     static public List<Product> Products = ImmutableList.<Product>builder()
             .add(ProductsMap.get("GOLD_1"))
             .add(ProductsMap.get("GOLD_2"))
