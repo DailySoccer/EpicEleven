@@ -359,9 +359,14 @@ public class OptaProcessor {
         OptaEvent myEvent = new OptaEvent(typeId, eventId, playerId, teamId, _gameId, _competitionId,
                                           _seasonId, timestamp, points, pointsTranslationId);
 
-        Model.optaEvents().update("{typeId: #, eventId: #, playerId: #, teamId: #, gameId: #, "+
-                                  "competitionId: #, seasonId: #}", typeId, eventId, playerId, teamId,
-                                  _gameId, _competitionId, _seasonId).upsert().with(myEvent);
+        if (times > 1) {
+            myEvent.times = times;
+        }
+
+        Model.optaEvents().update(
+            "{typeId: #, eventId: #, playerId: #, teamId: #, gameId: #, competitionId: #, seasonId: #}",
+                typeId, eventId, playerId, teamId, _gameId, _competitionId, _seasonId
+        ).upsert().with(myEvent);
     }
 
 
