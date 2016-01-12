@@ -596,11 +596,6 @@ public class LoginController extends Controller {
                     else if (stormpathErrors.containsKey(2007)) {
                         allErrors.put("password", "ERROR_PASSWORD_TOO_SHORT");
                     }
-                    else {
-                        // Cuando falle stormpath, tenemos que registrar que se ha producido un error
-                        //  en caso contrario, se modificarán sus datos en su cuenta de mongoDB y no se podrá hacer login
-                        allErrors.put("error", "ERROR_GENERIC");
-                    }
                 }
 
                 if (allErrors.isEmpty()) {
