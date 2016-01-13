@@ -34,7 +34,6 @@ public class Model {
     static public MongoCollection cancelledContestEntries() { return _jongo.getCollection("cancelledContestEntries"); }
 
     static public MongoCollection contests() { return _jongo.getCollection("contests"); }
-    static public MongoCollection matchEvents() { return _jongo.getCollection("matchEvents"); }
 
     static public MongoCollection statsSimulation() { return _jongo.getCollection("statsSimulation"); }
 
@@ -314,12 +313,6 @@ public class Model {
             contests.createIndex(new BasicDBObject("state", 1));
             contests.createIndex(new BasicDBObject("contestEntries._id", 1));
             contests.createIndex(new BasicDBObject("contestEntries.userId", 1));
-        }
-
-        if (!theMongoDB.collectionExists("matchEvents")) {
-            DBCollection matchEvents = theMongoDB.createCollection("matchEvents", new BasicDBObject());
-            matchEvents.createIndex(new BasicDBObject("templateMatchEventId", 1));
-            matchEvents.createIndex(new BasicDBObject("optaMatchEventId", 1));
         }
 
         if (!theMongoDB.collectionExists("cancelledContestEntries")) {
