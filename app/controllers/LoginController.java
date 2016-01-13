@@ -148,6 +148,8 @@ public class LoginController extends Controller {
 
                 if (theUser == null) {
                     theUser = new User(account.getGivenName(), account.getSurname(), account.getUsername(), account.getEmail().toLowerCase());
+                    Logger.debug("Creamos el usuario al no estar en nuestra DB pero si en Stormpath: {}", theUser.email);
+
                     insertUser(theUser);
                 }
             }
@@ -205,26 +207,9 @@ public class LoginController extends Controller {
 
             if (theUser == null) {
                 try {
-                    theUser = new User(theParams.firstName, theParams.lastName, theParams.nickName,
-                            theParams.email.toLowerCase());
-                    Model.users().insert(theUser);
+                    theUser = new User(theParams.firstName, theParams.lastName, theParams.nickName, theParams.email.toLowerCase());
+                    insertUser(theUser);
 
-                    // Existe un bonus por registrarse?
-                    SignupBonus bonus = SignupBonus.findOne();
-                    if (bonus != null && bonus.activated) {
-                        int seqId = User.getSeqId(theUser.userId);
-
-                        if (bonus.gold.isPositive()) {
-                            AccountingTranBonus.create(bonus.gold.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, theUser.userId.toString()+"-SIGNUP-GOLD", ImmutableList.of(
-                                    new AccountOp(theUser.userId, bonus.gold, ++seqId)
-                            ));
-                        }
-                        if (bonus.manager.isPositive()) {
-                            AccountingTranBonus.create(bonus.manager.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, theUser.userId.toString()+"-SIGNUP-MANAGER", ImmutableList.of(
-                                    new AccountOp(theUser.userId, bonus.manager, ++seqId)
-                            ));
-                        }
-                    }
                 } catch (DuplicateKeyException exc) {
                     int mongoError = 0; //"Hubo un problema en la creación de tu usuario");
                     if (exc.getMessage().contains("email")) {
@@ -348,6 +333,8 @@ public class LoginController extends Controller {
                     // Si el usuario tiene cuenta en StormPath, pero no existe en nuestra BD, lo creamos en nuestra BD
                     if (account != null) {
                         theUser = new User(account.getGivenName(), account.getSurname(), account.getUsername(), account.getEmail().toLowerCase());
+                        Logger.debug("Creamos el usuario al no estar en nuestra DB pero si en Stormpath: {}", theUser.email);
+
                         insertUser(theUser);
                     }
                     // Si el usuario no tiene cuenta en Stormpath ni lo encontramos en nuestra BD -> Reject
@@ -380,14 +367,14 @@ public class LoginController extends Controller {
 
             if (StormPathClient.instance().isConnected()) {
                 Account account = StormPathClient.instance().facebookLogin(loginParams.accessToken);
-                User theUser;
                 if (account != null) {
-                    theUser = User.findByEmail(account.getEmail().toLowerCase());
+                    User theUser = User.findByEmail(account.getEmail().toLowerCase());
 
                     if (theUser == null) {
                         theUser = new User(account.getGivenName(), account.getSurname(), getOrSetNickname(account), account.getEmail().toLowerCase());
                         insertUser(theUser);
                     }
+
                     // Actualizar la información de Facebook
                     theUser.facebookID = loginParams.facebookID;
                     theUser.facebookName = loginParams.facebookName;
@@ -406,11 +393,13 @@ public class LoginController extends Controller {
 
                 // Buscamos si tenemos un usuario con ese email
                 User theUser = User.findByEmail(loginParams.facebookEmail.toLowerCase());
+
                 if (theUser == null) {
                     // Creamos el usuario
                     theUser = new User(loginParams.facebookName, "", loginParams.facebookName, loginParams.facebookEmail.toLowerCase());
                     insertUser(theUser);
                 }
+
                 // Actualizar la información de Facebook
                 theUser.facebookID = loginParams.facebookID;
                 theUser.facebookName = loginParams.facebookName;
@@ -653,10 +642,25 @@ public class LoginController extends Controller {
         return allErrors;
     }
 
-
     private static void insertUser(User theUser) {
-        Logger.debug("Creamos el usuario al no estar en nuestra DB pero si en Stormpath: {}", theUser.email);
         Model.users().insert(theUser);
+
+        // Existe un bonus por registrarse?
+        SignupBonus bonus = SignupBonus.findOne();
+        if (bonus != null && bonus.activated) {
+            int seqId = User.getSeqId(theUser.userId);
+
+            if (bonus.gold.isPositive()) {
+                AccountingTranBonus.create(bonus.gold.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, theUser.userId.toString() + "-SIGNUP-GOLD", ImmutableList.of(
+                        new AccountOp(theUser.userId, bonus.gold, ++seqId)
+                ));
+            }
+            if (bonus.manager.isPositive()) {
+                AccountingTranBonus.create(bonus.manager.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, theUser.userId.toString() + "-SIGNUP-MANAGER", ImmutableList.of(
+                        new AccountOp(theUser.userId, bonus.manager, ++seqId)
+                ));
+            }
+        }
     }
 
     private static void updateFacebookInfo(User theUser) {
