@@ -21,7 +21,6 @@ public class SoccerPlayerStats {
     @JsonView(JsonViews.Statistics.class)
     public String optaMatchEventId;
 
-    @JsonView(JsonViews.Statistics.class)
     public Date startDate;
 
     @JsonView(JsonViews.Statistics.class)
