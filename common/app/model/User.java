@@ -493,7 +493,7 @@ public class User {
 
         }
         else {
-            Logger.debug("horas: {} balance: {} level: {}", horas, managerPoints.getAmount(), managerLevelFromPoints(managerPoints));
+            // Logger.debug("horas: {} balance: {} level: {}", horas, managerPoints.getAmount(), managerLevelFromPoints(managerPoints));
         }
         return managerPoints;
     }
