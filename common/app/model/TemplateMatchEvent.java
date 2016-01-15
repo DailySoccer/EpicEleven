@@ -173,7 +173,8 @@ public class TemplateMatchEvent implements JongoId {
         return Model.templateMatchEvents().findOne("{$query: " +
                         "{$and: [" +
                             "{$or: [{templateSoccerTeamAId: #}, {templateSoccerTeamBId: #}]}," +
-                            "{gameStartedDate: {$exists: 0}}" +
+                            "{gameStartedDate: {$exists: 0}}," +
+                            "{simulation: {$ne: true}}" +
                         "]}," +
                         "$orderby: {startDate: 1}}",
                 templateSoccerTeamId, templateSoccerTeamId).as(TemplateMatchEvent.class);

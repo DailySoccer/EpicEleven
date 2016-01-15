@@ -1,6 +1,7 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import model.opta.OptaEvent;
 import model.opta.OptaEventType;
 import model.opta.OptaMatchEventStats;
 import org.bson.types.ObjectId;
@@ -20,7 +21,6 @@ public class SoccerPlayerStats {
     @JsonView(JsonViews.Statistics.class)
     public String optaMatchEventId;
 
-    @JsonView(JsonViews.Statistics.class)
     public Date startDate;
 
     @JsonView(JsonViews.Statistics.class)
@@ -88,7 +88,7 @@ public class SoccerPlayerStats {
 
         // Contabilizar los eventos: Opta los manda de uno en uno y aqui es donde los agregamos
         for (SoccerPlayerStatType statType : SoccerPlayerStatType.values()) {
-            int count = countStat(statType.getEventTypes());
+            int count = countStat(statType);
             if (count > 0) {
                 statsCount.put(statType.toString(), count);
 
@@ -97,11 +97,37 @@ public class SoccerPlayerStats {
         }
     }
 
-    private int countStat(List<Integer> eventsTypes) {
-        return (int) Model.optaEvents().count("{optaPlayerId: #, gameId: #, typeId:  {$in: #}}", optaPlayerId, optaMatchEventId, eventsTypes);
+    private int countStat(SoccerPlayerStatType statType) {
+        int count = 0;
+
+        List<Integer> eventsTypes = statType.getEventTypes();
+
+        // Los goles encajados tienen un factor de "times" en sus eventos
+        if (statType.equals(SoccerPlayerStatType.GOLES_ENCAJADOS)) {
+            for (Integer eventType : statType.getEventTypes()) {
+                count += countStat(eventType);
+            }
+        }
+        else {
+            count = (int) Model.optaEvents().count("{optaPlayerId: #, gameId: #, typeId:  {$in: #}}", optaPlayerId, optaMatchEventId, eventsTypes);
+        }
+
+        return count;
     }
 
     private int countStat(Integer eventType) {
-        return (int) Model.optaEvents().count("{optaPlayerId: #, gameId: #, typeId: #}", optaPlayerId, optaMatchEventId, eventType);
+        int count = 0;
+
+        if (eventType == OptaEventType.GOAL_CONCEDED.code) {
+            OptaEvent goalConcededEvent = Model.optaEvents().findOne("{optaPlayerId: #, gameId: #, typeId: #}", optaPlayerId, optaMatchEventId, eventType).as(OptaEvent.class);
+            if (goalConcededEvent != null) {
+                count = goalConcededEvent.times != null ? goalConcededEvent.times : 1;
+            }
+        }
+        else {
+            count = (int) Model.optaEvents().count("{optaPlayerId: #, gameId: #, typeId: #}", optaPlayerId, optaMatchEventId, eventType);
+        }
+
+        return count;
     }
 }

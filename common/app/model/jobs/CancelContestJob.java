@@ -9,6 +9,7 @@ import model.shop.Order;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
+import play.Logger;
 import utils.MoneyUtils;
 
 import java.util.ArrayList;
@@ -56,6 +57,12 @@ public class CancelContestJob extends Job {
                     if (contest.entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD) && MoneyUtils.isGreaterThan(contest.entryFee, MoneyUtils.zero) && !contest.contestEntries.isEmpty()) {
                         List<AccountOp> accounts = new ArrayList<>();
                         for (ContestEntry contestEntry : contest.contestEntries) {
+                            // No devolvemos el dinero del que crea el Contest
+                            if (contest.authorId != null && contest.authorId.equals(contestEntry.userId)) {
+                                Logger.debug("Contest Cancelado: {} No devolvemos el dinero al authorId: {}", contest.contestId.toString(), contest.authorId.toString());
+                                continue;
+                            }
+
                             Money money = AccountingTran.moneySpentOnContest(contestEntry.userId, contestId);
                             // Queremos devolver el dinero que se gastó al entrar en el contest
                             money = money.negated();
@@ -68,8 +75,10 @@ public class CancelContestJob extends Job {
 
                             accounts.add(new AccountOp(contestEntry.userId, money, User.getSeqId(contestEntry.userId) + 1));
                         }
-                        AccountingTran accountingTran = AccountingTranCancelContest.create(contest.entryFee.getCurrencyUnit().getCode(), contestId, accounts);
-                        bValid = (accountingTran != null);
+                        if (accounts.size() > 0) {
+                            AccountingTran accountingTran = AccountingTranCancelContest.create(contest.entryFee.getCurrencyUnit().getCode(), contestId, accounts);
+                            bValid = (accountingTran != null);
+                        }
                     }
 
                     // Enviamos avisos de cancelación

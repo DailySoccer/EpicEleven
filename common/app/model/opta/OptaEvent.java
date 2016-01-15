@@ -32,6 +32,9 @@ public class OptaEvent {
     public int min;
     public int sec;
 
+    // Algunos eventos de los que generamos (p.ej. OptaEventType.GOAL_CONCEDED) pueden agrupar varios
+    public Integer times = null;
+
     public int points;
     public ObjectId pointsTranslationId;
 
