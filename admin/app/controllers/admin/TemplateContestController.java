@@ -178,7 +178,7 @@ public class TemplateContestController extends Controller {
         params.optaCompetitionId = String.valueOf(competitionId);
 
         Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
-        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.optaCompetitionId, params.createdAt), false));
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.optaCompetitionId, OptaCompetition.SEASON_DATE_START), false));
     }
 
     public static Result edit(String templateContestId) {
