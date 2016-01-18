@@ -14,6 +14,7 @@ public class UserInfo {
 
     public int wins;
     public int trueSkill = 0;
+    public float managerLevel = 0;
     public Money earnedMoney = MoneyUtils.zero;
 
     public UserInfo() {}
@@ -23,6 +24,7 @@ public class UserInfo {
         this.nickName = theUser.nickName;
         this.wins = theUser.wins;
         this.trueSkill = theUser.trueSkill;
+        this.managerLevel = User.managerLevelFromPoints(theUser.managerBalance);
         this.earnedMoney = theUser.earnedMoney;
         this.facebookID = theUser.facebookID;
     }
