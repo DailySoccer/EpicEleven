@@ -82,9 +82,11 @@ public class ExcelController extends Controller {
             // Empezamos desde el 1 para saltarnos la fila título
             for (int i = 1; i<= sheet.getLastRowNum(); i++) {
                 myRow = sheet.getRow(i);
-                
+
                 // Exste un optaPlayerID en esa columna?
-                if (myRow.getCell(_SalarySheet.OPTA_PLAYER_ID.column).getStringCellValue().isEmpty()) {
+                if (myRow == null ||
+                    myRow.getCell(_SalarySheet.OPTA_PLAYER_ID.column) == null ||
+                    myRow.getCell(_SalarySheet.OPTA_PLAYER_ID.column).getStringCellValue().isEmpty()) {
                     continue;
                 }
 

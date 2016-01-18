@@ -89,6 +89,7 @@ public class PaypalController extends Controller {
             }
         } catch (PayPalRESTException e) {
             Logger.error("WTF 7741: ", e);
+            result = null;
         }
 
         if (result == null) {
@@ -135,6 +136,7 @@ public class PaypalController extends Controller {
             }
         } catch (PayPalRESTException e) {
             Logger.error("WTF 7741: ", e);
+            result = null;
         }
 
         if (result == null) {
@@ -195,6 +197,10 @@ public class PaypalController extends Controller {
                 }
             } catch (PayPalRESTException e) {
                 Logger.error("WTF 7742: ", e);
+
+                // Pago cancelado
+                order.setCanceled();
+                success = false;
             }
         }
         else {
