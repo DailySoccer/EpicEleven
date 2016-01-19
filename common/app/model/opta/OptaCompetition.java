@@ -4,15 +4,14 @@ import model.GlobalDate;
 import model.JongoId;
 import model.Model;
 import org.bson.types.ObjectId;
+import org.joda.time.DateTime;
 import play.Logger;
 import utils.ListUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class OptaCompetition implements JongoId {
+    static public Date SEASON_DATE_START = new GregorianCalendar(2015, 8, 1).getTime();
     static final String CURRENT_SEASON = "2015";
 
     public ObjectId _id;
