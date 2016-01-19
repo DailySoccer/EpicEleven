@@ -11,6 +11,7 @@ import model.shop.ProductMoney;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
+import play.Play;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,8 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 public class PaypalPayment {
-
-    static final String MODE_CONFIG = Constants.SANDBOX;
 
     static final String HOSTNAME_DEFAULT = "backend.epiceleven.com";
 
@@ -30,16 +29,12 @@ public class PaypalPayment {
     /*
         LIVE CONFIGURATION
      */
-    static final String LIVE_CLIENT_ID = "AQapzBA9V1DouMJmqYle_1PSYemDEMeMbHstussn_DIE73-DidWuVUArhxHY";
-    static final String LIVE_SECRET = "EBqyjhAo_UYw4qEKhKl59YgrqgGyyW9U7sLEjhdQBxslsR3zj7OcQY1QHv1T";
     static final String LIVE_CANCEL_URL = "http://backend.epiceleven.com" + SERVER_CANCEL_PATH;
     static final String LIVE_RETURN_URL = "http://backend.epiceleven.com" + SERVER_RETURN_PATH;
 
     /*
         SANDBOX CONFIGURATION
      */
-    static final String SANDBOX_CLIENT_ID = "AXGKyxAeNjwaGg4gNwHDEoidWC7_uQeRgaFAWTccuLqb1-R-s11FWbceSWR0"; //"AWIunSu3Vqt484rLx3e9oOwMfS0u9pPDPm5mLfPJ9jlt1hwagfFoh-KVf-9hypmWF9npGy2gBeZO0ux7";
-    static final String SANDBOX_SECRET = "ENlBYxDHZVn_hotpxYtCXD3NPvvPQSmj8CbfzYWZyaFddkQTwhhw3GxV5Ipe"; //"EA2CJVjXwtHzgXri0SIOLphSbeaoeCFOvpFfDCLTji_2W86RifRg4yFRhbwOQ5yINTBY9wFBjzt_IWMy";
     static final String SANDBOX_CANCEL_URL = "https://devtools-paypal.com/guide/pay_paypal?cancel=true&orderId=";
     static final String SANDBOX_RETURN_URL = "https://devtools-paypal.com/guide/pay_paypal?success=true&orderId=";
 
@@ -144,7 +139,7 @@ public class PaypalPayment {
     public Map<String, String> getSdkConfig() {
         if (_sdkConfig == null) {
             _sdkConfig = new HashMap<>();
-            _sdkConfig.put(Constants.MODE, MODE_CONFIG);
+            _sdkConfig.put(Constants.MODE, Play.application().configuration().getString("paypal.mode"));
         }
         return _sdkConfig;
     }
@@ -181,9 +176,9 @@ public class PaypalPayment {
     // Typically the access token can be generated once and reused within the expiry window
     public String getAccessToken() throws PayPalRESTException {
         if (_accessToken == null) {
-            _accessToken = isLive()
-                    ? new OAuthTokenCredential(LIVE_CLIENT_ID, LIVE_SECRET, getSdkConfig()).getAccessToken()
-                    : new OAuthTokenCredential(SANDBOX_CLIENT_ID, SANDBOX_SECRET, getSdkConfig()).getAccessToken();
+            String clientId = Play.application().configuration().getString("paypal.clientId");
+            String secret = Play.application().configuration().getString("paypal.secret");
+            _accessToken = new OAuthTokenCredential(clientId, secret, getSdkConfig()).getAccessToken();
 
             /*
             // ClientID and ClientSecret retrieved from configuration
