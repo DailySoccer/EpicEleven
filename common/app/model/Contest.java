@@ -468,6 +468,12 @@ public class Contest implements JongoId {
 
         List<TemplateMatchEvent> templateMatchEvents = getTemplateMatchEvents();
 
+        // Verificación...
+        boolean matchEventsOK = (templateMatchEvents.stream().filter(templateMatchEvent -> templateMatchEvent.liveFantasyPoints != null).count() == templateMatchEvents.size());
+        if (!matchEventsOK) {
+            Logger.error("Contest: {}: TemplateMatchEvents sin LiveFantasyPoints", contestId.toString());
+        }
+
         // Actualizamos los fantasy points
         for (ContestEntry contestEntry : contestEntries) {
             contestEntry.fantasyPoints = contestEntry.getFantasyPointsFromMatchEvents(templateMatchEvents);
