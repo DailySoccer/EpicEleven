@@ -487,9 +487,11 @@ public class User {
 
             managerPoints = decayManagerPoints(managerPoints, percentToDecay);
 
+            /*
             Logger.debug("decay: manager: {} level: {} [horas: {} balance: {} level: {} penalization: {}]",
                     managerPoints.getAmount().longValue(), managerLevelFromPoints(managerPoints),
                     horas, managerPointsCopy.getAmount(), managerLevelFromPoints(managerPointsCopy), -percentToDecay);
+            */
 
         }
         else {
