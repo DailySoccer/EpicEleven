@@ -280,7 +280,6 @@ public class ContestController extends Controller {
         return attachInfoToContest(contest).toResult(JsonViews.FullContest.class);
     }
 
-    @UserAuthenticated
     public static Result getMyLiveContest(String contestId) {
         return getViewContest(contestId);
     }
@@ -403,7 +402,6 @@ public class ContestController extends Controller {
      * @param templateContestId TemplateContest sobre el que se esta interesado
      * @return La lista de partidos "live"
      */
-    @UserAuthenticated
     public static Result getLiveMatchEventsFromTemplateContest(String templateContestId) {
 
         // Obtenemos el TemplateContest
@@ -419,7 +417,6 @@ public class ContestController extends Controller {
         return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
     }
 
-    @UserAuthenticated
     public static Result getLiveMatchEventsFromContest(String contestId) {
 
         // Obtenemos el Contest
