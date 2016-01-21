@@ -285,7 +285,6 @@ public class ContestController extends Controller {
         return getViewContest(contestId);
     }
 
-    @UserAuthenticated
     public static Result getMyHistoryContest(String contestId) {
         return getViewContest(contestId);
     }
@@ -296,12 +295,8 @@ public class ContestController extends Controller {
 
         // No se puede ver el contest "completo" si está "activo" (únicamente en "live" o "history")
         if (contest.state.isActive()) {
-            Logger.error("WTF 7945: getViewContest: contest: {} user: {}", contestId, theUser.userId);
+            Logger.error("WTF 7945: getViewContest: contest: {} user: {}", contestId, theUser != null ? theUser.userId : "<guest>");
             return new ReturnHelper(false, ERROR_VIEW_CONTEST_INVALID).toResult();
-        }
-
-        if (!contest.containsContestEntryWithUser(theUser.userId)) {
-            Logger.error("WTF 7942: getViewContest: contest: {} user: {}", contestId, theUser.userId);
         }
 
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
