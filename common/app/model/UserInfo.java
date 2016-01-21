@@ -17,6 +17,8 @@ public class UserInfo {
     public float managerLevel = 0;
     public Money earnedMoney = MoneyUtils.zero;
 
+    public List<String> achievements = new ArrayList<>();
+
     public UserInfo() {}
 
     public UserInfo(User theUser) {
@@ -38,25 +40,25 @@ public class UserInfo {
     }
 
     static public List<UserInfo> findAll() {
-        List<User> users = User.findAll();
-
         List<UserInfo> usersInfo = new ArrayList<>();
 
-        for (User user : users) {
-            usersInfo.add(user.info());
-        }
+        User.findAll().forEach(user -> usersInfo.add(user.info()));
+
+        return usersInfo;
+    }
+
+    static public List<UserInfo> findAllWithAchievements() {
+        List<UserInfo> usersInfo = new ArrayList<>();
+
+        User.findAll().forEach(user -> usersInfo.add(user.infoWithAchievements()));
 
         return usersInfo;
     }
 
     static public List<UserInfo> findAllFromContestEntries(List<ContestEntry> contestEntries) {
-
-        List<User> users = User.find(contestEntries);
         List<UserInfo> usersInfo = new ArrayList<>();
 
-        for (User user : users) {
-            usersInfo.add(user.info());
-        }
+        User.find(contestEntries).forEach(user -> usersInfo.add(user.info()));
 
         return usersInfo;
     }

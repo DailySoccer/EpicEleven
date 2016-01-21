@@ -52,7 +52,7 @@ public class MainController extends Controller {
     }
 
     public static Result getLeaderboard() {
-        return new ReturnHelper(ImmutableMap.of("users", UserInfo.findAll())).toResult();
+        return new ReturnHelper(ImmutableMap.of("users", UserInfo.findAllWithAchievements())).toResult();
     }
 
     /*
