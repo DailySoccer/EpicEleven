@@ -38,7 +38,7 @@ public class Snapshot {
 
     public void load() {
         DBObject copyOp = new BasicDBObject("copydb", "1").
-                                     append("fromdb", "snapshot").
+                                     append("fromdb", snapshotDBName).
                                      append("todb",   "dailySoccerDB");
 
         Model.reset(true);
@@ -56,7 +56,7 @@ public class Snapshot {
     static private void createInDB() {
         DBObject copyOp = new BasicDBObject("copydb", "1").
                                      append("fromdb", "dailySoccerDB").
-                                     append("todb", "snapshot");
+                                     append("todb", snapshotDBName);
 
         _mongoDBSnapshot.dropDatabase();
 
@@ -73,7 +73,7 @@ public class Snapshot {
             MongoClient mongoClient = new MongoClient(mongoClientURI);
 
             _mongoDBAdmin = mongoClient.getDB("admin");
-            _mongoDBSnapshot = mongoClient.getDB("snapshot");
+            _mongoDBSnapshot = mongoClient.getDB(snapshotCollectionName);
 
             _jongoSnapshot = new Jongo(_mongoDBSnapshot);
         }
@@ -85,13 +85,14 @@ public class Snapshot {
 
 
     static private MongoCollection collection() {
-        return (_jongoSnapshot != null) ? _jongoSnapshot.getCollection(snapshotDBName) : null;
+        return (_jongoSnapshot != null) ? _jongoSnapshot.getCollection(snapshotCollectionName) : null;
     }
 
     static private DB _mongoDBAdmin;
     static private DB _mongoDBSnapshot;
     static private Jongo _jongoSnapshot;
 
+    static final private String snapshotCollectionName = "snapshot";
     static final private String snapshotDBName = "snapshot";
     static private Snapshot _instance;
 

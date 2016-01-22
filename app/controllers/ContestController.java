@@ -280,12 +280,10 @@ public class ContestController extends Controller {
         return attachInfoToContest(contest).toResult(JsonViews.FullContest.class);
     }
 
-    @UserAuthenticated
     public static Result getMyLiveContest(String contestId) {
         return getViewContest(contestId);
     }
 
-    @UserAuthenticated
     public static Result getMyHistoryContest(String contestId) {
         return getViewContest(contestId);
     }
@@ -296,12 +294,8 @@ public class ContestController extends Controller {
 
         // No se puede ver el contest "completo" si está "activo" (únicamente en "live" o "history")
         if (contest.state.isActive()) {
-            Logger.error("WTF 7945: getViewContest: contest: {} user: {}", contestId, theUser.userId);
+            Logger.error("WTF 7945: getViewContest: contest: {} user: {}", contestId, theUser != null ? theUser.userId : "<guest>");
             return new ReturnHelper(false, ERROR_VIEW_CONTEST_INVALID).toResult();
-        }
-
-        if (!contest.containsContestEntryWithUser(theUser.userId)) {
-            Logger.error("WTF 7942: getViewContest: contest: {} user: {}", contestId, theUser.userId);
         }
 
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
@@ -408,7 +402,6 @@ public class ContestController extends Controller {
      * @param templateContestId TemplateContest sobre el que se esta interesado
      * @return La lista de partidos "live"
      */
-    @UserAuthenticated
     public static Result getLiveMatchEventsFromTemplateContest(String templateContestId) {
 
         // Obtenemos el TemplateContest
@@ -424,7 +417,6 @@ public class ContestController extends Controller {
         return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
     }
 
-    @UserAuthenticated
     public static Result getLiveMatchEventsFromContest(String contestId) {
 
         // Obtenemos el Contest

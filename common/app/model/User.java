@@ -115,6 +115,12 @@ public class User {
         return new UserInfo(this);
     }
 
+    public UserInfo infoWithAchievements() {
+        UserInfo info = new UserInfo(this);
+        info.achievements = achievements;
+        return info;
+    }
+
     public User getProfile() {
         cachedBalance = calculateBalance();
         goldBalance = calculateGoldBalance();
@@ -487,9 +493,11 @@ public class User {
 
             managerPoints = decayManagerPoints(managerPoints, percentToDecay);
 
+            /*
             Logger.debug("decay: manager: {} level: {} [horas: {} balance: {} level: {} penalization: {}]",
                     managerPoints.getAmount().longValue(), managerLevelFromPoints(managerPoints),
                     horas, managerPointsCopy.getAmount(), managerLevelFromPoints(managerPointsCopy), -percentToDecay);
+            */
 
         }
         else {
