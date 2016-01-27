@@ -88,7 +88,7 @@ public class ContestController extends Controller {
                 // En primer lugar, intentamos reutilizar cualquier contest de este jugador que esté sin completar...
                 Contest contest = Contest.findOneWaitingAuthor(theUser.userId);
                 if (contest != null) {
-                    Logger.debug("createContest: Reutizando #{}: authorId: {}", contest.contestId, theUser.userId);
+                    Logger.debug("createContest: Reutilizando #{}: authorId: {}", contest.contestId, theUser.userId);
                     contest.setupFromTemplateContest(templateContest);
                     updatingContest = true;
                 }
