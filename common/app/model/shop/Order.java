@@ -95,7 +95,7 @@ public class Order {
                 result = product.price;
             }
             else {
-                result.plus(product.price);
+                result = result.plus(product.price);
             }
         }
         return result;
@@ -109,7 +109,7 @@ public class Order {
                 if (result == null) {
                     result = productMoney.gained;
                 } else {
-                    result.plus(productMoney.gained);
+                    result = result.plus(productMoney.gained);
                 }
             }
         }
