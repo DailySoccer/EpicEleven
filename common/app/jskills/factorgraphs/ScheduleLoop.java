@@ -35,7 +35,6 @@ public class ScheduleLoop<T> extends Schedule<T> {
         if(totalIterations > 100) {
             Logger.warn("ScheduleLoop: iterations: {} delta: {}", totalIterations, delta);
         }
-        // Logger.warn("ScheduleLoop: iterations: {} delta: {}", totalIterations, delta);
 
         return delta;
     }
