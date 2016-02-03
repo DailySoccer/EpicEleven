@@ -21,6 +21,7 @@ import utils.ReturnHelper;
 import utils.ReturnHelperWithAttach;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static play.data.Form.form;
 
@@ -32,6 +33,7 @@ public class ContestController extends Controller {
     private static final String ERROR_MY_CONTEST_ENTRY_INVALID = "ERROR_MY_CONTEST_ENTRY_INVALID";
     private static final String ERROR_TEMPLATE_CONTEST_INVALID = "ERROR_TEMPLATE_CONTEST_INVALID";
     private static final String ERROR_TEMPLATE_CONTEST_NOT_ACTIVE = "ERROR_TEMPLATE_CONTEST_NOT_ACTIVE";
+    private static final String ERROR_OP_UNAUTHORIZED = "ERROR_OP_UNAUTHORIZED";
 
     /*
         Parámetros para la creación de un contest por parte de un usuario.
@@ -431,5 +433,50 @@ public class ContestController extends Controller {
         List<TemplateMatchEvent> liveMatchEventList = TemplateMatchEvent.findAllPlaying(contest.templateMatchEventIds);
 
         return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
+    }
+
+    // @UserAuthenticated
+    public static Result getSoccerPlayersAvailablesToChange(String contestId) {
+        User theUser = (User)ctx().args.get("User");
+        Contest contest = Contest.findOne(contestId);
+
+        /*
+        if (!contest.containsContestEntryWithUser(theUser.userId)) {
+            return new ReturnHelper(false, ERROR_OP_UNAUTHORIZED).toResult();
+        }
+        */
+
+        // Obtener los partidos del torneo
+        List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
+
+        // Quedarnos con los partidos que no hayan terminado
+        matchEvents = matchEvents.stream().filter( matchEvent -> !matchEvent.isGameFinished()).collect(Collectors.toList());
+
+        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
+        Set<ObjectId> teamIds = new HashSet<>();
+        for(TemplateSoccerTeam team : teams) {
+            teamIds.add(team.templateSoccerTeamId);
+        }
+
+        // Buscar todos los players de la posición indicada y de los partidos no terminados
+        List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
+        Set<ObjectId> playersInContests = new HashSet<>();
+
+        contest.instanceSoccerPlayers.forEach( instance -> {
+            if (teamIds.contains(instance.templateSoccerTeamId)) {
+                instanceSoccerPlayers.add(instance);
+                playersInContests.add(instance.templateSoccerPlayerId);
+            }
+        });
+
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests));
+
+        return new ReturnHelper(ImmutableMap.builder()
+                .put("instanceSoccerPlayers", instanceSoccerPlayers)
+                .put("match_events", matchEvents)
+                .put("soccer_teams", teams)
+                .put("soccer_players", players)
+                .build())
+                .toResult(JsonViews.FullContest.class);
     }
 }
