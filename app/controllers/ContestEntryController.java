@@ -372,6 +372,8 @@ public class ContestEntryController extends Controller {
 
         User theUser = (User) ctx().args.get("User");
 
+        ObjectId contestId = null;
+
         if (!changeForm.hasErrors()) {
             ChangeSoccerPlayerParams params = changeForm.get();
 
@@ -420,6 +422,7 @@ public class ContestEntryController extends Controller {
                 }
 
                 if (errores.isEmpty()) {
+                    contestId = aContest.contestId;
                     if (!ContestEntry.update(theUser, aContest, /*contestState*/ "LIVE", contestEntry, contestEntry.formation, contestEntry.soccerIds)) {
                         errores.add(ERROR_RETRY_OP);
                     }
@@ -438,9 +441,12 @@ public class ContestEntryController extends Controller {
         Object result = changeForm.errorsAsJson();
 
         if (!changeForm.hasErrors()) {
+            /*
             result = ImmutableMap.of(
                     "result", "ok",
                     "profile", theUser.getProfile());
+            */
+            return ContestController.getMyLiveContest(contestId.toString());
         }
         else {
             Logger.error("WTF 7249: changeSoccerPlayer: {}", changeForm.errorsAsJson());
