@@ -79,6 +79,16 @@ public class ContestEntry implements JongoId {
                     position, fantasyPoints, prize.toString());
     }
 
+    public boolean containsSoccerPlayer(ObjectId soccerPlayerId) {
+        return soccerIds.indexOf(soccerPlayerId) != -1;
+    }
+
+    public void changeSoccerPlayer(ObjectId oldSoccerPlayerId, ObjectId newSoccerPlayerId) {
+        int index = soccerIds.indexOf(oldSoccerPlayerId);
+        if (index != -1) {
+            soccerIds.set(index, newSoccerPlayerId);
+        }
+    }
 
     static public ContestEntry findOne(String contestEntryId) {
         ContestEntry aContestEntry = null;
@@ -115,7 +125,7 @@ public class ContestEntry implements JongoId {
         return contestEntries;
     }
 
-    public static boolean update(User user, Contest contest, ContestEntry contestEntry, String formation, List<ObjectId> playerIds) {
+    public static boolean update(User user, Contest contest, String contestState, ContestEntry contestEntry, String formation, List<ObjectId> playerIds) {
 
         boolean bRet = false;
 
@@ -171,7 +181,7 @@ public class ContestEntry implements JongoId {
             }
 
             WriteResult result = Model.contests()
-                    .update("{_id: #, state: \"ACTIVE\", contestEntries._id: #, contestEntries.userId: #}", contest.contestId, contestEntry.contestEntryId, user.userId)
+                    .update("{_id: #, state: #, contestEntries._id: #, contestEntries.userId: #}", contest.contestId, contestState, contestEntry.contestEntryId, user.userId)
                     .with("{$set: {contestEntries.$.soccerIds: #, contestEntries.$.playersPurchased: #}}", playerIds, playersPurchasedList);
 
             // Comprobamos el número de documentos afectados (error == 0)

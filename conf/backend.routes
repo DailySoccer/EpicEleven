@@ -70,6 +70,7 @@ GET            /get_live_match_events/contest/:contest                 controlle
 POST           /add_contest_entry                                      controllers.ContestEntryController.addContestEntry()
 POST           /edit_contest_entry                                     controllers.ContestEntryController.editContestEntry()
 POST           /cancel_contest_entry                                   controllers.ContestEntryController.cancelContestEntry()
+POST           /change_soccer_player                                   controllers.ContestEntryController.changeSoccerPlayer()
 
 # Sincronizacion de nuestras maquinas locales con los datos de Opta
 GET            /return_xml/:timestamp                                  controllers.OptaHttpController.returnXML(timestamp: Long)
