@@ -94,12 +94,19 @@ public class ContestEntryController extends Controller {
                 }
                 // Verificar que el contest no esté lleno (<= 0 : Ilimitado número de participantes)
                 else if (aContest.maxEntries >= 0 && aContest.contestEntries.size() >= aContest.maxEntries) {
-                    // Buscar otro contest de características similares
-                    aContest = aContest.getSameContestWithFreeSlot(theUser.userId);
-                    if (aContest == null) {
-                        // Si no encontramos ningún Contest semejante, pedimos al webClient que lo intente otra vez
-                        //  dado que asumimos que simplemente es un problema "temporal"
-                        errores.add(ERROR_RETRY_OP);
+                    // Dado que no creamos varias instancias de los torneos llenos, creados por los usuarios,
+                    //   habrá que informar de que el torneo ya está lleno.
+                    if (aContest.isCreatedByUser()) {
+                        errores.add(ERROR_CONTEST_FULL);
+                    }
+                    else {
+                        // Buscar otro contest de características similares (el sistema tendría que crear una nueva instancia de características similares en algún momento...)
+                        aContest = aContest.getSameContestWithFreeSlot(theUser.userId);
+                        if (aContest == null) {
+                            // Si no encontramos ningún Contest semejante, pedimos al webClient que lo intente otra vez
+                            //  dado que asumimos que simplemente es un problema "temporal"
+                            errores.add(ERROR_RETRY_OP);
+                        }
                     }
                 }
 
