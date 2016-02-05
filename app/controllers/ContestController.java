@@ -104,17 +104,18 @@ public class ContestController extends Controller {
 
                 // Logger.debug("createContest: {} - {}", params.templateContestId, params.name);
 
-                final float SIMULATION_PRIZE_MULTIPLIER = 10f;
-
                 // Por defecto, los contests creados por los usuarios esperarán a que el author entre un contestEntry
                 contest.state = ContestState.WAITING_AUTHOR;
                 contest.authorId = theUser.userId;
                 contest.startDate = new DateTime(params.millisecondsSinceEpoch).withZone(DateTimeZone.UTC).toDate();
                 contest.simulation = params.simulation;
+
+                // TODO: Min. Entries a 2, hasta que se remaquete la página de Creación de Torneos
+                contest.minEntries = 2;
+
                 contest.maxEntries = params.maxEntries;
                 contest.freeSlots = params.maxEntries;
                 contest.entryFee = params.simulation ? Money.zero(MoneyUtils.CURRENCY_ENERGY).plus(templateContest.entryFee.getAmount()) : templateContest.entryFee;
-                contest.prizeMultiplier = params.simulation ? SIMULATION_PRIZE_MULTIPLIER : contest.prizeMultiplier;
 
                 Model.contests().update("{_id: #}", contest.contestId).upsert().with(contest);
 
