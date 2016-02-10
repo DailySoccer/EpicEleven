@@ -89,7 +89,13 @@ public class TrueSkillHelper {
             rankings[i] = i+1;
         }
 
-        GameInfo gameInfo = new jskills.GameInfo(INITIAL_MEAN, INITIAL_SD, BETA, DYNAMIC_FACTOR, DRAW);
+        final double defaultInitialMean = 25.0;
+        final double defaultInitialStandardDeviation = defaultInitialMean/3.0;
+        final double defaultBeta = defaultInitialMean/6.0;
+        final double defaultDynamicsFactor = defaultInitialMean/300.0;
+        final double defaultDrawProbability = 0.01;
+
+        GameInfo gameInfo = new jskills.GameInfo(defaultInitialMean, defaultInitialStandardDeviation, defaultBeta, defaultDynamicsFactor, defaultDrawProbability);
 
         Map<IPlayer, Rating> newRatings = calculator.calculateNewRatings(gameInfo, teams, rankings);
 
