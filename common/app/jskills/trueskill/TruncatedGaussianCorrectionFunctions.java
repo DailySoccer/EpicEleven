@@ -52,7 +52,8 @@ public class TruncatedGaussianCorrectionFunctions {
 
         if (denominator < 2.222758749e-162) {
             if (teamPerformanceDifference < 0.0)
-                return 1.0;
+                // FIX: Temporal
+                return 0.9999;
             else
                 return 0.0;
         }
