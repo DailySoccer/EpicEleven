@@ -270,7 +270,7 @@ public class ContestEntryController extends Controller {
                 }
 
                 if (errores.isEmpty()) {
-                    if (!ContestEntry.update(theUser, aContest, /*contestState*/ "ACTIVE", contestEntry, formation, idsList)) {
+                    if (!ContestEntry.update(theUser, aContest, ContestState.ACTIVE, contestEntry, formation, idsList)) {
                         errores.add(ERROR_RETRY_OP);
                     }
                 }
@@ -423,7 +423,7 @@ public class ContestEntryController extends Controller {
 
                 if (errores.isEmpty()) {
                     contestId = aContest.contestId;
-                    if (!ContestEntry.update(theUser, aContest, /*contestState*/ "LIVE", contestEntry, contestEntry.formation, contestEntry.soccerIds)) {
+                    if (!ContestEntry.update(theUser, aContest, ContestState.LIVE, contestEntry, contestEntry.formation, contestEntry.soccerIds)) {
                         errores.add(ERROR_RETRY_OP);
                     }
                 }

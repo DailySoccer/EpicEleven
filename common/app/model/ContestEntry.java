@@ -2,28 +2,35 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTranOrder;
 import model.shop.Order;
 import model.shop.Product;
+import model.shop.ProductMoney;
 import model.shop.ProductSoccerPlayer;
 import org.bson.types.ObjectId;
+import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import utils.ListUtils;
 import utils.MoneyUtils;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ContestEntry implements JongoId {
     public static final List<String> FORMATIONS = ImmutableList.of( "442", "352", "433", "343", "451" );
     public static final String FORMATION_DEFAULT = FORMATIONS.get(0);
+
+    static public List<Money> CHANGES_PRICES = ImmutableList.<Money>builder()
+            .add(Money.of(MoneyUtils.CURRENCY_GOLD, 0))
+            .add(Money.of(MoneyUtils.CURRENCY_GOLD, 3))
+            .add(Money.of(MoneyUtils.CURRENCY_GOLD, 6))
+            .build();
 
     @Id
     public ObjectId contestEntryId;
@@ -39,6 +46,9 @@ public class ContestEntry implements JongoId {
 
     @JsonView(value={JsonViews.FullContest.class})
     public List<ObjectId> playersPurchased; // Futbolistas que han necesitado ser comprados por tener un nivel superior
+
+    @JsonView(value={JsonViews.FullContest.class})
+    public Map<ObjectId, ObjectId> playersChanged; // Cambio de la alineacion de futbolistas en "Live"
 
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
     public int position = -1;
@@ -86,6 +96,11 @@ public class ContestEntry implements JongoId {
     public void changeSoccerPlayer(ObjectId oldSoccerPlayerId, ObjectId newSoccerPlayerId) {
         int index = soccerIds.indexOf(oldSoccerPlayerId);
         if (index != -1) {
+            if (playersChanged == null) {
+                playersChanged = new HashMap<>();
+            }
+
+            playersChanged.put(oldSoccerPlayerId, newSoccerPlayerId);
             soccerIds.set(index, newSoccerPlayerId);
         }
     }
@@ -125,7 +140,7 @@ public class ContestEntry implements JongoId {
         return contestEntries;
     }
 
-    public static boolean update(User user, Contest contest, String contestState, ContestEntry contestEntry, String formation, List<ObjectId> playerIds) {
+    public static boolean update(User user, Contest contest, ContestState contestState, ContestEntry contestEntry, String formation, List<ObjectId> playerIds) {
 
         boolean bRet = false;
 
@@ -181,8 +196,8 @@ public class ContestEntry implements JongoId {
             }
 
             WriteResult result = Model.contests()
-                    .update("{_id: #, state: #, contestEntries._id: #, contestEntries.userId: #}", contest.contestId, contestState, contestEntry.contestEntryId, user.userId)
-                    .with("{$set: {contestEntries.$.soccerIds: #, contestEntries.$.playersPurchased: #}}", playerIds, playersPurchasedList);
+                    .update("{_id: #, state: #, contestEntries._id: #, contestEntries.userId: #}", contest.contestId, contestState.toString(), contestEntry.contestEntryId, user.userId)
+                    .with("{$set: {contestEntries.$.soccerIds: #, contestEntries.$.playersPurchased: #, contestEntries.$.playersChanged: #}}", playerIds, playersPurchasedList, contestEntry.playersChanged);
 
             // Comprobamos el número de documentos afectados (error == 0)
             bRet = (result.getN() > 0);
