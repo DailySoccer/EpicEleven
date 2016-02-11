@@ -270,7 +270,7 @@ public class ContestEntryController extends Controller {
                 }
 
                 if (errores.isEmpty()) {
-                    if (!ContestEntry.update(theUser, aContest, ContestState.ACTIVE, contestEntry, formation, idsList)) {
+                    if (!ContestEntry.update(theUser, aContest, contestEntry, formation, idsList)) {
                         errores.add(ERROR_RETRY_OP);
                     }
                 }
@@ -388,8 +388,10 @@ public class ContestEntryController extends Controller {
 
                 List<String> errores = new ArrayList<>();
 
+                Money moneyNeeded = Money.zero(MoneyUtils.CURRENCY_GOLD);
+
                 if (contestEntry.containsSoccerPlayer(oldSoccerPlayerId)) {
-                    contestEntry.changeSoccerPlayer(oldSoccerPlayerId, newSoccerPlayerId);
+                    moneyNeeded = moneyNeeded.plus(contestEntry.changeSoccerPlayer(oldSoccerPlayerId, newSoccerPlayerId));
                 }
                 else {
                     errores.add(ERROR_CONTEST_ENTRY_INVALID);
@@ -402,7 +404,6 @@ public class ContestEntryController extends Controller {
                     if (errores.isEmpty()) {
                         if (MoneyUtils.isGreaterThan(aContest.entryFee, MoneyUtils.zero) &&
                                 aContest.entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
-                            Money moneyNeeded = Money.zero(MoneyUtils.CURRENCY_GOLD);
 
                             // Averiguar cuánto dinero ha usado para comprar futbolistas de nivel superior
                             Money managerBalance = User.calculateManagerBalance(theUser.userId);
@@ -410,6 +411,9 @@ public class ContestEntryController extends Controller {
                             List<InstanceSoccerPlayer> playersToBuy = contestEntry.playersNotPurchased(User.playersToBuy(managerBalance, soccerPlayers));
                             if (!playersToBuy.isEmpty()) {
                                 moneyNeeded = moneyNeeded.plus(User.moneyToBuy(aContest, managerBalance, playersToBuy));
+                            }
+
+                            if (moneyNeeded.isPositive()) {
                                 Logger.debug("changeSoccerPlayer: moneyNeeded: {}", moneyNeeded.toString());
 
                                 // Verificar que el usuario tiene dinero suficiente...
@@ -423,7 +427,7 @@ public class ContestEntryController extends Controller {
 
                 if (errores.isEmpty()) {
                     contestId = aContest.contestId;
-                    if (!ContestEntry.update(theUser, aContest, ContestState.LIVE, contestEntry, contestEntry.formation, contestEntry.soccerIds)) {
+                    if (!ContestEntry.change(theUser, aContest, contestEntry.contestEntryId, oldSoccerPlayerId, newSoccerPlayerId)) {
                         errores.add(ERROR_RETRY_OP);
                     }
                 }
