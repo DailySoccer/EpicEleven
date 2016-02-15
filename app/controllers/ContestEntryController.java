@@ -34,6 +34,8 @@ public class ContestEntryController extends Controller {
     private static final String CONTEST_ENTRY_KEY = "error";
     private static final String ERROR_CONTEST_INVALID = "ERROR_CONTEST_INVALID";
     private static final String ERROR_CONTEST_NOT_ACTIVE = "ERROR_CONTEST_NOT_ACTIVE";
+    private static final String ERROR_SOURCE_SOCCERPLAYER_INVALID = "ERROR_SOURCE_SOCCERPLAYER_INVALID";
+    private static final String ERROR_TARGET_SOCCERPLAYER_INVALID = "ERROR_TARGET_SOCCERPLAYER_INVALID";
     private static final String ERROR_CONTEST_FULL = "ERROR_CONTEST_FULL";
     private static final String ERROR_FANTASY_TEAM_INCOMPLETE = "ERROR_FANTASY_TEAM_INCOMPLETE";
     private static final String ERROR_SALARYCAP_INVALID = "ERROR_SALARYCAP_INVALID";
@@ -395,6 +397,32 @@ public class ContestEntryController extends Controller {
                 }
                 else {
                     errores.add(ERROR_CONTEST_ENTRY_INVALID);
+                }
+
+                if (errores.isEmpty()) {
+                    List<TemplateMatchEvent> templateMatchEvents = aContest.getTemplateMatchEvents();
+
+                    // Comprobar que el equipo del futbolista que vamos a sustituir no ha terminado de jugar
+                    InstanceSoccerPlayer oldInstanceSoccerPlayer = aContest.getInstanceSoccerPlayer(oldSoccerPlayerId);
+                    for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
+                        if (templateMatchEvent.containsTemplateSoccerTeam(oldInstanceSoccerPlayer.templateSoccerTeamId)) {
+                            if (templateMatchEvent.isGameFinished()) {
+                                errores.add(ERROR_SOURCE_SOCCERPLAYER_INVALID);
+                            }
+                            break;
+                        }
+                    }
+
+                    // Comprobar que el equipo del futbolista que vamos a introducir no ha comenzado a jugar
+                    InstanceSoccerPlayer newInstanceSoccerPlayer = aContest.getInstanceSoccerPlayer(newSoccerPlayerId);
+                    for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
+                        if (templateMatchEvent.containsTemplateSoccerTeam(newInstanceSoccerPlayer.templateSoccerTeamId)) {
+                            if (templateMatchEvent.isGameStarted()) {
+                                errores.add(ERROR_TARGET_SOCCERPLAYER_INVALID);
+                            }
+                            break;
+                        }
+                    }
                 }
 
                 if (errores.isEmpty()) {
