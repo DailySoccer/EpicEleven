@@ -32,6 +32,7 @@ public class ContestController extends Controller {
     private static final String ERROR_MY_CONTEST_INVALID = "ERROR_MY_CONTEST_INVALID";
     private static final String ERROR_MY_CONTEST_ENTRY_INVALID = "ERROR_MY_CONTEST_ENTRY_INVALID";
     private static final String ERROR_TEMPLATE_CONTEST_INVALID = "ERROR_TEMPLATE_CONTEST_INVALID";
+    private static final String ERROR_CONTEST_INVALID = "ERROR_CONTEST_INVALID";
     private static final String ERROR_TEMPLATE_CONTEST_NOT_ACTIVE = "ERROR_TEMPLATE_CONTEST_NOT_ACTIVE";
     private static final String ERROR_OP_UNAUTHORIZED = "ERROR_OP_UNAUTHORIZED";
 
@@ -433,6 +434,32 @@ public class ContestController extends Controller {
         List<TemplateMatchEvent> liveMatchEventList = TemplateMatchEvent.findAllPlaying(contest.templateMatchEventIds);
 
         return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
+    }
+
+    public static Result getLiveContestEntries(String contestId) {
+
+        // Obtenemos el Contest
+        Contest contest = Contest.findOne(contestId);
+
+        if (contest == null) {
+            return new ReturnHelper(false, ERROR_CONTEST_INVALID).toResult();
+        }
+
+        if (!contest.state.isLive()) {
+            return new ReturnHelper(false, ERROR_CONTEST_INVALID).toResult();
+        }
+
+        // Buscar todos los players que han sido incrustados en los contestEntries
+        Set<ObjectId> playersInContestEntries = new HashSet<>();
+        for (ContestEntry contestEntry: contest.contestEntries) {
+            playersInContestEntries.addAll(contestEntry.soccerIds);
+        }
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContestEntries));
+
+        return new ReturnHelper(ImmutableMap.of(
+                "contest_entries", contest.contestEntries,
+                "soccer_players", players))
+                .toResult(JsonViews.FullContest.class);
     }
 
     // @UserAuthenticated
