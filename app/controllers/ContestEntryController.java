@@ -438,7 +438,7 @@ public class ContestEntryController extends Controller {
                             Money managerBalance = User.calculateManagerBalance(theUser.userId);
                             float managerLevel = User.managerLevelFromPoints(managerBalance);
 
-                            moneyNeeded = TemplateSoccerPlayer.moneyToBuy(aContest, TemplateSoccerPlayer.levelFromSalary(instanceSoccerPlayer.salary), (int) managerLevel);
+                            moneyNeeded = moneyNeeded.plus(TemplateSoccerPlayer.moneyToBuy(aContest, TemplateSoccerPlayer.levelFromSalary(instanceSoccerPlayer.salary), (int) managerLevel));
 
                             if (moneyNeeded.isPositive()) {
                                 Logger.debug("changeSoccerPlayer: moneyNeeded: {}", moneyNeeded.toString());
