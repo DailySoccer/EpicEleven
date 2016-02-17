@@ -450,7 +450,7 @@ public class ContestController extends Controller {
             return new ReturnHelper(false, ERROR_CONTEST_INVALID).toResult();
         }
 
-        if (!contest.state.isLive()) {
+        if (!contest.state.isLive() && !contest.state.isHistory()) {
             return new ReturnHelper(false, ERROR_CONTEST_INVALID).toResult();
         }
 
