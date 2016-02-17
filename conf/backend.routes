@@ -60,15 +60,18 @@ GET            /get_my_active_contest/:contest                         controlle
 GET            /get_my_live_contest/:contest                           controllers.ContestController.getMyLiveContest(contest)
 GET            /get_my_history_contest/:contest                        controllers.ContestController.getMyHistoryContest(contest)
 GET            /get_my_contest_entry/:contest                          controllers.ContestController.getMyContestEntry(contest)
+GET            /get_soccer_players_availables_to_change/:contest       controllers.ContestController.getSoccerPlayersAvailablesToChange(contest)
 
 # Live contests asociados a usuario
 GET            /get_live_match_events/template_contest/:contest        controllers.ContestController.getLiveMatchEventsFromTemplateContest(contest)
 GET            /get_live_match_events/contest/:contest                 controllers.ContestController.getLiveMatchEventsFromContest(contest)
+GET            /get_live_contest_entries/:contest                      controllers.ContestController.getLiveContestEntries(contest)
 
 # Entrar/Salir concurso
 POST           /add_contest_entry                                      controllers.ContestEntryController.addContestEntry()
 POST           /edit_contest_entry                                     controllers.ContestEntryController.editContestEntry()
 POST           /cancel_contest_entry                                   controllers.ContestEntryController.cancelContestEntry()
+POST           /change_soccer_player                                   controllers.ContestEntryController.changeSoccerPlayer()
 
 # Sincronizacion de nuestras maquinas locales con los datos de Opta
 GET            /return_xml/:timestamp                                  controllers.OptaHttpController.returnXML(timestamp: Long)

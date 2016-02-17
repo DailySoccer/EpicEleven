@@ -34,6 +34,8 @@ public class ContestEntryController extends Controller {
     private static final String CONTEST_ENTRY_KEY = "error";
     private static final String ERROR_CONTEST_INVALID = "ERROR_CONTEST_INVALID";
     private static final String ERROR_CONTEST_NOT_ACTIVE = "ERROR_CONTEST_NOT_ACTIVE";
+    private static final String ERROR_SOURCE_SOCCERPLAYER_INVALID = "ERROR_SOURCE_SOCCERPLAYER_INVALID";
+    private static final String ERROR_TARGET_SOCCERPLAYER_INVALID = "ERROR_TARGET_SOCCERPLAYER_INVALID";
     private static final String ERROR_CONTEST_FULL = "ERROR_CONTEST_FULL";
     private static final String ERROR_FANTASY_TEAM_INCOMPLETE = "ERROR_FANTASY_TEAM_INCOMPLETE";
     private static final String ERROR_SALARYCAP_INVALID = "ERROR_SALARYCAP_INVALID";
@@ -117,7 +119,7 @@ public class ContestEntryController extends Controller {
             }
 
             if (errores.isEmpty()) {
-                errores = validateContestEntry(aContest, formation, idsList);
+                errores = validateContestEntry(aContest, formation, idsList, /*changeInLiveAllowed*/ false);
             }
 
             if (errores.isEmpty()) {
@@ -246,7 +248,7 @@ public class ContestEntryController extends Controller {
                 // Obtener los soccerIds de los futbolistas : List<ObjectId>
                 List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
 
-                List<String> errores = validateContestEntry(aContest, formation, idsList);
+                List<String> errores = validateContestEntry(aContest, formation, idsList, /*changeInLiveAllowed*/ false);
 
                 if (errores.isEmpty()) {
                     if (MoneyUtils.isGreaterThan(aContest.entryFee, MoneyUtils.zero) &&
@@ -355,7 +357,136 @@ public class ContestEntryController extends Controller {
         return new ReturnHelper(!contestEntryForm.hasErrors(), result).toResult();
     }
 
-    private static List<String> validateContestEntry (Contest contest, String formation, List<ObjectId> objectIds) {
+    public static class ChangeSoccerPlayerParams {
+        @Constraints.Required
+        public String contestEntryId;
+
+        @Constraints.Required
+        public String soccerPlayerId;
+
+        @Constraints.Required
+        public String soccerPlayerIdNew;
+    }
+
+    @UserAuthenticated
+    public static Result changeSoccerPlayer() {
+        Form<ChangeSoccerPlayerParams> changeForm = form(ChangeSoccerPlayerParams.class).bindFromRequest();
+
+        User theUser = (User) ctx().args.get("User");
+
+        ObjectId contestId = null;
+
+        if (!changeForm.hasErrors()) {
+            ChangeSoccerPlayerParams params = changeForm.get();
+
+            Logger.info("changeSoccerPlayer: contestEntryId({}) soccerPlayer: {} -> {}", params.contestEntryId, params.soccerPlayerId, params.soccerPlayerIdNew);
+
+            ContestEntry contestEntry = ContestEntry.findOne(params.contestEntryId);
+            if (contestEntry != null) {
+                // Obtener el contestId : ObjectId
+                Contest aContest = Contest.findOneFromContestEntry(contestEntry.contestEntryId);
+                ObjectId oldSoccerPlayerId = new ObjectId(params.soccerPlayerId);
+                ObjectId newSoccerPlayerId = new ObjectId(params.soccerPlayerIdNew);
+
+                List<String> errores = new ArrayList<>();
+
+                Money moneyNeeded = Money.zero(MoneyUtils.CURRENCY_GOLD);
+
+                if (contestEntry.containsSoccerPlayer(oldSoccerPlayerId)) {
+                    moneyNeeded = moneyNeeded.plus(contestEntry.changeSoccerPlayer(oldSoccerPlayerId, newSoccerPlayerId));
+                }
+                else {
+                    errores.add(ERROR_CONTEST_ENTRY_INVALID);
+                }
+
+                if (errores.isEmpty()) {
+                    List<TemplateMatchEvent> templateMatchEvents = aContest.getTemplateMatchEvents();
+
+                    // Comprobar que el equipo del futbolista que vamos a sustituir no ha terminado de jugar
+                    InstanceSoccerPlayer oldInstanceSoccerPlayer = aContest.getInstanceSoccerPlayer(oldSoccerPlayerId);
+                    for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
+                        if (templateMatchEvent.containsTemplateSoccerTeam(oldInstanceSoccerPlayer.templateSoccerTeamId)) {
+                            if (templateMatchEvent.isGameFinished()) {
+                                errores.add(ERROR_SOURCE_SOCCERPLAYER_INVALID);
+                            }
+                            break;
+                        }
+                    }
+
+                    // Comprobar que el equipo del futbolista que vamos a introducir no ha comenzado a jugar
+                    InstanceSoccerPlayer newInstanceSoccerPlayer = aContest.getInstanceSoccerPlayer(newSoccerPlayerId);
+                    for (TemplateMatchEvent templateMatchEvent : templateMatchEvents) {
+                        if (templateMatchEvent.containsTemplateSoccerTeam(newInstanceSoccerPlayer.templateSoccerTeamId)) {
+                            if (templateMatchEvent.isGameStarted()) {
+                                errores.add(ERROR_TARGET_SOCCERPLAYER_INVALID);
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                if (errores.isEmpty()) {
+                    // Obtener los soccerIds de los futbolistas : List<ObjectId>
+                    errores = validateContestEntry(aContest, contestEntry.formation, contestEntry.soccerIds, /*changeInLiveAllowed*/ true);
+
+                    if (errores.isEmpty()) {
+                        if (MoneyUtils.isGreaterThan(aContest.entryFee, MoneyUtils.zero) &&
+                                aContest.entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+
+                            // Averiguar cuánto dinero ha usado para comprar futbolistas de nivel superior
+                            Money managerBalance = User.calculateManagerBalance(theUser.userId);
+                            List<InstanceSoccerPlayer> soccerPlayers = aContest.getInstanceSoccerPlayers(contestEntry.soccerIds);
+                            List<InstanceSoccerPlayer> playersToBuy = contestEntry.playersNotPurchased(User.playersToBuy(managerBalance, soccerPlayers));
+                            if (!playersToBuy.isEmpty()) {
+                                moneyNeeded = moneyNeeded.plus(User.moneyToBuy(aContest, managerBalance, playersToBuy));
+                            }
+
+                            if (moneyNeeded.isPositive()) {
+                                Logger.debug("changeSoccerPlayer: moneyNeeded: {}", moneyNeeded.toString());
+
+                                // Verificar que el usuario tiene dinero suficiente...
+                                if (!User.hasMoney(theUser.userId, moneyNeeded)) {
+                                    errores.add(ERROR_USER_BALANCE_NEGATIVE);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (errores.isEmpty()) {
+                    contestId = aContest.contestId;
+                    if (!ContestEntry.change(theUser, aContest, contestEntry.contestEntryId, oldSoccerPlayerId, newSoccerPlayerId)) {
+                        errores.add(ERROR_RETRY_OP);
+                    }
+                }
+
+                // TODO: ¿Queremos informar de los distintos errores?
+                for (String error : errores) {
+                    changeForm.reject(CONTEST_ENTRY_KEY, error);
+                }
+            }
+            else {
+                changeForm.reject(CONTEST_ENTRY_KEY, ERROR_CONTEST_ENTRY_INVALID);
+            }
+        }
+
+        Object result = changeForm.errorsAsJson();
+
+        if (!changeForm.hasErrors()) {
+            /*
+            result = ImmutableMap.of(
+                    "result", "ok",
+                    "profile", theUser.getProfile());
+            */
+            return ContestController.getMyLiveContest(contestId.toString());
+        }
+        else {
+            Logger.error("WTF 7249: changeSoccerPlayer: {}", changeForm.errorsAsJson());
+        }
+        return new ReturnHelper(!changeForm.hasErrors(), result).toResult();
+    }
+
+    private static List<String> validateContestEntry (Contest contest, String formation, List<ObjectId> objectIds, boolean changeInLiveAllowed) {
         List<String> errores = new ArrayList<>();
 
         // Verificar que el contest sea válido
@@ -364,7 +495,7 @@ public class ContestEntryController extends Controller {
         }
         else {
             // Verificar que el contest esté activo (ni "live" ni "history")
-            if (!contest.state.isActive() && !contest.state.isWaitingAuthor()) {
+            if (!changeInLiveAllowed && !contest.state.isActive() && !contest.state.isWaitingAuthor()) {
                 errores.add(ERROR_CONTEST_NOT_ACTIVE);
             }
 
