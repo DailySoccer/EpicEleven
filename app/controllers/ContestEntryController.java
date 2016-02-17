@@ -433,13 +433,12 @@ public class ContestEntryController extends Controller {
                         if (MoneyUtils.isGreaterThan(aContest.entryFee, MoneyUtils.zero) &&
                                 aContest.entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
 
-                            // Averiguar cuánto dinero ha usado para comprar futbolistas de nivel superior
+                            InstanceSoccerPlayer instanceSoccerPlayer = aContest.getInstanceSoccerPlayer(newSoccerPlayerId);
+
                             Money managerBalance = User.calculateManagerBalance(theUser.userId);
-                            List<InstanceSoccerPlayer> soccerPlayers = aContest.getInstanceSoccerPlayers(contestEntry.soccerIds);
-                            List<InstanceSoccerPlayer> playersToBuy = contestEntry.playersNotPurchased(User.playersToBuy(managerBalance, soccerPlayers));
-                            if (!playersToBuy.isEmpty()) {
-                                moneyNeeded = moneyNeeded.plus(User.moneyToBuy(aContest, managerBalance, playersToBuy));
-                            }
+                            float managerLevel = User.managerLevelFromPoints(managerBalance);
+
+                            moneyNeeded = TemplateSoccerPlayer.moneyToBuy(aContest, TemplateSoccerPlayer.levelFromSalary(instanceSoccerPlayer.salary), (int) managerLevel);
 
                             if (moneyNeeded.isPositive()) {
                                 Logger.debug("changeSoccerPlayer: moneyNeeded: {}", moneyNeeded.toString());
