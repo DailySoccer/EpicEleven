@@ -313,14 +313,19 @@ public class ContestController extends Controller {
         }
         List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContestEntries));
 
-        return new ReturnHelper(ImmutableMap.builder()
+        ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
                 .put("contest", contest)
                 .put("users_info", usersInfoInContest)
                 .put("match_events", matchEvents)
                 .put("soccer_teams", teams)
                 .put("soccer_players", players)
-                .put("prizes", Prizes.findOne(contest.prizeType, contest.getNumEntries(), contest.getPrizePool()))
-                .build())
+                .put("prizes", Prizes.findOne(contest.prizeType, contest.getNumEntries(), contest.getPrizePool()));
+
+        if (theUser != null) {
+            builder.put("profile", theUser.getProfile());
+        }
+
+        return new ReturnHelper(builder.build())
                 .toResult(JsonViews.FullContest.class);
     }
 
