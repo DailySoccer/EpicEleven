@@ -383,20 +383,25 @@ public class ContestEntryController extends Controller {
 
             ContestEntry contestEntry = ContestEntry.findOne(params.contestEntryId);
             if (contestEntry != null) {
+                List<String> errores = new ArrayList<>();
+
+                if (!contestEntry.userId.equals(theUser.userId)) {
+                    errores.add(ERROR_CONTEST_ENTRY_INVALID);
+                }
+
                 // Obtener el contestId : ObjectId
                 Contest aContest = Contest.findOneFromContestEntry(contestEntry.contestEntryId);
                 ObjectId oldSoccerPlayerId = new ObjectId(params.soccerPlayerId);
                 ObjectId newSoccerPlayerId = new ObjectId(params.soccerPlayerIdNew);
 
-                List<String> errores = new ArrayList<>();
-
                 Money moneyNeeded = Money.zero(MoneyUtils.CURRENCY_GOLD);
 
-                if (contestEntry.containsSoccerPlayer(oldSoccerPlayerId)) {
-                    moneyNeeded = moneyNeeded.plus(contestEntry.changeSoccerPlayer(oldSoccerPlayerId, newSoccerPlayerId));
-                }
-                else {
-                    errores.add(ERROR_CONTEST_ENTRY_INVALID);
+                if (errores.isEmpty()) {
+                    if (contestEntry.containsSoccerPlayer(oldSoccerPlayerId)) {
+                        moneyNeeded = moneyNeeded.plus(contestEntry.changeSoccerPlayer(oldSoccerPlayerId, newSoccerPlayerId));
+                    } else {
+                        errores.add(ERROR_CONTEST_ENTRY_INVALID);
+                    }
                 }
 
                 if (errores.isEmpty()) {
