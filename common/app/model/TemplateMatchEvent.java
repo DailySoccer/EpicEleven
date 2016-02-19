@@ -250,6 +250,10 @@ public class TemplateMatchEvent implements JongoId {
         return points;
     }
 
+    public boolean containsTemplateSoccerTeam(ObjectId soccerTeamId) {
+        return templateSoccerTeamAId.equals(soccerTeamId) || templateSoccerTeamBId.equals(soccerTeamId);
+    }
+
     public boolean containsTemplateSoccerPlayer(ObjectId soccerPlayerId) {
         return liveFantasyPoints.containsKey(soccerPlayerId.toString());
     }
