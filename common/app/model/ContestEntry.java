@@ -2,17 +2,14 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTranOrder;
 import model.shop.Order;
 import model.shop.Product;
-import model.shop.ProductMoney;
 import model.shop.ProductSoccerPlayer;
 import org.bson.types.ObjectId;
-import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
@@ -26,7 +23,7 @@ public class ContestEntry implements JongoId {
     public static final List<String> FORMATIONS = ImmutableList.of( "442", "352", "433", "343", "451" );
     public static final String FORMATION_DEFAULT = FORMATIONS.get(0);
 
-    static public List<Money> CHANGES_PRICES = ImmutableList.<Money>builder()
+    static public List<Money> SUBSTITUTIONS_PRICES = ImmutableList.<Money>builder()
             .add(Money.of(MoneyUtils.CURRENCY_GOLD, 0))
             .add(Money.of(MoneyUtils.CURRENCY_GOLD, 3))
             .add(Money.of(MoneyUtils.CURRENCY_GOLD, 6))
@@ -48,7 +45,7 @@ public class ContestEntry implements JongoId {
     public List<ObjectId> playersPurchased; // Futbolistas que han necesitado ser comprados por tener un nivel superior
 
     @JsonView(value={JsonViews.FullContest.class})
-    public Map<ObjectId, ObjectId> playersChanged; // Cambio de la alineacion de futbolistas en "Live"
+    public List<Substitution> substitutions; // Cambio de la alineacion de futbolistas en "Live"
 
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
     public int position = -1;
@@ -85,12 +82,12 @@ public class ContestEntry implements JongoId {
     }
 
     public Money changePrice() {
-        int pricesIndex = (playersChanged != null ? playersChanged.size() : 0);
-        if (pricesIndex >= CHANGES_PRICES.size() || pricesIndex < 0) {
-            Logger.error("WTF - 3537: SoccerPlayer changes is requesting unknown change-price: index={}, MAX_CHANGES={}", pricesIndex, CHANGES_PRICES.size());
+        int pricesIndex = (substitutions != null ? substitutions.size() : 0);
+        if (pricesIndex >= SUBSTITUTIONS_PRICES.size() || pricesIndex < 0) {
+            Logger.error("WTF - 3537: SoccerPlayer changes is requesting unknown change-price: index={}, MAX_CHANGES={}", pricesIndex, SUBSTITUTIONS_PRICES.size());
             return Money.zero(MoneyUtils.CURRENCY_GOLD);
         }
-        return CHANGES_PRICES.get(pricesIndex);
+        return SUBSTITUTIONS_PRICES.get(pricesIndex);
     }
 
     public void updateRanking() {
@@ -111,11 +108,11 @@ public class ContestEntry implements JongoId {
 
         int index = soccerIds.indexOf(oldSoccerPlayerId);
         if (index != -1) {
-            if (playersChanged == null) {
-                playersChanged = new HashMap<>();
+            if (substitutions == null) {
+                substitutions = new ArrayList<>();
             }
 
-            playersChanged.put(oldSoccerPlayerId, newSoccerPlayerId);
+            substitutions.add(new Substitution(oldSoccerPlayerId, newSoccerPlayerId));
             soccerIds.set(index, newSoccerPlayerId);
         }
 
@@ -289,7 +286,7 @@ public class ContestEntry implements JongoId {
 
             WriteResult result = Model.contests()
                     .update("{_id: #, state: #, contestEntries._id: #, contestEntries.userId: #}", contest.contestId, "LIVE", contestEntry.contestEntryId, user.userId)
-                    .with("{$set: {contestEntries.$.soccerIds: #, contestEntries.$.playersPurchased: #, contestEntries.$.playersChanged: #}}", contestEntry.soccerIds, playersPurchasedList, contestEntry.playersChanged);
+                    .with("{$set: {contestEntries.$.soccerIds: #, contestEntries.$.playersPurchased: #, contestEntries.$.substitutions: #}}", contestEntry.soccerIds, playersPurchasedList, contestEntry.substitutions);
 
             // Comprobamos el número de documentos afectados (error == 0)
             bRet = (result.getN() > 0);
