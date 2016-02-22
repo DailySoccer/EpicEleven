@@ -2,9 +2,9 @@ package model.paypal;
 
 import com.paypal.api.payments.*;
 import com.paypal.core.Constants;
-import com.paypal.core.rest.APIContext;
-import com.paypal.core.rest.OAuthTokenCredential;
-import com.paypal.core.rest.PayPalRESTException;
+import com.paypal.base.rest.APIContext;
+import com.paypal.base.rest.OAuthTokenCredential;
+import com.paypal.base.rest.PayPalRESTException;
 import model.shop.Catalog;
 import model.shop.Product;
 import model.shop.ProductMoney;
