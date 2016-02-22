@@ -30,8 +30,8 @@ public class PaypalPayment {
     /*
         LIVE CONFIGURATION
      */
-    static final String LIVE_CLIENT_ID = "AXGKyxAeNjwaGg4gNwHDEoidWC7_uQeRgaFAWTccuLqb1-R-s11FWbceSWR0";
-    static final String LIVE_SECRET = "ENlBYxDHZVn_hotpxYtCXD3NPvvPQSmj8CbfzYWZyaFddkQTwhhw3GxV5Ipe";
+    static final String LIVE_CLIENT_ID = "AQapzBA9V1DouMJmqYle_1PSYemDEMeMbHstussn_DIE73-DidWuVUArhxHY";
+    static final String LIVE_SECRET = "EBqyjhAo_UYw4qEKhKl59YgrqgGyyW9U7sLEjhdQBxslsR3zj7OcQY1QHv1T";
     static final String LIVE_CANCEL_URL = "http://backend.epiceleven.com" + SERVER_CANCEL_PATH;
     static final String LIVE_RETURN_URL = "http://backend.epiceleven.com" + SERVER_RETURN_PATH;
 
