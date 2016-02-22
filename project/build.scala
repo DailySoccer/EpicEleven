@@ -71,8 +71,8 @@ object build extends Build {
                     ,"org.jooq" % "jooq" % "3.5.0"
                     ,"org.jooq" % "jooq-meta" % "3.5.0"
                     ,"org.flywaydb" % "flyway-core" % "3.1"
-                    ,"com.paypal.sdk" % "paypal-core" % "1.6.6"
-                    ,"com.paypal.sdk" % "rest-api-sdk" % "0.12.2" intransitive()
+                    ,"com.paypal.sdk" % "paypal-core" % "1.7.0"
+                    ,"com.paypal.sdk" % "rest-api-sdk" % "1.4.1"
                     ,"com.rabbitmq" % "amqp-client" % "3.4.3"
                     ,"org.ejml" % "all" % "0.28"
                     ,"org.apache.commons" % "commons-math3" % "3.5"
@@ -90,8 +90,8 @@ object build extends Build {
                     ,javaWs
                     ,"com.stormpath.sdk" % "stormpath-sdk-api" % "1.0.RC3"
                     ,"com.stormpath.sdk" % "stormpath-sdk-httpclient" % "1.0.RC3"
-                    ,"com.paypal.sdk" % "paypal-core" % "1.6.6"
-                    ,"com.paypal.sdk" % "rest-api-sdk" % "0.12.2" intransitive()
+                    ,"com.paypal.sdk" % "paypal-core" % "1.7.0"
+                    ,"com.paypal.sdk" % "rest-api-sdk" % "1.4.1"
                   ))
                  .enablePlugins(PlayJava)
                  .aggregate(common)
