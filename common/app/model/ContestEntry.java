@@ -42,10 +42,10 @@ public class ContestEntry implements JongoId {
     public List<ObjectId> soccerIds;    // Fantasy team
 
     @JsonView(value={JsonViews.FullContest.class})
-    public List<ObjectId> playersPurchased; // Futbolistas que han necesitado ser comprados por tener un nivel superior
+    public List<ObjectId> playersPurchased = new ArrayList<>(); // Futbolistas que han necesitado ser comprados por tener un nivel superior
 
     @JsonView(value={JsonViews.FullContest.class})
-    public List<Substitution> substitutions; // Cambio de la alineacion de futbolistas en "Live"
+    public List<Substitution> substitutions = new ArrayList<>(); // Cambio de la alineacion de futbolistas en "Live"
 
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
     public int position = -1;
@@ -72,12 +72,12 @@ public class ContestEntry implements JongoId {
     public ObjectId getId() { return contestEntryId; }
 
     public boolean playerPurchased(InstanceSoccerPlayer instanceSoccerPlayer) {
-        return playersPurchased.stream().anyMatch(t -> t.equals(instanceSoccerPlayer.templateSoccerPlayerId));
+        return playersPurchased != null && playersPurchased.stream().anyMatch(t -> t.equals(instanceSoccerPlayer.templateSoccerPlayerId));
     }
 
     public List<InstanceSoccerPlayer> playersNotPurchased(List<InstanceSoccerPlayer> instanceSoccerPlayers) {
         return instanceSoccerPlayers.stream().filter(instanceSoccerPlayer ->
-                        playersPurchased.stream().noneMatch(t -> t.equals(instanceSoccerPlayer.templateSoccerPlayerId))
+                        playersPurchased == null || playersPurchased.stream().noneMatch(t -> t.equals(instanceSoccerPlayer.templateSoccerPlayerId))
         ).collect(Collectors.toList());
     }
 
