@@ -7,7 +7,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.paypal.api.payments.Payment;
 import com.paypal.api.payments.PaymentHistory;
-import com.paypal.core.rest.PayPalRESTException;
+import com.paypal.base.rest.PayPalRESTException;
 import model.*;
 import model.jobs.CompleteOrderJob;
 import model.paypal.PaypalIPNMessage;
