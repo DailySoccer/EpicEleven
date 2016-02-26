@@ -293,6 +293,7 @@ public class Model {
         if (!theMongoDB.collectionExists("templateMatchEvents")) {
             DBCollection templateMatchEvents = theMongoDB.createCollection("templateMatchEvents", new BasicDBObject());
             templateMatchEvents.createIndex(new BasicDBObject("optaMatchEventId", 1));
+            templateMatchEvents.createIndex(new BasicDBObject("startDate", 1));
         }
 
         if (!theMongoDB.collectionExists("templateSoccerTeams")) {
@@ -322,6 +323,11 @@ public class Model {
         if (!theMongoDB.collectionExists("statsSimulation")) {
             DBCollection statsSimulation = theMongoDB.createCollection("statsSimulation", new BasicDBObject());
             statsSimulation.createIndex(new BasicDBObject("optaMatchEventId", 1));
+        }
+
+        if (!theMongoDB.collectionExists("jobs")) {
+            DBCollection jobs = theMongoDB.createCollection("jobs", new BasicDBObject());
+            jobs.createIndex(new BasicDBObject("state", 1));
         }
     }
 
