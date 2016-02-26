@@ -25,8 +25,8 @@ public class ContestEntry implements JongoId {
 
     static public List<Money> SUBSTITUTIONS_PRICES = ImmutableList.<Money>builder()
             .add(Money.of(MoneyUtils.CURRENCY_GOLD, 0))
-            .add(Money.of(MoneyUtils.CURRENCY_GOLD, 3))
-            .add(Money.of(MoneyUtils.CURRENCY_GOLD, 6))
+            .add(Money.of(MoneyUtils.CURRENCY_GOLD, 0))
+            .add(Money.of(MoneyUtils.CURRENCY_GOLD, 0))
             .build();
 
     @Id
