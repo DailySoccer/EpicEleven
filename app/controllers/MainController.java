@@ -7,6 +7,8 @@ import model.*;
 import model.opta.OptaTeam;
 import org.bson.types.ObjectId;
 import play.Logger;
+import play.cache.Cache;
+import play.cache.Cached;
 import play.data.Form;
 import play.data.validation.Constraints;
 import play.libs.F;
@@ -17,11 +19,15 @@ import utils.ListUtils;
 import utils.ReturnHelper;
 
 import java.util.*;
+import java.util.concurrent.Callable;
 
 import static play.data.Form.form;
 
 @AllowCors.Origin
 public class MainController extends Controller {
+
+    static int CACHE_SOCCERPLAYER_BY_COMPETITION = 15 * 60;
+
 
     public static Result ping() {
     	return ok("Pong");
@@ -129,29 +135,40 @@ public class MainController extends Controller {
         return new ReturnHelper(data).toResult(JsonViews.Statistics.class);
     }
 
-    @UserAuthenticated
-    public static Result getSoccerPlayersByCompetition(String competitionId) {
-        User theUser = (User)ctx().args.get("User");
+    // @UserAuthenticated
+    public static Result getSoccerPlayersByCompetition(String competitionId) throws Exception {
+        return Cache.getOrElse("SoccerPlayersByCompetition-".concat(competitionId), new Callable<Result>() {
+            @Override
+            public Result call() throws Exception {
+                User theUser = (User)ctx().args.get("User");
 
-        List<TemplateSoccerTeam> templateSoccerTeamList = TemplateSoccerTeam.findAllByCompetition(competitionId);
+                List<TemplateSoccerTeam> templateSoccerTeamList = TemplateSoccerTeam.findAllByCompetition(competitionId);
 
-        List<TemplateSoccerPlayer> templateSoccerPlayers = new ArrayList<>();
-        for (TemplateSoccerTeam templateSoccerTeam : templateSoccerTeamList) {
-            templateSoccerPlayers.addAll(templateSoccerTeam.getTemplateSoccerPlayersWithSalary());
-        }
+                List<TemplateSoccerPlayer> templateSoccerPlayers = new ArrayList<>();
+                for (TemplateSoccerTeam templateSoccerTeam : templateSoccerTeamList) {
+                    templateSoccerPlayers.addAll(templateSoccerTeam.getTemplateSoccerPlayersWithSalary());
+                }
 
-        List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
-        for (TemplateSoccerPlayer templateSoccerPlayer : templateSoccerPlayers) {
-            instanceSoccerPlayers.add( new InstanceSoccerPlayer(templateSoccerPlayer) );
-        }
+                List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
+                for (TemplateSoccerPlayer templateSoccerPlayer : templateSoccerPlayers) {
+                    instanceSoccerPlayers.add( new InstanceSoccerPlayer(templateSoccerPlayer) );
+                }
 
-        return new ReturnHelper(ImmutableMap.builder()
-                .put("instanceSoccerPlayers", instanceSoccerPlayers)
-                .put("soccer_teams", templateSoccerTeamList)
-                .put("soccer_players", templateSoccerPlayers)
-                .put("profile", theUser.getProfile())
-                .build())
-                .toResult(JsonViews.FullContest.class);
+                ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
+                        .put("instanceSoccerPlayers", instanceSoccerPlayers)
+                        .put("soccer_teams", templateSoccerTeamList)
+                        .put("soccer_players", templateSoccerPlayers);
+
+                /*
+                if (theUser != null) {
+                    builder.put("profile", theUser.getProfile());
+                }
+                */
+
+                return new ReturnHelper(builder.build())
+                        .toResult(JsonViews.FullContest.class);
+            }
+        }, CACHE_SOCCERPLAYER_BY_COMPETITION);
     }
 
     public static class FavoritesParams {

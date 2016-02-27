@@ -24,6 +24,14 @@ public class AllowCors {
 
             String origin = getOrigin(context.request());
 
+            // TODO: Buscar el medio por el que detectaremos la versión de mobile
+            if (origin == null) {
+                String userAgentHeader = String.join(", ", context.request().headers().get("User-Agent"));
+                if (userAgentHeader.contains("Mobile")) {
+                    origin = "*";
+                }
+            }
+
             // Cuando estamos en el mismo dominio (localhost:9000 o dailysoccer-staging), no recibimos origin.
             // La header "Access-Control-Allow-Credentials" no nos hace falta ponerla a true pq no usamos cookies.
             if (origin != null && isWhiteListed(origin)) {
@@ -33,6 +41,16 @@ public class AllowCors {
                 // Necesitamos que se pueda acceder a la version del servidor, mandada desde un filtro global en Global
                 context.response().setHeader("Access-Control-Expose-Headers", "Release-Version");
             }
+            else {
+                /*
+                Logger.warning("INVALID CorsAction: {} | Header: {}", context.toString(), context.request().headers().toString());
+
+                for (String key : context.request().headers().keySet()) {
+                    String[] values = context.request().headers().get(key);
+                    Logger.debug("Header: {} = {}", key, String.join(", ", values));
+                }
+                */
+            }
 
             return delegate.call(context);
         }
@@ -41,6 +59,14 @@ public class AllowCors {
     public static void preFlight(Http.Request request, Http.Response response) {
 
         String origin = getOrigin(request);
+
+        // TODO: Buscar el medio por el que detectaremos la versión de mobile
+        if (origin == null) {
+            String userAgentHeader = String.join(", ", request.headers().get("User-Agent"));
+            if (userAgentHeader.contains("Mobile")) {
+                origin = "*";
+            }
+        }
 
         if (origin != null && isWhiteListed(origin)) {
 
