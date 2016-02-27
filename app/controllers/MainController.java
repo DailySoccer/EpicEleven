@@ -129,7 +129,7 @@ public class MainController extends Controller {
         return new ReturnHelper(data).toResult(JsonViews.Statistics.class);
     }
 
-    @UserAuthenticated
+    // @UserAuthenticated
     public static Result getSoccerPlayersByCompetition(String competitionId) {
         User theUser = (User)ctx().args.get("User");
 
@@ -145,12 +145,16 @@ public class MainController extends Controller {
             instanceSoccerPlayers.add( new InstanceSoccerPlayer(templateSoccerPlayer) );
         }
 
-        return new ReturnHelper(ImmutableMap.builder()
+        ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
                 .put("instanceSoccerPlayers", instanceSoccerPlayers)
                 .put("soccer_teams", templateSoccerTeamList)
-                .put("soccer_players", templateSoccerPlayers)
-                .put("profile", theUser.getProfile())
-                .build())
+                .put("soccer_players", templateSoccerPlayers);
+
+        if (theUser != null) {
+            builder.put("profile", theUser.getProfile());
+        }
+
+        return new ReturnHelper(builder.build())
                 .toResult(JsonViews.FullContest.class);
     }
 
