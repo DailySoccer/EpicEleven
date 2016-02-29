@@ -194,7 +194,7 @@ public class TemplateContestController extends Controller {
             List<TemplateMatchEvent> templateMatchEvents = templateContest.getTemplateMatchEvents();
             return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(templateMatchEvents), templateContest.state.isActive()));
         }
-        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(templateContest.optaCompetitionId, params.createdAt), templateContest.state.isActive()));
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(templateContest.optaCompetitionId, OptaCompetition.SEASON_DATE_START), templateContest.state.isActive()));
     }
 
     public static Result createClone(String templateContestId) {
