@@ -16,6 +16,7 @@ import play.data.Form;
 import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.With;
 import utils.ListUtils;
 import utils.MoneyUtils;
 import utils.ReturnHelper;
@@ -28,6 +29,8 @@ import static play.data.Form.form;
 
 @AllowCors.Origin
 public class ContestController extends Controller {
+
+    private final static int CACHE_ACTIVE_CONTESTS = 1;
 
     private static final String ERROR_VIEW_CONTEST_INVALID = "ERROR_VIEW_CONTEST_INVALID";
     private static final String ERROR_MY_CONTEST_INVALID = "ERROR_MY_CONTEST_INVALID";
@@ -164,7 +167,8 @@ public class ContestController extends Controller {
     /*
      * Devuelve la lista de contests activos (aquellos a los que un usuario puede apuntarse)
      */
-    @Cached(key = "ActiveContest", duration = 1)
+    @With(AllowCors.CorsAction.class)
+    @Cached(key = "ActiveContest", duration = CACHE_ACTIVE_CONTESTS)
     public static Result getActiveContests() {
         // Query que compara el "número de entries" con "maxEntries" (parece más lenta que haciendo el filtro a mano)
         // List<Contest> contests = Contest.findAllActiveNotFull(JsonViews.ActiveContests.class);
