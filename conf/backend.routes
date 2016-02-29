@@ -7,6 +7,8 @@ GET            /current_date                                           controlle
 GET            /get_soccer_player_info/:soccerPlayer                   controllers.MainController.getTemplateSoccerPlayerInfo(soccerPlayer)
 GET            /get_instance_soccer_player_info/:contest/:soccerPlayer controllers.MainController.getInstanceSoccerPlayerInfo(contest, soccerPlayer)
 GET            /get_soccer_players_by_competition/:competitionId       controllers.MainController.getSoccerPlayersByCompetition(competitionId : String)
+GET            /get_soccer_players_by_competition_23                   controllers.MainController.getSoccerPlayersByCompetition_23()
+GET            /get_soccer_players_by_competition_8                    controllers.MainController.getSoccerPlayersByCompetition_8()
 
 # Reglas del juego
 GET            /get_scoring_rules                                      controllers.MainController.getScoringRules()

@@ -15,6 +15,7 @@ import play.libs.F;
 import play.libs.ws.WS;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.With;
 import utils.ListUtils;
 import utils.ReturnHelper;
 
@@ -26,8 +27,7 @@ import static play.data.Form.form;
 @AllowCors.Origin
 public class MainController extends Controller {
 
-    static int CACHE_SOCCERPLAYER_BY_COMPETITION = 15 * 60;
-
+    private final static int CACHE_SOCCERPLAYER_BY_COMPETITION = 15 * 60;
 
     public static Result ping() {
     	return ok("Pong");
@@ -140,24 +140,40 @@ public class MainController extends Controller {
         return Cache.getOrElse("SoccerPlayersByCompetition-".concat(competitionId), new Callable<Result>() {
             @Override
             public Result call() throws Exception {
-                User theUser = (User)ctx().args.get("User");
+                return getSoccerPlayersByCompetition_internal(competitionId);
+            }
+        }, CACHE_SOCCERPLAYER_BY_COMPETITION);
+    }
 
-                List<TemplateSoccerTeam> templateSoccerTeamList = TemplateSoccerTeam.findAllByCompetition(competitionId);
+    @With(AllowCors.CorsAction.class)
+    @Cached(key = "SoccerPlayersByCompetition-23", duration = CACHE_SOCCERPLAYER_BY_COMPETITION)
+    public static Result getSoccerPlayersByCompetition_23() {
+        return getSoccerPlayersByCompetition_internal("23");
+    }
 
-                List<TemplateSoccerPlayer> templateSoccerPlayers = new ArrayList<>();
-                for (TemplateSoccerTeam templateSoccerTeam : templateSoccerTeamList) {
-                    templateSoccerPlayers.addAll(templateSoccerTeam.getTemplateSoccerPlayersWithSalary());
-                }
+    @With(AllowCors.CorsAction.class)
+    @Cached(key = "SoccerPlayersByCompetition-8", duration = CACHE_SOCCERPLAYER_BY_COMPETITION)
+    public static Result getSoccerPlayersByCompetition_8() {
+        return getSoccerPlayersByCompetition_internal("8");
+    }
 
-                List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
-                for (TemplateSoccerPlayer templateSoccerPlayer : templateSoccerPlayers) {
-                    instanceSoccerPlayers.add( new InstanceSoccerPlayer(templateSoccerPlayer) );
-                }
+    private static Result getSoccerPlayersByCompetition_internal (String competitionId) {
+        List<TemplateSoccerTeam> templateSoccerTeamList = TemplateSoccerTeam.findAllByCompetition(competitionId);
 
-                ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
-                        .put("instanceSoccerPlayers", instanceSoccerPlayers)
-                        .put("soccer_teams", templateSoccerTeamList)
-                        .put("soccer_players", templateSoccerPlayers);
+        List<TemplateSoccerPlayer> templateSoccerPlayers = new ArrayList<>();
+        for (TemplateSoccerTeam templateSoccerTeam : templateSoccerTeamList) {
+            templateSoccerPlayers.addAll(templateSoccerTeam.getTemplateSoccerPlayersWithSalary());
+        }
+
+        List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
+        for (TemplateSoccerPlayer templateSoccerPlayer : templateSoccerPlayers) {
+            instanceSoccerPlayers.add( new InstanceSoccerPlayer(templateSoccerPlayer) );
+        }
+
+        ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
+                .put("instanceSoccerPlayers", instanceSoccerPlayers)
+                .put("soccer_teams", templateSoccerTeamList)
+                .put("soccer_players", templateSoccerPlayers);
 
                 /*
                 if (theUser != null) {
@@ -165,10 +181,8 @@ public class MainController extends Controller {
                 }
                 */
 
-                return new ReturnHelper(builder.build())
-                        .toResult(JsonViews.FullContest.class);
-            }
-        }, CACHE_SOCCERPLAYER_BY_COMPETITION);
+        return new ReturnHelper(builder.build())
+                .toResult(JsonViews.FullContest.class);
     }
 
     public static class FavoritesParams {
