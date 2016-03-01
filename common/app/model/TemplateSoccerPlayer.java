@@ -14,6 +14,7 @@ import play.mvc.Result;
 import utils.FileUtils;
 import utils.ListUtils;
 import utils.MoneyUtils;
+import utils.ViewProjection;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -108,6 +109,13 @@ public class TemplateSoccerPlayer implements JongoId {
 
     public static List<TemplateSoccerPlayer> findAll(List<ObjectId> idList) {
         return ListUtils.asList(Model.findObjectIds(Model.templateSoccerPlayers(), "_id", idList).as(TemplateSoccerPlayer.class));
+    }
+
+    public static List<TemplateSoccerPlayer> findAllWithProjection(List<ObjectId> idList, Class<?> projectionClass) {
+        return ListUtils.asList(
+                Model.findObjectIds(Model.templateSoccerPlayers(), "_id", idList)
+                        .projection(ViewProjection.get(projectionClass, TemplateSoccerPlayer.class))
+                        .as(TemplateSoccerPlayer.class));
     }
 
     static public HashMap<String, TemplateSoccerPlayer> findAllAsMap() {

@@ -247,7 +247,7 @@ public class ContestController extends Controller {
             }
         }
 
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests));
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAllWithProjection(ListUtils.asList(playersInContests), JsonViews.MyLiveContests.class);
 
         return new ReturnHelperWithAttach()
                 .attachObject("contests", myLiveContests, JsonViews.FullContest.class)
@@ -330,7 +330,8 @@ public class ContestController extends Controller {
         for (ContestEntry contestEntry: contest.contestEntries) {
             playersInContestEntries.addAll(contestEntry.soccerIds);
         }
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContestEntries));
+
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAllWithProjection(ListUtils.asList(playersInContestEntries), JsonViews.MyLiveContests.class);
 
         ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
                 .put("contest", contest)
