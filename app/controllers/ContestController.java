@@ -11,6 +11,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import play.Logger;
 import play.Play;
+import play.cache.Cache;
 import play.cache.Cached;
 import play.data.Form;
 import play.data.validation.Constraints;
@@ -23,6 +24,7 @@ import utils.ReturnHelper;
 import utils.ReturnHelperWithAttach;
 
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import static play.data.Form.form;
@@ -31,6 +33,8 @@ import static play.data.Form.form;
 public class ContestController extends Controller {
 
     private final static int CACHE_ACTIVE_CONTESTS = 1;
+    private final static int CACHE_VIEW_LIVE_CONTESTS = 60;
+    private final static int CACHE_VIEW_HISTORY_CONTESTS = 15 * 60;
 
     private static final String ERROR_VIEW_CONTEST_INVALID = "ERROR_VIEW_CONTEST_INVALID";
     private static final String ERROR_MY_CONTEST_INVALID = "ERROR_MY_CONTEST_INVALID";
@@ -289,15 +293,25 @@ public class ContestController extends Controller {
         return attachInfoToContest(contest).toResult(JsonViews.FullContest.class);
     }
 
-    public static Result getMyLiveContest(String contestId) {
-        return getViewContest(contestId);
+    public static Result getMyLiveContest(String contestId) throws Exception {
+        return Cache.getOrElse("ViewLiveContest-".concat(contestId), new Callable<Result>() {
+            @Override
+            public Result call() throws Exception {
+                return getViewContest(contestId);
+            }
+        }, CACHE_VIEW_LIVE_CONTESTS);
     }
 
-    public static Result getMyHistoryContest(String contestId) {
-        return getViewContest(contestId);
+    public static Result getMyHistoryContest(String contestId) throws Exception {
+        return Cache.getOrElse("ViewHistoryContest-".concat(contestId), new Callable<Result>() {
+            @Override
+            public Result call() throws Exception {
+                return getViewContest(contestId);
+            }
+        }, CACHE_VIEW_HISTORY_CONTESTS);
     }
 
-    private static Result getViewContest(String contestId) {
+    public static Result getViewContest(String contestId) {
         User theUser = (User)ctx().args.get("User");
         Contest contest = Contest.findOne(contestId);
 
@@ -326,9 +340,11 @@ public class ContestController extends Controller {
                 .put("soccer_players", players)
                 .put("prizes", Prizes.findOne(contest.prizeType, contest.getNumEntries(), contest.getPrizePool()));
 
+        /*
         if (theUser != null) {
             builder.put("profile", theUser.getProfile());
         }
+        */
 
         return new ReturnHelper(builder.build())
                 .toResult(JsonViews.FullContest.class);
