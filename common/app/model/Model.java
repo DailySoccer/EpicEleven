@@ -87,6 +87,11 @@ public class Model {
         initPostgresDB();
 
         _actors = new Actors(_instanceRole, targetEnv, systemMode);
+
+        Logger.debug("Akka: parallelism-factor: {} parallelism-min: {} parallelism-max: {}",
+                Play.application().configuration().getString("play.akka.actor.default-dispatcher.fork-join-executor.parallelism-factor"),
+                Play.application().configuration().getString("play.akka.actor.default-dispatcher.fork-join-executor.parallelism-min"),
+                Play.application().configuration().getString("play.akka.actor.default-dispatcher.fork-join-executor.parallelism-max"));
     }
 
     static public void shutdown() {
