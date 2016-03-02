@@ -37,6 +37,7 @@ public class ContestController extends Controller {
     private final static int CACHE_VIEW_HISTORY_CONTESTS = 15 * 60;
     private final static int CACHE_LIVE_MATCHEVENTS = 30;
     private final static int CACHE_LIVE_CONTESTENTRIES = 30;
+    private final static int CACHE_CONTEST_INFO = 60;
 
     private static final String ERROR_VIEW_CONTEST_INVALID = "ERROR_VIEW_CONTEST_INVALID";
     private static final String ERROR_MY_CONTEST_INVALID = "ERROR_MY_CONTEST_INVALID";
@@ -388,19 +389,24 @@ public class ContestController extends Controller {
                 .toResult(JsonViews.FullContest.class);
     }
 
-    public static Result getContestInfo(String contestId) {
-        Contest contest = Contest.findOne(contestId);
-        List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
-        List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
-        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
+    public static Result getContestInfo(String contestId) throws Exception {
+        return Cache.getOrElse("ContestInfo-".concat(contestId), new Callable<Result>() {
+            @Override
+            public Result call() throws Exception {
+                Contest contest = Contest.findOne(contestId);
+                List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
+                List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
+                List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
 
-        return new ReturnHelper(ImmutableMap.of(
-                "contest", contest,
-                "users_info", usersInfoInContest,
-                "match_events", matchEvents,
-                "soccer_teams", teams,
-                "prizes", Prizes.findOne(contest)))
-                .toResult(JsonViews.ContestInfo.class);
+                return new ReturnHelper(ImmutableMap.of(
+                        "contest", contest,
+                        "users_info", usersInfoInContest,
+                        "match_events", matchEvents,
+                        "soccer_teams", teams,
+                        "prizes", Prizes.findOne(contest)))
+                        .toResult(JsonViews.ContestInfo.class);
+            }
+        }, CACHE_CONTEST_INFO);
     }
     
     public static Result getActiveContest(String contestId) {
