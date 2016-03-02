@@ -33,6 +33,7 @@ import static play.data.Form.form;
 public class ContestController extends Controller {
 
     private final static int CACHE_ACTIVE_CONTESTS = 1;
+    private final static int CACHE_ACTIVE_CONTEST = 60;
     private final static int CACHE_VIEW_LIVE_CONTESTS = 60;
     private final static int CACHE_VIEW_HISTORY_CONTESTS = 15 * 60;
     private final static int CACHE_LIVE_MATCHEVENTS = 30;
@@ -409,8 +410,13 @@ public class ContestController extends Controller {
         }, CACHE_CONTEST_INFO);
     }
     
-    public static Result getActiveContest(String contestId) {
-        return attachInfoToContest(Contest.findOne(contestId)).toResult(JsonViews.Extended.class);
+    public static Result getActiveContest(String contestId) throws Exception {
+        return Cache.getOrElse("ActiveContest-".concat(contestId), new Callable<Result>() {
+            @Override
+            public Result call() throws Exception {
+                return attachInfoToContest(Contest.findOne(contestId)).toResult(JsonViews.Extended.class);
+            }
+        }, CACHE_ACTIVE_CONTEST);
     }
 
     private static ReturnHelper attachInfoToContest(Contest contest) {
