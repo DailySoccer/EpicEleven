@@ -482,7 +482,7 @@ public class ContestEntryController extends Controller {
                     "result", "ok",
                     "profile", theUser.getProfile());
             */
-            return ContestController.getMyLiveContest(contestId.toString());
+            return ContestController.getViewContest(contestId.toString());
         }
         else {
             Logger.error("WTF 7249: changeSoccerPlayer: {}", changeForm.errorsAsJson());

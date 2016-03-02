@@ -11,6 +11,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import play.Logger;
 import play.Play;
+import play.cache.Cache;
 import play.cache.Cached;
 import play.data.Form;
 import play.data.validation.Constraints;
@@ -23,6 +24,7 @@ import utils.ReturnHelper;
 import utils.ReturnHelperWithAttach;
 
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import static play.data.Form.form;
@@ -31,6 +33,10 @@ import static play.data.Form.form;
 public class ContestController extends Controller {
 
     private final static int CACHE_ACTIVE_CONTESTS = 1;
+    private final static int CACHE_VIEW_LIVE_CONTESTS = 60;
+    private final static int CACHE_VIEW_HISTORY_CONTESTS = 15 * 60;
+    private final static int CACHE_LIVE_MATCHEVENTS = 30;
+    private final static int CACHE_LIVE_CONTESTENTRIES = 30;
 
     private static final String ERROR_VIEW_CONTEST_INVALID = "ERROR_VIEW_CONTEST_INVALID";
     private static final String ERROR_MY_CONTEST_INVALID = "ERROR_MY_CONTEST_INVALID";
@@ -243,7 +249,7 @@ public class ContestController extends Controller {
             }
         }
 
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests));
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAllWithProjection(ListUtils.asList(playersInContests), JsonViews.MyLiveContests.class);
 
         return new ReturnHelperWithAttach()
                 .attachObject("contests", myLiveContests, JsonViews.FullContest.class)
@@ -289,15 +295,25 @@ public class ContestController extends Controller {
         return attachInfoToContest(contest).toResult(JsonViews.FullContest.class);
     }
 
-    public static Result getMyLiveContest(String contestId) {
-        return getViewContest(contestId);
+    public static Result getMyLiveContest(String contestId) throws Exception {
+        return Cache.getOrElse("ViewLiveContest-".concat(contestId), new Callable<Result>() {
+            @Override
+            public Result call() throws Exception {
+                return getViewContest(contestId);
+            }
+        }, CACHE_VIEW_LIVE_CONTESTS);
     }
 
-    public static Result getMyHistoryContest(String contestId) {
-        return getViewContest(contestId);
+    public static Result getMyHistoryContest(String contestId) throws Exception {
+        return Cache.getOrElse("ViewHistoryContest-".concat(contestId), new Callable<Result>() {
+            @Override
+            public Result call() throws Exception {
+                return getViewContest(contestId);
+            }
+        }, CACHE_VIEW_HISTORY_CONTESTS);
     }
 
-    private static Result getViewContest(String contestId) {
+    public static Result getViewContest(String contestId) {
         User theUser = (User)ctx().args.get("User");
         Contest contest = Contest.findOne(contestId);
 
@@ -316,7 +332,8 @@ public class ContestController extends Controller {
         for (ContestEntry contestEntry: contest.contestEntries) {
             playersInContestEntries.addAll(contestEntry.soccerIds);
         }
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContestEntries));
+
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAllWithProjection(ListUtils.asList(playersInContestEntries), JsonViews.MyLiveContests.class);
 
         ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
                 .put("contest", contest)
@@ -326,9 +343,11 @@ public class ContestController extends Controller {
                 .put("soccer_players", players)
                 .put("prizes", Prizes.findOne(contest.prizeType, contest.getNumEntries(), contest.getPrizePool()));
 
+        /*
         if (theUser != null) {
             builder.put("profile", theUser.getProfile());
         }
+        */
 
         return new ReturnHelper(builder.build())
                 .toResult(JsonViews.FullContest.class);
@@ -359,7 +378,7 @@ public class ContestController extends Controller {
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
         List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
 
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContestEntry));
+        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAllWithProjection(ListUtils.asList(playersInContestEntry), JsonViews.MyActiveContests.class);
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                 "users_info", usersInfoInContest,
@@ -416,19 +435,23 @@ public class ContestController extends Controller {
      * @param templateContestId TemplateContest sobre el que se esta interesado
      * @return La lista de partidos "live"
      */
-    public static Result getLiveMatchEventsFromTemplateContest(String templateContestId) {
+    public static Result getLiveMatchEventsFromTemplateContest(String templateContestId) throws Exception {
+        return Cache.getOrElse("LiveMatchEventsFromTemplateContest-".concat(templateContestId), new Callable<Result>() {
+            @Override
+            public Result call() throws Exception {
+                // Obtenemos el TemplateContest
+                TemplateContest templateContest = TemplateContest.findOne(templateContestId);
 
-        // Obtenemos el TemplateContest
-        TemplateContest templateContest = TemplateContest.findOne(templateContestId);
+                if (templateContest == null) {
+                    return new ReturnHelper(false, ERROR_TEMPLATE_CONTEST_INVALID).toResult();
+                }
 
-        if (templateContest == null) {
-            return new ReturnHelper(false, ERROR_TEMPLATE_CONTEST_INVALID).toResult();
-        }
+                // Consultar por los partidos del TemplateContest (queremos su version "live")
+                List<TemplateMatchEvent> liveMatchEventList = TemplateMatchEvent.findAllPlaying(templateContest.templateMatchEventIds);
 
-        // Consultar por los partidos del TemplateContest (queremos su version "live")
-        List<TemplateMatchEvent> liveMatchEventList = TemplateMatchEvent.findAllPlaying(templateContest.templateMatchEventIds);
-
-        return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
+                return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
+            }
+        }, CACHE_LIVE_MATCHEVENTS);
     }
 
     public static Result getLiveMatchEventsFromContest(String contestId) {
@@ -446,30 +469,36 @@ public class ContestController extends Controller {
         return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
     }
 
-    public static Result getLiveContestEntries(String contestId) {
+    public static Result getLiveContestEntries(String contestId) throws Exception {
 
-        // Obtenemos el Contest
-        Contest contest = Contest.findOne(contestId);
+        return Cache.getOrElse("LiveContestEntries-".concat(contestId), new Callable<Result>() {
+            @Override
+            public Result call() throws Exception {
+                // Obtenemos el Contest
+                Contest contest = Contest.findOne(contestId);
 
-        if (contest == null) {
-            return new ReturnHelper(false, ERROR_CONTEST_INVALID).toResult();
-        }
+                if (contest == null) {
+                    return new ReturnHelper(false, ERROR_CONTEST_INVALID).toResult();
+                }
 
-        if (!contest.state.isLive() && !contest.state.isHistory()) {
-            return new ReturnHelper(false, ERROR_CONTEST_INVALID).toResult();
-        }
+                if (!contest.state.isLive() && !contest.state.isHistory()) {
+                    return new ReturnHelper(false, ERROR_CONTEST_INVALID).toResult();
+                }
 
-        // Buscar todos los players que han sido incrustados en los contestEntries
-        Set<ObjectId> playersInContestEntries = new HashSet<>();
-        for (ContestEntry contestEntry: contest.contestEntries) {
-            playersInContestEntries.addAll(contestEntry.soccerIds);
-        }
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContestEntries));
+                // Buscar todos los players que han sido incrustados en los contestEntries
+                Set<ObjectId> playersInContestEntries = new HashSet<>();
+                for (ContestEntry contestEntry: contest.contestEntries) {
+                    playersInContestEntries.addAll(contestEntry.soccerIds);
+                }
 
-        return new ReturnHelper(ImmutableMap.of(
-                "contest_entries", contest.contestEntries,
-                "soccer_players", players))
-                .toResult(JsonViews.FullContest.class);
+                List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAllWithProjection(ListUtils.asList(playersInContestEntries), JsonViews.MyLiveContests.class);
+
+                return new ReturnHelper(ImmutableMap.of(
+                        "contest_entries", contest.contestEntries,
+                        "soccer_players", players))
+                        .toResult(JsonViews.FullContest.class);
+            }
+        }, CACHE_LIVE_CONTESTENTRIES);
     }
 
     // @UserAuthenticated
