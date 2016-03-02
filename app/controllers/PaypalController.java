@@ -272,11 +272,16 @@ public class PaypalController extends Controller {
             if (ipnMessage.isPaymentStatusCompleted()) {
                 // Actualizaremos el pedido únicamente si está "pending" (esperando respuesta)
                 //  de esta forma garantizamos que no tenemos en cuenta mensajes antiguos o repetidos
-                Order order = Order.findOne(ipnMessage.getIpnValue(PaypalIPNMessage.FIELD_CUSTOM_ID));
+                String fieldCustomId = ipnMessage.getIpnValue(PaypalIPNMessage.FIELD_CUSTOM_ID);
+                Order order = Order.findOne(fieldCustomId);
                 // Aseguramos que siempre completamos el pedido, la operación "setCompleted" es idempotente
                 if (order != null) {
                     CompleteOrderJob.create(order.orderId);
+                    Logger.info("IPN Order Valid: {}", order.orderId.toString());
                     // order.setCompleted();
+                }
+                else {
+                    Logger.warn("IPN Order Unknown: {}", fieldCustomId);
                 }
             }
 

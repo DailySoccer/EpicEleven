@@ -25,7 +25,7 @@ public class AllowCors {
             String origin = getOrigin(context.request());
 
             // TODO: Buscar el medio por el que detectaremos la versión de mobile
-            if (origin == null) {
+            if (origin == null && context.request() != null && context.request().headers() != null && context.request().headers().containsKey("User-Agent")) {
                 String userAgentHeader = String.join(", ", context.request().headers().get("User-Agent"));
                 if (userAgentHeader.contains("Mobile")) {
                     origin = "*";
