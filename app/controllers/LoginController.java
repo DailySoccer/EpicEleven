@@ -207,8 +207,17 @@ public class LoginController extends Controller {
 
             if (theUser == null) {
                 try {
-                    theUser = new User(theParams.firstName, theParams.lastName, theParams.nickName, theParams.email.toLowerCase());
-                    insertUser(theUser);
+                    boolean isTestAccount = theParams.email.toLowerCase().endsWith("@test.com");
+
+                    // Evitar la creación de cuentas "test"
+                    if (!isTestAccount) {
+                        theUser = new User(theParams.firstName, theParams.lastName, theParams.nickName, theParams.email.toLowerCase());
+                        insertUser(theUser);
+                    }
+                    else {
+                        //"Ya existe una cuenta con ese email. Indica otro email."
+                        error = new F.Tuple<>(2, "");
+                    }
 
                 } catch (DuplicateKeyException exc) {
                     int mongoError = 0; //"Hubo un problema en la creación de tu usuario");
