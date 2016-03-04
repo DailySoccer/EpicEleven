@@ -35,7 +35,7 @@ public class ContestController extends Controller {
     private final static int CACHE_ACTIVE_CONTESTS = 1;
     private final static int CACHE_ACTIVE_CONTEST = 60;
     private final static int CACHE_VIEW_LIVE_CONTESTS = 60;
-    private final static int CACHE_VIEW_HISTORY_CONTESTS = 15 * 60;
+    private final static int CACHE_VIEW_HISTORY_CONTESTS = 60;
     private final static int CACHE_LIVE_MATCHEVENTS = 30;
     private final static int CACHE_LIVE_CONTESTENTRIES = 30;
     private final static int CACHE_CONTEST_INFO = 60;
