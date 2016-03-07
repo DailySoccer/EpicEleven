@@ -218,4 +218,12 @@ public class MainController extends Controller {
             return ok(response.getBody());
         });
     }
+
+    public static Result termsOfUse() {
+        return redirect("http://www.futbolcuatro.com/terminos-de-uso/");
+    }
+
+    public static Result privacyPolicy() {
+        return redirect("http://www.futbolcuatro.com/politica-de-privacidad/");
+    }
 }

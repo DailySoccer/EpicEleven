@@ -1,4 +1,6 @@
 GET            /ping                                                   controllers.MainController.ping()
+GET            /terminos-de-uso                                        controllers.MainController.termsOfUse()
+GET            /politica-de-privacidad                                 controllers.MainController.privacyPolicy()
 
 # Informar de la fecha del server (usado por webclient para sincronizarse con la simulacion)
 GET            /current_date                                           controllers.MainController.getCurrentDate()
