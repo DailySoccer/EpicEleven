@@ -11,6 +11,7 @@ import model.shop.ProductMoney;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
+import play.Logger;
 import play.Play;
 
 import java.util.ArrayList;
@@ -175,10 +176,10 @@ public class PaypalPayment {
     // It is not mandatory to generate Access Token on a per call basis.
     // Typically the access token can be generated once and reused within the expiry window
     public String getAccessToken() throws PayPalRESTException {
-        if (_accessToken == null) {
+        if (_oauthTokenCredential == null || _oauthTokenCredential.expiresIn() <= 0) {
             String clientId = Play.application().configuration().getString("paypal.clientId");
             String secret = Play.application().configuration().getString("paypal.secret");
-            _accessToken = new OAuthTokenCredential(clientId, secret, getSdkConfig()).getAccessToken();
+            _oauthTokenCredential = new OAuthTokenCredential(clientId, secret, getSdkConfig());
 
             /*
             // ClientID and ClientSecret retrieved from configuration
@@ -186,8 +187,13 @@ public class PaypalPayment {
             String clientSecret = ConfigManager.getInstance().getValue("clientSecret");
             _accessToken = new OAuthTokenCredential(clientID, clientSecret).getAccessToken();
             */
+
+            Logger.debug("Paypal: accessToken generated");
         }
-        return _accessToken;
+        else {
+            Logger.debug("Paypal: accessToken expiresIn: {} segundos", _oauthTokenCredential.expiresIn());
+        }
+        return _oauthTokenCredential.getAccessToken();
     }
 
     public boolean isLive() {
@@ -196,6 +202,6 @@ public class PaypalPayment {
 
     static PaypalPayment _instance;
     Map<String, String> _sdkConfig;
-    String _accessToken;
+    OAuthTokenCredential _oauthTokenCredential;
     String _hostName = HOSTNAME_DEFAULT;
 }
