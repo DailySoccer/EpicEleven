@@ -187,6 +187,8 @@ public class PaypalPayment {
             String clientSecret = ConfigManager.getInstance().getValue("clientSecret");
             _accessToken = new OAuthTokenCredential(clientID, clientSecret).getAccessToken();
             */
+
+            Logger.debug("Paypal: accessToken generated");
         }
         else {
             Logger.debug("Paypal: accessToken expiresIn: {} segundos", _oauthTokenCredential.expiresIn());
