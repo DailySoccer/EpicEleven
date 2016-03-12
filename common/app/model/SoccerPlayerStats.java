@@ -63,7 +63,7 @@ public class SoccerPlayerStats {
     }
 
     public boolean hasPlayed() {
-        return (playedMinutes > 0 || fantasyPoints > 0 || !statsCount.isEmpty());
+        return (playedMinutes > 0 || fantasyPoints != 0 || !statsCount.isEmpty());
     }
 
     public void updateEventStats() {

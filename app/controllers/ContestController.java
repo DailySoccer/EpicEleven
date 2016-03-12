@@ -5,6 +5,7 @@ import actions.UserAuthenticated;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.WriteConcern;
 import model.*;
+import model.opta.OptaCompetition;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
 import org.joda.time.DateTime;
@@ -429,7 +430,12 @@ public class ContestController extends Controller {
         for (InstanceSoccerPlayer instance: contest.instanceSoccerPlayers) {
             playersInContests.add(instance.templateSoccerPlayerId);
         }
+
+        // Filtrar las estadísticas de la temporada actual
         List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests));
+        for (TemplateSoccerPlayer player : players) {
+            player.stats = player.stats.stream().filter(stat -> stat.hasPlayed() && stat.startDate.after(OptaCompetition.SEASON_DATE_START)).collect(Collectors.toList());
+        }
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                                                 "users_info", usersInfoInContest,
@@ -547,7 +553,11 @@ public class ContestController extends Controller {
             }
         });
 
+        // Filtrar las estadísticas de la temporada actual
         List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests));
+        for (TemplateSoccerPlayer player : players) {
+            player.stats = player.stats.stream().filter(stat -> stat.hasPlayed() && stat.startDate.after(OptaCompetition.SEASON_DATE_START)).collect(Collectors.toList());
+        }
 
         return new ReturnHelper(ImmutableMap.builder()
                 .put("instanceSoccerPlayers", instanceSoccerPlayers)
