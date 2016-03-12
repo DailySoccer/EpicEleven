@@ -4,6 +4,7 @@ import actions.AllowCors;
 import actions.UserAuthenticated;
 import com.google.common.collect.ImmutableMap;
 import model.*;
+import model.opta.OptaCompetition;
 import model.opta.OptaTeam;
 import org.bson.types.ObjectId;
 import play.Logger;
@@ -21,6 +22,7 @@ import utils.ReturnHelper;
 
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 import static play.data.Form.form;
 
@@ -168,6 +170,10 @@ public class MainController extends Controller {
         List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
         for (TemplateSoccerPlayer templateSoccerPlayer : templateSoccerPlayers) {
             instanceSoccerPlayers.add( new InstanceSoccerPlayer(templateSoccerPlayer) );
+        }
+
+        for (TemplateSoccerPlayer player : templateSoccerPlayers) {
+            player.stats = player.stats.stream().filter(stat -> stat.hasPlayed() && stat.startDate.after(OptaCompetition.SEASON_DATE_START)).collect(Collectors.toList());
         }
 
         ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
