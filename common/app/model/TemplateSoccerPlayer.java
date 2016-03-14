@@ -31,8 +31,14 @@ public class TemplateSoccerPlayer implements JongoId {
     public String optaPlayerId;
 
     public String name;
+
+    @JsonView(JsonViews.NotForClient.class)
     public FieldPos fieldPos;
+
+    @JsonView(JsonViews.NotForClient.class)
     public int salary;
+
+    @JsonView(JsonViews.NotForClient.class)
     public int fantasyPoints;
 
     public ObjectId templateTeamId;
@@ -46,7 +52,6 @@ public class TemplateSoccerPlayer implements JongoId {
     @JsonView(JsonViews.Extended.class)
     public List<SoccerPlayerStats> stats = new ArrayList<>();
 
-    @JsonView(JsonViews.Public.class)
     public int getPlayedMatches() {
         int numPlayed = 0;
         for (SoccerPlayerStats stat : stats) {
