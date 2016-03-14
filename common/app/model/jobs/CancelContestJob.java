@@ -53,31 +53,46 @@ public class CancelContestJob extends Job {
                 }
 
                 if (bValid) {
-                    // Únicamente devolveremos el GOLD (no la ENERGY)
-                    if (contest.entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD) && MoneyUtils.isGreaterThan(contest.entryFee, MoneyUtils.zero) && !contest.contestEntries.isEmpty()) {
-                        List<AccountOp> accounts = new ArrayList<>();
-                        for (ContestEntry contestEntry : contest.contestEntries) {
-                            // No devolvemos el dinero del que crea el Contest
-                            if (contest.authorId != null && contest.authorId.equals(contestEntry.userId)) {
-                                Logger.debug("Contest Cancelado: {} No devolvemos el dinero al authorId: {}", contest.contestId.toString(), contest.authorId.toString());
-                                continue;
+                    if (MoneyUtils.isGreaterThan(contest.entryFee, MoneyUtils.zero) && !contest.contestEntries.isEmpty()) {
+                        if (contest.entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
+                            List<AccountOp> accounts = new ArrayList<>();
+                            for (ContestEntry contestEntry : contest.contestEntries) {
+                                // No devolvemos el dinero del que crea el Contest
+                                if (contest.authorId != null && contest.authorId.equals(contestEntry.userId)) {
+                                    Logger.debug("Contest Cancelado: {} No devolvemos el dinero al authorId: {}", contest.contestId.toString(), contest.authorId.toString());
+                                    continue;
+                                }
+
+                                Money money = AccountingTran.moneySpentOnContest(contestEntry.userId, contestId);
+                                // Queremos devolver el dinero que se gastó al entrar en el contest
+                                money = money.negated();
+
+                                // Queremos devolver el dinero adicional que se gastó en comprar futbolistas
+                                Money moneySpent = Order.moneySpentOnContest(contestEntry.userId, contestId);
+                                if (moneySpent.isPositive()) {
+                                    money = money.plus(moneySpent);
+                                }
+
+                                accounts.add(new AccountOp(contestEntry.userId, money, User.getSeqId(contestEntry.userId) + 1));
                             }
-
-                            Money money = AccountingTran.moneySpentOnContest(contestEntry.userId, contestId);
-                            // Queremos devolver el dinero que se gastó al entrar en el contest
-                            money = money.negated();
-
-                            // Queremos devolver el dinero adicional que se gastó en comprar futbolistas
-                            Money moneySpent = Order.moneySpentOnContest(contestEntry.userId, contestId);
-                            if (moneySpent.isPositive()) {
-                                money = money.plus(moneySpent);
+                            if (accounts.size() > 0) {
+                                AccountingTran accountingTran = AccountingTranCancelContest.create(contest.entryFee.getCurrencyUnit().getCode(), contestId, accounts);
+                                bValid = (accountingTran != null);
                             }
-
-                            accounts.add(new AccountOp(contestEntry.userId, money, User.getSeqId(contestEntry.userId) + 1));
                         }
-                        if (accounts.size() > 0) {
-                            AccountingTran accountingTran = AccountingTranCancelContest.create(contest.entryFee.getCurrencyUnit().getCode(), contestId, accounts);
-                            bValid = (accountingTran != null);
+                        else if (contest.entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_ENERGY)) {
+                            Logger.debug("Cancel Contest: {} Devolviendo Energy: {}", contest.contestId.toString(), contest.entryFee.toString());
+                            for (ContestEntry contestEntry : contest.contestEntries) {
+                                // No devolvemos el dinero del que crea el Contest
+                                if (contest.authorId != null && contest.authorId.equals(contestEntry.userId)) {
+                                    Logger.debug("Contest Cancelado: {} No devolvemos el dinero al authorId: {}", contest.contestId.toString(), contest.authorId.toString());
+                                    continue;
+                                }
+
+                                User user = User.findOne(contestEntry.userId);
+                                user.addEnergy(contest.entryFee);
+                                Logger.debug("*** User: {} Devolviendo Energy: {}", user.userId.toString(), contest.entryFee.toString());
+                            }
                         }
                     }
 
