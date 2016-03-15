@@ -13,6 +13,9 @@ import java.util.*;
 public class OptaCompetition implements JongoId {
     static public Date SEASON_DATE_START = new GregorianCalendar(2015, 8, 1).getTime();
     static final String CURRENT_SEASON = "2015";
+    public static final String SPANISH_LA_LIGA = "24";
+    public static final String PREMIER = "8";
+    public static final String CHAMPIONS_LEAGUE = "5";
 
     public ObjectId _id;
     public boolean activated;
