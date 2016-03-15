@@ -423,29 +423,10 @@ public class ContestController extends Controller {
     private static ReturnHelper attachInfoToContest(Contest contest) {
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
-        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
-
-        // Buscar todos los players que han sido incrustados en los contests
-        Set<ObjectId> playersInContests = new HashSet<>();
-        for (InstanceSoccerPlayer instance: contest.instanceSoccerPlayers) {
-            playersInContests.add(instance.templateSoccerPlayerId);
-        }
-
-        // Filtrar las estadísticas de la temporada actual
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests));
-        for (TemplateSoccerPlayer player : players) {
-            player.stats = player.stats.stream().filter(
-                    stat -> stat.hasPlayed() &&
-                            stat.startDate.after(OptaCompetition.SEASON_DATE_START) &&
-                            !stat.optaCompetitionId.equals(OptaCompetition.CHAMPIONS_LEAGUE)
-            ).collect(Collectors.toList());
-        }
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                                                 "users_info", usersInfoInContest,
-                                                "match_events", matchEvents,
-                                                "soccer_teams", teams,
-                                                "soccer_players", players));
+                                                "match_events", matchEvents));
     }
 
     /**

@@ -146,7 +146,7 @@ public class MainController extends Controller {
 
         for (TemplateSoccerPlayer player : templateSoccerPlayers) {
             player.stats = player.stats.stream().filter(stat -> stat.hasPlayed() && stat.startDate.after(OptaCompetition.SEASON_DATE_START)).collect(Collectors.toList());
-            player.stats.clear();
+            // player.stats.clear();
         }
 
         ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
