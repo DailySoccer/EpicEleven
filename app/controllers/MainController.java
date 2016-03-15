@@ -199,18 +199,9 @@ public class MainController extends Controller {
             instanceSoccerPlayers.add( new InstanceSoccerPlayer(templateSoccerPlayer) );
         }
 
-        for (TemplateSoccerPlayer player : templateSoccerPlayers) {
-            player.stats = player.stats.stream().filter(
-                    stat -> stat.hasPlayed() &&
-                            stat.startDate.after(OptaCompetition.SEASON_DATE_START) &&
-                            !stat.optaCompetitionId.equals(OptaCompetition.CHAMPIONS_LEAGUE)
-            ).collect(Collectors.toList());
-        }
-
         ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
                 .put("instanceSoccerPlayers", instanceSoccerPlayers)
-                .put("soccer_teams", templateSoccerTeamList)
-                .put("soccer_players", templateSoccerPlayers);
+                .put("soccer_teams", templateSoccerTeamList);
 
                 /*
                 if (theUser != null) {

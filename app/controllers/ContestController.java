@@ -164,12 +164,10 @@ public class ContestController extends Controller {
     public static Result getActiveTemplateContests() {
         List<TemplateContest> templateContests = TemplateContest.findAllCustomizable();
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests);
-        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
 
         return new ReturnHelper(ImmutableMap.of(
                 "template_contests", templateContests,
-                "match_events", matchEvents,
-                "soccer_teams", teams
+                "match_events", matchEvents
         )).toResult(JsonViews.CreateContest.class);
     }
 
@@ -203,25 +201,12 @@ public class ContestController extends Controller {
         List<Contest> myHistoryContests = Contest.findAllMyHistory(theUser.userId, JsonViews.MyHistoryContests.class);
 
         List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.gatherFromContests(myLiveContests);
-        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(liveMatchEvents);
-
-        // Buscar todos los players que han sido incrustados en los contests
-        Set<ObjectId> playersInContests = new HashSet<>();
-        for (Contest liveContest: myLiveContests) {
-            for (InstanceSoccerPlayer instance: liveContest.instanceSoccerPlayers) {
-                playersInContests.add(instance.templateSoccerPlayerId);
-            }
-        }
-
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests));
 
         return new ReturnHelperWithAttach()
                 .attachObject("contests_0", myActiveContests, JsonViews.Public.class)
                 .attachObject("contests_1", myLiveContests, JsonViews.FullContest.class)
                 .attachObject("contests_2", myHistoryContests, JsonViews.Extended.class)
                 .attachObject("match_events", liveMatchEvents, JsonViews.FullContest.class)
-                .attachObject("soccer_teams", teams, JsonViews.Public.class)
-                .attachObject("soccer_players", players, JsonViews.Public.class)
                 .attachObject("profile", theUser.getProfile(), JsonViews.Public.class)
                 .toResult();
     }
@@ -242,23 +227,10 @@ public class ContestController extends Controller {
         List<Contest> myLiveContests = Contest.findAllMyLive(theUser.userId, JsonViews.MyLiveContests.class);
 
         List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.gatherFromContests(myLiveContests);
-        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(liveMatchEvents);
-
-        // Buscar todos los players que han sido incrustados en los contests
-        Set<ObjectId> playersInContests = new HashSet<>();
-        for (Contest liveContest: myLiveContests) {
-            for (InstanceSoccerPlayer instance: liveContest.instanceSoccerPlayers) {
-                playersInContests.add(instance.templateSoccerPlayerId);
-            }
-        }
-
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAllWithProjection(ListUtils.asList(playersInContests), JsonViews.MyLiveContests.class);
 
         return new ReturnHelperWithAttach()
                 .attachObject("contests", myLiveContests, JsonViews.FullContest.class)
                 .attachObject("match_events", liveMatchEvents, JsonViews.FullContest.class)
-                .attachObject("soccer_teams", teams, JsonViews.Public.class)
-                .attachObject("soccer_players", players, JsonViews.Public.class)
                 .attachObject("profile", theUser.getProfile(), JsonViews.Public.class)
                 .toResult();
     }
@@ -328,29 +300,12 @@ public class ContestController extends Controller {
 
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
-        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
-
-        // Buscar todos los players que han sido incrustados en los contestEntries
-        Set<ObjectId> playersInContestEntries = new HashSet<>();
-        for (ContestEntry contestEntry: contest.contestEntries) {
-            playersInContestEntries.addAll(contestEntry.soccerIds);
-        }
-
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAllWithProjection(ListUtils.asList(playersInContestEntries), JsonViews.MyLiveContests.class);
 
         ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
                 .put("contest", contest)
                 .put("users_info", usersInfoInContest)
                 .put("match_events", matchEvents)
-                .put("soccer_teams", teams)
-                .put("soccer_players", players)
                 .put("prizes", Prizes.findOne(contest.prizeType, contest.getNumEntries(), contest.getPrizePool()));
-
-        /*
-        if (theUser != null) {
-            builder.put("profile", theUser.getProfile());
-        }
-        */
 
         return new ReturnHelper(builder.build())
                 .toResult(JsonViews.FullContest.class);
@@ -379,15 +334,10 @@ public class ContestController extends Controller {
 
         List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
         List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
-        List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
-
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAllWithProjection(ListUtils.asList(playersInContestEntry), JsonViews.MyActiveContests.class);
 
         return new ReturnHelper(ImmutableMap.of("contest", contest,
                 "users_info", usersInfoInContest,
-                "match_events", matchEvents,
-                "soccer_teams", teams,
-                "soccer_players", players))
+                "match_events", matchEvents))
                 .toResult(JsonViews.FullContest.class);
     }
 
@@ -398,13 +348,11 @@ public class ContestController extends Controller {
                 Contest contest = Contest.findOne(contestId);
                 List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
                 List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
-                List<TemplateSoccerTeam> teams = TemplateSoccerTeam.findAllFromMatchEvents(matchEvents);
 
                 return new ReturnHelper(ImmutableMap.of(
                         "contest", contest,
                         "users_info", usersInfoInContest,
                         "match_events", matchEvents,
-                        "soccer_teams", teams,
                         "prizes", Prizes.findOne(contest)))
                         .toResult(JsonViews.ContestInfo.class);
             }
@@ -488,17 +436,8 @@ public class ContestController extends Controller {
                     return new ReturnHelper(false, ERROR_CONTEST_INVALID).toResult();
                 }
 
-                // Buscar todos los players que han sido incrustados en los contestEntries
-                Set<ObjectId> playersInContestEntries = new HashSet<>();
-                for (ContestEntry contestEntry: contest.contestEntries) {
-                    playersInContestEntries.addAll(contestEntry.soccerIds);
-                }
-
-                List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAllWithProjection(ListUtils.asList(playersInContestEntries), JsonViews.MyLiveContests.class);
-
                 return new ReturnHelper(ImmutableMap.of(
-                        "contest_entries", contest.contestEntries,
-                        "soccer_players", players))
+                        "contest_entries", contest.contestEntries))
                         .toResult(JsonViews.FullContest.class);
             }
         }, CACHE_LIVE_CONTESTENTRIES);
@@ -529,30 +468,16 @@ public class ContestController extends Controller {
 
         // Buscar todos los players de la posición indicada y de los partidos no terminados
         List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
-        Set<ObjectId> playersInContests = new HashSet<>();
 
         contest.instanceSoccerPlayers.forEach( instance -> {
             if (teamIds.contains(instance.templateSoccerTeamId)) {
                 instanceSoccerPlayers.add(instance);
-                playersInContests.add(instance.templateSoccerPlayerId);
             }
         });
-
-        // Filtrar las estadísticas de la temporada actual
-        List<TemplateSoccerPlayer> players = TemplateSoccerPlayer.findAll(ListUtils.asList(playersInContests));
-        for (TemplateSoccerPlayer player : players) {
-            player.stats = player.stats.stream().filter(
-                    stat -> stat.hasPlayed() &&
-                            stat.startDate.after(OptaCompetition.SEASON_DATE_START) &&
-                            !stat.optaCompetitionId.equals(OptaCompetition.CHAMPIONS_LEAGUE)
-            ).collect(Collectors.toList());
-        }
 
         return new ReturnHelper(ImmutableMap.builder()
                 .put("instanceSoccerPlayers", instanceSoccerPlayers)
                 .put("match_events", matchEvents)
-                .put("soccer_teams", teams)
-                .put("soccer_players", players)
                 .build())
                 .toResult(JsonViews.FullContest.class);
     }
