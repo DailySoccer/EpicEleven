@@ -379,8 +379,12 @@ public class Contest implements JongoId {
         return ListUtils.asList(Model.contests().find("{closed: true, closedAt: {$gt: #}}", closedAt).as(Contest.class));
     }
 
-    static public long countAllMyLive(ObjectId userId) {
-        return Model.contests().count("{state: \"LIVE\", \"contestEntries.userId\": #}", userId);
+    static public long countByState(ObjectId userId, ContestState contestState) {
+        return Model.contests().count("{state: #, \"contestEntries.userId\": #}", contestState, userId);
+    }
+
+    static public long countByStateAndSimulation(ObjectId userId, ContestState contestState, boolean simulation) {
+        return Model.contests().count("{state: #, \"contestEntries.userId\": #, simulation: #}", contestState, userId, simulation);
     }
 
     static private List<Contest> findAllMyContests(ObjectId userId, String query, Class<?> projectionClass) {

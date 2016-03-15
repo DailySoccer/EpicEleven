@@ -247,8 +247,20 @@ public class ContestController extends Controller {
     @UserAuthenticated
     public static Result countMyLiveContests() {
         User theUser = (User)ctx().args.get("User");
-        return new ReturnHelper(ImmutableMap.of("count", Contest.countAllMyLive(theUser.userId)))
+        return new ReturnHelper(ImmutableMap.of("count", Contest.countByState(theUser.userId, ContestState.LIVE)))
                 .toResult();
+    }
+
+    @UserAuthenticated
+    public static Result countMyContests() {
+        User theUser = (User)ctx().args.get("User");
+        return new ReturnHelper(ImmutableMap.of(
+                "numWaiting", Contest.countByState(theUser.userId, ContestState.ACTIVE),
+                "numLive", Contest.countByState(theUser.userId, ContestState.LIVE),
+                "numVirtualHistory", Contest.countByStateAndSimulation(theUser.userId, ContestState.HISTORY, true),
+                "numRealHistory", Contest.countByStateAndSimulation(theUser.userId, ContestState.HISTORY, false)
+        ))
+        .toResult();
     }
 
     @UserAuthenticated
