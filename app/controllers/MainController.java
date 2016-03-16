@@ -29,8 +29,8 @@ import static play.data.Form.form;
 @AllowCors.Origin
 public class MainController extends Controller {
 
-    private final static int CACHE_SOCCERPLAYER_BY_COMPETITION = 15 * 60;
-    private final static int CACHE_TEMPLATESOCCERPLAYERS = 24 * 60 * 60;
+    private final static int CACHE_SOCCERPLAYER_BY_COMPETITION = 15 * 60;   // 15 minutos
+    private final static int CACHE_TEMPLATESOCCERPLAYERS = 8 * 60 * 60;     // 8 Horas
     private final static int CACHE_TEMPLATESOCCERTEAMS = 24 * 60 * 60;
 
     public static Result ping() {
