@@ -29,7 +29,9 @@ import static play.data.Form.form;
 @AllowCors.Origin
 public class MainController extends Controller {
 
-    private final static int CACHE_SOCCERPLAYER_BY_COMPETITION = 15 * 60;
+    private final static int CACHE_SOCCERPLAYER_BY_COMPETITION = 15 * 60;   // 15 minutos
+    private final static int CACHE_TEMPLATESOCCERPLAYERS = 8 * 60 * 60;     // 8 Horas
+    private final static int CACHE_TEMPLATESOCCERTEAMS = 24 * 60 * 60;
 
     public static Result ping() {
     	return ok("Pong");
@@ -137,6 +139,34 @@ public class MainController extends Controller {
         return new ReturnHelper(data).toResult(JsonViews.Statistics.class);
     }
 
+    @With(AllowCors.CorsAction.class)
+    @Cached(key = "TemplateSoccerPlayers", duration = CACHE_TEMPLATESOCCERPLAYERS)
+    public static Result getTemplateSoccerPlayers() {
+        List<TemplateSoccerPlayer> templateSoccerPlayers = TemplateSoccerPlayer.findAll();
+
+        for (TemplateSoccerPlayer player : templateSoccerPlayers) {
+            player.stats = player.stats.stream().filter(
+                    stat -> stat.hasPlayed() &&
+                            stat.startDate.after(OptaCompetition.SEASON_DATE_START) &&
+                            !stat.optaCompetitionId.equals(OptaCompetition.CHAMPIONS_LEAGUE)
+            ).collect(Collectors.toList());
+        }
+
+        ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
+                .put("template_soccer_players", templateSoccerPlayers);
+        return new ReturnHelper(builder.build())
+                .toResult(JsonViews.Extended.class);
+    }
+
+    @With(AllowCors.CorsAction.class)
+    @Cached(key = "TemplateSoccerTeams", duration = CACHE_TEMPLATESOCCERTEAMS)
+    public static Result getTemplateSoccerTeams() {
+        ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
+                .put("template_soccer_teams", TemplateSoccerTeam.findAll());
+        return new ReturnHelper(builder.build())
+                .toResult(JsonViews.Extended.class);
+    }
+
     // @UserAuthenticated
     public static Result getSoccerPlayersByCompetition(String competitionId) throws Exception {
         return Cache.getOrElse("SoccerPlayersByCompetition-".concat(competitionId), new Callable<Result>() {
@@ -172,14 +202,9 @@ public class MainController extends Controller {
             instanceSoccerPlayers.add( new InstanceSoccerPlayer(templateSoccerPlayer) );
         }
 
-        for (TemplateSoccerPlayer player : templateSoccerPlayers) {
-            player.stats = player.stats.stream().filter(stat -> stat.hasPlayed() && stat.startDate.after(OptaCompetition.SEASON_DATE_START)).collect(Collectors.toList());
-        }
-
         ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
                 .put("instanceSoccerPlayers", instanceSoccerPlayers)
-                .put("soccer_teams", templateSoccerTeamList)
-                .put("soccer_players", templateSoccerPlayers);
+                .put("soccer_teams", templateSoccerTeamList);
 
                 /*
                 if (theUser != null) {

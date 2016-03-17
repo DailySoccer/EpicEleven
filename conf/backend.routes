@@ -11,6 +11,8 @@ GET            /get_instance_soccer_player_info/:contest/:soccerPlayer controlle
 GET            /get_soccer_players_by_competition/:competitionId       controllers.MainController.getSoccerPlayersByCompetition(competitionId : String)
 GET            /get_soccer_players_by_competition_23                   controllers.MainController.getSoccerPlayersByCompetition_23()
 GET            /get_soccer_players_by_competition_8                    controllers.MainController.getSoccerPlayersByCompetition_8()
+GET            /get_template_soccer_players                            controllers.MainController.getTemplateSoccerPlayers()
+GET            /get_template_soccer_teams                              controllers.MainController.getTemplateSoccerTeams()
 
 # Reglas del juego
 GET            /get_scoring_rules                                      controllers.MainController.getScoringRules()
@@ -60,6 +62,7 @@ GET            /get_my_active_contests                                 controlle
 GET            /get_my_live_contests                                   controllers.ContestController.getMyLiveContests()
 GET            /get_my_history_contests                                controllers.ContestController.getMyHistoryContests()
 GET            /count_my_live_contests                                 controllers.ContestController.countMyLiveContests()
+GET            /count_my_contests                                      controllers.ContestController.countMyContests()
 GET            /get_my_active_contest/:contest                         controllers.ContestController.getMyActiveContest(contest)
 GET            /get_my_live_contest/:contest                           controllers.ContestController.getMyLiveContest(contest)
 GET            /get_my_history_contest/:contest                        controllers.ContestController.getMyHistoryContest(contest)
