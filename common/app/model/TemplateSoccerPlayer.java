@@ -38,7 +38,6 @@ public class TemplateSoccerPlayer implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public int salary;
 
-    @JsonView(JsonViews.NotForClient.class)
     public int fantasyPoints;
 
     public ObjectId templateTeamId;
