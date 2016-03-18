@@ -313,6 +313,8 @@ public class User {
     }
 
     public void addEnergy(Money energy) {
+        refreshEnergy();
+
         lastUpdatedEnergy = GlobalDate.getCurrentDate();
 
         Money maxEnergy = Money.of(MoneyUtils.CURRENCY_ENERGY, MAX_ENERGY);
