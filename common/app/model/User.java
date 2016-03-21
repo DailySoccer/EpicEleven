@@ -315,12 +315,18 @@ public class User {
     public void addEnergy(Money energy) {
         refreshEnergy();
 
-        lastUpdatedEnergy = GlobalDate.getCurrentDate();
-
         Money maxEnergy = Money.of(MoneyUtils.CURRENCY_ENERGY, MAX_ENERGY);
         energyBalance = energyBalance.plus(energy);
         if (energyBalance.isGreaterThan(maxEnergy)) {
             energyBalance = maxEnergy;
+        }
+
+        // Si la energía la tenemos al máximo, podemos actualizar la fecha con la de NOW
+        if (energyBalance.getAmount().equals(MAX_ENERGY)) {
+            lastUpdatedEnergy = GlobalDate.getCurrentDate();
+        }
+        else {
+            // La energía ya se estaba recargando, tiene que estar correctamente actualizada por el refreshEnergy previo
         }
 
         saveEnergy();
