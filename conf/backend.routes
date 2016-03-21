@@ -22,6 +22,7 @@ GET            /get_leaderboard                                        controlle
 
 # Shop
 GET            /get_catalog                                            controllers.ShopController.getCatalog()
+GET            /get_itunes_catalog                                     controllers.ShopController.getiTunesCatalog()
 GET            /buy_product/:productId                                 controllers.ShopController.buyProduct(productId : String)
 GET            /buy_soccer_player/:contest/:soccerPlayer               controllers.ShopController.buySoccerPlayer(contest : String, soccerPlayer : String)
 
