@@ -18,7 +18,8 @@ public class Order {
     public enum TransactionType {
         IN_GAME,
         PAYPAL,
-        MORE_THAN_GAME
+        MORE_THAN_GAME,
+        ITUNES_CONNECT
     }
 
     public enum State {
@@ -120,8 +121,8 @@ public class Order {
         return ObjectId.isValid(orderId) ? Model.orders().findOne("{_id : #}", new ObjectId(orderId)).as(Order.class) : null;
     }
 
-    static public Order findOneFromPayment(String paymentId) {
-        return Model.orders().findOne("{paymentId : #}", paymentId).as(Order.class);
+    static public Order findOneFromPayment(TransactionType transactionType, String paymentId) {
+        return Model.orders().findOne("{transactionType: #, paymentId : #}", transactionType, paymentId).as(Order.class);
     }
 
     static public List<Order> findAllInContest(ObjectId userId, ObjectId contestId) {
