@@ -20,6 +20,8 @@ object Global extends GlobalSettings {
 
   // Will be set onStart to the Heroku deploy version when we are in production
   var releaseVersion = "devel"
+  var version_iOS = "devel"
+  var marketAppId_iOS = ""
 
   // Role of this machine (DEVELOPMENT_ROLE, WEB_ROLE, OPTAPROCESSOR_ROLE, BOTS_ROLE...)
   var instanceRole = InstanceRole.DEVELOPMENT_ROLE
@@ -32,10 +34,12 @@ object Global extends GlobalSettings {
 
   val releaseFilter = Filter { (nextFilter, requestHeader) =>
     nextFilter(requestHeader).map { result =>
-      result.withHeaders("Release-Version" -> releaseVersion)
+      result
+        .withHeaders("Release-Version" -> releaseVersion)
+        .withHeaders("Release-Version-iOS" -> version_iOS)
+        .withHeaders("Market-App-Id-iOS" -> marketAppId_iOS)
     }
   }
-
 
   val loggingFilter = Filter { (nextFilter, requestHeader) =>
     val startTime = System.currentTimeMillis
@@ -72,6 +76,8 @@ object Global extends GlobalSettings {
   override def onStart(app: Application) {
     instanceRole = readInstanceRole
     releaseVersion = readReleaseVersion
+    version_iOS = Play.current.configuration.getString("version_ios").orNull
+    marketAppId_iOS = Play.current.configuration.getString("market_app_id_ios").orNull
     targetEnvironment = readTargetEnvironment
     systemMode = readSystemMode
 
@@ -82,6 +88,7 @@ object Global extends GlobalSettings {
     readFakeDate()
 
     Logger.info(s"Epic Eleven $instanceRole, Version: $releaseVersion, TargetEnvironment: $targetEnvironment, has started")
+    Logger.info(s"Version iOS: $version_iOS MarketAppId_iOS: $marketAppId_iOS")
 
     model.Model.init(instanceRole, targetEnvironment, systemMode)
 
@@ -152,7 +159,6 @@ object Global extends GlobalSettings {
       thread.start()
     }
   }
-
 
   private def readReleaseVersion : String = {
     var version = "devel"
