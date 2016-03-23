@@ -34,9 +34,10 @@ object Global extends GlobalSettings {
 
   val releaseFilter = Filter { (nextFilter, requestHeader) =>
     nextFilter(requestHeader).map { result =>
-      result.withHeaders("Release-Version" -> releaseVersion)
-      result.withHeaders("Release-Version-iOS" -> version_iOS)
-      result.withHeaders("Market-App-Id-iOS" -> marketAppId_iOS)
+      result
+        .withHeaders("Release-Version" -> releaseVersion)
+        .withHeaders("Release-Version-iOS" -> version_iOS)
+        .withHeaders("Market-App-Id-iOS" -> marketAppId_iOS)
     }
   }
 
