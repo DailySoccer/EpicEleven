@@ -39,7 +39,7 @@ public class AllowCors {
                 context.response().setHeader("Access-Control-Allow-Origin", origin);
 
                 // Necesitamos que se pueda acceder a la version del servidor, mandada desde un filtro global en Global
-                context.response().setHeader("Access-Control-Expose-Headers", "Release-Version");
+                context.response().setHeader("Access-Control-Expose-Headers", "Release-Version, Release-Version-iOS, Market-App-Id-iOS");
             }
             else {
                 /*
