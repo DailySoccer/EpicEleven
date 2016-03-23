@@ -37,6 +37,10 @@ public class ShopController extends Controller {
         return new ReturnHelper(ImmutableMap.of("products", Catalog.Products)).toResult();
     }
 
+    public static Result getiTunesCatalog() {
+        return new ReturnHelper(ImmutableMap.of("products", Catalog.iTunesProducts)).toResult();
+    }
+
     @UserAuthenticated
     public static Result buyProduct(String productId) {
         User theUser = (User)ctx().args.get("User");
