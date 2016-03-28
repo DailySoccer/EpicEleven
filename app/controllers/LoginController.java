@@ -64,6 +64,10 @@ public class LoginController extends Controller {
         @Required public String password;
     }
 
+    public static class DeviceLoginParams {
+        @Required public String uuid;
+    }
+
     public static class FBLoginParams {
         @Required public String accessToken;
         @Required public String facebookID;
@@ -366,6 +370,32 @@ public class LoginController extends Controller {
         return returnHelper.toResult();
     }
 
+
+    public static Result deviceLogin() {
+
+        Form<DeviceLoginParams> loginParamsForm = Form.form(DeviceLoginParams.class).bindFromRequest();
+        ReturnHelper returnHelper = new ReturnHelper();
+
+        if (!loginParamsForm.hasErrors()) {
+            DeviceLoginParams loginParams = loginParamsForm.get();
+
+            // Buscamos el usuario en Mongo
+            User theUser = User.findByUUID(loginParams.uuid);
+
+            // Si el usuario no existe, lo creamos con información por defecto
+            if (theUser == null) {
+                theUser = new User("UUID", "", "UUID", loginParams.uuid.concat("@uuid.com").toLowerCase());
+                theUser.deviceUUID = loginParams.uuid;
+                Logger.debug("Creamos el usuario asociado al deviceUUID: {}", theUser.deviceUUID);
+
+                insertUser(theUser);
+            }
+
+            setSession(returnHelper, theUser);
+        }
+
+        return returnHelper.toResult();
+    }
 
     public static Result facebookLogin() {
         Form<FBLoginParams> loginParamsForm = Form.form(FBLoginParams.class).bindFromRequest();

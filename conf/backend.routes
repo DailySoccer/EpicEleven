@@ -32,6 +32,7 @@ GET            /buy_soccer_player/:contest/:soccerPlayer               controlle
 # Login
 POST           /login                                                  controllers.LoginController.login()
 POST           /facebooklogin                                          controllers.LoginController.facebookLogin()
+POST           /devicelogin                                            controllers.LoginController.deviceLogin()
 
 
 POST           /signup                                                 controllers.LoginController.signup()

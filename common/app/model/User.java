@@ -58,6 +58,7 @@ public class User {
     public String nickName;
 	public String email;
 
+    public String deviceUUID;
     public String facebookID;
 
     @JsonView(JsonViews.NotForClient.class)
@@ -180,6 +181,10 @@ public class User {
 
     static public User findByEmail(String email) {
         return Model.users().findOne("{email: #}", email).as(User.class);
+    }
+
+    static public User findByUUID(String uuid) {
+        return Model.users().findOne("{deviceUUID: #}", uuid).as(User.class);
     }
 
     static public List<User> findTests() {
