@@ -19,6 +19,7 @@ import utils.ListUtils;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 //       Sacar todos los bots cuando queda menos de X tiempo para empezar (poco a poco)
 //       Si queremos que puedan realmente jugar en concursos: http://en.wikipedia.org/wiki/Knapsack_problem
@@ -172,7 +173,7 @@ public class BotActor extends UntypedActor {
 
     void onTickBerserker() throws TimeoutException {
         // Vemos los concursos activos en los que no estamos ya metidos y nos metemos en todos ellos en el mismo tick, a lo berserker
-        List<Contest> notEntered = filterContestByNotEntered(getActiveContests(), null);
+        List<Contest> notEntered = filterContestBySimulation(filterContestByNotEntered(getActiveContests(), null));
 
         // El servidor nos puede cambiar de concurso. Vamos guardando aqui los cambios para no volver a intentar entrar
         // durante el bucle
@@ -190,7 +191,8 @@ public class BotActor extends UntypedActor {
     }
 
     void onTickProduction(float averageEnteredContests) throws TimeoutException {
-        List<Contest> notEntered = filterContestByNotEntered(getActiveContests(), null);
+        List<Contest> notEntered = filterContestBySimulation(filterContestByNotEntered(getActiveContests(), null));
+
         List<Contest> myActiveContests = getMyActiveContests();
         int diffContests = 0;
 
@@ -208,6 +210,8 @@ public class BotActor extends UntypedActor {
             }
         }
 
+        // TODO: No es posible salirse de ningún torneo
+        /*
         // Nos salimos de concursos donde ya hay demasiada gente (u otros bots)
         for (Contest contest : myActiveContests) {
             if (shouldLeave(contest)) {
@@ -215,6 +219,7 @@ public class BotActor extends UntypedActor {
                 diffContests--;
             }
         }
+        */
 
         // Comunicamos a nuestro padre en cuantos concursos estamos ahora mismo
         getSender().tell(new BotMsg("CurrentEnteredContests", _user.userId.toString(), myActiveContests.size() + diffContests), getSelf());
@@ -329,7 +334,7 @@ public class BotActor extends UntypedActor {
     }
 
     private boolean shouldEnter(Contest contest) {
-        return getNumFreeSlots(contest) > getGoalFreeSlots(contest);
+        return _user.energyBalance.isGreaterThan(contest.entryFee) && (contest.getNumEntries() < contest.minEntries);
     }
 
     private int getGoalFreeSlots(Contest contest) {
@@ -430,14 +435,13 @@ public class BotActor extends UntypedActor {
 
         JsonNode jsonNode = get(String.format("get_active_contest/%s", contest.contestId));
         JsonNode jsonNodeContest = jsonNode.findValue("contest");
-        JsonNode jsonNodeSoccerPlayers = jsonNode.findValue("soccer_players");
         String enteredContestId = null;
 
-        if (jsonNodeContest != null && jsonNodeSoccerPlayers != null) {
+        if (jsonNodeContest != null) {
             // Debemos hacer to.do nuestro proceso con los datos de salario, equipo, etc que vienen en los Instances y no en los Templates.
             // Los instances los obtenemos de la query "get_public_contest" (dado que el contest que recibimos no lo incluye, al obtenerse de una query "active_contests")
             List<InstanceSoccerPlayer> instanceSoccerPlayers = JsonUtils.fromJSON(jsonNodeContest.toString(), new TypeReference<Contest>() { }).instanceSoccerPlayers;
-            List<TemplateSoccerPlayer> soccerPlayers = JsonUtils.fromJSON(jsonNodeSoccerPlayers.toString(), new TypeReference<List<TemplateSoccerPlayer>>() { });
+            List<TemplateSoccerPlayer> soccerPlayers = TemplateSoccerPlayer.findAllFromInstances(instanceSoccerPlayers);
 
             // Simplemente "parcheamos" los templates con los datos de los instances
             copyInstancesToTemplates(instanceSoccerPlayers, soccerPlayers);
@@ -468,7 +472,7 @@ public class BotActor extends UntypedActor {
     private String addContestEntry(List<TemplateSoccerPlayer> lineup, ObjectId contestId) throws TimeoutException {
 
         String idList = new ObjectMapper().valueToTree(ListUtils.stringListFromObjectIdList(ListUtils.convertToIdList(lineup))).toString();
-        JsonNode jsonNode = post("add_contest_entry", String.format("contestId=%s&soccerTeam=%s", contestId.toString(), idList));
+        JsonNode jsonNode = post("add_contest_entry", String.format("contestId=%s&soccerTeam=%s&formation=442", contestId.toString(), idList));
 
         // Nosotros podemos pedir un contestId, pero el servidor puede elegir meternos en otro
         String enteredContestId = null;
@@ -539,6 +543,10 @@ public class BotActor extends UntypedActor {
         }
 
         return ret;
+    }
+
+    private List<Contest> filterContestBySimulation(List<Contest> contests) {
+        return contests.stream().filter( contest -> contest.simulation ).collect(Collectors.toList());
     }
 
     private JsonNode post(final String url, String params) throws TimeoutException {

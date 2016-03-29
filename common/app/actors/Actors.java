@@ -333,7 +333,7 @@ public class Actors {
             }
         }
         catch (Exception exc) {
-            Logger.error("WTF 2229 Error deserializando", exc);
+            Logger.error("WTF 2227 Error deserializando", exc);
         }
 
         return ret.params;

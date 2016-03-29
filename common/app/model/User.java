@@ -211,6 +211,10 @@ public class User {
     }
 
     public void setFavorites(List<ObjectId> soccerPlayers) {
+        if (soccerPlayers == null || soccerPlayers.isEmpty()) {
+            Logger.warn("setFavorites: NULL or EMPTY");
+            return;
+        }
         favorites = soccerPlayers;
         Model.users().update(userId).with("{$set: {favorites: #}}", favorites);
     }
