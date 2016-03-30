@@ -42,6 +42,9 @@ import static play.data.Form.form;
 
 @AllowCors.Origin
 public class LoginController extends Controller {
+    private static final String ACTION_SIGNUP = "signup";
+    private static final String ACTION_LOGIN = "login";
+
 
     // https://github.com/playframework/playframework/tree/master/samples/java/forms
     public static class SignupParams {
@@ -407,11 +410,14 @@ public class LoginController extends Controller {
             if (StormPathClient.instance().isConnected()) {
                 Account account = StormPathClient.instance().facebookLogin(loginParams.accessToken);
                 if (account != null) {
+                    boolean signup = false;
+
                     User theUser = User.findByEmail(account.getEmail().toLowerCase());
 
                     if (theUser == null) {
                         theUser = new User(account.getGivenName(), account.getSurname(), getOrSetNickname(account), account.getEmail().toLowerCase());
                         insertUser(theUser);
+                        signup = true;
                     }
 
                     // Actualizar la información de Facebook
@@ -420,7 +426,7 @@ public class LoginController extends Controller {
                     theUser.facebookEmail = loginParams.facebookEmail.toLowerCase();
                     updateFacebookInfo(theUser);
 
-                    setSession(returnHelper, theUser);
+                    setSession(returnHelper, theUser, signup ? ACTION_SIGNUP : ACTION_LOGIN);
 
                 } else {
                     loginParamsForm.reject("email", "Wrong Token");
@@ -430,6 +436,8 @@ public class LoginController extends Controller {
             else if (Play.isDev()) {
                 Logger.warn("facebookLogin: isDev");
 
+                boolean signup = false;
+
                 // Buscamos si tenemos un usuario con ese email
                 User theUser = User.findByEmail(loginParams.facebookEmail.toLowerCase());
 
@@ -437,6 +445,7 @@ public class LoginController extends Controller {
                     // Creamos el usuario
                     theUser = new User(loginParams.facebookName, "", loginParams.facebookName, loginParams.facebookEmail.toLowerCase());
                     insertUser(theUser);
+                    signup = true;
                 }
 
                 // Actualizar la información de Facebook
@@ -445,7 +454,7 @@ public class LoginController extends Controller {
                 theUser.facebookEmail = loginParams.facebookEmail.toLowerCase();
                 updateFacebookInfo(theUser);
 
-                setSession(returnHelper, theUser);
+                setSession(returnHelper, theUser, signup ? ACTION_SIGNUP : ACTION_LOGIN);
             }
             else {
                 loginParamsForm.reject("email", "Wrong Token");
@@ -485,6 +494,12 @@ public class LoginController extends Controller {
     }
 
     private static void setSession(ReturnHelper returnHelper, User theUser) {
+        setSession(returnHelper, theUser, null);
+    }
+
+    private static void setSession(ReturnHelper returnHelper, User theUser, String tag) {
+
+        Session session = null;
 
         if (Play.isDev()) {
             Logger.info("Estamos en desarrollo: El email {} sera el sessionToken y pondremos una cookie", theUser.email);
@@ -493,21 +508,28 @@ public class LoginController extends Controller {
             // por ejemplo usando Postman
             response().setCookie("sessionToken", theUser.email);
 
-            returnHelper.setOK(new Session(theUser.email, theUser.userId, GlobalDate.getCurrentDate()));
+            session = new Session(theUser.email, theUser.userId, GlobalDate.getCurrentDate());
         }
         else {
             // En produccion NO mandamos cookie. Esto evita CSRFs. Esperamos que el cliente nos mande el sessionToken
             // cada vez como parametro en una custom header.
-            Session session = Model.sessions().findOne("{userId: #}", theUser.userId).as(Session.class);
+            session = Model.sessions().findOne("{userId: #}", theUser.userId).as(Session.class);
 
             if (session == null) {
                 String sessionToken = Crypto.generateSignedToken();
                 session = new Session(sessionToken, theUser.userId, GlobalDate.getCurrentDate());
                 Model.sessions().insert(session);
             }
-
-            returnHelper.setOK(session);
         }
+
+        ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
+                .put("sessionToken", session.sessionToken);
+
+        if (tag != null) {
+            builder.put("action", tag);
+        }
+
+        returnHelper.setOK(builder.build());
     }
 
     @UserAuthenticated
