@@ -58,6 +58,7 @@ public class User {
     public String nickName;
 	public String email;
 
+    public String deviceUUID;
     public String facebookID;
 
     @JsonView(JsonViews.NotForClient.class)
@@ -182,6 +183,10 @@ public class User {
         return Model.users().findOne("{email: #}", email).as(User.class);
     }
 
+    static public User findByUUID(String uuid) {
+        return Model.users().findOne("{deviceUUID: #}", uuid).as(User.class);
+    }
+
     static public List<User> findTests() {
         return ListUtils.asList(Model.users().find("{email: {$regex: \"@test.com\"}, nickName: {$ne: 'Test'}}").as(User.class));
     }
@@ -206,6 +211,10 @@ public class User {
     }
 
     public void setFavorites(List<ObjectId> soccerPlayers) {
+        if (soccerPlayers == null || soccerPlayers.isEmpty()) {
+            Logger.warn("setFavorites: NULL or EMPTY");
+            return;
+        }
         favorites = soccerPlayers;
         Model.users().update(userId).with("{$set: {favorites: #}}", favorites);
     }

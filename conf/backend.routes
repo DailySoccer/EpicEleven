@@ -23,6 +23,7 @@ GET            /get_leaderboard                                        controlle
 # Shop
 GET            /get_catalog                                            controllers.ShopController.getCatalog()
 GET            /get_itunes_catalog                                     controllers.ShopController.getiTunesCatalog()
+GET            /get_playstore_catalog                                  controllers.ShopController.getPlayStoreCatalog()
 GET            /buy_product/:productId                                 controllers.ShopController.buyProduct(productId : String)
 GET            /buy_soccer_player/:contest/:soccerPlayer               controllers.ShopController.buySoccerPlayer(contest : String, soccerPlayer : String)
 
@@ -32,6 +33,7 @@ GET            /buy_soccer_player/:contest/:soccerPlayer               controlle
 # Login
 POST           /login                                                  controllers.LoginController.login()
 POST           /facebooklogin                                          controllers.LoginController.facebookLogin()
+POST           /devicelogin                                            controllers.LoginController.deviceLogin()
 
 
 POST           /signup                                                 controllers.LoginController.signup()

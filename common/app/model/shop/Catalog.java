@@ -30,6 +30,13 @@ public class Catalog {
             .put("ITUNES_GOLD_5", new ProductMoney("ITUNES_GOLD_5", "com.epiceleven.futbolcuatro.gold_5", Money.of(CurrencyUnit.EUR, 49.99), "product_gold_5", "images/icon-BuyGold5.png", Money.of(MoneyUtils.CURRENCY_GOLD, 900), Money.of(MoneyUtils.CURRENCY_GOLD, 400), false))
             .put("ITUNES_GOLD_6", new ProductMoney("ITUNES_GOLD_6", "com.epiceleven.futbolcuatro.gold_6", Money.of(CurrencyUnit.EUR, 99.99), "product_gold_6", "images/icon-BuyGold6.png", Money.of(MoneyUtils.CURRENCY_GOLD, 1700), Money.of(MoneyUtils.CURRENCY_GOLD, 650), false))
 
+            .put("PLAYSTORE_GOLD_1", new ProductMoney("PLAYSTORE_GOLD_1", "com.epiceleven.futbolcuatro.gold_1", Money.of(CurrencyUnit.EUR, 2.99), "product_gold_1", "images/icon-BuyGold1.png", Money.of(MoneyUtils.CURRENCY_GOLD, 30), Money.of(MoneyUtils.CURRENCY_GOLD, 0), false))
+            .put("PLAYSTORE_GOLD_2", new ProductMoney("PLAYSTORE_GOLD_2", "com.epiceleven.futbolcuatro.gold_2", Money.of(CurrencyUnit.EUR, 4.99), "product_gold_2", "images/icon-BuyGold2.png", Money.of(MoneyUtils.CURRENCY_GOLD, 50), Money.of(MoneyUtils.CURRENCY_GOLD, 5), true))
+            .put("PLAYSTORE_GOLD_3", new ProductMoney("PLAYSTORE_GOLD_3", "com.epiceleven.futbolcuatro.gold_3", Money.of(CurrencyUnit.EUR, 9.99), "product_gold_3", "images/icon-BuyGold3.png", Money.of(MoneyUtils.CURRENCY_GOLD, 120), Money.of(MoneyUtils.CURRENCY_GOLD, 15), false))
+            .put("PLAYSTORE_GOLD_4", new ProductMoney("PLAYSTORE_GOLD_4", "com.epiceleven.futbolcuatro.gold_4", Money.of(CurrencyUnit.EUR, 19.99), "product_gold_4", "images/icon-BuyGold4.png", Money.of(MoneyUtils.CURRENCY_GOLD, 250), Money.of(MoneyUtils.CURRENCY_GOLD, 50), false))
+            .put("PLAYSTORE_GOLD_5", new ProductMoney("PLAYSTORE_GOLD_5", "com.epiceleven.futbolcuatro.gold_5", Money.of(CurrencyUnit.EUR, 49.99), "product_gold_5", "images/icon-BuyGold5.png", Money.of(MoneyUtils.CURRENCY_GOLD, 900), Money.of(MoneyUtils.CURRENCY_GOLD, 400), false))
+            .put("PLAYSTORE_GOLD_6", new ProductMoney("PLAYSTORE_GOLD_6", "com.epiceleven.futbolcuatro.gold_6", Money.of(CurrencyUnit.EUR, 99.99), "product_gold_6", "images/icon-BuyGold6.png", Money.of(MoneyUtils.CURRENCY_GOLD, 1700), Money.of(MoneyUtils.CURRENCY_GOLD, 650), false))
+
             .put("ENERGY_1", new ProductMoney("ENERGY_1", Money.of(MoneyUtils.CURRENCY_GOLD, 1), "product_energy_1", "images/1pRefill.png", Money.zero(MoneyUtils.CURRENCY_ENERGY).plus(1)))
             .put("ENERGY_ALL", new ProductMoney("ENERGY_ALL", Money.of(MoneyUtils.CURRENCY_GOLD, 3), "product_maxrefill", "images/fullRefill.png", Money.of(MoneyUtils.CURRENCY_ENERGY, User.MAX_ENERGY)))
             .build();
@@ -61,6 +68,17 @@ public class Catalog {
             .add(ProductsMap.get("ITUNES_GOLD_4"))
             .add(ProductsMap.get("ITUNES_GOLD_5"))
             .add(ProductsMap.get("ITUNES_GOLD_6"))
+            .add(ProductsMap.get("ENERGY_1"))
+            .add(ProductsMap.get("ENERGY_ALL"))
+            .build();
+
+    static public List<Product> PlayStoreProducts = ImmutableList.<Product>builder()
+            .add(ProductsMap.get("PLAYSTORE_GOLD_1"))
+            .add(ProductsMap.get("PLAYSTORE_GOLD_2"))
+            .add(ProductsMap.get("PLAYSTORE_GOLD_3"))
+            .add(ProductsMap.get("PLAYSTORE_GOLD_4"))
+            .add(ProductsMap.get("PLAYSTORE_GOLD_5"))
+            .add(ProductsMap.get("PLAYSTORE_GOLD_6"))
             .add(ProductsMap.get("ENERGY_1"))
             .add(ProductsMap.get("ENERGY_ALL"))
             .build();
