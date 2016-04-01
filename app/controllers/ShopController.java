@@ -41,6 +41,10 @@ public class ShopController extends Controller {
         return new ReturnHelper(ImmutableMap.of("products", Catalog.iTunesProducts)).toResult();
     }
 
+    public static Result getPlayStoreCatalog() {
+        return new ReturnHelper(ImmutableMap.of("products", Catalog.PlayStoreProducts)).toResult();
+    }
+
     @UserAuthenticated
     public static Result buyProduct(String productId) {
         User theUser = (User)ctx().args.get("User");
