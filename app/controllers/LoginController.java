@@ -42,6 +42,8 @@ import static play.data.Form.form;
 
 @AllowCors.Origin
 public class LoginController extends Controller {
+    private static final Integer MAX_RETRY_TO_CREATE = 10;
+    private static final String NICKNAME_AUTO = "Guest";
     private static final String ACTION_SIGNUP = "signup";
     private static final String ACTION_LOGIN = "login";
 
@@ -386,18 +388,38 @@ public class LoginController extends Controller {
             User theUser = User.findByUUID(loginParams.uuid);
 
             // Si el usuario no existe, lo creamos con información por defecto
-            if (theUser == null) {
-                theUser = new User("UUID", "", "UUID", loginParams.uuid.concat("@uuid.com").toLowerCase());
-                theUser.deviceUUID = loginParams.uuid;
-                Logger.debug("Creamos el usuario asociado al deviceUUID: {}", theUser.deviceUUID);
+            // Permitimos varios intentos para garantizar que se genera un usuario correcto
+            for (int i=0; i<MAX_RETRY_TO_CREATE && (theUser == null); i++) {
+                try {
+                    theUser = createUserFormUUID(loginParams.uuid);
+                } catch (DuplicateKeyException exc) {
+                    theUser = null;
 
-                insertUser(theUser);
+                    Logger.error("deviceLogin: ", exc);
+                }
             }
 
-            setSession(returnHelper, theUser);
+            if (theUser != null) {
+                setSession(returnHelper, theUser);
+            }
+            else {
+                returnHelper.setKO(ImmutableMap.of("error", "Retry: Device Login Error"));
+            }
         }
 
         return returnHelper.toResult();
+    }
+
+    private static User createUserFormUUID(String uuid) {
+        String nickName = generateNewNickname();
+
+        User theUser = new User(nickName, "Stormtrooper", nickName, uuid.concat("@uuid.xyz").toLowerCase());
+        theUser.deviceUUID = uuid;
+        Logger.debug("Creamos el usuario asociado al deviceUUID: {}", theUser.deviceUUID);
+
+        insertUser(theUser);
+
+        return theUser;
     }
 
     public static Result facebookLogin() {
@@ -488,6 +510,18 @@ public class LoginController extends Controller {
 
         while (null != User.findByName(nickname)) {
             nickname = base+" "+Integer.toString(++count);
+        }
+
+        return nickname;
+    }
+
+    private static String generateNewNickname() {
+        int count = (int) Model.users().count();
+        String base = NICKNAME_AUTO;
+        String nickname = base+"-"+Integer.toString(++count);
+
+        while (null != User.findByName(nickname)) {
+            nickname = base+"-"+Integer.toString(++count);
         }
 
         return nickname;
