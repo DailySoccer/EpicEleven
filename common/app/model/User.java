@@ -73,7 +73,9 @@ public class User {
     public int trueSkill = 0;
     // Rating de True Skill
     public Rating rating = new Rating(TrueSkillHelper.INITIAL_MEAN, TrueSkillHelper.INITIAL_SD);
+
     // Torneos que se han tenido en cuenta para calcular su rating
+    @JsonView(JsonViews.NotForClient.class)
     public List<ObjectId> contestsRating = new ArrayList<>();
 
     public Money earnedMoney = MoneyUtils.zero;
