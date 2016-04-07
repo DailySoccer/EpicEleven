@@ -254,7 +254,7 @@ public class Model {
         // Si creando nuevo indice sobre datos que ya existan => .append("dropDups", true)
         users.createIndex(new BasicDBObject("email", 1), new BasicDBObject("unique", true));
         users.createIndex(new BasicDBObject("nickName", 1), new BasicDBObject("unique", true));
-        users.createIndex(new BasicDBObject("deviceUUID", 1), new BasicDBObject("unique", true));
+        users.createIndex(new BasicDBObject("deviceUUID", 1));
 
         // Do we need the sessionToken to be unique? SecureRandom guarantees it to be unique, doesn't it?
         // http://www.kodyaz.com/images/pics/random-number-generator-dilbert-comic.jpg

@@ -238,7 +238,7 @@ public class ContestEntryController extends Controller {
 
             String formation = params.formation;
 
-            Logger.info("editContestEntry: contestEntryId({}) soccerTeam({})", params.contestEntryId, params.soccerTeam);
+            Logger.info("editContestEntry: contestEntryId({}) formation({}) soccerTeam({})", params.contestEntryId, params.formation, params.soccerTeam);
 
             ContestEntry contestEntry = ContestEntry.findOne(params.contestEntryId);
             if (contestEntry != null) {
