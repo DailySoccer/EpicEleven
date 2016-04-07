@@ -19,7 +19,8 @@ public class Order {
         IN_GAME,
         PAYPAL,
         MORE_THAN_GAME,
-        ITUNES_CONNECT
+        ITUNES_CONNECT,
+        PLAYSTORE
     }
 
     public enum State {

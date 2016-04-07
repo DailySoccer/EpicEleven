@@ -22,6 +22,8 @@ object Global extends GlobalSettings {
   var releaseVersion = "devel"
   var version_iOS = "devel"
   var marketAppId_iOS = ""
+  var version_android = "devel"
+  var marketAppId_android = ""
 
   // Role of this machine (DEVELOPMENT_ROLE, WEB_ROLE, OPTAPROCESSOR_ROLE, BOTS_ROLE...)
   var instanceRole = InstanceRole.DEVELOPMENT_ROLE
@@ -38,6 +40,8 @@ object Global extends GlobalSettings {
         .withHeaders("Release-Version" -> releaseVersion)
         .withHeaders("Release-Version-iOS" -> version_iOS)
         .withHeaders("Market-App-Id-iOS" -> marketAppId_iOS)
+        .withHeaders("Release-Version-Android" -> version_android)
+        .withHeaders("Market-App-Id-Android" -> marketAppId_android)
     }
   }
 
@@ -78,6 +82,8 @@ object Global extends GlobalSettings {
     releaseVersion = readReleaseVersion
     version_iOS = Play.current.configuration.getString("version_ios").orNull
     marketAppId_iOS = Play.current.configuration.getString("market_app_id_ios").orNull
+    version_android = Play.current.configuration.getString("version_android").orNull
+    marketAppId_android = Play.current.configuration.getString("market_app_id_android").orNull
     targetEnvironment = readTargetEnvironment
     systemMode = readSystemMode
 
@@ -88,7 +94,7 @@ object Global extends GlobalSettings {
     readFakeDate()
 
     Logger.info(s"Epic Eleven $instanceRole, Version: $releaseVersion, TargetEnvironment: $targetEnvironment, has started")
-    Logger.info(s"Version iOS: $version_iOS MarketAppId_iOS: $marketAppId_iOS")
+    Logger.info(s"Version iOS: $version_iOS MarketAppId_iOS: $marketAppId_iOS Version Android: $version_android MarketAppId_Android: $marketAppId_android")
 
     model.Model.init(instanceRole, targetEnvironment, systemMode)
 

@@ -46,9 +46,11 @@ public class StoreController extends Controller {
         if (!buyForm.hasErrors()) {
             BuyParams params = buyForm.get();
 
-            Logger.debug("{}: User: {} Type: {} Product: {} PaymentId: {}", Order.TransactionType.ITUNES_CONNECT, theUser.userId.toString(), params.paymentType, params.productId, params.paymentId);
+            Order.TransactionType transactionType = params.paymentType.contains("android") ? Order.TransactionType.PLAYSTORE : Order.TransactionType.ITUNES_CONNECT;
 
-            Order order = Order.findOneFromPayment(Order.TransactionType.ITUNES_CONNECT, params.paymentId);
+            Logger.debug("{}: User: {} Type: {} Product: {} PaymentId: {}", transactionType, theUser.userId.toString(), params.paymentType, params.productId, params.paymentId);
+
+            Order order = Order.findOneFromPayment(transactionType, params.paymentId);
             if (order == null) {
                 // Obtenemos desde qué url están haciendo la solicitud
                 String refererUrl = request().hasHeader("Referer") ? request().getHeader("Referer") : Order.REFERER_URL_DEFAULT;
@@ -67,18 +69,18 @@ public class StoreController extends Controller {
                     order = Order.create(
                             orderId,
                             theUser.userId,
-                            Order.TransactionType.ITUNES_CONNECT,
+                            transactionType,
                             params.paymentId,
                             ImmutableList.of(product),
                             Order.REFERER_URL_DEFAULT);
 
                     CompleteOrderJob job = CompleteOrderJob.create(order.orderId);
 
-                    Logger.debug("{}: New Order: {} PaymentId: {} State: {}", Order.TransactionType.ITUNES_CONNECT, order.orderId.toString(), params.paymentId, job.state);
+                    Logger.debug("{}: New Order: {} PaymentId: {} State: {}", transactionType, order.orderId.toString(), params.paymentId, job.state);
                 }
             }
             else {
-                Logger.debug("{}: Order: {} ya registrada para ese PaymentId: {}", Order.TransactionType.ITUNES_CONNECT, order.orderId.toString(), params.paymentId);
+                Logger.debug("{}: Order: {} ya registrada para ese PaymentId: {}", transactionType, order.orderId.toString(), params.paymentId);
             }
         }
 
