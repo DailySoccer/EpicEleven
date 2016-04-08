@@ -37,6 +37,7 @@ public class ContestController extends Controller {
             public String projection() {
                 return "{" +
                         "name: 1, " +
+                        "authorId: 1, " +
                         "'contestEntries.userId': 1, " +
                         "maxEntries: 1, " +
                         "minManagerLevel: 1, maxManagerLevel: 1, " +
@@ -71,7 +72,7 @@ public class ContestController extends Controller {
                 Contest contest = (Contest) data;
                 switch (index) {
                     case 0:
-                        return contest.name;
+                        return contest.name + ((contest.authorId != null) ? "**" : "");
                     case 1:
                         return String.valueOf(contest.contestEntries.size());
                     case 2:
