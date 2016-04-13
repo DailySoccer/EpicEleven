@@ -80,6 +80,27 @@ public class LoginController extends Controller {
         @Required public String facebookEmail;
     }
 
+    public static class AskForUserProfileParams {
+        public String email;
+        public String password;
+
+        public String accessToken;
+        public String facebookID;
+    }
+
+    public static class BindFromAccountParams {
+        SignupParams signupParams;
+        FBLoginParams fbLoginParams;
+    }
+
+    public static class BindToAccountParams {
+        LoginParams loginParams;
+        FBLoginParams fbLoginParams;
+
+        public Map<String, String> source;
+        public Map<String, String> target;
+    }
+
     public static class AskForPasswordResetParams {
         @Required public String email;
     }
@@ -569,6 +590,158 @@ public class LoginController extends Controller {
     @UserAuthenticated
     public static Result getUserProfile() {
         return new ReturnHelper(((User)ctx().args.get("User")).getProfile()).toResult();
+    }
+
+    @UserAuthenticated
+    public static Result askForUserProfile() {
+        User theUser = (User)ctx().args.get("User");
+
+        Form<AskForUserProfileParams> form = form(AskForUserProfileParams.class).bindFromRequest();
+
+        User otherUser = null;
+
+        if (!form.hasErrors()) {
+            AskForUserProfileParams params = form.get();
+
+            // Acceso mediante cuenta de Facebook?
+            if (params.accessToken != null && !params.accessToken.isEmpty()) {
+                // Tenemos una cuenta asociada con ese facebookID?
+                otherUser = User.findByFacebook(params.facebookID);
+                if (otherUser != null) {
+                    // Tiene permiso para entrar con esa cuenta?
+                    Account account = StormPathClient.instance().facebookLogin(params.accessToken);
+                    if (account != null) {
+                        // OK:
+                    }
+                    else {
+                        // No tiene permisos...
+                        form.reject("auth", "ERROR_WRONG_EMAIL_OR_PASSWORD");
+                        otherUser = null;
+                    }
+                }
+                else {
+                    form.reject("email", "ERROR_WRONG_EMAIL_OR_PASSWORD");
+                }
+            }
+
+            // Acceso mediante cuenta de Email + Password?
+            if (params.email != null && !params.email.isEmpty()) {
+                // Tenemos una cuenta asociada con este email?
+                otherUser = User.findByEmail(params.email);
+                if (otherUser != null) {
+                    // Tiene permiso para entrar con esa cuenta?
+                    Account account = StormPathClient.instance().login(params.email, params.password);
+                    if (account != null) {
+                        // OK:
+                    }
+                    else {
+                        // No tiene permisos...
+                        form.reject("auth", "ERROR_WRONG_EMAIL_OR_PASSWORD");
+                        otherUser = null;
+                    }
+                }
+                else {
+                    form.reject("email", "ERROR_WRONG_EMAIL_OR_PASSWORD");
+                }
+            }
+        }
+
+        ReturnHelper returnHelper = new ReturnHelper();
+
+        if (!form.hasErrors()) {
+            returnHelper.setOK(ImmutableMap.of(
+                "profile", otherUser,
+                "numWaiting", Contest.countByState(otherUser.userId, ContestState.ACTIVE),
+                "numLive", Contest.countByState(otherUser.userId, ContestState.LIVE),
+                "numVirtualHistory", Contest.countByStateAndSimulation(otherUser.userId, ContestState.HISTORY, true),
+                "numRealHistory", Contest.countByStateAndSimulation(otherUser.userId, ContestState.HISTORY, false)
+            ));
+        }
+        else {
+            returnHelper.setKO(form.errorsAsJson());
+        }
+
+        return returnHelper.toResult();
+    }
+
+    @UserAuthenticated
+    public static Result bindFromAccount() {
+        User theUser = (User) ctx().args.get("User");
+        Form<BindToAccountParams> form = form(BindToAccountParams.class).bindFromRequest();
+
+        if (!form.hasErrors()) {
+            BindToAccountParams params = form.get();
+        }
+
+        ReturnHelper returnHelper = new ReturnHelper();
+
+        return returnHelper.toResult();
+    }
+
+    @UserAuthenticated
+    public static Result bindToAccount() {
+        User theUser = (User) ctx().args.get("User");
+
+        Form<BindToAccountParams> form = form(BindToAccountParams.class).bindFromRequest();
+
+        if (!form.hasErrors()) {
+            BindToAccountParams params = form.get();
+
+            Account account = null;
+
+            // Quiere vincular otra cuenta con la cuenta actual
+            if (params.source != null) {
+                account = getAccount(params.source);
+                if (account != null) {
+                    User otherUser = User.findByEmail(account.getEmail().toLowerCase());
+                    if (otherUser != null) {
+                        bindAccounts(otherUser, theUser);
+                    }
+                }
+            }
+            // Quiere vincular la cuenta actual con otra cuenta
+            else if (params.target != null) {
+                account = getAccount(params.target);
+                if (account != null) {
+                    User otherUser = User.findByEmail(account.getEmail().toLowerCase());
+                    if (otherUser != null) {
+                        bindAccounts(theUser, otherUser);
+                    }
+                }
+            }
+
+            if (account == null) {
+                form.reject("auth", "ERROR_WRONG_EMAIL_OR_PASSWORD");
+            }
+        }
+
+        ReturnHelper returnHelper = new ReturnHelper();
+
+        return returnHelper.toResult();
+    }
+
+    private static void bindAccounts(User source, User target) {
+        target.nickName         = source.nickName;
+        target.firstName        = source.firstName;
+        target.lastName         = source.lastName;
+        target.email            = source.email;
+        target.facebookName     = source.facebookName;
+        target.facebookID       = source.facebookID;
+        target.facebookEmail    = source.facebookEmail;
+    }
+
+    private static Account getAccount(Map<String, String> access) {
+        Account account = null;
+        if (access != null) {
+            if (access.containsKey("facebookID") && access.containsKey("accessToken")) {
+                account = StormPathClient.instance().facebookLogin(access.get("accessToken"));
+            }
+
+            if (access.containsKey("email") && access.containsKey("password")) {
+                account = StormPathClient.instance().login(access.get("email"), access.get("password"));
+            }
+        }
+        return account;
     }
 
     public static class UserProfilesFacebookParams {

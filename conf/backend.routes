@@ -43,6 +43,9 @@ POST           /devicelogin                                            controlle
 
 
 POST           /signup                                                 controllers.LoginController.signup()
+POST           /ask_for_user_profile                                   controllers.LoginController.askForUserProfile()
+POST           /bind_from_account                                      controllers.LoginController.bindFromAccount()
+POST           /bind_to_account                                        controllers.LoginController.bindToAccount()
 GET            /get_user_profile                                       controllers.LoginController.getUserProfile()
 POST           /get_facebook_profiles                                  controllers.LoginController.getFacebookProfiles()
 POST           /change_user_profile                                    controllers.LoginController.changeUserProfile()

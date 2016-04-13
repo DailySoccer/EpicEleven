@@ -238,6 +238,10 @@ public class User {
         return ListUtils.asList(Model.findObjectIds(Model.users(), "_id", userObjectIds).projection(projection).as(User.class));
     }
 
+    static public User findByFacebook(String facebookId) {
+        return Model.users().findOne("{facebookID: #}", facebookId).as(User.class);
+    }
+
     static public List<User> findByFacebook(List<String> facebookIds) {
         return ListUtils.asList(Model.findFields(Model.users(), "facebookID", facebookIds).as(User.class));
     }
