@@ -608,15 +608,16 @@ public class LoginController extends Controller {
                 // Tenemos una cuenta asociada con ese facebookID?
                 otherUser = User.findByFacebook(params.facebookID);
                 if (otherUser != null) {
-                    // Tiene permiso para entrar con esa cuenta?
-                    Account account = StormPathClient.instance().facebookLogin(params.accessToken);
-                    if (account != null) {
-                        // OK:
-                    }
-                    else {
-                        // No tiene permisos...
-                        form.reject("auth", "ERROR_WRONG_EMAIL_OR_PASSWORD");
-                        otherUser = null;
+                    if (StormPathClient.instance().isConnected()) {
+                        // Tiene permiso para entrar con esa cuenta?
+                        Account account = StormPathClient.instance().facebookLogin(params.accessToken);
+                        if (account != null) {
+                            // OK:
+                        } else {
+                            // No tiene permisos...
+                            form.reject("auth", "ERROR_WRONG_EMAIL_OR_PASSWORD");
+                            otherUser = null;
+                        }
                     }
                 }
                 else {
@@ -629,15 +630,16 @@ public class LoginController extends Controller {
                 // Tenemos una cuenta asociada con este email?
                 otherUser = User.findByEmail(params.email);
                 if (otherUser != null) {
-                    // Tiene permiso para entrar con esa cuenta?
-                    Account account = StormPathClient.instance().login(params.email, params.password);
-                    if (account != null) {
-                        // OK:
-                    }
-                    else {
-                        // No tiene permisos...
-                        form.reject("auth", "ERROR_WRONG_EMAIL_OR_PASSWORD");
-                        otherUser = null;
+                    if (StormPathClient.instance().isConnected()) {
+                        // Tiene permiso para entrar con esa cuenta?
+                        Account account = StormPathClient.instance().login(params.email, params.password);
+                        if (account != null) {
+                            // OK:
+                        } else {
+                            // No tiene permisos...
+                            form.reject("auth", "ERROR_WRONG_EMAIL_OR_PASSWORD");
+                            otherUser = null;
+                        }
                     }
                 }
                 else {
