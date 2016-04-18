@@ -103,8 +103,8 @@ public class LoginController extends Controller {
     public static class BindFacebookAccountParams {
         @Required public String accessToken;
         @Required public String facebookID;
-        @Required public String facebookName;
-        @Required public String facebookEmail;
+        public String facebookName;
+        public String facebookEmail;
     }
 
     public static class AskForPasswordResetParams {
@@ -825,7 +825,7 @@ public class LoginController extends Controller {
             setSession(returnHelper, theUser);
         }
         else {
-            Logger.debug("WTF 5418: bindFromAccount: {}", form.errorsAsJson());
+            Logger.debug("WTF 5418: bindToAccount: {}", form.errorsAsJson());
             returnHelper.setKO(form.errorsAsJson());
         }
 
@@ -876,7 +876,7 @@ public class LoginController extends Controller {
             setSession(returnHelper, theUser);
         }
         else {
-            Logger.debug("WTF 5418: bindFromAccount: {}", form.errorsAsJson());
+            Logger.debug("WTF 5418: bindFromFacebookAccount: {}", form.errorsAsJson());
             returnHelper.setKO(form.errorsAsJson());
         }
 
@@ -926,7 +926,7 @@ public class LoginController extends Controller {
             setSession(returnHelper, theUser);
         }
         else {
-            Logger.debug("WTF 5418: bindFromAccount: {}", form.errorsAsJson());
+            Logger.debug("WTF 5418: bindToFacebookAccount: {}", form.errorsAsJson());
             returnHelper.setKO(form.errorsAsJson());
         }
 
