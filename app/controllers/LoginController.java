@@ -789,21 +789,30 @@ public class LoginController extends Controller {
             BindAccountParams params = form.get();
 
             User otherUser = null;
+            Account account = null;
 
-            Account account = StormPathClient.instance().login(params.email,params.password);
-            if (account != null) {
-                otherUser = User.findByEmail(account.getEmail().toLowerCase());
+            if (StormPathClient.instance().isConnected()) {
+                account = StormPathClient.instance().login(params.email, params.password);
+
+                if (account != null) {
+                    otherUser = User.findByEmail(account.getEmail().toLowerCase());
+                }
+            }
+            else {
+                otherUser = User.findByEmail(params.email.toLowerCase());
             }
 
             if (otherUser != null) {
                 theUser.backupProfileInfo();
                 otherUser.backupProfileInfo();
 
-                bindAccount(theUser, otherUser);
+                bindUUID(theUser, otherUser);
                 unbindAccount(theUser);
 
                 theUser.saveProfileInfo();
                 otherUser.saveProfileInfo();
+
+                theUser = otherUser;
             }
             else {
                 form.reject("auth", "ERROR_WRONG_EMAIL_OR_PASSWORD");
@@ -914,6 +923,16 @@ public class LoginController extends Controller {
         target.facebookName     = source.facebookName;
         target.facebookID       = source.facebookID;
         target.facebookEmail    = source.facebookEmail;
+
+        if (source.deviceUUID != null && !source.deviceUUID.isEmpty()) {
+            target.deviceUUID = source.deviceUUID;
+        }
+
+        // target.saveProfileInfo();
+    }
+
+    private static void bindUUID(User source, User target) {
+        // target.backupProfileInfo();
 
         if (source.deviceUUID != null && !source.deviceUUID.isEmpty()) {
             target.deviceUUID = source.deviceUUID;
