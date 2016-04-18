@@ -840,34 +840,40 @@ public class LoginController extends Controller {
         if (!form.hasErrors()) {
             BindFacebookAccountParams params = form.get();
 
-            Account account = StormPathClient.instance().facebookLogin(params.accessToken);
-            if (account != null) {
-                User otherUser = User.findByEmail(account.getEmail().toLowerCase());
-                if (otherUser != null) {
-                    bindAccount(otherUser, theUser);
-                    unbindAccount(otherUser);
+            Account account = null;
+            User otherUser = null;
+
+            if (StormPathClient.instance().isConnected()) {
+                account = StormPathClient.instance().facebookLogin(params.accessToken);
+
+                if (account != null) {
+                    otherUser = User.findByEmail(account.getEmail().toLowerCase());
+
+                    if (otherUser == null) {
+                        otherUser = new User(account.getGivenName(), account.getSurname(), getOrSetNickname(account), account.getEmail().toLowerCase());
+                    }
+                }
+                else {
+                    form.reject("email", "Wrong Token");
                 }
             }
-            else {
-                /*
-                if (StormPathClient.instance().isConnected()) {
-                    error = StormPathClient.instance().register(theParams.nickName, theParams.email, theParams.password);
-                }
 
-                if (error == null || error._1 == -1) {
-                    form.reject("auth", "ERROR_WRONG_EMAIL_OR_PASSWORD");
-                }
-                */
-                form.reject("auth", "ERROR_WRONG_EMAIL_OR_PASSWORD");
+            if (otherUser != null) {
+                theUser.backupProfileInfo();
+                otherUser.backupProfileInfo();
+
+                bindAccount(otherUser, theUser);
+                unbindAccount(otherUser);
+
+                otherUser.saveProfileInfo();
+                theUser.saveProfileInfo();
             }
         }
 
         ReturnHelper returnHelper = new ReturnHelper();
 
         if (!form.hasErrors()) {
-            returnHelper.setOK(ImmutableMap.of(
-                    "result", "ok"
-            ));
+            setSession(returnHelper, theUser);
         }
         else {
             Logger.debug("WTF 5418: bindFromAccount: {}", form.errorsAsJson());
@@ -886,24 +892,38 @@ public class LoginController extends Controller {
         if (!form.hasErrors()) {
             BindFacebookAccountParams params = form.get();
 
-            Account account = StormPathClient.instance().facebookLogin(params.accessToken);
-            if (account != null) {
-                User otherUser = User.findByEmail(account.getEmail().toLowerCase());
-                if (otherUser != null) {
-                    bindAccount(theUser, otherUser);
-                    unbindAccount(theUser);
+            Account account = null;
+            User otherUser = null;
+
+            if (StormPathClient.instance().isConnected()) {
+                account = StormPathClient.instance().facebookLogin(params.accessToken);
+
+                if (account != null) {
+                    otherUser = User.findByEmail(account.getEmail().toLowerCase());
                 }
-            } else {
-                form.reject("auth", "ERROR_WRONG_EMAIL_OR_PASSWORD");
+                else {
+                    form.reject("email", "Wrong Token");
+                }
+            }
+
+            if (otherUser != null) {
+                theUser.backupProfileInfo();
+                otherUser.backupProfileInfo();
+
+                bindUUID(theUser, otherUser);
+                unbindAccount(theUser);
+
+                theUser.saveProfileInfo();
+                otherUser.saveProfileInfo();
+
+                theUser = otherUser;
             }
         }
 
         ReturnHelper returnHelper = new ReturnHelper();
 
         if (!form.hasErrors()) {
-            returnHelper.setOK(ImmutableMap.of(
-                    "result", "ok"
-            ));
+            setSession(returnHelper, theUser);
         }
         else {
             Logger.debug("WTF 5418: bindFromAccount: {}", form.errorsAsJson());
@@ -946,7 +966,7 @@ public class LoginController extends Controller {
 
         String nickName = generateNewNickname();
 
-        account.deviceUUID = "";
+        account.deviceUUID = (account.deviceUUID != null && !account.deviceUUID.isEmpty()) ? account.deviceUUID.concat("-old") : "";
         account.nickName = nickName;
         account.email = nickName.concat("@guest.xyz");
         account.facebookID = "";
