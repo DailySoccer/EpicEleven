@@ -88,17 +88,23 @@ public class LoginController extends Controller {
         public String facebookID;
     }
 
-    public static class BindFromAccountParams {
-        SignupParams signupParams;
-        FBLoginParams fbLoginParams;
+    public static class BindAccountParams {
+        public String firstName;
+        public String lastName;
+
+        // @Required @MinLength(value = 4)
+        public String nickName;
+
+        @Required @Email public String email;
+
+        @Required public String password;
     }
 
-    public static class BindToAccountParams {
-        LoginParams loginParams;
-        FBLoginParams fbLoginParams;
-
-        public Map<String, String> source;
-        public Map<String, String> target;
+    public static class BindFacebookAccountParams {
+        @Required public String accessToken;
+        @Required public String facebookID;
+        @Required public String facebookName;
+        @Required public String facebookEmail;
     }
 
     public static class AskForPasswordResetParams {
@@ -660,6 +666,7 @@ public class LoginController extends Controller {
             ));
         }
         else {
+            Logger.debug("WTF 5409: askForUserProfile: {}", form.errorsAsJson());
             returnHelper.setKO(form.errorsAsJson());
         }
 
@@ -669,13 +676,105 @@ public class LoginController extends Controller {
     @UserAuthenticated
     public static Result bindFromAccount() {
         User theUser = (User) ctx().args.get("User");
-        Form<BindToAccountParams> form = form(BindToAccountParams.class).bindFromRequest();
+        Form<BindAccountParams> form = form(BindAccountParams.class).bindFromRequest();
+
+        User otherUser = null;
 
         if (!form.hasErrors()) {
-            BindToAccountParams params = form.get();
+            BindAccountParams params = form.get();
+
+            boolean canCreateAccount = (params.nickName != null && !params.nickName.isEmpty());
+
+            Account account = null;
+            F.Tuple<Integer, String> error = null;
+
+            // Existe la cuenta en Stormpath?
+            if (StormPathClient.instance().isConnected()) {
+                account = StormPathClient.instance().login(params.email, params.password);
+
+                // Quiere crear la cuenta?
+                if (account == null) {
+                    if (canCreateAccount) {
+                        error = StormPathClient.instance().register(params.nickName, params.email, params.password);
+                    }
+                    else {
+                        // Login inválido
+                        form.reject("email", "ERROR_WRONG_EMAIL_OR_PASSWORD");
+                    }
+                }
+            }
+
+            if (!form.hasErrors()) {
+                if (error == null || error._1 == -1) {
+                    // Buscamos el usuario en la base de datos del juego
+                    otherUser = User.findByEmail(params.email.toLowerCase());
+
+                    // Quiere crear la cuenta?
+                    if (otherUser == null) {
+                        if (canCreateAccount) {
+                            try {
+                                otherUser = new User(params.firstName, params.lastName, params.nickName, params.email.toLowerCase());
+                                insertUser(otherUser);
+
+                                Logger.debug("bindAccount > NEW User {} {} - {} - {}", otherUser.firstName, otherUser.lastName, otherUser.nickName, otherUser.email.toLowerCase());
+
+                            } catch (DuplicateKeyException exc) {
+                                int mongoError = 0; //"Hubo un problema en la creación de tu usuario");
+                                if (exc.getMessage().contains("email")) {
+                                    mongoError = 2; //"Ya existe una cuenta con ese email. Indica otro email."
+                                }
+                                else if (exc.getMessage().contains("nickName")) {
+                                    mongoError = 1; //"Ya existe una cuenta con ese nombre de usuario. Elige uno diferente."
+                                }
+                                Logger.error("bindFromAccount > insertUser: ", exc);
+                                error = new F.Tuple<>(mongoError, "");
+
+                                otherUser = null;
+                            }
+                        }
+                        else {
+                            // Login inválido
+                            form.reject("email", "ERROR_WRONG_EMAIL_OR_PASSWORD");
+                        }
+                    }
+                    else {
+                        Logger.debug("bindAccount > User {} {} - {} - {}=> {}", otherUser.firstName, otherUser.lastName, otherUser.nickName, otherUser.email.toLowerCase());
+                    }
+
+                    if (otherUser != null) {
+                        Logger.debug("bindAccount > {} => {}", otherUser.email, theUser.email);
+
+                        theUser.backupProfileInfo();
+                        otherUser.backupProfileInfo();
+
+                        bindAccount(otherUser, theUser);
+                        unbindAccount(otherUser);
+
+                        otherUser.saveProfileInfo();
+                        theUser.saveProfileInfo();
+                    }
+                }
+
+                if (error != null && error._1 != -1) {
+                    Map<String, String> createUserErrors = translateError(error);
+                    if (createUserErrors != null && !createUserErrors.isEmpty()) {
+                        for (String key : createUserErrors.keySet()) {
+                            form.reject(key, createUserErrors.get(key));
+                        }
+                    }
+                }
+            }
         }
 
         ReturnHelper returnHelper = new ReturnHelper();
+
+        if (!form.hasErrors()) {
+            setSession(returnHelper, theUser);
+        }
+        else {
+            Logger.debug("WTF 5418: bindFromAccount: {}", form.errorsAsJson());
+            returnHelper.setKO(form.errorsAsJson());
+        }
 
         return returnHelper.toResult();
     }
@@ -684,45 +783,130 @@ public class LoginController extends Controller {
     public static Result bindToAccount() {
         User theUser = (User) ctx().args.get("User");
 
-        Form<BindToAccountParams> form = form(BindToAccountParams.class).bindFromRequest();
+        Form<BindAccountParams> form = form(BindAccountParams.class).bindFromRequest();
 
         if (!form.hasErrors()) {
-            BindToAccountParams params = form.get();
+            BindAccountParams params = form.get();
 
-            Account account = null;
+            User otherUser = null;
 
-            // Quiere vincular otra cuenta con la cuenta actual
-            if (params.source != null) {
-                account = getAccount(params.source);
-                if (account != null) {
-                    User otherUser = User.findByEmail(account.getEmail().toLowerCase());
-                    if (otherUser != null) {
-                        bindAccounts(otherUser, theUser);
-                    }
-                }
-            }
-            // Quiere vincular la cuenta actual con otra cuenta
-            else if (params.target != null) {
-                account = getAccount(params.target);
-                if (account != null) {
-                    User otherUser = User.findByEmail(account.getEmail().toLowerCase());
-                    if (otherUser != null) {
-                        bindAccounts(theUser, otherUser);
-                    }
-                }
+            Account account = StormPathClient.instance().login(params.email,params.password);
+            if (account != null) {
+                otherUser = User.findByEmail(account.getEmail().toLowerCase());
             }
 
-            if (account == null) {
+            if (otherUser != null) {
+                theUser.backupProfileInfo();
+                otherUser.backupProfileInfo();
+
+                bindAccount(theUser, otherUser);
+                unbindAccount(theUser);
+
+                theUser.saveProfileInfo();
+                otherUser.saveProfileInfo();
+            }
+            else {
                 form.reject("auth", "ERROR_WRONG_EMAIL_OR_PASSWORD");
             }
         }
 
         ReturnHelper returnHelper = new ReturnHelper();
 
+        if (!form.hasErrors()) {
+            setSession(returnHelper, theUser);
+        }
+        else {
+            Logger.debug("WTF 5418: bindFromAccount: {}", form.errorsAsJson());
+            returnHelper.setKO(form.errorsAsJson());
+        }
+
         return returnHelper.toResult();
     }
 
-    private static void bindAccounts(User source, User target) {
+    @UserAuthenticated
+    public static Result bindFromFacebookAccount() {
+        User theUser = (User) ctx().args.get("User");
+        Form<BindFacebookAccountParams> form = form(BindFacebookAccountParams.class).bindFromRequest();
+
+        if (!form.hasErrors()) {
+            BindFacebookAccountParams params = form.get();
+
+            Account account = StormPathClient.instance().facebookLogin(params.accessToken);
+            if (account != null) {
+                User otherUser = User.findByEmail(account.getEmail().toLowerCase());
+                if (otherUser != null) {
+                    bindAccount(otherUser, theUser);
+                    unbindAccount(otherUser);
+                }
+            }
+            else {
+                /*
+                if (StormPathClient.instance().isConnected()) {
+                    error = StormPathClient.instance().register(theParams.nickName, theParams.email, theParams.password);
+                }
+
+                if (error == null || error._1 == -1) {
+                    form.reject("auth", "ERROR_WRONG_EMAIL_OR_PASSWORD");
+                }
+                */
+                form.reject("auth", "ERROR_WRONG_EMAIL_OR_PASSWORD");
+            }
+        }
+
+        ReturnHelper returnHelper = new ReturnHelper();
+
+        if (!form.hasErrors()) {
+            returnHelper.setOK(ImmutableMap.of(
+                    "result", "ok"
+            ));
+        }
+        else {
+            Logger.debug("WTF 5418: bindFromAccount: {}", form.errorsAsJson());
+            returnHelper.setKO(form.errorsAsJson());
+        }
+
+        return returnHelper.toResult();
+    }
+
+    @UserAuthenticated
+    public static Result bindToFacebookAccount() {
+        User theUser = (User) ctx().args.get("User");
+
+        Form<BindFacebookAccountParams> form = form(BindFacebookAccountParams.class).bindFromRequest();
+
+        if (!form.hasErrors()) {
+            BindFacebookAccountParams params = form.get();
+
+            Account account = StormPathClient.instance().facebookLogin(params.accessToken);
+            if (account != null) {
+                User otherUser = User.findByEmail(account.getEmail().toLowerCase());
+                if (otherUser != null) {
+                    bindAccount(theUser, otherUser);
+                    unbindAccount(theUser);
+                }
+            } else {
+                form.reject("auth", "ERROR_WRONG_EMAIL_OR_PASSWORD");
+            }
+        }
+
+        ReturnHelper returnHelper = new ReturnHelper();
+
+        if (!form.hasErrors()) {
+            returnHelper.setOK(ImmutableMap.of(
+                    "result", "ok"
+            ));
+        }
+        else {
+            Logger.debug("WTF 5418: bindFromAccount: {}", form.errorsAsJson());
+            returnHelper.setKO(form.errorsAsJson());
+        }
+
+        return returnHelper.toResult();
+    }
+
+    private static void bindAccount(User source, User target) {
+        // target.backupProfileInfo();
+
         target.nickName         = source.nickName;
         target.firstName        = source.firstName;
         target.lastName         = source.lastName;
@@ -730,20 +914,26 @@ public class LoginController extends Controller {
         target.facebookName     = source.facebookName;
         target.facebookID       = source.facebookID;
         target.facebookEmail    = source.facebookEmail;
+
+        if (source.deviceUUID != null && !source.deviceUUID.isEmpty()) {
+            target.deviceUUID = source.deviceUUID;
+        }
+
+        // target.saveProfileInfo();
     }
 
-    private static Account getAccount(Map<String, String> access) {
-        Account account = null;
-        if (access != null) {
-            if (access.containsKey("facebookID") && access.containsKey("accessToken")) {
-                account = StormPathClient.instance().facebookLogin(access.get("accessToken"));
-            }
+    private static void unbindAccount(User account) {
+        // account.backupProfileInfo();
 
-            if (access.containsKey("email") && access.containsKey("password")) {
-                account = StormPathClient.instance().login(access.get("email"), access.get("password"));
-            }
-        }
-        return account;
+        String nickName = generateNewNickname();
+
+        account.deviceUUID = "";
+        account.nickName = nickName;
+        account.email = nickName.concat("@guest.xyz");
+        account.facebookID = "";
+        account.facebookEmail = "";
+
+        // account.saveProfileInfo();
     }
 
     public static class UserProfilesFacebookParams {

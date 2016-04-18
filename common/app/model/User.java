@@ -7,6 +7,10 @@ import model.accounting.*;
 import model.rewards.DailyRewards;
 import model.rewards.GoldReward;
 import model.rewards.Reward;
+import com.google.common.collect.ImmutableMap;
+import model.accounting.AccountOp;
+import model.accounting.AccountingTran;
+import model.accounting.AccountingTranBonus;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -168,6 +172,36 @@ public class User {
         }
 
         return this;
+    }
+
+    public void backupProfileInfo() {
+        if (userId != null) {
+            ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
+                    .put("firstName", firstName)
+                    .put("lastName", lastName)
+                    .put("nickName", nickName)
+                    .put("email", email);
+
+            if (deviceUUID != null) builder.put("deviceUUID", deviceUUID);
+            if (facebookID != null) builder.put("facebookID", facebookID);
+            if (facebookName != null) builder.put("facebookName", facebookName);
+            if (facebookEmail != null) builder.put("facebookEmail", facebookEmail);
+
+            Model.users().update(userId).with("{$set: {backup: #}}", builder.build());
+
+            Logger.debug("Backup: firstName: {}, lastName: {}, nickName: {}, email: {}, deviceUUID: {}, facebookID: {}, facebookName: {}, facebookEmail: {}",
+                    firstName, lastName, nickName, email, deviceUUID, facebookID, facebookName, facebookEmail);
+        }
+    }
+
+    public void saveProfileInfo() {
+        if (userId != null) {
+            Model.users().update(userId).with("{$set: {firstName: #, lastName: #, nickName: #, email: #, deviceUUID: #, facebookID: #, facebookName: #, facebookEmail: #}}",
+                    firstName, lastName, nickName, email, deviceUUID, facebookID, facebookName, facebookEmail);
+
+            Logger.debug("Profile: firstName: {}, lastName: {}, nickName: {}, email: {}, deviceUUID: {}, facebookID: {}, facebookName: {}, facebookEmail: {}",
+                    firstName, lastName, nickName, email, deviceUUID, facebookID, facebookName, facebookEmail);
+        }
     }
 
     public void saveManagerBalance() {
