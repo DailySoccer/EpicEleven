@@ -46,6 +46,9 @@ public class LoginController extends Controller {
     private static final String NICKNAME_AUTO = "Guest";
     private static final String ACTION_SIGNUP = "signup";
     private static final String ACTION_LOGIN = "login";
+    private static final String UNBIND_EMAIL = "@unbind.e11";
+    private static final String UUID_EMAIL = "@uuid.e11";
+    private static final String MARK_UNBIND_UUID = "-old";
 
 
     // https://github.com/playframework/playframework/tree/master/samples/java/forms
@@ -440,7 +443,7 @@ public class LoginController extends Controller {
     private static User createUserFormUUID(String uuid) {
         String nickName = generateNewNickname();
 
-        User theUser = new User(nickName, "Stormtrooper", nickName, uuid.concat("@uuid.xyz").toLowerCase());
+        User theUser = new User(nickName, "Stormtrooper", nickName, uuid.concat(UUID_EMAIL).toLowerCase());
         theUser.deviceUUID = uuid;
         Logger.debug("Creamos el usuario asociado al deviceUUID: {}", theUser.deviceUUID);
 
@@ -966,9 +969,9 @@ public class LoginController extends Controller {
 
         String nickName = generateNewNickname();
 
-        account.deviceUUID = (account.deviceUUID != null && !account.deviceUUID.isEmpty()) ? account.deviceUUID.concat("-old") : "";
+        account.deviceUUID = (account.deviceUUID != null && !account.deviceUUID.isEmpty()) ? account.deviceUUID.concat(MARK_UNBIND_UUID) : "";
         account.nickName = nickName;
-        account.email = nickName.concat("@guest.xyz");
+        account.email = nickName.concat(UNBIND_EMAIL);
         account.facebookID = "";
         account.facebookEmail = "";
 
