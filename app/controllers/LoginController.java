@@ -855,6 +855,10 @@ public class LoginController extends Controller {
                     if (otherUser == null) {
                         otherUser = new User(account.getGivenName(), account.getSurname(), getOrSetNickname(account), account.getEmail().toLowerCase());
                     }
+
+                    otherUser.facebookID = params.facebookID;
+                    otherUser.facebookName = params.facebookName;
+                    otherUser.facebookEmail = (params.facebookEmail != null) ? params.facebookEmail.toLowerCase() : "";
                 }
                 else {
                     form.reject("email", "Wrong Token");
