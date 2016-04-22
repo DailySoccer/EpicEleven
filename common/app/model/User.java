@@ -189,8 +189,8 @@ public class User {
 
             Model.users().update(userId).with("{$set: {backup: #}}", builder.build());
 
-            Logger.debug("Backup: firstName: {}, lastName: {}, nickName: {}, email: {}, deviceUUID: {}, facebookID: {}, facebookName: {}, facebookEmail: {}",
-                    firstName, lastName, nickName, email, deviceUUID, facebookID, facebookName, facebookEmail);
+            Logger.debug("Backup: {} firstName: {}, lastName: {}, nickName: {}, email: {}, deviceUUID: {}, facebookID: {}, facebookName: {}, facebookEmail: {}",
+                    userId.toString(), firstName, lastName, nickName, email, deviceUUID, facebookID, facebookName, facebookEmail);
         }
     }
 
@@ -199,8 +199,8 @@ public class User {
             Model.users().update(userId).with("{$set: {firstName: #, lastName: #, nickName: #, email: #, deviceUUID: #, facebookID: #, facebookName: #, facebookEmail: #}}",
                     firstName, lastName, nickName, email, deviceUUID, facebookID, facebookName, facebookEmail);
 
-            Logger.debug("Profile: firstName: {}, lastName: {}, nickName: {}, email: {}, deviceUUID: {}, facebookID: {}, facebookName: {}, facebookEmail: {}",
-                    firstName, lastName, nickName, email, deviceUUID, facebookID, facebookName, facebookEmail);
+            Logger.debug("Profile: {} firstName: {}, lastName: {}, nickName: {}, email: {}, deviceUUID: {}, facebookID: {}, facebookName: {}, facebookEmail: {}",
+                    userId.toString(), firstName, lastName, nickName, email, deviceUUID, facebookID, facebookName, facebookEmail);
         }
     }
 
