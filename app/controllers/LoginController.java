@@ -806,6 +806,8 @@ public class LoginController extends Controller {
             }
 
             if (otherUser != null) {
+                Logger.debug("bindAccount > {} => {}", theUser.email, otherUser.email);
+
                 theUser.backupProfileInfo();
                 otherUser.backupProfileInfo();
 
@@ -866,6 +868,8 @@ public class LoginController extends Controller {
             }
 
             if (otherUser != null) {
+                Logger.debug("bindFacebokAccount > {} => {}", otherUser.email, theUser.email);
+
                 theUser.backupProfileInfo();
                 otherUser.backupProfileInfo();
 
@@ -914,6 +918,8 @@ public class LoginController extends Controller {
             }
 
             if (otherUser != null) {
+                Logger.debug("bindFacebokAccount > {} => {}", theUser.email, otherUser.email);
+
                 theUser.backupProfileInfo();
                 otherUser.backupProfileInfo();
 
