@@ -974,10 +974,13 @@ public class LoginController extends Controller {
         String nickName = generateNewNickname();
 
         account.deviceUUID = (account.deviceUUID != null && !account.deviceUUID.isEmpty()) ? account.deviceUUID.concat(MARK_UNBIND_UUID) : "";
+        account.firstName = nickName;
+        account.lastName = "Stormtrooper";
         account.nickName = nickName;
         account.email = nickName.concat(UNBIND_EMAIL);
         account.facebookID = "";
         account.facebookEmail = "";
+        account.facebookName = "";
 
         // account.saveProfileInfo();
     }
