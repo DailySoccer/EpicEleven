@@ -5,6 +5,7 @@ import com.google.common.collect.Collections2;
 import utils.ListUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class GenerateLineup {
 
@@ -29,7 +30,13 @@ public class GenerateLineup {
             lineup.add(forwards.get(c));
         }
 
-        return lineup;
+        // Devolvemos la alineación ordenada por Goalkeeper, Defense, Middle y Forward
+        List<TemplateSoccerPlayer> result = new ArrayList<>();
+        result.addAll( lineup.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.GOALKEEPER) ).collect(Collectors.toList()) );
+        result.addAll( lineup.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.DEFENSE) ).collect(Collectors.toList()) );
+        result.addAll( lineup.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.MIDDLE) ).collect(Collectors.toList()) );
+        result.addAll( lineup.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.FORWARD) ).collect(Collectors.toList()) );
+        return result;
     }
 
     // Una intento rapido de hacerlo un poco mejor.
@@ -55,7 +62,13 @@ public class GenerateLineup {
         selectSoccerPlayers(lineup, middles, 4, salaryCap);
         selectSoccerPlayers(lineup, defenses, 4, salaryCap);
 
-        return lineup;
+        // Devolvemos la alineación ordenada por Goalkeeper, Defense, Middle y Forward
+        List<TemplateSoccerPlayer> result = new ArrayList<>();
+        result.addAll( lineup.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.GOALKEEPER) ).collect(Collectors.toList()) );
+        result.addAll( lineup.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.DEFENSE) ).collect(Collectors.toList()) );
+        result.addAll( lineup.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.MIDDLE) ).collect(Collectors.toList()) );
+        result.addAll( lineup.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.FORWARD) ).collect(Collectors.toList()) );
+        return result;
     }
 
 
