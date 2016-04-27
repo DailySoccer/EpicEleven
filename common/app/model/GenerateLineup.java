@@ -55,8 +55,9 @@ public class GenerateLineup {
             lineup.add(forwards.remove(_rand.nextInt(Math.min(8, forwards.size()))));
         }
 
-        // Un portero de la mitad para abajo
-        lineup.add(goalkeepers.get(_rand.nextInt(goalkeepers.size() / 2) + (goalkeepers.size() / 2)));
+        // Un portero de la mitad de abajo (con fantasyPoints positivos)
+        goalkeepers = filterByFantasyPoints(goalkeepers, 1, 10000);
+        lineup.add(goalkeepers.get(_rand.nextInt(goalkeepers.size())));
 
         // 4 y 4 cogidos al azar entre los mejores sin pasarnos del salario medio restante
         selectSoccerPlayers(lineup, middles, 4, salaryCap);
@@ -111,6 +112,15 @@ public class GenerateLineup {
             @Override
             public boolean apply(TemplateSoccerPlayer templateSoccerPlayer) {
                 return (templateSoccerPlayer != null && templateSoccerPlayer.salary >= salMin && templateSoccerPlayer.salary <= salMax);
+            }
+        }));
+    }
+
+    static private List<TemplateSoccerPlayer> filterByFantasyPoints(List<TemplateSoccerPlayer> sps, final int fpMin, final int fpMax) {
+        return ListUtils.asList(Collections2.filter(sps, new Predicate<TemplateSoccerPlayer>() {
+            @Override
+            public boolean apply(TemplateSoccerPlayer templateSoccerPlayer) {
+                return (templateSoccerPlayer != null && templateSoccerPlayer.fantasyPoints >= fpMin && templateSoccerPlayer.fantasyPoints <= fpMax);
             }
         }));
     }
