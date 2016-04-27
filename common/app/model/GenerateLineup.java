@@ -57,7 +57,7 @@ public class GenerateLineup {
 
         // Un portero de la mitad de abajo (con fantasyPoints positivos)
         goalkeepers = filterByFantasyPoints(goalkeepers, 1, 10000);
-        lineup.add(goalkeepers.get(_rand.nextInt(goalkeepers.size())));
+        lineup.add(goalkeepers.get(_rand.nextInt(goalkeepers.size() / 2) + (goalkeepers.size() / 2)));
 
         // 4 y 4 cogidos al azar entre los mejores sin pasarnos del salario medio restante
         selectSoccerPlayers(lineup, middles, 4, salaryCap);
