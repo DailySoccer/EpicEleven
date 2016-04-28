@@ -5,6 +5,7 @@ import com.google.common.collect.Collections2;
 import utils.ListUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class GenerateLineup {
 
@@ -29,7 +30,13 @@ public class GenerateLineup {
             lineup.add(forwards.get(c));
         }
 
-        return lineup;
+        // Devolvemos la alineación ordenada por Goalkeeper, Defense, Middle y Forward
+        List<TemplateSoccerPlayer> result = new ArrayList<>();
+        result.addAll( lineup.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.GOALKEEPER) ).collect(Collectors.toList()) );
+        result.addAll( lineup.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.DEFENSE) ).collect(Collectors.toList()) );
+        result.addAll( lineup.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.MIDDLE) ).collect(Collectors.toList()) );
+        result.addAll( lineup.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.FORWARD) ).collect(Collectors.toList()) );
+        return result;
     }
 
     // Una intento rapido de hacerlo un poco mejor.
@@ -48,14 +55,21 @@ public class GenerateLineup {
             lineup.add(forwards.remove(_rand.nextInt(Math.min(8, forwards.size()))));
         }
 
-        // Un portero de la mitad para abajo
+        // Un portero de la mitad de abajo (con fantasyPoints positivos)
+        goalkeepers = filterByFantasyPoints(goalkeepers, 1, 10000);
         lineup.add(goalkeepers.get(_rand.nextInt(goalkeepers.size() / 2) + (goalkeepers.size() / 2)));
 
         // 4 y 4 cogidos al azar entre los mejores sin pasarnos del salario medio restante
         selectSoccerPlayers(lineup, middles, 4, salaryCap);
         selectSoccerPlayers(lineup, defenses, 4, salaryCap);
 
-        return lineup;
+        // Devolvemos la alineación ordenada por Goalkeeper, Defense, Middle y Forward
+        List<TemplateSoccerPlayer> result = new ArrayList<>();
+        result.addAll( lineup.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.GOALKEEPER) ).collect(Collectors.toList()) );
+        result.addAll( lineup.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.DEFENSE) ).collect(Collectors.toList()) );
+        result.addAll( lineup.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.MIDDLE) ).collect(Collectors.toList()) );
+        result.addAll( lineup.stream().filter( templateSoccerPlayer -> templateSoccerPlayer.fieldPos.equals(FieldPos.FORWARD) ).collect(Collectors.toList()) );
+        return result;
     }
 
 
@@ -98,6 +112,15 @@ public class GenerateLineup {
             @Override
             public boolean apply(TemplateSoccerPlayer templateSoccerPlayer) {
                 return (templateSoccerPlayer != null && templateSoccerPlayer.salary >= salMin && templateSoccerPlayer.salary <= salMax);
+            }
+        }));
+    }
+
+    static private List<TemplateSoccerPlayer> filterByFantasyPoints(List<TemplateSoccerPlayer> sps, final int fpMin, final int fpMax) {
+        return ListUtils.asList(Collections2.filter(sps, new Predicate<TemplateSoccerPlayer>() {
+            @Override
+            public boolean apply(TemplateSoccerPlayer templateSoccerPlayer) {
+                return (templateSoccerPlayer != null && templateSoccerPlayer.fantasyPoints >= fpMin && templateSoccerPlayer.fantasyPoints <= fpMax);
             }
         }));
     }
