@@ -19,76 +19,44 @@ import java.util.List;
 
 
 public class Model {
-    static public String STATE_ID = "-4/2013"; // 4: Mundial
 
-    // COLLECTIONS QUE SE CONSERVAN
-    static public String SESSIONS_NAME = "sessions";
-    static public String USERS_NAME = "users";
-    static public String ORDERS_NAME = "orders";
-    static public String REFUNDS_NAME = "refunds";
-    static public String PROMOS_NAME = "promos";
-    static public String BONUS_NAME = "bonus";
-    static public String ACCOUNTING_TRANSACTIONS_NAME = "accountingTransactions";
-    static public String PAYPAL_RESPONSES_NAME = "paypalResponses";
-    static public String POINTS_TRANSLATION_NAME = "pointsTranslation";
+    static public MongoCollection opsLog() { return _jongo.getCollection(CollectionName.OPS_LOG()); }
 
-    // COLLECTIONS QUE DEPENDEN DE COMPETITION
-    static public String OPS_LOG_NAME = "opsLog".concat(STATE_ID);
-    static public String TEMPLATE_CONTESTS_NAME = "templateContests".concat(STATE_ID);
-    static public String TEMPLATE_MATCHEVENTS_NAME = "templateMatchEvents".concat(STATE_ID);
-    static public String TEMPLATE_SOCCERTEAMS_NAME = "templateSoccerTeams".concat(STATE_ID);
-    static public String TEMPLATE_SOCCERPLAYERS_NAME = "templateSoccerPlayers".concat(STATE_ID);
-    static public String CANCELLED_CONTESTENTRIES_NAME = "cancelledContestEntries".concat(STATE_ID);
-    static public String CONTESTS_NAME = "contests".concat(STATE_ID);
-    static public String STATS_SIMULATION_NAME = "statsSimulation".concat(STATE_ID);
-    static public String OPTA_COMPETITIONS_NAME = "optaCompetitions".concat(STATE_ID);
-    static public String OPTA_EVENTS_NAME = "optaEvents".concat(STATE_ID);
-    static public String OPTA_PLAYERS_NAME = "optaPlayers".concat(STATE_ID);
-    static public String OPTA_TEAMS_NAME = "optaTeams".concat(STATE_ID);
-    static public String OPTA_MATCHEVENTS_NAME = "optaMatchEvents".concat(STATE_ID);
-    static public String OPTA_MATCHEVENT_STATS_NAME = "optaMatchEventStats".concat(STATE_ID);
-    static public String JOBS_NAME = "jobs".concat(STATE_ID);
-    static public String NOTIFICATIONS_NAME = "notifications".concat(STATE_ID);
-    static public String OPTA_PROCESSOR_NAME = "optaProcessor".concat(STATE_ID);
-    static public String SIMULATOR_NAME = "simulator".concat(STATE_ID);
+    static public MongoCollection sessions() { return _jongo.getCollection(CollectionName.SESSIONS()); }
+    static public MongoCollection users() { return _jongo.getCollection(CollectionName.USERS()); }
 
-    static public MongoCollection opsLog() { return _jongo.getCollection(OPS_LOG_NAME); }
+    static public MongoCollection templateContests() { return _jongo.getCollection(CollectionName.TEMPLATE_CONTESTS()); }
+    static public MongoCollection templateMatchEvents() { return _jongo.getCollection(CollectionName.TEMPLATE_MATCHEVENTS()); }
+    static public MongoCollection templateSoccerTeams() { return _jongo.getCollection(CollectionName.TEMPLATE_SOCCERTEAMS()); }
+    static public MongoCollection templateSoccerPlayers() { return _jongo.getCollection(CollectionName.TEMPLATE_SOCCERPLAYERS()); }
+    static public MongoCollection cancelledContestEntries() { return _jongo.getCollection(CollectionName.CANCELLED_CONTESTENTRIES()); }
 
-    static public MongoCollection sessions() { return _jongo.getCollection(SESSIONS_NAME); }
-    static public MongoCollection users() { return _jongo.getCollection(USERS_NAME); }
+    static public MongoCollection contests() { return _jongo.getCollection(CollectionName.CONTESTS()); }
 
-    static public MongoCollection templateContests() { return _jongo.getCollection(TEMPLATE_CONTESTS_NAME); }
-    static public MongoCollection templateMatchEvents() { return _jongo.getCollection(TEMPLATE_MATCHEVENTS_NAME); }
-    static public MongoCollection templateSoccerTeams() { return _jongo.getCollection(TEMPLATE_SOCCERTEAMS_NAME); }
-    static public MongoCollection templateSoccerPlayers() { return _jongo.getCollection(TEMPLATE_SOCCERPLAYERS_NAME); }
-    static public MongoCollection cancelledContestEntries() { return _jongo.getCollection(CANCELLED_CONTESTENTRIES_NAME); }
+    static public MongoCollection statsSimulation() { return _jongo.getCollection(CollectionName.STATS_SIMULATION()); }
 
-    static public MongoCollection contests() { return _jongo.getCollection(CONTESTS_NAME); }
+    static public MongoCollection optaCompetitions() { return _jongo.getCollection(CollectionName.OPTA_COMPETITIONS()); }
+    static public MongoCollection optaEvents() { return _jongo.getCollection(CollectionName.OPTA_EVENTS()); }
+    static public MongoCollection optaPlayers() { return _jongo.getCollection(CollectionName.OPTA_PLAYERS()); }
+    static public MongoCollection optaTeams() { return _jongo.getCollection(CollectionName.OPTA_TEAMS()); }
+    static public MongoCollection optaMatchEvents() { return _jongo.getCollection(CollectionName.OPTA_MATCHEVENTS()); }
+    static public MongoCollection optaMatchEventStats() { return _jongo.getCollection(CollectionName.OPTA_MATCHEVENT_STATS()); }
+    static public MongoCollection pointsTranslation() { return _jongo.getCollection(CollectionName.POINTS_TRANSLATION()); }
 
-    static public MongoCollection statsSimulation() { return _jongo.getCollection(STATS_SIMULATION_NAME); }
+    static public MongoCollection jobs() { return _jongo.getCollection(CollectionName.JOBS()); }
+    static public MongoCollection accountingTransactions() { return _jongo.getCollection(CollectionName.ACCOUNTING_TRANSACTIONS()); }
 
-    static public MongoCollection optaCompetitions() { return _jongo.getCollection(OPTA_COMPETITIONS_NAME); }
-    static public MongoCollection optaEvents() { return _jongo.getCollection(OPTA_EVENTS_NAME); }
-    static public MongoCollection optaPlayers() { return _jongo.getCollection(OPTA_PLAYERS_NAME); }
-    static public MongoCollection optaTeams() { return _jongo.getCollection(OPTA_TEAMS_NAME); }
-    static public MongoCollection optaMatchEvents() { return _jongo.getCollection(OPTA_MATCHEVENTS_NAME); }
-    static public MongoCollection optaMatchEventStats() { return _jongo.getCollection(OPTA_MATCHEVENT_STATS_NAME); }
-    static public MongoCollection pointsTranslation() { return _jongo.getCollection(POINTS_TRANSLATION_NAME); }
+    static public MongoCollection notifications() {return _jongo.getCollection(CollectionName.NOTIFICATIONS());}
 
-    static public MongoCollection jobs() { return _jongo.getCollection(JOBS_NAME); }
-    static public MongoCollection accountingTransactions() { return _jongo.getCollection(ACCOUNTING_TRANSACTIONS_NAME); }
+    static public MongoCollection orders() { return _jongo.getCollection(CollectionName.ORDERS()); }
+    static public MongoCollection refunds() { return _jongo.getCollection(CollectionName.REFUNDS()); }
+    static public MongoCollection paypalResponses() { return _jongo.getCollection(CollectionName.PAYPAL_RESPONSES()); }
 
-    static public MongoCollection notifications() {return _jongo.getCollection(NOTIFICATIONS_NAME);}
+    static public MongoCollection promos() { return _jongo.getCollection(CollectionName.PROMOS()); }
+    static public MongoCollection bonus() { return _jongo.getCollection(CollectionName.BONUS()); }
 
-    static public MongoCollection orders() { return _jongo.getCollection(ORDERS_NAME); }
-    static public MongoCollection refunds() { return _jongo.getCollection(REFUNDS_NAME); }
-    static public MongoCollection paypalResponses() { return _jongo.getCollection(PAYPAL_RESPONSES_NAME); }
-
-    static public MongoCollection promos() { return _jongo.getCollection(PROMOS_NAME); }
-    static public MongoCollection bonus() { return _jongo.getCollection(BONUS_NAME); }
-
-    static public MongoCollection optaProcessor()  { return _jongo.getCollection(OPTA_PROCESSOR_NAME); }
-    static public MongoCollection simulator() { return _jongo.getCollection(SIMULATOR_NAME); }
+    static public MongoCollection optaProcessor()  { return _jongo.getCollection(CollectionName.OPTA_PROCESSOR()); }
+    static public MongoCollection simulator() { return _jongo.getCollection(CollectionName.SIMULATOR()); }
 
 
     static public TargetEnvironment getTargetEnvironment() {
@@ -104,7 +72,7 @@ public class Model {
         return _actors;
     }
 
-    static public void init(InstanceRole instanceRole, TargetEnvironment targetEnv, SystemMode systemMode) {
+    static public void init(InstanceRole instanceRole, TargetEnvironment targetEnv, SystemMode systemMode, String competitionSelector) {
 
         if ((!Play.isDev() || instanceRole != InstanceRole.DEVELOPMENT_ROLE) && targetEnv != TargetEnvironment.LOCALHOST) {
             throw new RuntimeException("WTF 05 Intento de inicializar un entorno remoto sin ser una maquina de desarrollo");
@@ -116,12 +84,21 @@ public class Model {
         initMongo(readMongoUriForEnvironment(_targetEnvironment));
         initPostgresDB();
 
+        if (competitionSelector != null) {
+            refreshCollections(competitionSelector);
+        }
+
         _actors = new Actors(_instanceRole, targetEnv, systemMode);
 
         Logger.debug("Akka: parallelism-factor: {} parallelism-min: {} parallelism-max: {}",
                 Play.application().configuration().getString("play.akka.actor.default-dispatcher.fork-join-executor.parallelism-factor"),
                 Play.application().configuration().getString("play.akka.actor.default-dispatcher.fork-join-executor.parallelism-min"),
                 Play.application().configuration().getString("play.akka.actor.default-dispatcher.fork-join-executor.parallelism-max"));
+    }
+
+    static public void refreshCollections(String selectorName) {
+        Logger.info ("Model: Selector: '{}'", selectorName);
+        CollectionName.SELECTOR_ID_$eq(selectorName);
     }
 
     static public void shutdown() {
@@ -281,7 +258,7 @@ public class Model {
     }
 
     static private void ensureUsersDB(DB theMongoDB) {
-        DBCollection users = theMongoDB.getCollection(USERS_NAME);
+        DBCollection users = theMongoDB.getCollection(CollectionName.USERS());
 
         // Si creando nuevo indice sobre datos que ya existan => .append("dropDups", true)
         users.createIndex(new BasicDBObject("email", 1), new BasicDBObject("unique", true));
@@ -290,16 +267,16 @@ public class Model {
 
         // Do we need the sessionToken to be unique? SecureRandom guarantees it to be unique, doesn't it?
         // http://www.kodyaz.com/images/pics/random-number-generator-dilbert-comic.jpg
-        DBCollection sessions = theMongoDB.getCollection(SESSIONS_NAME);
+        DBCollection sessions = theMongoDB.getCollection(CollectionName.SESSIONS());
         sessions.createIndex(new BasicDBObject("sessionToken", 1), new BasicDBObject("unique", true));
     }
 
     private static void ensureOptaDB(DB theMongoDB) {
 
-        DBCollection optaCompetitions = theMongoDB.getCollection(OPTA_COMPETITIONS_NAME);
+        DBCollection optaCompetitions = theMongoDB.getCollection(CollectionName.OPTA_COMPETITIONS());
         optaCompetitions.createIndex(new BasicDBObject("competitionId", 1));
 
-        DBCollection optaEvents = theMongoDB.getCollection(OPTA_EVENTS_NAME);
+        DBCollection optaEvents = theMongoDB.getCollection(CollectionName.OPTA_EVENTS());
         optaEvents.createIndex(new BasicDBObject("eventId", 1));
         optaEvents.createIndex(new BasicDBObject("gameId", 1));
         optaEvents.createIndex(new BasicDBObject("optaPlayerId", 1));
@@ -307,62 +284,62 @@ public class Model {
         optaEvents.createIndex(new BasicDBObject("homeTeamId", 1));
         optaEvents.createIndex(new BasicDBObject("awayTeamId", 1));
 
-        DBCollection optaPlayers = theMongoDB.getCollection(OPTA_PLAYERS_NAME);
+        DBCollection optaPlayers = theMongoDB.getCollection(CollectionName.OPTA_PLAYERS());
         optaPlayers.createIndex(new BasicDBObject("optaPlayerId", 1));
 
-        DBCollection optaTeams = theMongoDB.getCollection(OPTA_TEAMS_NAME);
+        DBCollection optaTeams = theMongoDB.getCollection(CollectionName.OPTA_TEAMS());
         DBCollection optaMatchEvents = theMongoDB.getCollection("optaMatchEvents");
 
-        DBCollection pointsTranslation = theMongoDB.getCollection(POINTS_TRANSLATION_NAME);
+        DBCollection pointsTranslation = theMongoDB.getCollection(CollectionName.POINTS_TRANSLATION());
         pointsTranslation.createIndex(new BasicDBObject("eventTypeId", 1));
 
-        DBCollection optaProcessor = theMongoDB.getCollection(OPTA_PROCESSOR_NAME);
+        DBCollection optaProcessor = theMongoDB.getCollection(CollectionName.OPTA_PROCESSOR());
         optaProcessor.createIndex(new BasicDBObject("stateId", 1));
     }
 
     static private void ensureContestsDB(DB theMongoDB) {
 
-        DBCollection templateContests = theMongoDB.getCollection(TEMPLATE_CONTESTS_NAME);
+        DBCollection templateContests = theMongoDB.getCollection(CollectionName.TEMPLATE_CONTESTS());
         templateContests.createIndex(new BasicDBObject("templateMatchEventIds", 1));
         templateContests.createIndex(new BasicDBObject("state", 1));
 
-        DBCollection templateMatchEvents = theMongoDB.getCollection(TEMPLATE_MATCHEVENTS_NAME);
+        DBCollection templateMatchEvents = theMongoDB.getCollection(CollectionName.TEMPLATE_MATCHEVENTS());
         templateMatchEvents.createIndex(new BasicDBObject("optaMatchEventId", 1));
         templateMatchEvents.createIndex(new BasicDBObject("startDate", 1));
 
-        DBCollection templateSoccerTeams = theMongoDB.getCollection(TEMPLATE_SOCCERTEAMS_NAME);
+        DBCollection templateSoccerTeams = theMongoDB.getCollection(CollectionName.TEMPLATE_SOCCERTEAMS());
         templateSoccerTeams.createIndex(new BasicDBObject("optaTeamId", 1));
 
-        DBCollection templateSoccerPlayers = theMongoDB.getCollection(TEMPLATE_SOCCERPLAYERS_NAME);
+        DBCollection templateSoccerPlayers = theMongoDB.getCollection(CollectionName.TEMPLATE_SOCCERPLAYERS());
         templateSoccerPlayers.createIndex(new BasicDBObject("templateTeamId", 1));
         templateSoccerPlayers.createIndex(new BasicDBObject("optaPlayerId", 1));
 
-        DBCollection contests = theMongoDB.getCollection(CONTESTS_NAME);
+        DBCollection contests = theMongoDB.getCollection(CollectionName.CONTESTS());
         contests.createIndex(new BasicDBObject("templateContestId", 1));
         contests.createIndex(new BasicDBObject("templateMatchEventIds", 1));
         contests.createIndex(new BasicDBObject("state", 1));
         contests.createIndex(new BasicDBObject("contestEntries._id", 1));
         contests.createIndex(new BasicDBObject("contestEntries.userId", 1));
 
-        if (!theMongoDB.collectionExists(CANCELLED_CONTESTENTRIES_NAME)) {
-            theMongoDB.createCollection(CANCELLED_CONTESTENTRIES_NAME, new BasicDBObject());
+        if (!theMongoDB.collectionExists(CollectionName.CANCELLED_CONTESTENTRIES())) {
+            theMongoDB.createCollection(CollectionName.CANCELLED_CONTESTENTRIES(), new BasicDBObject());
         }
 
-        DBCollection statsSimulation = theMongoDB.getCollection(STATS_SIMULATION_NAME);
+        DBCollection statsSimulation = theMongoDB.getCollection(CollectionName.STATS_SIMULATION());
         statsSimulation.createIndex(new BasicDBObject("optaMatchEventId", 1));
 
-        DBCollection jobs = theMongoDB.getCollection(JOBS_NAME);
+        DBCollection jobs = theMongoDB.getCollection(CollectionName.JOBS());
         jobs.createIndex(new BasicDBObject("state", 1));
     }
 
     static private void ensureTransactionsDB(DB theMongoDB) {
-        DBCollection accountingTransactions = theMongoDB.getCollection(ACCOUNTING_TRANSACTIONS_NAME);
+        DBCollection accountingTransactions = theMongoDB.getCollection(CollectionName.ACCOUNTING_TRANSACTIONS());
         accountingTransactions.createIndex(new BasicDBObject("accountOps.accountId", 1).append("accountOps.seqId", 1), new BasicDBObject("unique", true));
         accountingTransactions.createIndex(new BasicDBObject("currencyCode", 1));
     }
 
     static private void ensureNotificationsDB(DB theMongoDB) {
-        DBCollection notifications = theMongoDB.getCollection(NOTIFICATIONS_NAME);
+        DBCollection notifications = theMongoDB.getCollection(CollectionName.NOTIFICATIONS());
         notifications.createIndex(new BasicDBObject("topic", 1));
         notifications.createIndex(new BasicDBObject("reason", 1));
         notifications.createIndex(new BasicDBObject("recipients", 1));
@@ -370,14 +347,14 @@ public class Model {
     }
 
     static private void ensurePromosDB(DB theMongoDB) {
-        if (!theMongoDB.collectionExists(PROMOS_NAME)) {
-            theMongoDB.createCollection(PROMOS_NAME, new BasicDBObject());
+        if (!theMongoDB.collectionExists(CollectionName.PROMOS())) {
+            theMongoDB.createCollection(CollectionName.PROMOS(), new BasicDBObject());
         }
     }
 
     static private void ensureBonusDB(DB theMongoDB) {
-        if (!theMongoDB.collectionExists(BONUS_NAME)) {
-            theMongoDB.createCollection(BONUS_NAME, new BasicDBObject());
+        if (!theMongoDB.collectionExists(CollectionName.BONUS())) {
+            theMongoDB.createCollection(CollectionName.BONUS(), new BasicDBObject());
         }
     }
 

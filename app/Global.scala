@@ -33,6 +33,7 @@ object Global extends GlobalSettings {
 
   var systemMode = SystemMode.DEVELOPMENT
 
+  var competitionSelector = ""
 
   val releaseFilter = Filter { (nextFilter, requestHeader) =>
     nextFilter(requestHeader).map { result =>
@@ -86,6 +87,7 @@ object Global extends GlobalSettings {
     marketAppId_android = Play.current.configuration.getString("market_app_id_android").orNull
     targetEnvironment = readTargetEnvironment
     systemMode = readSystemMode
+    competitionSelector = Play.current.configuration.getString("competitionSelector").orNull
 
     if (Play.isProd) {
       launchReadVersionThread()
@@ -96,7 +98,7 @@ object Global extends GlobalSettings {
     Logger.info(s"Epic Eleven $instanceRole, Version: $releaseVersion, TargetEnvironment: $targetEnvironment, has started")
     Logger.info(s"Version iOS: $version_iOS MarketAppId_iOS: $marketAppId_iOS Version Android: $version_android MarketAppId_Android: $marketAppId_android")
 
-    model.Model.init(instanceRole, targetEnvironment, systemMode)
+    model.Model.init(instanceRole, targetEnvironment, systemMode, competitionSelector)
 
     // Es aqui donde se llama a la inicializacion de Stormpath a traves del constructor
     if (StormPathClient.instance.isConnected) {

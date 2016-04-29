@@ -103,6 +103,7 @@
     @if(competitionFilter == "*") {
         <a href="@TemplateContestController.newForm(23)"><button class="btn btn-success">[@competition_name("23")] Add Contest</button></a>
         <a href="@TemplateContestController.newForm(8)"><button class="btn btn-success">[@competition_name("8")] Add Contest</button></a>
+        <a href="@TemplateContestController.newForm(4)"><button class="btn btn-success">[@competition_name("4")] Add Contest</button></a>
     } else {
         <a href="@TemplateContestController.newForm(competitionFilter.toInt)"><button class="btn btn-success">[@competition_name(competitionFilter)] Add Contest</button></a>
     }
