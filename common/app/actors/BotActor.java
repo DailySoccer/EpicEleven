@@ -334,7 +334,7 @@ public class BotActor extends UntypedActor {
     }
 
     private boolean shouldEnter(Contest contest) {
-        return _user.energyBalance.isGreaterThan(contest.entryFee) && (contest.getNumEntries() < contest.minEntries) && ((contest.maxEntries - contest.getNumEntries()) > 1);
+        return _user.energyBalance.isGreaterThan(contest.entryFee) && ((contest.minEntries - contest.getNumEntries()) > 1);
     }
 
     private int getGoalFreeSlots(Contest contest) {
