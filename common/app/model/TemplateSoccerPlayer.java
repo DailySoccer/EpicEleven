@@ -3,6 +3,7 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.WriteConcern;
+import model.opta.OptaCompetition;
 import model.opta.OptaPlayer;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
@@ -18,6 +19,15 @@ import utils.ViewProjection;
 
 import java.util.*;
 import java.util.stream.Collectors;
+
+class StatsCompetition {
+    public StatsCompetition(int num, int fantasyPoints) {
+        this.num = num;
+        this.fantasyPoints = fantasyPoints;
+    }
+    public int num;
+    public int fantasyPoints;
+}
 
 public class TemplateSoccerPlayer implements JongoId {
     public static final int FILTER_BY_DFP = 1;
@@ -50,6 +60,51 @@ public class TemplateSoccerPlayer implements JongoId {
 
     @JsonView(JsonViews.Extended.class)
     public List<SoccerPlayerStats> stats = new ArrayList<>();
+
+    @JsonView(JsonViews.Template.class)
+    public Map<String, StatsCompetition> getCompetitions() {
+        HashMap<String, StatsCompetition> result = new HashMap<>();
+
+        Date startDate = OptaCompetition.SEASON_DATE_START;
+
+        List<SoccerPlayerStats> filteredStats = stats.stream().filter(
+                stat -> stat.hasPlayed() &&
+                        stat.startDate.after(startDate) &&
+                        !stat.optaCompetitionId.equals(OptaCompetition.CHAMPIONS_LEAGUE)
+        ).collect(Collectors.toList());
+
+        if (filteredStats.size() > 0) {
+            // La Liga
+            List<SoccerPlayerStats> ligaStats = filteredStats.stream().filter(
+                stat -> stat.optaCompetitionId.equals(OptaCompetition.SPANISH_LA_LIGA)
+            ).collect(Collectors.toList());
+
+            if (ligaStats.size() > 0) {
+                int num = ligaStats.stream()
+                        .mapToInt( stat -> stat.fantasyPoints )
+                        .reduce( 0, (prev, stat) -> prev + stat ) / ligaStats.size();
+                result.put(OptaCompetition.SPANISH_LA_LIGA, new StatsCompetition(ligaStats.size(), num));
+            }
+
+            // Premier
+            List<SoccerPlayerStats> premierStats = filteredStats.stream().filter(
+                    stat -> stat.optaCompetitionId.equals(OptaCompetition.PREMIER)
+            ).collect(Collectors.toList());
+
+            if (premierStats.size() > 0) {
+                int num = premierStats.stream()
+                        .mapToInt( stat -> stat.fantasyPoints )
+                        .reduce( 0, (prev, stat) -> prev + stat ) / premierStats.size();
+                result.put(OptaCompetition.PREMIER, new StatsCompetition(premierStats.size(), num));
+            }
+
+            // Logger.debug("TemplateSoccerPlayer: {} | Liga: {} size : Premier: {} size", templateSoccerPlayerId.toString(), ligaStats.size(), premierStats.size());
+        }
+
+        return result;
+    }
+    private void setCompetitions(Map<String, StatsCompetition> blah) { }    // Para poder deserializar lo que nos llega por la red sin usar FAIL_ON_UNKNOWN_PROPERTIES
+
 
     public int getPlayedMatches() {
         int numPlayed = 0;
