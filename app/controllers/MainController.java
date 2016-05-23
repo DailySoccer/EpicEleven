@@ -159,12 +159,23 @@ public class MainController extends Controller {
     }
 
     @With(AllowCors.CorsAction.class)
+    @Cached(key = "TemplateSoccerPlayersV2", duration = CACHE_TEMPLATESOCCERPLAYERS)
+    public static Result getTemplateSoccerPlayersV2() {
+        List<TemplateSoccerPlayer> templateSoccerPlayers = TemplateSoccerPlayer.findAll();
+
+        ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
+                .put("template_soccer_players", templateSoccerPlayers);
+        return new ReturnHelper(builder.build())
+                .toResult(JsonViews.Template.class);
+    }
+
+    @With(AllowCors.CorsAction.class)
     @Cached(key = "TemplateSoccerTeams", duration = CACHE_TEMPLATESOCCERTEAMS)
     public static Result getTemplateSoccerTeams() {
         ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
                 .put("template_soccer_teams", TemplateSoccerTeam.findAll());
         return new ReturnHelper(builder.build())
-                .toResult(JsonViews.Extended.class);
+                .toResult(JsonViews.Template.class);
     }
 
     // @UserAuthenticated

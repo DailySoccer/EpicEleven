@@ -12,6 +12,7 @@ GET            /get_soccer_players_by_competition/:competitionId       controlle
 GET            /get_soccer_players_by_competition_23                   controllers.MainController.getSoccerPlayersByCompetition_23()
 GET            /get_soccer_players_by_competition_8                    controllers.MainController.getSoccerPlayersByCompetition_8()
 GET            /get_template_soccer_players                            controllers.MainController.getTemplateSoccerPlayers()
+GET            /v2/get_template_soccer_players                         controllers.MainController.getTemplateSoccerPlayersV2()
 GET            /get_template_soccer_teams                              controllers.MainController.getTemplateSoccerTeams()
 
 # Reglas del juego

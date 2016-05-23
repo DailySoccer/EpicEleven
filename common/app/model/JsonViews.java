@@ -4,6 +4,7 @@ public class JsonViews {
     static public class Public {}
     static public class ContestInfo extends Public {}
     static public class CreateContest extends Public {}
+    static public class Template extends Public {}
     static public class Extended extends Public {}
     static public class FullContest extends Extended {}
     static public class Statistics extends Extended {}
