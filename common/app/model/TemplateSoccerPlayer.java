@@ -21,6 +21,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 class StatsCompetition {
+    public StatsCompetition() {
+    }
+
     public StatsCompetition(int num, int fantasyPoints) {
         this.num = num;
         this.fantasyPoints = fantasyPoints;
