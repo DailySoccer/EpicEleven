@@ -1,7 +1,23 @@
-@()
+@(competitionFilter: String = "*", stateFilter: String = "ACTIVE", competitionMap: HashMap[String, model.opta.OptaCompetition])
 
 @import model._
 @import controllers.admin.routes._
+
+@competition_names(competitionIds : List[String]) = @{
+    competitionIds.filter( (p) => competitionMap.contains(p) ).map( (p) => competition_name(p) ).mkString(", ")
+}
+
+@competition_name(competitionId : String) = @{
+    if(competitionId == "*") {
+        "All Competitions"
+    } else {
+        if(competitionMap.contains(competitionId)) {
+            competitionMap(competitionId).competitionName
+        } else {
+            competitionId
+        }
+    }
+}
 
 @scripts = {
     <script type="text/javascript">
@@ -42,7 +58,7 @@
               "stateSave": true,
               "bJQueryUI": true,
               "sPaginationType": "full_numbers",
-              "sAjaxSource": "/admin/contests/ajax"
+              "sAjaxSource": "/admin/contests/ajax/@competitionFilter/@stateFilter"
             });
         })
 
@@ -70,7 +86,28 @@
 </div>
 }
 
-<h1 class="page-header">Contests</h1>
+<h1 class="page-header">Contests
+    <span class="dropdown">
+        <a data-toggle="dropdown" href="#">@competition_name(competitionFilter)</a><span class="caret"></span>
+        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+            @if(competitionFilter != "*") {
+                <li><a href='@ContestController.index'>All Competitions</a></li>
+            }
+            @for((key, competition) <- competitionMap) {
+                @if(competitionFilter != key) {
+                    <li><a href='@ContestController.showFilterByCompetition(key, stateFilter)'>@competition.competitionName</a></li>
+                }
+            }
+        </ul>
+    </span>
+    <span class="dropdown">
+        <a data-toggle="dropdown" href="#">@stateFilter</a><span class="caret"></span>
+        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+            <li><a href='@ContestController.showFilterByCompetition(competitionFilter, "ACTIVE")'>ACTIVE</a></li>
+            <li><a href='@ContestController.showFilterByCompetition(competitionFilter, "HISTORY")'>HISTORY</a></li>
+        </ul>
+    </span>
+</h1>
 <!--div style="float: right; margin-right:100px;">
     <a href="@ContestController.defaultCSV"><button class="btn btn-success">Default CSV</button></a>
 </div>

@@ -39,20 +39,23 @@ public class TemplateContestController extends Controller {
             "Just 4 Fun", "Weekly", "Experts Only", "Friends", "Pro Level", "Friday Only", "Amateur", "Weekend Only", "For Fame & Glory"};
 
     public static Result index() {
-        return ok(views.html.template_contest_list.render(getCreatingTemplateContestsState(), "*", OptaCompetition.asMap(OptaCompetition.findAllActive())));
+        return ok(views.html.template_contest_list.render(getCreatingTemplateContestsState(), "*", ContestState.ACTIVE.toString(), OptaCompetition.asMap(OptaCompetition.findAllActive())));
     }
 
-    public static Result showFilterByCompetition(String optaCompetitionId) {
-        return ok(views.html.template_contest_list.render(getCreatingTemplateContestsState(), optaCompetitionId, OptaCompetition.asMap(OptaCompetition.findAllActive())));
+    public static Result showFilterByCompetition(String optaCompetitionId, String stateId) {
+        return ok(views.html.template_contest_list.render(getCreatingTemplateContestsState(), optaCompetitionId, stateId, OptaCompetition.asMap(OptaCompetition.findAllActive())));
     }
 
-    public static Result indexAjax(String seasonCompetitionId) {
+    public static Result indexAjax(String seasonCompetitionId, String stateId) {
         HashMap<String, OptaCompetition> optaCompetitions = OptaCompetition.asMap(OptaCompetition.findAllActive());
 
         String query = null;
         if (optaCompetitions.containsKey(seasonCompetitionId)) {
             OptaCompetition optaCompetition = optaCompetitions.get(seasonCompetitionId);
-            query = String.format("{optaCompetitionId: '%s'}", optaCompetition.competitionId);
+            query = String.format("{optaCompetitionId: '%s', state: '%s'}", optaCompetition.competitionId, stateId);
+        }
+        else {
+            query = String.format("{state: '%s'}", stateId);
         }
 
         return PaginationData.withAjaxAndQuery(request().queryString(), Model.templateContests(), query, TemplateContest.class, new PaginationData() {

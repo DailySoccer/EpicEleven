@@ -1,4 +1,4 @@
-@(automaticallyCreateEnabled : Boolean, competitionFilter: String = "*", competitionMap: HashMap[String, model.opta.OptaCompetition])
+@(automaticallyCreateEnabled : Boolean, competitionFilter: String = "*", stateFilter: String = "ACTIVE", competitionMap: HashMap[String, model.opta.OptaCompetition])
 
 @import model._
 @import controllers.admin.routes._
@@ -65,7 +65,7 @@
               "stateSave": true,
               "bJQueryUI": true,
               "sPaginationType": "full_numbers",
-              "sAjaxSource": "/admin/template_contests/ajax/@competitionFilter"
+              "sAjaxSource": "/admin/template_contests/ajax/@competitionFilter/@stateFilter"
             });
         })
 
@@ -83,9 +83,18 @@
             }
             @for((key, competition) <- competitionMap) {
                 @if(competitionFilter != key) {
-                    <li><a href='@TemplateContestController.showFilterByCompetition(key)'>@competition.competitionName</a></li>
+                    <li><a href='@TemplateContestController.showFilterByCompetition(key, stateFilter)'>@competition.competitionName</a></li>
                 }
             }
+        </ul>
+    </span>
+    <span class="dropdown">
+        <a data-toggle="dropdown" href="#">@stateFilter</a><span class="caret"></span>
+        <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+            <li><a href='@TemplateContestController.showFilterByCompetition(competitionFilter, "ACTIVE")'>ACTIVE</a></li>
+            <li><a href='@TemplateContestController.showFilterByCompetition(competitionFilter, "OFF")'>OFF</a></li>
+            <li><a href='@TemplateContestController.showFilterByCompetition(competitionFilter, "HISTORY")'>HISTORY</a></li>
+            <li><a href='@TemplateContestController.showFilterByCompetition(competitionFilter, "DRAFT")'>DRAFT</a></li>
         </ul>
     </span>
     </h1>

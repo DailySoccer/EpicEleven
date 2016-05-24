@@ -43,7 +43,8 @@ GET         /fantasy_points/match_event/:matchEventId/:playerId                 
 GET         /live_events/match_event/:matchEventId/:playerId                     controllers.admin.TemplateSoccerPlayerController.showPlayerLiveEventsInMatchEvent(matchEventId : String, playerId : String)
 
 GET         /contests                                                            controllers.admin.ContestController.index()
-GET         /contests/ajax                                                       controllers.admin.ContestController.indexAjax()
+GET         /contests/filterBy/:competitionId/:stateId                           controllers.admin.ContestController.showFilterByCompetition(competitionId : String, stateId : String)
+GET         /contests/ajax/:competitionId/:stateId                               controllers.admin.ContestController.indexAjax(competitionId : String, stateId : String)
 GET         /contest/:contestId                                                  controllers.admin.ContestController.show(contestId : String)
 GET         /contests/verify_prizes                                              controllers.admin.ContestController.verifyPrizes()
 GET         /contests/verify_entry_fee                                           controllers.admin.ContestController.verifyEntryFee()
@@ -51,11 +52,12 @@ POST        /contests/import_from_csv                                           
 GET         /contests/default_csv                                                controllers.admin.ContestController.defaultCSV()
 
 GET         /template_contests                                                   controllers.admin.TemplateContestController.index()
-GET         /template_contests/filterBy/:competitionId                           controllers.admin.TemplateContestController.showFilterByCompetition(competitionId : String)
+GET         /template_contests/filterBy/:competitionId/:stateId                  controllers.admin.TemplateContestController.showFilterByCompetition(competitionId : String, stateId : String)
+GET         /template_contests/ajax/:competitionId/:stateId                      controllers.admin.TemplateContestController.indexAjax(competitionId : String, stateId : String)
 POST        /template_contests/import_from_csv                                   controllers.admin.TemplateContestController.importFromCSV()
 GET         /template_contests/default_csv                                       controllers.admin.TemplateContestController.defaultCSV()
 
-GET         /template_contests/ajax/:competitionId                               controllers.admin.TemplateContestController.indexAjax(competitionId : String)
+
 GET         /template_contest/create_all                                         controllers.admin.TemplateContestController.createAll()
 GET         /template_contest/enable_creating/:state                             controllers.admin.TemplateContestController.setCreatingTemplateContestsState(state : Boolean)
 GET         /template_contest/new/:competitionId                                 controllers.admin.TemplateContestController.newForm(competitionId : Int)

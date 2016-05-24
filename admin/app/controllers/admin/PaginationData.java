@@ -36,7 +36,8 @@ public class PaginationData {
 
         long iTotalRecords = collection.count();
         long iTotalDisplayRecords = iTotalRecords;
-        String filter = params.get("sSearch")[0];
+        String filter = (params.get("sSearch") != null) ? params.get("sSearch")[0] : "";
+
         Integer pageSize = Integer.valueOf(params.get("iDisplayLength")[0]);
         Integer page = Integer.valueOf(params.get("iDisplayStart")[0]) / pageSize;
         final Integer iSort = Integer.valueOf(params.get("iSortCol_0")[0]);
@@ -44,7 +45,7 @@ public class PaginationData {
         List<String> fieldNames = paginationData.getFieldNames();
         String sortBy = fieldNames.get(iSort);
         String order = params.get("sSortDir_0")[0];
-        Boolean sortedByBDD = false; //!sortBy.equals("");
+        Boolean sortedByBDD = !sortBy.equals("");
 
         // Aqui iremos añadiendo los registros válidos
         List<Map<String, Object>> dataList = new ArrayList<>();
