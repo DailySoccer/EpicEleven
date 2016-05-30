@@ -213,7 +213,7 @@ public class User {
     }
 
     public void setFavorites(List<ObjectId> soccerPlayers) {
-        if (soccerPlayers == null || soccerPlayers.isEmpty()) {
+        if (soccerPlayers == null || (soccerPlayers.isEmpty() && favorites.isEmpty())) {
             Logger.warn("setFavorites: NULL or EMPTY");
             return;
         }
