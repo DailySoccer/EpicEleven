@@ -76,7 +76,7 @@ public class Guild {
         removeRequest(newMember.userId);
     }
 
-    private void removeRequest(ObjectId userId) {
+    public void removeRequest(ObjectId userId) {
         Model.guilds().update(guildId).with("{$pull: {requests: #}}", userId);
     }
 

@@ -87,9 +87,10 @@ POST           /change_soccer_player                                   controlle
 # Guilds
 GET            /get_guilds                                             controllers.GuildController.getGuilds()
 POST           /create_guild                                           controllers.GuildController.createGuild()
+GET            /request_to_enter/:guildId                              controllers.GuildController.requestToEnter(guildId : String)
+GET            /reject_request_to_enter/:userId                        controllers.GuildController.rejectRequestToEnter(userId : String)
 GET            /add_member_to_guild/:userId                            controllers.GuildController.acceptMember(userId : String)
 GET            /change_rol/:userId/:rol                                controllers.GuildController.changeRol(userId : String, rol : String)
-GET            /request_from_member/:guildId                           controllers.GuildController.requestFromMember(guildId : String)
 GET            /remove_member/:userId                                  controllers.GuildController.removeMember(userId : String)
 GET            /remove_from_guild                                      controllers.GuildController.removeFromGuild()
 

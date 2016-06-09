@@ -57,7 +57,7 @@ public class GuildController extends Controller {
         Solicitud para entrar en el Guild
      */
     @UserAuthenticated
-    public static Result requestFromMember(String guildId) {
+    public static Result requestToEnter(String guildId) {
         User theUser = (User)ctx().args.get("User");
 
         // 1. Encontrar el Guild
@@ -66,6 +66,32 @@ public class GuildController extends Controller {
 
             // 2. Solicitud de entrar en el Guild
             guild.request(theUser.userId);
+        }
+
+        return new ReturnHelper(ImmutableMap.of(
+                "ok", true
+        )).toResult();
+    }
+
+    /*
+        Rechazar la entrada en el Guild
+     */
+    @UserAuthenticated
+    public static Result rejectRequestToEnter(String userId) {
+        User theUser = (User)ctx().args.get("User");
+
+        // 1. Que el usuario tenga permisos de administracion del Guild
+        Guild guild = Guild.findOne(theUser.guildId);
+        if ((guild != null) && guild.hasRol(theUser.userId, Guild.UserRol.ADMIN)) {
+
+            User newMember = User.findOne(userId);
+
+            // 2. Que el usuario haya solicitado su ingreso en el Guild
+            if (guild.hasRequested(newMember.userId)) {
+
+                // Eliminar la solicitud de ingreso
+                guild.rejectRequest(newMember);
+            }
         }
 
         return new ReturnHelper(ImmutableMap.of(
