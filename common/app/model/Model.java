@@ -26,6 +26,7 @@ public class Model {
 
     static public MongoCollection sessions() { return _jongo.getCollection("sessions"); }
     static public MongoCollection users() { return _jongo.getCollection("users"); }
+    static public MongoCollection guilds() { return _jongo.getCollection("guilds"); }
 
     static public MongoCollection templateContests() { return _jongo.getCollection("templateContests"); }
     static public MongoCollection templateMatchEvents() { return _jongo.getCollection("templateMatchEvents"); }

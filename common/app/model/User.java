@@ -100,6 +100,8 @@ public class User {
     public List<UserNotification> notifications = new ArrayList<>();
     public List<ObjectId> favorites = new ArrayList<>();
 
+    public ObjectId guildId;        // Guild al que pertenece
+
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
@@ -219,6 +221,17 @@ public class User {
         }
         favorites = soccerPlayers;
         Model.users().update(userId).with("{$set: {favorites: #}}", favorites);
+    }
+
+    public void setGuild(ObjectId newGuildId) {
+        guildId = newGuildId;
+
+        if (guildId != null) {
+            Model.users().update(userId).with("{$set: {guildId: #}}", guildId);
+        }
+        else {
+            Model.users().update(userId).with("{$unset: {guildId: ''}}");
+        }
     }
 
     public void updateStats() {

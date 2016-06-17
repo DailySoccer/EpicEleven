@@ -84,6 +84,16 @@ POST           /edit_contest_entry                                     controlle
 POST           /cancel_contest_entry                                   controllers.ContestEntryController.cancelContestEntry()
 POST           /change_soccer_player                                   controllers.ContestEntryController.changeSoccerPlayer()
 
+# Guilds
+GET            /get_guilds                                             controllers.GuildController.getGuilds()
+POST           /create_guild                                           controllers.GuildController.createGuild()
+GET            /request_to_enter/:guildId                              controllers.GuildController.requestToEnter(guildId : String)
+GET            /reject_request_to_enter/:userId                        controllers.GuildController.rejectRequestToEnter(userId : String)
+GET            /add_member_to_guild/:userId                            controllers.GuildController.acceptMember(userId : String)
+GET            /change_rol/:userId/:rol                                controllers.GuildController.changeRol(userId : String, rol : String)
+GET            /remove_member/:userId                                  controllers.GuildController.removeMember(userId : String)
+GET            /remove_from_guild                                      controllers.GuildController.removeFromGuild()
+
 # Sincronizacion de nuestras maquinas locales con los datos de Opta
 GET            /return_xml/:timestamp                                  controllers.OptaHttpController.returnXML(timestamp: Long)
 GET            /remaining/:timestamp                                   controllers.OptaHttpController.remainingXMLs(timestamp: Long)

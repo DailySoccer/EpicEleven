@@ -13,7 +13,11 @@ public class UserNotification implements JongoId {
         CONTEST_CANCELLED,
         MANAGER_LEVEL_UP,
         MANAGER_LEVEL_DOWN,
-        ACHIEVEMENT_EARNED
+        ACHIEVEMENT_EARNED,
+
+        GUILD_REQUEST_TO_ENTER,
+        GUILD_EJECTED_MEMBER,
+        GUILD_ACCEPTED_MEMBER
     }
 
     @Id
