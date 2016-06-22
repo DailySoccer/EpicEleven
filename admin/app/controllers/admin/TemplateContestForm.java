@@ -133,11 +133,7 @@ public class TemplateContestForm {
         createdAt = templateContest.createdAt.getTime();
     }
 
-    public static HashMap<String, String> matchEventsOptions(String optaCompetitionId, long startTime) {
-        return matchEventsOptions(optaCompetitionId, new Date(startTime));
-    }
-
-    public static HashMap<String, String> matchEventsOptions(String optaCompetitionId, Date startDate) {
+    public static HashMap<String, String> matchEventsOptions(String optaCompetitionId, String seasonId) {
         /*
         final int MAX_MATCH_EVENTS = 100;
         List<TemplateMatchEvent> templateMatchEventsResults = utils.ListUtils.asList(Model.templateMatchEvents()
@@ -145,7 +141,7 @@ public class TemplateContestForm {
                 .sort("{startDate : 1}").limit(MAX_MATCH_EVENTS).as(TemplateMatchEvent.class));
         */
         List<TemplateMatchEvent> templateMatchEventsResults = utils.ListUtils.asList(Model.templateMatchEvents()
-                .find("{optaCompetitionId: #, startDate: {$gte: #}, simulation: {$ne: true}}", optaCompetitionId, startDate)
+                .find("{optaCompetitionId: #, optaSeasonId: #, simulation: {$ne: true}}", optaCompetitionId, seasonId)
                 .sort("{startDate : 1}").as(TemplateMatchEvent.class));
 
         return matchEventsOptions(templateMatchEventsResults);
