@@ -446,12 +446,12 @@ public class BotActor extends UntypedActor {
             // Simplemente "parcheamos" los templates con los datos de los instances
             copyInstancesToTemplates(instanceSoccerPlayers, soccerPlayers);
 
-            List<TemplateSoccerPlayer> lineup = GenerateLineup.quickAndDirty(soccerPlayers, contest.salaryCap);
+            List<TemplateSoccerPlayer> lineup = GenerateLineup.quickAndDirty(soccerPlayers, contest.salaryCap, ContestEntry.FORMATIONS.get(0));
 
             // Verificar que se haya generado un lineup correcto
             if (lineup.size() != 11 || GenerateLineup.sumSalary(lineup) > contest.salaryCap) {
                 Logger.warn("{} tuvo que recurrir a sillyWay, {} contestId, {} players, {} salary", getFullName(), contest.contestId, lineup.size(), GenerateLineup.sumSalary(lineup));
-                lineup = GenerateLineup.sillyWay(soccerPlayers, contest.salaryCap);
+                lineup = GenerateLineup.sillyWay(soccerPlayers, contest.salaryCap, ContestEntry.FORMATIONS.get(0));
             }
 
             if (lineup.size() == 11 && GenerateLineup.sumSalary(lineup) <= contest.salaryCap) {

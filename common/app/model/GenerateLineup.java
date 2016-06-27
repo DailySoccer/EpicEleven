@@ -9,24 +9,30 @@ import java.util.stream.Collectors;
 
 public class GenerateLineup {
 
-    static public List<TemplateSoccerPlayer> sillyWay(List<TemplateSoccerPlayer> soccerPlayers, int salaryCap) {
+    static public List<TemplateSoccerPlayer> sillyWay(List<TemplateSoccerPlayer> soccerPlayers, int salaryCap, String formation) {
         List<TemplateSoccerPlayer> lineup = new ArrayList<>();
 
         sortBySalary(soccerPlayers);
 
+        int numDefenses = Character.getNumericValue(formation.charAt(0));
+        int numMiddles = Character.getNumericValue(formation.charAt(1));
+        int numForwards = Character.getNumericValue(formation.charAt(2));
+
         List<TemplateSoccerPlayer> goalkeepers = filterByPosition(soccerPlayers, FieldPos.GOALKEEPER);
         lineup.add(goalkeepers.get(0));
 
-        List<TemplateSoccerPlayer> middles = filterByPosition(soccerPlayers, FieldPos.MIDDLE);
         List<TemplateSoccerPlayer> defenses = filterByPosition(soccerPlayers, FieldPos.DEFENSE);
-
-        for (int c = 0; c < 4; ++c) {
-            lineup.add(middles.get(c));
+        for (int c = 0; c < numDefenses; ++c) {
             lineup.add(defenses.get(c));
         }
 
+        List<TemplateSoccerPlayer> middles = filterByPosition(soccerPlayers, FieldPos.MIDDLE);
+        for (int c = 0; c < numMiddles; ++c) {
+            lineup.add(middles.get(c));
+        }
+
         List<TemplateSoccerPlayer> forwards = filterByPosition(soccerPlayers, FieldPos.FORWARD);
-        for (int c = 0; c < 2; ++c) {
+        for (int c = 0; c < numForwards; ++c) {
             lineup.add(forwards.get(c));
         }
 
@@ -40,18 +46,22 @@ public class GenerateLineup {
     }
 
     // Una intento rapido de hacerlo un poco mejor.
-    static public List<TemplateSoccerPlayer> quickAndDirty(List<TemplateSoccerPlayer> soccerPlayers, int salaryCap) {
+    static public List<TemplateSoccerPlayer> quickAndDirty(List<TemplateSoccerPlayer> soccerPlayers, int salaryCap, String formation) {
         List<TemplateSoccerPlayer> lineup = new ArrayList<>();
 
         sortByFantasyPoints(soccerPlayers, true);
+
+        int numDefenses = Character.getNumericValue(formation.charAt(0));
+        int numMiddles = Character.getNumericValue(formation.charAt(1));
+        int numForwards = Character.getNumericValue(formation.charAt(2));
 
         List<TemplateSoccerPlayer> forwards = filterByPosition(soccerPlayers, FieldPos.FORWARD);
         List<TemplateSoccerPlayer> goalkeepers = filterByPosition(soccerPlayers, FieldPos.GOALKEEPER);
         List<TemplateSoccerPlayer> middles = filterByPosition(soccerPlayers, FieldPos.MIDDLE);
         List<TemplateSoccerPlayer> defenses = filterByPosition(soccerPlayers, FieldPos.DEFENSE);
 
-        // Dos delanteros entre los 8 mejores
-        for (int c = 0; c < 2; ++c) {
+        // 2 delanteros entre los 8 mejores
+        for (int c = 0; c < numForwards; ++c) {
             lineup.add(forwards.remove(_rand.nextInt(Math.min(8, forwards.size()))));
         }
 
@@ -60,8 +70,8 @@ public class GenerateLineup {
         lineup.add(goalkeepers.get(_rand.nextInt(goalkeepers.size() / 2) + (goalkeepers.size() / 2)));
 
         // 4 y 4 cogidos al azar entre los mejores sin pasarnos del salario medio restante
-        selectSoccerPlayers(lineup, middles, 4, salaryCap);
-        selectSoccerPlayers(lineup, defenses, 4, salaryCap);
+        selectSoccerPlayers(lineup, middles, numMiddles, salaryCap);
+        selectSoccerPlayers(lineup, defenses, numDefenses, salaryCap);
 
         // Devolvemos la alineación ordenada por Goalkeeper, Defense, Middle y Forward
         List<TemplateSoccerPlayer> result = new ArrayList<>();

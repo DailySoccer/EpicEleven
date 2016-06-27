@@ -490,6 +490,33 @@ public class ContestEntryController extends Controller {
         return new ReturnHelper(!changeForm.hasErrors(), result).toResult();
     }
 
+    public static Result generateLineup(String contestId, String formation) {
+        boolean result = ContestEntry.FORMATIONS.stream().anyMatch( value -> value.equals(formation) );
+        if (!result) {
+            return new ReturnHelper(false, ERROR_FORMATION_INVALID).toResult();
+        }
+
+        Contest contest = Contest.findOne(contestId);
+        if (contest == null) {
+            return new ReturnHelper(false, ERROR_CONTEST_INVALID).toResult();
+        }
+
+        List<TemplateSoccerPlayer> soccerPlayers = TemplateSoccerPlayer.findAllFromInstances(contest.instanceSoccerPlayers);
+
+        List<TemplateSoccerPlayer> lineup = GenerateLineup.quickAndDirty(soccerPlayers, contest.salaryCap, formation);
+
+        // Verificar que se haya generado un lineup correcto
+        if (lineup.size() != 11 || GenerateLineup.sumSalary(lineup) > contest.salaryCap) {
+            Logger.warn("Se tuvo que recurrir a sillyWay, {} contestId, {} players, {} salary", contest.contestId, lineup.size(), GenerateLineup.sumSalary(lineup));
+            lineup = GenerateLineup.sillyWay(soccerPlayers, contest.salaryCap, formation);
+        }
+
+        return new ReturnHelper(ImmutableMap.builder()
+                .put("lineup", lineup)
+                .build())
+                .toResult(JsonViews.Public.class);
+    }
+
     private static List<String> validateContestEntry (Contest contest, String formation, List<ObjectId> objectIds, boolean changeInLiveAllowed) {
         List<String> errores = new ArrayList<>();
 

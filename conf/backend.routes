@@ -83,6 +83,7 @@ POST           /add_contest_entry                                      controlle
 POST           /edit_contest_entry                                     controllers.ContestEntryController.editContestEntry()
 POST           /cancel_contest_entry                                   controllers.ContestEntryController.cancelContestEntry()
 POST           /change_soccer_player                                   controllers.ContestEntryController.changeSoccerPlayer()
+GET            /generate_lineup/:contest/:formation                    controllers.ContestEntryController.generateLineup(contest, formation)
 
 # Guilds
 GET            /get_guilds                                             controllers.GuildController.getGuilds()
