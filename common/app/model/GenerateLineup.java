@@ -2,6 +2,8 @@ package model;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
+import org.bson.types.ObjectId;
+import play.Logger;
 import utils.ListUtils;
 
 import java.util.*;
@@ -84,16 +86,35 @@ public class GenerateLineup {
 
 
     static private void selectSoccerPlayers(List<TemplateSoccerPlayer> lineup, List<TemplateSoccerPlayer> from, int howMany, int salaryCap) {
+        HashMap<ObjectId, Integer> numPlayersInTeam = new HashMap<>();
+
+        // Actualizar el número de futbolistas por equipo
+        lineup.forEach( soccerPlayer ->
+                numPlayersInTeam.put( soccerPlayer.templateTeamId, numPlayersInTeam.containsKey(soccerPlayer.templateTeamId) ? numPlayersInTeam.get(soccerPlayer.templateTeamId) + 1 : 1 ));
+
         for (int c = 0; c < howMany; ++c) {
             int averageRemainingSalary = (salaryCap - sumSalary(lineup)) / (11 - lineup.size());
 
             List<TemplateSoccerPlayer> filtered = filterBySalary(from, 0, averageRemainingSalary);
+
+            // Quitar los equipos de los que ya tengamos el número máximo de futbolistas
+            for(HashMap.Entry<ObjectId, Integer> entry : numPlayersInTeam.entrySet()) {
+                if (entry.getValue() == Contest.MAX_PLAYERS_SAME_TEAM) {
+                    filtered = removeWhereTeam(filtered, entry.getKey());
+                    Logger.debug("Generate Lineup: Remove TeamId: {}", entry.getKey());
+                }
+            }
+
             if (!filtered.isEmpty()) {
                 sortByFantasyPoints(filtered, true);
 
                 // Entre los 8 mejores... esto podia ser un parametro para ajustar mas, por ejemplo dependiendo del numero de maxEntries
                 TemplateSoccerPlayer selected = filtered.get(_rand.nextInt(Math.min(8, filtered.size())));
                 lineup.add(selected);
+
+                // Actualizar el número de futbolistas por equipo
+                numPlayersInTeam.put( selected.templateTeamId, numPlayersInTeam.containsKey(selected.templateTeamId) ? numPlayersInTeam.get(selected.templateTeamId) + 1 : 1 );
+
                 from.remove(selected);
             }
         }
@@ -113,6 +134,15 @@ public class GenerateLineup {
             @Override
             public boolean apply(TemplateSoccerPlayer templateSoccerPlayer) {
                 return (templateSoccerPlayer != null && templateSoccerPlayer.fieldPos == fp);
+            }
+        }));
+    }
+
+    static private List<TemplateSoccerPlayer> removeWhereTeam(List<TemplateSoccerPlayer> sps, final ObjectId teamId) {
+        return ListUtils.asList(Collections2.filter(sps, new Predicate<TemplateSoccerPlayer>() {
+            @Override
+            public boolean apply(TemplateSoccerPlayer templateSoccerPlayer) {
+                return (templateSoccerPlayer != null && !templateSoccerPlayer.templateTeamId.equals(teamId));
             }
         }));
     }

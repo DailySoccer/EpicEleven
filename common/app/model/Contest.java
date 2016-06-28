@@ -26,7 +26,7 @@ public class Contest implements JongoId {
     public static final String FILL_WITH_MOCK_USERS = "%MockUsers";
 
     @JsonIgnore
-    final int MAX_PLAYERS_SAME_TEAM = 4;
+    public static final int MAX_PLAYERS_SAME_TEAM = 4;
 
     @Id
     public ObjectId contestId;
