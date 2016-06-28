@@ -88,22 +88,23 @@ public class GenerateLineup {
     static private void selectSoccerPlayers(List<TemplateSoccerPlayer> lineup, List<TemplateSoccerPlayer> from, int howMany, int salaryCap) {
         HashMap<ObjectId, Integer> numPlayersInTeam = new HashMap<>();
 
-        // Actualizar el número de futbolistas por equipo
-        lineup.forEach( soccerPlayer ->
-                numPlayersInTeam.put( soccerPlayer.templateTeamId, numPlayersInTeam.containsKey(soccerPlayer.templateTeamId) ? numPlayersInTeam.get(soccerPlayer.templateTeamId) + 1 : 1 ));
+        for (TemplateSoccerPlayer soccerPlayer : lineup) {
+            Integer num = numPlayersInTeam.containsKey(soccerPlayer.templateTeamId) ? numPlayersInTeam.get(soccerPlayer.templateTeamId) : 0;
+
+            // Actualizar el número de futbolistas por equipo
+            numPlayersInTeam.put( soccerPlayer.templateTeamId, num + 1);
+
+            // Quitar los equipos de los que ya tengamos el número máximo de futbolistas
+            if ( num + 1 == Contest.MAX_PLAYERS_SAME_TEAM) {
+                from = removeWhereTeam(from, soccerPlayer.templateTeamId);
+                Logger.debug("Generate Lineup: Remove TeamId: {}", soccerPlayer.templateTeamId);
+            }
+        }
 
         for (int c = 0; c < howMany; ++c) {
             int averageRemainingSalary = (salaryCap - sumSalary(lineup)) / (11 - lineup.size());
 
             List<TemplateSoccerPlayer> filtered = filterBySalary(from, 0, averageRemainingSalary);
-
-            // Quitar los equipos de los que ya tengamos el número máximo de futbolistas
-            for(HashMap.Entry<ObjectId, Integer> entry : numPlayersInTeam.entrySet()) {
-                if (entry.getValue() == Contest.MAX_PLAYERS_SAME_TEAM) {
-                    filtered = removeWhereTeam(filtered, entry.getKey());
-                    Logger.debug("Generate Lineup: Remove TeamId: {}", entry.getKey());
-                }
-            }
 
             if (!filtered.isEmpty()) {
                 sortByFantasyPoints(filtered, true);
@@ -114,6 +115,12 @@ public class GenerateLineup {
 
                 // Actualizar el número de futbolistas por equipo
                 numPlayersInTeam.put( selected.templateTeamId, numPlayersInTeam.containsKey(selected.templateTeamId) ? numPlayersInTeam.get(selected.templateTeamId) + 1 : 1 );
+
+                // Si al añadir ese futbolista alcanzamos el número máximo permitido de futbolistas del mismo equipo, eliminamos al resto de futbolistas de ese mismo equipo de la lista
+                if (numPlayersInTeam.get( selected.templateTeamId ) == Contest.MAX_PLAYERS_SAME_TEAM) {
+                    from = removeWhereTeam(from, selected.templateTeamId);
+                    Logger.debug("Generate Lineup: Remove TeamId: {}", selected.templateTeamId);
+                }
 
                 from.remove(selected);
             }
