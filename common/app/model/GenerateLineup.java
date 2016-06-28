@@ -89,13 +89,11 @@ public class GenerateLineup {
         HashMap<ObjectId, Integer> numPlayersInTeam = new HashMap<>();
 
         for (TemplateSoccerPlayer soccerPlayer : lineup) {
-            Integer num = numPlayersInTeam.containsKey(soccerPlayer.templateTeamId) ? numPlayersInTeam.get(soccerPlayer.templateTeamId) : 0;
-
             // Actualizar el número de futbolistas por equipo
-            numPlayersInTeam.put( soccerPlayer.templateTeamId, num + 1);
+            numPlayersInTeam.put( soccerPlayer.templateTeamId, numPlayersInTeam.containsKey(soccerPlayer.templateTeamId) ? numPlayersInTeam.get(soccerPlayer.templateTeamId) + 1 : 1 );
 
             // Quitar los equipos de los que ya tengamos el número máximo de futbolistas
-            if ( num + 1 == Contest.MAX_PLAYERS_SAME_TEAM) {
+            if (numPlayersInTeam.get( soccerPlayer.templateTeamId ) == Contest.MAX_PLAYERS_SAME_TEAM) {
                 from = removeWhereTeam(from, soccerPlayer.templateTeamId);
                 Logger.debug("Generate Lineup: Remove TeamId: {}", soccerPlayer.templateTeamId);
             }
