@@ -193,4 +193,14 @@ public class GuildController extends Controller {
                 "ok", true
         )).toResult();
     }
+
+    /*
+        Devolver el leaderboard del Guild al que pertenece el usuario
+     */
+    @UserAuthenticated
+    public static Result getLeaderboard() {
+        User theUser = (User)ctx().args.get("User");
+
+        return new ReturnHelper(ImmutableMap.of("users", UserInfo.findGuildWithAchievements(theUser.guildId))).toResult();
+    }
 }

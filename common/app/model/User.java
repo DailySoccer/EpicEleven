@@ -165,6 +165,10 @@ public class User {
         return Model.users().findOne("{nickName: #}", username).as(User.class);
     }
 
+    static public List<User> findByGuild(ObjectId guildId) {
+        return ListUtils.asList(Model.users().find("{guildId: #}", guildId).as(User.class));
+    }
+
     static public User findOne(ObjectId userId) {
         return Model.users().findOne(userId).as(User.class);
     }
