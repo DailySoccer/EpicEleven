@@ -163,7 +163,7 @@ public class StoreController extends Controller {
     }
 
     private static JsonNode post(String url, JsonNode jsonNode) throws TimeoutException {
-        WSRequestHolder requestHolder = WS.url(Play.application().configuration().getString("market_verification_url_ios"));
+        WSRequestHolder requestHolder = WS.url(url);
 
         F.Promise<WSResponse> response = requestHolder
                 .setHeader("content-type", "application/x-www-form-urlencoded")
