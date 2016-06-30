@@ -120,6 +120,7 @@ GET            /paypal/withdraw_funds/:amount                          controlle
 
 # Store
 POST           /store/buy/:paymentId                                   controllers.StoreController.buy(paymentId : String)
+POST           /store/validator                                        controllers.StoreController.validator()
 
 POST           /short_url                                              controllers.MainController.getShortUrl()
 

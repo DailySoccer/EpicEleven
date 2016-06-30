@@ -2,8 +2,14 @@ package controllers;
 
 import actions.AllowCors;
 import actions.UserAuthenticated;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import jdk.nashorn.internal.ir.annotations.Immutable;
 import model.Model;
 import model.User;
 import model.jobs.CompleteOrderJob;
@@ -11,12 +17,31 @@ import model.shop.Catalog;
 import model.shop.Order;
 import model.shop.ProductMoney;
 import org.bson.types.ObjectId;
+import play.Play;
 import play.Logger;
+import play.libs.F;
+import play.libs.Json;
+import play.libs.ws.WS;
+import play.libs.ws.WSRequestHolder;
+import play.libs.ws.WSResponse;
+
 import play.data.Form;
 import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
 import utils.ReturnHelper;
+
+import java.security.*;
+import javax.crypto.*;
+
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static play.data.Form.form;
 
@@ -96,5 +121,72 @@ public class StoreController extends Controller {
         return new ReturnHelper(!buyForm.hasErrors(), result).toResult();
     }
 
+    public static Result validator() {
+        play.data.DynamicForm requestData = form().bindFromRequest();
+//        Logger.debug("{}", requestData);
+
+        if( requestData.get("transaction.type").equals("android-playstore") ) {
+            // Validacion Android
+            String dataStr = requestData.get("transaction.receipt");
+            byte[] data = dataStr.getBytes();
+
+            String signatureStr = requestData.get("transaction.signature");
+            byte[] signature = Base64.getDecoder().decode(signatureStr);
+
+            String publicKeyStr = Play.application().configuration().getString("market_app_key_android");
+            byte[] publicKey = Base64.getDecoder().decode(publicKeyStr);
+
+            try {
+                KeyFactory kf = KeyFactory.getInstance("RSA");
+                PublicKey pubKey = kf.generatePublic(new X509EncodedKeySpec(publicKey));
+                Signature sign = Signature.getInstance("SHA1withRSA");
+                sign.initVerify(pubKey);
+                sign.update(data);
+                if(sign.verify(signature)) return new ReturnHelper(true, ImmutableMap.of(  "ok", true, "data", ImmutableMap.of(  "code", 0, "msg", "Ok") ) ).toResult();
+
+            } catch (Exception e) {
+                Logger.debug("{}", e);
+
+            }
+
+        }else{
+            try {
+                JsonNode node = StoreController.post(Play.application().configuration().getString("market_verification_url_ios"), Json.newObject().put("receipt-data", requestData.get("transaction.receipt")));
+                if( node.get("status").asInt()==0)
+                    return new ReturnHelper(true, ImmutableMap.of(  "ok", true, "data", ImmutableMap.of(  "code", 0, "msg", "Ok") ) ).toResult();
+            }catch(Exception e){
+                Logger.debug("{}", e);
+            }
+        }
+        return new ReturnHelper(true, ImmutableMap.of(  "ok", false, "data", ImmutableMap.of(  "code", 1, "msg", "Error in validation") ) ).toResult();
+
+    }
+
+    private static JsonNode post(String url, JsonNode jsonNode) throws TimeoutException {
+        WSRequestHolder requestHolder = WS.url(Play.application().configuration().getString("market_verification_url_ios"));
+
+        F.Promise<WSResponse> response = requestHolder
+                .setHeader("content-type", "application/x-www-form-urlencoded")
+                .post(jsonNode);
+
+        F.Promise<JsonNode> jsonPromise = response.map(
+                new F.Function<WSResponse, JsonNode>() {
+                    public JsonNode apply(WSResponse response) {
+                        try {
+                            return response.asJson();
+                        }
+                        catch (Exception exc) {
+                            Logger.debug("Json incorrecto: {}", response.getStatusText());
+                            return JsonNodeFactory.instance.objectNode();
+                        }
+                    }
+                }
+        );
+
+        return jsonPromise.get(5000, TimeUnit.MILLISECONDS);
+    }
+
 }
+
+
 
