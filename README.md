@@ -21,6 +21,7 @@ Installing the environment
     $ brew install postgres
 
 - Initialize postgres running command "data/create_postgres.sh":
+
     $ ./ data/create_postgres.sh
 
 - To run the server with debugging enabled in HTTP mode (no SSL certificate or modification to /etc/hosts required):
