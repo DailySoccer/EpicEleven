@@ -92,3 +92,12 @@ Heroku
 - If you ever need to force a rebuild, for instance when upgrading Play, have a look at the "Clean builds" section of:
 
     https://devcenter.heroku.com/articles/scala-support
+    
+    
+    
+
+Puesta a punto de BBDD para desarrollo
+===================
+Hay un Snapshot subido al repositorio. Los pasos a seguir para poner a punto la bbdd con datos para desarrollo son:
+- Ir a la url: http://localhost:9000/admin/snapshots -> Pulsar en "Restore Snapshot from Disk" y luego "Load Snapshot"
+- Ir a http://localhost:9000/admin -> http://localhost:9000/admin -> Pulsar el botón "Initial Setup"
