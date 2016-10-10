@@ -152,19 +152,20 @@ public class StoreController extends Controller {
         }else{
             try {
                 JsonNode node = StoreController.post(Play.application().configuration().getString("market_verification_url_ios"), Json.newObject().put("receipt-data", requestData.get("transaction.receipt")));
-                if( node.get("status").asInt()==0)
-                    return new ReturnHelper(true, ImmutableMap.of(  "ok", true, "data", ImmutableMap.of(  "code", 0, "msg", "Ok") ) ).toResult();
+                if( node.get("status").asInt()==0) {
+                    Logger.debug("!!!!!!!! ok");
+                    return new ReturnHelper(true, ImmutableMap.of("ok", true, "data", ImmutableMap.of("code", 0, "msg", "Ok"))).toResult();
+                }
             }catch(Exception e){
                 Logger.debug("{}", e);
             }
         }
+        Logger.debug("!!!!!!error");
         return new ReturnHelper(true, ImmutableMap.of(  "ok", false, "data", ImmutableMap.of(  "code", 1, "msg", "Error in validation") ) ).toResult();
 
     }
 
     private static JsonNode post(String url, JsonNode jsonNode) throws TimeoutException {
-        Logger.debug("{}", url);
-        Logger.debug("{}", Play.application().configuration().getString("market_verification_url_ios"));
         WSRequestHolder requestHolder = WS.url(url);
 
         F.Promise<WSResponse> response = requestHolder
