@@ -176,7 +176,8 @@ public class StoreController extends Controller {
                 new F.Function<WSResponse, JsonNode>() {
                     public JsonNode apply(WSResponse response) {
                         try {
-                            Logger.debug("Json respuest: {}", response );
+                            Logger.debug("Json respuesta as text: {}", response.asJson().asText() );
+                            Logger.debug("Json respuesta as json: {}", response.asJson() );
                             return response.asJson();
                         }
                         catch (Exception exc) {
@@ -186,9 +187,8 @@ public class StoreController extends Controller {
                     }
                 }
         );
-        JsonNode ret = jsonPromise.get(5000, TimeUnit.MILLISECONDS);
-        Logger.debug("TimeOut" );
-        return ret;
+
+        return jsonPromise.get(5000, TimeUnit.MILLISECONDS);
     }
 
 }
