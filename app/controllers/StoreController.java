@@ -124,10 +124,8 @@ public class StoreController extends Controller {
     public static Result validator() {
         play.data.DynamicForm requestData = form().bindFromRequest();
         //Logger.debug("{}", requestData);
-        Logger.debug("Hola Mundo");
 
         if( requestData.get("transaction.type").equals("android-playstore") ) {
-            Logger.debug("ANDROID");
             // Validacion Android
             String dataStr = requestData.get("transaction.receipt");
             byte[] data = dataStr.getBytes();
@@ -152,7 +150,6 @@ public class StoreController extends Controller {
             }
 
         }else{
-            Logger.debug("IOS");
             try {
                 JsonNode node = StoreController.post(Play.application().configuration().getString("market_verification_url_ios"), Json.newObject().put("receipt-data", requestData.get("transaction.receipt")));
                 if( node.get("status").asInt()==0)
@@ -166,6 +163,8 @@ public class StoreController extends Controller {
     }
 
     private static JsonNode post(String url, JsonNode jsonNode) throws TimeoutException {
+        Logger.debug("{}", url);
+        Logger.debug("{}", Play.application().configuration().getString("market_verification_url_ios"));
         WSRequestHolder requestHolder = WS.url(url);
 
         F.Promise<WSResponse> response = requestHolder
