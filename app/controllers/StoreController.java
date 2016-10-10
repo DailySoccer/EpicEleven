@@ -123,7 +123,7 @@ public class StoreController extends Controller {
 
     public static Result validator() {
         play.data.DynamicForm requestData = form().bindFromRequest();
-//        Logger.debug("{}", requestData);
+        Logger.debug("{}", requestData);
 
         if( requestData.get("transaction.type").equals("android-playstore") ) {
             // Validacion Android
