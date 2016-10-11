@@ -151,6 +151,7 @@ public class StoreController extends Controller {
 
         }else{
             try {
+                Logger.debug("TRANSACTION.RECEIPT : {}", requestData.get("transaction.receipt"));
                 JsonNode node = StoreController.post(Play.application().configuration().getString("market_verification_url_ios"), Json.newObject().put("receipt-data", requestData.get("transaction.receipt")));
                 if( node.get("status").asInt()==0) {
                     Logger.debug("!!!!!!!! ok");
@@ -160,7 +161,7 @@ public class StoreController extends Controller {
                 Logger.debug("{}", e);
             }
         }
-        Logger.debug("!!!!!!error");
+        Logger.debug("!!!!!! error");
         return new ReturnHelper(true, ImmutableMap.of(  "ok", false, "data", ImmutableMap.of(  "code", 1, "msg", "Error in validation") ) ).toResult();
 
     }
