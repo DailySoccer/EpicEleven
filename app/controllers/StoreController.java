@@ -123,7 +123,7 @@ public class StoreController extends Controller {
 
     public static Result validator() {
         play.data.DynamicForm requestData = form().bindFromRequest();
-        Logger.debug("Request Data . Data: {}", requestData.data());
+        //Logger.debug("Request Data . Data: {}", requestData.data());
 
         if( requestData.get("transaction.type").equals("android-playstore") ) {
             // Validacion Android
@@ -145,23 +145,20 @@ public class StoreController extends Controller {
                 if(sign.verify(signature)) return new ReturnHelper(true, ImmutableMap.of(  "ok", true, "data", ImmutableMap.of(  "code", 0, "msg", "Ok") ) ).toResult();
 
             } catch (Exception e) {
-                Logger.debug("{}", e);
+                Logger.debug("Validator Android Error: {}", e);
 
             }
 
         }else{
             try {
-                Logger.debug("TRANSACTION.RECEIPT : " + requestData.get("transaction.transactionReceipt"));
                 JsonNode node = StoreController.post(Play.application().configuration().getString("market_verification_url_ios"), Json.newObject().put("receipt-data", requestData.get("transaction.transactionReceipt")));
-                if( node.get("status").asInt()==0) {
-                    Logger.debug("!!!!!!!! ok");
+                if( node.get("status").asInt() == 0) {
                     return new ReturnHelper(true, ImmutableMap.of("ok", true, "data", ImmutableMap.of("code", 0, "msg", "Ok"))).toResult();
                 }
             }catch(Exception e){
-                Logger.debug("{}", e);
+                Logger.debug("Validator iOS Error: {}", e);
             }
         }
-        Logger.debug("!!!!!! error");
         return new ReturnHelper(true, ImmutableMap.of(  "ok", false, "data", ImmutableMap.of(  "code", 1, "msg", "Error in validation") ) ).toResult();
 
     }
@@ -177,11 +174,10 @@ public class StoreController extends Controller {
                 new F.Function<WSResponse, JsonNode>() {
                     public JsonNode apply(WSResponse response) {
                         try {
-                            Logger.debug("Json respuesta as json: {}", response.asJson() );
                             return response.asJson();
                         }
-                        catch (Exception exc) {
-                            Logger.debug("Json incorrecto: {}", response.getStatusText());
+                        catch (Exception e) {
+                            Logger.debug("Json incorrecto: {} ", e);
                             return JsonNodeFactory.instance.objectNode();
                         }
                     }
