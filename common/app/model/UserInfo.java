@@ -55,6 +55,16 @@ public class UserInfo {
         return usersInfo;
     }
 
+    static public List<UserInfo> findGuildWithAchievements(ObjectId guildId) {
+        List<UserInfo> usersInfo = new ArrayList<>();
+
+        if (guildId != null) {
+            User.findByGuild(guildId).forEach(user -> usersInfo.add(user.infoWithAchievements()));
+        }
+
+        return usersInfo;
+    }
+
     static public List<UserInfo> findAllFromContestEntries(List<ContestEntry> contestEntries) {
         List<UserInfo> usersInfo = new ArrayList<>();
 

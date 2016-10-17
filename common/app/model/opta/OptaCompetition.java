@@ -4,15 +4,13 @@ import model.GlobalDate;
 import model.JongoId;
 import model.Model;
 import org.bson.types.ObjectId;
-import org.joda.time.DateTime;
-import play.Logger;
 import utils.ListUtils;
 
 import java.util.*;
 
 public class OptaCompetition implements JongoId {
     static public Date SEASON_DATE_START = new GregorianCalendar(2015, 8, 1).getTime();
-    static final String CURRENT_SEASON = "2015";
+    public static final String CURRENT_SEASON_ID = "2015";
     public static final String SPANISH_LA_LIGA = "23";
     public static final String PREMIER = "8";
     public static final String CHAMPIONS_LEAGUE = "5";
@@ -62,13 +60,13 @@ public class OptaCompetition implements JongoId {
     }
 
     static public List<OptaTeam> findTeamsByCompetitionId(String competitionId) {
-        return OptaTeam.findAllByCompetition(createId(CURRENT_SEASON, competitionId));
+        return OptaTeam.findAllByCompetition(createId(CURRENT_SEASON_ID, competitionId));
     }
 
     static public List<OptaTeam> findTeamsByCompetitionCode(String code) {
         List<OptaCompetition> competitions = ListUtils.asList(Model.optaCompetitions().find("{activated: true, competitionCode: #}", code).as(OptaCompetition.class));
         OptaCompetition competition = competitions.get(competitions.size()-1);
-        return OptaTeam.findAllByCompetition(createId(CURRENT_SEASON, competition.competitionId));
+        return OptaTeam.findAllByCompetition(createId(CURRENT_SEASON_ID, competition.competitionId));
     }
 
     static public List<String> asIds(List<OptaCompetition> optaCompetitions) {

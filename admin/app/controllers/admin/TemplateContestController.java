@@ -3,7 +3,6 @@ package controllers.admin;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BooleanSupplier;
 
 import actions.CheckTargetEnvironment;
 import com.google.common.base.Joiner;
@@ -39,20 +38,23 @@ public class TemplateContestController extends Controller {
             "Just 4 Fun", "Weekly", "Experts Only", "Friends", "Pro Level", "Friday Only", "Amateur", "Weekend Only", "For Fame & Glory"};
 
     public static Result index() {
-        return ok(views.html.template_contest_list.render(getCreatingTemplateContestsState(), "*", OptaCompetition.asMap(OptaCompetition.findAllActive())));
+        return ok(views.html.template_contest_list.render(getCreatingTemplateContestsState(), "*", ContestState.ACTIVE.toString(), OptaCompetition.asMap(OptaCompetition.findAllActive())));
     }
 
-    public static Result showFilterByCompetition(String optaCompetitionId) {
-        return ok(views.html.template_contest_list.render(getCreatingTemplateContestsState(), optaCompetitionId, OptaCompetition.asMap(OptaCompetition.findAllActive())));
+    public static Result showFilterByCompetition(String optaCompetitionId, String stateId) {
+        return ok(views.html.template_contest_list.render(getCreatingTemplateContestsState(), optaCompetitionId, stateId, OptaCompetition.asMap(OptaCompetition.findAllActive())));
     }
 
-    public static Result indexAjax(String seasonCompetitionId) {
+    public static Result indexAjax(String seasonCompetitionId, String stateId) {
         HashMap<String, OptaCompetition> optaCompetitions = OptaCompetition.asMap(OptaCompetition.findAllActive());
 
         String query = null;
         if (optaCompetitions.containsKey(seasonCompetitionId)) {
             OptaCompetition optaCompetition = optaCompetitions.get(seasonCompetitionId);
-            query = String.format("{optaCompetitionId: '%s'}", optaCompetition.competitionId);
+            query = String.format("{optaCompetitionId: '%s', state: '%s'}", optaCompetition.competitionId, stateId);
+        }
+        else {
+            query = String.format("{state: '%s'}", stateId);
         }
 
         return PaginationData.withAjaxAndQuery(request().queryString(), Model.templateContests(), query, TemplateContest.class, new PaginationData() {
@@ -178,7 +180,7 @@ public class TemplateContestController extends Controller {
         params.optaCompetitionId = String.valueOf(competitionId);
 
         Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
-        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.optaCompetitionId, OptaCompetition.SEASON_DATE_START), false));
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.optaCompetitionId, OptaCompetition.CURRENT_SEASON_ID), false));
     }
 
     public static Result edit(String templateContestId) {
@@ -194,7 +196,7 @@ public class TemplateContestController extends Controller {
             List<TemplateMatchEvent> templateMatchEvents = templateContest.getTemplateMatchEvents();
             return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(templateMatchEvents), templateContest.state.isActive()));
         }
-        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(templateContest.optaCompetitionId, OptaCompetition.SEASON_DATE_START), templateContest.state.isActive()));
+        return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(templateContest.optaCompetitionId, OptaCompetition.CURRENT_SEASON_ID), templateContest.state.isActive()));
     }
 
     public static Result createClone(String templateContestId) {
@@ -221,7 +223,7 @@ public class TemplateContestController extends Controller {
         if (templateContestForm.hasErrors()) {
             String createdAt = templateContestForm.field("createdAt").valueOr("0");
             String optaCompetitionId = templateContestForm.field("optaCompetitionId").valueOr("23");
-            return badRequest(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(optaCompetitionId, Long.parseLong(createdAt)), false));
+            return badRequest(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(optaCompetitionId, OptaCompetition.CURRENT_SEASON_ID), false));
         }
 
         TemplateContestForm params = templateContestForm.get();
@@ -290,7 +292,7 @@ public class TemplateContestController extends Controller {
 
         printAsTablePlayerManagerLevel(templateContest, params.filterByDFP, params.filterByPlayedMatches, params.filterByDays);
 
-        return redirect(routes.TemplateContestController.index());
+        return redirect(routes.TemplateContestController.showFilterByCompetition(templateContest.optaCompetitionId, templateContest.state.toString()));
     }
 
     public static Result showManagerLevels(String templateContestId) {

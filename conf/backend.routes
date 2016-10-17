@@ -83,6 +83,18 @@ POST           /add_contest_entry                                      controlle
 POST           /edit_contest_entry                                     controllers.ContestEntryController.editContestEntry()
 POST           /cancel_contest_entry                                   controllers.ContestEntryController.cancelContestEntry()
 POST           /change_soccer_player                                   controllers.ContestEntryController.changeSoccerPlayer()
+GET            /generate_lineup/:contest/:formation                    controllers.ContestEntryController.generateLineup(contest, formation)
+
+# Guilds
+GET            /get_guilds                                             controllers.GuildController.getGuilds()
+POST           /create_guild                                           controllers.GuildController.createGuild()
+GET            /request_to_enter/:guildId                              controllers.GuildController.requestToEnter(guildId : String)
+GET            /reject_request_to_enter/:userId                        controllers.GuildController.rejectRequestToEnter(userId : String)
+GET            /add_member_to_guild/:userId                            controllers.GuildController.acceptMember(userId : String)
+GET            /change_rol/:userId/:rol                                controllers.GuildController.changeRol(userId : String, rol : String)
+GET            /remove_member/:userId                                  controllers.GuildController.removeMember(userId : String)
+GET            /remove_from_guild                                      controllers.GuildController.removeFromGuild()
+GET            /get_guild_leaderboard                                  controllers.GuildController.getLeaderboard()
 
 # Sincronizacion de nuestras maquinas locales con los datos de Opta
 GET            /return_xml/:timestamp                                  controllers.OptaHttpController.returnXML(timestamp: Long)
@@ -108,6 +120,7 @@ GET            /paypal/withdraw_funds/:amount                          controlle
 
 # Store
 POST           /store/buy/:paymentId                                   controllers.StoreController.buy(paymentId : String)
+POST           /store/validator                                        controllers.StoreController.validator()
 
 POST           /short_url                                              controllers.MainController.getShortUrl()
 

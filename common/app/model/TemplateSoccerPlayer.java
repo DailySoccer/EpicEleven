@@ -21,9 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 class StatsCompetition {
-    public StatsCompetition() {
-    }
-
+    private StatsCompetition() {/*hidden jackson constructor*/}
     public StatsCompetition(int num, int fantasyPoints) {
         this.num = num;
         this.fantasyPoints = fantasyPoints;

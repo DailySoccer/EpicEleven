@@ -100,6 +100,8 @@ public class User {
     public List<UserNotification> notifications = new ArrayList<>();
     public List<ObjectId> favorites = new ArrayList<>();
 
+    public ObjectId guildId;        // Guild al que pertenece
+
     @JsonView(JsonViews.NotForClient.class)
     public Date createdAt;
 
@@ -163,6 +165,10 @@ public class User {
         return Model.users().findOne("{nickName: #}", username).as(User.class);
     }
 
+    static public List<User> findByGuild(ObjectId guildId) {
+        return ListUtils.asList(Model.users().find("{guildId: #}", guildId).as(User.class));
+    }
+
     static public User findOne(ObjectId userId) {
         return Model.users().findOne(userId).as(User.class);
     }
@@ -213,12 +219,23 @@ public class User {
     }
 
     public void setFavorites(List<ObjectId> soccerPlayers) {
-        if (soccerPlayers == null || soccerPlayers.isEmpty()) {
+        if (soccerPlayers == null || (soccerPlayers.isEmpty() && favorites.isEmpty())) {
             Logger.warn("setFavorites: NULL or EMPTY");
             return;
         }
         favorites = soccerPlayers;
         Model.users().update(userId).with("{$set: {favorites: #}}", favorites);
+    }
+
+    public void setGuild(ObjectId newGuildId) {
+        guildId = newGuildId;
+
+        if (guildId != null) {
+            Model.users().update(userId).with("{$set: {guildId: #}}", guildId);
+        }
+        else {
+            Model.users().update(userId).with("{$unset: {guildId: ''}}");
+        }
     }
 
     public void updateStats() {
