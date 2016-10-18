@@ -125,7 +125,9 @@ public class ContestEntryController extends Controller {
             if (errores.isEmpty()) {
                 if (MoneyUtils.isGreaterThan(aContest.entryFee, MoneyUtils.zero)) {
                     Money moneyNeeded = aContest.entryFee;
-
+                    
+// FPA: Los jugadores no cuestan pasta.
+/*
                     // En los torneos Oficiales, el usuario también tiene que pagar a los futbolistas
                     if (aContest.entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
                         Money managerBalance = User.calculateManagerBalance(theUser.userId);
@@ -134,7 +136,7 @@ public class ContestEntryController extends Controller {
                         moneyNeeded = moneyNeeded.plus(User.moneyToBuy(aContest, managerBalance, soccerPlayers));
                         Logger.debug("addContestEntry: moneyNeeded: {}", moneyNeeded.toString());
                     }
-
+*/
                     // Verificar que el usuario tiene dinero suficiente...
                     if (!User.hasMoney(theUser.userId, moneyNeeded)) {
                         errores.add(ERROR_USER_BALANCE_NEGATIVE);
