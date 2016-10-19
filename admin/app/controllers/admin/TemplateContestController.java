@@ -180,6 +180,7 @@ public class TemplateContestController extends Controller {
         params.optaCompetitionId = String.valueOf(competitionId);
 
         Form<TemplateContestForm> templateContestForm = Form.form(TemplateContestForm.class).fill(params);
+        Logger.error("TemplateContestController(1): optaCompetitionId "+params.optaCompetitionId+" seasonID "+OptaCompetition.CURRENT_SEASON_ID);
         return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(params.optaCompetitionId, OptaCompetition.CURRENT_SEASON_ID), false));
     }
 
@@ -196,6 +197,7 @@ public class TemplateContestController extends Controller {
             List<TemplateMatchEvent> templateMatchEvents = templateContest.getTemplateMatchEvents();
             return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(templateMatchEvents), templateContest.state.isActive()));
         }
+        Logger.error("TemplateContestController(2): optaCompetitionId "+templateContest.optaCompetitionId+" seasonID "+OptaCompetition.CURRENT_SEASON_ID);
         return ok(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(templateContest.optaCompetitionId, OptaCompetition.CURRENT_SEASON_ID), templateContest.state.isActive()));
     }
 
@@ -223,6 +225,7 @@ public class TemplateContestController extends Controller {
         if (templateContestForm.hasErrors()) {
             String createdAt = templateContestForm.field("createdAt").valueOr("0");
             String optaCompetitionId = templateContestForm.field("optaCompetitionId").valueOr("23");
+            Logger.error("TemplateContestController(3): optaCompetitionId "+optaCompetitionId+" seasonID "+OptaCompetition.CURRENT_SEASON_ID);
             return badRequest(views.html.template_contest_add.render(templateContestForm, TemplateContestForm.matchEventsOptions(optaCompetitionId, OptaCompetition.CURRENT_SEASON_ID), false));
         }
 

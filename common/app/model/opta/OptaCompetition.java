@@ -33,6 +33,9 @@ public class OptaCompetition implements JongoId {
         this.competitionName = competitionName;
         this.seasonId = seasonId;
         this.createdAt = GlobalDate.getCurrentDate();
+
+
+        Logger.error("OptaCompetition(1): seasonID "+CURRENT_SEASON_ID+" seasonId "+seasonId);
     }
 
     public ObjectId getId() {
