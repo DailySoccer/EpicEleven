@@ -140,6 +140,8 @@ public class TemplateContestForm {
                 .find("{startDate: {$gte: #, $lte: #}, simulation: {$ne: true}}", startDate, new DateTime(startDate).plusDays(20).toDate())
                 .sort("{startDate : 1}").limit(MAX_MATCH_EVENTS).as(TemplateMatchEvent.class));
         */
+
+        Logger.error("matchEventsOptions: optaCompetitionId "+optaCompetitionId+" seasonID "+seasonId);
         List<TemplateMatchEvent> templateMatchEventsResults = utils.ListUtils.asList(Model.templateMatchEvents()
                 .find("{optaCompetitionId: #, optaSeasonId: #, simulation: {$ne: true}}", optaCompetitionId, seasonId)
                 .sort("{startDate : 1}").as(TemplateMatchEvent.class));
