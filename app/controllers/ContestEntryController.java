@@ -47,12 +47,7 @@ public class ContestEntryController extends Controller {
     private static final String ERROR_USER_ALREADY_INCLUDED = "ERROR_USER_ALREADY_INCLUDED";
     private static final String ERROR_USER_BALANCE_NEGATIVE = "ERROR_USER_BALANCE_NEGATIVE";
     private static final String ERROR_MAX_PLAYERS_SAME_TEAM = "ERROR_MAX_PLAYERS_SAME_TEAM";
-    private static final String ERROR_RETRY_OP1 = "MI_ERROR_RETRY_OP_1";
-    private static final String ERROR_RETRY_OP2 = "MI_ERROR_RETRY_OP_2";
-    private static final String ERROR_RETRY_OP3 = "MI_ERROR_RETRY_OP_3";
-    private static final String ERROR_RETRY_OP4 = "MI_ERROR_RETRY_OP_4";
-    private static final String ERROR_RETRY_OP5 = "MI_ERROR_RETRY_OP_5";
-    private static final String ERROR_RETRY_OP6 = "MI_ERROR_RETRY_OP_6";
+    private static final String ERROR_RETRY_OP = "ERROR_RETRY_OP";
 
     public static class AddContestEntryParams {
         @Constraints.Required
@@ -112,7 +107,7 @@ public class ContestEntryController extends Controller {
                         if (aContest == null) {
                             // Si no encontramos ningún Contest semejante, pedimos al webClient que lo intente otra vez
                             //  dado que asumimos que simplemente es un problema "temporal"
-                            errores.add(ERROR_RETRY_OP1);
+                            errores.add(ERROR_RETRY_OP);
                         }
                     }
                 }
@@ -135,11 +130,9 @@ public class ContestEntryController extends Controller {
                         Money managerBalance = User.calculateManagerBalance(theUser.userId);
 
                         List<InstanceSoccerPlayer> soccerPlayers = aContest.getInstanceSoccerPlayers(idsList);
-                        // moneyNeeded = moneyNeeded.plus(User.moneyToBuy(aContest, managerBalance, soccerPlayers));
-                        User.moneyToBuy(aContest, managerBalance, soccerPlayers);
+                        moneyNeeded = moneyNeeded.plus(User.moneyToBuy(aContest, managerBalance, soccerPlayers));
                         Logger.debug("addContestEntry: moneyNeeded: {}", moneyNeeded.toString());
                     }
-
                     // Verificar que el usuario tiene dinero suficiente...
                     if (!User.hasMoney(theUser.userId, moneyNeeded)) {
                         errores.add(ERROR_USER_BALANCE_NEGATIVE);
@@ -188,7 +181,7 @@ public class ContestEntryController extends Controller {
                 // Al intentar aplicar el job puede que nos encontremos con algún conflicto (de última hora),
                 //  lo volvemos a intentar para poder informar del error (con los tests anteriores)
                 if (!enterContestJob.isDone()) {
-                    errores.add(ERROR_RETRY_OP2);
+                    errores.add(ERROR_RETRY_OP);
                 }
             }
 
@@ -278,7 +271,7 @@ public class ContestEntryController extends Controller {
 
                 if (errores.isEmpty()) {
                     if (!ContestEntry.update(theUser, aContest, contestEntry, formation, idsList)) {
-                        errores.add(ERROR_RETRY_OP3);
+                        errores.add(ERROR_RETRY_OP);
                     }
                 }
 
@@ -340,7 +333,7 @@ public class ContestEntryController extends Controller {
                 if (!contestEntryForm.hasErrors()) {
                     CancelContestEntryJob cancelContestEntryJob = CancelContestEntryJob.create(theUser.userId, contest.contestId, contestEntry.contestEntryId);
                     if (!cancelContestEntryJob.isDone()) {
-                        contestEntryForm.reject(ERROR_RETRY_OP4);
+                        contestEntryForm.reject(ERROR_RETRY_OP);
                     }
                 }
             }
@@ -402,7 +395,7 @@ public class ContestEntryController extends Controller {
                 Money moneyNeeded = Money.zero(MoneyUtils.CURRENCY_GOLD);
 
                 if (errores.isEmpty()) {
-                    if (contestEntry.containsSoccerPlayer(oldSoccerPlayerId)) {
+                    if (contestEntry.containsSoccerPlayer(oldSoccerPlayerId) && !contestEntry.containsSoccerPlayer(newSoccerPlayerId)) {
                         moneyNeeded = moneyNeeded.plus(contestEntry.changeSoccerPlayer(oldSoccerPlayerId, newSoccerPlayerId));
                     } else {
                         errores.add(ERROR_CONTEST_ENTRY_INVALID);
@@ -465,7 +458,7 @@ public class ContestEntryController extends Controller {
                 if (errores.isEmpty()) {
                     contestId = aContest.contestId;
                     if (!ContestEntry.change(theUser, aContest, contestEntry.contestEntryId, oldSoccerPlayerId, newSoccerPlayerId)) {
-                        errores.add(ERROR_RETRY_OP5);
+                        errores.add(ERROR_RETRY_OP);
                     }
                 }
 
