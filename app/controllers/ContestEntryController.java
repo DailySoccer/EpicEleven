@@ -133,9 +133,7 @@ public class ContestEntryController extends Controller {
                     // En los torneos Oficiales, el usuario también tiene que pagar a los futbolistas
                     if (aContest.entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
                         Money managerBalance = User.calculateManagerBalance(theUser.userId);
-
-                        List<InstanceSoccerPlayer> soccerPlayers = aContest.getInstanceSoccerPlayers(idsList);
-                        // moneyNeeded = moneyNeeded.plus(User.moneyToBuy(aContest, managerBalance, soccerPlayers));
+                        moneyNeeded = moneyNeeded.plus(User.moneyToBuy(aContest, managerBalance, soccerPlayers));
                         User.moneyToBuy(aContest, managerBalance, soccerPlayers);
                         Logger.debug("addContestEntry: moneyNeeded: {}", moneyNeeded.toString());
                     }
