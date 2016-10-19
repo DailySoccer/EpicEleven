@@ -5,7 +5,7 @@ import model.JongoId;
 import model.Model;
 import org.bson.types.ObjectId;
 import utils.ListUtils;
-
+import play.Logger;
 import java.util.*;
 
 public class OptaCompetition implements JongoId {
