@@ -395,7 +395,7 @@ public class ContestEntryController extends Controller {
                 Money moneyNeeded = Money.zero(MoneyUtils.CURRENCY_GOLD);
 
                 if (errores.isEmpty()) {
-                    if (contestEntry.containsSoccerPlayer(oldSoccerPlayerId)) {
+                    if (contestEntry.containsSoccerPlayer(oldSoccerPlayerId) && !contestEntry.containsSoccerPlayer(newSoccerPlayerId)) {
                         moneyNeeded = moneyNeeded.plus(contestEntry.changeSoccerPlayer(oldSoccerPlayerId, newSoccerPlayerId));
                     } else {
                         errores.add(ERROR_CONTEST_ENTRY_INVALID);
