@@ -141,8 +141,6 @@ public class TemplateContestForm {
                 .find("{startDate: {$gte: #, $lte: #}, simulation: {$ne: true}}", startDate, new DateTime(startDate).plusDays(20).toDate())
                 .sort("{startDate : 1}").limit(MAX_MATCH_EVENTS).as(TemplateMatchEvent.class));
         */
-        seasonId="2016";
-        Logger.error("matchEventsOptions: optaCompetitionId "+optaCompetitionId+" seasonID "+seasonId);
         List<TemplateMatchEvent> templateMatchEventsResults = utils.ListUtils.asList(Model.templateMatchEvents()
                 .find("{optaCompetitionId: #, optaSeasonId: #, simulation: {$ne: true}}", optaCompetitionId, seasonId)
                 .sort("{startDate : 1}").as(TemplateMatchEvent.class));
@@ -151,7 +149,6 @@ public class TemplateContestForm {
     }
 
     public static HashMap<String, String> matchEventsOptions(List<TemplateMatchEvent> templateMatchEvents) {
-        Logger.error("matchEventsOptions: NOOO");
         HashMap<String, String> options = new LinkedHashMap<>();
 
         List<ObjectId> teamIds = new ArrayList<>();
