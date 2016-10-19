@@ -1,0 +1,153 @@
+@(isInit:Boolean, isPaused:Boolean, currentDate:String, pauseDate:String, speedFactor:Int)
+
+@import controllers.admin.routes
+
+<div class="navbar navbar-fixed-bottom" style="background: #ededed; border-top: 1px solid #ccc">
+    <div class="container-fluid">
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <div style="margin-top: 5px;"><a>Current Date:<span style="font-weight:700; margin-left: 0.50em;" id="time">@currentDate</span></a></div>
+                    <div><a><span>Next Stop:</span><span style="font-weight:700;margin-left: 0.50em;position: absolute; right: 0px;" id="nextStop">@pauseDate</span></a></div>
+                </li>
+            </ul>
+
+            <a class="btn btn-primary ajax switch" href="@routes.SimulatorController.initShutdown">
+                @if(isInit) {
+                    On
+                } else {
+                    Off
+                }
+            </a>
+
+            <div class="btn-group" style="display:inline-block;">
+
+                @if(isPaused) {
+                    <a class="btn btn-sim btn-primary ajax play" href="@routes.SimulatorController.pauseResume"
+                       title="Starts the simulator at the beginning of time (the first date sent by Opta) or resumes execution from the current date.">Start</a>
+                } else {
+                    <a class="btn btn-sim btn-primary ajax pause" href="@routes.SimulatorController.pauseResume">Pause</a>
+                }
+
+                <a class="btn btn-sim btn-primary ajax forward" href="@routes.SimulatorController.nextStep"
+                    title="Process the next Opta file (or first if we are at the beginning of time)">Next step</a>
+
+                <a class="btn btn-sim btn-primary ajax stop" href="@routes.SimulatorController.reset" title="Erases the whole Database and resets to the beginning of time.">
+                    Reset
+                </a>
+            </div>
+
+            @helper.form(action = routes.SimulatorController.gotoDate, 'id -> "date-pause-form", 'style -> "display:inline-block; margin-top: 8px;") {
+                <input type="datetime-local" value="2014-06-14T00:00" id="date-pause" name="date" class="form-control" style="display:inline-block">
+            }
+            <button id="date-pause-ok" name="date-pause-ok" type="button" class="btn btn-sim btn-primary fforward" style="position:relative;">Go to Date</button>
+            <select id="sim-speed" onchange="changeSpeed()" class="form-control" style="width: inherit; display: inline-block;" >
+                <option value="-1">Max Speed</option>
+                <option value="3600">1 hour per second</option>
+                <option value="60">1 minute per second</option>
+                <option value="2">Twice as fast</option>
+                <option value="1">Real time</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" charset="utf-8">
+
+    $(document).ready(function() {
+        // Lo pintamos la primera vez desde el cliente por ejemplo para settear correctamente el speedFactor
+        repaintInterface(@isInit, @isPaused, "@currentDate", "@pauseDate", @speedFactor);
+
+        window.setTimeout(refreshStateFromServer, 200);
+    });
+
+    function refreshStateFromServer() {
+        @if(model.Model.isLocalHostTargetEnvironment()) {
+        $.ajax({
+            dataType: "json",
+            url: "/admin/get_simulator_state",
+            success: function (result) {
+                repaintInterface(result.init, result.isPaused, result.currentDateFormatted, result.pauseDateFormatted, result.speedFactor);
+            },
+            complete: function () {
+                window.setTimeout(refreshStateFromServer, 200);
+            }
+        });
+        }
+    }
+
+
+    function repaintInterface(is_init, is_paused, current_date, pause_date, speed_factor) {
+
+        $("#time").text(current_date);
+        $("#nextStop").text(pause_date);
+        $('#sim-speed option[value="'+ speed_factor +'"]').prop('selected', true);
+
+        if (is_init) {
+
+            $(".switch").text("Off");
+            $(".btn-sim").removeClass("disabled");
+            $("#sim-speed").prop("disabled", false);
+
+            if (is_paused) {
+                $(".btn-sim.pause").attr("href", "@routes.SimulatorController.pauseResume");
+                $(".btn-sim.pause").text("Play");
+                $(".btn-sim.pause").addClass("play");
+
+                $(".btn-sim.play").removeClass("pause");
+
+                $(".btn-sim.forward").removeClass("disabled");
+                $(".btn-sim.forward").text("Next step");
+
+                $(".btn-sim.fforward").removeClass("disabled");
+
+                $(".btn-sim").removeClass("btn-success");
+                $(".btn-sim").addClass("btn-primary");
+            }
+            else {
+                $(".btn-sim.play").attr("href", "@routes.SimulatorController.pauseResume");
+                $(".btn-sim.play").text("Pause");
+                $(".btn-sim.play").addClass("pause");
+
+                $(".btn-sim.pause").removeClass("play");
+
+                $(".btn-sim.forward").addClass("disabled");
+                $(".btn-sim.forward").text("Next step");
+
+                $(".btn-sim.fforward").addClass("disabled");
+
+                $(".btn-sim").removeClass("btn-primary");
+                $(".btn-sim").addClass("btn-success");
+            }
+        }
+        else {
+            $(".switch").text("On");
+            $(".btn-sim").addClass("disabled");
+
+            $(".btn-sim").removeClass("btn-success");
+            $(".btn-sim").addClass("btn-primary");
+            $("#sim-speed").prop("disabled", true);
+        }
+    }
+
+
+    function changeSpeed() {
+        var new_speed = $('#sim-speed').val();
+        var another_temp = $.ajax({ url: "/admin/simulator_speed/" + new_speed });
+    }
+
+    $('#date-pause-ok').click(function(){
+        var form = $('#date-pause-form');
+        $.ajax({
+          type: form.attr('method'),
+          url: form.attr('action'),
+          data: form.serialize()
+        }).done(function() {
+          // Optionally alert the user of success here...
+        }).fail(function() {
+          // Optionally alert the user of an error here...
+        });
+
+    });
+
+</script>

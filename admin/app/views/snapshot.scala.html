@@ -1,0 +1,30 @@
+@()
+
+@import controllers.admin.SimulatorController
+@import controllers.admin.SnapshotController
+@import controllers.admin.routes
+
+
+@main("Snapshots - Admin") {
+
+    <h1 class="page-header">Snapshots</h1>
+    <div><strong>Last Snapshot</strong> (@SnapshotController.getSnapshotName()):</div>
+    <br/>
+    <div class="btn-group">
+        <a class="btn btn-primary" href="@routes.SnapshotController.loadSnapshot" title="Load snapshot.">
+            Load Snapshot
+        </a>
+        <a class="btn btn-primary" href="@routes.SnapshotController.saveSnapshot" title="Save snapshot.">
+            Save Snapshot
+        </a>
+    </div>
+    <hr>
+    <div class="btn-group">
+        <a class="btn btn-primary" href="@routes.SnapshotController.snapshotDump" title="Dumps saved snapshot to disk.">
+            Dump Snapshot to Disk
+        </a>
+        <a class="btn btn-primary" href="@routes.SnapshotController.snapshotRestore" title="Load a snapshot from disk to database.">
+            Restore Snapshot from Disk
+        </a>
+    </div>
+}

@@ -1,0 +1,144 @@
+@(title: String, scripts: Html = Html(""))(content: Html)
+
+@import controllers.admin.FlashMessage
+@import controllers.admin.routes._
+@import model._
+
+@flash_message() = {
+    @for(message <- FlashMessage.list) {
+        @if(message !=null) {
+            @if(!message.text.isEmpty) {
+                <div class="alert alert-@message.alertType alert-dismissable">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    <span class="">@Html(message.text)</span>
+                </div>
+            }
+        }
+    }
+    @FlashMessage.clear
+}
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>@title</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="/css/bootstrap-3.1.1.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-theme-3.1.1.min.css" rel="stylesheet">
+
+    <!-- DataTables -->
+    <link href="/css/jquery.dataTables-1.10.0.css" rel="stylesheet">
+    <link href="/css/dataTables.bootstrap.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <!-- link href="http://getbootstrap.com/examples/dashboard/dashboard.css" rel="stylesheet" -->
+    <link href="/css/dashboard.css" rel="stylesheet">
+    <link href="/css/simulator-btn.css" rel="stylesheet">
+
+    <!-- Just for debugging purposes. Don't actually copy this line! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+            <ul class="nav nav-sidebar">
+                <li><a href="@DashboardController.index">Dashboard</a></li>
+                <!--li><a href="@InfoController.index">Consultas</a></li-->
+            </ul>
+            <ul class="nav nav-sidebar">
+                <li><a href="@LobbyController.lobby">Lobby</a></li>
+                <li><a href="@UserController.index">Users</a></li>
+                <li><a href="@RefundController.index">Refunds</a></li>
+                <li><a href="@PromoController.index">Promos</a></li>
+                <li><a href="@BonusController.index">Bonus</a></li>
+                <li><a href="@PointsTranslationController.index">Points Translations</a></li>
+                <li><a href="@ContestController.index">Contests</a></li>
+            </ul>
+            <ul class="nav nav-sidebar">
+                <li><a href="@TemplateContestController.index">Template Contests</a></li>
+                <li><a href="@TemplateMatchEventController.index">Template Match Events</a></li>
+                <li><a href="@TemplateSoccerTeamController.index">Template Soccer Teams</a></li>
+                <li><a href="@TemplateSoccerPlayerController.index">Template Soccer Players</a></li>
+            </ul>
+            <ul class="nav nav-sidebar">
+                <li><a href="@OptaController.optaCompetitions">Opta Competitions</a></li>
+                <li><a href="@OptaController.optaSoccerPlayers">Opta Players</a></li>
+                <li><a href="@OptaController.optaSoccerTeams">Opta Teams</a></li>
+                <li><a href="@OptaController.optaMatchEvents">Opta Match Events</a></li>
+                <li><a href="@OptaController.optaEvents">Opta Events</a></li>
+            </ul>
+            @if(model.Model.isLocalHostTargetEnvironment) {
+                <ul class="nav nav-sidebar">
+                    <li><a href="@SnapshotController.index">Snapshots</a></li>
+                    <li><a href="@RefresherController.index">Refresh DB</a></li>
+                </ul>
+            }
+            <ul class="nav nav-sidebar">
+                <li><a href="@MigrationsController.index">Migrations</a></li>
+            </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            @flash_message
+            @content
+        </div>
+    </div>
+</div>
+<!-- Bootstrap core JavaScript
+================================================== -->
+
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
+<script src="/js/jquery.dataTables.js"></script>
+<script src="/js/dataTables.bootstrap.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+@* Inyectamos nuestra barra de control del simulador solo si estamos controlando nuestra maquina local *@
+@if(model.Model.isLocalHostTargetEnvironment) {
+    @controllers.admin.SimulatorController.simulatorBar()
+}
+
+<script type="text/javascript" charset="utf-8">
+    $(document).ready( function () {
+        $('#table_id').dataTable( {
+            stateSave: true,
+            iDisplayLength: 100
+        } );
+    } );
+
+    // Gracias a esto basta poner en un boton la clase 'ajax' para que el boton haga un ajax request sin provocar un
+    // refresco total de la pagina
+    $('.ajax').on('click', function(e) {
+        $(this).addClass('active');
+        e.preventDefault();
+        var myself = $(this);
+        $.ajax({
+            url: $(this).attr('href'),
+                complete: function(result) {
+                    myself.removeClass('active');
+                }
+        });
+    });
+</script>
+
+@scripts
+
+</body>
+</html>

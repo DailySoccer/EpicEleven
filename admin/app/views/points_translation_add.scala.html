@@ -1,0 +1,70 @@
+@(pointsTranslationForm: Form[controllers.admin.PointsTranslationForm])
+@import model.opta.{OptaEventType, OptaProcessor}
+
+@import helper._
+@import controllers.admin.routes._
+
+@if(pointsTranslationForm.hasErrors) {
+    @controllers.admin.FlashMessage.danger("Points Translation Form has errors")
+}
+
+@input_number(field: Field, _placeholder: String = "", _class: String = "") = {
+<div>
+    <input id="@field.name" name="@field.name" type="number" placeholder="@_placeholder" class="@_class @if(field.hasErrors) {has-error}" required="" value="@field.value">
+    @if(field.hasErrors) {
+    <span class="help-block">@{field.error.map { error => error.message }}</span>
+    }
+</div>
+}
+
+@main("Point Translation Add - Admin") {
+
+<h1 class="page-header">Point Translation Add</h1>
+
+<h2 class="sub-header"></h2>
+
+@helper.form(action = PointsTranslationController.create, 'class -> "form-horizontal") {
+<fieldset>
+
+    <!-- Form Name -->
+    <legend>Point Translation</legend>
+
+    <input type="hidden" name="id" value='@pointsTranslationForm("id").value' >
+
+    <!-- Text input-->
+    <div class="control-group">
+        <div class="controls">
+            @select(
+            pointsTranslationForm("eventType"),
+            options(OptaEventType.options()),
+            '_label -> "Event Type"
+            )
+        </div>
+    </div>
+
+    <!-- Text input-->
+    <div class="control-group">
+        <label class="control-label">Points</label>
+        <div class="controls">
+            @input_number(pointsTranslationForm("points"), _placeholder = "Points", _class = "form-control input-xlarge")
+        </div>
+    </div>
+
+    <!-- Button (Double) -->
+    <div class="control-group">
+        <label class="control-label" for="ok"></label>
+        <div class="controls">
+            <button id="ok" name="ok" type="submit" class="btn btn-success">Create</button>
+            <a href="@PointsTranslationController.index" class="btn btn-danger">Cancel</a>
+        </div>
+    </div>
+
+</fieldset>
+}
+
+<br/>
+
+<br/>
+<a href='@PointsTranslationController.index'>Back to Points Translation</a>
+
+}

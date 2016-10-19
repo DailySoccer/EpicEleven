@@ -1,0 +1,149 @@
+GET         /                                                                    controllers.admin.DashboardController.index()
+
+GET         /reset_db                                                            controllers.admin.DashboardController.resetDB()
+GET         /initial_setup                                                       controllers.admin.DashboardController.initialSetup()
+GET         /get_target_environment                                              controllers.admin.DashboardController.getTargetEnvironment()
+GET         /start_stop_bot_actors                                               controllers.admin.DashboardController.startStopBotActors()
+GET         /start_bot_actors                                                    controllers.admin.DashboardController.startBotActors()
+GET         /stop_bot_actors                                                     controllers.admin.DashboardController.stopBotActors()
+GET         /pause_resume_bot_actors                                             controllers.admin.DashboardController.pauseResumeBotActors()
+GET         /stampede_bot_actors                                                 controllers.admin.DashboardController.stampedeBotActors()
+GET         /berserker_bot_actors                                                controllers.admin.DashboardController.berserkerBotActors()
+GET         /add_money_to_bots/:amount                                           controllers.admin.DashboardController.addMoneyToBots(amount : String)
+GET         /add_money_to_tests/:amount                                          controllers.admin.DashboardController.addMoneyToTests(amount : String)
+
+GET         /consultas                                                           controllers.admin.InfoController.index()
+GET         /consulta/players                                                    controllers.admin.InfoController.queryPlayers()
+POST        /consulta/players                                                    controllers.admin.InfoController.queryPlayersSubmit()
+
+GET         /lobby                                                               controllers.admin.LobbyController.lobby()
+
+GET         /import_teams                                                        controllers.admin.ImportController.showImportTeams()
+GET         /import_teams/:competitionId                                         controllers.admin.ImportController.showImportTeamsFromCompetition(competitionId : String)
+GET         /import_soccers                                                      controllers.admin.ImportController.showImportSoccers()
+GET         /import_match_events                                                 controllers.admin.ImportController.showImportMatchEvents()
+
+GET         /points_translation/create                                           controllers.admin.PointsTranslationController.resetToDefault()
+GET         /points_translations                                                 controllers.admin.PointsTranslationController.index()
+GET         /points_translation/add                                              controllers.admin.PointsTranslationController.newForm()
+GET         /points_translation/edit/:pointsTranslationId                        controllers.admin.PointsTranslationController.edit(pointsTranslationId)
+POST        /points_translation/add                                              controllers.admin.PointsTranslationController.create()
+GET         /points_translations/:eventType                                      controllers.admin.PointsTranslationController.history(eventType: Integer)
+
+GET         /users                                                               controllers.admin.UserController.index()
+GET         /user/:userId/transactions                                           controllers.admin.UserController.transactions(userId : String)
+
+GET         /refunds                                                             controllers.admin.RefundController.index()
+GET         /refund/:refundId                                                    controllers.admin.RefundController.apply(refundId)
+
+GET         /soccer_player_stats/:playerId                                       controllers.admin.TemplateSoccerPlayerController.showStats(playerId : String)
+
+GET         /fantasy_points/contest/:contestId/:playerId                         controllers.admin.TemplateSoccerPlayerController.showFantasyPointsInContest(contestId : String, playerId : String)
+GET         /fantasy_points/match_event/:matchEventId/:playerId                  controllers.admin.TemplateSoccerPlayerController.showFantasyPointsInMatchEvent(matchEventId : String, playerId : String)
+GET         /live_events/match_event/:matchEventId/:playerId                     controllers.admin.TemplateSoccerPlayerController.showPlayerLiveEventsInMatchEvent(matchEventId : String, playerId : String)
+
+GET         /contests                                                            controllers.admin.ContestController.index()
+GET         /contests/filterBy/:competitionId/:stateId                           controllers.admin.ContestController.showFilterByCompetition(competitionId : String, stateId : String)
+GET         /contests/ajax/:competitionId/:stateId                               controllers.admin.ContestController.indexAjax(competitionId : String, stateId : String)
+GET         /contest/:contestId                                                  controllers.admin.ContestController.show(contestId : String)
+GET         /contests/verify_prizes                                              controllers.admin.ContestController.verifyPrizes()
+GET         /contests/verify_entry_fee                                           controllers.admin.ContestController.verifyEntryFee()
+POST        /contests/import_from_csv                                            controllers.admin.ContestController.importFromCSV()
+GET         /contests/default_csv                                                controllers.admin.ContestController.defaultCSV()
+
+GET         /template_contests                                                   controllers.admin.TemplateContestController.index()
+GET         /template_contests/filterBy/:competitionId/:stateId                  controllers.admin.TemplateContestController.showFilterByCompetition(competitionId : String, stateId : String)
+GET         /template_contests/ajax/:competitionId/:stateId                      controllers.admin.TemplateContestController.indexAjax(competitionId : String, stateId : String)
+POST        /template_contests/import_from_csv                                   controllers.admin.TemplateContestController.importFromCSV()
+GET         /template_contests/default_csv                                       controllers.admin.TemplateContestController.defaultCSV()
+
+
+GET         /template_contest/create_all                                         controllers.admin.TemplateContestController.createAll()
+GET         /template_contest/enable_creating/:state                             controllers.admin.TemplateContestController.setCreatingTemplateContestsState(state : Boolean)
+GET         /template_contest/new/:competitionId                                 controllers.admin.TemplateContestController.newForm(competitionId : Int)
+GET         /template_contest/save/:templateContestId                            controllers.admin.TemplateContestController.edit(templateContestId : String)
+POST        /template_contest/save                                               controllers.admin.TemplateContestController.create()
+GET         /template_contests/clone/:templateContestId                          controllers.admin.TemplateContestController.createClone(templateContestId : String)
+GET         /template_contest/publish/:templateContestId                         controllers.admin.TemplateContestController.publish(templateContestId : String)
+GET         /template_contest/delete/:templateContestId                          controllers.admin.TemplateContestController.destroy(templateContestId : String)
+GET         /template_contest/:templateContestId                                 controllers.admin.TemplateContestController.show(templateContestId : String)
+GET         /template_contest/managerLevels/:templateContestId                   controllers.admin.TemplateContestController.showManagerLevels(templateContestId : String)
+
+GET         /template_contest/get_prizes/:prizeType/:maxEntries/:prizePool       controllers.admin.TemplateContestController.getPrizes(prizeType : String, maxEntries : Int, prizePool : Int)
+
+GET         /template_match_events                                               controllers.admin.TemplateMatchEventController.index()
+GET         /template_match_events/ajax                                          controllers.admin.TemplateMatchEventController.indexAjax()
+GET         /template_match_event/:templateMatchEventId                          controllers.admin.TemplateMatchEventController.show(templateMatchEventId : String)
+GET         /template_match_event/optaEvents/:matchEventId                       controllers.admin.TemplateMatchEventController.showOptaEvents(matchEventId : String)
+GET         /template_match_event/simulatedEvents/:matchEventId                  controllers.admin.TemplateMatchEventController.showSimulatedEvents(matchEventId : String)
+GET         /template_match_event/managerLevels/:templateMatchEventId            controllers.admin.TemplateMatchEventController.showManagerLevels(templateMatchEventId : String)
+GET         /template_match_event/simulations_to_csv/:templateMatchEventId/:num  controllers.admin.TemplateMatchEventController.simulationsToCSV(templateMatchEventId : String, num : Int)
+GET         /template_match_event/simulate/:matchEventId                         controllers.admin.TemplateMatchEventController.simulate(matchEventId : String)
+
+GET         /template_soccer_teams                                               controllers.admin.TemplateSoccerTeamController.index()
+GET         /template_soccer_team/:templateSoccerTeam                            controllers.admin.TemplateSoccerTeamController.show(templateSoccerTeam : String)
+GET         /template_soccer_team/managerLevels/:templateSoccerTeam              controllers.admin.TemplateSoccerTeamController.showManagerLevels(templateSoccerTeam : String)
+GET         /template_soccer_team/statistics_to_csv/:templateSoccerTeam          controllers.admin.TemplateSoccerTeamController.statisticsToCSV(templateSoccerTeam : String)
+
+GET         /template_soccer_players                                             controllers.admin.TemplateSoccerPlayerController.index()
+GET         /template_soccer_players/ajax                                        controllers.admin.TemplateSoccerPlayerController.indexAjax()
+GET         /template_soccer_player/statistics_to_csv/:templateSoccerPlayerId    controllers.admin.TemplateSoccerPlayerController.statisticsToCSV(templateSoccerPlayerId : String)
+GET         /template_soccer_player/matchstatistics_to_csv/:templateSoccerPlayerId  controllers.admin.TemplateSoccerPlayerController.matchStatisticsToCSV(templateSoccerPlayerId : String)
+
+GET         /opta_competitions                                                   controllers.admin.OptaController.optaCompetitions()
+GET         /opta_competitions/:competition/activated/:state                     controllers.admin.OptaController.changeCompetitionState(competition : String, state : String)
+GET         /opta_soccer_players                                                 controllers.admin.OptaController.optaSoccerPlayers()
+GET         /opta_soccer_teams                                                   controllers.admin.OptaController.optaSoccerTeams()
+GET         /opta_match_events                                                   controllers.admin.OptaController.optaMatchEvents()
+GET         /opta_events                                                         controllers.admin.OptaController.optaEvents()
+GET         /opta_events/ajax                                                    controllers.admin.OptaController.optaEventsAjax()
+GET         /opta_events/update                                                  controllers.admin.OptaController.updateOptaEvents()
+
+GET         /promos                                                              controllers.admin.PromoController.index()
+GET         /promos/add                                                          controllers.admin.PromoController.newForm()
+GET         /promos/edit/:promoId                                                controllers.admin.PromoController.edit(promoId)
+GET         /promos/delete/:promoId                                              controllers.admin.PromoController.delete(promoId)
+POST        /promos/save                                                         controllers.admin.PromoController.create()
+
+GET         /bonus                                                               controllers.admin.BonusController.index()
+POST        /bonus/add_funds/save                                                controllers.admin.BonusController.save()
+
+GET         /init_shutdown_simulator                                             controllers.admin.SimulatorController.initShutdown()
+GET         /pause_resume_simulator                                              controllers.admin.SimulatorController.pauseResume()
+GET         /reset_simulator                                                     controllers.admin.SimulatorController.reset()
+GET         /nextstep_simulator                                                  controllers.admin.SimulatorController.nextStep()
+POST        /goto_date_simulator                                                 controllers.admin.SimulatorController.gotoDate()
+GET         /simulator_speed/:speed                                              controllers.admin.SimulatorController.setSpeed(speed : Int)
+GET         /get_simulator_state                                                 controllers.admin.SimulatorController.getSimulatorState()
+
+
+GET         /snapshots                                                           controllers.admin.SnapshotController.index()
+GET         /save_snapshot                                                       controllers.admin.SnapshotController.saveSnapshot()
+GET         /load_snapshot                                                       controllers.admin.SnapshotController.loadSnapshot()
+GET         /snapshot_dump                                                       controllers.admin.SnapshotController.snapshotDump()
+GET         /snapshot_restore                                                    controllers.admin.SnapshotController.snapshotRestore()
+
+GET         /start_stop_refresh                                                  controllers.admin.RefresherController.startStopRefresh()
+GET         /refresher                                                           controllers.admin.RefresherController.index()
+GET         /refresher_in_progress                                               controllers.admin.RefresherController.inProgress()
+GET         /last_date                                                           controllers.admin.RefresherController.lastDate()
+
+GET         /migrations                                                          controllers.admin.MigrationsController.index()
+GET         /migration/:type                                                     controllers.admin.MigrationsController.apply(type)
+
+# Test Driven Routes
+GET         /test_goto/:year/:month/:day/:hour/:minute/:second                   controllers.admin.TestController.gotoDate(year: Int, month: Int, day: Int, hour: Int, minute: Int, second:Int)
+GET         /test_start                                                          controllers.admin.TestController.start()
+GET         /test_goto_timestamp/:timestamp                                      controllers.admin.TestController.gotoDateTimestamp(timestamp : Long)
+GET         /test_current_date                                                   controllers.admin.TestController.getCurrentDate()
+
+GET         /test_initial_setup                                                  controllers.admin.TestController.initialSetup()
+GET         /create_contests/:mockIndex                                          controllers.admin.TestController.createContests(mockIndex: Int)
+GET         /create_promos/:mockIndex                                            controllers.admin.TestController.createPromos(mockIndex: Int)
+
+
+# WIP
+GET         /excel                                                               controllers.admin.ExcelController.index()
+POST        /excel/upload                                                        controllers.admin.ExcelController.upload()
+
+GET         /excel/write_log/:competitionId                                      controllers.admin.ExcelController.writeSoccerPlayersLog(competitionId: Int)

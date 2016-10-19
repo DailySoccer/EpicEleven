@@ -1,0 +1,70 @@
+.btn-sim {
+  /*padding-left: 35px; /* XD */
+  padding-left: 25px; /* SD */
+}
+.btn:after {
+  /*background: url(img/buttons.png) no-repeat; /* XD */
+  background: url(/images/buttons-small.png) no-repeat; /* SD */
+  content: " ";
+  display: block;
+  position: absolute;
+}
+.play:after {
+  background-position: 0 0;
+  /*top: 4px;
+  left: 8px;
+  width: 16px;
+  height: 18px;*/ /* XD */
+  top: 11px;
+  left: 9px;
+  width: 9px;
+  height: 10px; /* SD */
+}
+.pause:after {
+  /*background-position: -17px 0;
+  top: 4px;
+  left: 14px;
+  width: 10px;
+  height: 18px;*/ /* XD */
+  background-position: -9px 0;
+  top: 11px;
+  left: 11px;
+  width: 6px;
+  height: 10px; /* SD */
+}
+.stop:after {
+  /*background-position: -27px 0;
+  top: 4px;
+  left: 10px;
+  width: 14px;
+  height: 18px;*/ /* XD */
+  background-position: -15px 0;
+  top: 11px;
+  left: 9px;
+  width: 9px;
+  height: 10px; /* SD */
+}
+.forward:after {
+  /*background-position: -42px 0;
+  top: 4px;
+  left: 10px;
+  width: 15px;
+  height: 18px;*/ /* XD */
+  background-position: -24px 0;
+  top: 11px;
+  left: 10px;
+  width: 8px;
+  height: 10px; /* SD */
+}
+.fforward:after {
+  /*background-position: -57px 0;
+  top: 4px;
+  left: 4px;
+  width: 26px;
+  height: 18px;*/ /* XD */
+  background-position: -32px 0;
+  top: 11px;
+  left: 6px;
+  width: 14px;
+  height: 10px; /* SD */
+}

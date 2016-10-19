@@ -1,0 +1,72 @@
+@(promoForm: Form[controllers.admin.PromoForm])
+@import model.opta.{OptaEventType, OptaProcessor}
+
+@import helper._
+@import controllers.admin.routes._
+
+@if(promoForm.hasErrors) {
+    @controllers.admin.FlashMessage.danger("Promo Form has errors")
+}
+
+@input_number(field: Field, _placeholder: String = "", _class: String = "") = {
+<div>
+    <input id="@field.name" name="@field.name" type="number" placeholder="@_placeholder" class="@_class @if(field.hasErrors) {has-error}" required="" value="@field.value">
+    @if(field.hasErrors) {
+    <span class="help-block">@{field.error.map { error => error.message }}</span>
+    }
+</div>
+}
+
+@main("Promo Add/Edit - Admin") {
+
+<h1 class="page-header">Promo Add</h1>
+
+@if(promoForm("id").value != null) {
+<div style="float: right; margin-right:100px;">
+    <a href='@PromoController.delete(promoForm("id").value)'><button class="btn btn-danger">Delete</button></a>
+</div>
+<br/>
+<hr/>
+}
+
+@helper.form(action = PromoController.create, 'class -> "form-horizontal") {
+<fieldset>
+
+    <!-- Form Name -->
+    <input type="hidden" name="id" value='@promoForm("id").value' >
+
+
+    <div class="col-md-12">
+
+        <div class="col-md-7">
+            <form class="form-horizontal">
+
+            @inputText(field=promoForm("codeName"), args = 'placeholder -> "CodeName", 'class -> "form-control")
+            @inputText(field=promoForm("url"), args = 'placeholder -> "URL", 'class -> "form-control")
+            @textarea(field=promoForm("html"), args = 'placeholder -> "HTML", 'class -> "form-control")
+            @inputText(field=promoForm("imageXs"), args = 'placeholder -> "imageXs", 'class -> "form-control")
+            @inputText(field=promoForm("imageDesktop"), args = 'placeholder -> "imageDesktop", 'class -> "form-control")
+            @inputText(field=promoForm("priority"), args = 'placeholder -> "1: Mínima prioridad, 10: Máxima prioridad", 'class -> "form-control")
+            @inputDate(field=promoForm("activationDate"), args = 'class -> "form-control")
+            @inputDate(field=promoForm("deactivationDate"), args = 'class -> "form-control")
+                
+            </form>
+        </div>
+    </div>
+
+    <!-- Button (Double) -->
+    <div class="control-group">
+        <label class="control-label" for="ok"></label>
+        <div class="controls">
+            <button id="ok" name="ok" type="submit" class="btn btn-success">Save</button>
+            <a href="@PromoController.index" class="btn btn-danger">Cancel</a>
+        </div>
+    </div>
+
+</fieldset>
+}
+
+<br/>
+<a href='@PromoController.index'>Back to Promos</a>
+
+}

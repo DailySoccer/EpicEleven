@@ -1,0 +1,45 @@
+@(soccers: List[model.opta.OptaPlayer])
+
+@import model.GlobalDate
+@import controllers.admin.routes._
+
+@scripts = {
+    <script type="text/javascript">
+        $(document).ready( function(){
+            $('#ajax_table_id').dataTable( {
+                "columns": [
+                    { "title": "Id" },
+                    { "title": "Name" },
+                    { "title": "Position" },
+                    { "title": "Team ID" },
+                    { "title": "Team Name" },
+                    { "title": "Updated Time" }
+                ],
+                "data": [
+                    @for((p, index) <- soccers.zipWithIndex) {
+                        [
+                            "@p.optaPlayerId",
+                            "@p.name",
+                            "@p.position",
+                            "@p.teamId",
+                            "@p.getTeamName()",
+                            "@GlobalDate.formatDate(p.updatedTime)",
+                        ] @if(index < soccers.size-1) { , }
+                    }
+                ],
+                stateSave: true,
+                iDisplayLength: 100,
+                "deferRender": true
+            } );
+        })
+    </script>
+}
+
+@main("Opta Soccer Players - Admin", scripts) {
+
+<h1 class="page-header">Opta Soccer Players</h1>
+
+<div class="table-responsive">
+    <table id="ajax_table_id" class="table table-striped"></table>
+</div>
+}
