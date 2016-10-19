@@ -1,0 +1,43 @@
+<div id="helpInfo">
+  <div class="block-light" id="help-info-1">
+    <div class="title" ng-bind-html="getLocalizedText('point1title')"></div>
+    <div class="description" ng-bind-html="getLocalizedText('point1content')"></div>
+    <div class="img-wrapper">
+      <img src="images/help/helpCrearTorneos1XS.png" ng-if="scrDet.isXsScreen">
+      <img src="images/help/helpCrearTorneos1.png" ng-if="!scrDet.isXsScreen">
+    </div>
+  </div>
+  
+  <div class="block-dark" id="help-info-2">
+    <div class="title" ng-bind-html="getLocalizedText('point2title')"></div>
+    <div class="description" ng-bind-html="getLocalizedText('point2content')"></div>
+    <div class="img-wrapper">
+      <img src="images/help/helpCrearTorneos2XS.png" ng-if="scrDet.isXsScreen">
+      <img src="images/help/helpCrearTorneos2.png" ng-if="!scrDet.isXsScreen">
+    </div>
+  </div>
+  
+  <div class="block-light" id="help-info-3">
+    <div class="title" ng-bind-html="getLocalizedText('point3title')"></div>
+    <div class="description" ng-bind-html="getLocalizedText('point3content')"></div>
+    <div class="img-wrapper">
+      <img src="images/help/helpCrearTorneos3XS.png" ng-if="scrDet.isXsScreen">
+      <img src="images/help/helpCrearTorneos3.png" ng-if="!scrDet.isXsScreen">
+    </div>
+  </div>
+  
+   <div class="block-dark" id="help-info-4">
+    <div class="title" ng-bind-html="getLocalizedText('point4title')"></div>
+    <div class="description" ng-bind-html="getLocalizedText('point4content')"></div>
+    <div class="img-wrapper">
+      <img src="images/help/helpCrearTorneos4XS.png" ng-if="scrDet.isXsScreen">
+      <img src="images/help/helpCrearTorneos4.png" ng-if="!scrDet.isXsScreen">
+    </div>
+    <div class="button-wrapper">
+      <button type="button" class="button-back" ng-click="goToPage('help_info')">{{getLocalizedText("button-back")}}</button>
+    </div>
+  </div>
+  
+  
+  
+</div>

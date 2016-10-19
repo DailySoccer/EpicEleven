@@ -1,0 +1,6 @@
+<div class="friend-element-wrapper">
+  <img class="friend-picture" ng-src="{{profileImage == ''? 'images/icon-userProfile.png' : profileImage}}">
+  <span class="friend-name" max-text-width="{width: nameWidth, text: nickname}"></span>
+  <span class="friend-manager-level" ng-if="showManagerLevel"><span class="amount">{{managerLevel}}</span></span>
+  <button class="challenge-friend" ng-click="onChallenge({'user': fbUser})" ng-if="showChallenge">{{challengeText}}</button>
+</div>

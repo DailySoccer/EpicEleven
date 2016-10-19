@@ -1,0 +1,126 @@
+<div id="addFundsContent">
+
+  <!-- header title -->
+  <div class="default-section-header">{{getLocalizedText("title")}}</div>
+
+  <div>
+    <div class="description">
+      <p id="descriptionTip1">{{getLocalizedText("description1")}}</p>
+      <p id="descriptionTip2">{{getLocalizedText("description2")}}</p>
+    </div>
+    <div class="add-founds-box">
+      <p>{{getLocalizedText("minfunds")}}{{formatCurrency("10")}}</p>
+      <div class="money-selector">
+        <div class="money-element">
+          <input type="radio" name="money-radio" id="firstOffer" value="10"><label for="firstOffer">{{formatCurrency("10")}}</label>
+        </div>
+        <div class="money-element">
+          <input type="radio" name="money-radio" id="secondOffer" value="25" checked="checked"><label for="secondOffer">{{formatCurrency("25")}}</label>
+        </div>
+        <div class="money-element">
+          <input type="radio" name="money-radio" id="thirdOffer" value="50"><label for="thirdOffer">{{formatCurrency("50")}}</label>
+        </div>
+        <div class="money-element custom-money-element">
+          <input type="radio" name="money-radio" id="customEuros">
+          <input type="number" id="customEurosAmount" value="10"><label for="customEuros">{{formatCurrency("")}}</label>
+        </div>
+      </div>
+      <h2 class="paypal-info">Add <span id="selectedAmountInfo">{{formatCurrency(selectedValue.toString())}}</span> {{getLocalizedText("via")}} <img src="images/markPaypalMed.jpg"></h2>
+      <p class="paypal-info">{{getLocalizedText("paypalinfo")}}</p>
+      <div class="button-wrapper"><button class="add-funds-button" id="addFundsButton">{{getLocalizedText("buttonaddfunds")}}</button></div>
+    </div>
+  </div>
+  <div class="need-help-box">
+    <p id="need-help-text">{{getLocalizedText("needhelp")}}</p>
+    <p id="need-help-email">support@epiceleven.com</p>
+  </div>
+
+  <!-- Comentado hasta que tengamos los textos legales
+
+  <div class="pay-faq-block">
+    <h1 class="pay-faq-title">Preguntas frecuentes sobre el pago</h1>
+    <div class="toogle-block">
+      <input type="checkbox" id="rule1" class="toggle">
+      <label for="rule1">Por qué estoy pagando exactamente</label>
+      <div>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec mollis placerat leo quis pellentesque. Proin sollicitudin vel felis vulputate varius. Aenean non ante nec dolor sagittis ornare sit amet vel diam. Etiam eu dui at odio tempor eleifend. Nunc urna justo, volutpat sed mollis efficitur, venenatis id purus. Fusce elementum tellus in ligula maximus, in aliquet erat tincidunt. Aenean mollis sollicitudin tincidunt. Etiam ac velit eu erat placerat condimentum. Donec lorem tortor, convallis pretium finibus eu, euismod eget dolor. </p>
+      </div>
+    </div>
+    <div class="toogle-block">
+      <input type="checkbox" id="rule2" class="toggle">
+      <label for="rule2">¿Cuánto puedo ganar?</label>
+      <div>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec mollis placerat leo quis pellentesque. Proin sollicitudin vel felis vulputate varius. Aenean non ante nec dolor sagittis ornare sit amet vel diam. Etiam eu dui at odio tempor eleifend. Nunc urna justo, volutpat sed mollis efficitur, venenatis id purus. Fusce elementum tellus in ligula maximus, in aliquet erat tincidunt. Aenean mollis sollicitudin tincidunt. Etiam ac velit eu erat placerat condimentum. Donec lorem tortor, convallis pretium finibus eu, euismod eget dolor. </p>
+      </div>
+    </div>
+    <div class="toogle-block">
+      <input type="checkbox" id="rule3" class="toggle">
+      <label for="rule3">¿Es este juego legal en España y la Unión Europea?</label>
+      <div>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec mollis placerat leo quis pellentesque. Proin sollicitudin vel felis vulputate varius. Aenean non ante nec dolor sagittis ornare sit amet vel diam. Etiam eu dui at odio tempor eleifend. Nunc urna justo, volutpat sed mollis efficitur, venenatis id purus. Fusce elementum tellus in ligula maximus, in aliquet erat tincidunt. Aenean mollis sollicitudin tincidunt. Etiam ac velit eu erat placerat condimentum. Donec lorem tortor, convallis pretium finibus eu, euismod eget dolor. </p>
+      </div>
+    </div>
+  </div>
+   Comentado hasta que tengamos los textos legales -->
+
+
+  <ng-view></ng-view>
+  <!--div class="default-header-text"> MI CUENTA </div>
+  <div class="blue-separator"></div>
+  <div class="profile-content">
+
+    <div class="personal-data">
+      <div class="data-header">
+        <span class="data-header-title">INFORMACION PERSONAL</span>
+        <div class="button-wrapper"><button class="action-button" ng-click="editPersonalData()">EDITAR</button></div>
+      </div>
+      <div class="bloque-sm">
+        <div class="data-row"><span class="data-key">Nombre personal:</span><span class="data-value">{{userData.firstName + ' ' + userData.lastName}}</span></div>
+        <div class="data-row"><span class="data-key">Nombre de usuario:</span><span class="data-value">{{userData.nickName}}</span></div>
+        <div class="data-row"><span class="data-key">Correo electrónico:</span><span class="data-value">{{userData.email}}</span></div>
+        <div class="data-row"><span class="data-key">Contraseña:</span><span class="data-value">********</span></div>
+      </div>
+      <!--
+      <div class="bloque-sm">
+        <div class="data-row"><span class="data-key">Pais:</span><span class="data-value">&lt; Pais &gt;</span></div>
+        <div class="data-row"><span class="data-key">Region:</span><span class="data-value">&lt; Region &gt;</span></div>
+        <div class="data-row"><span class="data-key">Ciudad:</span><span class="data-value">&lt; Ciudad &gt;</span></div>
+        <div class="data-row"><span class="data-key">Notificaciones:</span><span class="data-value">&lt; Notificaciones &gt;</span></div>
+      </div>
+      -->
+    <!--/div-->
+
+    <!--
+    <div class="pocket-data">
+      <div class="data-header">
+          <span class="data-header-title">MONEDERO</span>
+          <div class="button-wrapper">
+            <button class="action-button-transaction">TRANSACCIONES</button>
+            <button class="action-button-get-funds">RETIRAR FONDOS</button>
+          </div>
+       </div>
+      <div class="data-container-9">
+        <div class="data-row"><span class="data-key">Balance actual:</span><span class="data-value-balance">&lt;balance&gt;€</span></div>
+        <div class="data-row"><span class="data-key">Bonus pendientes:</span><span class="data-value">&lt;pending-bonuses&gt;€</span></div>
+      </div>
+      <div class="data-container-3">
+        <button class="add-funds-button">AÑADIR FONDOS</button>
+      </div>
+    </div>
+
+    <div class="epicpoints-data">
+      <div class="data-header"><span class="data-header-title">EPIC POINTS</span></div>
+      <div class="data-row">
+        <div class="data-column"><span class="data-key">E11P BALANCE:</span><span class="data-value">--€</span></div>
+        <div class="data-column"><span class="data-key">&lt;ulti-month&gt;:</span><span class="data-value">--€</span></div>
+      </div>
+      <div class="data-row">
+        <div class="data-column"><span class="data-key">THIS MONTH:</span><span class="data-value">--€</span></div>
+        <div class="data-column"><span class="data-key">&lt;penul-month&gt;:</span><span class="data-value">--€</span></div>
+        <div class="data-column"><a class="data-link" href="">¿Cómo gastar tus EPs?</a></div>
+      </div>
+    </div>
+    -->
+
+  <!--/div-->
+</div>

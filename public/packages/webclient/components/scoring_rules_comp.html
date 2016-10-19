@@ -1,0 +1,49 @@
+<div id="scoringForAll" class="panel-points">
+  <div class="rules-header">{{getLocalizedText("all")}}</div>
+  <div class="rules-content">
+    <div class="punctuation" ng-class="getClassesIsNegative(event['points'])" ng-repeat="event in AllPlayers">
+      <span class="name">{{event["name"]}}</span>
+      <span class="points"><b>{{event["points"]}}</b></span>
+    </div>
+  </div>
+</div>
+
+<div id="scoringForGoalKeepers" class="panel-points">
+  <div class="rules-header">{{getLocalizedText("goalkeepers")}}</div>
+  <div class="rules-content">
+    <div class="punctuation" ng-class="getClassesIsNegative(event['points'])" ng-repeat="event in GoalKeepers">
+      <span class="name">{{event["name"]}} </span>
+      <span class="points"><b>{{event["points"]}}</b></span>
+    </div>
+  </div>
+</div>
+
+<div id="scoringForDefenders" class="panel-points">
+  <div class="rules-header">{{getLocalizedText("defenders")}}</div>
+  <div class="rules-content">
+    <div class="punctuation" ng-class="getClassesIsNegative(event['points'])" ng-repeat="event in Defenders ">
+      <span class="name">{{event["name"]}} </span>
+      <span class="points"><b>{{event["points"]}}</b></span>
+    </div>
+  </div>
+</div>
+
+<div id="scoringForMidFielders" class="panel-points">
+  <div class="rules-header">{{getLocalizedText("middles")}}</div>
+  <div class="rules-content">
+    <div class="punctuation" ng-class="getClassesIsNegative(event['points'])" ng-repeat="event in MidFielders">
+      <span class="name">{{event["name"]}} </span>
+      <span class="points"><b>{{event["points"]}}</b></span>
+    </div>
+  </div>
+</div>
+
+<div id="scoringForForwards" class="panel-points">
+  <div class="rules-header">{{getLocalizedText("forwards")}}</div>
+  <div class=rules-content>
+    <div class="punctuation" ng-class="getClassesIsNegative(event['points'])" ng-repeat="event in Forwards">
+      <span class="name">{{event["name"]}} </span>
+      <span class="points"><b>{{event["points"]}}</b></span>
+    </div>
+  </div>
+</div>

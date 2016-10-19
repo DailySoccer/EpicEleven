@@ -1,0 +1,90 @@
+<div id="myContest" >
+  <!-- header title -->
+  <div class="default-section-header">{{getLocalizedText("title")}}</div>
+  <!-- Nav tabs -->
+  <ul id="myContestMenuTabs" class="my-contest-tabs" role="tablist">
+    <li id="live-contest-tab" class="active"><tab role="tab" data-toggle="tab" ng-click="gotoSection('live')"> {{getLocalizedText("tablive")}} <span class="contest-count" ng-if="numLiveContests > 0">{{numLiveContests}}</span></tab></li>
+    <li id="waiting-contest-tab"><tab role="tab" data-toggle="tab" ng-click="gotoSection('upcoming')">{{getLocalizedText("tabupcoming")}}</tab></li>
+    <li id="history-contest-tab"><tab role="tab" data-toggle="tab" ng-click="gotoSection('history')">{{getLocalizedText ("tabhistory")}}</tab></li>
+  </ul>
+
+  <!-- Tab panes -->
+  <div class="tabs">
+    <div class="tab-content">
+
+      <!-- LIVE CONTESTS -->
+      <div class="tab-pane active" id="live-contest-content">
+        <!-- Barra de resumen de actividad -->
+        <div class="resume-bar"><span class="information-no-contest">{{liveContestsMessage}}</span></div>
+
+        <section ng-unless="loadingService.isLoading" ng-switch="hasLiveContests">
+          <!-- lista vacía -->
+          <div class="no-contests-wrapper" ng-switch-when="false">
+            <div class="no-contests-content">
+              <div class="default-info-text" ng-bind-html="getLocalizedText('nolives')"></div>
+              <div class="no-contests-text">{{getLocalizedText("nolivestip1")}} <strong data-toggle="tab" ng-click="gotoSection('upcoming')">{{getLocalizedText("nolivestip2")}}</strong> {{getLocalizedText("nolivestip3")}}</div>
+            </div>
+            <div class="no-contest-bottom-row">
+              <button class="btn-go-to-contest" ng-click="gotoLobby()">{{getLocalizedText("tocontest")}}</button>
+            </div>
+          </div>
+          <!-- lista de concursos -->
+          <div class="list-container" ng-switch-when="true">
+            <contests-list-f2p id="liveContests" contests-list="contestsService.liveContests"
+                           sorting="liveSortType" on-action-click='onLiveActionClick(contest)' on-row-click='onLiveActionClick(contest)'>
+            </contests-list-f2p>
+          </div>
+        </section>
+      </div>
+
+      <!-- WAITING CONTESTS -->
+      <div class="tab-pane" id="waiting-contest-content">
+        <div class="resume-bar"><span class="information-no-contest">{{waitingContestsMessage}}</span></div>
+
+        <section ng-unless="loadingService.isLoading" ng-switch="hasWaitingContests">
+          <!-- lista vacía -->
+          <div class="no-contests-wrapper" ng-switch-when="false">
+            <div class="no-contests-content">
+              <div class="default-info-text" ng-bind-html="getLocalizedText('noupcomings')"></div>
+              <div class="no-contests-text">{{getLocalizedText("noupcomingstip1")}}</div>
+            </div>
+            <div class="no-contest-bottom-row">
+              <button class="btn-go-to-contest" ng-click="gotoLobby()">{{getLocalizedText("tocontest")}}</button>
+            </div>
+          </div>
+          <!-- lista de concursos -->
+          <div class="list-container" ng-switch-when="true">
+            <contests-list-f2p id="waitingContests" contests-list='contestsService.waitingContests' show-date="true"
+                           sorting="waitingSortType" on-action-click='onWaitingActionClick(contest)' on-row-click='onWaitingActionClick(contest)'>
+            </contests-list-f2p>
+          </div>
+        </section>
+      </div>
+
+      <!-- HISTORY CONTESTS -->
+      <div class="tab-pane" id="history-contest-content">
+        <div class="resume-bar"><span class="information-no-contest">{{historyContestsMessage}}</span></div>
+
+        <section ng-unless="loadingService.isLoading" ng-switch="hasHistoryContests">
+          <!-- lista vacía -->
+          <div class="no-contests-wrapper" ng-switch-when="false">
+            <div class="no-contests-content">
+              <div class="default-info-text" ng-bind-html="getLocalizedText('nohistorys')"></div>
+              <div class="no-contests-text">{{getLocalizedText("nohistoryestip")}}</div>
+            </div>
+            <div class="no-contest-bottom-row">
+              <button class="btn-go-to-contest" ng-click="gotoLobby()">{{getLocalizedText("tocontest")}}</button>
+            </div>
+          </div>
+          <!-- lista de concursos -->
+          <div class="list-container" ng-switch-when="true">
+            <contests-list-f2p id="historyContests" contests-list="contestsService.historyContests" show-date="true"
+                           sorting="historySortType" on-action-click='onHistoryActionClick(contest)' on-row-click='onHistoryActionClick(contest)'>
+            </contests-list-f2p>
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</div>

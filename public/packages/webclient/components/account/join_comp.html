@@ -1,0 +1,101 @@
+<div id="joinRoot" ng-show="!loadingService.isLoading" ng-class="{'air':!isModal}">
+  <div id="signupbox" class="main-box" ng-class="{'air':!isModal}">
+
+    <div class="panel">
+
+      <div class="panel-heading">
+        <div class="panel-title">{{getLocalizedText("title")}}</div>
+        <button type="button" class="close" ng-click="onAction('CANCEL', $event)">
+          <span class="glyphicon glyphicon-remove"></span>
+        </button>
+      </div>
+
+      <div class="panel-body" >
+
+        <!-- Facebook stuff-->
+        <div  class="user-form-field facebook-form-wrapper">
+          <div class="form-description" ng-bind-html="getLocalizedText('facebookdescription')"></div>
+          <div class="fb-button-wrapper">
+            <div class="fb-login-button" data-size="xlarge" data-max-rows="1" 
+                 data-scope="public_profile,email,user_friends"
+                 data-show-faces="true" onlogin="jsLoginFB()" ng-show="!isFacebookConnected"></div>
+            <div class="fb-login-button" data-size="xlarge"
+                 data-scope="public_profile,email,user_friends"
+                 onlogin="jsLoginFB()" ng-show="isFacebookConnected"></div>
+          </div>
+        </div>
+        <!-- -->
+
+        <form id="signupForm" class="form-horizontal" ng-submit="onAction('SUBMIT')" role="form" formAutofillFix>
+          <div class="form-description" ng-bind-html="getLocalizedText('clasicsignupdescription')"></div>
+          
+          <!-- NICKNAME  -->
+          <div class="user-form-field" id="mailAndNameFieldsWrapper">
+            <!-- Description -->
+            <div class="new-row bottom-separation-10">
+              <div class="small-text">{{getLocalizedText('nickrequires')}}</div>
+            </div>
+            <!-- Field Input -->
+            <div id="nickNameInputGroup" class="form-group">
+              <input id="nickName" name="NickName" type="text" ng-model="theNickName" placeholder="{{getLocalizedText('nick')}}" class="form-control" maxlength="{{MAX_NICKNAME_LENGTH}}" tabindex="1" autocapitalize="off" auto-focus>
+            </div>
+            <!-- Error label -->
+            <div class="new-row">
+              <div id="nickNameError" class="join-err-text">{{getLocalizedText("invalidnick")}}</div>
+            </div>
+
+          <!-- EMAIL -->
+            <!-- Field Input -->
+            <div id="emailInputGroup" class="form-group">
+              <input id="email" name="Email" type="email" ng-model="theEmail" placeholder="{{getLocalizedText('email')}}" class="form-control" tabindex="2" autocapitalize="off">
+            </div>
+            <!-- Error label -->
+            <div class="new-row">
+              <div id="emailError" class="join-err-text">{{getLocalizedText("invalidemail")}}</div>
+            </div>
+          </div>
+
+          <!-- PASSWORD -->
+          <div  class="user-form-field" id="passAndRepassFieldsWrapper">
+            <!-- Description -->
+            <div class="new-row bottom-separation-10">
+              <div class="small-text">{{getLocalizedText("passrequires")}}</div>
+            </div>
+            <!-- Field Input 1 -->
+            <div id="passwordInputGroup" class="form-group  bottom-separation-10">
+              <input id="password" name="Password" type="password" ng-model="thePassword" placeholder="{{getLocalizedText('pass')}}" class="form-control" data-minlength="MIN_PASSWORD_LENGTH" ng-minlength="MIN_PASSWORD_LENGTH"  tabindex="3" autocapitalize="off">
+            </div>
+            <!-- Field Input 2 -->
+            <div id="rePasswordInputGroup" class="form-group">
+              <input id="rePassword" name="RePassword" type="password" ng-model="theRePassword" placeholder="{{getLocalizedText('repass')}}" class="form-control" tabindex="4" autocapitalize="off">
+            </div>
+            <!-- Error de password -->
+            <div class="new-row">
+              <div id="passwordError" class="join-err-text">{{getLocalizedText("invalidpass")}}</div>
+            </div>
+            <div class="acceptTermsAndConditionsWrapper">
+              <!--input id="acceptTermsAndConditions" name="acceptTermsAndConditions" type="checkbox" ng-model="theAcceptTnC" tabindex="5"-->
+              <span class="termsAndConditionsText" ng-bind-html-unsafe="getLocalizedText('acceptTermsAndPrivacyPolicy')"></span>
+            </div>
+          </div>
+            
+          <!-- GOTO LOGIN -->
+          <div class="user-form-field">
+            <div class="small-text">{{getLocalizedText("registered")}} <span class="link-aspect" id="gotoLoginLink" ng-click="onAction('LOGIN', $event)"> {{getLocalizedText("loginhere")}}</span></div>
+          </div>
+
+          <!-- BUTTONS -->
+          <div class="input-group user-form-field">
+            <div class="new-row">
+              <div class="buttons-wrapper">
+                <button type="submit" id="btnSubmit" name="JoinNow" ng-disabled="!enabledSubmit" class="enter-button-half">{{getLocalizedText("buttonsignup")}}</button>
+                <button id="btnCancelJoin" ng-click="onAction('CANCEL', $event)" class="cancel-button-half">{{getLocalizedText("buttoncancel")}}</button>
+             </div>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
