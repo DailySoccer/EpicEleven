@@ -5,12 +5,12 @@ import model.JongoId;
 import model.Model;
 import org.bson.types.ObjectId;
 import utils.ListUtils;
-
+import play.Logger;
 import java.util.*;
 
 public class OptaCompetition implements JongoId {
     static public Date SEASON_DATE_START = new GregorianCalendar(2016, 8, 1).getTime();
-    public static final String CURRENT_SEASON_ID = "2016";
+    //public static final String CURRENT_SEASON_ID = "2016";
     public static final String SPANISH_LA_LIGA = "23";
     public static final String PREMIER = "8";
     public static final String CHAMPIONS_LEAGUE = "5";
