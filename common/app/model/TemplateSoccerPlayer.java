@@ -383,11 +383,11 @@ public class TemplateSoccerPlayer implements JongoId {
     }
 
     static Double[] LEVEL_BASE = new Double[]{
-        0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.7, 0.8, 0.9, 1.0
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
     };
 
     static Double[] LEVEL_MULTIPLIER = new Double[]{
-        0.0, 1.0, 2.0, 4.0, 8.0, 16.0, 32.0, 64.0, 128.0, 256.0, 512.0
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
     };
 
     static public Money moneyToBuy(Contest contest, int playerLevel, int userManagerLevel) {
