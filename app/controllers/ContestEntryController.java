@@ -107,7 +107,7 @@ public class ContestEntryController extends Controller {
                         if (aContest == null) {
                             // Si no encontramos ningún Contest semejante, pedimos al webClient que lo intente otra vez
                             //  dado que asumimos que simplemente es un problema "temporal"
-                            errores.add(ERROR_RETRY_OP);
+                            errores.add(ERROR_RETRY_OP+"1");
                         }
                     }
                 }
@@ -183,7 +183,7 @@ public class ContestEntryController extends Controller {
                 // Al intentar aplicar el job puede que nos encontremos con algún conflicto (de última hora),
                 //  lo volvemos a intentar para poder informar del error (con los tests anteriores)
                 if (!enterContestJob.isDone()) {
-                    errores.add(ERROR_RETRY_OP);
+                    errores.add(ERROR_RETRY_OP+"2");
                 }
             }
 
@@ -273,7 +273,7 @@ public class ContestEntryController extends Controller {
 
                 if (errores.isEmpty()) {
                     if (!ContestEntry.update(theUser, aContest, contestEntry, formation, idsList)) {
-                        errores.add(ERROR_RETRY_OP);
+                        errores.add(ERROR_RETRY_OP+"3");
                     }
                 }
 
@@ -335,7 +335,7 @@ public class ContestEntryController extends Controller {
                 if (!contestEntryForm.hasErrors()) {
                     CancelContestEntryJob cancelContestEntryJob = CancelContestEntryJob.create(theUser.userId, contest.contestId, contestEntry.contestEntryId);
                     if (!cancelContestEntryJob.isDone()) {
-                        contestEntryForm.reject(ERROR_RETRY_OP);
+                        contestEntryForm.reject(ERROR_RETRY_OP+"4");
                     }
                 }
             }
@@ -460,7 +460,7 @@ public class ContestEntryController extends Controller {
                 if (errores.isEmpty()) {
                     contestId = aContest.contestId;
                     if (!ContestEntry.change(theUser, aContest, contestEntry.contestEntryId, oldSoccerPlayerId, newSoccerPlayerId)) {
-                        errores.add(ERROR_RETRY_OP);
+                        errores.add(ERROR_RETRY_OP+"5");
                     }
                 }
 
