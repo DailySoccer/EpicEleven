@@ -666,7 +666,7 @@ public class LoginController extends Controller {
 
             if (somethingChanged) {
                 Map<Integer, String> stormpathErrors = changeStormpathProfile(theUser, params, somethingChanged, originalEmail);
-
+                Logger.error("changeUserProfile: {}", stormpathErrors.isEmpty() );
                 if (!stormpathErrors.isEmpty()) {
                     if (stormpathErrors.containsKey(409)) {
                         if (!params.nickName.isEmpty() && null != User.findByName(params.nickName)) {
