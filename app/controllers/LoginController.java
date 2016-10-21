@@ -666,8 +666,8 @@ public class LoginController extends Controller {
 
             if (somethingChanged) {
                 Map<Integer, String> stormpathErrors = changeStormpathProfile(theUser, params, somethingChanged, originalEmail);
-                Logger.error("changeUserProfile: {}", stormpathErrors.isEmpty() );
                 if (!stormpathErrors.isEmpty()) {
+                    Logger.error(">>>>>> changeUserProfile: {}", stormpathErrors );
                     if (stormpathErrors.containsKey(409)) {
                         if (!params.nickName.isEmpty() && null != User.findByName(params.nickName)) {
                             allErrors.put("nickName", "ERROR_NICKNAME_TAKEN");
@@ -679,6 +679,8 @@ public class LoginController extends Controller {
                     }
                     else if (stormpathErrors.containsKey(2007)) {
                         allErrors.put("password", "ERROR_PASSWORD_TOO_SHORT");
+                    }else {
+                        allErrors.put("password", "ERROR_UNKNOW ");
                     }
                 }
 
@@ -696,7 +698,7 @@ public class LoginController extends Controller {
         else {
             result = changeParamsForm.errorsAsJson();
         }
-
+        Logger.error(">>>>>> changeUserProfile: final result {}", result );
         return new ReturnHelper(!changeParamsForm.hasErrors(), result).toResult();
     }
 
