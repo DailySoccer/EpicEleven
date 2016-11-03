@@ -38,12 +38,12 @@ public class TemplateSoccerPlayer implements JongoId {
     @Id
     public ObjectId templateSoccerPlayerId;
 
-    @JsonView(JsonViews.NotForClient.class)
+    @JsonView(value = {JsonViews.NotForClient.class, JsonViews.CheckChanges.class})
     public String optaPlayerId;
 
     public String name;
 
-    @JsonView(JsonViews.NotForClient.class)
+    @JsonView(value = {JsonViews.NotForClient.class, JsonViews.CheckChanges.class})
     public FieldPos fieldPos;
 
     @JsonView(JsonViews.NotForClient.class)
@@ -159,12 +159,25 @@ public class TemplateSoccerPlayer implements JongoId {
         return Model.templateSoccerPlayers().findOne("{optaPlayerId: #}", optaPlayerId).as(TemplateSoccerPlayer.class);
     }
 
+    public static TemplateSoccerPlayer findOneFromOptaId(String optaPlayerId, Class<?> projectionClass) {
+        return Model.templateSoccerPlayers().findOne("{optaPlayerId: #}", optaPlayerId)
+                    .projection(ViewProjection.get(projectionClass, TemplateSoccerPlayer.class))
+                    .as(TemplateSoccerPlayer.class);
+    }
+
     static public boolean exists(String optaPlayerId) {
         return Model.templateSoccerPlayers().count("{optaPlayerId: #}", optaPlayerId) == 1;
     }
 
     public static List<TemplateSoccerPlayer> findAll() {
         return ListUtils.asList(Model.templateSoccerPlayers().find().as(TemplateSoccerPlayer.class));
+    }
+
+    public static List<TemplateSoccerPlayer> findAllWithProjection(Class<?> projectionClass) {
+        return ListUtils.asList(
+                Model.templateSoccerPlayers().find()
+                        .projection(ViewProjection.get(projectionClass, TemplateSoccerPlayer.class))
+                        .as(TemplateSoccerPlayer.class));
     }
 
     public static List<TemplateSoccerPlayer> findAll(List<ObjectId> idList) {
@@ -176,6 +189,15 @@ public class TemplateSoccerPlayer implements JongoId {
                 Model.findObjectIds(Model.templateSoccerPlayers(), "_id", idList)
                         .projection(ViewProjection.get(projectionClass, TemplateSoccerPlayer.class))
                         .as(TemplateSoccerPlayer.class));
+    }
+
+    public static boolean checkIfHasChanged(OptaPlayer optaPlayer, ObjectId templateSoccerTeamId) {
+        return Model.templateSoccerPlayers().count("{optaPlayerId: #, templateTeamId: #, name: #, fieldPos: #}",
+                optaPlayer.optaPlayerId,
+                templateSoccerTeamId,
+                optaPlayer.name,
+                transformToFieldPosFromOptaPos(optaPlayer.position)
+        ) == 0;
     }
 
     static public HashMap<String, TemplateSoccerPlayer> findAllAsMap() {
@@ -279,6 +301,13 @@ public class TemplateSoccerPlayer implements JongoId {
                 (TemplateSoccerTeam.findOne(templateTeamId, optaPlayer.teamId) == null);
     }
 
+    public boolean hasChanged(OptaPlayer optaPlayer, ObjectId templateSoccerTeamId) {
+        return !optaPlayerId.equals(optaPlayer.optaPlayerId) ||
+                !name.equals(optaPlayer.name) ||
+                !fieldPos.equals(transformToFieldPosFromOptaPos(optaPlayer.position)) ||
+                !templateTeamId.equals(templateSoccerTeamId);
+    }
+
     public void changeDocument(OptaPlayer optaPlayer) {
         // optaPlayerId = optaPlayer.optaPlayerId;
         name = optaPlayer.name;
@@ -287,7 +316,11 @@ public class TemplateSoccerPlayer implements JongoId {
         TemplateSoccerTeam templateSoccerTeam = TemplateSoccerTeam.findOneFromOptaId(optaPlayer.teamId);
         if (templateSoccerTeam != null) {
             templateTeamId = templateSoccerTeam.templateSoccerTeamId;
-            updateDocument();
+
+            // Cambiamos únicamente los campos concretos
+            Model.templateSoccerPlayers().update("{optaPlayerId: #}", optaPlayerId)
+                    .with("{$set: {name: #, fieldPos: #, templateTeamId: #}}", name, fieldPos, templateTeamId);
+            // updateDocument();
         } else {
             Logger.error("WTF 8791: TeamID({}) inválido", optaPlayer.teamId);
         }

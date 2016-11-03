@@ -17,6 +17,12 @@ public class OptaImporter {
         _optaMatchEventIds = processor.getDirtyMatchEventIds();
     }
 
+    public OptaImporter(HashSet<String> optaTeamIds, HashSet<String> optaPlayerIds, HashSet<String> optaMatchEventIds) {
+        _optaTeamIds = optaTeamIds;
+        _optaPlayerIds = optaPlayerIds;
+        _optaMatchEventIds = optaMatchEventIds;
+    }
+
     public void process() {
         importTeams();
         importPlayers();
@@ -24,7 +30,7 @@ public class OptaImporter {
     }
 
     private void importTeams() {
-        if (_optaTeamIds.isEmpty()) {
+        if (_optaTeamIds == null || _optaTeamIds.isEmpty()) {
             return;
         }
 
@@ -53,7 +59,7 @@ public class OptaImporter {
     }
 
     private void importPlayers() {
-        if (_optaPlayerIds.isEmpty()) {
+        if (_optaPlayerIds == null || _optaPlayerIds.isEmpty()) {
             return;
         }
 
@@ -87,7 +93,7 @@ public class OptaImporter {
                         templatePlayer.updateDocument();
                         OpsLog.onNew(OPS_LOG_IMPORT, optaPlayer);
                     }
-                } else if (templatePlayer.hasChanged(optaPlayer)) {
+                } else if (templatePlayer.hasChanged(optaPlayer, templateTeam.templateSoccerTeamId)) {
                     templatePlayer.changeDocument(optaPlayer);
                     OpsLog.onChange(OPS_LOG_IMPORT, optaPlayer);
                 }
@@ -97,7 +103,7 @@ public class OptaImporter {
     }
 
     private void importMatchEvents() {
-        if (_optaMatchEventIds.isEmpty()) {
+        if (_optaMatchEventIds == null || _optaMatchEventIds.isEmpty()) {
             return;
         }
 

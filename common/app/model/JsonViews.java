@@ -8,6 +8,7 @@ public class JsonViews {
     static public class Extended extends Public {}
     static public class FullContest extends Extended {}
     static public class Statistics extends Extended {}
+    static public class CheckChanges extends Public {}
     static public class NotForClient {}
 
     static public class AllContests {}

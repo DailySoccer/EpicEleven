@@ -50,6 +50,12 @@ public final class MockData {
         createCompetition("6",  "EU_UC", "UEFA Europa League", "2015");
         createCompetition("8",  "EN_PR", "English Barclays Premier League", "2015");
         createCompetition("23", "ES_PL", "Spanish La Liga", "2015");
+
+        // 2016
+        createCompetition("5",  "EU_CL", "Champions League", "2016");
+        createCompetition("6",  "EU_UC", "UEFA Europa League", "2016");
+        createCompetition("8",  "EN_PR", "English Barclays Premier League", "2016");
+        createCompetition("23", "ES_PL", "Spanish La Liga", "2016");
     }
 
     static private void createCompetition(String competitionId, String competitionCode, String competitionName, String seasonId) {
