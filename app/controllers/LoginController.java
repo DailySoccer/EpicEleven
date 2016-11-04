@@ -718,8 +718,10 @@ public class LoginController extends Controller {
 
     @UserAuthenticated
     public static Result removeNotification(String notificationId) {
-        User theUser = (User)ctx().args.get("User");
-        UserNotification.remove(theUser.userId, new ObjectId(notificationId));
+        if (ObjectId.isValid(notificationId)) {
+            User theUser = (User) ctx().args.get("User");
+            UserNotification.remove(theUser.userId, new ObjectId(notificationId));
+        }
         return new ReturnHelper(true, ImmutableMap.of()).toResult();
     }
 
