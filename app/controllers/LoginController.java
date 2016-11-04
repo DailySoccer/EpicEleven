@@ -702,7 +702,10 @@ public class LoginController extends Controller {
         else {
             result = changeParamsForm.errorsAsJson();
         }
-        Logger.error(">>>>>> changeUserProfile: final result {}", result );
+
+        if (changeParamsForm.hasErrors()) {
+            Logger.error(">>>>>> changeUserProfile: final result {}", result);
+        }
         return new ReturnHelper(!changeParamsForm.hasErrors(), result).toResult();
     }
 
