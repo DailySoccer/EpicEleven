@@ -44,7 +44,7 @@ public class ContestEntry implements JongoId {
     @JsonView(value={JsonViews.FullContest.class})
     public List<ObjectId> playersPurchased = new ArrayList<>(); // Futbolistas que han necesitado ser comprados por tener un nivel superior
 
-    @JsonView(value={JsonViews.FullContest.class})
+    @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class})
     public List<Substitution> substitutions = new ArrayList<>(); // Cambio de la alineacion de futbolistas en "Live"
 
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
