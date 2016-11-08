@@ -120,7 +120,7 @@ public class TemplateContestController extends Controller {
                         return "";
                     case 15:
                         return "";
-                    case 16:
+                    case 17:
                         return templateContest.simulation ? "Simulation" : "Real";
                 }
                 return "<invalid value>";
@@ -141,6 +141,8 @@ public class TemplateContestController extends Controller {
                         return String.format("<a href=\"%s\" style=\"white-space: nowrap\">%s</a>",
                                 routes.TemplateContestController.show(templateContest.templateContestId.toString()),
                                 fieldValue);
+                    case 4:
+                        return String.format("%d/%s", templateContest.minInstances, templateContest.maxInstances <= 0 ? "-" : String.valueOf(templateContest.maxInstances));
                     case 5:
                         return String.format("%d/%d", templateContest.minEntries, templateContest.maxEntries);
                     case 14:
@@ -238,6 +240,7 @@ public class TemplateContestController extends Controller {
         templateContest.simulation = (params.typeContest == TypeContest.VIRTUAL);
         templateContest.name = params.name;
         templateContest.minInstances = params.minInstances;
+        templateContest.maxInstances = params.maxInstances;
         templateContest.minEntries = params.minEntries;
         templateContest.maxEntries = params.maxEntries;
         templateContest.salaryCap = params.salaryCap.money;
@@ -290,7 +293,7 @@ public class TemplateContestController extends Controller {
             OpsLog.onChange(templateContest);
         }
 
-        printAsTablePlayerManagerLevel(templateContest, params.filterByDFP, params.filterByPlayedMatches, params.filterByDays);
+        // printAsTablePlayerManagerLevel(templateContest, params.filterByDFP, params.filterByPlayedMatches, params.filterByDays);
 
         return redirect(routes.TemplateContestController.showFilterByCompetition(templateContest.optaCompetitionId, templateContest.state.toString()));
     }
@@ -311,6 +314,7 @@ public class TemplateContestController extends Controller {
         SIMULATION,
         CUSTOMIZABLE,
         MIN_INSTANCES,
+        MAX_INSTANCES,
         MIN_ENTRIES,
         MAX_ENTRIES,
         SALARY_CAP,
@@ -344,6 +348,7 @@ public class TemplateContestController extends Controller {
             body.add(String.valueOf(template.simulation));
             body.add(String.valueOf(template.customizable));
             body.add(String.valueOf(template.minInstances));
+            body.add(String.valueOf(template.maxInstances));
             body.add(String.valueOf(template.minEntries));
             body.add(String.valueOf(template.maxEntries));
             body.add(String.valueOf(template.salaryCap));
@@ -429,6 +434,7 @@ public class TemplateContestController extends Controller {
                         case SIMULATION:        templateContest.simulation = Boolean.valueOf(params[i]);
                         case CUSTOMIZABLE:      templateContest.customizable = Boolean.valueOf(params[i]); break;
                         case MIN_INSTANCES:     templateContest.minInstances = Integer.valueOf(params[i]); break;
+                        case MAX_INSTANCES:     templateContest.maxInstances = Integer.valueOf(params[i]); break;
                         case MIN_ENTRIES:       templateContest.minEntries = Integer.valueOf(params[i]); break;
                         case MAX_ENTRIES:       templateContest.maxEntries = Integer.valueOf(params[i]);
                         case SALARY_CAP:        templateContest.salaryCap = Integer.valueOf(params[i]); break;
@@ -625,6 +631,7 @@ public class TemplateContestController extends Controller {
 
         templateContest.name = "%StartDate - " + contestNameSuffixes[templateCount] + " " + TemplateContest.FILL_WITH_MOCK_USERS;
         templateContest.minInstances = 3;
+        templateContest.maxInstances = 0;
         templateContest.maxEntries = maxEntries;
         templateContest.prizeType = prizeType;
         templateContest.entryFee = entryFee;

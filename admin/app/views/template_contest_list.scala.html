@@ -44,7 +44,7 @@
                 { "title": "Name" },
                 { "title": "Num. Matches" },
                 { "title": "Competition" },
-                { "title": "Min Instances" },
+                { "title": "Min/Max Instances" },
                 { "title": "Min/Max Entries" },
                 { "title": "Salary Cap" },
                 { "title": "Filters" },
@@ -93,6 +93,7 @@
         <ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
             <li><a href='@TemplateContestController.showFilterByCompetition(competitionFilter, "ACTIVE")'>ACTIVE</a></li>
             <li><a href='@TemplateContestController.showFilterByCompetition(competitionFilter, "OFF")'>OFF</a></li>
+            <li><a href='@TemplateContestController.showFilterByCompetition(competitionFilter, "LIVE")'>LIVE</a></li>
             <li><a href='@TemplateContestController.showFilterByCompetition(competitionFilter, "HISTORY")'>HISTORY</a></li>
             <li><a href='@TemplateContestController.showFilterByCompetition(competitionFilter, "DRAFT")'>DRAFT</a></li>
         </ul>
