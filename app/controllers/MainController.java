@@ -254,6 +254,31 @@ public class MainController extends Controller {
                 .toResult(JsonViews.FullContest.class);
     }
 
+    @UserAuthenticated
+    public static Result addFlag(String flag) {
+        User theUser = (User) ctx().args.get("User");
+        theUser.addFlag(flag);
+
+        return new ReturnHelper(true, ImmutableMap.of(
+                "result", "ok")).toResult();
+    }
+
+    @UserAuthenticated
+    public static Result removeFlag(String flag) {
+        User theUser = (User) ctx().args.get("User");
+        theUser.removeFlag(flag);
+
+        return new ReturnHelper(true, ImmutableMap.of(
+                "result", "ok")).toResult();
+    }
+
+    @UserAuthenticated
+    public static Result hasFlag(String flag) {
+        User theUser = (User) ctx().args.get("User");
+        return new ReturnHelper(true, ImmutableMap.of(
+                "result", theUser.hasFlag(flag))).toResult();
+    }
+
     public static F.Promise<Result> getShortUrl() {
         String url = request().body().asJson().get("url").asText();
         return WS.url("http://www.readability.com/api/shortener/v1/urls").post("url="+url).map(response -> {

@@ -2,10 +2,9 @@ package controllers.admin;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import model.*;
-import model.opta.OptaEvent;
-import model.opta.OptaEventType;
-import model.opta.OptaMatchEventStats;
+import model.opta.*;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -14,10 +13,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import utils.FileUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TemplateSoccerPlayerController extends Controller {
     public static Result index() {
@@ -217,5 +213,97 @@ public class TemplateSoccerPlayerController extends Controller {
         FlashMessage.info(fileName);
 
         return redirect(routes.TemplateSoccerPlayerController.showStats(templateSoccerPlayerId));
+    }
+
+    public static Result showChangesList() {
+        Map<String, Map<String, String>> changesList = getChangesListFromOpta();
+        return ok(views.html.template_soccer_player_changes.render(changesList));
+    }
+
+    public static Result importFromOpta() {
+        Map<String, Map<String, String>> changesList = getChangesListFromOpta();
+
+        HashSet<String> optaPlayerIds = new HashSet<>();
+        for (String optaId : changesList.keySet()) {
+            optaPlayerIds.add(optaId);
+            Logger.debug("change: optaId: {}", optaId);
+        }
+        Logger.debug("Total Changes: {} documents", optaPlayerIds.size());
+
+        new OptaImporter(null, optaPlayerIds, null).process();
+
+        FlashMessage.info("Import ƒrom Opta " + optaPlayerIds.size() + " documents");
+
+        return redirect(routes.TemplateSoccerPlayerController.showChangesList());
+    }
+
+    private static Map<String, Map<String, String>> getChangesListFromOpta() {
+        Map<String, Map<String, String>> results = new HashMap<>();
+
+        HashMap<ObjectId, TemplateSoccerTeam> templateSoccerTeamMap = TemplateSoccerTeam.findAllAsMap();
+        HashMap<String, OptaTeam> optaTeamMap = OptaTeam.findAllAsMap();
+
+        HashMap<String, ObjectId> optaTeamToTemplate = new HashMap<>();
+        templateSoccerTeamMap.forEach((k, v) -> optaTeamToTemplate.put(v.optaTeamId, k));
+
+        List<TemplateSoccerPlayer> templateSoccerPlayers = TemplateSoccerPlayer.findAllWithProjection(JsonViews.CheckChanges.class);
+
+        HashMap<String, TemplateSoccerPlayer> optaIdToTemplate = new HashMap<>();
+        for (TemplateSoccerPlayer templateSoccerPlayer : templateSoccerPlayers) {
+            optaIdToTemplate.put(templateSoccerPlayer.optaPlayerId, templateSoccerPlayer);
+        }
+
+        // Recorremos todos los optaPlayers para encontrar aquellos templateSoccerPlayers que no tengamos correctamente actualizados
+        for (OptaPlayer optaPlayer : OptaPlayer.findAll()) {
+            TemplateSoccerPlayer templateSoccerPlayer = optaIdToTemplate.containsKey(optaPlayer.optaPlayerId) ? optaIdToTemplate.get(optaPlayer.optaPlayerId) : null;
+
+            // Es un futbolista NUEVO?
+            if (templateSoccerPlayer == null) {
+                // Equipo inválido?
+                if (!optaTeamMap.containsKey(optaPlayer.teamId)) {
+                    /*
+                    final Map<String, String> data = ImmutableMap.<String, String>builder()
+                            .put("Name", optaPlayer.name)
+                            .put("TeamOld", "-")
+                            .put("TeamNew", optaPlayer.teamId)
+                            .put("FieldPos", optaPlayer.position)
+                            .put("Action", "INVALID")
+                            .build();
+                    results.put(optaPlayer.optaPlayerId, data);
+                    */
+                    Logger.error("INVALID: Name ({}) TeamOld({}) TeamNew({}), FieldPos({})",
+                            optaPlayer.name, "-", optaPlayer.teamId, optaPlayer.position);
+                }
+                else {
+                    final Map<String, String> data = ImmutableMap.<String, String>builder()
+                            .put("Name", optaPlayer.name)
+                            .put("TeamOld", templateSoccerTeamMap.get(templateSoccerPlayer.templateTeamId).name)
+                            .put("TeamNew", optaTeamMap.get(optaPlayer.teamId).name)
+                            .put("FieldPos", optaPlayer.position)
+                            // .put("UpdatedTime", GlobalDate.formatDate(optaPlayer.updatedTime))
+                            .put("Action", "NEW")
+                            .build();
+                    results.put(optaPlayer.optaPlayerId, data);
+                    Logger.debug("NEW: Name ({}) TeamOld({}) TeamNew({}), FieldPos({})",
+                            optaPlayer.name, templateSoccerTeamMap.get(templateSoccerPlayer.templateTeamId).name, optaTeamMap.get(optaPlayer.teamId).name, optaPlayer.position);
+                }
+            }
+            // Tiene algún CAMBIO?
+            else if (templateSoccerPlayer.hasChanged(optaPlayer, optaTeamToTemplate.get(optaPlayer.teamId))) {
+                final Map<String, String> data = ImmutableMap.<String, String>builder()
+                        .put("Name", optaPlayer.name)
+                        .put("TeamOld", templateSoccerTeamMap.get(templateSoccerPlayer.templateTeamId).name)
+                        .put("TeamNew", optaTeamMap.get(optaPlayer.teamId).name)
+                        .put("FieldPos", optaPlayer.position)
+                        // .put("UpdatedTime", GlobalDate.formatDate(optaPlayer.updatedTime))
+                        .put("Action", "CHANGE")
+                        .build();
+                results.put(optaPlayer.optaPlayerId, data);
+                Logger.debug("CHANGE: Name ({}) TeamOld({}) TeamNew({}), FieldPos({})",
+                        optaPlayer.name, templateSoccerTeamMap.get(templateSoccerPlayer.templateTeamId).name, optaTeamMap.get(optaPlayer.teamId).name, optaPlayer.position);
+            }
+        }
+
+        return results;
     }
 }

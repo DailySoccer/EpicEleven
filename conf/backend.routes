@@ -51,6 +51,10 @@ POST           /reset_password                                         controlle
 GET            /resend_verification_email                              controllers.LoginController.resendVerificationEmail()
 POST           /favorites                                              controllers.MainController.setFavorites()
 
+GET            /add_flag/:flag                                         controllers.MainController.addFlag(flag)
+GET            /remove_flag/:flag                                      controllers.MainController.removeFlag(flag)
+GET            /has_flag/:flag                                         controllers.MainController.hasFlag(flag)
+
 # Crear concurso
 GET            /get_active_templatecontests                            controllers.ContestController.getActiveTemplateContests()
 POST           /create_contest                                         controllers.ContestController.createContest()

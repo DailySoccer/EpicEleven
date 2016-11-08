@@ -79,6 +79,10 @@ public class OptaPlayer {
                 (teamId == null)    || !teamId.equals(optaPlayer.teamId);
     }
 
+    static public List<OptaPlayer> findAll() {
+        return ListUtils.asList(Model.optaPlayers().find().as(OptaPlayer.class));
+    }
+
     static public List<OptaPlayer> findAllFromTeam(String optaTeamId) {
         return ListUtils.asList(Model.optaPlayers().find("{teamId: #}", optaTeamId).as(OptaPlayer.class));
     }

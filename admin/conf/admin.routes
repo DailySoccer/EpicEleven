@@ -89,6 +89,8 @@ GET         /template_soccer_players                                            
 GET         /template_soccer_players/ajax                                        controllers.admin.TemplateSoccerPlayerController.indexAjax()
 GET         /template_soccer_player/statistics_to_csv/:templateSoccerPlayerId    controllers.admin.TemplateSoccerPlayerController.statisticsToCSV(templateSoccerPlayerId : String)
 GET         /template_soccer_player/matchstatistics_to_csv/:templateSoccerPlayerId  controllers.admin.TemplateSoccerPlayerController.matchStatisticsToCSV(templateSoccerPlayerId : String)
+GET         /template_soccer_players/changes_list                                controllers.admin.TemplateSoccerPlayerController.showChangesList()
+GET         /template_soccer_players/import_from_opta                            controllers.admin.TemplateSoccerPlayerController.importFromOpta()
 
 GET         /opta_competitions                                                   controllers.admin.OptaController.optaCompetitions()
 GET         /opta_competitions/:competition/activated/:state                     controllers.admin.OptaController.changeCompetitionState(competition : String, state : String)

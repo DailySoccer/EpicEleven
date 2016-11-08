@@ -702,7 +702,10 @@ public class LoginController extends Controller {
         else {
             result = changeParamsForm.errorsAsJson();
         }
-        Logger.error(">>>>>> changeUserProfile: final result {}", result );
+
+        if (changeParamsForm.hasErrors()) {
+            Logger.error(">>>>>> changeUserProfile: final result {}", result);
+        }
         return new ReturnHelper(!changeParamsForm.hasErrors(), result).toResult();
     }
 
@@ -718,8 +721,10 @@ public class LoginController extends Controller {
 
     @UserAuthenticated
     public static Result removeNotification(String notificationId) {
-        User theUser = (User)ctx().args.get("User");
-        UserNotification.remove(theUser.userId, new ObjectId(notificationId));
+        if (ObjectId.isValid(notificationId)) {
+            User theUser = (User) ctx().args.get("User");
+            UserNotification.remove(theUser.userId, new ObjectId(notificationId));
+        }
         return new ReturnHelper(true, ImmutableMap.of()).toResult();
     }
 

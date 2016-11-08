@@ -100,6 +100,8 @@ public class User {
     public List<UserNotification> notifications = new ArrayList<>();
     public List<ObjectId> favorites = new ArrayList<>();
 
+    public List<String> flags = new ArrayList<>();
+
     public ObjectId guildId;        // Guild al que pertenece
 
     @JsonView(JsonViews.NotForClient.class)
@@ -236,6 +238,19 @@ public class User {
         else {
             Model.users().update(userId).with("{$unset: {guildId: ''}}");
         }
+    }
+
+
+    public void addFlag (String flag) {
+        Model.users().update(userId).with("{$push: {flags: #}}", flag);
+    }
+
+    public void removeFlag (String flag) {
+        Model.users().update(userId).with("{$pull: {flags: #}}", flag);
+    }
+
+    public boolean hasFlag (String flag) {
+        return Model.users().find("{_id: #, flags: {$in: [#]}}", userId, flag).as(User.class) != null;
     }
 
     public void updateStats() {
