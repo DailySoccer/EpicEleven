@@ -1,10 +1,10 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import model.accounting.AccountOp;
-import model.accounting.AccountingTran;
-import model.accounting.AccountingTranBonus;
+import model.accounting.*;
 import model.rewards.DailyRewards;
+import model.rewards.GoldReward;
+import model.rewards.Reward;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -289,8 +289,30 @@ public class User {
     }
 
     public void claimReward(ObjectId rewardId) {
-        // TODO: Crear un AccountingTranReward para dar la recompensa al usuario
-        Logger.debug("claimReward: {}", rewardId);
+        Reward reward = dailyRewards.findReward(rewardId);
+        if (reward != null && (reward instanceof  GoldReward)) {
+            GoldReward goldReward = (GoldReward) reward;
+
+            // Crear un AccountingTranReward para dar la recompensa al usuario
+            List<AccountOp> accounts = new ArrayList<>();
+            accounts.add(new AccountOp(userId, goldReward.value, User.getSeqId(userId) + 1));
+            AccountingTranReward.create(MoneyUtils.CURRENCY_GOLD.getCode(), rewardId, accounts);
+
+            // Lo eliminamos del usuario
+            removeReward(rewardId);
+
+            Logger.debug("claimReward: user: {} rewardId {}", userId.toString(), rewardId);
+        }
+        else {
+            Logger.error("claimReward: user: {} rewardId: {} invalid", userId.toString(), rewardId.toString());
+        }
+    }
+
+    private void removeReward(ObjectId rewardId) {
+        // Lo quitamos de la instancia actual
+        dailyRewards.removeReward(rewardId);
+        // Lo quitamos de la bdd
+        Model.users().update(userId).with("{$pull: {'dailyRewards.rewards': { _id: # } }}", rewardId);
     }
 
     public Integer getSeqId() {

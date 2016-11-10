@@ -3,6 +3,7 @@ package model.rewards;
 import com.fasterxml.jackson.annotation.JsonView;
 import model.GlobalDate;
 import model.JsonViews;
+import org.bson.types.ObjectId;
 import org.joda.money.Money;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -55,6 +56,14 @@ public class DailyRewards {
 
         Logger.debug("dailyRewards: lastDate: {} consecutiveDays: {} rewards: {}",
                 GlobalDate.formatDate(lastDate), consecutiveDays, String.join(", ", rewardsStr));
+    }
+
+    public Reward findReward(ObjectId rewardId) {
+        return rewards.stream().filter(reward -> reward.rewardId.equals(rewardId)).findFirst().orElse(null);
+    }
+
+    public void removeReward(ObjectId rewardId) {
+        rewards = rewards.stream().filter(reward -> !reward.rewardId.equals(rewardId)).collect(Collectors.toList());
     }
 
     private long hoursFromLastDate() {
