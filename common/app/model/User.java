@@ -288,6 +288,11 @@ public class User {
         Model.users().update("{_id: #}", userId).with("{$set: {dailyRewards: #}}", dailyRewards);
     }
 
+    public void claimReward(ObjectId rewardId) {
+        // TODO: Crear un AccountingTranReward para dar la recompensa al usuario
+        Logger.debug("claimReward: {}", rewardId);
+    }
+
     public Integer getSeqId() {
         return User.getSeqId(userId);
     }
