@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTran;
 import model.accounting.AccountingTranBonus;
+import model.rewards.DailyRewards;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
@@ -71,7 +72,9 @@ public class User {
 
     // True Skill
     public int trueSkill = 0;
+
     // Rating de True Skill
+    @JsonView(JsonViews.NotForClient.class)
     public Rating rating = new Rating(TrueSkillHelper.INITIAL_MEAN, TrueSkillHelper.INITIAL_SD);
 
     // Torneos que se han tenido en cuenta para calcular su rating
@@ -88,6 +91,7 @@ public class User {
     public Money energyBalance      = Money.of(MoneyUtils.CURRENCY_ENERGY, MAX_ENERGY);
 
     // La última fecha en la que se participó en un contest de simulación
+    @JsonView(JsonViews.NotForClient.class)
     public Date lastUpdatedManager;
 
     // La última fecha en la que se recalculó la energía
@@ -101,6 +105,8 @@ public class User {
     public List<ObjectId> favorites = new ArrayList<>();
 
     public List<String> flags = new ArrayList<>();
+
+    public DailyRewards dailyRewards = new DailyRewards();
 
     public ObjectId guildId;        // Guild al que pertenece
 
@@ -136,6 +142,12 @@ public class User {
         earnedMoney = calculatePrizes(MoneyUtils.CURRENCY_GOLD);
         managerLevel = managerLevelFromPoints(managerBalance);
         // Logger.debug("gold: {} manager: {} energy: {}", goldBalance, managerBalance, energyBalance);
+
+        if (dailyRewards.update()) {
+            // Actualizar el dailyRewards en la bdd
+            updateDailyRewards();
+        }
+
         return this;
     }
 
@@ -270,6 +282,10 @@ public class User {
     public void updateTrueSkillByContest(ObjectId contestId) {
         // Garantizamos que un determinado contest no influye varias veces en el cálculo del trueSkill
         Model.users().update("{_id: #, contestsRating: {$nin: [#]} }", userId, contestId).with("{$set: {trueSkill: #, rating: #}, $push: {contestsRating: #}}", trueSkill, rating, contestId);
+    }
+
+    public void updateDailyRewards() {
+        Model.users().update("{_id: #}", userId).with("{$set: {dailyRewards: #}}", dailyRewards);
     }
 
     public Integer getSeqId() {
