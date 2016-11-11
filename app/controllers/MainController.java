@@ -280,12 +280,10 @@ public class MainController extends Controller {
     }
 
     @UserAuthenticated
-    public static Result claimReward(String rewardId) {
+    public static Result claimReward() {
         User theUser = (User) ctx().args.get("User");
 
-        if (ObjectId.isValid(rewardId)) {
-            theUser.claimReward(new ObjectId(rewardId));
-        }
+        theUser.claimReward();
 
         return new ReturnHelper(true, ImmutableMap.of(
                 "profile", theUser.getProfile())).toResult();

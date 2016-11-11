@@ -288,31 +288,30 @@ public class User {
         Model.users().update("{_id: #}", userId).with("{$set: {dailyRewards: #}}", dailyRewards);
     }
 
-    public void claimReward(ObjectId rewardId) {
-        Reward reward = dailyRewards.findReward(rewardId);
-        if (reward != null && (reward instanceof  GoldReward)) {
+    public void claimReward() {
+        Reward reward = dailyRewards.lastReward();
+        if (reward instanceof  GoldReward) {
             GoldReward goldReward = (GoldReward) reward;
 
             // Crear un AccountingTranReward para dar la recompensa al usuario
             List<AccountOp> accounts = new ArrayList<>();
             accounts.add(new AccountOp(userId, goldReward.value, User.getSeqId(userId) + 1));
-            AccountingTranReward.create(MoneyUtils.CURRENCY_GOLD.getCode(), rewardId, accounts);
+            AccountingTranReward.create(MoneyUtils.CURRENCY_GOLD.getCode(), reward.rewardId, accounts);
 
-            // Lo eliminamos del usuario
-            removeReward(rewardId);
+            // Actualizamos la fecha al momento concreto en el que se hizo y marcamos la recompensa como recogida
+            dailyRewards.lastDate = GlobalDate.getCurrentDate();
+            reward.pickedUp = true;
 
-            Logger.debug("claimReward: user: {} rewardId {}", userId.toString(), rewardId);
+            // Actualizamos la bdd con los cambios
+            Model.users()
+                    .update("{_id: #, \"dailyRewards.rewards._id\": #}", userId, reward.rewardId)
+                    .with("{$set: {\"dailyRewards.lastDate\": #, \"dailyRewards.rewards.$.pickedUp\": true}}", GlobalDate.getCurrentDate());
+
+            Logger.debug("claimReward: user: {} rewardId {}", userId.toString(), reward.rewardId);
         }
         else {
-            Logger.error("claimReward: user: {} rewardId: {} invalid", userId.toString(), rewardId.toString());
+            Logger.error("claimReward: user: {} rewardId: {} invalid", userId.toString(), reward.rewardId.toString());
         }
-    }
-
-    private void removeReward(ObjectId rewardId) {
-        // Lo quitamos de la instancia actual
-        dailyRewards.removeReward(rewardId);
-        // Lo quitamos de la bdd
-        Model.users().update(userId).with("{$pull: {'dailyRewards.rewards': { _id: # } }}", rewardId);
     }
 
     public Integer getSeqId() {

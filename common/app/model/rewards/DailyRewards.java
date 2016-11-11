@@ -1,6 +1,8 @@
 package model.rewards;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import model.GlobalDate;
 import model.JsonViews;
 import org.bson.types.ObjectId;
@@ -20,9 +22,8 @@ public class DailyRewards {
     public static final long HOURS_TO_RESET = 48;
 
     @JsonView(JsonViews.NotForClient.class)
-    public Date lastDate;               // La última fecha en la que se recompensó por entrar
+    public Date lastDate;               // La última fecha en la que el usuario recogió la recompensa
 
-    @JsonView(JsonViews.NotForClient.class)
     public int consecutiveDays = -1;    // Número de días consecutivos en los que el usuario está volviendo a la aplicación
 
     public List<Reward> rewards = new ArrayList<>();
@@ -36,14 +37,34 @@ public class DailyRewards {
         long hours = hoursFromLastDate();
         if (hours >= HOURS_TO_RECEIVE_DAILYREWARDS) {
 
-            consecutiveDays = (hours >= HOURS_TO_RESET) ? 1 : consecutiveDays + 1;
+            if (hours >= HOURS_TO_RESET) {
+                rewards = createRewards();
+                consecutiveDays = 1;
 
-            // TODO: Entregar una recompensa
-            rewards.add(new GoldReward(Money.of(MoneyUtils.CURRENCY_GOLD, consecutiveDays), consecutiveDays));
+                updated = true;
+            }
+            // Si ha recogido la anterior recompensa
+            else if (rewards.get(consecutiveDays - 1).pickedUp) {
 
+                // Si ha recogido todas las recompensas
+                if (consecutiveDays >= rewards.size()) {
+                    // Volvemos a empezar
+                    rewards = createRewards();
+                    consecutiveDays = 1;
+                } else {
+                    // Le ofrecemos la siguiente recompensa
+                    consecutiveDays++;
+                }
+
+                updated = true;
+            }
+        }
+
+        if (updated) {
+            // Inicializamos la fecha con la de generación de los premios,
+            // posteriormente cuando el usuario recoja el premio la volveremos a cambiar
+            // (para que tomemos como referencia el momento "real" en el que recogió el premio)
             lastDate = GlobalDate.getCurrentDate();
-
-            updated = true;
 
             printDebug();
         }
@@ -58,12 +79,22 @@ public class DailyRewards {
                 GlobalDate.formatDate(lastDate), consecutiveDays, String.join(", ", rewardsStr));
     }
 
-    public Reward findReward(ObjectId rewardId) {
-        return rewards.stream().filter(reward -> reward.rewardId.equals(rewardId)).findFirst().orElse(null);
+    public Reward lastReward() {
+        return rewards.get(consecutiveDays - 1);
     }
 
     public void removeReward(ObjectId rewardId) {
         rewards = rewards.stream().filter(reward -> !reward.rewardId.equals(rewardId)).collect(Collectors.toList());
+    }
+
+    private List<Reward> createRewards() {
+        return ImmutableList.of(
+                new GoldReward(Money.of(MoneyUtils.CURRENCY_GOLD, 1)),
+                new GoldReward(Money.of(MoneyUtils.CURRENCY_GOLD, 1)),
+                new GoldReward(Money.of(MoneyUtils.CURRENCY_GOLD, 2)),
+                new GoldReward(Money.of(MoneyUtils.CURRENCY_GOLD, 2)),
+                new GoldReward(Money.of(MoneyUtils.CURRENCY_GOLD, 3))
+        );
     }
 
     private long hoursFromLastDate() {

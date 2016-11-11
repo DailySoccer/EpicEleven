@@ -14,6 +14,7 @@ public class Reward {
     public ObjectId rewardId;
 
     public RewardType type;
+    public boolean pickedUp;
 
     protected Reward() {
     }
@@ -21,9 +22,10 @@ public class Reward {
     protected Reward(RewardType type) {
         this.rewardId = new ObjectId();
         this.type = type;
+        this.pickedUp = false;
     }
 
     protected String debug() {
-        return type.toString() + "(" + rewardId.toString() + ")";
+        return String.format("%s(%s) %s", type.toString(), rewardId.toString(), pickedUp ? "PICKED UP" : "WAITING");
     }
 }
