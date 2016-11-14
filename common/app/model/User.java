@@ -290,7 +290,7 @@ public class User {
 
     public void claimReward() {
         Reward reward = dailyRewards.lastReward();
-        if (reward instanceof  GoldReward) {
+        if (!reward.pickedUp && (reward instanceof  GoldReward)) {
             GoldReward goldReward = (GoldReward) reward;
 
             // Crear un AccountingTranReward para dar la recompensa al usuario
