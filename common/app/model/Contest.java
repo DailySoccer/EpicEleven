@@ -317,6 +317,11 @@ public class Contest implements JongoId {
                 .count("{templateContestId: #, state: \"ACTIVE\", freeSlots: {$gt: 0}}", templateContestId);
     }
 
+    static public long countActiveFromTemplateContest(ObjectId templateContestId) {
+        return Model.contests()
+                .count("{templateContestId: #, state: \"ACTIVE\"}", templateContestId);
+    }
+
     static public long countPlayedSimulations(ObjectId userId) {
         return Model.contests()
                 .count("{'contestEntries.userId': #, state: \"HISTORY\", simulation: true}", userId);

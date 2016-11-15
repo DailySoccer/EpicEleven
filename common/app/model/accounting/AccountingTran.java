@@ -28,7 +28,8 @@ public class AccountingTran {
         FREE_MONEY,
         BONUS,
         BONUS_TO_CASH,
-        DECAY
+        DECAY,
+        REWARD
     }
 
     public enum TransactionProc {

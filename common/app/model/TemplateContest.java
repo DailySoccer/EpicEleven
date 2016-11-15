@@ -34,6 +34,9 @@ public class TemplateContest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public int minInstances;        // Minimum desired number of instances that we want running at any given moment
 
+    @JsonView(JsonViews.NotForClient.class)
+    public int maxInstances = 0;    // Máximo número de instancias que pueden existir (estén o no llenas)
+
     public int minEntries = 2;
     public int maxEntries;
 
@@ -74,18 +77,19 @@ public class TemplateContest implements JongoId {
 
     public TemplateContest() { }
 
-    public TemplateContest(String name, int minInstances, int maxEntries, SalaryCap salaryCap,
+    public TemplateContest(String name, int minInstances, int maxInstances, int maxEntries, SalaryCap salaryCap,
                            Money entryFee, PrizeType prizeType, Date activationAt,
                            List<String> templateMatchEvents) {
-        this(name, minInstances, maxEntries, salaryCap, entryFee, 1.0f, prizeType, activationAt, templateMatchEvents);
+        this(name, minInstances, maxInstances, maxEntries, salaryCap, entryFee, 1.0f, prizeType, activationAt, templateMatchEvents);
     }
 
-    public TemplateContest(String name, int minInstances, int maxEntries, SalaryCap salaryCap,
+    public TemplateContest(String name, int minInstances, int maxInstances, int maxEntries, SalaryCap salaryCap,
                             Money entryFee, float prizeMultiplier, PrizeType prizeType, Date activationAt,
                             List<String> templateMatchEvents) {
 
         this.name = name;
         this.minInstances = minInstances;
+        this.maxInstances = maxInstances;
         this.minEntries = 2;
         this.maxEntries = maxEntries;
         this.salaryCap = salaryCap.money;
@@ -115,6 +119,7 @@ public class TemplateContest implements JongoId {
         cloned.state = state;
         cloned.name = name;
         cloned.minInstances = minInstances;
+        cloned.maxInstances = maxInstances;
         cloned.minEntries = minEntries;
         cloned.maxEntries = maxEntries;
 
@@ -209,6 +214,11 @@ public class TemplateContest implements JongoId {
                                      .as(TemplateContest.class));
     }
 
+    static public boolean hasMaxInstances(ObjectId templateContestId) {
+        // Comprobamos si el template tiene maxInstances > 0 (tiene un límite de instancias que puede crear)
+        return Model.templateContests().findOne("{_id : #, maxInstances: {$gt: 0}}", templateContestId).as(TemplateContest.class) != null;
+    }
+
     public TemplateContest insert() {
         Model.templateContests().withWriteConcern(WriteConcern.SAFE).update("{_id: #}", templateContestId).upsert().with(this);
         return this;
@@ -237,10 +247,13 @@ public class TemplateContest implements JongoId {
     public static void maintainingMinimumNumberOfInstances(ObjectId templateContestId) {
         TemplateContest templateContest = findOne(templateContestId);
 
+        // Cuantas instancias tenemos creadas que no estén llenas?
+        long instancesNotFull = Contest.countActiveNotFullFromTemplateContest(templateContestId);
         // Cuantas instancias tenemos creadas?
-        long instances = Contest.countActiveNotFullFromTemplateContest(templateContestId);
+        long instances = (templateContest.maxInstances <= 0) ? 0 : Contest.countActiveFromTemplateContest(templateContestId);
 
-        for (long i=instances; i < templateContest.minInstances; i++) {
+        long limitInstances = (templateContest.maxInstances <= 0) ? Long.MAX_VALUE : templateContest.maxInstances;
+        for (long i=0; i < (templateContest.minInstances - instancesNotFull) && (instances + i) < limitInstances; i++) {
             templateContest.instantiateContest();
         }
     }

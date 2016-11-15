@@ -191,6 +191,7 @@ public class ContestsActor extends TickableActor {
 
         templateContest.name = "%StartDate - " + _contestNameSuffixes[_templateCount] + " " + TemplateContest.FILL_WITH_MOCK_USERS;
         templateContest.minInstances = 1;
+        templateContest.maxInstances = 0;
         templateContest.maxEntries = maxEntries;
         templateContest.prizeType = prizeType;
         templateContest.entryFee = entryFee;

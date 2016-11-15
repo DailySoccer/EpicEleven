@@ -64,19 +64,19 @@ public class TestController extends Controller {
         switch(mockIndex) {
             case 0:
                 Model.templateContests().insert(new TemplateContest(
-                        "jue., 12 jun.!! %MockUsers", 1, 200, SalaryCap.DIFFICULT, MoneyUtils.zero, PrizeType.FREE,
+                        "jue., 12 jun.!! %MockUsers", 1, 0, 200, SalaryCap.DIFFICULT, MoneyUtils.zero, PrizeType.FREE,
                         new DateTime(2014, 6, 12, 0, 0, DateTimeZone.UTC).toDate(),
                         new ArrayList<String>(Arrays.asList("731782", "731768"))) //RUS-SOUTHKOREA MEX-CMR
                 );
 
                 Model.templateContests().insert(new TemplateContest(
-                        "jue., 12 jun.... %MockUsers", 1, 200, SalaryCap.EASY, MoneyUtils.zero, PrizeType.FREE,
+                        "jue., 12 jun.... %MockUsers", 1, 0, 200, SalaryCap.EASY, MoneyUtils.zero, PrizeType.FREE,
                         new DateTime(2014, 6, 12, 0, 0, DateTimeZone.UTC).toDate(),
                         new ArrayList<String>(Arrays.asList("731767", "731776", "731793", "731813"))) // BRA-HRV FRA-HND ARG-IRN KOR-BEL
                 );
 
                 Model.templateContests().insert(new TemplateContest(
-                        "jue., 12 jun.++ %MockUsers", 1, 100, SalaryCap.STANDARD, MoneyUtils.zero, PrizeType.FREE,
+                        "jue., 12 jun.++ %MockUsers", 1, 0, 100, SalaryCap.STANDARD, MoneyUtils.zero, PrizeType.FREE,
                         new DateTime(2014, 6, 12, 0, 0, DateTimeZone.UTC).toDate(),
                         new ArrayList<String>(Arrays.asList("731767", "731768", "731769"))) // BRA-HRV MEX-CMR ESP-NLD
                 );

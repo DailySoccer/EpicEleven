@@ -32,7 +32,7 @@ public class TemplateContestForm {
     public String optaCompetitionId;
 
     // Por defecto, el formulario asumirá "Virtual" (dada su mayor frecuencia de creación)
-    public TypeContest typeContest = TypeContest.VIRTUAL;
+    public TypeContest typeContest = TypeContest.REAL;
     public SelectionYESNO typeCustomizable;
 
     @Constraints.Required
@@ -41,6 +41,10 @@ public class TemplateContestForm {
     @Constraints.Min(0)
     @Constraints.Required
     public int minInstances = 1;        // Minimum desired number of instances that we want running at any given moment
+
+    @Constraints.Min(0)
+    @Constraints.Required
+    public int maxInstances = 0;        // Máximo número de instancias de un template determinado
 
     @Constraints.Min(2)
     @Constraints.Required
@@ -109,6 +113,7 @@ public class TemplateContestForm {
         typeCustomizable = templateContest.customizable ? SelectionYESNO.YES : SelectionYESNO.NO;
         name = templateContest.name;
         minInstances = templateContest.minInstances;
+        maxInstances = templateContest.maxInstances;
         minEntries = templateContest.minEntries;
         maxEntries = templateContest.maxEntries;
         salaryCap = SalaryCap.findByMoney(templateContest.salaryCap);

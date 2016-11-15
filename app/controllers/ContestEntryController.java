@@ -102,12 +102,21 @@ public class ContestEntryController extends Controller {
                         errores.add(ERROR_CONTEST_FULL);
                     }
                     else {
+                        // Registramos el templateContestId antes de modificar el Contest (por si lo necesitamos más adelante)
+                        ObjectId templateContestId = aContest.templateContestId;
+
                         // Buscar otro contest de características similares (el sistema tendría que crear una nueva instancia de características similares en algún momento...)
                         aContest = aContest.getSameContestWithFreeSlot(theUser.userId);
                         if (aContest == null) {
                             // Si no encontramos ningún Contest semejante, pedimos al webClient que lo intente otra vez
                             //  dado que asumimos que simplemente es un problema "temporal"
-                            errores.add(ERROR_RETRY_OP);
+                            // Salvo que el templateContest tenga una limitación de instancias posibles
+                            boolean limitInstances = TemplateContest.hasMaxInstances(templateContestId);
+                            errores.add(limitInstances ? ERROR_CONTEST_FULL : ERROR_RETRY_OP);
+
+                            if (limitInstances) {
+                                Logger.info("LIMIT TemplateContest MaxInstances: {}", templateContestId.toString());
+                            }
                         }
                     }
                 }

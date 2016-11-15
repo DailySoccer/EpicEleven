@@ -279,6 +279,16 @@ public class MainController extends Controller {
                 "result", theUser.hasFlag(flag))).toResult();
     }
 
+    @UserAuthenticated
+    public static Result claimReward() {
+        User theUser = (User) ctx().args.get("User");
+
+        theUser.claimReward();
+
+        return new ReturnHelper(true, ImmutableMap.of(
+                "profile", theUser.getProfile())).toResult();
+    }
+
     public static F.Promise<Result> getShortUrl() {
         String url = request().body().asJson().get("url").asText();
         return WS.url("http://www.readability.com/api/shortener/v1/urls").post("url="+url).map(response -> {
