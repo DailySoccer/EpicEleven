@@ -55,6 +55,8 @@ GET            /add_flag/:flag                                         controlle
 GET            /remove_flag/:flag                                      controllers.MainController.removeFlag(flag)
 GET            /has_flag/:flag                                         controllers.MainController.hasFlag(flag)
 
+GET            /claim_reward                                           controllers.MainController.claimReward()
+
 # Crear concurso
 GET            /get_active_templatecontests                            controllers.ContestController.getActiveTemplateContests()
 POST           /create_contest                                         controllers.ContestController.createContest()
