@@ -1,0 +1,14 @@
+<div id="matchesFilterWrapper" ng-switch="srcDet.isXsScreen">
+
+  <select id="matchesSelectorFilter" ng-switch-when="true" class="matches-selector-filter" ng-model="optionsSelectorValue" >
+    <option ng-repeat="match in matchEvents" id="option-match-{{match.id}}" value="{{$index + 1}}" ng-value="match.id">{{match.textoSelector}}</option>
+  </select>
+
+  <div id="matchesFilterButtons" class="matches-filter-buttons" ng-switch-when="false">
+    <div class="button-filter-wrapper" ng-repeat="match in matchEvents" >
+      <button class="btn btn-default button-filter-team" ng-bind-html="match.texto" id="match-{{match.id}}"
+              ng-click="optionsSelectorValue = match.id" ng-class="{'active': optionsSelectorValue == match.id }">
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,108 @@
+<div id="homeRoot">
+  <!--
+  Torneos
+  Tutorial
+  Blog
+  Crear Torneos
+  Torneos en directo
+  Scouting??
+  -->
+  
+  <!--div id="contestTile" class="home-tile-wrapper enabled" ng-click="onContestsClick()"-->
+  <div id="contestTile" class="home-tile-wrapper"  ng-class="{'disabled': !isCreateContestTileEnabled}">
+    <div class="home-tile-content">
+      <div class="tile">
+        <div ng-bind-html-unsafe="contestTileHTML"></div>
+        <!--span class="tile-action"></span-->
+      </div>
+    </div>
+  </div>
+  
+  <div id="manageTile" class="vertical-layout-tilling">
+    <!--div id="createContestTile" class="home-tile-wrapper" ng-click="onCreateContestClick()" ng-class="{'disabled': !isCreateContestTileEnabled}"-->
+    <div id="createContestTile" class="home-tile-wrapper" ng-class="{'disabled': !isCreateContestTileEnabled}">
+      <div class="home-tile-content">
+        <div class="tile">
+          <span class="tile-title">{{getLocalizedText('create_contest_title')}}</span>
+          <span class="tile-info">{{CreateContestTileText}}</span>
+          <span class="tile-action"></span>
+        </div>
+      </div>
+    </div>
+    <div id="scoutingTile" class="home-tile-wrapper" ng-click="onScoutingClick()" ng-class="{'disabled': !isScoutingTileEnabled}">
+      <div class="home-tile-content">
+        <div class="tile">
+          <span class="tile-title">{{getLocalizedText('scouting_title')}}</span>
+          <span class="tile-info ">{{getLocalizedText('scouting_info')}}</span>
+          <span class="tile-action"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  
+  <div id="myContestsTile" class="vertical-layout-tilling">
+    <div id="upcomingTile" class="home-tile-wrapper" ng-click="onUpcomingClick()" ng-class="{'disabled': !isUpcomingTileEnabled}">
+      <div class="home-tile-content">
+        <div class="tile">
+          <span class="tile-title">{{getLocalizedText('upcoming_title')}}</span>
+          <div class="tile-info">
+            <span ng-if="!isUpcomingTileEnabled">{{getLocalizedText('mycontest_disabled_info')}}</span>
+            <span ng-if="isUpcomingTileEnabled" class="num-contest-info">{{numUpcomingContests}}</span>
+          </div>
+          <span class="tile-action"></span>
+        </div>
+      </div>
+    </div>
+    <div id="liveTile" class="home-tile-wrapper" ng-click="onLiveClick()" ng-class="{'disabled': !isLiveTileEnabled}">
+      <div class="home-tile-content">
+        <div class="tile">
+          <span class="tile-title">{{getLocalizedText('live_title')}}</span>
+          <div class="tile-info">
+            <span ng-if="!isLiveTileEnabled">{{getLocalizedText('mycontest_disabled_info')}}</span>
+            <span ng-if="isLiveTileEnabled" class="num-contest-info">{{numLiveContests}}</span>
+          </div>
+          <span class="tile-action"></span>
+        </div>
+      </div>
+    </div>
+    <div id="historyTile" class="home-tile-wrapper" ng-click="onHistoryClick()" ng-class="{'disabled': !isHistoryTileEnabled}">
+      <div class="home-tile-content">
+        <div class="tile">
+          <span class="tile-title">{{getLocalizedText('history_title')}}</span>
+          <div class="tile-info">
+            <span ng-if="!isHistoryTileEnabled">{{getLocalizedText('mycontest_disabled_info')}}</span>
+            <span ng-if="isHistoryTileEnabled" class="num-contest-info virtual">{{numVirtualHistoryContests}}</span>
+            <span ng-if="isHistoryTileEnabled" class="num-contest-info real">{{numRealHistoryContests}}</span>
+          </div>
+          <span class="tile-action"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  
+  <div id="helpTile" class="vertical-layout-tilling">
+    <div id="blogTile" class="home-tile-wrapper enabled" ng-click="onBlogClick()" ng-class="{'disabled': !isBlogTileEnabled}">
+      <div class="home-tile-content">
+        <div class="tile">
+          <span class="tile-title">{{getLocalizedText('blog_title')}}</span>
+          <span class="tile-info">{{getLocalizedText('blog_info')}}</span>
+          <span class="tile-blog-author">{{getLocalizedText('blog_author')}}</span>
+          <span class="tile-action"></span>
+        </div>
+      </div>
+    </div>
+    <div id="howitworksTile" class="home-tile-wrapper" ng-click="onHowItWorksClick()" ng-class="{'disabled': !isHowItWorksEnabled}">
+      <div class="home-tile-content">
+        <div class="tile">
+          <span class="tile-title">{{getLocalizedText('help_title')}}</span>
+          <span class="tile-info">{{getLocalizedText('help_info')}}</span>
+          <span class="tile-action"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="clearfix"></div>
+</div>

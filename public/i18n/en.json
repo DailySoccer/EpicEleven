@@ -1,0 +1,749 @@
+{
+  "_comment"                            : "i18n English",
+  "version"                             : "0.0.1",
+  "modified"                            : "2015-09-21",
+  "language"                            : "English",
+  "locale"                              : "en",
+  "translations"                        :
+  {
+    "currency"                          : "$",
+    "locale"                            : "en_EN",
+    "common"                            :
+    {
+      "day"                             : " DAY ",
+      "days"                            : " DAYS ",
+      "points"                          : " Points ",
+      "abrevpoints"                     : " PTS. "
+    }
+    ,"date"                             :
+    {
+      "datewithdayofthemonth"           : "MMM d EEE",
+      "dateshort"                       : "MM/dd",
+      "timeshort"                       : "HH:mm",
+      "datetimeshort"                   : "E, HH:mm",
+      "datetimelong"                    : "E, MM/dd/yy HH:mm",
+      "datetimedayhour"                 : "MM/dd/yy HH:mm"
+    }
+    ,"weekcalendar"                     :
+    {
+      "1"                               : "M",
+      "2"                               : "T",
+      "3"                               : "W",
+      "4"                               : "Th",
+      "5"                               : "F",
+      "6"                               : "S",
+      "7"                               : "Su"
+    }
+    ,"landing"                          :
+    {
+      "title"                           : "DAILY FANTASY LEAGUES",
+      "subtitle"                        : "Play whenever you want, wherever your want. Win prizes with no season-long commitment.",
+      "buttonplay"                      : "PLAY NOW",
+      "info1"                           : "Compete with your friends in La Liga, Premier and Champions",
+      "info2"                           : "Create your lineup on your computer, tablet or smartphone in seconds",
+      "info3"                           : "Immediate cash payouts"
+    }
+    ,"join"                             :
+    {
+      "title"                           : "SIGN UP",
+      "description"                     : "Don't have an EPIC ELEVEN account yet? <br> Sign up now.",
+      "nickrequires"                    : "Your nickname must be @MIN_NICKNAME_LENGTH to @MAX_NICKNAME_LENGTH characters long.",
+      "nick"                            : "Nickname",
+      "invalidnick"                     : "Invalid nickname.",
+      "email"                           : "Email",
+      "invalidemail"                    : "Invalid email.",
+      "passrequires"                    : "Password: Should be at least @MIN_PASSWORD_LENGTH characters. (Type it twice).",
+      "pass"                            : "Password",
+      "repass"                          : "Repeat password",
+      "invalidpass"                     : "Invalid password.",
+      "buttonsignup"                    : "SIGN UP",
+      "buttoncancel"                    : "CANCEL",
+      "registered"                      : "Already have an account?",
+      "loginhere"                       : "Log in here!"
+    }
+    ,"login"                            :
+    {
+      "title"                           : "LOG IN",
+      "description"                     : "Enter your email and password.",
+      "email"                           : "Email",
+      "pass"                            : "Password",
+      "loginerror"                      : "LOGIN ERROR: The nickname or password is not correct.",
+      "forgotpass"                      : "Forgot your password?",
+      "buttonlogin"                     : "CONTINUE",
+      "buttoncancel"                    : "CANCEL",
+      "unregistered"                    : "Don't have an account yet?",
+      "signuphere"                      : "Sign up here!"
+    }
+    ,"changepass"                       :
+    {
+      "error503"                        : "ERROR 503",
+      "changepass"                      : "CHANGE PASSWORD",
+      "unavailable"                     : "The page is not available",
+      "tokenexpired"                    : "The provided token is invalid or has expired.",
+      "createpass"                      : "Create a new password.",
+      "passrequires"                    : "Password: at least @MIN_PASSWORD_LENGTH characters. (Type it twice).",
+      "pass"                            : "Password",
+      "repass"                          : "Repeat Password",
+      "buttoncontinue"                  : "CONTINUE",
+      "buttoncancel"                    : "CANCEL"
+    }
+    ,"rememberpass"                     :
+    {
+      "title"                           : "REMEMBER PASSWORD",
+      "confirm_part_1"                  : "We have sent you an email to",
+      "confirm_part_2"                  : "Check your inbox and follow the instructions in the email.",
+      "description"                     : "Forgot your password? Enter your email address and we will send you instructions to recover your password.",
+      "emailrequires"                   : "Enter the email address used to sign up for EPIC ELEVEN:",
+      "email"                           : "Email",
+      "buttoncontinue"                  : "CONTINUE",
+      "buttoncancel"                    : "CANCEL",
+      "unregistered"                    : "Don't have an account?",
+      "signuphere"                      : "Sign up here!"
+    }
+    ,"addfunds"                         :
+    {
+      "title"                           : "ADD FUNDS",
+      "description1"                    : "In order to play Epic Eleven with real money, you need to add funds to your account.",
+      "description2"                    : "Don't worry, you can withdraw your money whenever you want for free.",
+      "minfunds"                        : "Minimum allowed is ",
+      "addfunds"                        : "Add",
+      "via"                             : "via",
+      "paypalinfo"                      : "You can add funds using PayPal account. The money will be transferred to Fantasy Sports Games S.L.",
+      "buttonaddfunds"                  : "Add funds",
+      "needhelp"                        : "Need help"
+    }
+    ,"editprofile"                      :
+    {
+      "title"                           : "EDIT ACCOUNT",
+      "name"                            : "Name",
+      "lastname"                        : "Last name",
+      "username"                        : "Nick",
+      "mail"                            : "Email",
+      "passrequires"                    : "Password (Fill the both fields to update it)",
+      "pass"                            : "Password",
+      "repass"                          : "Repeat Password",
+      "notifications"                   : "NOTIFICATIONS",
+      "newletternotifications"          : "NEWSLETTER/SPECIAL OFFERS",
+      "gamenotifications"               : "GAME NOTIFICATIONS",
+      "transfernotifications"           : "OWN SOCCER PLAYER TRANSFER NOTIFICACIONS",
+      "buttonsave"                      : "SAVE",
+      "buttoncancel"                    : "CANCEL"
+    }
+    ,"paymentresponse"                  :
+    {
+      "resultok"                        : "Successful payment",
+      "resultnook"                      : "Cancelled payment",
+      "resultokdesc"                    : "Thank you! Your order has been successfully processed.",
+      "resultnookdesc"                  : "The requested transaction cannot be completed. Please check your payment method and try again."
+    }
+    ,"transactionhistory"               :
+    {
+      "title"                           : "TRANSACTION HISTORY",
+      "date"                            : "DATE",
+      "id"                              : "ID",
+      "subject"                         : "SUBJECT",
+      "value"                           : "VALUE",
+      "balance"                         : "BALANCE"
+    }
+    ,"userprofile"                      :
+    {
+      "title"                           : "My Account",
+      "buttonedit"                      : "EDIT",
+      "fullname"                        : "Full Name",
+      "nick"                            : "Nick",
+      "email"                           : "Email",
+      "pass"                            : "Password",
+      "wallet"                          : "Gold Coins",
+      "buttonbuy"                       : "Buy",
+      "ranking"                         : "Rankings",
+      "buttonrankingtable"              : "Ranking table"
+    }
+    ,"leaderboard"                      :
+    {
+      "title"                           : "Ranking",
+      "trueskill"                       : "Skill",
+      "gold"                            : "Gold",
+      "topgold"                         : "Top Gold",
+      "topskill"                        : "Top Skill",
+      "abrevposition"                   : "Pos.",
+      "name"                            : "Name"
+    }
+    ,"withdrawfunds"                    :
+    {
+      "title"                           : "WITHDRAW FUNDS",
+      "balance"                         : "YOUR BALANCE IS",
+      "withdrawdesc1"                   : "How much money do you want to withdraw?",
+      "withdrawdesc2"                   : "You can only withdraw money amounts larger than ",
+      "withdrawfunds"                   : "Withdraw funds",
+      "needhelp"                        : "Need help?"
+    }
+    ,"entercontest"                     :
+    {
+      "tablineup"                       : "Your lineup",
+      "tabcontestinfo"                  : "Contest Info",
+      "buttoncancel"                    : "CANCEL",
+      "yourlineup"                      : "YOUR LINEUP",
+      "remainsalary"                    : "REMAINING SALARY",
+      "buttonclean"                     : "REMOVE ALL",
+      "buttoncontinue"                  : "CONTINUE",
+      "tip"                             : "Remember: you can edit your team as many times as you want until the contest starts",
+      "lineupsavedmsg"                  : "Lineup saved",
+      "errorcontestnotactivetitle"      : "Live Contest",
+      "errorcontestnotactivegeneric"    : "It is not possible to enter a live contest.",
+      "errorcontestnotactiveediting"    : "It is not possible to modify your lineup once the contest has started.",
+      "errormaxplayerssameteamtitle"    : "Players from same team",
+      "errormaxplayerssameteamgeneric"  : "It is not possible...",
+      "erroruserbalancenegativetitle"   : "Not enough cash",
+      "erroruserbalancenegativegeneric" : "You do not have enough cash to enter this contest. Please, add funds to continue.",
+      "errordefaulttitle"               : "Warning",
+      "errordefaultgeneric"             : "An error has occurred. You can not enter this contest at the moment. Please, try again later.",
+      "errordefaultediting"             : "An error has occurred. You can not modify your lineup at the moment. Please, try again later.",
+      "alert-no-energy-title"           : "Not enough ENERGY",
+      "alert-no-gold-title"             : "Not enough GOLD",
+      "alert-no-energy-message"         : "You don't have available ENERGY to eneter this contest",
+      "alert-no-gold-message"           : "You don't have available GOLD to eneter this contest",
+      "alert-no-gold-to-buy-message"    : "You don't have enough GOLD to select this player",
+      "resource-gold"                   : "GOLD",
+      "resource-energy"                 : "ENERGY",
+      "buy-gold-button"                 : "BUY GOLD",
+      "buy-energy-button"               : "REFILL ENERGY",
+      "alert-user-gold-message"         : "You own @MONEY",
+      "alert-no-energy-message"         : "<strong>You don't have enough energy</strong><br>to enter this contest."
+    }
+    ,"lineupselector"                   :
+    {
+      "wastedsalarycap"                 : "<strong>You've spent the salary cap</strong><br> Please choose players that fit the budget.",
+      "maxplayersteam"                  : "<strong>Ups! It looks like you already have @MAX_PLAYERS_SAME_TEAM players of the same team</strong><br> Please, choose another player...",
+      "not-enough-resources"            : "<strong>ATENTION! You can't enter this tournament</strong><br> We will save your lineup until you get what you need to pay the entry-fee.",
+      "add"                             : "ADD "
+    }
+    ,"matchesfilter"                    :
+    {
+      "all-matches"                     : "All<br>matches",
+      "allmatches"                      : "All matches",
+      "all"                             : "all"
+    }
+    ,"soccerplayerlist"                 :
+    {
+      "positionabrev"                   : "Pos.",
+      "name"                            : "Name",
+      "dfp"                             : "DFP",
+      "numMatchesAbrev"                 : "#Match",
+      "salary"                          : "Salary",
+      "search-player"                   : "Search player...",
+      "players"                         : "Players"
+    }
+    ,"soccerplayerpositions"            :
+    {
+      "goalkeeper"                      : "GOALKEEPER",
+      "gk"                              : "GK",
+      "defense"                         : "DEFENSE",
+      "def"                             : "DEF",
+      "middle"                          : "MIDDLE",
+      "mid"                             : "MID",
+      "forward"                         : "FORWARD",
+      "for"                             : "FOR",
+      "all"                             : "ALL"
+    }
+    ,"soccerplayerstats"                :
+    {
+      "buttoncancel"                    : "CANCEL",
+      "buttonadd"                       : "ADD",
+      "tittle"                          : "PLAYER STATISTICS",
+      "dfp"                             : "DFP",
+      "matches"                         : "MATCHES",
+      "salary"                          : "SALARY",
+      "next-match"                      : "NEXT MATCH",
+      "seasondata"                      : "Season Data",
+      "matchbymatch"                    : "Match by Match",
+      "seasonstats"                     : "SEASON STATISTICS <span>(DATA BY MATCH)</span>",
+      "noseasonstats"                   : "has not played any game this season",
+      "season"                          : "Season",
+      "keypasses"                       : "PASSES",
+      "abrevpasses"                     : "P",
+      "descpasses"                      : "Passes",
+      "keyrecovers"                     : "RECOVERIES",
+      "abrevrecovers"                   : "R",
+      "descrecovers"                    : "Recoveries",
+      "keyposslost"                     : "POSSESSION_LOST",
+      "abrevposslost"                   : "PL",
+      "descposslost"                    : "Possession lost",
+      "keyfoulscommited"                : "FOULS_COMMITED",
+      "abrevfoulscommited"              : "F",
+      "descfoulscommited"               : "Fouls Committed",
+      "keyyellowcards"                  : "YELLOW_CARDS",
+      "abrevyellowcards"                : "YC",
+      "descyellowcards"                 : "Yellow Cards",
+      "keyredcards"                     : "RED_CARDS",
+      "abrevredcards"                   : "RC",
+      "descredcards"                    : "Red Cards",
+      "keygoalsconceded"                : "GOALS_CONCEDED",
+      "abrevgoalsconceded"              : "GC",
+      "descgoalsconceded"               : "Goals Conceded",
+      "keysaves"                        : "SAVES",
+      "abrevsaves"                      : "S",
+      "descsaves"                       : "Saves",
+      "keyclearances"                   : "CLEARANCES",
+      "abrevclearances"                 : "C",
+      "descclearances"                  : "Clearances",
+      "keypenaltiessaved"               : "PENALTIES_SAVED",
+      "abrevpenaltiessaved"             : "PS",
+      "descpenaltiessaved"              : "Penalties Saved",
+      "keygoals"                        : "GOALS",
+      "abrevgoals"                      : "G",
+      "descgoals"                       : "Goals",
+      "keyshots"                        : "SHOTS",
+      "abrevshots"                      : "SH",
+      "descshots"                       : "Shots",
+      "keychancescreated"               : "CHANCES_CREATED",
+      "abrevchancescreated"             : "CH",
+      "descchancescreated"              : "Chances Created",
+      "keytakeons"                      : "TAKE-ONS",
+      "abrevtakeons"                    : "T",
+      "desctakeons"                     : "Take-ons",
+      "keyfoulsconceded"                : "FOULS_CONCEDED",
+      "abrevfoulsconceded"              : "FC",
+      "descfoulsconceded"               : "Fouls Conceded",
+      "keyplayedminutes"                : "PLAYED_MINUTES",
+      "keyfantasypoints"                : "FANTASY_POINTS",
+      "date"                            : "Date",
+      "opponent"                        : "Opponent",
+      "dailyfantasypoints"              : "Daily Fantasy Points",
+      "minutes"                         : "Minutes",
+      "posessionlost"                   : "Possesion Lost"
+    }
+    ,"footer"                           :
+    {
+      "help"                            : "HELP",
+      "legal"                           : "LEGAL",
+      "terms"                           : "TERMS<span> OF USE</span>",
+      "privacy"                         : "PRIVACY<span> POLICY</span>",
+      "data-provided-by"                : "Data provided by"
+    }
+    ,"mainmenu"                         :
+    {
+      "lobby"                           : "LOBBY",
+      "mycontest"                       : "MY CONTEST",
+      "leaderboard"                     : "RANKING",
+      "howitworks"                      : "Help",
+      "myaccount"                       : "My Account",
+      "shop"                            : "Shop",
+
+      "addfunds"                        : "Add Funds",
+      "transactions"                    : "Transaction History",
+      "referral"                        : "Referral Center",
+      "classification"                  : "Classification",
+      "howitworks2"                     : "How It Works",
+      "logout"                          : "LogOut",
+      "login"                           : "Log In"
+    }
+    ,"contestlist"                      :
+    {
+      "entryfee"                        : "Entry fee:",
+      "of"                              : "OF",
+      "prize"                           : "Prize",
+      "points"                          : "Points",
+      "position"                        : "Position:",
+      "today"                           : "Today",
+      "soonHint"                        : "@TIME min<br>left",
+      "verySoonHint"                    : "@TIME<br>Left"
+    }
+    ,"contestfilters"                   :
+    {
+      "filters"                         : "FILTERS",
+      "competition"                     : "COMPETITION",
+      "contests"                        : "CONTESTS",
+      "salarycap"                       : "SALARY CAP",
+      "entryfee"                        : "ENTRY FEE",
+      "min"                             : "MIN",
+      "max"                             : "MAX",
+      "clearfilters"                    : "CLEAR FILTERS",
+      "buttonaccept"                    : "ACCEPT",
+      "sortby"                          : "Sort by",
+      "search"                          : "Search contest",
+      "availabletip"                    : "Available contests ",
+      "competitionlaliga"               : "Spanish BBVA La Liga",
+      "competitionpremier"              : "Barclays Premier League",
+      "competitionchampions"            : "UEFA Champions League",
+      "contestfree"                     : "Free",
+      "contestheadtohead"               : "Head to Head",
+      "contestleague"                   : "League",
+      "contestfifty"                    : "50 / 50",
+      "salarycapbegginer"               : "Beginner",
+      "salarycapstandard"               : "Standard",
+      "salarycapskilled"                : "Skilled",
+      "sortbyname"                      : "Name",
+      "sortbyentryfee"                  : "Entry Fee",
+      "sortbystartdate"                 : "Start Date"
+    }
+    ,"fantasyteam"                      :
+    {
+      "editlineup"                      : "EDIT THE LINEUP",
+      "pos"                             : "POS",
+      "points"                          : "POINTS",
+      "remainingtime"                   : "REMAINING TIME",
+      "close"                           : "CLOSE",
+      "owned"                           : "OWNED"
+    }
+    ,"teamspanel"                       :
+    {
+      "showmatches"                     : "SHOW MATCHES",
+      "firsthalf"                       : "1st Half - ",
+      "secondhalf"                      : "2nd Half - ",
+      "error"                           : "-Err-",
+      "finished"                        : "Finished"
+    }
+    ,"userlist"                         :
+    {
+      "title"                           : "CONTENDERS IN THIS CONTEST",
+      "desc"                            : "Choose a contender to compare lineups",
+      "pos"                             : "POS",
+      "player"                          : "PLAYER",
+      "rt"                              : "R.T",
+      "points"                          : "POINTS",
+      "prizes"                          : "PRIZES"
+    }
+    ,"viewcontest"                      :
+    {
+      "yourlineup"                      : "Your lineup",
+      "users"                           : "Users",
+      "opponent"                        : "Opponent"
+    }
+    ,"viewcontestentry"                 :
+    {
+      "created"                         : "WELL DONE! YOU HAVE SUCCESSFULLY COMPLETED YOUR LINEUP",
+      "edited"                          : "WELL DONE! YOU HAVE SUCCESSFULLY EDITED YOUR LINEUP",
+      "swapped"                         : "THE CONTEST WAS FULL, SO WE HAVE PUT YOU IN THIS EQUIVALENT ONE",
+      "tip"                             : "Remember that you can edit your lineup as many times as you want before the contest starts",
+      "yourlineup"                      : "Your lineup",
+      "users"                           : "Users",
+      "backtocontests"                  : "BACK TO CONTESTS",
+      "cancel"                          : "CANCEL PARTICIPATION",
+      "alertcanceltitle"                : "¡Atención!",
+      "alertcancelpaidcontest"          : "You are going to cancel your participation in this constest.<br><br>The entry fee of @PRICE will be refounded if you decide to leave.<br><br>¿Are you sure?<br><br>",
+      "alertcancelcontest"              : "You are going to cancel your participation in the contest<br><br>¿Are you sure?<br><br>",
+      "alertbuttonno"                   : "No",
+      "alertbuttonyes"                  : "Yes"
+    },
+    "contestheader"                     :
+    {
+      "entryfee"                        : "ENTRY FEE",
+      "prizes"                          : "PRIZES",
+      "finished"                        : "FINISHED",
+      "startedon"                       : "STARTED ON ",
+      "startson"                        : "STARTS ON ",
+      "verysoon"                        : "STARTS VERY SOON ",
+      "startsin"                        : "STARTS IN ",
+      "salarycap"                       : "contenders - Salary cap",
+      "entryfee"                        : "Entry fee:",
+      "prize"                           : "Prize:",
+      "position"                        : "Position:"
+    }
+    ,"contest"                          :
+    {
+      "contestfree"                     : "Free",
+      "contestheadtohead"               : "Head to Head",
+      "contestleague"                   : "League",
+      "contestfifty"                    : "50 / 50",
+      "salarycap"                       : "Salary cap",
+      "contenders"                      : "contenders",
+      "of"                              : "of",
+      "minimum-contenders"              : "Min. @NUMERO"
+    }
+    ,"contestinfo"                      :
+    {
+      "matches"                         : "Matches",
+      "prizes"                          : "Prizes",
+      "contenders"                      : "Contenders",
+      "scoringrules"                    : "Scoring Rules",
+      "buttonenter"                     : "ENTER",
+      "nocontenders"                    : "There are still no contenders in this contest. <br> Encourage to be the first.",
+      "skill"                           : "Points",
+      "prizes2"                         : "PRIZES",
+      "contenders2"                     : "CONTENDERS",
+      "rulestip"                        : "Choose a team of 11 soccer players from the following matches.",
+      "winnertakesall"                  : "Winner takes all"
+    }
+    ,"prizes"                           :
+    {
+      "free"                            : "Free contest. No prizes",
+      "winnertakesall"                  : "Winner takes all",
+      "first3"                          : "First 3 get prizes",
+      "firstthird"                      : "First # get prizes",
+      "fifty"                           : "First # get prizes"
+    }
+    ,"lobby"                            :
+    {
+      "nextcontest"                     : "NEXT CONTEST"
+    }
+    ,"mycontest"                        :
+    {
+      "title"                           : "MY CONTESTS",
+      "tablive"                         : "live",
+      "tabupcoming"                     : "Upcoming",
+      "tabhistory"                      : "Entry History",
+      "nolives"                         : "YOUR ARE NOT PLAYING ANY CONTEST<br>AT THE MOMENT",
+      "nolivestip1"                     : "CHECK OUT THE LIST OF YOUR ",
+      "nolivestip2"                     : "NEXT CONTESTS",
+      "nolivestip3"                     : " TO SEE WHEN THEY START",
+      "tocontest"                       : "TO THE CONTESTS",
+      "noupcomings"                     : "YOU DON'T HAVE ANY TEAM FOR ANY CONTEST<br>RIGHT NOW",
+      "noupcomingstip1"                 : "GO TO THE CONTEST LIST, PICK ONE AND START PLAYING",
+      "nohistorys"                      : "YOU HAVEN'T PLAYED ANY CONTEST YET<br>WHAT ARE YOU WAITING FOR TO START WINNING?",
+      "nohistoryestip"                  : "GO TO THE CONTEST LIST, PICK ONE AND START PLAYING",
+      "hasLivecontests1"                : "LIVE CONTESTS",
+      "hasLivecontests2"                : "YOU CAN CHECK YOUR LIVE CONTESTS HERE",
+      "haswaitingcontests1"             : "YOU HAVE ENTERED",
+      "haswaitingcontests2"             : "CONTESTS",
+      "haswaitingcontests3"             : "HERE YOU CAN CHECK YOUR CONTESTS AND EDIT YOUR LINEUPS",
+      "hasHistoryContests1"             : "ENTRIES",
+      "hasHistoryContests2"             : "WON",
+      "hasHistoryContests3"             : "HERE YOU CAN CHECK YOUR PAST CONTESTS: LINEUPS, CONTENDERS, SCORES…"
+    }
+    ,"tutorial"                         :
+    {
+      "skip-tutorial"                   : "Skip tutorial",
+      "title-lobby"                     : "SELECT A CONTEST",
+      "title-entercontest"              : "SELECT YOUR LINEUP",
+      "title-viewcontestentry"          : "WELCOME TO EPIC ELEVEN",
+      "text-lobby"                      : "You can play as many contests as you like for La Liga BBVA, Barclays Premier League and UEFA Champions League.",
+      "text-entercontest"               : "Pick up 11 players within the salary cap.",
+      "text-viewcontestentry"           : "Go to “<b>My Contest</b>” to edit your lineups, watch your team’s live performance or review previous contests. <br> <br> <p class=\"subtitle\">Remember: you can play as many contests as you like, and select as many lineups as you like.</p>",
+      "next"                            : "Next"
+    }
+    ,"tutorial_iniciacion"              :
+    {
+    }
+    ,"tutorial_entrenamiento"           :
+    {
+    }
+    ,"tutorial_oficial"                 :
+    {
+    }
+    ,"restricted"                       :
+    {
+      "desc"                            : "Sorry, your current location prohibits you from making deposits on Epic Eleven.<br><br>If you think this is an error and you require any assistance, please contact us through <a href=\"mailto:support@epiceleven.com\">support@epiceleven.com</a>",
+      "gotolobby"                       : "Return to Lobby"
+    }
+    ,"scoringrules"                     :
+    {
+      "all"                             : "ALL PLAYERS",
+      "goalkeepers"                     : "GOALKEEPERS",
+      "defenders"                       : "DEFENDERS",
+      "middles"                         : "MIDFIELDERS",
+      "forwards"                        : "FORWARDS",
+      "successpass"                     : "Pass Successful",
+      "unsuccesspass"                   : "Pass Unsuccessful",
+      "takeon"                          : "Take-on",
+      "foulreceived"                    : "Foul Received",
+      "tackle"                          : "Tackle",
+      "interception"                    : "Interception",
+      "save"                            : "Save",
+      "saveshot"                       : "Blocked Shot",
+      "claim"                           : "Claim",
+      "clearance"                       : "Clearance",
+      "miss"                            : "Missed shot",
+      "post"                            : "Post",
+      "asaved"                          : "Attempted Shot",
+      "ycard"                           : "Yellow Card",
+      "punch"                           : "Punch",
+      "dispossessed"                    : "Dispossessed",
+      "error"                           : "Error",
+      "decisiveerror"                   : "Decisive Error",
+      "assist"                          : "Chance Created",
+      "tacklecomplete"                  : "Tackle Successful",
+      "goalbygk"                        : "Goal",
+      "goalbydef"                       : "Goal",
+      "goalbymid"                       : "Goal",
+      "goalbyfor"                       : "Goal",
+      "owngoal"                         : "Own Goal",
+      "foulcommited"                    : "Foul Committed",
+      "ycard2"                          : "Second Yellow Card",
+      "rcard"                           : "Red Card",
+      "offside"                         : "Offside",
+      "penaltyconceded"                 : "Penalty Conceded",
+      "penaltyfailed"                   : "Penalty Missed",
+      "penaltysaved"                    : "Penalty Saved",
+      "clean"                           : "Clean Sheet",
+      "goalconceded"                    : "Goal Conceded"
+    }
+    ,"shop"                              :
+    {
+      "name"                            : "SHOP",
+      "goldshopdescription"             : "Buy Gold to in order to enter <strong>Official Contests</strong>",
+      "trainerpointsshopdescription"    : "Increase your Trainer Tier and sign <strong>Better Players</strong>",
+      "energyshopdescription"           : "Refill your energy in order to enter <strong>Virtual Contests</strong>",
+      "free"                            : "FREE",
+      "mostpopularimagesource"          : "images/icon-most-popular.png",
+      "product_gold_1"                  : "PENNIES",
+      "product_gold_2"                  : "BIG BOSS",
+      "product_gold_3"                  : "SCOUT",
+      "product_gold_4"                  : "AGENT",
+      "product_gold_5"                  : "PRESIDENT",
+      "product_gold_6"                  : "MEN IN BLACK",
+      "product_maxrefill"               : "Refill all the energy",
+      "autorefill"                      : "AutoRefill+1 in:"
+    }
+    ,"goldshop"                          :
+    {
+      "buttonback"                      : "Back"
+    }
+    ,"energyshop"                        :
+    {
+      "buttonback"                      : "Back",
+      "erroruserbalancenegativetitle"   : "Not enough cash",
+      "erroruserbalancenegativegeneric" : "You do not have enough cash. Please, add funds to continue.",
+      "errordefaultgeneric"             : "An error has occurred. Please, try again later.",
+      "errordefaultediting"             : "An error has occurred. Please, try again later."
+    },
+    "facebook_service"                  :
+    {
+      "default_title"                   : "Epic Eleven",
+      "default_description"             : "Juega hoy gratis a Epic Eleven",
+      
+      "contest_live_title"              : "¡Sigue el torneo en directo!",
+      "contest_live_description"        : "Estoy jugando en un torneo de Epic Eleven, ¡fíjate en cómo lo estoy haciendo!",
+      "contest_live_img_first"          : "http://thumbs.dreamstime.com/z/ganador-de-la-concesi%C3%B3n-vector-9014178.jpg",
+      "contest_live_img_second"         : "http://www.rmbs.es/blog/biblioteca-san-julian/wp-content/uploads/2012/04/medalla-plata1.jpg",
+      "contest_live_img_third"          : "http://www.rmbs.es/blog/biblioteca-san-julian/wp-content/uploads/2012/04/9172624-medalla-de-bronce-tercer-lugar.jpg",
+      "contest_live_img_other"          : "http://www.plymouth.gov.uk/banner-footballpitch.jpg",
+      
+      "contest_history_title"           : "¡He quedado @USER_POS!",
+      "contest_history_description"     : "Juega conmigo en Epic Eleven y demuestra si puedes superarme.",
+      "contest_history_img_first"       : "http://thumbs.dreamstime.com/z/ganador-de-la-concesi%C3%B3n-vector-9014178.jpg",
+      "contest_history_img_second"      : "http://www.rmbs.es/blog/biblioteca-san-julian/wp-content/uploads/2012/04/medalla-plata1.jpg",
+      "contest_history_img_third"       : "http://www.rmbs.es/blog/biblioteca-san-julian/wp-content/uploads/2012/04/9172624-medalla-de-bronce-tercer-lugar.jpg",
+      "contest_history_img_other"       : "http://www.plymouth.gov.uk/banner-footballpitch.jpg",
+      
+      "contest_inscription_title"       : "¡Acabo de inscribirme en un torneo de Epic Eleven!",
+      "contest_inscription_description" : "Pulsa sobre este enlace y gana un bono de bienvenida para jugar conmigo.",
+      "contest_inscription_img"         : "http://hercules.deportevirtual.com/images/inscripc.jpg"
+    }
+    ,"createcontest"                     :
+    {
+      "select_event"                    : "Select Event",
+      "select_competition_first"        : "Select competition first",
+      "name"                            : "Name",
+      "create_contest"                  : "Create Contest",
+      "contest_name_placeholder"        : "Contest Name",
+      "contest_type"                    : "Contest type",
+      "oficial"                         : "Oficial",
+      "training"                        : "Training",
+      "competition"                     : "Competition",
+      "spanish_league"                  : "La Liga",
+      "premiere_league"                 : "Premiere",
+      "event"                           : "Event",
+      "rivals"                          : "Rivals",
+      "head_to_head"                    : "Head to head",
+      "league"                          : "League",
+      "no_limit"                        : "No limits",
+      "date"                            : "Date",
+      "fixed_hour_warning"              : "Oficial contest's date is not selectable",
+      "create_contest_btt"              : "Create contest",
+      "matches_title"                   : "Matches"
+    }
+    ,"home"                             :
+    {
+      "play"                            : "Play",
+      "learn_to_play"                   : "Learn to play<br>and start your football manager career",
+      "create_contest_title"            : "Challenge your friends",
+      "create_contest_text_nolog"       : "You should be logged in",
+      "create_contest_text_notut"       : "You should learn to play first",
+      "create_contest_text_logNtut"     : "Show themm who rules",
+
+      "scouting_title"                  : "Scouting",
+      "scouting_info"                   : "Coming soon",
+
+      "upcoming_title"                  : "Next contests",
+      "live_title"                      : "Live contests",
+      "history_title"                   : "History",
+      "mycontest_disabled_info"         : "Still you have not participated",
+
+      "blog_title"                      : "HalfTime",
+      "blog_info"                       : "A blog written by Salva Carmona, the guy with the best knowledge of football statistics in the world."
+    }
+        ,"notifications"                    :
+    {
+      "name"                            : "NOTIFICACIONES",
+
+      "NEW_SPECIAL_EVENT_ACTIVE"        : "NEW_SPECIAL_EVENT_ACTIVE",
+      "NEW_OFFER_ACTIVE"                : "NEW_OFFER_ACTIVE",
+
+      "CONTEST_FINISHED"                : "TORNEO TERMINADO",
+      "CONTEST_FINISHED_DESCRIPTION"    : "@NAME: Lorem fistrum te voy a borrar el cerito condemor tiene musho peligro mamaar sexuarl.",
+
+      "DUEL_FINISHED"                   : "DUELO TERMINADO",
+
+      "CONTEST_CANCELLED"               : "TORNEO CANCELADO",
+      "DAILY_CHALLENGE_ENABLED"         : "DAILY_CHALLENGE_ENABLED",
+      "OFICIAL_CONTEST_START"           : "OFICIAL_CONTEST_START",
+      "CONTEST_INVITATIONS"             : "CONTEST_INVITATIONS",
+      "SKILL_LEVEL_UP"                  : "SKILL_LEVEL_UP",
+      "SKILL_LEVEL_DOWN"                : "SKILL_LEVEL_DOWN",
+      "MANAGER_LEVEL_UP"                : "HAS SUBIDO TU NIVEL DE MANAGER",
+      "MANAGER_LEVEL_DOWN"              : "HAS BAJADO TU NIVEL DE MANAGER",
+      "ACHIEVEMENT_EARNED"              : "HAS CONSEGUIDO @NAME",
+
+      "BUTTON_NEW_SPECIAL_EVENT_ACTIVE" : "Participar",
+      "BUTTON_NEW_OFFER_ACTIVE"         : "Mas información",
+      "BUTTON_CONTEST_FINISHED"         : "Ver resultado",
+      "BUTTON_DUEL_FINISHED"            : "Ver resultado",
+      "BUTTON_CONTEST_CANCELLED"        : "Participar en otro",
+      "BUTTON_DAILY_CHALLENGE_ENABLED"  : "Entrar",
+      "BUTTON_OFICIAL_CONTEST_START"    : "Ver en vivo",
+      "BUTTON_CONTEST_INVITATIONS"      : "Ver",
+      "BUTTON_SKILL_LEVEL_UP"           : "",
+      "BUTTON_SKILL_LEVEL_DOWN"         : "",
+      "BUTTON_MANAGER_LEVEL_UP"         : "",
+      "BUTTON_MANAGER_LEVEL_DOWN"       : "",
+      "BUTTON_ACHIEVEMENT_EARNED"       : ""
+    }
+    ,"howitworks"                       :
+    {
+      "point1title"                     : "<span class=\"help-point\">1</span> Choose Your Competition",
+      "point1content"                   : "<img class=\"capital-icon\" src=\"images/iconTrophyGold.png\"><br><strong>Torneos oficiales</strong><br>Cuestan y dan oro y se juegan cuando se celebran los partidos reales asociados<br><img class=\"capital-icon\" src=\"images/iconTrainerBlue.png\"><br><strong>Torneos de entrenamiento</strong><br>Cuestan energía y dan Manager Points. Comienzan a la hora anunciada",
+      "point2title"                     : "<span class=\"help-point\">2</span> Make your lineup",
+      "point2content"                   : "<strong>A continuación, selecciona los 11 jugadores de tu equipo<br>sin pasarte del límite salarial. Recuerda:<strong><br><br><br><ul><li>No puedes escoger a más de 4 jugadores del mismo equipo.</li><li>Puedes cambiar tu alineación hasta la hora de comienzo del torneo</li></ul>",
+      "point3title"                     : "<span class=\"help-point\">3</span> Score and Win",
+      "point3content"                   : "<strong>En los torneos oficiales, sigue la evolución de tu equipo</strong><br>en tiempo real cuando hayan comenzado los partidos asociados al torneo.<br>Una vez hayan terminado, puedes consultar el resultado en \"Mis torneos\"",
+      "point3content2"                  : "<strong>Los torneos de entrenamiento se resuelven de forma<br>automática en pocos segundos</strong>",
+      "point4title"                     : "Play from anywhere",
+      "point4description"               : "Es muy fácil jugar a Epic Eleven desde cualquier lugar y con cualquier dispositivo. Puedes seguir la evolución de tu alineación desde tu ordenador, tablet o smartphone con un diseño adaptado a cada dispositivo.",
+      "button-play"                     : "Play Now"
+	  }
+    ,"rules"                            :
+    {
+      "rules-title"                      : "Rules",
+      "1-legals"                         : "1. Legals",
+      "1-legals-text"                    : "<p>To play in Epic Eleven you must be at least 18 years older. For further information, please, see our<a ng-click=\"goTo('terminus_info')\">Terms of Use</a>.</p>",
+      "2-multiple-accounts"              : "2. Multiple Accounts",
+      "2-multiple-accounts-text"         : "<p>Any Player can only own a single user account of Epic Eleven. However, in special cases, Epic Eleven allows the creation of a second account. To do this, you must receive written consent of Epic Eleven before opening a second account, so is Epic Eleven’s final decision to let a User possess two user accounts. If this condition is not met, any penalty that Epic Eleven suits fit will be issued at Epic Eleven’s staff discretion and may involve the closure of all involved user accounts and the retention of cash within, if we determine that has been obtained fraudulently.</p>",
+      "3-banned-accounts"                : "3. Banned accounts",
+      "3-banned-accounts-text"           : "<p>There are certain behaviors that are detrimental to Epic Eleven and the other players. These behaviors may imply the cancellation of some (or all) of the functions associated with a user account. As a result of the foregoing, users whose accounts have been canceled shall respect the disciplinary measures imposed. All communication pertaining to the restoration of a user account must be made through the email account <a href='mailto:support@epiceleven.com'>support@epiceleven.com</a>.</p>",
+      "4-nicknames"                      : "4. Nicknames",
+      "4-nicknames-text"                 : "<p>Epic Eleven holds the right to request the change of a user name where that is offensive or respond to commercial interests. Only Epic Eleven can determine the reasons for that request. If the User ignores the request, Epic Eleven will alter this username without being obliged to extend any further notice to the User.</p>",
+      "5-empty-contests"                 : "5. Empty contests",
+      "5-empty-contests-text"            : "<p>All open tournaments that take place in Epic Eleven have a certain prize and a number of specific participants. If at the start of the tournament this number of participants is not reached, it may be canceled. For example, a competition \"One on One\" without 2 competitors and a league of 10 people with only 9 participants can not be held. In every case, is up to Epic Eleven discretion to cancel a contest.</p>",
+      "6-cancelled-participation"        : "6. Cancelled participation",
+      "6-cancelled-participation-text"   : "<p>Users can withdraw its participation in any contest by clicking the \"Cancel Entry\" button at the bottom left of the section in which you can edit your team. Once the tournament has started, the button \"Cancel entry\" will disappear from that section. Epic Eleven will not consider requests for cancellation of entries in competitions that are completed during the first 15 minutes of the start of the game. Epic Eleven has no obligation to attend requests for cancellation that are not received or that have been received after the deadlines listed above in this section, due to technical difficulties or other reasons. Also, Epic Eleven will not attend requests to cancel registrations in contests \"One versus One\".</p>",
+      "7-postponed-games"                : "7. Postponed games",
+      "7-postponed-games-text"           : "<p>The rules that specify the treatment of postponed games vary depending on the type of contest. Epic Eleven reserves the right to act in this regard depending on the particular circumstances.</p>",
+      "8-suspended-games"                : "8. Suspended games",
+      "8-suspended-games-text"           : "<p>The rules that specify the treatment to suspended matches depend on the type of contest. It is considered that a match has been suspended when it is unfinished, but with prospects for completion in the future. Epic Eleven is committed to, at least, take into account the statistics collected before the end of the contest, for the sake of the game.</p>",
+      "9-players-in-negotiation-process" : "9. Players in negotiation process",
+      "9-players-in-negotiation-text"    : "<p>Any player involved in team transaction processes might affect current contests, may these players being in a team that is no longer his actual team. Our player lists are updated once a day (at 00:00), so keep in mind that contests might have been created several days before the transfer was made, which results in players being available for their old teams, not for their new teams. Also, in some cases, a player might not be available for a contest since he was transferred to a team that does not fit into that very contest, so unless the player selects an alternate player, the transferred player would be credited with zero points.</p><p>When a transaction is under negotiation the player may still appear in the list of player of his former team. If he plays against his former team, he may still be awarded with points, as he plays in the same game, which usually will be included in the same contests. Points may not be accurately awarded, but will be reflected at the end of the game. Is worth noting that the settlement of the contest may be delayed in order to ensure maximum accuracy.</p><p>In very rare cases, a player is transferred early enough in the day to play a game for his new team the same day. If it is transferred from a team that plays a game later in the evening to a team that will play a game earlier, you might be able to select the player for later game, knowing that the transfer was made de facto before the game. If this is the case, the transferred player would be credited with zero points.</p>",
+      "10-lineup-restrictions"           : "10. Lineup restrictions",
+      "10-lineup-restrictions-text"      : "<p>Lineup restrictions are limited to one rule: no more than 4 players from the same team. Any attempt to overcome this limitation will find an automatic refusal to proceed by the platform itself.</p>",
+      "11-score-revisions"               : "11. Score revisions",
+      "11-score-revisions-text"          : "<p>During the game we received the events from our supplier, OPTA. After the game, they provide us with a final document with full match statistics. Once received and confirmed, contests will begin to be settled. However, on rare occasions, our provider might review those documents, which may alter the final box score. If this were to happen, the player's score on Epic Eleven will not be updated. Note that this situation is not the same as a case where a correction must be made after closing due to a problem with the data source or the resolution process.</p>",
+      "12-access-associated-issues"      : "12. Access associated issues",
+      "12-access-associated-issues-text" : "<p>Although we do our best to guarantee the correct performance of Epic Eleven at any time, we may experience cuts or slow performance due to unexpected problems that may arise in Epic Eleven or in the support provided by third parties for the Portal. Sometimes, the user may experience problems while accessing the service, editing lineups or entering new contests.</p><p>If you experience any problems accessing the service, please contact us vía <a href='mailto:support@epiceleven.com'>support@epiceleven.com</a>. If there were periods during which users were unable to access our services, to edit lineups or to perform any action, Epic Eleven will provide instructions to cancel any contest by email before the game starts.</p>",
+      "13-contest-cancellation"          : "13. Contest cancellation",
+      "13-contest-cancellation-text"     : "<p>Epic Eleven holds the right to cancel contests at discretion, without any restrictions. Usually this might be done in extreme situations, where an event might affect several contests in a negative way or even the real competitions, which in the end would affect Epic Eleven.</p>"
+    }
+    ,"serverError"                      :
+    {
+      "connection-error"                : "Connection error..."
+    }
+  }
+}

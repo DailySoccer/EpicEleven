@@ -1,0 +1,38 @@
+<div id="leaderboard-wrapper">
+
+  <div class="default-section-header">
+    <div class="header-title">{{getLocalizedText('title')}}</div>
+    <friend-info class="visited-user" user="userShown" max-width="290" show-challenge="false" show-manager-level="false" ng-if="!isLoggedPlayer" id-error="userShown != null && userId != userShown.userId"></friend-info>
+    <!--div class="visited-user">{{visitedName}} <img ng-src="{{visitedPhoto}}"></img></div-->
+  </div>
+
+  <ul id="#leaderboardTabs" class="leaderboard-tabs" role="tablist">
+    <li id="points-tab" class="active"><tab class="leaderboard-tab top-points-tab"   role="tab" data-toggle="tab" ng-click="gotoSection('points')">{{trueskillTabTitle}}</tab></li>
+    <li id="money-tab">                <tab class="leaderboard-tab top-money-tab"    role="tab" data-toggle="tab" ng-click="gotoSection('money')">{{goldTabTitle}}</tab></li>
+    <li id="achievements-tab">         <tab class="leaderboard-tab achievements-tab" role="tab" data-toggle="tab" ng-click="gotoSection('achievements')">{{achievementsTabTitle}}</tab></li>
+  </ul>
+
+  <div class="tabs">
+    <div class="tab-content">
+
+      <div class="tab-pane active" id="points-content">
+
+        <leaderboard-table share-info="sharingInfoTrueSkill" show-header="true" highlight-element="playerPointsInfo" table-elements="pointsUserList" rows="USERS_TO_SHOW" points-column-label="pointsColumnName" hint="playerPointsHint" ng-show="!loadingService.isLoading"></leaderboard-table>
+
+      </div>
+
+      <div class="tab-pane" id="money-content">
+
+        <leaderboard-table share-info="sharingInfoGold" show-header="true" highlight-element="playerMoneyInfo" table-elements="moneyUserList" rows="USERS_TO_SHOW" points-column-label="moneyColumnName" hint="playerMoneyHint" ng-show="!loadingService.isLoading"></leaderboard-table>
+
+      </div>
+
+      <div class="tab-pane" id="achievements-content">
+
+        <achievement-list ng-show="!loadingService.isLoading" user="userShown"></achievement-list>
+
+      </div>
+    </div>
+  </div>
+
+</div>
