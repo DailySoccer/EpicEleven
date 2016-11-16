@@ -254,7 +254,7 @@ public class User {
 
 
     public void addFlag (String flag) {
-        Model.users().update(userId).with("{$push: {flags: #}}", flag);
+        Model.users().update(userId).with("{$addToSet: {flags: #}}", flag);
     }
 
     public void removeFlag (String flag) {
