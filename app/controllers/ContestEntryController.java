@@ -508,7 +508,12 @@ public class ContestEntryController extends Controller {
             return new ReturnHelper(false, ERROR_CONTEST_INVALID).toResult();
         }
 
+        // Debemos hacer to.do nuestro proceso con los datos de salario, equipo, etc que vienen en los Instances y no en los Templates.
+        List<InstanceSoccerPlayer> instanceSoccerPlayers = contest.instanceSoccerPlayers;
         List<TemplateSoccerPlayer> soccerPlayers = TemplateSoccerPlayer.findAllFromInstances(contest.instanceSoccerPlayers);
+
+        // Simplemente "parcheamos" los templates con los datos de los instances
+        GenerateLineup.copyInstancesToTemplates(instanceSoccerPlayers, soccerPlayers);
 
         List<TemplateSoccerPlayer> lineup = GenerateLineup.quickAndDirty(soccerPlayers, contest.salaryCap, formation);
 
