@@ -19,6 +19,7 @@ import play.mvc.Result;
 import play.mvc.With;
 import utils.ListUtils;
 import utils.ReturnHelper;
+import utils.SessionUtils;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -29,6 +30,7 @@ import static play.data.Form.form;
 @AllowCors.Origin
 public class MainController extends Controller {
 
+    private final static int CACHE_LEADERBOARD = 12 * 60 * 60;              // 12 horas
     private final static int CACHE_SOCCERPLAYER_BY_COMPETITION = 15 * 60;   // 15 minutos
     private final static int CACHE_TEMPLATESOCCERPLAYERS = 8 * 60 * 60;     // 8 Horas
     private final static int CACHE_TEMPLATESOCCERTEAMS = 24 * 60 * 60;
@@ -61,7 +63,55 @@ public class MainController extends Controller {
         return new ReturnHelper(ImmutableMap.of("scoring_rules", PointsTranslation.getAllCurrent())).toResult();
     }
 
-    public static Result getLeaderboard() {
+    private static List<UserRanking> getUsersRanking() {
+        List<UserRanking> usersRanking = new ArrayList<UserRanking>();
+
+        User.findAll(JsonViews.Leaderboard.class).forEach(user -> usersRanking.add( new UserRanking(user) ) );
+
+        return usersRanking;
+    }
+
+    public static Result getLeaderboard() throws Exception {
+        User theUser = SessionUtils.getUserFromRequest(Controller.ctx().request());
+
+        List<UserRanking> userRankingList = Cache.getOrElse("Leaderboard", new Callable<List<UserRanking>>() {
+            @Override
+            public List<UserRanking> call() throws Exception {
+                return getUsersRanking();
+            }
+        }, CACHE_LEADERBOARD);
+
+        // Asumimos una caché inválida, porque para que sea válida el usuario tendría que estar registrado en la misma
+        boolean validCache = (theUser == null);
+
+        if (!validCache) {
+            // Comprobar si coinciden los datos de la caché con los del usuario que los solicita
+            for (UserRanking userRanking : userRankingList) {
+                if (userRanking.getUserId().equals(theUser.userId.toString())) {
+                    // Si lo que tenemos en la cache tiene los mismos datos que los que tiene actualmente el usuario
+                    // consideraremos a la caché válida
+                    validCache = userRanking.getEarnedMoney().equals(theUser.earnedMoney)
+                            && (userRanking.getTrueSkill() == theUser.trueSkill);
+                    break;
+                }
+            }
+        }
+
+        // Hay que reconstruir la caché?
+        if (!validCache) {
+            Logger.debug("getLeaderboard: cache INVALID");
+
+            userRankingList = getUsersRanking();
+            Cache.set("Leaderboard", userRankingList);
+        }
+        else {
+            Logger.debug("getLeaderboard: cache OK");
+        }
+
+        return new ReturnHelper(ImmutableMap.of("users", userRankingList)).toResult(JsonViews.Leaderboard.class);
+    }
+
+    public static Result getLeaderboardV2() {
         return new ReturnHelper(ImmutableMap.of("users", UserInfo.findAllWithAchievements())).toResult();
     }
 
