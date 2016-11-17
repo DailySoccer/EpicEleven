@@ -134,6 +134,25 @@ public class GenerateLineup {
         return ret;
     }
 
+    static public void copyInstancesToTemplates(List<InstanceSoccerPlayer> instanceSoccerPlayers, List<TemplateSoccerPlayer> soccerPlayers) {
+        for (InstanceSoccerPlayer ins : instanceSoccerPlayers) {
+            boolean bFound = false;
+            for (TemplateSoccerPlayer sp : soccerPlayers) {
+                if (sp.templateSoccerPlayerId.equals(ins.templateSoccerPlayerId)) {
+                    sp.salary = ins.salary;
+                    sp.fieldPos = ins.fieldPos;
+                    sp.templateTeamId = ins.templateSoccerTeamId;
+
+                    bFound = true;
+                    break;
+                }
+            }
+            if (!bFound) {
+                throw new RuntimeException("WTF 6556 Hemos encontrado un InstanceSoccerPlayer sin TemplateSoccerPlayer");
+            }
+        }
+    }
+
     static private List<TemplateSoccerPlayer> filterByPosition(List<TemplateSoccerPlayer> sps, final FieldPos fp) {
         return ListUtils.asList(Collections2.filter(sps, new Predicate<TemplateSoccerPlayer>() {
             @Override
