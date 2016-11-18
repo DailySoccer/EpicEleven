@@ -14,7 +14,10 @@ public class UserRanking extends HashMap<String, Object> {
     public UserRanking(User user) {
         put(USERID, user.userId.toString());
         put(NICKNAME, user.nickName);
-        put(TRUESKILL, user.trueSkill);
+
+        if (user.trueSkill != 0) {
+            put(TRUESKILL, user.trueSkill);
+        }
 
         if (user.earnedMoney.isPositive()) {
             put(EARNEDMONEY, user.earnedMoney);

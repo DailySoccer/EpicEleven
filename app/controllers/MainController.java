@@ -86,8 +86,9 @@ public class MainController extends Controller {
 
         if (!validCache) {
             // Comprobar si coinciden los datos de la caché con los del usuario que los solicita
+            String userId = theUser.userId.toString();
             for (UserRanking userRanking : userRankingList) {
-                if (userRanking.getUserId().equals(theUser.userId.toString())) {
+                if (userRanking.getUserId().equals(userId)) {
                     // Si lo que tenemos en la cache tiene los mismos datos que los que tiene actualmente el usuario
                     // consideraremos a la caché válida
                     validCache = userRanking.getEarnedMoney().equals(theUser.earnedMoney)
