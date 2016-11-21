@@ -7,49 +7,31 @@
 @scripts = {
     <script type="text/javascript">
         $(document).ready( function(){
-            $('#ajax_table_id').dataTable( {
-                "columns": [
-                    { "title": "Id" },
-                    { "title": "FirstName" },
-                    { "title": "LastName" },
-                    { "title": "NickName" },
-                    { "title": "Email" },
-                    { "title": "Created At" },
-                    { "title": "Wins" },
-                    { "title": "Gold" },
-                    { "title": "Manager" },
-                    { "title": "Energy" },
-                    { "title": "Earned Money" },
-                    { "title": "TrueSkill" }
-                ],
-                "data": [
-                    @for((p, index) <- users.zipWithIndex) {
-                        [
-                            "@p.userId",
-                            "@p.firstName",
-                            "@p.lastName",
-                            "@p.nickName",
-                            "@p.email",
-                            "@GlobalDate.formatDate(p.createdAt)",
-                            "@p.wins",
-                            "@MoneyUtils.asString(p.calculateGoldBalance())",
-                            "@MoneyUtils.asString(p.calculateManagerBalance()) [@p.timeOfDecay().getStandardHours()h]",
-                            "@MoneyUtils.asString(p.calculateEnergyBalance())",
-                            "@MoneyUtils.asString(p.earnedMoney)",
-                            "@p.trueSkill"
-                        ] @if(index < users.size-1) { , }
-                    }
-                ],
-                "columnDefs": [ {
-                    "targets": [7],
+            $('#ajax_table_id').dataTable( {
+              "columns": [
+                { "title": "Id" },
+                { "title": "NickName" },
+                { "title": "Created At" },
+                { "title": "Wins" },
+                { "title": "Gold" },
+                { "title": "Earned Money" },
+                { "title": "TrueSkill" }
+              ],
+              "columnDefs": [ {
+                    "targets": [4],
                     "mRender": function (data, type, full) {
                         return '<a href="user/' + full[0] + '/transactions">' + data + '</a>';
                     }
-                }],
-                stateSave: true,
-                iDisplayLength: 100,
-                "deferRender": true
-            } );
+              }],
+              "iDisplayLength": 100,
+              "bProcessing": true,
+              "aaSorting": [[ 0, "asc" ]],
+              "bServerSide": true,
+              "stateSave": true,
+              "bJQueryUI": true,
+              "sPaginationType": "full_numbers",
+              "sAjaxSource": "/admin/users/ajax"
+            });
         })
     </script>
 }
