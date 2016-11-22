@@ -23,14 +23,14 @@ public class AccountingTranBonus extends AccountingTran {
         this.bonusId = bonusId;
     }
 
-    static public AccountingTranBonus findOne (TransactionType bonusType, String bonusId) {
+    static public AccountingTranBonus findOne (String currencyCode, TransactionType bonusType, String bonusId) {
         return Model.accountingTransactions()
-                .findOne("{type: #, bonusId: #}", bonusType, bonusId)
+                .findOne("{currencyCode: #, type: #, bonusId: #}", currencyCode, bonusType, bonusId)
                 .as(AccountingTranBonus.class);
     }
 
     static public AccountingTran create(String currencyCode, TransactionType bonusType, String bonusId, List<AccountOp> accounts) {
-        AccountingTranBonus accountingOp = findOne(bonusType, bonusId);
+        AccountingTranBonus accountingOp = findOne(currencyCode, bonusType, bonusId);
         if (accountingOp == null) {
             accountingOp = new AccountingTranBonus(currencyCode, bonusType, bonusId);
             accountingOp.accountOps = accounts;

@@ -361,7 +361,10 @@ public class Contest implements JongoId {
     }
 
     static public List<Contest> findAllHistoryNotClosed() {
-        return ListUtils.asList(Model.contests().find("{state: \"HISTORY\", $or: [{closed: {$exists: false}}, {closed: false}]}").as(Contest.class));
+        // Únicamente comprobamos los torneos que empezaron como mucho hace 7 días
+        DateTime oneWeekInPast = new DateTime(GlobalDate.getCurrentDate()).minusDays(7);
+        return ListUtils.asList(Model.contests().find("{state: \"HISTORY\", startDate: {$gt: #}, $or: [{closed: {$exists: false}}, {closed: false}]}",
+                oneWeekInPast.toDate()).as(Contest.class));
     }
 
     static public List<Contest> findAllCanceled() {

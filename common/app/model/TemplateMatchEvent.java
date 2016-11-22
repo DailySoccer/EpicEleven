@@ -172,12 +172,13 @@ public class TemplateMatchEvent implements JongoId {
     public static TemplateMatchEvent findNextMatchEvent(ObjectId templateSoccerTeamId) {
         return Model.templateMatchEvents().findOne("{$query: " +
                         "{$and: [" +
+                            "{startDate: {$gt: #}}," +
                             "{$or: [{templateSoccerTeamAId: #}, {templateSoccerTeamBId: #}]}," +
                             "{gameStartedDate: {$exists: 0}}," +
                             "{simulation: {$ne: true}}" +
                         "]}," +
                         "$orderby: {startDate: 1}}",
-                templateSoccerTeamId, templateSoccerTeamId).as(TemplateMatchEvent.class);
+                GlobalDate.getCurrentDate(), templateSoccerTeamId, templateSoccerTeamId).as(TemplateMatchEvent.class);
     }
 
     public static List<TemplateMatchEvent> gatherFromTemplateContests(List<TemplateContest> templateContests) {

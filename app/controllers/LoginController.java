@@ -761,11 +761,14 @@ public class LoginController extends Controller {
                         new AccountOp(theUser.userId, bonus.gold, ++seqId)
                 ));
             }
+            // TODO No damos bonus de manager en la nueva versión
+            /*
             if (bonus.manager.isPositive()) {
                 AccountingTranBonus.create(bonus.manager.getCurrencyUnit().getCode(), AccountingTran.TransactionType.BONUS, theUser.userId.toString() + "-SIGNUP-MANAGER", ImmutableList.of(
                         new AccountOp(theUser.userId, bonus.manager, ++seqId)
                 ));
             }
+            */
         }
     }
 

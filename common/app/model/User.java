@@ -17,6 +17,7 @@ import play.data.validation.Constraints;
 import utils.ListUtils;
 import utils.MoneyUtils;
 import utils.TrueSkillHelper;
+import utils.ViewProjection;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -54,8 +55,12 @@ public class User {
     @Id
     public ObjectId userId;
 
+    @JsonView(JsonViews.NotForClient.class)
 	public String firstName;
+
+    @JsonView(JsonViews.NotForClient.class)
 	public String lastName;
+
     public String nickName;
 	public String email;
 
@@ -84,10 +89,16 @@ public class User {
     public Money earnedMoney = MoneyUtils.zero;
 
     // TODO: De momento no es realmente un "cache", siempre lo recalculamos
+    @JsonView(JsonViews.Public.class)
     public Money cachedBalance;
 
+    @JsonView(JsonViews.Public.class)
     public Money goldBalance        = Money.zero(MoneyUtils.CURRENCY_GOLD);
+
+    @JsonView(JsonViews.Public.class)
     public Money managerBalance     = Money.zero(MoneyUtils.CURRENCY_MANAGER);
+
+    @JsonView(JsonViews.Public.class)
     public Money energyBalance      = Money.of(MoneyUtils.CURRENCY_ENERGY, MAX_ENERGY);
 
     // La última fecha en la que se participó en un contest de simulación
@@ -95,19 +106,27 @@ public class User {
     public Date lastUpdatedManager;
 
     // La última fecha en la que se recalculó la energía
+    @JsonView(JsonViews.Public.class)
     public Date lastUpdatedEnergy;
 
+    @JsonView(JsonViews.Public.class)
     public float managerLevel = 0;
 
     public List<String> achievements = new ArrayList<>();
 
+    @JsonView(JsonViews.Public.class)
     public List<UserNotification> notifications = new ArrayList<>();
+
+    @JsonView(JsonViews.Public.class)
     public List<ObjectId> favorites = new ArrayList<>();
 
+    @JsonView(JsonViews.Public.class)
     public List<String> flags = new ArrayList<>();
 
+    @JsonView(JsonViews.Public.class)
     public DailyRewards dailyRewards = new DailyRewards();
 
+    @JsonView(JsonViews.Public.class)
     public ObjectId guildId;        // Guild al que pertenece
 
     @JsonView(JsonViews.NotForClient.class)
@@ -173,6 +192,10 @@ public class User {
 
     static public List<User> findAll() {
         return ListUtils.asList(Model.users().find().as(User.class));
+    }
+
+    static public List<User> findAll(Class<?> projectionClass) {
+        return ListUtils.asList(Model.users().find().projection(ViewProjection.get(projectionClass, User.class)).as(User.class));
     }
 
     static public User findByName(String username) {

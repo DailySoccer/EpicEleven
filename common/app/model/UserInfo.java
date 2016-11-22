@@ -1,5 +1,6 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
 import utils.MoneyUtils;
@@ -10,13 +11,21 @@ import java.util.List;
 public class UserInfo {
     public ObjectId userId;
     public String nickName;
+
+    @JsonView(JsonViews.Public.class)
     public String facebookID;
 
+    @JsonView(JsonViews.Public.class)
     public int wins;
+
     public int trueSkill = 0;
+
+    @JsonView(JsonViews.Public.class)
     public float managerLevel = 0;
+
     public Money earnedMoney = MoneyUtils.zero;
 
+    @JsonView(JsonViews.Public.class)
     public List<String> achievements = new ArrayList<>();
 
     public UserInfo() {}
@@ -42,7 +51,7 @@ public class UserInfo {
     static public List<UserInfo> findAll() {
         List<UserInfo> usersInfo = new ArrayList<>();
 
-        User.findAll().forEach(user -> usersInfo.add(user.info()));
+        User.findAll(JsonViews.Leaderboard.class).forEach(user -> usersInfo.add(user.info()));
 
         return usersInfo;
     }
@@ -50,7 +59,7 @@ public class UserInfo {
     static public List<UserInfo> findAllWithAchievements() {
         List<UserInfo> usersInfo = new ArrayList<>();
 
-        User.findAll().forEach(user -> usersInfo.add(user.infoWithAchievements()));
+        User.findAll(JsonViews.Leaderboard.class).forEach(user -> usersInfo.add(user.infoWithAchievements()));
 
         return usersInfo;
     }

@@ -32,6 +32,7 @@ GET         /points_translations/:eventType                                     
 
 GET         /users                                                               controllers.admin.UserController.index()
 GET         /user/:userId/transactions                                           controllers.admin.UserController.transactions(userId : String)
+GET         /users/ajax                                                          controllers.admin.UserController.indexAjax()
 
 GET         /refunds                                                             controllers.admin.RefundController.index()
 GET         /refund/:refundId                                                    controllers.admin.RefundController.apply(refundId)

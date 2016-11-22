@@ -19,6 +19,7 @@ import play.mvc.Result;
 import play.mvc.With;
 import utils.ListUtils;
 import utils.ReturnHelper;
+import utils.SessionUtils;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -29,6 +30,7 @@ import static play.data.Form.form;
 @AllowCors.Origin
 public class MainController extends Controller {
 
+    private final static int CACHE_LEADERBOARD = 12 * 60 * 60;              // 12 horas
     private final static int CACHE_SOCCERPLAYER_BY_COMPETITION = 15 * 60;   // 15 minutos
     private final static int CACHE_TEMPLATESOCCERPLAYERS = 8 * 60 * 60;     // 8 Horas
     private final static int CACHE_TEMPLATESOCCERTEAMS = 24 * 60 * 60;
@@ -61,8 +63,136 @@ public class MainController extends Controller {
         return new ReturnHelper(ImmutableMap.of("scoring_rules", PointsTranslation.getAllCurrent())).toResult();
     }
 
-    public static Result getLeaderboard() {
-        return new ReturnHelper(ImmutableMap.of("users", UserInfo.findAllWithAchievements())).toResult();
+    private static List<UserRanking> getUsersRanking() {
+        List<UserRanking> usersRanking = new ArrayList<UserRanking>();
+
+        User.findAll(JsonViews.Leaderboard.class).forEach(user -> usersRanking.add( new UserRanking(user) ) );
+
+        return usersRanking;
+    }
+
+    public static Result getLeaderboard() throws Exception {
+        User theUser = SessionUtils.getUserFromRequest(Controller.ctx().request());
+
+        List<UserRanking> userRankingList = Cache.getOrElse("Leaderboard", new Callable<List<UserRanking>>() {
+            @Override
+            public List<UserRanking> call() throws Exception {
+                return getUsersRanking();
+            }
+        }, CACHE_LEADERBOARD);
+
+        // Asumimos una caché inválida, porque para que sea válida el usuario tendría que estar registrado en la misma
+        boolean validCache = (theUser == null);
+
+        if (!validCache) {
+            // Comprobar si coinciden los datos de la caché con los del usuario que los solicita
+            String userId = theUser.userId.toString();
+            for (UserRanking userRanking : userRankingList) {
+                if (userRanking.getUserId().equals(userId)) {
+                    // Si lo que tenemos en la cache tiene los mismos datos que los que tiene actualmente el usuario
+                    // consideraremos a la caché válida
+                    validCache = userRanking.getEarnedMoney().equals(theUser.earnedMoney)
+                            && (userRanking.getTrueSkill() == theUser.trueSkill);
+                    break;
+                }
+            }
+        }
+
+        // Hay que reconstruir la caché?
+        if (!validCache) {
+            Logger.debug("getLeaderboard: cache INVALID");
+
+            userRankingList = getUsersRanking();
+            Cache.set("Leaderboard", userRankingList);
+        }
+        else {
+            Logger.debug("getLeaderboard: cache OK");
+        }
+
+        return new ReturnHelper(ImmutableMap.of("users", userRankingList)).toResult(JsonViews.Leaderboard.class);
+    }
+
+    private static List<UserRanking> getSortedUsersRanking() {
+        List<UserRanking> usersRanking = new ArrayList<UserRanking>();
+
+        List<User> users = User.findAll(JsonViews.Leaderboard.class);
+
+        // Creamos la estructura de ranking de usuarios
+        users.forEach(user -> usersRanking.add( new UserRanking(user) ) );
+
+        // Obtenemos la posición de ranking de cada uno de los usuarios
+        class UserValue {
+            public int index = 0;       // índice en la tabla general de "users"
+            public long value = 0;      // valor a comparar (gold o trueskill)
+            public UserValue(int index, long value) {
+                this.index = index;
+                this.value = value;
+            }
+        }
+
+        // Crear 2 lista para obtener el ranking de trueskill y gold
+        List<UserValue> skillRanking = new ArrayList<>(users.size());
+        List<UserValue> goldRanking = new ArrayList<>(users.size());
+        for (int i=0; i<users.size(); i++) {
+            User user = users.get(i);
+            skillRanking.add( new UserValue(i, user.trueSkill) );
+            goldRanking.add( new UserValue(i, user.earnedMoney.getAmount().longValue()) );
+        }
+
+        Collections.sort(skillRanking, (v1, v2) -> (int)(v2.value - v1.value));
+        Collections.sort(goldRanking, (v1, v2) -> (int)(v2.value - v1.value));
+
+        // Registrar el ranking en la lista de ranking de usuarios
+        for (int i=0; i<users.size(); i++) {
+            UserValue skillRank = skillRanking.get(i);
+            usersRanking.get(skillRank.index).put("skillRank", i+1);
+
+            UserValue goldRank = goldRanking.get(i);
+            usersRanking.get(goldRank.index).put("goldRank", i+1);
+        }
+
+        return usersRanking;
+    }
+
+    public static Result getLeaderboardV2() throws Exception {
+        User theUser = SessionUtils.getUserFromRequest(Controller.ctx().request());
+
+        List<UserRanking> userRankingList = Cache.getOrElse("LeaderboardV2", new Callable<List<UserRanking>>() {
+            @Override
+            public List<UserRanking> call() throws Exception {
+                return getSortedUsersRanking();
+            }
+        }, CACHE_LEADERBOARD);
+
+        if (theUser != null) {
+            // Comprobar si coinciden los datos de la caché con los del usuario que los solicita
+            String userId = theUser.userId.toString();
+
+            // Asumimos que los datos son incorrectos, dado que el usuario podría no estar en la lista cacheada
+            boolean validCache = false;
+
+            for (UserRanking userRanking : userRankingList) {
+                if (userRanking.getUserId().equals(userId)) {
+                    // Si lo que tenemos en la cache tiene los mismos datos que los que tiene actualmente el usuario
+                    // consideraremos a la caché válida
+                    validCache = userRanking.getEarnedMoney().equals(theUser.earnedMoney)
+                            && (userRanking.getTrueSkill() == theUser.trueSkill);
+                    break;
+                }
+            }
+
+            // Hay que reconstruir la caché?
+            if (!validCache) {
+                Logger.debug("getLeaderboardV2: cache INVALID");
+
+                userRankingList = getSortedUsersRanking();
+                Cache.set("LeaderboardV2", userRankingList);
+            } else {
+                Logger.debug("getLeaderboardV2: cache OK");
+            }
+        }
+
+        return new ReturnHelper(ImmutableMap.of("users", userRankingList)).toResult(JsonViews.Leaderboard.class);
     }
 
     /*

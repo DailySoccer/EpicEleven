@@ -182,8 +182,10 @@ public class ContestEntry implements JongoId {
 
                 for (InstanceSoccerPlayer instanceSoccerPlayer : playersToBuy) {
                     Money price = TemplateSoccerPlayer.moneyToBuy(contest, TemplateSoccerPlayer.levelFromSalary(instanceSoccerPlayer.salary), (int) managerLevel);
-                    ProductSoccerPlayer product = new ProductSoccerPlayer(price, contest.contestId, instanceSoccerPlayer.templateSoccerPlayerId);
-                    productSoccerPlayers.add(product);
+                    if (price.isPositive()) {
+                        ProductSoccerPlayer product = new ProductSoccerPlayer(price, contest.contestId, instanceSoccerPlayer.templateSoccerPlayerId);
+                        productSoccerPlayers.add(product);
+                    }
                 }
             }
         }
