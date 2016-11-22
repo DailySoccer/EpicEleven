@@ -26,6 +26,6 @@ public class UserRanking extends HashMap<String, Object> {
 
     public String getUserId() { return (String) get(USERID); }
     public String getNickName() { return (String) get(NICKNAME); }
-    public Integer getTrueSkill() { return (Integer) get(TRUESKILL); }
+    public Integer getTrueSkill() { return containsKey(TRUESKILL) ? (Integer) get(TRUESKILL) : 0; }
     public Money getEarnedMoney() { return containsKey(EARNEDMONEY) ? (Money) get(EARNEDMONEY) : MoneyUtils.zero; }
 }
