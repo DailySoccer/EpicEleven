@@ -11,6 +11,7 @@ import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.jongo.*;
 import org.jongo.marshall.jackson.JacksonMapper;
+import play.Configuration;
 import play.Logger;
 import play.Play;
 import utils.*;
@@ -114,9 +115,20 @@ public class Model {
 
     static private boolean initMongo(String mongodbUri) {
         boolean bSuccess = false;
-        MongoClientURI mongoClientURI = new MongoClientURI(mongodbUri);
 
+        Configuration configuration = Play.application().configuration();
+
+        MongoClientOptions.Builder builder = new MongoClientOptions.Builder();
+        builder.connectionsPerHost(configuration.getInt("mongoOptions.connectionsPerHost"));
+        builder.threadsAllowedToBlockForConnectionMultiplier(configuration.getInt("mongoOptions.threadsAllowedToBlockForConnectionMultiplier"));
+        builder.connectTimeout(configuration.getInt("mongoOptions.connectTimeout"));
+        builder.socketTimeout(configuration.getInt("mongoOptions.socketTimeout"));
+
+        MongoClientURI mongoClientURI = new MongoClientURI(mongodbUri, builder);
         Logger.info("The MongoDB is {}/{}", mongoClientURI.getHosts(), mongoClientURI.getDatabase());
+
+        MongoClientOptions mongoClientOptions = mongoClientURI.getOptions();
+        Logger.info("{}", mongoClientOptions.toString());
 
         try {
             _mongoClient = new MongoClient(mongoClientURI);
