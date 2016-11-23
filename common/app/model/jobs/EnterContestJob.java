@@ -54,13 +54,16 @@ public class EnterContestJob extends Job {
                     bValid = contest.entryFee.isNegativeOrZero() || transactionPayment(contest, contestEntry);
 
                     if (bValid) {
-                        Contest contestModified = transactionInsertContestEntry(contest, contestEntry);
-                        if (contestModified != null) {
+                        boolean contestModified = transactionInsertContestEntry(contest, contestEntry);
+                        if (contestModified) {
                             bValid = true;
+
+                            // Añadimos el contestEntry al contest, a efectos del check "isFull"
+                            contest.contestEntries.add(contestEntry);
 
                             // Crear instancias automáticamente según se vayan llenando las anteriores
                             // (salvo que sea un contest creado por un usuario)
-                            if (contestModified.isFull() && !contestModified.isCreatedByUser()) {
+                            if (!contest.isCreatedByUser() && contest.isFull()) {
                                 TemplateContest.maintainingMinimumNumberOfInstances(contest.templateContestId);
                             }
                         }
@@ -156,14 +159,15 @@ public class EnterContestJob extends Job {
         return transactionValid;
     }
 
-    private Contest transactionInsertContestEntry(Contest contest, ContestEntry contestEntry) {
+    private boolean transactionInsertContestEntry(Contest contest, ContestEntry contestEntry) {
         // Insertamos el contestEntry en el contest
         //  Comprobamos que el contest siga ACTIVE, que el usuario no esté ya inscrito y que existan Huecos Libres (maxEntries <= 0 : Ilimitado número de participantes)
         String query = String.format("{_id: #, state: \"ACTIVE\", contestEntries.userId: {$ne: #}, $or: [{maxEntries: {$lte: 0}}, {contestEntries.%s: {$exists: false}}]}", contest.maxEntries - 1);
-        return Model.contests().findAndModify(query, contestId, userId)
-                .with("{$push: {contestEntries: #}, $inc: {freeSlots : -1}}", contestEntry)
-                .returnNew()
-                .as(Contest.class);
+        WriteResult result = Model.contests().update(query, contestId, userId)
+                .with("{$push: {contestEntries: #}, $inc: {freeSlots : -1}}", contestEntry);
+
+        // Comprobamos el número de documentos afectados (error == 0)
+        return (result.getN() > 0);
     }
 
     private void cancelAccountOp () {
