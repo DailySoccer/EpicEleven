@@ -125,38 +125,41 @@ public class StoreController extends Controller {
         play.data.DynamicForm requestData = form().bindFromRequest();
         //Logger.debug("Request Data . Data: {}", requestData.data());
 
-        if( requestData.get("transaction.type").equals("android-playstore") ) {
-            // Validacion Android
-            String dataStr = requestData.get("transaction.receipt");
-            byte[] data = dataStr.getBytes();
+        if( requestData != null && requestData.get("transaction.type") != null) {
+            if (requestData.get("transaction.type").equals("android-playstore")) {
+                // Validacion Android
+                String dataStr = requestData.get("transaction.receipt");
+                byte[] data = dataStr.getBytes();
 
-            String signatureStr = requestData.get("transaction.signature");
-            byte[] signature = Base64.getDecoder().decode(signatureStr);
+                String signatureStr = requestData.get("transaction.signature");
+                byte[] signature = Base64.getDecoder().decode(signatureStr);
 
-            String publicKeyStr = Play.application().configuration().getString("market_app_key_android");
-            byte[] publicKey = Base64.getDecoder().decode(publicKeyStr);
+                String publicKeyStr = Play.application().configuration().getString("market_app_key_android");
+                byte[] publicKey = Base64.getDecoder().decode(publicKeyStr);
 
-            try {
-                KeyFactory kf = KeyFactory.getInstance("RSA");
-                PublicKey pubKey = kf.generatePublic(new X509EncodedKeySpec(publicKey));
-                Signature sign = Signature.getInstance("SHA1withRSA");
-                sign.initVerify(pubKey);
-                sign.update(data);
-                if(sign.verify(signature)) return new ReturnHelper(true, ImmutableMap.of(  "ok", true, "data", ImmutableMap.of(  "code", 0, "msg", "Ok") ) ).toResult();
+                try {
+                    KeyFactory kf = KeyFactory.getInstance("RSA");
+                    PublicKey pubKey = kf.generatePublic(new X509EncodedKeySpec(publicKey));
+                    Signature sign = Signature.getInstance("SHA1withRSA");
+                    sign.initVerify(pubKey);
+                    sign.update(data);
+                    if (sign.verify(signature))
+                        return new ReturnHelper(true, ImmutableMap.of("ok", true, "data", ImmutableMap.of("code", 0, "msg", "Ok"))).toResult();
 
-            } catch (Exception e) {
-                Logger.debug("Validator Android Error: {}", e);
+                } catch (Exception e) {
+                    Logger.debug("Validator Android Error: {}", e);
 
-            }
-
-        }else{
-            try {
-                JsonNode node = StoreController.post(Play.application().configuration().getString("market_verification_url_ios"), Json.newObject().put("receipt-data", requestData.get("transaction.transactionReceipt")));
-                if( node.get("status").asInt() == 0) {
-                    return new ReturnHelper(true, ImmutableMap.of("ok", true, "data", ImmutableMap.of("code", 0, "msg", "Ok"))).toResult();
                 }
-            }catch(Exception e){
-                Logger.debug("Validator iOS Error: {}", e);
+
+            } else {
+                try {
+                    JsonNode node = StoreController.post(Play.application().configuration().getString("market_verification_url_ios"), Json.newObject().put("receipt-data", requestData.get("transaction.transactionReceipt")));
+                    if (node.get("status").asInt() == 0) {
+                        return new ReturnHelper(true, ImmutableMap.of("ok", true, "data", ImmutableMap.of("code", 0, "msg", "Ok"))).toResult();
+                    }
+                } catch (Exception e) {
+                    Logger.debug("Validator iOS Error: {}", e);
+                }
             }
         }
         return new ReturnHelper(true, ImmutableMap.of(  "ok", false, "data", ImmutableMap.of(  "code", 1, "msg", "Error in validation") ) ).toResult();
