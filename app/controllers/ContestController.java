@@ -255,10 +255,10 @@ public class ContestController extends Controller {
     public static Result countMyContests() {
         User theUser = (User)ctx().args.get("User");
         return new ReturnHelper(ImmutableMap.of(
-                "numWaiting", Contest.countByState(theUser.userId, ContestState.ACTIVE),
+                "numWaiting", 0, //Contest.countByState(theUser.userId, ContestState.ACTIVE),
                 "numLive", Contest.countByState(theUser.userId, ContestState.LIVE),
-                "numVirtualHistory", Contest.countByStateAndSimulation(theUser.userId, ContestState.HISTORY, true),
-                "numRealHistory", Contest.countByStateAndSimulation(theUser.userId, ContestState.HISTORY, false)
+                "numVirtualHistory", 0, //Contest.countByStateAndSimulation(theUser.userId, ContestState.HISTORY, true),
+                "numRealHistory", 0 //Contest.countByStateAndSimulation(theUser.userId, ContestState.HISTORY, false)
         ))
         .toResult();
     }
