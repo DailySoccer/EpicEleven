@@ -508,7 +508,7 @@ public class LoginController extends Controller {
         String nickname = base;
         int count = 0;
 
-        while (null != User.findByName(nickname)) {
+        while (User.existsByName(nickname)) {
             nickname = base+" "+Integer.toString(++count);
         }
 
@@ -520,7 +520,7 @@ public class LoginController extends Controller {
         String base = NICKNAME_AUTO;
         String nickname = base+"-"+Integer.toString(++count);
 
-        while (null != User.findByName(nickname)) {
+        while (User.existsByName(nickname)) {
             nickname = base+"-"+Integer.toString(++count);
         }
 
@@ -666,7 +666,7 @@ public class LoginController extends Controller {
 
             if (somethingChanged) {
                 // Quitamos soporte stormpath.
-                if(null != User.findByName(params.nickName))
+                if(User.existsByName(params.nickName))
                     allErrors.put("nickName", "ERROR_NICKNAME_TAKEN");
                 /*
                 Map<Integer, String> stormpathErrors = changeStormpathProfile(theUser, params, somethingChanged, originalEmail);

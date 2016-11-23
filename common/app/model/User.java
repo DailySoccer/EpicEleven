@@ -202,6 +202,10 @@ public class User {
         return Model.users().findOne("{nickName: #}", username).as(User.class);
     }
 
+    static public boolean existsByName(String username) {
+        return Model.users().find("{nickName: #}", username).limit(1).projection("{_id: 1}").as(User.class).iterator().hasNext();
+    }
+
     static public List<User> findByGuild(ObjectId guildId) {
         return ListUtils.asList(Model.users().find("{guildId: #}", guildId).as(User.class));
     }
