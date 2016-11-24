@@ -154,12 +154,13 @@ public class User {
     }
 
     public User getProfile() {
-        cachedBalance = calculateBalance();
+        // TODO En la versión actual no se usa el ManagerLevel
         goldBalance = calculateGoldBalance();
-        managerBalance = calculateManagerBalance();
-        energyBalance = calculateEnergyBalance();
-        earnedMoney = calculatePrizes(MoneyUtils.CURRENCY_GOLD);
-        managerLevel = managerLevelFromPoints(managerBalance);
+        cachedBalance = goldBalance;
+        //managerBalance = calculateManagerBalance();
+        //energyBalance = calculateEnergyBalance();
+        //earnedMoney = calculatePrizes(MoneyUtils.CURRENCY_GOLD);
+        //managerLevel = managerLevelFromPoints(managerBalance);
         // Logger.debug("gold: {} manager: {} energy: {}", goldBalance, managerBalance, energyBalance);
 
         if (dailyRewards.update()) {
