@@ -20,7 +20,7 @@ public class MoneyUtils {
 
     static public String asString(Money money) {
         if (money.getCurrencyUnit().equals(CURRENCY_GOLD)) {
-            return "@ " + money.getAmount().toBigInteger();
+            return "@ " + money.getAmount().floatValue();
         }
         else if (money.getCurrencyUnit().equals(CURRENCY_MANAGER)) {
             return "¥ " + money.getAmount().toBigInteger();
