@@ -154,12 +154,13 @@ public class User {
     }
 
     public User getProfile() {
-        cachedBalance = calculateBalance();
+        // TODO En la versión actual no se usa el ManagerLevel
         goldBalance = calculateGoldBalance();
-        managerBalance = calculateManagerBalance();
-        energyBalance = calculateEnergyBalance();
-        earnedMoney = calculatePrizes(MoneyUtils.CURRENCY_GOLD);
-        managerLevel = managerLevelFromPoints(managerBalance);
+        cachedBalance = goldBalance;
+        //managerBalance = calculateManagerBalance();
+        //energyBalance = calculateEnergyBalance();
+        //earnedMoney = calculatePrizes(MoneyUtils.CURRENCY_GOLD);
+        //managerLevel = managerLevelFromPoints(managerBalance);
         // Logger.debug("gold: {} manager: {} energy: {}", goldBalance, managerBalance, energyBalance);
 
         if (dailyRewards.update()) {
@@ -537,7 +538,7 @@ public class User {
     static public Money calculateBalance(ObjectId userId, String currencyUnit) {
 
         List<BalanceOp> accountingOps = Model.accountingTransactions()
-                .aggregate("{$match: { \"accountOps.accountId\": #, currencyCode: #, state: \"VALID\"}}", userId, currencyUnit)
+                .aggregate("{$match: { \"accountOps.accountId\": #, currencyCode: #, \"accountOps.value\": {$ne: #}, state: \"VALID\"}}", userId, currencyUnit, currencyUnit.concat(" 0.00"))
                 .and("{$unwind: \"$accountOps\"}")
                 .and("{$match: {\"accountOps.accountId\": #}}", userId)
                 .and("{$project: {value: \"$accountOps.value\"}}")

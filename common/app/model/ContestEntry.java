@@ -161,6 +161,8 @@ public class ContestEntry implements JongoId {
         List<Product> productSoccerPlayers = new ArrayList<>();
         List<ObjectId> playersPurchasedList = contestEntry.playersPurchased;
 
+        // TODO: Actualmente ningún futbolista se compra
+        /*
         // Si el contest es de pago con GOLD, entonces los futbolistas de nivel superior se compran y hay que crear una transacción
         if (contest.entryFee.getCurrencyUnit().equals(MoneyUtils.CURRENCY_GOLD)) {
             Money managerBalance = User.calculateManagerBalance(user.userId);
@@ -189,6 +191,7 @@ public class ContestEntry implements JongoId {
                 }
             }
         }
+        */
 
         try {
             if (!productSoccerPlayers.isEmpty()) {
