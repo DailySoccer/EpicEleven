@@ -538,7 +538,7 @@ public class User {
     static public Money calculateBalance(ObjectId userId, String currencyUnit) {
 
         List<BalanceOp> accountingOps = Model.accountingTransactions()
-                .aggregate("{$match: { \"accountOps.accountId\": #, currencyCode: #, state: \"VALID\"}}", userId, currencyUnit)
+                .aggregate("{$match: { \"accountOps.accountId\": #, currencyCode: #, \"accountOps.value\": {$ne: #}, state: \"VALID\"}}", userId, currencyUnit, currencyUnit.concat(" 0.00"))
                 .and("{$unwind: \"$accountOps\"}")
                 .and("{$match: {\"accountOps.accountId\": #}}", userId)
                 .and("{$project: {value: \"$accountOps.value\"}}")
