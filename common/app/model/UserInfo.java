@@ -15,14 +15,15 @@ public class UserInfo {
     @JsonView(JsonViews.Public.class)
     public String facebookID;
 
-    @JsonView(JsonViews.Public.class)
+    @JsonView(JsonViews.NotForClient.class)
     public int wins;
 
     public int trueSkill = 0;
 
-    @JsonView(JsonViews.Public.class)
+    @JsonView(JsonViews.NotForClient.class)
     public float managerLevel = 0;
 
+    @JsonView(JsonViews.NotForClient.class)
     public Money earnedMoney = MoneyUtils.zero;
 
     @JsonView(JsonViews.Public.class)
