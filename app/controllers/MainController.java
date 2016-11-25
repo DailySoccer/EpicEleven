@@ -123,8 +123,8 @@ public class MainController extends Controller {
         // Obtenemos la posición de ranking de cada uno de los usuarios
         class UserValue {
             public int index = 0;       // índice en la tabla general de "users"
-            public long value = 0;      // valor a comparar (gold o trueskill)
-            public UserValue(int index, long value) {
+            public float value = 0;      // valor a comparar (gold o trueskill)
+            public UserValue(int index, float value) {
                 this.index = index;
                 this.value = value;
             }
@@ -136,11 +136,11 @@ public class MainController extends Controller {
         for (int i=0; i<users.size(); i++) {
             User user = users.get(i);
             skillRanking.add( new UserValue(i, user.trueSkill) );
-            goldRanking.add( new UserValue(i, user.earnedMoney.getAmount().longValue()) );
+            goldRanking.add( new UserValue(i, user.earnedMoney.getAmount().floatValue()) );
         }
 
-        Collections.sort(skillRanking, (v1, v2) -> (int)(v2.value - v1.value));
-        Collections.sort(goldRanking, (v1, v2) -> (int)(v2.value - v1.value));
+        Collections.sort(skillRanking, (v1, v2) -> Float.compare(v2.value, v1.value));
+        Collections.sort(goldRanking, (v1, v2) -> Float.compare(v2.value, v1.value));
 
         // Registrar el ranking en la lista de ranking de usuarios
         for (int i=0; i<users.size(); i++) {
