@@ -214,6 +214,10 @@ public class TemplateContest implements JongoId {
                                      .as(TemplateContest.class));
     }
 
+    static public long getNumInstancesNotFull(ObjectId templateContestId) {
+        return Model.contests().count("{templateContestId : #, freeSlots: {$gt: 0}}", templateContestId);
+    }
+
     static public boolean hasMaxInstances(ObjectId templateContestId) {
         // Comprobamos si el template tiene maxInstances > 0 (tiene un límite de instancias que puede crear)
         return Model.templateContests().findOne("{_id : #, maxInstances: {$gt: 0}}", templateContestId).as(TemplateContest.class) != null;

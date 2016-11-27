@@ -220,6 +220,15 @@ public class TemplateContestController extends Controller {
         return redirect(routes.TemplateContestController.index());
     }
 
+    public static Result maintainNumInstances(String templateContestIdStr) {
+        ObjectId templateContesId = new ObjectId(templateContestIdStr);
+        TemplateContest.maintainingMinimumNumberOfInstances(templateContesId);
+
+        FlashMessage.info("Instances Not Full: " + String.valueOf(TemplateContest.getNumInstancesNotFull(templateContesId)));
+
+        return show(templateContestIdStr);
+    }
+
     public static Result create() {
         Form<TemplateContestForm> templateContestForm = form(TemplateContestForm.class).bindFromRequest();
         if (templateContestForm.hasErrors()) {
