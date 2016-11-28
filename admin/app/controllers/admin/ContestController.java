@@ -128,6 +128,9 @@ public class ContestController extends Controller {
             public String getRenderFieldByIndex(Object data, String fieldValue, Integer index) {
                 Contest contest = (Contest) data;
                 switch (index) {
+                    case 0: return String.format("<a href=\"%s\">%s</a>",
+                            routes.ContestController.show(contest.contestId.toString()).url(),
+                            fieldValue);
                     case 5: return String.format("<a href=\"%s\">%s</a>",
                                 routes.TemplateContestController.show(fieldValue).url(),
                                 fieldValue);
@@ -317,6 +320,11 @@ public class ContestController extends Controller {
         Logger.info("verifyEntryFee END");
 
         return errors.isEmpty() ? ok("OK") : new ReturnHelper(false, errors).toResult();
+    }
+
+    static public Result checkFreeSlots(String contestId) {
+        FlashMessage.info("Check FreeSlots: " + String.valueOf(Contest.hasFreeSlots(new ObjectId(contestId))));
+        return show(contestId);
     }
 
     static private List<String> errorsInPrize(Contest contest) {
