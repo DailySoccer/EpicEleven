@@ -54,16 +54,14 @@ public class EnterContestJob extends Job {
                     bValid = contest.entryFee.isNegativeOrZero() || transactionPayment(contest, contestEntry);
 
                     if (bValid) {
-                        boolean contestModified = transactionInsertContestEntry(contest, contestEntry);
-                        if (contestModified) {
+                        // TODO Con el contest modificado únicamente se podrá preguntar por "isFull"
+                        Contest contestModified = transactionInsertContestEntry(contest, contestEntry);
+                        if (contestModified != null) {
                             bValid = true;
-
-                            // Añadimos el contestEntry al contest, a efectos del check "isFull"
-                            contest.contestEntries.add(contestEntry);
 
                             // Crear instancias automáticamente según se vayan llenando las anteriores
                             // (salvo que sea un contest creado por un usuario)
-                            if (!contest.isCreatedByUser() && contest.isFull()) {
+                            if (contestModified.isFull() && !contest.isCreatedByUser()) {
                                 TemplateContest.maintainingMinimumNumberOfInstances(contest.templateContestId);
                             }
                         }
@@ -159,15 +157,16 @@ public class EnterContestJob extends Job {
         return transactionValid;
     }
 
-    private boolean transactionInsertContestEntry(Contest contest, ContestEntry contestEntry) {
+    private Contest transactionInsertContestEntry(Contest contest, ContestEntry contestEntry) {
         // Insertamos el contestEntry en el contest
         //  Comprobamos que el contest siga ACTIVE, que el usuario no esté ya inscrito y que existan Huecos Libres (maxEntries <= 0 : Ilimitado número de participantes)
         String query = String.format("{_id: #, state: \"ACTIVE\", contestEntries.userId: {$ne: #}, $or: [{maxEntries: {$lte: 0}}, {contestEntries.%s: {$exists: false}}]}", contest.maxEntries - 1);
-        WriteResult result = Model.contests().update(query, contestId, userId)
-                .with("{$push: {contestEntries: #}, $inc: {freeSlots : -1}}", contestEntry);
-
-        // Comprobamos el número de documentos afectados (error == 0)
-        return (result.getN() > 0);
+        return Model.contests().findAndModify(query, contestId, userId)
+                .with("{$push: {contestEntries: #}, $inc: {freeSlots : -1}}", contestEntry)
+                .returnNew()
+                // Devolvemos los campos necesarios para que funcione "isFull"
+                .projection("{ maxEntries : 1, 'contestEntries._id' : 1}")
+                .as(Contest.class);
     }
 
     private void cancelAccountOp () {
