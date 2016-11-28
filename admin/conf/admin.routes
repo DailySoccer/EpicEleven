@@ -51,6 +51,7 @@ GET         /contests/verify_prizes                                             
 GET         /contests/verify_entry_fee                                           controllers.admin.ContestController.verifyEntryFee()
 POST        /contests/import_from_csv                                            controllers.admin.ContestController.importFromCSV()
 GET         /contests/default_csv                                                controllers.admin.ContestController.defaultCSV()
+GET         /check_free_slots/:contestId                                         controllers.admin.ContestController.checkFreeSlots(contestId)
 
 GET         /template_contests                                                   controllers.admin.TemplateContestController.index()
 GET         /template_contests/filterBy/:competitionId/:stateId                  controllers.admin.TemplateContestController.showFilterByCompetition(competitionId : String, stateId : String)
@@ -69,6 +70,7 @@ GET         /template_contest/publish/:templateContestId                        
 GET         /template_contest/delete/:templateContestId                          controllers.admin.TemplateContestController.destroy(templateContestId : String)
 GET         /template_contest/:templateContestId                                 controllers.admin.TemplateContestController.show(templateContestId : String)
 GET         /template_contest/managerLevels/:templateContestId                   controllers.admin.TemplateContestController.showManagerLevels(templateContestId : String)
+GET         /template_contest/maintain_num_instances/:templateContestId          controllers.admin.TemplateContestController.maintainNumInstances(templateContestId : String)
 
 GET         /template_contest/get_prizes/:prizeType/:maxEntries/:prizePool       controllers.admin.TemplateContestController.getPrizes(prizeType : String, maxEntries : Int, prizePool : Int)
 

@@ -395,6 +395,10 @@ public class Contest implements JongoId {
         return Model.contests().count("{state: #, \"contestEntries.userId\": #, simulation: #}", contestState, userId, simulation);
     }
 
+    static public boolean hasFreeSlots(ObjectId contestId) {
+        return Model.contests().count("{_id : #, $or: [{maxEntries: {$lte: 0}}, {freeSlots: {$gt: 0}}]}", contestId) > 0;
+    }
+
     static private List<Contest> findAllMyContests(ObjectId userId, String query, Class<?> projectionClass) {
         return ListUtils.asList(Model.contests()
                 .find(query, userId)
