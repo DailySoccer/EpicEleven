@@ -2,6 +2,7 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonView;
+import com.google.common.collect.ImmutableList;
 import com.mongodb.WriteConcern;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTranPrize;
@@ -47,12 +48,12 @@ public class Contest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public Date closedAt;
 
-    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public ContestState state = ContestState.OFF;
 
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public String name;
 
-    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class, JsonViews.MyActiveContest.class})
     public List<ContestEntry> contestEntries = new ArrayList<>();
 
     @JsonView(JsonViews.Public.class)
@@ -61,12 +62,15 @@ public class Contest implements JongoId {
     }
     private void setNumEntries(int blah) { }    // Para poder deserializar lo que nos llega por la red sin usar FAIL_ON_UNKNOWN_PROPERTIES
 
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public int minEntries = 2;
+
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public int maxEntries;
 
-    @JsonView(JsonViews.NotForClient.class)
     public int freeSlots;
 
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public int salaryCap;
 
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
@@ -81,16 +85,25 @@ public class Contest implements JongoId {
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public PrizeType prizeType;
 
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public Integer minManagerLevel;
+
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public Integer maxManagerLevel;
+
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public Integer minTrueSkill;
+
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public Integer maxTrueSkill;
 
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public Date startDate;
 
     @JsonView(JsonViews.NotForClient.class)
     public Date activationAt;
 
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public String optaCompetitionId;
 
     @JsonView(value={JsonViews.ContestInfo.class, JsonViews.Extended.class, JsonViews.MyLiveContests.class})
@@ -105,10 +118,13 @@ public class Contest implements JongoId {
     @JsonView(JsonViews.NotForClient.class)
     public boolean closed = false;
 
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public boolean simulation = false;
 
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public ObjectId authorId;
 
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public String specialImage;
 
     public Contest() {}
@@ -182,8 +198,7 @@ public class Contest implements JongoId {
 
     public ObjectId getId() { return contestId; }
 
-    public boolean isFull() { return maxEntries > 0 && getNumEntries() >= maxEntries; }
-
+    public boolean isFull() { return maxEntries > 0 && freeSlots <= 0; }
 
     public List<TemplateMatchEvent> getTemplateMatchEvents() {
         return TemplateMatchEvent.findAll(templateMatchEventIds);
@@ -265,6 +280,22 @@ public class Contest implements JongoId {
         if (ObjectId.isValid(contestId)) {
             aContest = Model.contests().findOne(new ObjectId(contestId)).as(Contest.class);
         }
+        return aContest;
+    }
+
+    static public Contest findOne(ObjectId contestId, ObjectId userId) {
+        Contest aContest = Model.contests()
+                .findOne("{_id : #, 'contestEntries.userId' : #}", contestId, userId)
+                .projection("{ 'contestEntries.$' : 1 }")
+                .as(Contest.class);
+        return aContest;
+    }
+
+    static public Contest findOne(ObjectId contestId, ObjectId userId, Class<?> projectionClass) {
+        Contest aContest = Model.contests()
+                .findOne("{_id : #, 'contestEntries.userId' : #}", contestId, userId)
+                .projection(ViewProjection.get(projectionClass, ImmutableList.of("contestEntries.$"), Contest.class))
+                .as(Contest.class);
         return aContest;
     }
 
@@ -351,7 +382,7 @@ public class Contest implements JongoId {
 
     static public List<Contest> findAllActiveNotFull(Class<?> projectionClass) {
         return ListUtils.asList(Model.contests()
-                .find("{state: \"ACTIVE\", freeSlots: {$gt: 0}}")
+                .find("{state: \"ACTIVE\", $or: [{maxEntries: {$lte: 0}}, {freeSlots: {$gt: 0}}], authorId: {$exists: false}}")
                 .projection(ViewProjection.get(projectionClass, Contest.class))
                 .as(Contest.class));
     }
@@ -369,6 +400,14 @@ public class Contest implements JongoId {
 
     static public List<Contest> findAllCanceled() {
         return ListUtils.asList(Model.contests().find("{state: \"CANCELED\"}").as(Contest.class));
+    }
+
+    // Buscar los contests de la lista en los que el usuario está inscrito
+    static public List<Contest> findSignupUser(List<ObjectId> contestIds, ObjectId userId) {
+        return ListUtils.asList(Model.contests()
+                .find("{_id: {$in:#}, \"contestEntries.userId\": #}", contestIds, userId)
+                .projection("{_id: 1}")
+                .as(Contest.class));
     }
 
     static public List<Contest> findAllMyActive(ObjectId userId, Class<?> projectionClass) {

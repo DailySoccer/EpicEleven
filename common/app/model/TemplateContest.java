@@ -46,8 +46,11 @@ public class TemplateContest implements JongoId {
     public Money prizePool;
     public float prizeMultiplier = 1.0f;
 
+    @JsonView(JsonViews.NotForClient.class)
     public Integer minManagerLevel;
+    @JsonView(JsonViews.NotForClient.class)
     public Integer maxManagerLevel;
+
     public Integer minTrueSkill;
     public Integer maxTrueSkill;
 
@@ -186,6 +189,10 @@ public class TemplateContest implements JongoId {
 
     static public List<TemplateContest> findAllActive() {
         return ListUtils.asList(Model.templateContests().find("{state: \"ACTIVE\"}").as(TemplateContest.class));
+    }
+
+    static public long countAllActive() {
+        return Model.templateContests().count("{state: \"ACTIVE\"}");
     }
 
     static public List<TemplateContest> findAllActiveNotSimulations() {

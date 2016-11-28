@@ -22,6 +22,19 @@ public class ViewProjection {
         return ret;
     }
 
+    static public String get(Class<?> viewClass, List<String> projections, Class<?> pojoClass) {
+        String ret = getCached(viewClass, projections, pojoClass);
+        if (ret == null) {
+            List<String> fields = getFieldNames("", viewClass, pojoClass);
+            fields.addAll(projections);
+
+            ret = asProjection(fields);
+
+            registerCache(viewClass, pojoClass, ret);
+        }
+        return ret;
+    }
+
     static private List<String> getFieldNames(String path, Class<?> viewClass, Class<?> pojoClass) {
         List<String> fieldNames = new ArrayList<>();
         for(Field field: pojoClass.getFields()) {
@@ -119,6 +132,11 @@ public class ViewProjection {
 
     static private String getCached(Class<?> viewClass, Class<?> pojoClass) {
         String key = viewClass.getName().concat(pojoClass.getName());
+        return _cache.get(key);
+    }
+
+    static private String getCached(Class<?> viewClass, List<String> projections, Class<?> pojoClass) {
+        String key = viewClass.getName().concat(pojoClass.getName()).concat( String.join("", projections));
         return _cache.get(key);
     }
 

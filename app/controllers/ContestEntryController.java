@@ -89,8 +89,9 @@ public class ContestEntryController extends Controller {
             // Obtener los soccerIds de los futbolistas : List<ObjectId>
             List<ObjectId> idsList = ListUtils.objectIdListFromJson(params.soccerTeam);
 
-            List<String> errores = new ArrayList<>();
-            if (aContest != null) {
+            List<String> errores = validateContestEntry(aContest, formation, idsList, /*changeInLiveAllowed*/ false);
+
+            if (errores.isEmpty()) {
                 if (aContest.containsContestEntryWithUser(theUser.userId)) {
                     errores.add(ERROR_USER_ALREADY_INCLUDED);
                 }
@@ -125,10 +126,6 @@ public class ContestEntryController extends Controller {
                 if (aContest != null) {
                     contestIdValid = aContest.contestId;
                 }
-            }
-
-            if (errores.isEmpty()) {
-                errores = validateContestEntry(aContest, formation, idsList, /*changeInLiveAllowed*/ false);
             }
 
             if (errores.isEmpty()) {
