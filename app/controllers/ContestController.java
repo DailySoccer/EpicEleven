@@ -33,7 +33,7 @@ import static play.data.Form.form;
 @AllowCors.Origin
 public class ContestController extends Controller {
 
-    private final static int CACHE_ACTIVE_CONTESTS = 10;
+    private final static int CACHE_ACTIVE_CONTESTS = 1;
     private final static int CACHE_ACTIVE_CONTEST = 60;
     private final static int CACHE_VIEW_LIVE_CONTESTS = 60;
     private final static int CACHE_VIEW_HISTORY_CONTESTS = 60;
