@@ -46,8 +46,11 @@ public class TemplateContest implements JongoId {
     public Money prizePool;
     public float prizeMultiplier = 1.0f;
 
+    @JsonView(JsonViews.NotForClient.class)
     public Integer minManagerLevel;
+    @JsonView(JsonViews.NotForClient.class)
     public Integer maxManagerLevel;
+
     public Integer minTrueSkill;
     public Integer maxTrueSkill;
 
@@ -186,6 +189,18 @@ public class TemplateContest implements JongoId {
 
     static public List<TemplateContest> findAllActive() {
         return ListUtils.asList(Model.templateContests().find("{state: \"ACTIVE\"}").as(TemplateContest.class));
+    }
+
+    static public boolean existsAnyInState(ContestState contestState) {
+        return Model.templateContests().find("{state: #}", contestState).limit(1).projection("{_id : 1}").as(TemplateContest.class).hasNext();
+    }
+
+    static public List<TemplateContest> findAllActiveOrLive() {
+        return ListUtils.asList(Model.templateContests().find("{$or: [{state: \"ACTIVE\"}, {state: \"LIVE\"}]}").as(TemplateContest.class));
+    }
+
+    static public long countAllActiveOrLive() {
+        return Model.templateContests().count("{$or: [{state: \"ACTIVE\"}, {state: \"LIVE\"}]}");
     }
 
     static public List<TemplateContest> findAllActiveNotSimulations() {

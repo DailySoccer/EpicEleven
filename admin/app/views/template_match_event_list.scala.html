@@ -3,8 +3,77 @@
 @import model._
 @import controllers.admin.routes._
 
+@match_event_state(match_event : model.TemplateMatchEvent) = @{
+    if(match_event.isGameFinished()) {
+        "Finished"
+    } else {
+        if(match_event.isGameStarted()) {
+            "Live"
+        } else {
+            "Waiting"
+        }
+    }
+}
+
+@match_event_name(p : model.TemplateMatchEvent) = @{
+    var teamA = ""
+    var teamB = ""
+    if(p.isGameStarted()) {
+        if(templateSoccerTeamMap.containsKey(p.templateSoccerTeamAId)) {
+            teamA = templateSoccerTeamMap(p.templateSoccerTeamAId).name + "(" + p.getFantasyPointsForTeam(p.templateSoccerTeamAId) + ")"
+        } else {
+            teamA = p.templateSoccerTeamAId.toString
+        }
+        if(templateSoccerTeamMap.containsKey(p.templateSoccerTeamBId)) {
+            teamB = templateSoccerTeamMap(p.templateSoccerTeamBId).name + "(" + p.getFantasyPointsForTeam(p.templateSoccerTeamBId) + ")"
+        } else {
+            teamB = p.templateSoccerTeamBId.toString
+        }
+    } else {
+        if(templateSoccerTeamMap.containsKey(p.templateSoccerTeamAId)) {
+            teamA = templateSoccerTeamMap(p.templateSoccerTeamAId).name
+        } else {
+            teamA = p.templateSoccerTeamAId.toString
+        }
+        if(templateSoccerTeamMap.containsKey(p.templateSoccerTeamBId)) {
+            teamB = templateSoccerTeamMap(p.templateSoccerTeamBId).name
+        } else {
+            teamB = p.templateSoccerTeamBId.toString
+        }
+    }
+    if (p.homeScore != -1 && p.awayScore != -1) {
+        teamA + " vS " + teamB + " (" + p.homeScore + " - " + p.awayScore + ")"
+    } else {
+        teamA + " vS " + teamB
+    }
+}
+
+@include_columns() = {
+    { "title": "OptaId" },
+    { "title": "OptaTeamAId" },
+    { "title": "OptaTeamBId" },
+    { "title": "Teams" },
+    { "title": "Competition" },
+    { "title": "Start Date" },
+    { "title": "State" }
+}
+
+@include_match_events(match_event_list : List[model.TemplateMatchEvent]) = {
+    @for((p, index) <- match_event_list.zipWithIndex) {
+    [
+    "@p.optaMatchEventId",
+    "@p.optaTeamAId",
+    "@p.optaTeamBId",
+    "@TemplateMatchEventController.show(p.templateMatchEventId.toString())~@match_event_name(p)",
+    "@p.optaCompetitionId",
+    "@GlobalDate.formatDate(p.startDate)",
+    "@match_event_state(p)"
+    ] @if(index < match_event_list.size-1) { , }
+    }
+}
+
 @scripts = {
-    <script type="text/javascript">
+<script type="text/javascript">
 
         function updatePage() {
             @if(model.Model.isLocalHostTargetEnvironment()) {
@@ -20,28 +89,34 @@
         }
 
         $(document).ready( function(){
-            window.setInterval(updatePage, 10000);
+            $('#ajax_table').dataTable( {
+                "columns": [ @include_columns() ],
+                "data": [ @include_match_events(match_events) ],
+                "columnDefs": [ {
+                    "targets": 3,
+                    "mRender": function (data, type, full) {
+                        var fields = data.split('~');
+                        return '<a href="' + fields[0] + '">' + fields[1] + '</a>';
+                    }
+                },
+                {
+                    "targets": 6,
+                    "mRender": function (data, type, full) {
+                        if (data == "Finished") {
+                            return '<button class="btn btn-danger">' + data + '</button>';
+                        } else if (data == "Live") {
+                            return '<button class="btn btn-success">' + data + '</button>';
+                        } else {
+                            return '<button class="btn btn-warning">' + data + '</button>';
+                        }
+                    }
+                } ],
+                stateSave: true,
+                iDisplayLength: 100,
+                "deferRender": true
+            } );
 
-            $('#ajax_table_id').dataTable( {
-              "columns": [
-                { "title": "OptaId" },
-                { "title": "OptaTeamAId" },
-                { "title": "OptaTeamBId" },
-                { "title": "Teams" },
-                { "title": "Competition" },
-                { "title": "Start Date" },
-                { "title": "State" },
-                { "title": "" }
-              ],
-              "iDisplayLength": 100,
-              "bProcessing": true,
-              "aaSorting": [[ 5, "desc" ]],
-              "bServerSide": true,
-              "stateSave": true,
-              "bJQueryUI": true,
-              "sPaginationType": "full_numbers",
-              "sAjaxSource": "/admin/template_match_events/ajax"
-            });
+            window.setInterval(updatePage, 10000);
         })
 
     </script>
@@ -52,7 +127,7 @@
 <h1 class="page-header">Template Match Events</h1>
 
 <div class="table-responsive">
-    <table id="ajax_table_id" class="table table-striped">
+    <table id="ajax_table" class="table table-striped">
     </table>
 </div>
 

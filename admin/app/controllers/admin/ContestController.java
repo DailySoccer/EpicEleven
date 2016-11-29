@@ -11,6 +11,8 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.bson.types.ObjectId;
 import org.joda.time.format.DateTimeFormatter;
+import org.jongo.Find;
+import org.jongo.MongoCollection;
 import play.Logger;
 import play.Play;
 import play.mvc.Controller;
@@ -44,13 +46,20 @@ public class ContestController extends Controller {
         String query = null;
         if (optaCompetitions.containsKey(seasonCompetitionId)) {
             OptaCompetition optaCompetition = optaCompetitions.get(seasonCompetitionId);
-            query = String.format("{optaCompetitionId: '%s', state: '%s'}", optaCompetition.competitionId, stateId);
+            query = String.format("{optaCompetitionId: '%s', state: '%s', startDate: {$gt: #}}", optaCompetition.competitionId, stateId);
         }
         else {
-            query = String.format("{state: '%s'}", stateId);
+            query = String.format("{state: '%s', startDate: {$gt: #}}", stateId);
         }
 
         return PaginationData.withAjaxAndQuery(request().queryString(), Model.contests(), query, Contest.class, new PaginationData() {
+            public long count(MongoCollection collection, String query) {
+                return query != null ? collection.count(query, OptaCompetition.SEASON_DATE_START) : collection.count();
+            }
+            public Find find(MongoCollection collection, String query) {
+                return query != null ? collection.find(query, OptaCompetition.SEASON_DATE_START) : collection.find();
+            }
+
             public String projection() {
                 return "{" +
                         "name: 1, " +

@@ -26,6 +26,12 @@ public class PaginationData {
     public List<String> getFieldNames() { return null; }
     public String getFieldByIndex(Object data, Integer index) { return null; }
     public String getRenderFieldByIndex(Object data, String fieldValue, Integer index) { return fieldValue; }
+    public long count(MongoCollection collection, String query) {
+        return query != null ? collection.count(query) : collection.count();
+    }
+    public Find find(MongoCollection collection, String query) {
+        return query != null ? collection.find(query) : collection.find();
+    }
 
     public static <T> Result withAjax(Map<String, String[]> params, MongoCollection collection, final Class<T> clazz, PaginationData paginationData) {
         return withAjaxAndQuery(params, collection, null, clazz, paginationData);
@@ -34,7 +40,7 @@ public class PaginationData {
     public static <T> Result withAjaxAndQuery(Map<String, String[]> params, MongoCollection collection, String query, final Class<T> clazz, PaginationData paginationData) {
         //long startTime = System.currentTimeMillis();
 
-        long iTotalRecords = collection.count();
+        long iTotalRecords = paginationData.count(collection, query);
         long iTotalDisplayRecords = iTotalRecords;
         String filter = (params.get("sSearch") != null) ? params.get("sSearch")[0] : "";
 
@@ -50,7 +56,7 @@ public class PaginationData {
         // Aqui iremos añadiendo los registros válidos
         List<Map<String, Object>> dataList = new ArrayList<>();
 
-        Find find = query != null ? collection.find(query) : collection.find();
+        Find find = paginationData.find(collection, query);
 
         if (paginationData.projection() != null) {
             find.projection(paginationData.projection());

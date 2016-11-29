@@ -32,19 +32,20 @@ public class ContestEntry implements JongoId {
     @Id
     public ObjectId contestEntryId;
 
-    @JsonView(value={JsonViews.Public.class, JsonViews.AllContests.class})
+    @JsonView(value={JsonViews.Public.class, JsonViews.AllContests.class, JsonViews.MyActiveContest.class, JsonViews.MyLiveContestsV2.class})
     public ObjectId userId;             // Usuario que creo el equipo
 
-    @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class})
+    @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class, JsonViews.MyActiveContest.class})
     public String formation;    // Formación del fantasyTeam creado
 
-    @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class})
+    @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class, JsonViews.MyActiveContest.class, JsonViews.MyLiveContestsV2.class})
     public List<ObjectId> soccerIds;    // Fantasy team
 
-    @JsonView(value={JsonViews.FullContest.class})
+    // @JsonView(value={JsonViews.FullContest.class})
+    @JsonView(JsonViews.NotForClient.class)
     public List<ObjectId> playersPurchased = new ArrayList<>(); // Futbolistas que han necesitado ser comprados por tener un nivel superior
 
-    @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class})
+    @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class, JsonViews.MyLiveContestsV2.class})
     public List<Substitution> substitutions = new ArrayList<>(); // Cambio de la alineacion de futbolistas en "Live"
 
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})

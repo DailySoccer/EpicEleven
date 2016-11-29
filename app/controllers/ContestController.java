@@ -3,15 +3,12 @@ package controllers;
 import actions.AllowCors;
 import actions.UserAuthenticated;
 import com.google.common.collect.ImmutableMap;
-import com.mongodb.WriteConcern;
 import model.*;
-import model.opta.OptaCompetition;
 import org.bson.types.ObjectId;
 import org.joda.money.Money;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import play.Logger;
-import play.Play;
 import play.cache.Cache;
 import play.cache.Cached;
 import play.data.Form;
@@ -19,10 +16,7 @@ import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.With;
-import utils.ListUtils;
-import utils.MoneyUtils;
-import utils.ReturnHelper;
-import utils.ReturnHelperWithAttach;
+import utils.*;
 
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -33,13 +27,16 @@ import static play.data.Form.form;
 @AllowCors.Origin
 public class ContestController extends Controller {
 
-    private final static int CACHE_ACTIVE_CONTESTS = 1;
+    private final static int CACHE_ACTIVE_TEMPLATE_CONTESTS = 60 * 60 * 8;      // 8 horas
+    private final static int CACHE_COUNT_ACTIVE_TEMPLATE_CONTESTS = 60 * 30;    // 30 minutos
+    private final static int CACHE_ACTIVE_CONTESTS = 60;
     private final static int CACHE_ACTIVE_CONTEST = 60;
     private final static int CACHE_VIEW_LIVE_CONTESTS = 60;
-    private final static int CACHE_VIEW_HISTORY_CONTESTS = 60;
+    private final static int CACHE_VIEW_HISTORY_CONTEST = 60 * 60 * 8;      // 8 horas
     private final static int CACHE_LIVE_MATCHEVENTS = 30;
     private final static int CACHE_LIVE_CONTESTENTRIES = 30;
     private final static int CACHE_CONTEST_INFO = 60;
+    private final static int CACHE_EXISTS_LIVE = 60 * 5;         // 5 minutos
 
     private static final String ERROR_VIEW_CONTEST_INVALID = "ERROR_VIEW_CONTEST_INVALID";
     private static final String ERROR_MY_CONTEST_INVALID = "ERROR_MY_CONTEST_INVALID";
@@ -159,27 +156,60 @@ public class ContestController extends Controller {
     }
 
     /*
-     * Devuelve la lista de template Contests disponibles para que el usuario cree contests
+     * Devuelve la lista de template Contests disponibles
      */
-    public static Result getActiveTemplateContests() {
-        List<TemplateContest> templateContests = TemplateContest.findAllCustomizable();
-        List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests);
+    public static Result getActiveTemplateContests() throws Exception {
 
-        return new ReturnHelper(ImmutableMap.of(
+        Map<String, Object> result = Cache.getOrElse("ActiveTemplateContests", new Callable<Map<String, Object>>() {
+            @Override
+            public Map<String, Object> call() throws Exception {
+                return findActiveTemplateContests();
+            }
+        }, CACHE_ACTIVE_TEMPLATE_CONTESTS);
+
+        // Necesitamos actualizar la caché?
+        long countTemplateContest = TemplateContest.countAllActiveOrLive();
+        if (result.containsKey("template_contests") && result.get("template_contests") instanceof ArrayList){
+            List<?> list = (List<?>) result.get("template_contests");
+            if (list != null && list.size() != countTemplateContest) {
+                result = findActiveTemplateContests();
+
+                Cache.set("ActiveTemplateContests", result);
+                Logger.debug("getActiveTemplateContests: cache INVALID");
+            }
+        }
+
+        return new ReturnHelper(result).toResult(JsonViews.Extended.class);
+    }
+
+    private static Map<String, Object> findActiveTemplateContests() {
+        List<TemplateContest> templateContests = TemplateContest.findAllActiveOrLive();
+        List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests);
+        return ImmutableMap.of(
                 "template_contests", templateContests,
                 "match_events", matchEvents
-        )).toResult(JsonViews.CreateContest.class);
+        );
+    }
+
+    @With(AllowCors.CorsAction.class)
+    @Cached(key = "CountActiveTemplateContests", duration = CACHE_COUNT_ACTIVE_TEMPLATE_CONTESTS)
+    public static Result countActiveTemplateContests() {
+        return new ReturnHelper(ImmutableMap.of(
+                "count", TemplateContest.countAllActiveOrLive()
+        )).toResult();
     }
 
     /*
      * Devuelve la lista de contests activos (aquellos a los que un usuario puede apuntarse)
      */
-    @With(AllowCors.CorsAction.class)
-    @Cached(key = "ActiveContests", duration = CACHE_ACTIVE_CONTESTS)
-    public static Result getActiveContests() {
-        // Query que compara el "número de entries" con "maxEntries" (parece más lenta que haciendo el filtro a mano)
-        // List<Contest> contests = Contest.findAllActiveNotFull(JsonViews.ActiveContests.class);
-        List<Contest> contests = Contest.findAllActive(JsonViews.ActiveContests.class);
+    public static Result getActiveContests() throws Exception {
+        List<Contest> contests = Cache.getOrElse("ActiveContests", new Callable<List<Contest>>() {
+            @Override
+            public List<Contest> call() throws Exception {
+                return Contest.findAllActiveNotFull(JsonViews.ActiveContests.class);
+                //return Contest.findAllActive(JsonViews.ActiveContests.class);
+            }
+        }, CACHE_ACTIVE_CONTESTS);
 
         // Filtrar los contests que ya están completos
         List<Contest> contestsNotFull = new ArrayList<>(contests.size());
@@ -189,7 +219,45 @@ public class ContestController extends Controller {
             }
         }
 
+        User theUser = SessionUtils.getUserFromRequest(Controller.ctx().request());
+        if (theUser != null) {
+            // Quitamos los torneos en los que esté inscrito el usuario
+            List<ObjectId> contestIds = contestsNotFull.stream().map(contest -> contest.contestId).collect(Collectors.toList());
+            List<Contest> contestsRegistered = Contest.findSignupUser(contestIds, theUser.userId);
+
+            contestsNotFull.removeIf( contest -> contestsRegistered.stream().anyMatch( registered -> registered.contestId.equals(contest.contestId) ));
+        }
+
         return new ReturnHelper(ImmutableMap.of("contests", contestsNotFull)).toResult();
+    }
+
+    public static Result getActiveContestsV2() throws Exception {
+        List<Contest> contests = Cache.getOrElse("ActiveContestsV2", new Callable<List<Contest>>() {
+            @Override
+            public List<Contest> call() throws Exception {
+                return Contest.findAllActiveNotFull(JsonViews.ActiveContestsV2.class);
+                //return Contest.findAllActive(JsonViews.ActiveContests.class);
+            }
+        }, CACHE_ACTIVE_CONTESTS);
+
+        // Filtrar los contests que ya están completos
+        List<Contest> contestsNotFull = new ArrayList<>(contests.size());
+        for (Contest contest: contests) {
+            if (!contest.isFull() && !contest.isCreatedByUser()) {
+                contestsNotFull.add(contest);
+            }
+        }
+
+        User theUser = SessionUtils.getUserFromRequest(Controller.ctx().request());
+        if (theUser != null) {
+            // Quitamos los torneos en los que esté inscrito el usuario
+            List<ObjectId> contestIds = contestsNotFull.stream().map(contest -> contest.contestId).collect(Collectors.toList());
+            List<Contest> contestsRegistered = Contest.findSignupUser(contestIds, theUser.userId);
+
+            contestsNotFull.removeIf( contest -> contestsRegistered.stream().anyMatch( registered -> registered.contestId.equals(contest.contestId) ));
+        }
+
+        return new ReturnHelper(ImmutableMap.of("contests", contestsNotFull)).toResult(JsonViews.ActiveContestsV2.class);
     }
 
     @UserAuthenticated
@@ -221,18 +289,82 @@ public class ContestController extends Controller {
     }
 
     @UserAuthenticated
-    public static Result getMyLiveContests() {
+    public static Result getMyActiveContestsV2() {
+        User theUser = (User)ctx().args.get("User");
+        return new ReturnHelper(ImmutableMap.of(
+                "contests", Contest.findAllMyActive(theUser.userId, JsonViews.MyActiveContestsV2.class),
+                "profile", theUser.getProfile()
+        )).toResult();
+    }
+
+    @UserAuthenticated
+    public static Result getMyLiveContests() throws Exception {
         User theUser = (User)ctx().args.get("User");
 
-        List<Contest> myLiveContests = Contest.findAllMyLive(theUser.userId, JsonViews.MyLiveContests.class);
+        // Comprobar si existe un torneo en live, antes de hacer una query más costosa (y específico a un usuario)
+        boolean existsLive = Cache.getOrElse("ExistsContestInLive", new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return TemplateContest.existsAnyInState(ContestState.LIVE);
+            }
+        }, CACHE_EXISTS_LIVE);
 
-        List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.gatherFromContests(myLiveContests);
+        Result result;
+        if (existsLive) {
+            List<Contest> myLiveContests = Contest.findAllMyLive(theUser.userId, JsonViews.MyLiveContests.class);
 
-        return new ReturnHelperWithAttach()
-                .attachObject("contests", myLiveContests, JsonViews.FullContest.class)
-                .attachObject("match_events", liveMatchEvents, JsonViews.FullContest.class)
-                .attachObject("profile", theUser.getProfile(), JsonViews.Public.class)
-                .toResult();
+            List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.gatherFromContests(myLiveContests);
+
+            result = new ReturnHelperWithAttach()
+                    .attachObject("contests", myLiveContests, JsonViews.FullContest.class)
+                    .attachObject("match_events", liveMatchEvents, JsonViews.FullContest.class)
+                    .attachObject("profile", theUser.getProfile(), JsonViews.Public.class)
+                    .toResult();
+        }
+        else {
+            // Si no existe ningún torneo Live, no puede existir ninguno en el que esté el usuario
+            result = new ReturnHelper(ImmutableMap.of(
+                    "contests", new ArrayList<Contest>(),
+                    "match_events", new ArrayList<Contest>(),
+                    "profile", theUser.getProfile()
+            )).toResult();
+        }
+        return result;
+    }
+
+    @UserAuthenticated
+    public static Result getMyLiveContestsV2() throws Exception {
+        User theUser = (User)ctx().args.get("User");
+
+        // Comprobar si existe un torneo en live, antes de hacer una query más costosa (y específico a un usuario)
+        boolean existsLive = Cache.getOrElse("ExistsContestInLive", new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return TemplateContest.existsAnyInState(ContestState.LIVE);
+            }
+        }, CACHE_EXISTS_LIVE);
+
+        Result result;
+        if (existsLive) {
+            List<Contest> myLiveContests = Contest.findAllMyLive(theUser.userId, JsonViews.MyLiveContestsV2.class);
+
+            List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.gatherFromContests(myLiveContests);
+
+            return new ReturnHelperWithAttach()
+                    .attachObject("contests", myLiveContests, JsonViews.MyLiveContestsV2.class)
+                    .attachObject("match_events", liveMatchEvents, JsonViews.FullContest.class)
+                    .attachObject("profile", theUser.getProfile(), JsonViews.Public.class)
+                    .toResult();
+        }
+        else {
+            // Si no existe ningún torneo Live, no puede existir ninguno en el que esté el usuario
+            result = new ReturnHelper(ImmutableMap.of(
+                    "contests", new ArrayList<Contest>(),
+                    "match_events", new ArrayList<Contest>(),
+                    "profile", theUser.getProfile()
+            )).toResult();
+        }
+        return result;
     }
 
     @UserAuthenticated
@@ -245,18 +377,45 @@ public class ContestController extends Controller {
     }
 
     @UserAuthenticated
-    public static Result countMyLiveContests() {
+    public static Result getMyHistoryContestsV2() {
         User theUser = (User)ctx().args.get("User");
-        return new ReturnHelper(ImmutableMap.of("count", Contest.countByState(theUser.userId, ContestState.LIVE)))
+        return new ReturnHelper(ImmutableMap.of(
+                "contests", Contest.findAllMyHistoryWithMyEntry(theUser.userId, JsonViews.MyHistoryContests.class),
+                "profile", theUser.getProfile()
+        )).toResult(JsonViews.Extended.class);
+    }
+
+    @UserAuthenticated
+    public static Result countMyLiveContests() throws Exception {
+        User theUser = (User)ctx().args.get("User");
+
+        boolean existsLive = Cache.getOrElse("ExistsContestInLive", new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return TemplateContest.existsAnyInState(ContestState.LIVE);
+            }
+        }, CACHE_EXISTS_LIVE);
+
+        long count = !existsLive ? 0 : Contest.countByState(theUser.userId, ContestState.LIVE);
+        return new ReturnHelper(ImmutableMap.of("count", count))
                 .toResult();
     }
 
     @UserAuthenticated
-    public static Result countMyContests() {
+    public static Result countMyContests() throws Exception {
         User theUser = (User)ctx().args.get("User");
+
+        // Comprobar si existe un torneo en live, antes de hacer una query más costosa (y específico a un usuario)
+        boolean existsLive = Cache.getOrElse("ExistsContestInLive", new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return TemplateContest.existsAnyInState(ContestState.LIVE);
+            }
+        }, CACHE_EXISTS_LIVE);
+
         return new ReturnHelper(ImmutableMap.of(
                 "numWaiting", 0, //Contest.countByState(theUser.userId, ContestState.ACTIVE),
-                "numLive", Contest.countByState(theUser.userId, ContestState.LIVE),
+                "numLive", !existsLive ? 0 : Contest.countByState(theUser.userId, ContestState.LIVE),
                 "numVirtualHistory", 0, //Contest.countByStateAndSimulation(theUser.userId, ContestState.HISTORY, true),
                 "numRealHistory", 0 //Contest.countByStateAndSimulation(theUser.userId, ContestState.HISTORY, false)
         ))
@@ -282,6 +441,18 @@ public class ContestController extends Controller {
         return attachInfoToContest(contest).toResult(JsonViews.FullContest.class);
     }
 
+    @UserAuthenticated
+    public static Result getMyActiveContestV2(String contestId) {
+        User theUser = (User)ctx().args.get("User");
+        Contest contest = Contest.findOne(new ObjectId(contestId), theUser.userId, JsonViews.MyActiveContest.class);
+        if (!contest.containsContestEntryWithUser(theUser.userId)) {
+            Logger.error("WTF 7943: getMyContest: contest: {} user: {}", contestId, theUser.userId);
+            return new ReturnHelper(false, ERROR_MY_CONTEST_INVALID).toResult();
+        }
+
+        return new ReturnHelper(ImmutableMap.of("contest", contest)).toResult(JsonViews.MyActiveContest.class);
+    }
+
     public static Result getMyLiveContest(String contestId) throws Exception {
         return Cache.getOrElse("ViewLiveContest-".concat(contestId), new Callable<Result>() {
             @Override
@@ -297,7 +468,7 @@ public class ContestController extends Controller {
             public Result call() throws Exception {
                 return getViewContest(contestId);
             }
-        }, CACHE_VIEW_HISTORY_CONTESTS);
+        }, CACHE_VIEW_HISTORY_CONTEST);
     }
 
     public static Result getViewContest(String contestId) {
@@ -353,6 +524,18 @@ public class ContestController extends Controller {
                 .toResult(JsonViews.FullContest.class);
     }
 
+    @UserAuthenticated
+    public static Result getMyContestEntryV2(String contestId) {
+        User theUser = (User)ctx().args.get("User");
+        Contest contest = Contest.findOne(new ObjectId(contestId), theUser.userId, JsonViews.MyActiveContest.class);
+        if (!contest.containsContestEntryWithUser(theUser.userId)) {
+            Logger.error("WTF 7944: getMyContestEntry: contest: {} user: {}", contestId, theUser.userId);
+            return new ReturnHelper(false, ERROR_MY_CONTEST_ENTRY_INVALID).toResult();
+        }
+
+        return new ReturnHelper(ImmutableMap.of("contest", contest)).toResult(JsonViews.MyActiveContest.class);
+    }
+
     public static Result getContestInfo(String contestId) throws Exception {
         return Cache.getOrElse("ContestInfo-".concat(contestId), new Callable<Result>() {
             @Override
@@ -370,12 +553,38 @@ public class ContestController extends Controller {
             }
         }, CACHE_CONTEST_INFO);
     }
-    
+
+    public static Result getContestInfoV2(String contestId) throws Exception {
+        return Cache.getOrElse("ContestInfo-".concat(contestId), new Callable<Result>() {
+            @Override
+            public Result call() throws Exception {
+                Contest contest = Contest.findOne(contestId);
+                List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
+
+                return new ReturnHelper(ImmutableMap.of(
+                        "contest", contest,
+                        "users_info", usersInfoInContest,
+                        "prizes", Prizes.findOne(contest)))
+                        .toResult(JsonViews.ContestInfo.class);
+            }
+        }, CACHE_CONTEST_INFO);
+    }
+
     public static Result getActiveContest(String contestId) throws Exception {
         return Cache.getOrElse("ActiveContest-".concat(contestId), new Callable<Result>() {
             @Override
             public Result call() throws Exception {
                 return attachInfoToContest(Contest.findOne(contestId)).toResult(JsonViews.Extended.class);
+            }
+        }, CACHE_ACTIVE_CONTEST);
+    }
+
+    public static Result getActiveContestV2(String contestId) throws Exception {
+        return Cache.getOrElse("ActiveContestV2-".concat(contestId), new Callable<Result>() {
+            @Override
+            public Result call() throws Exception {
+                Contest contest = Contest.findOne(new ObjectId(contestId), JsonViews.ActiveContest.class);
+                return new ReturnHelper(ImmutableMap.of("contest", contest)).toResult(JsonViews.ActiveContest.class);
             }
         }, CACHE_ACTIVE_CONTEST);
     }

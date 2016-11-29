@@ -8,8 +8,10 @@ import model.User;
 import model.accounting.AccountingTran;
 import model.opta.OptaCompetition;
 import org.bson.types.ObjectId;
+import play.cache.Cached;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.mvc.With;
 import utils.ListUtils;
 import utils.MoneyUtils;
 
@@ -18,9 +20,12 @@ import java.util.HashMap;
 import java.util.List;
 
 public class UserController extends Controller {
+    @Cached(key = "UserController.index", duration = 60 * 60)
     public static Result index() {
-        List<User> userList = ListUtils.asList(Model.users().find().as(User.class));
-
+        List<User> userList = ListUtils.asList(Model.users()
+                        .find()
+                        .projection("{ nickName: 1, createdAt : 1, wins : 1, goldBalance : 1, earnedMoney : 1, trueSkill : 1 }")
+                        .as(User.class));
         return ok(views.html.user_list.render(userList));
     }
 

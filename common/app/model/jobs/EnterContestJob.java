@@ -165,7 +165,7 @@ public class EnterContestJob extends Job {
                 .with("{$push: {contestEntries: #}, $inc: {freeSlots : -1}}", contestEntry)
                 .returnNew()
                 // Devolvemos los campos necesarios para que funcione "isFull"
-                .projection("{ maxEntries : 1, 'contestEntries._id' : 1}")
+                .projection("{ maxEntries : 1, freeSlots : 1}")
                 .as(Contest.class);
     }
 
