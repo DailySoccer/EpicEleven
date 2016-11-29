@@ -24,7 +24,7 @@
                             "@p.nickName",
                             "@GlobalDate.formatDate(p.createdAt)",
                             "@p.wins",
-                            "@MoneyUtils.asString(p.calculateGoldBalance())",
+                            "@MoneyUtils.asString(p.goldBalance)",
                             "@MoneyUtils.asString(p.earnedMoney)",
                             "@p.trueSkill"
                         ] @if(index < users.size-1) { , }

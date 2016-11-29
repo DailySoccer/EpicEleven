@@ -24,7 +24,7 @@ public class UserController extends Controller {
     public static Result index() {
         List<User> userList = ListUtils.asList(Model.users()
                         .find()
-                        .projection("{ nickName: 1, createdAt : 1, wins : 1, earnedMoney : 1, trueSkill : 1 }")
+                        .projection("{ nickName: 1, createdAt : 1, wins : 1, goldBalance : 1, earnedMoney : 1, trueSkill : 1 }")
                         .as(User.class));
         return ok(views.html.user_list.render(userList));
     }
