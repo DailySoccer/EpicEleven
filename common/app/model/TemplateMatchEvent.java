@@ -2,10 +2,7 @@ package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.mongodb.WriteConcern;
-import model.opta.OptaEvent;
-import model.opta.OptaEventType;
-import model.opta.OptaMatchEvent;
-import model.opta.OptaMatchEventStats;
+import model.opta.*;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
 import org.joda.time.Minutes;
@@ -130,7 +127,7 @@ public class TemplateMatchEvent implements JongoId {
     }
 
     public static List<TemplateMatchEvent> findAll() {
-        return ListUtils.asList(Model.templateMatchEvents().find().as(TemplateMatchEvent.class));
+        return ListUtils.asList(Model.templateMatchEvents().find("{ startDate: {$gte: #} }", OptaCompetition.SEASON_DATE_START).as(TemplateMatchEvent.class));
     }
 
     public static long countClonesFromOptaId(String optaMatchEventId) {

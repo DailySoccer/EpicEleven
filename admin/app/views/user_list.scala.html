@@ -5,33 +5,41 @@
 @import controllers.admin.routes.DashboardController
 
 @scripts = {
-    <script type="text/javascript">
+<script type="text/javascript">
         $(document).ready( function(){
-            $('#ajax_table_id').dataTable( {
-              "columns": [
-                { "title": "Id" },
-                { "title": "NickName" },
-                { "title": "Created At" },
-                { "title": "Wins" },
-                { "title": "Gold" },
-                { "title": "Earned Money" },
-                { "title": "TrueSkill" }
-              ],
-              "columnDefs": [ {
+            $('#ajax_table_id').dataTable( {
+                "columns": [
+                    { "title": "Id" },
+                    { "title": "NickName" },
+                    { "title": "Created At" },
+                    { "title": "Wins" },
+                    { "title": "Gold" },
+                    { "title": "Earned Money" },
+                    { "title": "TrueSkill" }
+                ],
+                "data": [
+                    @for((p, index) <- users.zipWithIndex) {
+                        [
+                            "@p.userId",
+                            "@p.nickName",
+                            "@GlobalDate.formatDate(p.createdAt)",
+                            "@p.wins",
+                            "@MoneyUtils.asString(p.calculateGoldBalance())",
+                            "@MoneyUtils.asString(p.earnedMoney)",
+                            "@p.trueSkill"
+                        ] @if(index < users.size-1) { , }
+                    }
+                ],
+                "columnDefs": [ {
                     "targets": [4],
                     "mRender": function (data, type, full) {
                         return '<a href="user/' + full[0] + '/transactions">' + data + '</a>';
                     }
-              }],
-              "iDisplayLength": 100,
-              "bProcessing": true,
-              "aaSorting": [[ 0, "asc" ]],
-              "bServerSide": true,
-              "stateSave": true,
-              "bJQueryUI": true,
-              "sPaginationType": "full_numbers",
-              "sAjaxSource": "/admin/users/ajax"
-            });
+                }],
+                stateSave: true,
+                iDisplayLength: 100,
+                "deferRender": true
+            } );
         })
     </script>
 }
