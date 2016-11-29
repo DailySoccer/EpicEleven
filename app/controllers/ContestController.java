@@ -325,6 +325,15 @@ public class ContestController extends Controller {
     }
 
     @UserAuthenticated
+    public static Result getMyHistoryContestsV2() {
+        User theUser = (User)ctx().args.get("User");
+        return new ReturnHelper(ImmutableMap.of(
+                "contests", Contest.findAllMyHistoryWithMyEntry(theUser.userId, JsonViews.MyHistoryContests.class),
+                "profile", theUser.getProfile()
+        )).toResult(JsonViews.Extended.class);
+    }
+
+    @UserAuthenticated
     public static Result countMyLiveContests() {
         User theUser = (User)ctx().args.get("User");
         return new ReturnHelper(ImmutableMap.of("count", Contest.countByState(theUser.userId, ContestState.LIVE)))

@@ -422,6 +422,10 @@ public class Contest implements JongoId {
         return findAllMyContests(userId, "{state: \"HISTORY\", \"contestEntries.userId\": #}", projectionClass);
     }
 
+    static public List<Contest> findAllMyHistoryWithMyEntry(ObjectId userId, Class<?> projectionClass) {
+        return findAllMyContestsWithMyEntry(userId, "{state: \"HISTORY\", \"contestEntries.userId\": #}", projectionClass);
+    }
+
     static public List<Contest> findAllClosedAfter(Date closedAt) {
         return ListUtils.asList(Model.contests().find("{closed: true, closedAt: {$gt: #}}", closedAt).as(Contest.class));
     }
@@ -442,6 +446,13 @@ public class Contest implements JongoId {
         return ListUtils.asList(Model.contests()
                 .find(query, userId)
                 .projection(ViewProjection.get(projectionClass, Contest.class))
+                .as(Contest.class));
+    }
+
+    static private List<Contest> findAllMyContestsWithMyEntry(ObjectId userId, String query, Class<?> projectionClass) {
+        return ListUtils.asList(Model.contests()
+                .find(query, userId)
+                .projection(ViewProjection.get(projectionClass, ImmutableList.of("contestEntries.$"), Contest.class))
                 .as(Contest.class));
     }
 
