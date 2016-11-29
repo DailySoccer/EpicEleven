@@ -191,8 +191,12 @@ public class TemplateContest implements JongoId {
         return ListUtils.asList(Model.templateContests().find("{state: \"ACTIVE\"}").as(TemplateContest.class));
     }
 
-    static public long countAllActive() {
-        return Model.templateContests().count("{state: \"ACTIVE\"}");
+    static public List<TemplateContest> findAllActiveOrLive() {
+        return ListUtils.asList(Model.templateContests().find("{$or: [{state: \"ACTIVE\"}, {state: \"LIVE\"}]}").as(TemplateContest.class));
+    }
+
+    static public long countAllActiveOrLive() {
+        return Model.templateContests().count("{$or: [{state: \"ACTIVE\"}, {state: \"LIVE\"}]}");
     }
 
     static public List<TemplateContest> findAllActiveNotSimulations() {

@@ -30,12 +30,12 @@ import static play.data.Form.form;
 @AllowCors.Origin
 public class ContestController extends Controller {
 
-    private final static int CACHE_ACTIVE_TEMPLATE_CONTESTS = 60 * 60 * 8;  // 8 horas
-    private final static int CACHE_COUNT_ACTIVE_TEMPLATE_CONTESTS = 60 * 30;  // 30 minutos
+    private final static int CACHE_ACTIVE_TEMPLATE_CONTESTS = 60 * 60 * 8;      // 8 horas
+    private final static int CACHE_COUNT_ACTIVE_TEMPLATE_CONTESTS = 60 * 30;    // 30 minutos
     private final static int CACHE_ACTIVE_CONTESTS = 60;
     private final static int CACHE_ACTIVE_CONTEST = 60;
     private final static int CACHE_VIEW_LIVE_CONTESTS = 60;
-    private final static int CACHE_VIEW_HISTORY_CONTESTS = 60;
+    private final static int CACHE_VIEW_HISTORY_CONTEST = 60 * 60 * 8;      // 8 horas
     private final static int CACHE_LIVE_MATCHEVENTS = 30;
     private final static int CACHE_LIVE_CONTESTENTRIES = 30;
     private final static int CACHE_CONTEST_INFO = 60;
@@ -165,26 +165,16 @@ public class ContestController extends Controller {
         Map<String, Object> result = Cache.getOrElse("ActiveTemplateContests", new Callable<Map<String, Object>>() {
             @Override
             public Map<String, Object> call() throws Exception {
-                List<TemplateContest> templateContests = TemplateContest.findAllActive();
-                List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests);
-                return ImmutableMap.of(
-                        "template_contests", templateContests,
-                        "match_events", matchEvents
-                );
+                return findActiveTemplateContests();
             }
         }, CACHE_ACTIVE_TEMPLATE_CONTESTS);
 
         // Necesitamos actualizar la caché?
-        long countTemplateContest = TemplateContest.countAllActive();
+        long countTemplateContest = TemplateContest.countAllActiveOrLive();
         if (result.containsKey("template_contests") && result.get("template_contests") instanceof ArrayList){
             List<?> list = (List<?>) result.get("template_contests");
             if (list != null && list.size() != countTemplateContest) {
-                List<TemplateContest> templateContests = TemplateContest.findAllActive();
-                List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests);
-                result = ImmutableMap.of(
-                        "template_contests", templateContests,
-                        "match_events", matchEvents
-                );
+                result = findActiveTemplateContests();
 
                 Cache.set("ActiveTemplateContests", result);
                 Logger.debug("getActiveTemplateContests: cache INVALID");
@@ -194,11 +184,20 @@ public class ContestController extends Controller {
         return new ReturnHelper(result).toResult(JsonViews.Extended.class);
     }
 
+    private static Map<String, Object> findActiveTemplateContests() {
+        List<TemplateContest> templateContests = TemplateContest.findAllActiveOrLive();
+        List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests);
+        return ImmutableMap.of(
+                "template_contests", templateContests,
+                "match_events", matchEvents
+        );
+    }
+
     @With(AllowCors.CorsAction.class)
     @Cached(key = "CountActiveTemplateContests", duration = CACHE_COUNT_ACTIVE_TEMPLATE_CONTESTS)
     public static Result countActiveTemplateContests() {
         return new ReturnHelper(ImmutableMap.of(
-                "count", TemplateContest.countAllActive()
+                "count", TemplateContest.countAllActiveOrLive()
         )).toResult();
     }
 
@@ -400,7 +399,7 @@ public class ContestController extends Controller {
             public Result call() throws Exception {
                 return getViewContest(contestId);
             }
-        }, CACHE_VIEW_HISTORY_CONTESTS);
+        }, CACHE_VIEW_HISTORY_CONTEST);
     }
 
     public static Result getViewContest(String contestId) {
