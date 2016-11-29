@@ -77,6 +77,7 @@ GET            /get_my_contests                                        controlle
 GET            /get_my_active_contests                                 controllers.ContestController.getMyActiveContests()
 GET            /v2/get_my_active_contests                              controllers.ContestController.getMyActiveContestsV2()
 GET            /get_my_live_contests                                   controllers.ContestController.getMyLiveContests()
+GET            /v2/get_my_live_contests                                controllers.ContestController.getMyLiveContestsV2()
 GET            /get_my_history_contests                                controllers.ContestController.getMyHistoryContests()
 GET            /v2/get_my_history_contests                             controllers.ContestController.getMyHistoryContestsV2()
 GET            /count_my_live_contests                                 controllers.ContestController.countMyLiveContests()

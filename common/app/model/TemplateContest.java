@@ -191,6 +191,10 @@ public class TemplateContest implements JongoId {
         return ListUtils.asList(Model.templateContests().find("{state: \"ACTIVE\"}").as(TemplateContest.class));
     }
 
+    static public boolean existsAnyInState(ContestState contestState) {
+        return Model.templateContests().find("{state: #}", contestState).limit(1).projection("{_id : 1}").as(TemplateContest.class).hasNext();
+    }
+
     static public List<TemplateContest> findAllActiveOrLive() {
         return ListUtils.asList(Model.templateContests().find("{$or: [{state: \"ACTIVE\"}, {state: \"LIVE\"}]}").as(TemplateContest.class));
     }

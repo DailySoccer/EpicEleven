@@ -53,7 +53,7 @@ public class Contest implements JongoId {
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public String name;
 
-    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class, JsonViews.MyActiveContest.class})
+    @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class, JsonViews.MyActiveContest.class, JsonViews.MyLiveContestsV2.class})
     public List<ContestEntry> contestEntries = new ArrayList<>();
 
     @JsonView(JsonViews.Public.class)
@@ -428,6 +428,10 @@ public class Contest implements JongoId {
 
     static public List<Contest> findAllClosedAfter(Date closedAt) {
         return ListUtils.asList(Model.contests().find("{closed: true, closedAt: {$gt: #}}", closedAt).as(Contest.class));
+    }
+
+    static public boolean existsAnyInState(ContestState contestState) {
+        return Model.contests().find("{state: #}", contestState).limit(1).projection("{_id : 1}").as(Contest.class).hasNext();
     }
 
     static public long countByState(ObjectId userId, ContestState contestState) {

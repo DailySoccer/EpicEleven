@@ -22,6 +22,7 @@ public class JsonViews {
     static public class MyActiveContests extends ActiveContests {}
     static public class MyActiveContestsV2 {}
     static public class MyLiveContests extends AllContests {}
+    static public class MyLiveContestsV2 {}
     static public class MyHistoryContests extends AllContests {}
     static public class InstanceSoccerPlayers {}
 }
