@@ -1,6 +1,7 @@
 package utils;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -24,6 +25,7 @@ public class ObjectIdMapper extends ObjectMapper {
 
         setVisibility(PropertyAccessor.ALL, Visibility.NONE);
         setVisibility(PropertyAccessor.FIELD, Visibility.PUBLIC_ONLY);
+        setSerializationInclusion(JsonInclude.Include.NON_NULL);
     }
 
     public static class ObjectIdSerializer extends JsonSerializer<ObjectId> {

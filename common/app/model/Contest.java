@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.mongodb.WriteConcern;
 import model.accounting.AccountOp;
 import model.accounting.AccountingTranPrize;
+import model.opta.OptaCompetition;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
@@ -106,7 +107,10 @@ public class Contest implements JongoId {
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public String optaCompetitionId;
 
-    @JsonView(value={JsonViews.ContestInfo.class, JsonViews.Extended.class, JsonViews.MyLiveContests.class})
+    @JsonView(value = {JsonViews.NotForClient.class, JsonViews.MyLiveContestsV2.class})
+    public Date liveUpdatedAt = OptaCompetition.SEASON_DATE_START;
+
+    @JsonView(value={JsonViews.ContestInfo.class, JsonViews.Extended.class, JsonViews.MyLiveContests.class, JsonViews.MyLiveContestsV2.class})
     public List<ObjectId> templateMatchEventIds = new ArrayList<>();
 
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyLiveContests.class, JsonViews.InstanceSoccerPlayers.class})
@@ -143,7 +147,7 @@ public class Contest implements JongoId {
         name = template.name;
         minEntries = template.minEntries;
         maxEntries = template.maxEntries;
-        freeSlots = template.maxEntries;
+        freeSlots = template.freeSlots;
         salaryCap = template.salaryCap;
         entryFee = template.entryFee;
         prizeMultiplier = template.prizeMultiplier;
@@ -156,6 +160,7 @@ public class Contest implements JongoId {
         startDate = template.startDate;
         activationAt = template.activationAt;
         optaCompetitionId = template.optaCompetitionId;
+        liveUpdatedAt = template.liveUpdatedAt;
         templateMatchEventIds = template.templateMatchEventIds;
         instanceSoccerPlayers = template.instanceSoccerPlayers;
         simulation = template.simulation;
@@ -416,6 +421,20 @@ public class Contest implements JongoId {
 
     static public List<Contest> findAllMyLive(ObjectId userId, Class<?> projectionClass) {
         return findAllMyContests(userId, "{state: \"LIVE\", \"contestEntries.userId\": #}", projectionClass);
+    }
+
+    static public Contest findOneLiveUpdated(ObjectId contestId) {
+        return Model.contests()
+                .findOne("{_id: #}", contestId)
+                .projection("{_id: 1, liveUpdatedAt: 1}")
+                .as(Contest.class);
+    }
+
+    static public List<Contest> findMyLiveUpdated(ObjectId userId) {
+        return ListUtils.asList(Model.contests()
+                .find("{state: \"LIVE\", \"contestEntries.userId\": #}", userId)
+                .projection("{_id: 1, liveUpdatedAt: 1}")
+                .as(Contest.class));
     }
 
     static public List<Contest> findAllMyHistory(ObjectId userId, Class<?> projectionClass) {

@@ -102,7 +102,7 @@ public class TemplateSoccerPlayer implements JongoId {
             // Logger.debug("TemplateSoccerPlayer: {} | Liga: {} size : Premier: {} size", templateSoccerPlayerId.toString(), ligaStats.size(), premierStats.size());
         }
 
-        return result;
+        return result.size() > 0 ? result : null;
     }
     private void setCompetitions(Map<String, StatsCompetition> blah) { }    // Para poder deserializar lo que nos llega por la red sin usar FAIL_ON_UNKNOWN_PROPERTIES
 
@@ -171,6 +171,13 @@ public class TemplateSoccerPlayer implements JongoId {
 
     public static List<TemplateSoccerPlayer> findAll() {
         return ListUtils.asList(Model.templateSoccerPlayers().find().as(TemplateSoccerPlayer.class));
+    }
+
+    public static List<TemplateSoccerPlayer> findAllTemplate() {
+        return ListUtils.asList(Model.templateSoccerPlayers()
+                .find()
+                .projection("{name : 1, fantasyPoints : 1, templateTeamId : 1, 'stats.optaCompetitionId': 1, 'stats.startDate' : 1, 'stats.fantasyPoints' : 1}")
+                .as(TemplateSoccerPlayer.class));
     }
 
     public static List<TemplateSoccerPlayer> findAllWithProjection(Class<?> projectionClass) {

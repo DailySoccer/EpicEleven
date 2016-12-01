@@ -396,6 +396,16 @@ public class TemplateContest implements JongoId {
         }
     }
 
+    public static void actionWhenMatchEventUpdated(TemplateMatchEvent matchEvent) {
+        long startTime = System.currentTimeMillis();
+        // Marcamos los torneos que se han actualizado con información de "live"
+        Model.contests()
+                .update("{state: \"LIVE\", templateMatchEventIds: {$in:[#]}}", matchEvent.templateMatchEventId)
+                .multi()
+                .with("{$set: {liveUpdatedAt: #}}", GlobalDate.getCurrentDate());
+        Logger.debug("actionWhenMatchEventUpdated: {}", System.currentTimeMillis() - startTime);
+    }
+
     public static void actionWhenMatchEventIsFinished(TemplateMatchEvent matchEvent) {
         // Buscamos los template contests que incluyan ese partido
         List<TemplateContest> templateContests = ListUtils.asList(Model.templateContests()

@@ -291,12 +291,31 @@ public class MainController extends Controller {
     @With(AllowCors.CorsAction.class)
     @Cached(key = "TemplateSoccerPlayersV2", duration = CACHE_TEMPLATESOCCERPLAYERS)
     public static Result getTemplateSoccerPlayersV2() {
-        List<TemplateSoccerPlayer> templateSoccerPlayers = TemplateSoccerPlayer.findAll();
+        List<TemplateSoccerPlayer> templateSoccerPlayers = TemplateSoccerPlayer.findAllTemplate();
 
-        ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
-                .put("template_soccer_players", templateSoccerPlayers);
-        return new ReturnHelper(builder.build())
-                .toResult(JsonViews.Template.class);
+        List<Map<String, Object>> templateSoccerPlayersList = new ArrayList<>();
+        templateSoccerPlayers.forEach( template -> {
+            Map<String, Object> templateSoccerPlayer = new HashMap<>();
+
+            templateSoccerPlayer.put("_id", template.templateSoccerPlayerId.toString());
+            templateSoccerPlayer.put("name", template.name);
+            templateSoccerPlayer.put("templateTeamId", template.templateTeamId.toString());
+
+            if (template.fantasyPoints != 0) {
+                templateSoccerPlayer.put("fantasyPoints", template.fantasyPoints);
+
+                Object competitions = template.getCompetitions();
+                if (competitions != null) {
+                    templateSoccerPlayer.put("competitions", competitions);
+                }
+            }
+
+            templateSoccerPlayersList.add(templateSoccerPlayer);
+        });
+
+        return new ReturnHelper(ImmutableMap.of(
+                "template_soccer_players", templateSoccerPlayersList
+            )).toResult(JsonViews.Template.class);
     }
 
     @With(AllowCors.CorsAction.class)

@@ -45,6 +45,7 @@ public class OptaMatchEventChangeProcessor {
 
                     // Actualizamos "live"
                     templateMatchEvent.updateState();
+                    actionWhenMatchEventUpdated(templateMatchEvent);
 
                     // Si HA TERMINADO, hacemos las acciones de matchEventIsFinished
                     if (templateMatchEvent.isPostGame() && OptaEvent.isGameFinished(templateMatchEvent.optaMatchEventId)) {
@@ -60,6 +61,10 @@ public class OptaMatchEventChangeProcessor {
 
     private void actionWhenMatchEventIsStarted(TemplateMatchEvent matchEvent) {
         TemplateContest.actionWhenMatchEventIsStarted(matchEvent);
+    }
+
+    private void actionWhenMatchEventUpdated(TemplateMatchEvent matchEvent) {
+        TemplateContest.actionWhenMatchEventUpdated(matchEvent);
     }
 
     private void actionWhenMatchEventIsFinished(TemplateMatchEvent matchEvent) {
