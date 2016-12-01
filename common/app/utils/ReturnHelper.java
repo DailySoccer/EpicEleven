@@ -29,7 +29,9 @@ public class ReturnHelper {
 
         try {
         	if (payload != null) {
-            	final String jsonPayload = objectIdMapper.writerWithView(jsonView).writeValueAsString(payload);
+            	final String jsonPayload = jsonView != null
+                        ? objectIdMapper.writerWithView(jsonView).writeValueAsString(payload)
+                        : objectIdMapper.writeValueAsString(payload);
              	ret = new Content() {
                 	@Override public String body() { return jsonPayload; }
                 	@Override public String contentType() { return "application/json"; }

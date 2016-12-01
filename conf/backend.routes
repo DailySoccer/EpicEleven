@@ -85,6 +85,7 @@ GET            /count_my_contests                                      controlle
 GET            /get_my_active_contest/:contest                         controllers.ContestController.getMyActiveContest(contest)
 GET            /v2/get_my_active_contest/:contest                      controllers.ContestControllerV2.getMyActiveContestV2(contest)
 GET            /get_my_live_contest/:contest                           controllers.ContestController.getMyLiveContest(contest)
+GET            /v2/get_my_live_contest/:contest                        controllers.ContestControllerV2.getMyLiveContestV2(contest)
 GET            /get_my_history_contest/:contest                        controllers.ContestController.getMyHistoryContest(contest)
 GET            /get_my_contest_entry/:contest                          controllers.ContestController.getMyContestEntry(contest)
 GET            /v2/get_my_contest_entry/:contest                       controllers.ContestControllerV2.getMyContestEntryV2(contest)

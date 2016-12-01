@@ -225,6 +225,16 @@ public class User {
         return ListUtils.asList(Model.findObjectIds(Model.users(), "_id", userObjectIds).as(User.class));
     }
 
+    static public List<User> find(List<ContestEntry> contestEntries, String projection) {
+        List<ObjectId> userObjectIds = new ArrayList<>(contestEntries.size());
+
+        for (ContestEntry entry: contestEntries) {
+            userObjectIds.add(entry.userId);
+        }
+
+        return ListUtils.asList(Model.findObjectIds(Model.users(), "_id", userObjectIds).projection(projection).as(User.class));
+    }
+
     static public List<User> findByFacebook(List<String> facebookIds) {
         return ListUtils.asList(Model.findFields(Model.users(), "facebookID", facebookIds).as(User.class));
     }

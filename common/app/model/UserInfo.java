@@ -82,4 +82,12 @@ public class UserInfo {
 
         return usersInfo;
     }
+
+    static public List<UserInfo> findNicknamesFromContestEntries(List<ContestEntry> contestEntries) {
+        List<UserInfo> usersInfo = new ArrayList<>();
+
+        User.find(contestEntries, "{ nickName: 1 }").forEach(user -> usersInfo.add(user.info()));
+
+        return usersInfo;
+    }
 }

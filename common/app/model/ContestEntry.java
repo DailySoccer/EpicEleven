@@ -35,6 +35,9 @@ public class ContestEntry implements JongoId {
     @JsonView(value={JsonViews.Public.class, JsonViews.AllContests.class, JsonViews.MyActiveContest.class, JsonViews.MyLiveContestsV2.class})
     public ObjectId userId;             // Usuario que creo el equipo
 
+    // Se puede insertar el propio nickName del usuario en el contestEntry
+    public String nickName = null;
+
     @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class, JsonViews.MyActiveContest.class})
     public String formation;    // Formación del fantasyTeam creado
 
@@ -48,13 +51,13 @@ public class ContestEntry implements JongoId {
     @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class, JsonViews.MyLiveContestsV2.class})
     public List<Substitution> substitutions = new ArrayList<>(); // Cambio de la alineacion de futbolistas en "Live"
 
-    @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
+    @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class, JsonViews.MyLiveContestsV2.class})
     public int position = -1;
 
     @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
     public Money prize = MoneyUtils.zero;
 
-    @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class})
+    @JsonView(value={JsonViews.Extended.class, JsonViews.MyHistoryContests.class, JsonViews.MyLiveContestsV2.class})
     public int fantasyPoints;
 
     @JsonView(JsonViews.NotForClient.class)
@@ -312,6 +315,16 @@ public class ContestEntry implements JongoId {
                     fantasyPoints += templateMatchEvent.getSoccerPlayerFantasyPoints(templateSoccerPlayerId);
                     break;
                 }
+            }
+        }
+        return fantasyPoints;
+    }
+
+    public int getFantasyPointsFromMap(Map<String, LiveFantasyPoints> liveFantasyPointsMap) {
+        int fantasyPoints = 0;
+        for (ObjectId templateSoccerPlayerId : soccerIds) {
+            if (liveFantasyPointsMap.containsKey(templateSoccerPlayerId.toString())) {
+                fantasyPoints += liveFantasyPointsMap.get(templateSoccerPlayerId.toString()).points;
             }
         }
         return fantasyPoints;
