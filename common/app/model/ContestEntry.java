@@ -38,7 +38,7 @@ public class ContestEntry implements JongoId {
     // Se puede insertar el propio nickName del usuario en el contestEntry
     public String nickName = null;
 
-    @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class, JsonViews.MyActiveContest.class})
+    @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class, JsonViews.MyActiveContest.class, JsonViews.MyLiveContestsV2.class})
     public String formation;    // Formación del fantasyTeam creado
 
     @JsonView(value={JsonViews.FullContest.class, JsonViews.MyLiveContests.class, JsonViews.MyActiveContest.class, JsonViews.MyLiveContestsV2.class})
