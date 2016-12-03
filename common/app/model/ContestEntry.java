@@ -294,8 +294,10 @@ public class ContestEntry implements JongoId {
             }
 
             WriteResult result = Model.contests()
-                    .update("{_id: #, state: #, contestEntries._id: #, contestEntries.userId: #}", contest.contestId, "LIVE", contestEntry.contestEntryId, user.userId)
-                    .with("{$set: {contestEntries.$.soccerIds: #, contestEntries.$.playersPurchased: #, contestEntries.$.substitutions: #}}", contestEntry.soccerIds, playersPurchasedList, contestEntry.substitutions);
+                    .update("{_id: #, state: #, contestEntries._id: #, contestEntries.userId: #}",
+                            contest.contestId, "LIVE", contestEntry.contestEntryId, user.userId)
+                    .with("{$set: {contestEntries.$.soccerIds: #, contestEntries.$.playersPurchased: #, contestEntries.$.substitutions: #, liveUpdatedAt: #}}",
+                            contestEntry.soccerIds, playersPurchasedList, contestEntry.substitutions, GlobalDate.getCurrentDate());
 
             // Comprobamos el número de documentos afectados (error == 0)
             bRet = (result.getN() > 0);
