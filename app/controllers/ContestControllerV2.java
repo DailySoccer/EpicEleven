@@ -24,7 +24,7 @@ public class ContestControllerV2 extends Controller {
     private final static int CACHE_COUNT_ACTIVE_TEMPLATE_CONTESTS = 60 * 30;    // 30 minutos
     private final static int CACHE_ACTIVE_CONTESTS = 60;
     private final static int CACHE_ACTIVE_CONTEST = 60;
-    private final static int CACHE_VIEW_LIVE_CONTESTS = 60 * 60 * 8;        // 8 horas
+    private final static int CACHE_VIEW_LIVE_CONTESTS = 60 * 30 * 1;        // 30 minutos
     private final static int CACHE_VIEW_HISTORY_CONTEST = 60 * 60 * 8;      // 8 horas
     private final static int CACHE_LIVE_MATCHEVENTS = 30;
     private final static int CACHE_LIVE_CONTESTENTRIES = 30;
