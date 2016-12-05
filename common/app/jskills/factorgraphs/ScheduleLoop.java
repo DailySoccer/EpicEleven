@@ -4,7 +4,7 @@ import play.Logger;
 
 public class ScheduleLoop<T> extends Schedule<T> {
 
-    private static final int MAX_ITERATIONS = 1000;
+    private static final int MAX_ITERATIONS = 100;
 
     private final double maxDelta;
     private final Schedule<T> scheduleToLoop;
@@ -32,7 +32,7 @@ public class ScheduleLoop<T> extends Schedule<T> {
             }
         }
 
-        if(totalIterations > 100) {
+        if(totalIterations >= 100) {
             Logger.warn("ScheduleLoop: iterations: {} delta: {}", totalIterations, delta);
         }
 

@@ -9,6 +9,7 @@ import model.User;
 import play.Logger;
 
 public class TrueSkillHelper {
+    static public final double MAX_MEAN = 60.0;
     static public final double INITIAL_MEAN = 25.0;
     static public final double INITIAL_SD = INITIAL_MEAN / 3;
 
@@ -106,6 +107,9 @@ public class TrueSkillHelper {
             if (MyConservativeTrueSkill(rating) < 0) {
                 rating = new Rating(rating.getStandardDeviation() * CONSERVATIVE_FACTOR, rating.getStandardDeviation());
             }
+            else if (rating.getMean() > MAX_MEAN) {
+                rating = new Rating(MAX_MEAN, rating.getStandardDeviation());
+            }
 
             User user = result.get(player.getKey());
             user.trueSkill = (int)(MyConservativeTrueSkill(rating) * MULTIPLIER);
@@ -114,6 +118,21 @@ public class TrueSkillHelper {
 
             if (evolution.containsKey(user.userId)) {
                 Map userEvolution = evolution.get(user.userId);
+
+                /*
+                final int MAX_TRUE_SKILL_UP = 3000;
+                final int MAX_TRUE_SKILL_DOWN = 1000;
+
+                // Limitamos los cambios de trueSkill
+                int oldTrueSkill = (int)userEvolution.get("trueSkill");
+                user.trueSkill = (user.trueSkill > oldTrueSkill)
+                    ? Math.min(user.trueSkill, oldTrueSkill + MAX_TRUE_SKILL_UP)
+                    : Math.max(user.trueSkill, oldTrueSkill - MAX_TRUE_SKILL_DOWN);
+                if (user.trueSkill <= 0) {
+                    user.trueSkill = 0;
+                }
+                */
+
                 Logger.debug("--> User: {} Position: {} DFP: {} TrueSkill: {}/{} Mean: {}/{} StandarDeviation: {}/{}",
                         user.nickName, userEvolution.get("position"), userEvolution.get("fantasyPoints"),
                         userEvolution.get("trueSkill"), user.trueSkill,
