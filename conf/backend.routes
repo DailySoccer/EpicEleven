@@ -149,6 +149,7 @@ POST           /log                                                    controlle
 OPTIONS        /*path                                                  controllers.MainController.preFlight(path)
 
 # Static assets
-GET            /                                                       controllers.Assets.at(path="/public", file="index.html")
+#GET            /                                                       controllers.Assets.at(path="/public", file="index.html")
+GET             /                                                      controllers.MainController.ping()
 GET            /*file                                                  controllers.Assets.at(path="/public", file)
 
