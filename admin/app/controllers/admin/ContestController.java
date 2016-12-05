@@ -13,6 +13,7 @@ import org.bson.types.ObjectId;
 import org.joda.time.format.DateTimeFormatter;
 import org.jongo.Find;
 import org.jongo.MongoCollection;
+import org.jongo.MongoCursor;
 import play.Logger;
 import play.Play;
 import play.mvc.Controller;
@@ -334,6 +335,35 @@ public class ContestController extends Controller {
     static public Result checkFreeSlots(String contestId) {
         FlashMessage.info("Check FreeSlots: " + String.valueOf(Contest.hasFreeSlots(new ObjectId(contestId))));
         return show(contestId);
+    }
+
+    static public Result checkTrueSkill(String contestId) {
+        Contest contest = Contest.findOne(new ObjectId(contestId));
+        contest.checkTrueSkill();
+        return show(contestId);
+    }
+
+    static public Result recalculateTrueSkill() {
+        // Reset del TrueSkill de los usuarios
+        Model.users()
+                .update("{}")
+                .multi()
+                .with("{$set: { rating: { Mean: 25.0000, StandardDeviation: 8.333333 }, contestsRating: [] }}");
+
+        // Recorrer cada uno de los torneos en HISTORY (a partir de la temporada actual)
+        MongoCursor<Contest> cursor = Model.contests()
+                .find("{state: \"HISTORY\", startDate: {$gte: #}}", OptaCompetition.SEASON_DATE_START)
+                .sort("{_id : 1}")
+                .as(Contest.class);
+
+        int counter = 0;
+        while (cursor.hasNext()) {
+            Contest contest = cursor.next();
+            Logger.debug("{}: Contest: {} {}", counter++, contest.name, GlobalDate.formatDate(contest.startDate));
+            contest.recalculateTrueSkill();
+        }
+
+        return index();
     }
 
     static private List<String> errorsInPrize(Contest contest) {

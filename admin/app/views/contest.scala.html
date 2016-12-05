@@ -7,6 +7,7 @@
 <h1 class="page-header">Contest: @contest.name</h1>
 
 <a href="@ContestController.checkFreeSlots(contest.contestId.toString())"><button class="btn btn-success">Check FreeSlots</button></a>
+<a href="@ContestController.checkTrueSkill(contest.contestId.toString())"><button class="btn btn-success">Check TrueSkill</button></a>
 
 <h4>Num Entries: @contest.getNumEntries()</h4>
 <h4>Max Entries: @contest.maxEntries</h4>

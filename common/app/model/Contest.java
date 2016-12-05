@@ -553,8 +553,37 @@ public class Contest implements JongoId {
         return result;
     }
 
-    private void updateRanking(Prizes prizes) {
+    public Map<ObjectId, User> checkTrueSkill() {
+        Prizes prizes = Prizes.findOne(prizeType, getNumEntries(), getPrizePool());
+        updateContestEntryRanking (prizes);
+        return TrueSkillHelper.RecomputeRatings(contestEntries);
+    }
 
+    public void recalculateTrueSkill() {
+        Logger.debug("TrueSkill: Contest: {} ({}) {}", name, contestId.toString(), GlobalDate.formatDate(startDate));
+
+        // Calculamos el trueSkill de los participantes y actualizamos su información en la BDD
+        Map<ObjectId, User> usersRating = TrueSkillHelper.RecomputeRatings(contestEntries);
+        for (Map.Entry<ObjectId, User> entry : usersRating.entrySet()) {
+            User user = entry.getValue();
+            if (Double.isNaN(user.rating.Mean) || Double.isNaN(user.rating.StandardDeviation)) {
+                System.exit(0);
+            }
+            user.updateTrueSkillByContest(contestId);
+        }
+    }
+
+    private void updateRanking(Prizes prizes) {
+        updateContestEntryRanking(prizes);
+
+        // Si es un torneo REAL, actualizaremos el TrueSkill de los participantes
+        if (!simulation) {
+            // Los contestEntries están ordenadas según sus posiciones
+            updateTrueSkill();
+        }
+    }
+
+    private void updateContestEntryRanking(Prizes prizes) {
         List<TemplateMatchEvent> templateMatchEvents = getTemplateMatchEvents();
 
         // Verificación...
@@ -578,12 +607,6 @@ public class Contest implements JongoId {
             contestEntry.position = index++;
             contestEntry.prize = prizes.getValue(contestEntry.position);
             contestEntry.updateRanking();
-        }
-
-        // Si es un torneo REAL, actualizaremos el TrueSkill de los participantes
-        if (!simulation) {
-            // Los contestEntries están ordenadas según sus posiciones
-            updateTrueSkill();
         }
     }
 
