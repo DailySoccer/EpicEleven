@@ -79,13 +79,13 @@
 
 @main("Contests - Admin", scripts) {
 
-@if(model.Model.isLocalHostTargetEnvironment()) {
 <div style="float: right; margin-right:100px;">
+    @if(model.Model.isLocalHostTargetEnvironment()) {
     <button class="btn btn-primary" onclick="verifyPrizes()">Verify Prizes</button>
     <button class="btn btn-primary" onclick="verifyEntryFee()">Verify EntryFee</button>
+    }
     <a href="@ContestController.recalculateTrueSkill()"><button class="btn btn-danger">Recalculate TrueSkill</button></a>
 </div>
-}
 
 <h1 class="page-header">Contests
     <span class="dropdown">

@@ -15,10 +15,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
-import utils.ListUtils;
-import utils.MoneyUtils;
-import utils.TrueSkillHelper;
-import utils.ViewProjection;
+import utils.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -559,7 +556,7 @@ public class Contest implements JongoId {
         return TrueSkillHelper.RecomputeRatings(contestEntries);
     }
 
-    public void recalculateTrueSkill() {
+    public void recalculateTrueSkill(BatchWriteOperation batchWriteOperation) {
         Logger.debug("TrueSkill: Contest: {} ({}) {}", name, contestId.toString(), GlobalDate.formatDate(startDate));
 
         // Calculamos el trueSkill de los participantes y actualizamos su información en la BDD
@@ -569,7 +566,7 @@ public class Contest implements JongoId {
             if (Double.isNaN(user.rating.Mean) || Double.isNaN(user.rating.StandardDeviation)) {
                 System.exit(0);
             }
-            user.updateTrueSkillByContest(contestId);
+            user.updateTrueSkillByContest(batchWriteOperation, contestId);
         }
     }
 

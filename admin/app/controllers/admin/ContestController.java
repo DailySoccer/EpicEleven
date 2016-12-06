@@ -19,9 +19,7 @@ import play.Play;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
-import utils.FileUtils;
-import utils.MoneyUtils;
-import utils.ReturnHelper;
+import utils.*;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -352,15 +350,20 @@ public class ContestController extends Controller {
 
         // Recorrer cada uno de los torneos en HISTORY (a partir de la temporada actual)
         MongoCursor<Contest> cursor = Model.contests()
+                //.find("{state: \"HISTORY\", startDate: {$gte: #}, _id: {$gte: #}}", OptaCompetition.SEASON_DATE_START, new ObjectId("5832fef9e4b092789e1baef2"))
                 .find("{state: \"HISTORY\", startDate: {$gte: #}}", OptaCompetition.SEASON_DATE_START)
                 .sort("{_id : 1}")
                 .as(Contest.class);
 
         int counter = 0;
         while (cursor.hasNext()) {
+            BatchWriteOperation batchWriteOperation = new BatchWriteOperation(Model.users().getDBCollection().initializeUnorderedBulkOperation());
+
             Contest contest = cursor.next();
             Logger.debug("{}: Contest: {} {}", counter++, contest.name, GlobalDate.formatDate(contest.startDate));
-            contest.recalculateTrueSkill();
+            contest.recalculateTrueSkill(batchWriteOperation);
+
+            batchWriteOperation.execute();
         }
 
         return index();
