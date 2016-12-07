@@ -87,6 +87,7 @@ GET            /v2/get_my_active_contest/:contest                      controlle
 GET            /get_my_live_contest/:contest                           controllers.ContestController.getMyLiveContest(contest)
 GET            /v2/get_my_live_contest/:contest                        controllers.ContestControllerV2.getMyLiveContestV2(contest)
 GET            /get_my_history_contest/:contest                        controllers.ContestController.getMyHistoryContest(contest)
+GET            /get_my_history_contest_entry/:contest                  controllers.ContestController.getMyHistoryContestEntry(contest)
 GET            /get_my_contest_entry/:contest                          controllers.ContestController.getMyContestEntry(contest)
 GET            /v2/get_my_contest_entry/:contest                       controllers.ContestControllerV2.getMyContestEntryV2(contest)
 GET            /get_soccer_players_availables_to_change/:contest       controllers.ContestController.getSoccerPlayersAvailablesToChange(contest)

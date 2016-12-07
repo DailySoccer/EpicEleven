@@ -435,11 +435,24 @@ public class Contest implements JongoId {
     }
 
     static public List<Contest> findAllMyHistory(ObjectId userId, Class<?> projectionClass) {
-        return findAllMyContests(userId, "{state: \"HISTORY\", \"contestEntries.userId\": #}", projectionClass);
+        return ListUtils.asList(Model.contests()
+                .find("{state: \"HISTORY\", startDate: {$gte: #}, \"contestEntries.userId\": #}", OptaCompetition.SEASON_DATE_START, userId)
+                .projection(ViewProjection.get(projectionClass, Contest.class))
+                .as(Contest.class));
+    }
+
+    static public Contest findOneMyHistoryWithMyEntry(ObjectId contestId, ObjectId userId, Class<?> projectionClass) {
+        return Model.contests()
+                .findOne("{_id: #, state: \"HISTORY\", \"contestEntries.userId\": #}", contestId, userId)
+                .projection(ViewProjection.get(projectionClass, ImmutableList.of("contestEntries.$"), Contest.class))
+                .as(Contest.class);
     }
 
     static public List<Contest> findAllMyHistoryWithMyEntry(ObjectId userId, Class<?> projectionClass) {
-        return findAllMyContestsWithMyEntry(userId, "{state: \"HISTORY\", \"contestEntries.userId\": #}", projectionClass);
+        return ListUtils.asList(Model.contests()
+                .find("{state: \"HISTORY\", startDate: {$gte: #}, \"contestEntries.userId\": #}", OptaCompetition.SEASON_DATE_START, userId)
+                .projection(ViewProjection.get(projectionClass, ImmutableList.of("contestEntries.$"), Contest.class))
+                .as(Contest.class));
     }
 
     static public List<Contest> findAllClosedAfter(Date closedAt) {
@@ -466,13 +479,6 @@ public class Contest implements JongoId {
         return ListUtils.asList(Model.contests()
                 .find(query, userId)
                 .projection(ViewProjection.get(projectionClass, Contest.class))
-                .as(Contest.class));
-    }
-
-    static private List<Contest> findAllMyContestsWithMyEntry(ObjectId userId, String query, Class<?> projectionClass) {
-        return ListUtils.asList(Model.contests()
-                .find(query, userId)
-                .projection(ViewProjection.get(projectionClass, ImmutableList.of("contestEntries.$"), Contest.class))
                 .as(Contest.class));
     }
 

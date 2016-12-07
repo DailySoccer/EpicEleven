@@ -258,6 +258,14 @@ public class ContestController extends Controller {
     }
 
     @UserAuthenticated
+    public static Result getMyHistoryContestEntry(String contestId) {
+        User theUser = (User)ctx().args.get("User");
+        return new ReturnHelper(ImmutableMap.of(
+                "contest", Contest.findOneMyHistoryWithMyEntry(new ObjectId(contestId), theUser.userId, JsonViews.MyHistoryContests.class)
+        )).toResult(JsonViews.MyHistoryContests.class);
+    }
+
+    @UserAuthenticated
     public static Result countMyLiveContests() throws Exception {
         User theUser = (User)ctx().args.get("User");
 
