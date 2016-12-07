@@ -58,6 +58,7 @@ public class TrueSkillHelper {
         // Creamos la lista de equipos que se han enfrentado (únicamente compuesto por un usuario)
         for(ContestEntry contestEntry : contestEntries) {
             User user = User.findOne(contestEntry.userId);
+            // User user = User.findOne(contestEntry.userId, "{_id : 1, nickName : 1, trueSkill : 1, rating : 1}");
 
             // Asociamos al player del TrueSkill con el usuario
             IPlayer player = new jskills.Player<>(user.userId);

@@ -559,6 +559,8 @@ public class Contest implements JongoId {
     public void recalculateTrueSkill(BatchWriteOperation batchWriteOperation) {
         Logger.debug("TrueSkill: Contest: {} ({}) {}", name, contestId.toString(), GlobalDate.formatDate(startDate));
 
+        Collections.sort(contestEntries, new ContestEntryComparable());
+
         // Calculamos el trueSkill de los participantes y actualizamos su información en la BDD
         Map<ObjectId, User> usersRating = TrueSkillHelper.RecomputeRatings(contestEntries);
         for (Map.Entry<ObjectId, User> entry : usersRating.entrySet()) {
