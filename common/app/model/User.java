@@ -1,6 +1,8 @@
 package model;
 
 import com.fasterxml.jackson.annotation.JsonView;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBObject;
 import model.accounting.*;
 import model.rewards.DailyRewards;
 import model.rewards.GoldReward;
@@ -14,10 +16,7 @@ import org.joda.time.Minutes;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
 import play.data.validation.Constraints;
-import utils.ListUtils;
-import utils.MoneyUtils;
-import utils.TrueSkillHelper;
-import utils.ViewProjection;
+import utils.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -215,6 +214,10 @@ public class User {
         return Model.users().findOne(userId).as(User.class);
     }
 
+    static public User findOne(ObjectId userId, String projection) {
+        return Model.users().findOne(userId).projection(projection).as(User.class);
+    }
+
     static public List<User> find(List<ContestEntry> contestEntries) {
         List<ObjectId> userObjectIds = new ArrayList<>(contestEntries.size());
 
@@ -320,6 +323,18 @@ public class User {
     public void updateTrueSkillByContest(ObjectId contestId) {
         // Garantizamos que un determinado contest no influye varias veces en el cálculo del trueSkill
         Model.users().update("{_id: #, contestsRating: {$nin: [#]} }", userId, contestId).with("{$set: {trueSkill: #, rating: #}, $push: {contestsRating: #}}", trueSkill, rating, contestId);
+    }
+
+    public void updateTrueSkillByContest(BatchWriteOperation batchWriteOperation, ObjectId contestId) {
+        // Garantizamos que un determinado contest no influye varias veces en el cálculo del trueSkill
+        // Model.users().update("{_id: #, contestsRating: {$nin: [#]} }", userId, contestId).with("{$set: {trueSkill: #, rating: #}, $push: {contestsRating: #}}", trueSkill, rating, contestId);
+        DBObject query = new BasicDBObject("_id", userId);
+        BasicDBObject bdoRating = new BasicDBObject("Mean", rating.Mean).append("StandardDeviation", rating.StandardDeviation);
+        BasicDBObject bdoSet = new BasicDBObject("trueSkill", trueSkill).append("rating", bdoRating);
+        BasicDBObject bdoPush = new BasicDBObject("contestsRating", contestId);
+
+        DBObject update = new BasicDBObject("$set", bdoSet).append("$push", bdoPush);
+        batchWriteOperation.find(query).updateOne(update);
     }
 
     public void updateDailyRewards() {

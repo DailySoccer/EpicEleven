@@ -8,6 +8,9 @@ import java.util.Arrays;
 
 
 public enum SalaryCap {
+    SALARY_CAP_90000(90000),
+    SALARY_CAP_85000(85000),
+    SALARY_CAP_80000(80000),
     EASY(75000),
     STANDARD(70000),
     DIFFICULT(65000);

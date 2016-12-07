@@ -258,6 +258,14 @@ public class ContestController extends Controller {
     }
 
     @UserAuthenticated
+    public static Result getMyHistoryContestEntry(String contestId) {
+        User theUser = (User)ctx().args.get("User");
+        return new ReturnHelper(ImmutableMap.of(
+                "contest", Contest.findOneMyHistoryWithMyEntry(new ObjectId(contestId), theUser.userId, JsonViews.MyHistoryContests.class)
+        )).toResult(JsonViews.MyHistoryContests.class);
+    }
+
+    @UserAuthenticated
     public static Result countMyLiveContests() throws Exception {
         User theUser = (User)ctx().args.get("User");
 
@@ -323,12 +331,43 @@ public class ContestController extends Controller {
     }
 
     public static Result getMyHistoryContest(String contestId) throws Exception {
-        return Cache.getOrElse("ViewHistoryContest-".concat(contestId), new Callable<Result>() {
-            @Override
-            public Result call() throws Exception {
-                return getViewContest(contestId);
+        Object result;
+
+        Object cache = Cache.get("ViewHistoryContest-".concat(contestId));
+        if (cache == null || !(cache instanceof Map)) {
+
+            Contest contest = Contest.findOne(contestId);
+
+            // No se puede ver el contest "completo" si está "activo" (únicamente en "live" o "history")
+            if (contest.state.isActive()) {
+                User theUser = SessionUtils.getUserFromRequest(Controller.ctx().request());
+                Logger.error("WTF 7945: getMyHistoryContest: contest: {} user: {}", contestId, theUser != null ? theUser.userId : "<guest>");
+                return new ReturnHelper(false, ERROR_VIEW_CONTEST_INVALID).toResult();
             }
-        }, CACHE_VIEW_HISTORY_CONTEST);
+
+            List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
+            List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
+
+            ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
+                    .put("contest", contest)
+                    .put("users_info", usersInfoInContest)
+                    .put("match_events", matchEvents)
+                    .put("prizes", Prizes.findOne(contest.prizeType, contest.getNumEntries(), contest.getPrizePool()));
+
+            result = builder.build();
+
+            // Registramos en la caché únicamente los torneos "cerrados" (se haya calculado el ranking y repartido los premios)
+            if (contest.closed) {
+                Cache.set("ViewHistoryContest-".concat(contestId), result, CACHE_VIEW_HISTORY_CONTEST);
+            }
+        }
+        else {
+            result = Cache.get("ViewHistoryContest-".concat(contestId));
+            Logger.debug("getMyHistoryContest: {} CACHED", contestId);
+        }
+
+        return new ReturnHelper(result)
+                .toResult(JsonViews.FullContest.class);
     }
 
     public static Result getViewContest(String contestId) {

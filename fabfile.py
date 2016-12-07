@@ -242,19 +242,24 @@ def deploy(dest='staging', mode='debug'):
 
         #if env.dest in production_dests:
         #    rm_public()
+        """
         rm_public()
 
         with lcd('../webclient'):
             if prepare_client():
                 build_client()
         if env.client_built:
-            commit_for_deploy()
-            heroku_push()
-            heroku_version()
-            wake_dest()
+        """
+        commit_for_deploy()
+        heroku_push()
+        heroku_version()
+        wake_dest()
+
         return_to_previous_state()
+        """
         if env.client_built:
             launch_functional_tests()
+        """
     if env.back_stashed:
         unstash()
 
@@ -272,9 +277,11 @@ def return_to_previous_state():
             if env.public_deleted:
                 git_checkout('-- public')
             git_checkout(env.back_branch_name)
+    """
     with lcd('../webclient'):
         git_checkout(env.client_branch_name)
         post_build_client()
+    """
 
 def fab_help():
     print 'Instalación: '

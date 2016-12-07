@@ -51,7 +51,9 @@ GET         /contests/verify_prizes                                             
 GET         /contests/verify_entry_fee                                           controllers.admin.ContestController.verifyEntryFee()
 POST        /contests/import_from_csv                                            controllers.admin.ContestController.importFromCSV()
 GET         /contests/default_csv                                                controllers.admin.ContestController.defaultCSV()
+GET         /contests/recalculate_trueskill                                      controllers.admin.ContestController.recalculateTrueSkill()
 GET         /check_free_slots/:contestId                                         controllers.admin.ContestController.checkFreeSlots(contestId)
+GET         /check_trueskill/:contestId                                          controllers.admin.ContestController.checkTrueSkill(contestId)
 
 GET         /template_contests                                                   controllers.admin.TemplateContestController.index()
 GET         /template_contests/filterBy/:competitionId/:stateId                  controllers.admin.TemplateContestController.showFilterByCompetition(competitionId : String, stateId : String)

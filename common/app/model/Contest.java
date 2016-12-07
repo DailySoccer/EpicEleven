@@ -15,10 +15,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.jongo.marshall.jackson.oid.Id;
 import play.Logger;
-import utils.ListUtils;
-import utils.MoneyUtils;
-import utils.TrueSkillHelper;
-import utils.ViewProjection;
+import utils.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -438,11 +435,24 @@ public class Contest implements JongoId {
     }
 
     static public List<Contest> findAllMyHistory(ObjectId userId, Class<?> projectionClass) {
-        return findAllMyContests(userId, "{state: \"HISTORY\", \"contestEntries.userId\": #}", projectionClass);
+        return ListUtils.asList(Model.contests()
+                .find("{state: \"HISTORY\", startDate: {$gte: #}, \"contestEntries.userId\": #}", OptaCompetition.SEASON_DATE_START, userId)
+                .projection(ViewProjection.get(projectionClass, Contest.class))
+                .as(Contest.class));
+    }
+
+    static public Contest findOneMyHistoryWithMyEntry(ObjectId contestId, ObjectId userId, Class<?> projectionClass) {
+        return Model.contests()
+                .findOne("{_id: #, state: \"HISTORY\", \"contestEntries.userId\": #}", contestId, userId)
+                .projection(ViewProjection.get(projectionClass, ImmutableList.of("contestEntries.$"), Contest.class))
+                .as(Contest.class);
     }
 
     static public List<Contest> findAllMyHistoryWithMyEntry(ObjectId userId, Class<?> projectionClass) {
-        return findAllMyContestsWithMyEntry(userId, "{state: \"HISTORY\", \"contestEntries.userId\": #}", projectionClass);
+        return ListUtils.asList(Model.contests()
+                .find("{state: \"HISTORY\", startDate: {$gte: #}, \"contestEntries.userId\": #}", OptaCompetition.SEASON_DATE_START, userId)
+                .projection(ViewProjection.get(projectionClass, ImmutableList.of("contestEntries.$"), Contest.class))
+                .as(Contest.class));
     }
 
     static public List<Contest> findAllClosedAfter(Date closedAt) {
@@ -469,13 +479,6 @@ public class Contest implements JongoId {
         return ListUtils.asList(Model.contests()
                 .find(query, userId)
                 .projection(ViewProjection.get(projectionClass, Contest.class))
-                .as(Contest.class));
-    }
-
-    static private List<Contest> findAllMyContestsWithMyEntry(ObjectId userId, String query, Class<?> projectionClass) {
-        return ListUtils.asList(Model.contests()
-                .find(query, userId)
-                .projection(ViewProjection.get(projectionClass, ImmutableList.of("contestEntries.$"), Contest.class))
                 .as(Contest.class));
     }
 
@@ -553,8 +556,39 @@ public class Contest implements JongoId {
         return result;
     }
 
-    private void updateRanking(Prizes prizes) {
+    public Map<ObjectId, User> checkTrueSkill() {
+        Prizes prizes = Prizes.findOne(prizeType, getNumEntries(), getPrizePool());
+        updateContestEntryRanking (prizes);
+        return TrueSkillHelper.RecomputeRatings(contestEntries);
+    }
 
+    public void recalculateTrueSkill(BatchWriteOperation batchWriteOperation) {
+        Logger.debug("TrueSkill: Contest: {} ({}) {}", name, contestId.toString(), GlobalDate.formatDate(startDate));
+
+        Collections.sort(contestEntries, new ContestEntryComparable());
+
+        // Calculamos el trueSkill de los participantes y actualizamos su información en la BDD
+        Map<ObjectId, User> usersRating = TrueSkillHelper.RecomputeRatings(contestEntries);
+        for (Map.Entry<ObjectId, User> entry : usersRating.entrySet()) {
+            User user = entry.getValue();
+            if (Double.isNaN(user.rating.Mean) || Double.isNaN(user.rating.StandardDeviation)) {
+                System.exit(0);
+            }
+            user.updateTrueSkillByContest(batchWriteOperation, contestId);
+        }
+    }
+
+    private void updateRanking(Prizes prizes) {
+        updateContestEntryRanking(prizes);
+
+        // Si es un torneo REAL, actualizaremos el TrueSkill de los participantes
+        if (!simulation) {
+            // Los contestEntries están ordenadas según sus posiciones
+            updateTrueSkill();
+        }
+    }
+
+    private void updateContestEntryRanking(Prizes prizes) {
         List<TemplateMatchEvent> templateMatchEvents = getTemplateMatchEvents();
 
         // Verificación...
@@ -578,12 +612,6 @@ public class Contest implements JongoId {
             contestEntry.position = index++;
             contestEntry.prize = prizes.getValue(contestEntry.position);
             contestEntry.updateRanking();
-        }
-
-        // Si es un torneo REAL, actualizaremos el TrueSkill de los participantes
-        if (!simulation) {
-            // Los contestEntries están ordenadas según sus posiciones
-            updateTrueSkill();
         }
     }
 
