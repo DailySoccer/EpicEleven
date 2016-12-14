@@ -21,7 +21,7 @@
                     @for((p, index) <- users.zipWithIndex) {
                         [
                             "@p.userId",
-                            "@p.nickName",
+                            "@p.nickName ",     // Espacio al final del nickName, para evitar efectos secundarios de un carácter "\" al final del propio nick
                             "@GlobalDate.formatDate(p.createdAt)",
                             "@p.wins",
                             "@MoneyUtils.asString(p.goldBalance)",

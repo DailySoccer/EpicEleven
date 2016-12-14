@@ -350,20 +350,22 @@ public class ContestController extends Controller {
 
         // Recorrer cada uno de los torneos en HISTORY (a partir de la temporada actual)
         MongoCursor<Contest> cursor = Model.contests()
-                //.find("{state: \"HISTORY\", startDate: {$gte: #}, _id: {$gte: #}}", OptaCompetition.SEASON_DATE_START, new ObjectId("5832fef9e4b092789e1baef2"))
+                //.find("{state: \"HISTORY\", startDate: {$gte: #}, _id: {$gte: #}}", OptaCompetition.SEASON_DATE_START, new ObjectId("5844333fd4c68a1254b69fc4"))
                 .find("{state: \"HISTORY\", startDate: {$gte: #}}", OptaCompetition.SEASON_DATE_START)
                 .sort("{_id : 1}")
                 .as(Contest.class);
 
         int counter = 0;
         while (cursor.hasNext()) {
-            BatchWriteOperation batchWriteOperation = new BatchWriteOperation(Model.users().getDBCollection().initializeUnorderedBulkOperation());
-
             Contest contest = cursor.next();
-            Logger.debug("{}: Contest: {} {}", counter++, contest.name, GlobalDate.formatDate(contest.startDate));
-            contest.recalculateTrueSkill(batchWriteOperation);
+            if (contest.contestEntries.size() >= 2) {
+                BatchWriteOperation batchWriteOperation = new BatchWriteOperation(Model.users().getDBCollection().initializeUnorderedBulkOperation());
 
-            batchWriteOperation.execute();
+                Logger.debug("{}: Contest: {} {}", counter++, contest.name, GlobalDate.formatDate(contest.startDate));
+                contest.recalculateTrueSkill(batchWriteOperation);
+
+                batchWriteOperation.execute();
+            }
         }
 
         return index();

@@ -7,6 +7,10 @@ public class BatchWriteOperation {
         this.bulkOperation = bulkOperation;
     }
 
+    public int getNumOperations() {
+        return numOperations;
+    }
+
     public void insert(com.mongodb.DBObject document) {
         numOperations++;
         bulkOperation.insert(document);

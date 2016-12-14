@@ -1,3 +1,6 @@
+GET            /maintenance.html                                         controllers.MainController.maintenance()
+# GET            /*maintenance                                           controllers.MainController.maintenance(maintenance : String)
+
 GET            /ping                                                   controllers.MainController.ping()
 GET            /terminos-de-uso                                        controllers.MainController.termsOfUse()
 GET            /politica-de-privacidad                                 controllers.MainController.privacyPolicy()
