@@ -30,10 +30,19 @@ import static play.data.Form.form;
 @AllowCors.Origin
 public class MainController extends Controller {
 
+    private final static String MAINTENANCE = "maintenance";
     private final static int CACHE_LEADERBOARD = 12 * 60 * 60;              // 12 horas
     private final static int CACHE_SOCCERPLAYER_BY_COMPETITION = 15 * 60;   // 15 minutos
     private final static int CACHE_TEMPLATESOCCERPLAYERS = 8 * 60 * 60;     // 8 Horas
     private final static int CACHE_TEMPLATESOCCERTEAMS = 24 * 60 * 60;
+
+    public static Result maintenance() {
+        return badRequest(MAINTENANCE);
+    }
+
+    public static Result maintenance(String parameters) {
+        return maintenance();
+    }
 
     public static Result ping() {
     	return ok("Pong");
