@@ -95,7 +95,7 @@ public class TrueSkillHelper {
         final double defaultInitialStandardDeviation = defaultInitialMean/3.0;
         final double defaultBeta = defaultInitialMean/6.0;
         final double defaultDynamicsFactor = defaultInitialMean/300.0;
-        final double defaultDrawProbability = 0.01;
+        final double defaultDrawProbability = 0.009;
 
         GameInfo gameInfo = new jskills.GameInfo(defaultInitialMean, defaultInitialStandardDeviation, defaultBeta, defaultDynamicsFactor, defaultDrawProbability);
 
