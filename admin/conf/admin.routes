@@ -71,6 +71,7 @@ GET         /template_contests/clone/:templateContestId                         
 GET         /template_contest/publish/:templateContestId                         controllers.admin.TemplateContestController.publish(templateContestId : String)
 GET         /template_contest/delete/:templateContestId                          controllers.admin.TemplateContestController.destroy(templateContestId : String)
 GET         /template_contest/:templateContestId                                 controllers.admin.TemplateContestController.show(templateContestId : String)
+GET         /template_contest/soccerplayers_stats/:templateContestId             controllers.admin.TemplateContestController.showSoccerPlayersStats(templateContestId : String)
 GET         /template_contest/managerLevels/:templateContestId                   controllers.admin.TemplateContestController.showManagerLevels(templateContestId : String)
 GET         /template_contest/maintain_num_instances/:templateContestId          controllers.admin.TemplateContestController.maintainNumInstances(templateContestId : String)
 
@@ -127,6 +128,7 @@ GET         /get_simulator_state                                                
 GET         /snapshots                                                           controllers.admin.SnapshotController.index()
 GET         /save_snapshot                                                       controllers.admin.SnapshotController.saveSnapshot()
 GET         /load_snapshot                                                       controllers.admin.SnapshotController.loadSnapshot()
+GET         /snapshot_dump                                                       controllers.admin.SnapshotController.snapshotDump()
 GET         /snapshot_dump                                                       controllers.admin.SnapshotController.snapshotDump()
 GET         /snapshot_restore                                                    controllers.admin.SnapshotController.snapshotRestore()
 

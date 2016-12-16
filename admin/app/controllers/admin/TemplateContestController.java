@@ -3,11 +3,13 @@ package controllers.admin;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import actions.CheckTargetEnvironment;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.mongodb.WriteConcern;
+import jdk.nashorn.internal.objects.Global;
 import model.*;
 import model.opta.OptaCompetition;
 import org.bson.types.ObjectId;
@@ -24,6 +26,7 @@ import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import utils.FileUtils;
+import utils.ListUtils;
 import utils.MoneyUtils;
 import utils.ReturnHelper;
 
@@ -326,6 +329,44 @@ public class TemplateContestController extends Controller {
                 TemplateSoccerTeam.findAllAsMap()));
     }
 
+    public static Result showSoccerPlayersStats(String templateContestId) {
+        TemplateContest templateContest = TemplateContest.findOne(new ObjectId(templateContestId));
+
+        List<TemplateMatchEvent> templateMatchEvents = templateContest.getTemplateMatchEvents();
+
+        List<String> optaMatchEventIds = templateMatchEvents.stream().map( match -> match.optaMatchEventId ).collect(Collectors.toList());
+
+        HashMap<ObjectId, TemplateSoccerTeam> teamMap = TemplateSoccerTeam.findAllAsMap();
+
+        printAsTableSoccerPlayerStats(FieldPos.GOALKEEPER, bestSoccerPlayers(optaMatchEventIds, FieldPos.GOALKEEPER), teamMap);
+        printAsTableSoccerPlayerStats(FieldPos.DEFENSE, bestSoccerPlayers(optaMatchEventIds, FieldPos.DEFENSE), teamMap);
+        printAsTableSoccerPlayerStats(FieldPos.MIDDLE, bestSoccerPlayers(optaMatchEventIds, FieldPos.MIDDLE), teamMap);
+        printAsTableSoccerPlayerStats(FieldPos.FORWARD, bestSoccerPlayers(optaMatchEventIds, FieldPos.FORWARD), teamMap);
+
+        return ok(views.html.template_contest.render(
+                templateContest,
+                templateMatchEvents,
+                teamMap));
+    }
+
+    public static List<TemplateSoccerPlayer> bestSoccerPlayers(List<String> optaMatchEventIds, FieldPos fieldPos) {
+        List<TemplateSoccerPlayer> result = ListUtils.asList(Model.templateSoccerPlayers()
+                .find("{ fieldPos: #, \"stats.optaMatchEventId\": {$in: #} }",
+                               fieldPos.toString(), optaMatchEventIds)
+                .projection("{ _id: 1, name: 1, templateTeamId: 1, optaPlayerId: 1, \"stats.$\": 1 }")
+                .as(TemplateSoccerPlayer.class)
+        );
+
+        Collections.sort(result, new Comparator<TemplateSoccerPlayer>() {
+            @Override
+            public int compare(TemplateSoccerPlayer o1, TemplateSoccerPlayer o2) {
+                return o2.stats.get(0).fantasyPoints - o1.stats.get(0).fantasyPoints;
+            }
+        });
+
+        return result.subList(0, 3);
+    }
+
     public enum FieldCSV {
         ID,
         NAME,
@@ -514,6 +555,41 @@ public class TemplateContestController extends Controller {
             buffer.append("<td>" + frequency.get(FieldPos.DEFENSE.name()) +"</td>");
             buffer.append("<td>" + frequency.get(FieldPos.MIDDLE.name()) +"</td>");
             buffer.append("<td>" + frequency.get(FieldPos.FORWARD.name()) +"</td>");
+
+            buffer.append("</tr>");
+        }
+        buffer.append("</table>");
+
+        FlashMessage.info(buffer.toString());
+    }
+
+    private static void printAsTableSoccerPlayerStats(FieldPos fieldPos, List<TemplateSoccerPlayer> soccerPlayers, Map<ObjectId, TemplateSoccerTeam> teamMap) {
+        StringBuffer buffer = new StringBuffer();
+
+        buffer.append("<h3>" + fieldPos.toString() + "</h3>");
+        buffer.append("<table border=\"1\" style=\"width:80%; text-align: center; \">\n" +
+                "        <tr>\n" +
+                "        <td><strong> Num <strong></td>\n" +
+                "        <td><strong> OptaPlayerId <strong></td>\n" +
+                "        <td><strong> Name <strong></td>\n" +
+                "        <td><strong> FantasyPoints <strong></td>\n" +
+                "        <td><strong> Team <strong></td>\n" +
+                "        <td><strong> OpponentTeam <strong></td>\n" +
+                "        <td><strong> Fecha <strong></td>\n" +
+                "        </tr>");
+        for (int i=0; i<soccerPlayers.size(); i++) {
+            TemplateSoccerPlayer soccerPlayer = soccerPlayers.get(i);
+
+            SoccerPlayerStats stats = soccerPlayer.stats.get(0);
+
+            buffer.append("<tr>");
+            buffer.append("<td>" + i + "</td>");
+            buffer.append("<td>" + soccerPlayer.optaPlayerId + "</td>");
+            buffer.append("<td>" + soccerPlayer.name +"</td>");
+            buffer.append("<td>" + stats.fantasyPoints +"</td>");
+            buffer.append("<td>" + teamMap.get(soccerPlayer.templateTeamId).name +"</td>");
+            buffer.append("<td>" + teamMap.get(stats.opponentTeamId).name +"</td>");
+            buffer.append("<td>" + GlobalDate.formatDate(stats.startDate) +"</td>");
 
             buffer.append("</tr>");
         }
