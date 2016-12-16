@@ -135,6 +135,8 @@ GET         /refresher                                                          
 GET         /refresher_in_progress                                               controllers.admin.RefresherController.inProgress()
 GET         /last_date                                                           controllers.admin.RefresherController.lastDate()
 
+GET         /maintenance                                                         controllers.admin.MaintenanceController.index()
+
 GET         /migrations                                                          controllers.admin.MigrationsController.index()
 GET         /migration/:type                                                     controllers.admin.MigrationsController.apply(type)
 
