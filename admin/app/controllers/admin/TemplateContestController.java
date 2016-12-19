@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import actions.CheckTargetEnvironment;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.mongodb.WriteConcern;
 import jdk.nashorn.internal.objects.Global;
 import model.*;
@@ -338,14 +339,35 @@ public class TemplateContestController extends Controller {
 
         HashMap<ObjectId, TemplateSoccerTeam> teamMap = TemplateSoccerTeam.findAllAsMap();
 
-        printAsTableSoccerPlayerStats(FieldPos.GOALKEEPER, bestSoccerPlayers(optaMatchEventIds, FieldPos.GOALKEEPER), teamMap);
-        printAsTableSoccerPlayerStats(FieldPos.DEFENSE, bestSoccerPlayers(optaMatchEventIds, FieldPos.DEFENSE), teamMap);
-        printAsTableSoccerPlayerStats(FieldPos.MIDDLE, bestSoccerPlayers(optaMatchEventIds, FieldPos.MIDDLE), teamMap);
-        printAsTableSoccerPlayerStats(FieldPos.FORWARD, bestSoccerPlayers(optaMatchEventIds, FieldPos.FORWARD), teamMap);
+        List<Contest> contests = ListUtils.asList(
+                Model.contests()
+                        .find("{ templateContestId: # }", templateContest.templateContestId )
+                        .projection("{ _id: 1, contestEntries: 1 }")
+                        .as(Contest.class)
+        );
 
-        return ok(views.html.template_contest.render(
+        List<TemplateSoccerPlayer> bestGoalkeepers = bestSoccerPlayers(optaMatchEventIds, FieldPos.GOALKEEPER);
+        List<TemplateSoccerPlayer> bestDefenses = bestSoccerPlayers(optaMatchEventIds, FieldPos.DEFENSE);
+        List<TemplateSoccerPlayer> bestMiddles = bestSoccerPlayers(optaMatchEventIds, FieldPos.MIDDLE);
+        List<TemplateSoccerPlayer> bestForwards = bestSoccerPlayers(optaMatchEventIds, FieldPos.FORWARD);
+
+        List<TemplateSoccerPlayer> efficientGoalkeepers = efficientSoccerPlayers(templateContest, optaMatchEventIds, FieldPos.GOALKEEPER);
+        List<TemplateSoccerPlayer> efficientDefenses = efficientSoccerPlayers(templateContest, optaMatchEventIds, FieldPos.DEFENSE);
+        List<TemplateSoccerPlayer> efficientMiddles = efficientSoccerPlayers(templateContest, optaMatchEventIds, FieldPos.MIDDLE);
+        List<TemplateSoccerPlayer> efficientForwards = efficientSoccerPlayers(templateContest, optaMatchEventIds, FieldPos.FORWARD);
+
+        /*
+        printAsTableSoccerPlayerStats(FieldPos.GOALKEEPER, bestGoalkeepers, teamMap);
+        printAsTableSoccerPlayerStats(FieldPos.DEFENSE, bestDefenses, teamMap);
+        printAsTableSoccerPlayerStats(FieldPos.MIDDLE, bestMiddles, teamMap);
+        printAsTableSoccerPlayerStats(FieldPos.FORWARD, bestForwards, teamMap);
+        */
+
+        return ok(views.html.template_contest_soccer_players_stats.render(
                 templateContest,
-                templateMatchEvents,
+                contests,
+                bestGoalkeepers, bestDefenses, bestMiddles, bestForwards,
+                efficientGoalkeepers, efficientDefenses, efficientMiddles, efficientForwards,
                 teamMap));
     }
 
@@ -357,14 +379,41 @@ public class TemplateContestController extends Controller {
                 .as(TemplateSoccerPlayer.class)
         );
 
-        Collections.sort(result, new Comparator<TemplateSoccerPlayer>() {
+        result.sort(new Comparator<TemplateSoccerPlayer>() {
             @Override
             public int compare(TemplateSoccerPlayer o1, TemplateSoccerPlayer o2) {
                 return o2.stats.get(0).fantasyPoints - o1.stats.get(0).fantasyPoints;
             }
         });
 
-        return result.subList(0, 3);
+        return result.subList(0, 4);
+    }
+
+    public static List<TemplateSoccerPlayer> efficientSoccerPlayers(TemplateContest templateContest, List<String> optaMatchEventIds, FieldPos fieldPos) {
+        List<TemplateSoccerPlayer> result = ListUtils.asList(Model.templateSoccerPlayers()
+                .find("{ fieldPos: #, \"stats.optaMatchEventId\": {$in: #} }",
+                        fieldPos.toString(), optaMatchEventIds)
+                .projection("{ _id: 1, name: 1, templateTeamId: 1, optaPlayerId: 1, salary : 1, \"stats.$\": 1 }")
+                .as(TemplateSoccerPlayer.class)
+        );
+
+        result.forEach( soccerPlayer -> {
+            InstanceSoccerPlayer instanceSoccerPlayer = templateContest.getInstanceSoccerPlayer(soccerPlayer.templateSoccerPlayerId);
+            if (instanceSoccerPlayer != null) {
+                soccerPlayer.salary = instanceSoccerPlayer.salary;
+            }
+        });
+
+        result.sort(new Comparator<TemplateSoccerPlayer>() {
+            @Override
+            public int compare(TemplateSoccerPlayer o1, TemplateSoccerPlayer o2) {
+                float factor1 = (o1.stats.get(0).fantasyPoints > 0) ? ((float) o1.salary / o1.stats.get(0).fantasyPoints ) : Float.MAX_VALUE;
+                float factor2 = (o2.stats.get(0).fantasyPoints > 0) ? ((float) o2.salary / o2.stats.get(0).fantasyPoints ) : Float.MAX_VALUE;
+                return Float.compare(factor1, factor2);
+            }
+        });
+
+        return result.subList(0, 4);
     }
 
     public enum FieldCSV {

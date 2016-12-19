@@ -1,0 +1,148 @@
+@(
+    templateContest: model.TemplateContest,
+    contests : List[model.Contest],
+    bestGoalKeepers : List[model.TemplateSoccerPlayer],
+    bestDefenses : List[model.TemplateSoccerPlayer],
+    bestMiddles : List[model.TemplateSoccerPlayer],
+    bestForwards : List[model.TemplateSoccerPlayer],
+    efficientGoalKeepers : List[model.TemplateSoccerPlayer],
+    efficientDefenses : List[model.TemplateSoccerPlayer],
+    efficientMiddles : List[model.TemplateSoccerPlayer],
+    efficientForwards : List[model.TemplateSoccerPlayer],
+    templateSoccerTeamMap: HashMap[org.bson.types.ObjectId, model.TemplateSoccerTeam]
+)
+
+@import controllers.admin.routes._
+@import model._
+
+@numContestEntries = @{
+    var num = 0;
+    contests.foreach { num += _.getNumEntries() }
+    num
+}
+
+@numSoccerPlayerInContestEntries(templateSoccerPlayerId: org.bson.types.ObjectId) = @{
+    var num = 0;
+    for (contest <- contests) {
+        for (contestEntry <- contest.contestEntries) {
+            if (contestEntry.containsSoccerPlayer(templateSoccerPlayerId)) {
+                num += 1;
+            }
+        }
+    }
+    num;
+}
+
+@get_salary(templateSoccerPlayer : model.TemplateSoccerPlayer) = @{
+    val instance = templateContest.getInstanceSoccerPlayer(templateSoccerPlayer.templateSoccerPlayerId);
+    if (instance != null) {
+        instance.salary;
+    } else {
+        templateSoccerPlayer.salary;
+    }
+}
+
+
+@print_table_best(title : String, list : List[model.TemplateSoccerPlayer]) = {
+<table border="1" style="width:95%; text-align: center;">
+    <caption class="bg-info"> @title </caption>
+    <thead>
+    <tr>
+        <!--th>Template SoccerID</th-->
+        <th>OptaPlayerId</th>
+        <th>Name</th>
+        <th>Fantasy Points</th>
+        <th>Team</th>
+        <th>OpponentTeam</th>
+        <th>Fecha</th>
+        <th>ContestEntries</th>
+    </tr>
+    </thead>
+    <tbody>
+    @for(p <- list) {
+    <tr>
+        <!--td>@p.templateSoccerPlayerId</td-->
+        <td>@p.optaPlayerId</td>
+        <td>@p.name</td>
+        <td>@p.stats(0).fantasyPoints</td>
+        <td>@templateSoccerTeamMap(p.templateTeamId).name</td>
+        <td>@templateSoccerTeamMap(p.stats(0).opponentTeamId).name</td>
+        <td>@GlobalDate.formatDate(p.stats(0).startDate)</td>
+        <td>@numSoccerPlayerInContestEntries(p.templateSoccerPlayerId)</td>
+    </tr>
+    }
+    </tbody>
+</table>
+}
+
+@print_table_efficient(title : String, list : List[model.TemplateSoccerPlayer]) = {
+<table border="1" style="width:95%; text-align: center;">
+    <caption class="bg-info"> @title </caption>
+    <thead>
+    <tr>
+        <!--th>Template SoccerID</th-->
+        <th>OptaPlayerId</th>
+        <th>Name</th>
+        <th>Salary / FP</th>
+        <th>Salary</th>
+        <th>Fantasy Points</th>
+        <th>Team</th>
+        <th>OpponentTeam</th>
+        <th>Fecha</th>
+        <th>ContestEntries</th>
+    </tr>
+    </thead>
+    <tbody>
+    @for(p <- list) {
+    <tr>
+        <!--td>@p.templateSoccerPlayerId</td-->
+        <td>@p.optaPlayerId</td>
+        <td>@p.name</td>
+        <td>@{ "%.2f".format(get_salary(p).toFloat / p.stats(0).fantasyPoints) }</td>
+        <td>@get_salary(p)</td>
+        <td>@p.stats(0).fantasyPoints</td>
+        <td>@templateSoccerTeamMap(p.templateTeamId).name</td>
+        <td>@templateSoccerTeamMap(p.stats(0).opponentTeamId).name</td>
+        <td>@GlobalDate.formatDate(p.stats(0).startDate)</td>
+        <td>@numSoccerPlayerInContestEntries(p.templateSoccerPlayerId)</td>
+    </tr>
+    }
+    </tbody>
+</table>
+}
+@scripts = {
+<script type="text/javascript">
+        $(document).ready( function(){
+            $('#table_id_2').dataTable( {
+                stateSave: true,
+                iDisplayLength: 100
+            } );
+
+        })
+    </script>
+}
+
+@main("TemplateContest - SoccerPlayers Stats - Admin", scripts) {
+
+<h2 class="sub-header">@templateContest.name - SoccerPlayers Stats</h2>
+<div><strong>Max. Entries:</strong> @templateContest.maxEntries</div>
+<div><strong>Num. Instances:</strong> @contests.length</div>
+<div><strong>Num. ContestEntries:</strong> @numContestEntries</div>
+
+<h3 class="sub-header">BEST FANTASYPOINTS</h3>
+<div>
+    @print_table_best("GOALKEEPERS", bestGoalKeepers)
+    @print_table_best("DEFENSES", bestDefenses)
+    @print_table_best("MIDDLES", bestMiddles)
+    @print_table_best("FORWARDS", bestForwards)
+</div>
+
+<h3 class="sub-header">EFFICIENT SALARY / FANTASYPOINTS</h3>
+<div>
+    @print_table_efficient("GOALKEEPERS", efficientGoalKeepers)
+    @print_table_efficient("DEFENSES", efficientDefenses)
+    @print_table_efficient("MIDDLES", efficientMiddles)
+    @print_table_efficient("FORWARDS", efficientForwards)
+</div>
+
+}

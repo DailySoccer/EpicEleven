@@ -363,6 +363,20 @@ public class TemplateContest implements JongoId {
                 : Prizes.getPool(simulation ? MoneyUtils.CURRENCY_MANAGER : MoneyUtils.CURRENCY_GOLD, entryFee, maxEntries, prizeMultiplier);
     }
 
+    public InstanceSoccerPlayer getInstanceSoccerPlayer(ObjectId templateSoccerPlayerId) {
+        InstanceSoccerPlayer instanceSoccerPlayer = null;
+        for (InstanceSoccerPlayer soccerPlayer: instanceSoccerPlayers) {
+            if (soccerPlayer.templateSoccerPlayerId.equals(templateSoccerPlayerId)) {
+                instanceSoccerPlayer = soccerPlayer;
+                break;
+            }
+        }
+        if (instanceSoccerPlayer == null) {
+            Logger.error ("WTF 7312: instanceSoccerPlayer == null -> {} ", templateSoccerPlayerId.toString());
+        }
+        return instanceSoccerPlayer;
+    }
+
     public static void actionWhenMatchEventIsStarted(TemplateMatchEvent matchEvent) {
         // Los template contests (que incluyan este match event y que esten "activos") tienen que ser marcados como "live"
         Model.templateContests()
