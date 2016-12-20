@@ -521,7 +521,7 @@ public class User {
     }
 
     static public Integer getSeqId(ObjectId userId) {
-        List<AccountOp> account = Model.accountingTransactions()
+        List<AccountOp> account = ListUtils.asList(Model.accountingTransactions()
                 .aggregate("{$match: { \"accountOps.accountId\": #}}", userId)
                 .and("{$unwind: \"$accountOps\"}")
                 .and("{$match: {\"accountOps.accountId\": #}}", userId)
@@ -529,7 +529,7 @@ public class User {
                 .and("{$sort: { \"accountOps.seqId\": -1 }}")
                 .and("{$limit: 1}")
                 .and("{$group: {_id: \"seqId\", accountId: { $first: \"$accountOps.accountId\" }, seqId: { $first: \"$accountOps.seqId\" }}}")
-                .as(AccountOp.class);
+                .as(AccountOp.class));
         return (!account.isEmpty() && account.get(0).seqId != null) ? account.get(0).seqId : 0;
     }
 
@@ -539,12 +539,12 @@ public class User {
     }
 
     static public Money calculatePrizes(ObjectId userId, CurrencyUnit currencyUnit) {
-        List<PrizeOp> prizeOps = Model.accountingTransactions()
+        List<PrizeOp> prizeOps = ListUtils.asList(Model.accountingTransactions()
                 .aggregate("{$match: { \"accountOps.accountId\": #, currencyCode: #, type: #, state: \"VALID\"}}", userId, currencyUnit.toString(), AccountingTran.TransactionType.PRIZE)
                 .and("{$unwind: \"$accountOps\"}")
                 .and("{$match: {\"accountOps.accountId\": #}}", userId)
                 .and("{$project: {value: \"$accountOps.value\"}}")
-                .as(PrizeOp.class);
+                .as(PrizeOp.class));
 
         Money balance = MoneyUtils.zero(currencyUnit.getCode());
         if (!prizeOps.isEmpty()) {
@@ -562,12 +562,12 @@ public class User {
 
     static public Money calculateBalance(ObjectId userId, String currencyUnit) {
 
-        List<BalanceOp> accountingOps = Model.accountingTransactions()
+        List<BalanceOp> accountingOps = ListUtils.asList(Model.accountingTransactions()
                 .aggregate("{$match: { \"accountOps.accountId\": #, currencyCode: #, \"accountOps.value\": {$ne: #}, state: \"VALID\"}}", userId, currencyUnit, currencyUnit.concat(" 0.00"))
                 .and("{$unwind: \"$accountOps\"}")
                 .and("{$match: {\"accountOps.accountId\": #}}", userId)
                 .and("{$project: {value: \"$accountOps.value\"}}")
-                .as(BalanceOp.class);
+                .as(BalanceOp.class));
 
         Money balance = MoneyUtils.zero(currencyUnit);
         if (!accountingOps.isEmpty()) {

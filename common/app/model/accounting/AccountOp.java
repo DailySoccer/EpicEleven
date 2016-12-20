@@ -5,6 +5,7 @@ import model.User;
 import org.bson.types.ObjectId;
 import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
+import utils.ListUtils;
 import utils.MoneyUtils;
 
 import java.math.BigDecimal;
@@ -52,7 +53,7 @@ public class AccountOp {
             return MoneyUtils.zero(value.getCurrencyUnit().getCode());
         }
 
-        List<AccountOp> accountOp = Model.accountingTransactions()
+        List<AccountOp> accountOp = ListUtils.asList(Model.accountingTransactions()
                 .aggregate("{$match: { \"accountOps.accountId\": #, proc: #, state: \"VALID\", currencyCode: #}}", accountId, AccountingTran.TransactionProc.COMMITTED, value.getCurrencyUnit().getCode())
                 .and("{$unwind: \"$accountOps\"}")
                 .and("{$match: {\"accountOps.accountId\": #, \"accountOps.seqId\": { $lt: # }}}", accountId, seqId)
@@ -60,7 +61,7 @@ public class AccountOp {
                 .and("{$sort: { \"accountOps.seqId\": -1 }}")
                 .and("{$limit: 1}")
                 .and("{$group: {_id: \"balance\", accountId: { $first: \"$accountOps.accountId\" }, cachedBalance: { $first: \"$accountOps.cachedBalance\" }}}")
-                .as(AccountOp.class);
+                .as(AccountOp.class));
 
         return (!accountOp.isEmpty()) ? accountOp.get(0).cachedBalance : MoneyUtils.zero(value.getCurrencyUnit().getCode());
     }

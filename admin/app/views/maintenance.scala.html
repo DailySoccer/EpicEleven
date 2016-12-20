@@ -1,0 +1,36 @@
+@(data: Map[String, Object])
+
+@import model._
+@import controllers.admin.routes._
+
+@scripts = {
+<script type="text/javascript">
+
+        function updatePage() {
+            @if(model.Model.isLocalHostTargetEnvironment()) {
+            $.ajax({
+                url: "/admin/get_simulator_state",
+                success: function(result) {
+                    if (result.init && !result.isPaused) {
+                        window.location.reload(true);
+                    }
+                }
+            });
+            }
+        }
+
+        $(document).ready( function(){
+            window.setInterval(updatePage, 10000);
+        })
+
+    </script>
+}
+
+@main("Maintenance - Admin", scripts) {
+
+<h1 class="page-header">Maintenance</h1>
+
+<a href="@MaintenanceController.apply()"><button class="btn btn-danger">Apply</button></a>
+
+<h2 class="sub-header"></h2>
+}
