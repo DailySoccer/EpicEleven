@@ -17,6 +17,7 @@
         <th>ContestEntries</th>
         <th>Users</th>
         <th>New Users</th>
+        <th>Retención</th>
         <th>NOVATO</th>
         <th>AMATEUR</th>
         <th>PROFESIONAL</th>
@@ -31,6 +32,7 @@
         <td>@stats("total")</td>
         <td>@stats("users")</td>
         <td>@stats("newUsers")</td>
+        <td>@{stats("users").toInt - stats("newUsers").toInt}</td>
         <td>@stats("NOVATO")</td>
         <td>@stats("AMATEUR")</td>
         <td>@stats("PROFESIONAL")</td>
