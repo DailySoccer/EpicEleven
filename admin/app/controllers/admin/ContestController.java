@@ -2,6 +2,7 @@ package controllers.admin;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import com.mongodb.DBCursor;
 import model.*;
 import model.accounting.*;
 import model.opta.OptaCompetition;
@@ -14,6 +15,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.jongo.Find;
 import org.jongo.MongoCollection;
 import org.jongo.MongoCursor;
+import org.jongo.QueryModifier;
 import play.Logger;
 import play.Play;
 import play.mvc.Controller;
@@ -22,10 +24,8 @@ import play.mvc.Result;
 import utils.*;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ContestController extends Controller {
     static final String SEPARATOR_CSV = ";";
@@ -165,7 +165,48 @@ public class ContestController extends Controller {
     }
 
     public static Result show(String contestId) {
-        return ok(views.html.contest.render(Contest.findOne(contestId)));
+        Contest contest = Contest.findOne(contestId);
+
+        contest.contestEntries.sort(new Comparator<ContestEntry>() {
+            @Override
+            public int compare(ContestEntry o1, ContestEntry o2) {
+                return o1.position - o2.position;
+            }
+        });
+
+        List<UserInfo> usersInfoInContest = UserInfo.findNicknamesFromContestEntries(contest.contestEntries);
+
+        // Creamos un mapa con los nickNames
+        Map<ObjectId, String> usersInfoMap = new HashMap<>();
+        usersInfoInContest.forEach( userInfo -> usersInfoMap.put(userInfo.userId, userInfo.nickName) );
+
+        // Incrustamos el nickName en el contestEntry, para evitar enviarlos como datos independientes
+        contest.contestEntries.forEach( contestEntry -> {
+            if (usersInfoMap.containsKey(contestEntry.userId)) {
+                contestEntry.nickName = usersInfoMap.get(contestEntry.userId);
+            }
+        });
+
+        List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
+        List<String> optaMatchEventIds = matchEvents.stream().map(matchEvent -> matchEvent.optaMatchEventId).collect(Collectors.toList());
+
+        List<TemplateSoccerPlayer> templateSoccerPlayers = ListUtils.asList(Model.templateSoccerPlayers()
+                .find("{ \"stats.optaMatchEventId\": {$in: #} }", optaMatchEventIds)
+                .projection("{ _id: 1, name: 1, templateTeamId: 1, optaPlayerId: 1, \"stats.$\": 1 }")
+                .as(TemplateSoccerPlayer.class)
+        );
+
+        HashMap<ObjectId, TemplateSoccerPlayer> templateSoccerPlayerMap = new HashMap<>();
+        templateSoccerPlayers.forEach( templateSoccerPlayer -> templateSoccerPlayerMap.put(templateSoccerPlayer.getId(), templateSoccerPlayer));
+
+        HashMap<ObjectId, TemplateSoccerTeam> templateSoccerTeamMap = TemplateSoccerTeam.findAllAsMap();
+
+        return ok(views.html.contest.render(
+                contest,
+                contest.contestEntries.stream().limit(10).collect(Collectors.toList()),
+                templateSoccerPlayerMap,
+                templateSoccerTeamMap
+        ));
     }
 
     public enum FieldCSV {
@@ -353,6 +394,11 @@ public class ContestController extends Controller {
                 //.find("{state: \"HISTORY\", startDate: {$gte: #}, _id: {$gte: #}}", OptaCompetition.SEASON_DATE_START, new ObjectId("5844333fd4c68a1254b69fc4"))
                 .find("{state: \"HISTORY\", startDate: {$gte: #}}", OptaCompetition.SEASON_DATE_START)
                 .sort("{_id : 1}")
+                .with(new QueryModifier() {
+                    public void modify(DBCursor cursor) {
+                        cursor.batchSize(100);
+                    }
+                })
                 .as(Contest.class);
 
         int counter = 0;

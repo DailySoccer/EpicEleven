@@ -228,7 +228,12 @@ public class TemplateSoccerPlayer implements JongoId {
         for (InstanceSoccerPlayer instanceSoccerPlayer : instanceSoccerPlayers) {
             templateSoccerPlayerIds.add(instanceSoccerPlayer.templateSoccerPlayerId);
         }
-        return findAll(templateSoccerPlayerIds);
+        // Devolvemos los TemplateSoccerPlayers pero sin las estadísticas
+        return ListUtils.asList(Model.templateSoccerPlayers()
+                .find("{_id: {$in: #}}", templateSoccerPlayerIds)
+                .projection("{stats: 0}")
+                .as(TemplateSoccerPlayer.class));
+        // return findAll(templateSoccerPlayerIds);
     }
 
     static public List<TemplateSoccerPlayer> findAllActiveFromTeams(List<TemplateSoccerTeam> templateSoccerTeams) {
