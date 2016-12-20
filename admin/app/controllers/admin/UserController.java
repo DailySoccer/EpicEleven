@@ -68,9 +68,10 @@ public class UserController extends Controller {
             // Averiguamos su TrueSkill
             List<User> users = ListUtils.asList(Model.users()
                     .find("{_id: {$in: #}}", uniques)
-                    .projection("{ trueSkill : 1 }")
+                    .projection("{ trueSkill : 1, createdAt : 1 }")
                     .as(User.class));
 
+            int newUsers = 0;
             int[] trueSkill = {0, 0, 0, 0, 0};
             for (User user : users) {
                 int index = user.trueSkill / 1000;
@@ -79,12 +80,17 @@ public class UserController extends Controller {
                 else if (user.trueSkill < 4000) trueSkill[2]++;
                 else if (user.trueSkill < 5000) trueSkill[3]++;
                 else trueSkill[4]++;
+
+                if (user.createdAt.after(startDate)) {
+                    newUsers++;
+                }
             }
 
             // Registramos la estadística
             HashMap<String, String> stats = new HashMap<>();
             stats.put("startDate", GlobalDate.formatDate(startDate));
             stats.put("users", String.valueOf(uniques.size()));
+            stats.put("newUsers", String.valueOf(newUsers));
             stats.put("total", String.valueOf(total));
             stats.put("NOVATO", String.valueOf(trueSkill[0]));
             stats.put("AMATEUR", String.valueOf(trueSkill[1]));
