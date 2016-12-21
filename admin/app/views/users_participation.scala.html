@@ -1,0 +1,46 @@
+@(
+    participation: List[HashMap[String, String]]
+)
+
+@import controllers.admin.routes._
+@import model._
+
+@main("Participation Stats - Admin") {
+
+<h1 class="page-header">Participation Stats</h1>
+
+<table border="1" style="width:95%; text-align: center;">
+    <caption class="bg-info"> Stats </caption>
+    <thead>
+    <tr>
+        <th>StartDate</th>
+        <th>ContestEntries</th>
+        <th>Users</th>
+        <th>New Users</th>
+        <th>Retención</th>
+        <th>NOVATO</th>
+        <th>AMATEUR</th>
+        <th>PROFESIONAL</th>
+        <th>CRACK</th>
+        <th>ESTRELLA</th>
+    </tr>
+    </thead>
+    <tbody>
+    @for(stats <- participation) {
+    <tr>
+        <td>@stats("startDate")</td>
+        <td>@stats("total")</td>
+        <td>@stats("users")</td>
+        <td>@stats("newUsers")</td>
+        <td>@{stats("users").toInt - stats("newUsers").toInt}</td>
+        <td>@stats("NOVATO")</td>
+        <td>@stats("AMATEUR")</td>
+        <td>@stats("PROFESIONAL")</td>
+        <td>@stats("CRACK")</td>
+        <td>@stats("ESTRELLA")</td>
+    </tr>
+    }
+    </tbody>
+</table>
+
+}

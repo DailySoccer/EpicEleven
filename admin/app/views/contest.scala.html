@@ -1,15 +1,96 @@
-@(contest: model.Contest)
+@(
+    contest: model.Contest,
+    topUsers : List[model.ContestEntry],
+    templateSoccerPlayerMap: HashMap[org.bson.types.ObjectId, model.TemplateSoccerPlayer],
+    templateSoccerTeamMap: HashMap[org.bson.types.ObjectId, model.TemplateSoccerTeam]
+)
 
 @import controllers.admin.routes._
+@import model._
 
 @main("Contest - Admin") {
 
 <h1 class="page-header">Contest: @contest.name</h1>
 
-<a href="@ContestController.checkFreeSlots(contest.contestId.toString())"><button class="btn btn-success">Check FreeSlots</button></a>
-<a href="@ContestController.checkTrueSkill(contest.contestId.toString())"><button class="btn btn-success">Check TrueSkill</button></a>
+<!--a href="@ContestController.checkFreeSlots(contest.contestId.toString())"><button class="btn btn-success">Check FreeSlots</button></a>
+<a href="@ContestController.checkTrueSkill(contest.contestId.toString())"><button class="btn btn-success">Check TrueSkill</button></a-->
 
-<h4>Num Entries: @contest.getNumEntries()</h4>
-<h4>Max Entries: @contest.maxEntries</h4>
-<h4>FreeSlots: @contest.freeSlots</h4>
+<h4><strong>StartDate:</strong> @GlobalDate.formatDate(contest.startDate)</h4>
+<h4><strong>Num Entries:</strong> @contest.getNumEntries()</h4>
+<h4><strong>Max Entries:</strong> @contest.maxEntries</h4>
+<!--h4>FreeSlots: @contest.freeSlots</h4-->
+
+@if(contest.state.isHistory()) {
+<h3 class="sub-header">TOP USERS</h3>
+
+    @for(c <- topUsers) {
+
+    <h4>@{c.position + 1}º - @c.nickName - @c.fantasyPoints points</h4>
+
+<table border="1" style="width:55%; text-align: center;">
+    <caption class="bg-info"> Alineación </caption>
+    <thead>
+    <tr>
+        <!--th>Template SoccerID</th-->
+        <th>FieldPos</th>
+        <th>Name</th>
+        <th>Team</th>
+        <th>FantasyPoints</th>
+        <th>Salary</th>
+    </tr>
+    </thead>
+    <tbody>
+    @for(p <- c.soccerIds) {
+    <tr>
+        <td>@contest.getInstanceSoccerPlayer(p).fieldPos</td>
+        <td>@templateSoccerPlayerMap(p).name</td>
+        <td>@templateSoccerTeamMap(contest.getInstanceSoccerPlayer(p).templateSoccerTeamId).name</td>
+        <td>@templateSoccerPlayerMap(p).stats(0).fantasyPoints</td>
+        <td>@contest.getInstanceSoccerPlayer(p).salary</td>
+    </tr>
+    }
+    </tbody>
+</table>
+
+@if(!c.substitutions.isEmpty()) {
+    <table border="1" style="width:100%; text-align: center;">
+    <caption class="bg-info"> Sustituciones </caption>
+    <thead>
+    <tr>
+        <!--th>Template SoccerID</th-->
+        <th>From: FieldPos</th>
+        <th>From: Name</th>
+        <th>From: Team</th>
+        <th>From: FantasyPoints</th>
+        <th>From: Salary</th>
+        <th>To: FieldPos</th>
+        <th>To: Name</th>
+        <th>To: Team</th>
+        <th>To: FantasyPoints</th>
+        <th>To: Salary</th>
+    </tr>
+    </thead>
+    <tbody>
+    @for(p <- c.substitutions) {
+    <tr>
+        <td>@contest.getInstanceSoccerPlayer(p.source).fieldPos</td>
+        <td>@templateSoccerPlayerMap(p.source).name</td>
+        <td>@templateSoccerTeamMap(contest.getInstanceSoccerPlayer(p.source).templateSoccerTeamId).name</td>
+        <td>@templateSoccerPlayerMap(p.source).stats(0).fantasyPoints</td>
+        <td>@contest.getInstanceSoccerPlayer(p.source).salary</td>
+        <td>@contest.getInstanceSoccerPlayer(p.target).fieldPos</td>
+        <td>@templateSoccerPlayerMap(p.target).name</td>
+        <td>@templateSoccerTeamMap(contest.getInstanceSoccerPlayer(p.target).templateSoccerTeamId).name</td>
+        <td>@templateSoccerPlayerMap(p.target).stats(0).fantasyPoints</td>
+        <td>@contest.getInstanceSoccerPlayer(p.target).salary</td>
+    </tr>
+    }
+    </tbody>
+    </table>
+}
+
+    <hr/>
+    }
+}
+
 }

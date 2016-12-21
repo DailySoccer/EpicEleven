@@ -33,6 +33,7 @@ GET         /points_translations/:eventType                                     
 GET         /users                                                               controllers.admin.UserController.index()
 GET         /user/:userId/transactions                                           controllers.admin.UserController.transactions(userId : String)
 GET         /users/ajax                                                          controllers.admin.UserController.indexAjax()
+GET         /users/participation                                                 controllers.admin.UserController.participation()
 
 GET         /refunds                                                             controllers.admin.RefundController.index()
 GET         /refund/:refundId                                                    controllers.admin.RefundController.apply(refundId)
@@ -71,6 +72,7 @@ GET         /template_contests/clone/:templateContestId                         
 GET         /template_contest/publish/:templateContestId                         controllers.admin.TemplateContestController.publish(templateContestId : String)
 GET         /template_contest/delete/:templateContestId                          controllers.admin.TemplateContestController.destroy(templateContestId : String)
 GET         /template_contest/:templateContestId                                 controllers.admin.TemplateContestController.show(templateContestId : String)
+GET         /template_contest/soccerplayers_stats/:templateContestId             controllers.admin.TemplateContestController.showSoccerPlayersStats(templateContestId : String)
 GET         /template_contest/managerLevels/:templateContestId                   controllers.admin.TemplateContestController.showManagerLevels(templateContestId : String)
 GET         /template_contest/maintain_num_instances/:templateContestId          controllers.admin.TemplateContestController.maintainNumInstances(templateContestId : String)
 
@@ -128,12 +130,16 @@ GET         /snapshots                                                          
 GET         /save_snapshot                                                       controllers.admin.SnapshotController.saveSnapshot()
 GET         /load_snapshot                                                       controllers.admin.SnapshotController.loadSnapshot()
 GET         /snapshot_dump                                                       controllers.admin.SnapshotController.snapshotDump()
+GET         /snapshot_dump                                                       controllers.admin.SnapshotController.snapshotDump()
 GET         /snapshot_restore                                                    controllers.admin.SnapshotController.snapshotRestore()
 
 GET         /start_stop_refresh                                                  controllers.admin.RefresherController.startStopRefresh()
 GET         /refresher                                                           controllers.admin.RefresherController.index()
 GET         /refresher_in_progress                                               controllers.admin.RefresherController.inProgress()
 GET         /last_date                                                           controllers.admin.RefresherController.lastDate()
+
+GET         /maintenance                                                         controllers.admin.MaintenanceController.index()
+GET         /maintenance/apply                                                   controllers.admin.MaintenanceController.apply()
 
 GET         /migrations                                                          controllers.admin.MigrationsController.index()
 GET         /migration/:type                                                     controllers.admin.MigrationsController.apply(type)

@@ -8,6 +8,7 @@ import model.User;
 import model.accounting.AccountingTran;
 import model.opta.OptaCompetition;
 import org.bson.types.ObjectId;
+import org.joda.time.DateTime;
 import play.cache.Cached;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -15,9 +16,7 @@ import play.mvc.With;
 import utils.ListUtils;
 import utils.MoneyUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class UserController extends Controller {
     @Cached(key = "UserController.index", duration = 60 * 60)
@@ -34,6 +33,79 @@ public class UserController extends Controller {
         User user = User.findOne(userId);
         List<AccountingTran> accountingTrans = AccountingTran.findAllFromUserId(userId);
         return ok(views.html.user_transactions.render(user, AccountingTran.findAllFromUserId(userId)));
+    }
+
+    public static Result participation() {
+        List<HashMap<String, String>> participation = new ArrayList<>();
+
+        DateTime currentTime = new DateTime(GlobalDate.getCurrentDate());
+        int dayOfWeek = currentTime.dayOfWeek().get();
+        play.Logger.debug("DayOfWeek: {}", dayOfWeek );
+
+        currentTime = currentTime.minusDays(dayOfWeek - 1);
+        currentTime = currentTime.withTime(1, 0, 0, 0);
+
+        Date startDate = currentTime.toDate();
+        Date endDate = currentTime.plusDays(30).toDate();
+
+        while (endDate.after(OptaCompetition.SEASON_DATE_START)) {
+
+            // Buscamos los torneos entre las fechas deseadas
+            List<Contest> contests = ListUtils.asList(Model.contests()
+                    .find("{startDate: {$gte: #, $lt: #}}", startDate, endDate)
+                    .projection("{ \"contestEntries.userId\": 1 }")
+                    .as(Contest.class));
+
+            int total = 0;
+
+            // Contabilizamos los usuarios únicos
+            Set<ObjectId> uniques = new HashSet<>();
+            for (Contest contest : contests) {
+                contest.contestEntries.forEach(contestEntry -> uniques.add(contestEntry.userId));
+                total += contest.contestEntries.size();
+            }
+
+            // Averiguamos su TrueSkill
+            List<User> users = ListUtils.asList(Model.users()
+                    .find("{_id: {$in: #}}", uniques)
+                    .projection("{ trueSkill : 1, createdAt : 1 }")
+                    .as(User.class));
+
+            int newUsers = 0;
+            int[] trueSkill = {0, 0, 0, 0, 0};
+            for (User user : users) {
+                int index = user.trueSkill / 1000;
+                if (user.trueSkill < 1500) trueSkill[0]++;
+                else if (user.trueSkill < 3000) trueSkill[1]++;
+                else if (user.trueSkill < 4000) trueSkill[2]++;
+                else if (user.trueSkill < 5000) trueSkill[3]++;
+                else trueSkill[4]++;
+
+                if (user.createdAt.after(startDate)) {
+                    newUsers++;
+                }
+            }
+
+            // Registramos la estadística
+            HashMap<String, String> stats = new HashMap<>();
+            stats.put("startDate", GlobalDate.formatDate(startDate));
+            stats.put("users", String.valueOf(uniques.size()));
+            stats.put("newUsers", String.valueOf(newUsers));
+            stats.put("total", String.valueOf(total));
+            stats.put("NOVATO", String.valueOf(trueSkill[0]));
+            stats.put("AMATEUR", String.valueOf(trueSkill[1]));
+            stats.put("PROFESIONAL", String.valueOf(trueSkill[2]));
+            stats.put("CRACK", String.valueOf(trueSkill[3]));
+            stats.put("ESTRELLA", String.valueOf(trueSkill[4]));
+            participation.add(stats);
+
+            currentTime = currentTime.minusDays(7);
+            endDate = startDate;
+            startDate = currentTime.toDate();
+        }
+
+
+        return ok(views.html.users_participation.render(participation));
     }
 
     public static Result indexAjax() {

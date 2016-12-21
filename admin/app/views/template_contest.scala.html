@@ -68,6 +68,9 @@
 
 <h1 class="page-header">Template Contest</h1>
 
+@if(template_contest.state.isHistory()) {
+    <a href="@TemplateContestController.showSoccerPlayersStats(template_contest.templateContestId.toString())"><button class="btn btn-success">SoccerPlayer Stats</button></a>
+}
 <a href="@TemplateContestController.showManagerLevels(template_contest.templateContestId.toString())"><button class="btn btn-success">Manager Levels</button></a>
 <a href="@TemplateContestController.maintainNumInstances(template_contest.templateContestId.toString())"><button class="btn btn-success">Maintain Num Instances</button></a>
 
