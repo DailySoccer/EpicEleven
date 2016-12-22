@@ -6,6 +6,10 @@ import model.GlobalDate;
 import model.Model;
 import model.User;
 import model.accounting.AccountingTran;
+import model.accounting.AccountOp;
+import org.joda.money.Money;
+import utils.MoneyUtils;
+
 import model.opta.OptaCompetition;
 import org.bson.types.ObjectId;
 import org.joda.time.DateTime;
@@ -17,6 +21,7 @@ import utils.ListUtils;
 import utils.MoneyUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class UserController extends Controller {
     @Cached(key = "UserController.index", duration = 60 * 60)
@@ -40,7 +45,6 @@ public class UserController extends Controller {
 
         DateTime currentTime = new DateTime(GlobalDate.getCurrentDate());
         int dayOfWeek = currentTime.dayOfWeek().get();
-        play.Logger.debug("DayOfWeek: {}", dayOfWeek );
 
         currentTime = currentTime.minusDays(dayOfWeek - 1);
         currentTime = currentTime.withTime(1, 0, 0, 0);
@@ -106,6 +110,111 @@ public class UserController extends Controller {
 
 
         return ok(views.html.users_participation.render(participation));
+    }
+
+    public static Result transactionsStats() {
+        List<HashMap<String, String>> transactions = new ArrayList<>();
+
+        DateTime currentTime = new DateTime(GlobalDate.getCurrentDate());
+        int dayOfWeek = currentTime.dayOfWeek().get();
+
+        currentTime = currentTime.minusDays(dayOfWeek - 1);
+        currentTime = currentTime.withTime(1, 0, 0, 0);
+
+        Date startDate = currentTime.toDate();
+        Date endDate = currentTime.plusDays(30).toDate();
+
+        Money moneyTotal = MoneyUtils.zero;
+        Money moneyPrizeTotal = MoneyUtils.zero;
+        Money moneyOrderTotal = MoneyUtils.zero;
+        Money moneyEnterContestTotal = MoneyUtils.zero;
+        Money moneyBonusTotal = MoneyUtils.zero;
+        Money moneyRewardTotal = MoneyUtils.zero;
+
+        while (endDate.after(OptaCompetition.SEASON_DATE_START)) {
+
+            // Buscamos los torneos entre las fechas deseadas
+            List<AccountingTran> accountings = ListUtils.asList(Model.accountingTransactions()
+                    .find("{currencyCode: \"AUD\", createdAt: {$gte: #, $lt: #}}", startDate, endDate)
+                    .as(AccountingTran.class));
+
+            Money moneyPrize = moneyInTransactions(accountings.stream()
+                    .filter(accounting -> accounting.type.equals(AccountingTran.TransactionType.PRIZE))
+                    .collect(Collectors.toList()));
+            moneyPrizeTotal = moneyPrizeTotal.plus(moneyPrize);
+
+            Money moneyOrder = moneyInTransactions(accountings.stream()
+                    .filter(accounting -> accounting.type.equals(AccountingTran.TransactionType.ORDER))
+                    .collect(Collectors.toList()));
+            moneyOrderTotal = moneyOrderTotal.plus(moneyOrder);
+
+            Money moneyBonus = moneyInTransactions(accountings.stream()
+                    .filter(accounting -> accounting.type.equals(AccountingTran.TransactionType.BONUS))
+                    .collect(Collectors.toList()));
+            moneyBonusTotal = moneyBonusTotal.plus(moneyBonus);
+
+            Money moneyReward = moneyInTransactions(accountings.stream()
+                    .filter(accounting -> accounting.type.equals(AccountingTran.TransactionType.REWARD))
+                    .collect(Collectors.toList()));
+            moneyRewardTotal = moneyRewardTotal.plus(moneyReward);
+
+            Money moneyEnterContest = moneyInTransactions(accountings.stream()
+                    .filter(accounting -> accounting.type.equals(AccountingTran.TransactionType.ENTER_CONTEST))
+                    .collect(Collectors.toList()));
+
+            Money moneyCancelContest = moneyInTransactions(accountings.stream()
+                    .filter(accounting -> accounting.type.equals(AccountingTran.TransactionType.CANCEL_CONTEST))
+                    .collect(Collectors.toList()));
+            Money moneyCancelContestEntry = moneyInTransactions(accountings.stream()
+                    .filter(accounting -> accounting.type.equals(AccountingTran.TransactionType.CANCEL_CONTEST_ENTRY))
+                    .collect(Collectors.toList()));
+            moneyEnterContest = moneyEnterContest.plus(moneyCancelContest).plus(moneyCancelContestEntry);
+            // play.Logger.debug("Cancel: {} ({} + {})", moneyCancelContest.plus(moneyCancelContestEntry).getAmount(), moneyCancelContest.getAmount(), moneyCancelContestEntry.getAmount());
+
+            moneyEnterContestTotal = moneyEnterContestTotal.plus(moneyEnterContest);
+
+            Money moneyTotalWeek = moneyPrize.plus(moneyOrder).plus(moneyEnterContest).plus(moneyBonus).plus(moneyReward);
+            moneyTotal = moneyTotal.plus(moneyTotalWeek);
+
+            // Registramos la estadística
+            HashMap<String, String> stats = new HashMap<>();
+            stats.put("startDate", GlobalDate.formatDate(startDate));
+            stats.put("total", String.valueOf(moneyTotalWeek.getAmount()));
+            stats.put("prize", String.valueOf(moneyPrize.getAmount()));
+            stats.put("order", String.valueOf(moneyOrder.getAmount()));
+            stats.put("enter_contest", String.valueOf(moneyEnterContest.getAmount()));
+            stats.put("bonus", String.valueOf(moneyBonus.getAmount()));
+            stats.put("reward", String.valueOf(moneyReward.getAmount()));
+            transactions.add(stats);
+
+            currentTime = currentTime.minusDays(7);
+            endDate = startDate;
+            startDate = currentTime.toDate();
+        }
+
+        HashMap<String, String> stats = new HashMap<>();
+        stats.put("startDate", "");
+        stats.put("total", String.valueOf(moneyTotal.getAmount()));
+        stats.put("prize", String.valueOf(moneyPrizeTotal.getAmount()));
+        stats.put("order", String.valueOf(moneyOrderTotal.getAmount()));
+        stats.put("enter_contest", String.valueOf(moneyEnterContestTotal.getAmount()));
+        stats.put("bonus", String.valueOf(moneyBonusTotal.getAmount()));
+        stats.put("reward", String.valueOf(moneyRewardTotal.getAmount()));
+        transactions.add(stats);
+
+        return ok(views.html.transactions_stats.render(transactions));
+    }
+
+    private static Money moneyInTransactions(List<AccountingTran> accountings) {
+        Money result = MoneyUtils.zero;
+
+        for (AccountingTran accounting : accountings) {
+            for (AccountOp account : accounting.accountOps) {
+                result = result.plus(account.value);
+            }
+        }
+
+        return result;
     }
 
     public static Result indexAjax() {

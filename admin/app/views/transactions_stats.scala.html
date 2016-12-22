@@ -1,0 +1,40 @@
+@(
+    transactions: List[HashMap[String, String]]
+)
+
+@import controllers.admin.routes._
+@import model._
+
+@main("Participation Stats - Admin") {
+
+<h1 class="page-header">Transaction Stats</h1>
+
+<table border="1" style="width:95%; text-align: center;">
+    <caption class="bg-info"> Stats </caption>
+    <thead>
+    <tr>
+        <th>StartDate</th>
+        <th>Total</th>
+        <th>Bonus</th>
+        <th>Reward</th>
+        <th>Enter Contest</th>
+        <th>Prize</th>
+        <th>Order</th>
+    </tr>
+    </thead>
+    <tbody>
+    @for(stats <- transactions) {
+    <tr>
+        <td>@stats("startDate")</td>
+        <td>@stats("total")</td>
+        <td>@stats("bonus")</td>
+        <td>@stats("reward")</td>
+        <td>@stats("enter_contest")</td>
+        <td>@stats("prize")</td>
+        <td>@stats("order")</td>
+    </tr>
+    }
+    </tbody>
+</table>
+
+}

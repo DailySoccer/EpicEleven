@@ -34,6 +34,7 @@ GET         /users                                                              
 GET         /user/:userId/transactions                                           controllers.admin.UserController.transactions(userId : String)
 GET         /users/ajax                                                          controllers.admin.UserController.indexAjax()
 GET         /users/participation                                                 controllers.admin.UserController.participation()
+GET         /users/transactions_stats                                            controllers.admin.UserController.transactionsStats()
 
 GET         /refunds                                                             controllers.admin.RefundController.index()
 GET         /refund/:refundId                                                    controllers.admin.RefundController.apply(refundId)
