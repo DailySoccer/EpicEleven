@@ -50,6 +50,10 @@ public class MainController extends Controller {
     	return ok("Pong");
     }
 
+    public static Result cacheStats() {
+        return ok(CacheManager.stats());
+    }
+
     // Toda nuestra API va con preflight. No hemos tenido mas remedio, porque se nos planteaba el siguiente problema:
     // Para evitar el preflight, solo puedes mandar las "simple-headers'. Nuestro sessionToken entonces lo mandamos
     // en el POST dentro del www-form-urlencoded, ok, pero en el GET dentro de la queryString => malo para la seguridad.

@@ -92,6 +92,7 @@ object build extends Build {
                     ,"com.stormpath.sdk" % "stormpath-sdk-httpclient" % "1.0.RC3"
                     ,"com.paypal.sdk" % "paypal-core" % "1.7.0"
                     ,"com.paypal.sdk" % "rest-api-sdk" % "1.4.1"
+                    ,"com.github.ben-manes.caffeine" % "caffeine" % "2.3.5"
                   ))
                  .enablePlugins(PlayJava)
                  .aggregate(common)
