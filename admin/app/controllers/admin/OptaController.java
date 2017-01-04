@@ -13,6 +13,12 @@ import utils.ListUtils;
 import java.util.List;
 
 public class OptaController extends Controller {
+    public static Result updateCompetition(String competitionId) {
+        OptaCompetitionUpdater updater = new OptaCompetitionUpdater(OptaCompetition.SEASON_DATE_START, "2016", competitionId);
+        updater.run();
+        return optaCompetitions();
+    }
+
     public static Result optaCompetitions() {
         List<OptaCompetition> optaCompetitions = ListUtils.asList(Model.optaCompetitions().find().as(OptaCompetition.class));
         return ok(views.html.opta_competition_list.render(optaCompetitions));
