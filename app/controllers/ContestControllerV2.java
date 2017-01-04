@@ -2,6 +2,8 @@ package controllers;
 
 import actions.AllowCors;
 import actions.UserAuthenticated;
+import akka.actor.ActorRef;
+import akka.actor.ActorSelection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import model.*;
@@ -9,6 +11,7 @@ import org.bson.types.ObjectId;
 import play.Logger;
 import play.cache.Cache;
 import play.cache.Cached;
+import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.mvc.With;
@@ -18,8 +21,16 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
+import akka.actor.*;
+import play.mvc.*;
+import play.libs.Akka;
+import play.libs.F.Promise;
+
+import static akka.pattern.Patterns.ask;
+
 @AllowCors.Origin
 public class ContestControllerV2 extends Controller {
+    private final static int ACTOR_TIMEOUT = 10000;
     private final static int CACHE_ACTIVE_TEMPLATE_CONTESTS = 60 * 60 * 8;      // 8 horas
     private final static int CACHE_COUNT_ACTIVE_TEMPLATE_CONTESTS = 60 * 30;    // 30 minutos
     private final static int CACHE_ACTIVE_CONTESTS = 60;
@@ -42,39 +53,11 @@ public class ContestControllerV2 extends Controller {
     /*
      * Devuelve la lista de template Contests disponibles
      */
-    public static Result getActiveTemplateContests() throws Exception {
-
-        Map<String, Object> result = Cache.getOrElse("ActiveTemplateContests", new Callable<Map<String, Object>>() {
-            @Override
-            public Map<String, Object> call() throws Exception {
-                return findActiveTemplateContests();
-            }
-        }, CACHE_ACTIVE_TEMPLATE_CONTESTS);
-
-        // Necesitamos actualizar la caché?
-        long countTemplateContest = TemplateContest.countAllActiveOrLive();
-        if (result.containsKey("template_contests") && result.get("template_contests") instanceof ArrayList){
-            List<?> list = (List<?>) result.get("template_contests");
-            if (list != null && list.size() != countTemplateContest) {
-                result = findActiveTemplateContests();
-
-                Cache.set("ActiveTemplateContests", result);
-                Logger.debug("getActiveTemplateContests: cache INVALID");
-            }
-        }
-
-        return new ReturnHelper(result).toResult(JsonViews.Extended.class);
+    public static Promise<Result> getActiveTemplateContests() throws Exception {
+        ActorRef actor = CacheManager.getActiveTemplateContests();
+        return F.Promise.wrap(ask(actor, "getActiveTemplateContests", ACTOR_TIMEOUT))
+                .map(response -> new ReturnHelper(response).toResult(JsonViews.Extended.class));
     }
-
-    private static Map<String, Object> findActiveTemplateContests() {
-        List<TemplateContest> templateContests = TemplateContest.findAllActiveOrLive();
-        List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.gatherFromTemplateContests(templateContests);
-        return ImmutableMap.of(
-                "template_contests", templateContests,
-                "match_events", matchEvents
-        );
-    }
-
 
     @With(AllowCors.CorsAction.class)
     @Cached(key = "CountActiveTemplateContests", duration = CACHE_COUNT_ACTIVE_TEMPLATE_CONTESTS)
