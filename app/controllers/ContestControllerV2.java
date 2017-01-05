@@ -54,46 +54,39 @@ public class ContestControllerV2 extends Controller {
      * Devuelve la lista de template Contests disponibles
      */
     public static Promise<Result> getActiveTemplateContests() throws Exception {
-        ActorRef actor = CacheManager.getActiveTemplateContests();
-        return F.Promise.wrap(ask(actor, "getActiveTemplateContests", ACTOR_TIMEOUT))
+        return CacheManager.getActiveTemplateContests()
                 .map(response -> new ReturnHelper(response).toResult(JsonViews.Extended.class));
     }
 
-    @With(AllowCors.CorsAction.class)
-    @Cached(key = "CountActiveTemplateContests", duration = CACHE_COUNT_ACTIVE_TEMPLATE_CONTESTS)
-    public static Result countActiveTemplateContests() {
-        return new ReturnHelper(ImmutableMap.of(
-                "count", TemplateContest.countAllActiveOrLive()
-        )).toResult();
+    public static Promise<Result> countActiveTemplateContests() {
+        return CacheManager.countActiveTemplateContests()
+                .map(response -> (Result) response);
     }
 
-    public static Result getActiveContestsV2() throws Exception {
-        List<Contest> contests = Cache.getOrElse("ActiveContestsV2", new Callable<List<Contest>>() {
-            @Override
-            public List<Contest> call() throws Exception {
-                return Contest.findAllActiveNotFull(JsonViews.ActiveContestsV2.class);
-                //return Contest.findAllActive(JsonViews.ActiveContests.class);
-            }
-        }, CACHE_ACTIVE_CONTESTS);
+    public static Promise<Result> getActiveContestsV2() throws Exception {
+        return CacheManager.getActiveContestsV2()
+                .map( response -> {
+                    List<Contest> contests = (List<Contest>) response;
 
-        // Filtrar los contests que ya están completos
-        List<Contest> contestsNotFull = new ArrayList<>(contests.size());
-        for (Contest contest: contests) {
-            if (!contest.isFull() && !contest.isCreatedByUser()) {
-                contestsNotFull.add(contest);
-            }
-        }
+                    // Filtrar los contests que ya están completos
+                    List<Contest> contestsNotFull = new ArrayList<>(contests.size());
+                    for (Contest contest: contests) {
+                        if (!contest.isFull() && !contest.isCreatedByUser()) {
+                            contestsNotFull.add(contest);
+                        }
+                    }
 
-        User theUser = SessionUtils.getUserFromRequest(Controller.ctx().request());
-        if (theUser != null) {
-            // Quitamos los torneos en los que esté inscrito el usuario
-            List<ObjectId> contestIds = contestsNotFull.stream().map(contest -> contest.contestId).collect(Collectors.toList());
-            List<Contest> contestsRegistered = Contest.findSignupUser(contestIds, theUser.userId);
+                    User theUser = SessionUtils.getUserFromRequest(Controller.ctx().request());
+                    if (theUser != null) {
+                        // Quitamos los torneos en los que esté inscrito el usuario
+                        List<ObjectId> contestIds = contestsNotFull.stream().map(contest -> contest.contestId).collect(Collectors.toList());
+                        List<Contest> contestsRegistered = Contest.findSignupUser(contestIds, theUser.userId);
 
-            contestsNotFull.removeIf( contest -> contestsRegistered.stream().anyMatch( registered -> registered.contestId.equals(contest.contestId) ));
-        }
+                        contestsNotFull.removeIf( contest -> contestsRegistered.stream().anyMatch( registered -> registered.contestId.equals(contest.contestId) ));
+                    }
 
-        return new ReturnHelper(ImmutableMap.of("contests", contestsNotFull)).toResult(JsonViews.ActiveContestsV2.class);
+                    return new ReturnHelper(ImmutableMap.of("contests", contestsNotFull)).toResult(JsonViews.ActiveContestsV2.class);
+                });
     }
 
     @UserAuthenticated
@@ -105,71 +98,68 @@ public class ContestControllerV2 extends Controller {
     }
 
     @UserAuthenticated
-    public static Result getMyLiveContestsV2() throws Exception {
+    public static Promise<Result> getMyLiveContestsV2() throws Exception {
         User theUser = (User)ctx().args.get("User");
 
-        // Comprobar si existe un torneo en live, antes de hacer una query más costosa (y específico a un usuario)
-        boolean existsLive = Cache.getOrElse("ExistsContestInLive", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return TemplateContest.existsAnyInState(ContestState.LIVE);
-            }
-        }, CACHE_EXISTS_LIVE);
+        return CacheManager.existsContestInLive()
+                .map(response -> {
+                    boolean existsLive = (Boolean) response;
 
-        if (existsLive) {
-            final List<Contest> myLiveContests = new ArrayList<>();
+                    if (existsLive) {
+                        final List<Contest> myLiveContests = new ArrayList<>();
 
-            // Solicitamos los contests en los que estamos apuntados (incluye información de tiempo de actualización del "live")
-            List<Contest> myLiveContestIds = Contest.findMyLiveUpdated(theUser.userId);
+                        // Solicitamos los contests en los que estamos apuntados (incluye información de tiempo de actualización del "live")
+                        List<Contest> myLiveContestIds = Contest.findMyLiveUpdated(theUser.userId);
 
-            // Contests que tendremos que obtener
-            List<ObjectId> myLiveIdsToUpdate = new ArrayList<>();
+                        // Contests que tendremos que obtener
+                        List<ObjectId> myLiveIdsToUpdate = new ArrayList<>();
 
-            myLiveContestIds.forEach( contest -> {
-                Contest contestCached = (Contest) Cache.get(contest.contestId.toString().concat("live"));
-                if (contestCached != null) {
-                    // El tiempo de caché está correctamente actualizada ?
-                    if (contestCached.liveUpdatedAt.compareTo(contest.liveUpdatedAt) >= 0) {
-                        Logger.debug("myLiveContests: {} OK : {} >= {}",
-                                contest.contestId, GlobalDate.formatDate(contestCached.liveUpdatedAt), GlobalDate.formatDate(contest.liveUpdatedAt));
-                        myLiveContests.add(contestCached);
-                    } else {
-                        Logger.debug("myLiveContests: {} FAILED : {} < {}",
-                                contest.contestId, GlobalDate.formatDate(contestCached.liveUpdatedAt), GlobalDate.formatDate(contest.liveUpdatedAt));
-                        myLiveIdsToUpdate.add(contest.contestId);
+                        myLiveContestIds.forEach(contest -> {
+                            Contest contestCached = (Contest) Cache.get(contest.contestId.toString().concat("live"));
+                            if (contestCached != null) {
+                                // El tiempo de caché está correctamente actualizada ?
+                                if (contestCached.liveUpdatedAt.compareTo(contest.liveUpdatedAt) >= 0) {
+                                    Logger.debug("myLiveContests: {} OK : {} >= {}",
+                                            contest.contestId, GlobalDate.formatDate(contestCached.liveUpdatedAt), GlobalDate.formatDate(contest.liveUpdatedAt));
+                                    myLiveContests.add(contestCached);
+                                } else {
+                                    Logger.debug("myLiveContests: {} FAILED : {} < {}",
+                                            contest.contestId, GlobalDate.formatDate(contestCached.liveUpdatedAt), GlobalDate.formatDate(contest.liveUpdatedAt));
+                                    myLiveIdsToUpdate.add(contest.contestId);
+                                }
+                            } else {
+                                myLiveIdsToUpdate.add(contest.contestId);
+                            }
+                        });
+
+                        List<Contest> myLiveContestsToUpdate = getLiveInfo(myLiveIdsToUpdate);
+                        myLiveContests.addAll(myLiveContestsToUpdate);
+
+                        List<Contest> result = myLiveContests.stream().map(contest -> {
+                            // Clonamos los torneos a devolver, para modificarlos y no afectar a lo registrado en la caché
+                            Contest contestFiltered = new Contest(contest);
+
+                            contestFiltered.contestId = contest.contestId;
+
+                            // Eliminar los contestEntries que no sean el usuario
+                            contestFiltered.contestEntries = contest.contestEntries.stream().filter(contestEntry -> contestEntry.userId.equals(theUser.userId)).collect(Collectors.toList());
+
+                            // Una vez calculado el ranking ya no estamos intesados en enviarlos al app
+                            contestFiltered.templateMatchEventIds = null;
+
+                            return contestFiltered;
+                        }).collect(Collectors.toList());
+
+                        return new ReturnHelperWithAttach()
+                                .attachObject("contests", result, JsonViews.MyLiveContestsV2.class)
+                                .toResult();
                     }
-                } else {
-                    myLiveIdsToUpdate.add(contest.contestId);
-                }
-            });
 
-            List<Contest> myLiveContestsToUpdate = getLiveInfo(myLiveIdsToUpdate);
-            myLiveContests.addAll(myLiveContestsToUpdate);
-
-            List<Contest> result = myLiveContests.stream().map( contest -> {
-                // Clonamos los torneos a devolver, para modificarlos y no afectar a lo registrado en la caché
-                Contest contestFiltered = new Contest(contest);
-
-                contestFiltered.contestId = contest.contestId;
-
-                // Eliminar los contestEntries que no sean el usuario
-                contestFiltered.contestEntries = contest.contestEntries.stream().filter( contestEntry -> contestEntry.userId.equals(theUser.userId) ).collect(Collectors.toList());
-
-                // Una vez calculado el ranking ya no estamos intesados en enviarlos al app
-                contestFiltered.templateMatchEventIds = null;
-
-                return contestFiltered;
-            }).collect(Collectors.toList());
-
-            return new ReturnHelperWithAttach()
-                    .attachObject("contests", result, JsonViews.MyLiveContestsV2.class)
-                    .toResult();
-        }
-
-        // Si no existe ningún torneo Live, no puede existir ninguno en el que esté el usuario
-        return new ReturnHelper(ImmutableMap.of(
-                "contests", new ArrayList<Contest>()
-        )).toResult();
+                    // Si no existe ningún torneo Live, no puede existir ninguno en el que esté el usuario
+                    return new ReturnHelper(ImmutableMap.of(
+                            "contests", new ArrayList<Contest>()
+                    )).toResult();
+                });
     }
 
     @UserAuthenticated
@@ -227,14 +217,9 @@ public class ContestControllerV2 extends Controller {
         }, CACHE_CONTEST_INFO);
     }
 
-    public static Result getActiveContestV2(String contestId) throws Exception {
-        return Cache.getOrElse("ActiveContestV2-".concat(contestId), new Callable<Result>() {
-            @Override
-            public Result call() throws Exception {
-                Contest contest = Contest.findOne(new ObjectId(contestId), JsonViews.ActiveContest.class);
-                return new ReturnHelper(ImmutableMap.of("contest", contest)).toResult(JsonViews.ActiveContest.class);
-            }
-        }, CACHE_ACTIVE_CONTEST);
+    public static Promise<Result> getActiveContestV2(String contestId) throws Exception {
+        return CacheManager.getActiveContestV2(contestId)
+                .map(response -> (Result) response);
     }
 
     @UserAuthenticated

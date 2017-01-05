@@ -15,6 +15,7 @@ import play.data.Form;
 import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
+import play.libs.F.Promise;
 import play.mvc.With;
 import utils.*;
 
@@ -266,19 +267,16 @@ public class ContestController extends Controller {
     }
 
     @UserAuthenticated
-    public static Result countMyLiveContests() throws Exception {
+    public static Promise<Result> countMyLiveContests() throws Exception {
         User theUser = (User)ctx().args.get("User");
+        return CacheManager.existsContestInLive()
+                .map(response -> {
+                    boolean existsLive = (Boolean) response;
 
-        boolean existsLive = Cache.getOrElse("ExistsContestInLive", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return TemplateContest.existsAnyInState(ContestState.LIVE);
-            }
-        }, CACHE_EXISTS_LIVE);
-
-        long count = !existsLive ? 0 : Contest.countByState(theUser.userId, ContestState.LIVE);
-        return new ReturnHelper(ImmutableMap.of("count", count))
-                .toResult();
+                    long count = !existsLive ? 0 : Contest.countByState(theUser.userId, ContestState.LIVE);
+                    return new ReturnHelper(ImmutableMap.of("count", count))
+                            .toResult();
+                });
     }
 
     @UserAuthenticated

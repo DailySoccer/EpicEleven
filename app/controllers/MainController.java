@@ -2,6 +2,7 @@ package controllers;
 
 import actions.AllowCors;
 import actions.UserAuthenticated;
+import akka.actor.ActorRef;
 import com.google.common.collect.ImmutableMap;
 import model.*;
 import model.opta.OptaCompetition;
@@ -13,6 +14,7 @@ import play.cache.Cached;
 import play.data.Form;
 import play.data.validation.Constraints;
 import play.libs.F;
+import play.libs.F.Promise;
 import play.libs.ws.WS;
 import play.mvc.Controller;
 import play.mvc.Result;
@@ -25,11 +27,13 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
+import static akka.pattern.Patterns.ask;
 import static play.data.Form.form;
 
 @AllowCors.Origin
 public class MainController extends Controller {
 
+    private final static int ACTOR_TIMEOUT = 10000;
     private final static String MAINTENANCE = "maintenance";
     private final static int CACHE_LEADERBOARD = 12 * 60 * 60;              // 12 horas
     private final static int CACHE_SOCCERPLAYER_BY_COMPETITION = 15 * 60;   // 15 minutos
@@ -250,75 +254,27 @@ public class MainController extends Controller {
     /*
      * Obtener la información sobre un InstanceSoccerPlayer (estadísticas,...)
      */
-    public static Result getInstanceSoccerPlayerInfo(String contestId, String templateSoccerPlayerId) {
-        InstanceSoccerPlayer instanceSoccerPlayer = InstanceSoccerPlayer.findOne(new ObjectId(contestId), new ObjectId(templateSoccerPlayerId));
-        TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(templateSoccerPlayerId));
+    public static Promise<Result> getInstanceSoccerPlayerInfo(String contestId, String templateSoccerPlayerId) {
+        return CacheManager.getTemplateSoccerPlayerInfo(templateSoccerPlayerId)
+                .map(response -> {
+                    InstanceSoccerPlayer instanceSoccerPlayer = InstanceSoccerPlayer.findOne(new ObjectId(contestId), new ObjectId(templateSoccerPlayerId));
 
-        Set<ObjectId> templateSoccerTeamIds = new HashSet<>();
-
-        // Añadimos el equipo en el que juega actualmente el futbolista
-        templateSoccerTeamIds.add(templateSoccerPlayer.templateTeamId);
-
-        // Añadimos los equipos CONTRA los que ha jugado el futbolista
-        for (SoccerPlayerStats stats : templateSoccerPlayer.stats) {
-            templateSoccerTeamIds.add(stats.opponentTeamId);
-        }
-
-        // Incluimos el próximo partido que jugará el futbolista (y sus equipos)
-        TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findNextMatchEvent(templateSoccerPlayer.templateTeamId);
-        if (templateMatchEvent != null) {
-            templateSoccerTeamIds.add(templateMatchEvent.templateSoccerTeamAId);
-            templateSoccerTeamIds.add(templateMatchEvent.templateSoccerTeamBId);
-        }
-
-        List<TemplateSoccerTeam> templateSoccerTeams = !templateSoccerTeamIds.isEmpty() ? TemplateSoccerTeam.findAll(ListUtils.asList(templateSoccerTeamIds))
-                : new ArrayList<TemplateSoccerTeam>();
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("soccer_teams", templateSoccerTeams);
-        data.put("soccer_player", templateSoccerPlayer);
-        data.put("instance_soccer_player", instanceSoccerPlayer);
-        if (templateMatchEvent != null) {
-            data.put("match_event", templateMatchEvent);
-        }
-        return new ReturnHelper(data).toResult(JsonViews.Statistics.class);
+                    Map<String, Object> data = (Map<String, Object>) response;
+                    data.put("instance_soccer_player", instanceSoccerPlayer);
+                    return new ReturnHelper(data).toResult(JsonViews.Statistics.class);
+                });
     }
 
     /*
      * Obtener la información sobre un SoccerPlayer (estadísticas,...)
      */
-    public static Result getTemplateSoccerPlayerInfo(String templateSoccerPlayerId) {
-
-        TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(templateSoccerPlayerId));
-
-        Set<ObjectId> templateSoccerTeamIds = new HashSet<>();
-
-        // Añadimos el equipo en el que juega actualmente el futbolista
-        templateSoccerTeamIds.add(templateSoccerPlayer.templateTeamId);
-
-        // Añadimos los equipos CONTRA los que ha jugado el futbolista
-        for (SoccerPlayerStats stats : templateSoccerPlayer.stats) {
-            templateSoccerTeamIds.add(stats.opponentTeamId);
-        }
-
-        // Incluimos el próximo partido que jugará el futbolista (y sus equipos)
-        TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findNextMatchEvent(templateSoccerPlayer.templateTeamId);
-        if (templateMatchEvent != null) {
-            templateSoccerTeamIds.add(templateMatchEvent.templateSoccerTeamAId);
-            templateSoccerTeamIds.add(templateMatchEvent.templateSoccerTeamBId);
-        }
-
-        List<TemplateSoccerTeam> templateSoccerTeams = !templateSoccerTeamIds.isEmpty() ? TemplateSoccerTeam.findAll(ListUtils.asList(templateSoccerTeamIds))
-                : new ArrayList<TemplateSoccerTeam>();
-
-        Map<String, Object> data = new HashMap<>();
-        data.put("soccer_teams", templateSoccerTeams);
-        data.put("soccer_player", templateSoccerPlayer);
-        data.put("instance_soccer_player", new InstanceSoccerPlayer(templateSoccerPlayer));
-        if (templateMatchEvent != null) {
-            data.put("match_event", templateMatchEvent);
-        }
-        return new ReturnHelper(data).toResult(JsonViews.Statistics.class);
+    public static Promise<Result> getTemplateSoccerPlayerInfo(String templateSoccerPlayerId) {
+        return CacheManager.getTemplateSoccerPlayerInfo(templateSoccerPlayerId)
+                .map(response -> {
+                    Map<String, Object> data = (Map<String, Object>) response;
+                    data.put("instance_soccer_player", new InstanceSoccerPlayer((TemplateSoccerPlayer) data.get("soccer_player")));
+                    return new ReturnHelper(data).toResult(JsonViews.Statistics.class);
+                });
     }
 
     @With(AllowCors.CorsAction.class)
@@ -340,92 +296,29 @@ public class MainController extends Controller {
                 .toResult(JsonViews.Extended.class);
     }
 
-    @With(AllowCors.CorsAction.class)
-    @Cached(key = "TemplateSoccerPlayersV2", duration = CACHE_TEMPLATESOCCERPLAYERS)
-    public static Result getTemplateSoccerPlayersV2() {
-        List<TemplateSoccerPlayer> templateSoccerPlayers = TemplateSoccerPlayer.findAllTemplate();
-
-        List<Map<String, Object>> templateSoccerPlayersList = new ArrayList<>();
-        templateSoccerPlayers.forEach( template -> {
-            Map<String, Object> templateSoccerPlayer = new HashMap<>();
-
-            templateSoccerPlayer.put("_id", template.templateSoccerPlayerId.toString());
-            templateSoccerPlayer.put("name", template.name);
-            templateSoccerPlayer.put("templateTeamId", template.templateTeamId.toString());
-
-            if (template.fantasyPoints != 0) {
-                templateSoccerPlayer.put("fantasyPoints", template.fantasyPoints);
-
-                Object competitions = template.getCompetitions();
-                if (competitions != null) {
-                    templateSoccerPlayer.put("competitions", competitions);
-                }
-            }
-
-            templateSoccerPlayersList.add(templateSoccerPlayer);
-        });
-
-        return new ReturnHelper(ImmutableMap.of(
-                "template_soccer_players", templateSoccerPlayersList
-            )).toResult(JsonViews.Template.class);
+    public static Promise<Result> getTemplateSoccerPlayersV2() {
+        return CacheManager.getTemplateSoccerPlayersV2()
+                .map(response -> (Result) response);
     }
 
-    @With(AllowCors.CorsAction.class)
-    @Cached(key = "TemplateSoccerTeams", duration = CACHE_TEMPLATESOCCERTEAMS)
-    public static Result getTemplateSoccerTeams() {
-        ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
-                .put("template_soccer_teams", TemplateSoccerTeam.findAll());
-        return new ReturnHelper(builder.build())
-                .toResult(JsonViews.Template.class);
+    public static Promise<Result> getTemplateSoccerTeams() {
+        return CacheManager.getTemplateSoccerTeams()
+                .map(response -> (Result) response);
     }
 
-    // @UserAuthenticated
-    public static Result getSoccerPlayersByCompetition(String competitionId) throws Exception {
-        return Cache.getOrElse("SoccerPlayersByCompetition-".concat(competitionId), new Callable<Result>() {
-            @Override
-            public Result call() throws Exception {
-                return getSoccerPlayersByCompetition_internal(competitionId);
-            }
-        }, CACHE_SOCCERPLAYER_BY_COMPETITION);
+    public static Promise<Result> getSoccerPlayersByCompetition(String competitionId) throws Exception {
+        return CacheManager.getSoccerPlayersByCompetition(competitionId)
+                .map(response -> (Result) response);
     }
 
-    @With(AllowCors.CorsAction.class)
-    @Cached(key = "SoccerPlayersByCompetition-23", duration = CACHE_SOCCERPLAYER_BY_COMPETITION)
-    public static Result getSoccerPlayersByCompetition_23() {
-        return getSoccerPlayersByCompetition_internal("23");
+    public static Promise<Result> getSoccerPlayersByCompetition_23() {
+        return CacheManager.getSoccerPlayersByCompetition("23")
+                .map(response -> (Result) response);
     }
 
-    @With(AllowCors.CorsAction.class)
-    @Cached(key = "SoccerPlayersByCompetition-8", duration = CACHE_SOCCERPLAYER_BY_COMPETITION)
-    public static Result getSoccerPlayersByCompetition_8() {
-        return getSoccerPlayersByCompetition_internal("8");
-    }
-
-    private static Result getSoccerPlayersByCompetition_internal (String competitionId) {
-        List<TemplateSoccerTeam> templateSoccerTeamList = TemplateSoccerTeam.findAllByCompetition(competitionId);
-
-        List<TemplateSoccerPlayer> templateSoccerPlayers = new ArrayList<>();
-        for (TemplateSoccerTeam templateSoccerTeam : templateSoccerTeamList) {
-            templateSoccerPlayers.addAll(templateSoccerTeam.getTemplateSoccerPlayersWithSalary());
-        }
-
-        List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
-        for (TemplateSoccerPlayer templateSoccerPlayer : templateSoccerPlayers) {
-            instanceSoccerPlayers.add( new InstanceSoccerPlayer(templateSoccerPlayer) );
-        }
-
-        ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
-                .put("instanceSoccerPlayers", instanceSoccerPlayers)
-                .put("soccer_teams", templateSoccerTeamList);
-
-                /*
-                if (theUser != null) {
-                    builder.put("profile", theUser.getProfile());
-                }
-                */
-
-        return new ReturnHelper(builder.build())
-                .toResult(JsonViews.FullContest.class);
+    public static Promise<Result> getSoccerPlayersByCompetition_8() {
+        return CacheManager.getSoccerPlayersByCompetition("8")
+                .map(response -> (Result) response);
     }
 
     public static class FavoritesParams {
