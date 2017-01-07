@@ -81,6 +81,10 @@ public class CacheActor extends UntypedActor {
                 sender().tell(msgGetActiveContestV2((String) msg.param), getSelf());
                 break;
 
+            case "getContestInfoV2":
+                sender().tell(msgGetContestInfoV2((String) msg.param), getSelf());
+                break;
+
             case "getTemplateSoccerPlayerInfo":
                 sender().tell(msgGetTemplateSoccerPlayerInfo((String) msg.param), getSelf());
                 break;
@@ -192,6 +196,29 @@ public class CacheActor extends UntypedActor {
                 return new ReturnHelper(ImmutableMap.of("contest", contest)).toResult(JsonViews.ActiveContest.class);
             }
         }, CACHE_ACTIVE_CONTEST);
+    }
+
+    private static Result msgGetContestInfoV2(String contestId) throws Exception {
+        return Cache.getOrElse("ContestInfo-".concat(contestId), new Callable<Result>() {
+            @Override
+            public Result call() throws Exception {
+                Contest contest = Contest.findOne(contestId);
+                List<UserInfo> usersInfoInContest = UserInfo.findTrueSkillFromContestEntries(contest.contestEntries);
+
+                ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
+                        .put("contest", contest)
+                        .put("users_info", usersInfoInContest)
+                        .put("prizes", Prizes.findOne(contest));
+
+                if (contest.state.isLive() || contest.state.isHistory()) {
+                    List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
+                    builder.put("match_events", matchEvents);
+                }
+
+                return new ReturnHelper(builder.build())
+                        .toResult(JsonViews.ContestInfo.class);
+            }
+        }, CACHE_CONTEST_INFO);
     }
 
     private static Result msgGetTemplateSoccerPlayersV2() throws Exception {

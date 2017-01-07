@@ -49,6 +49,12 @@ public class CacheManager {
         return F.Promise.wrap(ask(actor, new CacheActor.CacheMsg("getActiveContestV2", contestId), ACTOR_TIMEOUT));
     }
 
+    static Promise<Object> getContestInfoV2(String contestId) {
+        String actorName = "contestinfo-".concat(contestId);
+        ActorRef actor = getActor(actorName );
+        return F.Promise.wrap(ask(actor, new CacheActor.CacheMsg("getContestInfoV2", contestId), ACTOR_TIMEOUT));
+    }
+
     static Promise<Object> getTemplateSoccerPlayersV2() {
         ActorRef actor = getActor("templatesoccerplayers" );
         return F.Promise.wrap(ask(actor, "getTemplateSoccerPlayersV2", ACTOR_TIMEOUT));
