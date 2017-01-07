@@ -1,6 +1,8 @@
 package model;
 
+import com.google.common.collect.ImmutableList;
 import org.bson.types.ObjectId;
+import play.Logger;
 import utils.ViewProjection;
 
 public class InstanceSoccerPlayer {
@@ -22,7 +24,9 @@ public class InstanceSoccerPlayer {
     }
 
     static public InstanceSoccerPlayer findOne(ObjectId contestId, ObjectId templateSoccerPlayerId) {
-        Contest contest = Model.contests().findOne("{_id : #}", contestId).projection(ViewProjection.get(JsonViews.InstanceSoccerPlayers.class, Contest.class)).as(Contest.class);
+        Contest contest = Model.contests()
+                .findOne("{_id : #, \"instanceSoccerPlayers.templateSoccerPlayerId\": #}", contestId, templateSoccerPlayerId)
+                .projection(ViewProjection.get(JsonViews.InstanceSoccerPlayers.class, ImmutableList.of("instanceSoccerPlayers.$"), Contest.class)).as(Contest.class);
         return contest.getInstanceSoccerPlayer(templateSoccerPlayerId);
     }
 
