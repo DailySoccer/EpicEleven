@@ -34,6 +34,7 @@ GET         /users                                                              
 GET         /user/:userId/transactions                                           controllers.admin.UserController.transactions(userId : String)
 GET         /users/ajax                                                          controllers.admin.UserController.indexAjax()
 GET         /users/participation                                                 controllers.admin.UserController.participation()
+GET         /users/transactions_stats                                            controllers.admin.UserController.transactionsStats()
 
 GET         /refunds                                                             controllers.admin.RefundController.index()
 GET         /refund/:refundId                                                    controllers.admin.RefundController.apply(refundId)
@@ -100,6 +101,7 @@ GET         /template_soccer_players/changes_list                               
 GET         /template_soccer_players/import_from_opta                            controllers.admin.TemplateSoccerPlayerController.importFromOpta()
 
 GET         /opta_competitions                                                   controllers.admin.OptaController.optaCompetitions()
+GET         /opta_competition_update/:competitionId                              controllers.admin.OptaController.updateCompetition(competitionId)
 GET         /opta_competitions/:competition/activated/:state                     controllers.admin.OptaController.changeCompetitionState(competition : String, state : String)
 GET         /opta_soccer_players                                                 controllers.admin.OptaController.optaSoccerPlayers()
 GET         /opta_soccer_teams                                                   controllers.admin.OptaController.optaSoccerTeams()

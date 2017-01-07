@@ -123,6 +123,7 @@ public class Model {
         builder.threadsAllowedToBlockForConnectionMultiplier(configuration.getInt("mongoOptions.threadsAllowedToBlockForConnectionMultiplier"));
         builder.connectTimeout(configuration.getInt("mongoOptions.connectTimeout"));
         builder.socketTimeout(configuration.getInt("mongoOptions.socketTimeout"));
+        builder.socketKeepAlive(configuration.getBoolean("mongoOptions.socketKeepAlive"));
 
         MongoClientURI mongoClientURI = new MongoClientURI(mongodbUri, builder);
         Logger.info("The MongoDB is {}/{}", mongoClientURI.getHosts(), mongoClientURI.getDatabase());
