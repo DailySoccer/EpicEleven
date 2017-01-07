@@ -44,7 +44,8 @@ public class CacheManager {
     }
 
     static Promise<Object> getActiveContestV2(String contestId) {
-        ActorRef actor = getActor("activecontests" );
+        String actorName = "activecontest-".concat(contestId);
+        ActorRef actor = getActor(actorName );
         return F.Promise.wrap(ask(actor, new CacheActor.CacheMsg("getActiveContestV2", contestId), ACTOR_TIMEOUT));
     }
 

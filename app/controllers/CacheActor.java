@@ -70,7 +70,7 @@ public class CacheActor extends UntypedActor {
 
     private void onReceive(CacheMsg msg) throws Exception {
 
-        Logger.debug("CacheActor: {}", msg.msg);
+        Logger.debug("CacheActor: {}: {}", msg.msg, msg.param);
 
         switch (msg.msg) {
             case "getSoccerPlayersByCompetition":
