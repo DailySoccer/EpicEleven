@@ -135,21 +135,21 @@ public class QueryActor extends UntypedActor {
     }
 
     private static Map<String, Object> activeTemplateContestsCache() throws Exception {
+        /*
         return Cache.getOrElse("ActiveTemplateContests", new Callable<Map<String, Object>>() {
             @Override
             public Map<String, Object> call() throws Exception {
                 return findActiveTemplateContests();
             }
         }, CACHE_ACTIVE_TEMPLATE_CONTESTS);
+        */
+        return CacheManager.activeTemplateContests().get("ActiveTemplateContests", key -> {
+            return findActiveTemplateContests();
+        });
     }
 
     private static Map<String, Object> msgGetActiveTemplateContests() throws Exception {
-        return Cache.getOrElse("ActiveTemplateContests", new Callable<Map<String, Object>>() {
-            @Override
-            public Map<String, Object> call() throws Exception {
-                return findActiveTemplateContests();
-            }
-        }, CACHE_ACTIVE_TEMPLATE_CONTESTS);
+        return activeTemplateContestsCache();
     }
 
     private static void msgCheckActiveTemplateContests() throws Exception {

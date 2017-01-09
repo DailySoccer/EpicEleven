@@ -23,29 +23,31 @@ public class CacheManager {
     private final static int CACHE_LIVE_CONTESTENTRIES = 30;
     private final static int CACHE_CONTEST_INFO = 60;
     private final static int CACHE_EXISTS_LIVE = 60 * 5;         // 5 minutos
+    private final static int CACHE_SOCCERPLAYER_BY_COMPETITION = 15 * 60;   // 15 minutos
+    private final static int CACHE_TEMPLATESOCCERPLAYERS = 8 * 60 * 60;     // 8 Horas
+    private final static int CACHE_TEMPLATESOCCERPLAYER = 8 * 60 * 60;          // 8 Hora
+    private final static int CACHE_TEMPLATESOCCERTEAMS = 24 * 60 * 60;
 
     private CacheManager() {}
 
-    static LoadingCache<String, Map<String, Object>> activeTemplateContests() {
+    static Cache<String, Map<String, Object>> activeTemplateContests() {
         if (_activeTemplateContests == null) {
             _activeTemplateContests = Caffeine.newBuilder()
                     .maximumSize(1)
                     .expireAfterWrite(CACHE_ACTIVE_TEMPLATE_CONTESTS, TimeUnit.SECONDS)
                     .recordStats()
-                    .build(key -> findActiveTemplateContests());
+                    .build();
         }
         return _activeTemplateContests;
     }
 
-    static LoadingCache<String, Long> count() {
+    static Cache<String, Long> count() {
         if (_count == null) {
             _count = Caffeine.newBuilder()
-                    .maximumSize(100)
+                    .maximumSize(1)
                     .expireAfterWrite(CACHE_COUNT_ACTIVE_TEMPLATE_CONTESTS, TimeUnit.SECONDS)
                     .recordStats()
-                    .build(key -> {
-                        return TemplateContest.countAllActiveOrLive();
-                    });
+                    .build();
         }
         return _count;
     }
@@ -84,6 +86,6 @@ public class CacheManager {
         return result.toString();
     }
 
-    static LoadingCache<String, Map<String, Object>> _activeTemplateContests;
-    static LoadingCache<String, Long> _count;
+    static Cache<String, Map<String, Object>> _activeTemplateContests;
+    static Cache<String, Long> _count;
 }
