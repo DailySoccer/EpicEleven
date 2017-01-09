@@ -194,27 +194,9 @@ public class ContestControllerV2 extends Controller {
         return new ReturnHelper(ImmutableMap.of("contest", contest)).toResult(JsonViews.MyActiveContest.class);
     }
 
-    public static Result getContestInfoV2(String contestId) throws Exception {
-        return Cache.getOrElse("ContestInfo-".concat(contestId), new Callable<Result>() {
-            @Override
-            public Result call() throws Exception {
-                Contest contest = Contest.findOne(contestId);
-                List<UserInfo> usersInfoInContest = UserInfo.findAllFromContestEntries(contest.contestEntries);
-
-                ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
-                        .put("contest", contest)
-                        .put("users_info", usersInfoInContest)
-                        .put("prizes", Prizes.findOne(contest));
-
-                if (contest.state.isLive() || contest.state.isHistory()) {
-                    List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
-                    builder.put("match_events", matchEvents);
-                }
-
-                return new ReturnHelper(builder.build())
-                        .toResult(JsonViews.ContestInfo.class);
-            }
-        }, CACHE_CONTEST_INFO);
+    public static Promise<Result> getContestInfoV2(String contestId) throws Exception {
+        return CacheManager.getContestInfoV2(contestId)
+                .map(response -> (Result) response);
     }
 
     public static Promise<Result> getActiveContestV2(String contestId) throws Exception {
