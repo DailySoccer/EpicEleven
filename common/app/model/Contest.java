@@ -128,6 +128,9 @@ public class Contest implements JongoId {
     @JsonView(value = {JsonViews.Public.class, JsonViews.AllContests.class})
     public String specialImage;
 
+    @JsonView(JsonViews.NotForClient.class)
+    public List<String> errors = new ArrayList<>();
+
     public Contest() {}
 
     public Contest(Contest template) {
@@ -620,6 +623,15 @@ public class Contest implements JongoId {
 
         // Calculamos el trueSkill de los participantes y actualizamos su información en la BDD
         Map<ObjectId, User> usersRating = TrueSkillHelper.RecomputeRatings(contestEntries);
+
+        // Comprobar que no existen valores "NaN"
+        boolean hasNaN = usersRating.values().stream().anyMatch(user -> Double.isNaN(user.rating.Mean) || Double.isNaN(user.rating.StandardDeviation));
+        if (hasNaN) {
+            Logger.error("updateTrueSkill: contestId: {} -> NaN", contestId.toString());
+            Model.contests().update("{_id: #}", contestId).with("{$push: {errors: #}}", "TRUESKILL_NAN");
+            return;
+        }
+
         for (Map.Entry<ObjectId, User> entry : usersRating.entrySet()) {
             User user = entry.getValue();
             user.updateTrueSkillByContest(contestId);
