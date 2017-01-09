@@ -76,7 +76,7 @@ public class UserInfo {
     }
 
     static public List<UserInfo> findAllFromContestEntries(List<ContestEntry> contestEntries) {
-        List<UserInfo> usersInfo = new ArrayList<>();
+        List<UserInfo> usersInfo = new ArrayList<>(contestEntries.size());
 
         User.find(contestEntries).forEach(user -> usersInfo.add(user.info()));
 
@@ -84,7 +84,7 @@ public class UserInfo {
     }
 
     static public List<UserInfo> findTrueSkillFromContestEntries(List<ContestEntry> contestEntries) {
-        List<UserInfo> usersInfo = new ArrayList<>();
+        List<UserInfo> usersInfo = new ArrayList<>(contestEntries.size());
 
         User.find(contestEntries, "{ nickName: 1, trueSkill: 1 }").forEach(user -> usersInfo.add(user.info()));
 
@@ -92,7 +92,7 @@ public class UserInfo {
     }
 
     static public List<UserInfo> findNicknamesFromContestEntries(List<ContestEntry> contestEntries) {
-        List<UserInfo> usersInfo = new ArrayList<>();
+        List<UserInfo> usersInfo = new ArrayList<>(contestEntries.size());
 
         User.find(contestEntries, "{ nickName: 1 }").forEach(user -> usersInfo.add(user.info()));
 
