@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
-public class CacheActor extends UntypedActor {
+public class QueryActor extends UntypedActor {
 
     private final static int CACHE_ACTIVE_TEMPLATE_CONTESTS = 60 * 60 * 8;      // 8 horas
     private final static int CACHE_COUNT_ACTIVE_TEMPLATE_CONTESTS = 60 * 30;    // 30 minutos
@@ -44,7 +44,7 @@ public class CacheActor extends UntypedActor {
     }
 
 
-    public CacheActor() {}
+    public QueryActor() {}
 
     @Override public void preStart() throws Exception {
         super.preStart();

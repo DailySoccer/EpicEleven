@@ -11,18 +11,16 @@ import scala.concurrent.duration.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import static akka.pattern.Patterns.ask;
 
-public class CacheManager {
+public class QueryManager {
     private final static int ACTOR_TIMEOUT = 10000;
     private final static String CACHE_DISPATCHER = "cache-dispatcher";
     private final static int CHECK_ACTIVE_TEMPLATE_CONTESTS = 15 * 60;      // 15 minutos
 
-    private CacheManager() {}
+    private QueryManager() {}
 
     static Promise<Object> getActiveTemplateContests() {
         ActorRef actor = getActor("activetemplatecontests", ref ->
@@ -46,13 +44,13 @@ public class CacheManager {
     static Promise<Object> getActiveContestV2(String contestId) {
         String actorName = "activecontest-".concat(contestId);
         ActorRef actor = getActor(actorName );
-        return F.Promise.wrap(ask(actor, new CacheActor.CacheMsg("getActiveContestV2", contestId), ACTOR_TIMEOUT));
+        return F.Promise.wrap(ask(actor, new QueryActor.CacheMsg("getActiveContestV2", contestId), ACTOR_TIMEOUT));
     }
 
     static Promise<Object> getContestInfoV2(String contestId) {
         String actorName = "contestinfo-".concat(contestId);
         ActorRef actor = getActor(actorName );
-        return F.Promise.wrap(ask(actor, new CacheActor.CacheMsg("getContestInfoV2", contestId), ACTOR_TIMEOUT));
+        return F.Promise.wrap(ask(actor, new QueryActor.CacheMsg("getContestInfoV2", contestId), ACTOR_TIMEOUT));
     }
 
     static Promise<Object> getTemplateSoccerPlayersV2() {
@@ -62,7 +60,7 @@ public class CacheManager {
 
     static Promise<Object> getTemplateSoccerPlayerInfo(String templateSoccerPlayerId) {
         ActorRef actor = getActor("templatesoccerplayers" );
-        return F.Promise.wrap(ask(actor, new CacheActor.CacheMsg("getTemplateSoccerPlayerInfo", templateSoccerPlayerId), ACTOR_TIMEOUT));
+        return F.Promise.wrap(ask(actor, new QueryActor.CacheMsg("getTemplateSoccerPlayerInfo", templateSoccerPlayerId), ACTOR_TIMEOUT));
     }
 
     static Promise<Object> getTemplateSoccerTeams() {
@@ -72,7 +70,7 @@ public class CacheManager {
 
     static Promise<Object> getSoccerPlayersByCompetition(String competitionId) {
         ActorRef actor = getActor("templatesoccerplayers" );
-        return F.Promise.wrap(ask(actor, new CacheActor.CacheMsg("getSoccerPlayersByCompetition", competitionId), ACTOR_TIMEOUT));
+        return F.Promise.wrap(ask(actor, new QueryActor.CacheMsg("getSoccerPlayersByCompetition", competitionId), ACTOR_TIMEOUT));
     }
 
     static Promise<Object> countActiveTemplateContests() {
@@ -91,7 +89,7 @@ public class CacheManager {
 
     private static ActorRef getActor(String name, Consumer<ActorRef> setup) {
         Supplier<ActorRef> newInstance = () -> {
-            ActorRef response = Akka.system().actorOf(Props.create(CacheActor.class).withDispatcher(CACHE_DISPATCHER), name);
+            ActorRef response = Akka.system().actorOf(Props.create(QueryActor.class).withDispatcher(CACHE_DISPATCHER), name);
             setup.accept(response);
             return response;
         };

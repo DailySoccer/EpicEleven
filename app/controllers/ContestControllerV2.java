@@ -2,28 +2,19 @@ package controllers;
 
 import actions.AllowCors;
 import actions.UserAuthenticated;
-import akka.actor.ActorRef;
-import akka.actor.ActorSelection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import model.*;
 import org.bson.types.ObjectId;
 import play.Logger;
 import play.cache.Cache;
-import play.cache.Cached;
-import play.libs.F;
 import play.mvc.Controller;
 import play.mvc.Result;
-import play.mvc.With;
 import utils.*;
 
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
-import akka.actor.*;
-import play.mvc.*;
-import play.libs.Akka;
 import play.libs.F.Promise;
 
 import static akka.pattern.Patterns.ask;
@@ -54,17 +45,17 @@ public class ContestControllerV2 extends Controller {
      * Devuelve la lista de template Contests disponibles
      */
     public static Promise<Result> getActiveTemplateContests() throws Exception {
-        return CacheManager.getActiveTemplateContests()
+        return QueryManager.getActiveTemplateContests()
                 .map(response -> new ReturnHelper(response).toResult(JsonViews.Extended.class));
     }
 
     public static Promise<Result> countActiveTemplateContests() {
-        return CacheManager.countActiveTemplateContests()
+        return QueryManager.countActiveTemplateContests()
                 .map(response -> (Result) response);
     }
 
     public static Promise<Result> getActiveContestsV2() throws Exception {
-        return CacheManager.getActiveContestsV2()
+        return QueryManager.getActiveContestsV2()
                 .map( response -> {
                     List<Contest> contests = (List<Contest>) response;
 
@@ -101,7 +92,7 @@ public class ContestControllerV2 extends Controller {
     public static Promise<Result> getMyLiveContestsV2() throws Exception {
         User theUser = (User)ctx().args.get("User");
 
-        return CacheManager.existsContestInLive()
+        return QueryManager.existsContestInLive()
                 .map(response -> {
                     boolean existsLive = (Boolean) response;
 
@@ -195,12 +186,12 @@ public class ContestControllerV2 extends Controller {
     }
 
     public static Promise<Result> getContestInfoV2(String contestId) throws Exception {
-        return CacheManager.getContestInfoV2(contestId)
+        return QueryManager.getContestInfoV2(contestId)
                 .map(response -> (Result) response);
     }
 
     public static Promise<Result> getActiveContestV2(String contestId) throws Exception {
-        return CacheManager.getActiveContestV2(contestId)
+        return QueryManager.getActiveContestV2(contestId)
                 .map(response -> (Result) response);
     }
 

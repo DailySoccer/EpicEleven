@@ -2,11 +2,9 @@ package controllers;
 
 import actions.AllowCors;
 import actions.UserAuthenticated;
-import akka.actor.ActorRef;
 import com.google.common.collect.ImmutableMap;
 import model.*;
 import model.opta.OptaCompetition;
-import model.opta.OptaTeam;
 import org.bson.types.ObjectId;
 import play.Logger;
 import play.cache.Cache;
@@ -255,7 +253,7 @@ public class MainController extends Controller {
      * Obtener la información sobre un InstanceSoccerPlayer (estadísticas,...)
      */
     public static Promise<Result> getInstanceSoccerPlayerInfo(String contestId, String templateSoccerPlayerId) {
-        return CacheManager.getTemplateSoccerPlayerInfo(templateSoccerPlayerId)
+        return QueryManager.getTemplateSoccerPlayerInfo(templateSoccerPlayerId)
                 .map(response -> {
                     InstanceSoccerPlayer instanceSoccerPlayer = InstanceSoccerPlayer.findOne(new ObjectId(contestId), new ObjectId(templateSoccerPlayerId));
 
@@ -269,7 +267,7 @@ public class MainController extends Controller {
      * Obtener la información sobre un SoccerPlayer (estadísticas,...)
      */
     public static Promise<Result> getTemplateSoccerPlayerInfo(String templateSoccerPlayerId) {
-        return CacheManager.getTemplateSoccerPlayerInfo(templateSoccerPlayerId)
+        return QueryManager.getTemplateSoccerPlayerInfo(templateSoccerPlayerId)
                 .map(response -> {
                     Map<String, Object> data = (Map<String, Object>) response;
                     data.put("instance_soccer_player", new InstanceSoccerPlayer((TemplateSoccerPlayer) data.get("soccer_player")));
@@ -297,27 +295,27 @@ public class MainController extends Controller {
     }
 
     public static Promise<Result> getTemplateSoccerPlayersV2() {
-        return CacheManager.getTemplateSoccerPlayersV2()
+        return QueryManager.getTemplateSoccerPlayersV2()
                 .map(response -> (Result) response);
     }
 
     public static Promise<Result> getTemplateSoccerTeams() {
-        return CacheManager.getTemplateSoccerTeams()
+        return QueryManager.getTemplateSoccerTeams()
                 .map(response -> (Result) response);
     }
 
     public static Promise<Result> getSoccerPlayersByCompetition(String competitionId) throws Exception {
-        return CacheManager.getSoccerPlayersByCompetition(competitionId)
+        return QueryManager.getSoccerPlayersByCompetition(competitionId)
                 .map(response -> (Result) response);
     }
 
     public static Promise<Result> getSoccerPlayersByCompetition_23() {
-        return CacheManager.getSoccerPlayersByCompetition("23")
+        return QueryManager.getSoccerPlayersByCompetition("23")
                 .map(response -> (Result) response);
     }
 
     public static Promise<Result> getSoccerPlayersByCompetition_8() {
-        return CacheManager.getSoccerPlayersByCompetition("8")
+        return QueryManager.getSoccerPlayersByCompetition("8")
                 .map(response -> (Result) response);
     }
 

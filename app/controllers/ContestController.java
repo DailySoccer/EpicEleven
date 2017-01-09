@@ -10,13 +10,11 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import play.Logger;
 import play.cache.Cache;
-import play.cache.Cached;
 import play.data.Form;
 import play.data.validation.Constraints;
 import play.mvc.Controller;
 import play.mvc.Result;
 import play.libs.F.Promise;
-import play.mvc.With;
 import utils.*;
 
 import java.util.*;
@@ -269,7 +267,7 @@ public class ContestController extends Controller {
     @UserAuthenticated
     public static Promise<Result> countMyLiveContests() throws Exception {
         User theUser = (User)ctx().args.get("User");
-        return CacheManager.existsContestInLive()
+        return QueryManager.existsContestInLive()
                 .map(response -> {
                     boolean existsLive = (Boolean) response;
 
