@@ -3,6 +3,7 @@ package utils;
 import model.Model;
 import model.Session;
 import model.User;
+import org.bson.types.ObjectId;
 import play.Logger;
 import play.Play;
 import play.mvc.Http;
@@ -26,12 +27,25 @@ public class SessionUtils {
 
         Session theSession = Model.sessions().findOne("{sessionToken: # }", sessionToken).as(Session.class);
 
-        if (theSession == null) {
+        return (theSession != null) ? Model.users().findOne(theSession.userId).as(User.class) : null;
+    }
+
+    public static ObjectId getUserIdFromRequest(Http.Request request) {
+        String sessionToken = getSessionTokenFromRequest(request);
+
+        if (sessionToken == null) {
+            Logger.debug("SessionUtils.getUserFromRequest: No hay session token");
             return null;
         }
-        else {
-            return Model.users().findOne(theSession.userId).as(User.class);
+
+        // En desarrollo, el sessionToken hace referencia al email
+        if (Play.isDev()) {
+            return User.findByEmail(sessionToken).userId;
         }
+
+        Session theSession = Model.sessions().findOne("{sessionToken: # }", sessionToken).as(Session.class);
+
+        return (theSession != null) ? Model.users().findOne(theSession.userId).projection("{_id: 1}").as(User.class).userId : null;
     }
 
     private static String getSessionTokenFromRequest(Http.Request request) {

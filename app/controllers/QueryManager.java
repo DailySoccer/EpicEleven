@@ -83,6 +83,11 @@ public class QueryManager {
         return F.Promise.wrap(ask(actor, "existsContestInLive", ACTOR_TIMEOUT));
     }
 
+    static Promise<Object> getUserRankingList(String userId) {
+        ActorRef actor = getActor("userRanking" );
+        return F.Promise.wrap(ask(actor, new QueryActor.CacheMsg("getUserRankingList", userId), ACTOR_TIMEOUT));
+    }
+
     private static ActorRef getActor(String name) {
         return getActor(name, ref -> {});
     }

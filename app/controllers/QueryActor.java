@@ -32,6 +32,7 @@ public class QueryActor extends UntypedActor {
     private final static int CACHE_TEMPLATESOCCERPLAYERS = 8 * 60 * 60;     // 8 Horas
     private final static int CACHE_TEMPLATESOCCERPLAYER = 8 * 60 * 60;          // 8 Hora
     private final static int CACHE_TEMPLATESOCCERTEAMS = 24 * 60 * 60;
+    private final static int CACHE_LEADERBOARD = 12 * 60 * 60;              // 12 horas
 
 
     public static class CacheMsg {
@@ -89,6 +90,10 @@ public class QueryActor extends UntypedActor {
                 sender().tell(msgGetTemplateSoccerPlayerInfo((String) msg.param), getSelf());
                 break;
 
+            case "getUserRankingList":
+                sender().tell(msgGetUserRankingList((String) msg.param), getSelf());
+                break;
+
             default:
                 unhandled(msg);
                 break;
@@ -144,12 +149,7 @@ public class QueryActor extends UntypedActor {
     }
 
     private static Map<String, Object> msgGetActiveTemplateContests() throws Exception {
-        return Cache.getOrElse("ActiveTemplateContests", new Callable<Map<String, Object>>() {
-            @Override
-            public Map<String, Object> call() throws Exception {
-                return findActiveTemplateContests();
-            }
-        }, CACHE_ACTIVE_TEMPLATE_CONTESTS);
+        return activeTemplateContestsCache();
     }
 
     private static void msgCheckActiveTemplateContests() throws Exception {
@@ -341,6 +341,90 @@ public class QueryActor extends UntypedActor {
                 return TemplateContest.existsAnyInState(ContestState.LIVE);
             }
         }, CACHE_EXISTS_LIVE);
+    }
+
+    private static List<UserRanking>  msgGetUserRankingList(String userId) throws Exception {
+        List<UserRanking> userRankingList = Cache.getOrElse("LeaderboardV2", new Callable<List<UserRanking>>() {
+            @Override
+            public List<UserRanking> call() throws Exception {
+                return getSortedUsersRanking();
+            }
+        }, CACHE_LEADERBOARD);
+
+        User theUser = (userId != null && ObjectId.isValid(userId))
+                ? User.findOne(new ObjectId(userId), "{ earnedMoney: 1, trueSkill: 1 }")
+                : null;
+
+        if (theUser != null) {
+            // Comprobar si coinciden los datos de la caché con los del usuario que los solicita
+
+            // Asumimos que los datos son incorrectos, dado que el usuario podría no estar en la lista cacheada
+            boolean validCache = false;
+
+            for (UserRanking ranking : userRankingList) {
+                if (ranking.getUserId().equals(userId)) {
+                    // Si lo que tenemos en la cache tiene los mismos datos que los que tiene actualmente el usuario
+                    // consideraremos a la caché válida
+                    validCache = ranking.getEarnedMoney().equals(theUser.earnedMoney)
+                            && (ranking.getTrueSkill() == theUser.trueSkill);
+                    break;
+                }
+            }
+
+            // Hay que reconstruir la caché?
+            if (!validCache) {
+                Logger.debug("getLeaderboardV2: cache INVALID");
+
+                userRankingList = getSortedUsersRanking();
+                Cache.set("LeaderboardV2", userRankingList);
+            } else {
+                Logger.debug("getLeaderboardV2: cache OK");
+            }
+        }
+
+        return userRankingList;
+    }
+
+    private static List<UserRanking> getSortedUsersRanking() {
+        List<UserRanking> usersRanking = new ArrayList<UserRanking>();
+
+        List<User> users = User.findAll(JsonViews.Leaderboard.class);
+
+        // Creamos la estructura de ranking de usuarios
+        users.forEach(user -> usersRanking.add( new UserRanking(user) ) );
+
+        // Obtenemos la posición de ranking de cada uno de los usuarios
+        class UserValue {
+            public int index = 0;       // índice en la tabla general de "users"
+            public float value = 0;      // valor a comparar (gold o trueskill)
+            public UserValue(int index, float value) {
+                this.index = index;
+                this.value = value;
+            }
+        }
+
+        // Crear 2 lista para obtener el ranking de trueskill y gold
+        List<UserValue> skillRanking = new ArrayList<>(users.size());
+        List<UserValue> goldRanking = new ArrayList<>(users.size());
+        for (int i=0; i<users.size(); i++) {
+            User user = users.get(i);
+            skillRanking.add( new UserValue(i, user.trueSkill) );
+            goldRanking.add( new UserValue(i, user.earnedMoney.getAmount().floatValue()) );
+        }
+
+        skillRanking.sort((v1, v2) -> Float.compare(v2.value, v1.value));
+        goldRanking.sort((v1, v2) -> Float.compare(v2.value, v1.value));
+
+        // Registrar el ranking en la lista de ranking de usuarios
+        for (int i=0; i<users.size(); i++) {
+            UserValue skillRank = skillRanking.get(i);
+            usersRanking.get(skillRank.index).put("skillRank", i+1);
+
+            UserValue goldRank = goldRanking.get(i);
+            usersRanking.get(goldRank.index).put("goldRank", i+1);
+        }
+
+        return usersRanking;
     }
 
     private static Map<String, Object> findActiveTemplateContests() {

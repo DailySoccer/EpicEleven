@@ -165,88 +165,54 @@ public class MainController extends Controller {
         return usersRanking;
     }
 
-    private static List<UserRanking>  getUserRankingList() throws Exception {
-        User theUser = SessionUtils.getUserFromRequest(Controller.ctx().request());
-
-        List<UserRanking> userRankingList = Cache.getOrElse("LeaderboardV2", new Callable<List<UserRanking>>() {
-            @Override
-            public List<UserRanking> call() throws Exception {
-                return getSortedUsersRanking();
-            }
-        }, CACHE_LEADERBOARD);
-
-        if (theUser != null) {
-            // Comprobar si coinciden los datos de la caché con los del usuario que los solicita
-            String userId = theUser.userId.toString();
-
-            // Asumimos que los datos son incorrectos, dado que el usuario podría no estar en la lista cacheada
-            boolean validCache = false;
-
-            for (UserRanking ranking : userRankingList) {
-                if (ranking.getUserId().equals(userId)) {
-                    // Si lo que tenemos en la cache tiene los mismos datos que los que tiene actualmente el usuario
-                    // consideraremos a la caché válida
-                    validCache = ranking.getEarnedMoney().equals(theUser.earnedMoney)
-                            && (ranking.getTrueSkill() == theUser.trueSkill);
-                    break;
-                }
-            }
-
-            // Hay que reconstruir la caché?
-            if (!validCache) {
-                Logger.debug("getLeaderboardV2: cache INVALID");
-
-                userRankingList = getSortedUsersRanking();
-                Cache.set("LeaderboardV2", userRankingList);
-            } else {
-                Logger.debug("getLeaderboardV2: cache OK");
-            }
-        }
-
-        return userRankingList;
+    public static Promise<Result> getLeaderboardV2() throws Exception {
+        ObjectId userId = SessionUtils.getUserIdFromRequest(Controller.ctx().request());
+        return QueryManager.getUserRankingList(userId != null ? userId.toString() : null)
+                .map(response -> {
+                    List<UserRanking> userRankingList = (List<UserRanking>) response;
+                    return new ReturnHelper(ImmutableMap.of("users", userRankingList)).toResult(JsonViews.Leaderboard.class);
+                });
     }
 
-    public static Result getLeaderboardV2() throws Exception {
-        List<UserRanking> userRankingList = getUserRankingList();
-        return new ReturnHelper(ImmutableMap.of("users", userRankingList)).toResult(JsonViews.Leaderboard.class);
-    }
-
-    public static Result getLeaderboardV3() throws Exception {
-        List<UserRanking> userRankingList = getUserRankingList();
-
+    public static Promise<Result> getLeaderboardV3() throws Exception {
         User theUser = SessionUtils.getUserFromRequest(Controller.ctx().request());
 
-        if (theUser != null) {
-            // Limitar la información que enviamos
-            String userId = theUser.userId.toString();
+        return QueryManager.getUserRankingList(theUser != null ? theUser.userId.toString() : null)
+                .map(response -> {
+                    List<UserRanking> userRankingList = (List<UserRanking>) response;
 
-            // Buscar el usuario en el ranking
-            UserRanking userRanking = null;
-            for (UserRanking ranking : userRankingList) {
-                if (ranking.getUserId().equals(userId)) {
-                    userRanking = ranking;
-                    break;
-                }
-            }
-            if (userRanking != null) {
-                // Únicamente enviaremos el top de cada ranking y los usuarios que están "cerca" del usuario
-                int userSkillRank = userRanking.getSkillRank();
-                int userGoldRank = userRanking.getGoldRank();
+                    if (theUser != null) {
+                        // Limitar la información que enviamos
+                        String userId = theUser.userId.toString();
 
-                List<UserRanking> filteredRankingList = userRankingList.stream().filter( ranking -> {
-                    int skillRank = ranking.getSkillRank();
-                    int goldRank = ranking.getGoldRank();
-                    return ( skillRank < 10 || goldRank <= 10 || Math.abs(userSkillRank - skillRank) < 10 || Math.abs(userGoldRank - goldRank) < 10);
-                }).collect(Collectors.toList());
+                        // Buscar el usuario en el ranking
+                        UserRanking userRanking = null;
+                        for (UserRanking ranking : userRankingList) {
+                            if (ranking.getUserId().equals(userId)) {
+                                userRanking = ranking;
+                                break;
+                            }
+                        }
+                        if (userRanking != null) {
+                            // Únicamente enviaremos el top de cada ranking y los usuarios que están "cerca" del usuario
+                            int userSkillRank = userRanking.getSkillRank();
+                            int userGoldRank = userRanking.getGoldRank();
 
-                return new ReturnHelper(ImmutableMap.of("users", filteredRankingList)).toResult(JsonViews.Leaderboard.class);
-            }
-            else {
-                Logger.error("getLeaderboardV3: User invalid: {}", theUser.userId.toString());
-            }
-        }
+                            List<UserRanking> filteredRankingList = userRankingList.stream().filter( ranking -> {
+                                int skillRank = ranking.getSkillRank();
+                                int goldRank = ranking.getGoldRank();
+                                return ( skillRank < 10 || goldRank <= 10 || Math.abs(userSkillRank - skillRank) < 10 || Math.abs(userGoldRank - goldRank) < 10);
+                            }).collect(Collectors.toList());
 
-        return new ReturnHelper(ImmutableMap.of("users", userRankingList)).toResult(JsonViews.Leaderboard.class);
+                            return new ReturnHelper(ImmutableMap.of("users", filteredRankingList)).toResult(JsonViews.Leaderboard.class);
+                        }
+                        else {
+                            Logger.error("getLeaderboardV3: User invalid: {}", theUser.userId.toString());
+                        }
+                    }
+
+                    return new ReturnHelper(ImmutableMap.of("users", userRankingList)).toResult(JsonViews.Leaderboard.class);
+                });
     }
 
     /*
