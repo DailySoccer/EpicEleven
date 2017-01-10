@@ -11,10 +11,6 @@ import utils.ListUtils;
 import utils.ReturnHelper;
 
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
 
 public class QueryActor extends UntypedActor {
 
@@ -140,12 +136,7 @@ public class QueryActor extends UntypedActor {
     }
 
     private static Map<String, Object> activeTemplateContestsCache() throws Exception {
-        return Cache.getOrElse("ActiveTemplateContests", new Callable<Map<String, Object>>() {
-            @Override
-            public Map<String, Object> call() throws Exception {
-                return findActiveTemplateContests();
-            }
-        }, CACHE_ACTIVE_TEMPLATE_CONTESTS);
+        return Cache.getOrElse("ActiveTemplateContests", QueryActor::findActiveTemplateContests, CACHE_ACTIVE_TEMPLATE_CONTESTS);
     }
 
     private static Map<String, Object> msgGetActiveTemplateContests() throws Exception {
@@ -168,188 +159,152 @@ public class QueryActor extends UntypedActor {
     }
 
     private static Result msgCountActiveTemplateContests() throws Exception {
-        return Cache.getOrElse("CountActiveTemplateContests", new Callable<Result>() {
-            @Override
-            public Result call() throws Exception {
-                return new ReturnHelper(ImmutableMap.of(
-                        "count", TemplateContest.countAllActiveOrLive()
-                )).toResult();
-            }
-        }, CACHE_COUNT_ACTIVE_TEMPLATE_CONTESTS);
+        return Cache.getOrElse("CountActiveTemplateContests", () -> new ReturnHelper(ImmutableMap.of(
+                "count", TemplateContest.countAllActiveOrLive()
+        )).toResult(), CACHE_COUNT_ACTIVE_TEMPLATE_CONTESTS);
     }
 
     private static List<Contest> msgGetActiveContestsV2() throws Exception {
-        return Cache.getOrElse("ActiveContestsV2", new Callable<List<Contest>>() {
-            @Override
-            public List<Contest> call() throws Exception {
-                return Contest.findAllActiveNotFull(JsonViews.ActiveContestsV2.class);
-                //return Contest.findAllActive(JsonViews.ActiveContests.class);
-            }
+        return Cache.getOrElse("ActiveContestsV2", () -> {
+            return Contest.findAllActiveNotFull(JsonViews.ActiveContestsV2.class);
+            //return Contest.findAllActive(JsonViews.ActiveContests.class);
         }, CACHE_ACTIVE_CONTESTS);
     }
 
     private static Result msgGetActiveContestV2(String contestId) throws Exception {
-        return Cache.getOrElse("ActiveContestV2-".concat(contestId), new Callable<Result>() {
-            @Override
-            public Result call() throws Exception {
-                Contest contest = Contest.findOne(new ObjectId(contestId), JsonViews.ActiveContest.class);
-                return new ReturnHelper(ImmutableMap.of("contest", contest)).toResult(JsonViews.ActiveContest.class);
-            }
+        return Cache.getOrElse("ActiveContestV2-".concat(contestId), () -> {
+            Contest contest = Contest.findOne(new ObjectId(contestId), JsonViews.ActiveContest.class);
+            return new ReturnHelper(ImmutableMap.of("contest", contest)).toResult(JsonViews.ActiveContest.class);
         }, CACHE_ACTIVE_CONTEST);
     }
 
     private static Result msgGetContestInfoV2(String contestId) throws Exception {
-        return Cache.getOrElse("ContestInfo-".concat(contestId), new Callable<Result>() {
-            @Override
-            public Result call() throws Exception {
-                Contest contest = Contest.findOne(contestId);
-                List<UserInfo> usersInfoInContest = UserInfo.findTrueSkillFromContestEntries(contest.contestEntries);
+        return Cache.getOrElse("ContestInfo-".concat(contestId), () -> {
+            Contest contest = Contest.findOne(contestId);
+            List<UserInfo> usersInfoInContest = UserInfo.findTrueSkillFromContestEntries(contest.contestEntries);
 
-                ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
-                        .put("contest", contest)
-                        .put("users_info", usersInfoInContest)
-                        .put("prizes", Prizes.findOne(contest));
+            ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
+                    .put("contest", contest)
+                    .put("users_info", usersInfoInContest)
+                    .put("prizes", Prizes.findOne(contest));
 
-                if (contest.state.isLive() || contest.state.isHistory()) {
-                    List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
-                    builder.put("match_events", matchEvents);
-                }
-
-                return new ReturnHelper(builder.build())
-                        .toResult(JsonViews.ContestInfo.class);
+            if (contest.state.isLive() || contest.state.isHistory()) {
+                List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contest.templateMatchEventIds);
+                builder.put("match_events", matchEvents);
             }
+
+            return new ReturnHelper(builder.build())
+                    .toResult(JsonViews.ContestInfo.class);
         }, CACHE_CONTEST_INFO);
     }
 
     private static Result msgGetTemplateSoccerPlayersV2() throws Exception {
-        return Cache.getOrElse("TemplateSoccerPlayersV2", new Callable<Result>() {
-            @Override
-            public Result call() throws Exception {
-                List<TemplateSoccerPlayer> templateSoccerPlayers = TemplateSoccerPlayer.findAllTemplate();
+        return Cache.getOrElse("TemplateSoccerPlayersV2", () -> {
+            List<TemplateSoccerPlayer> templateSoccerPlayers = TemplateSoccerPlayer.findAllTemplate();
 
-                List<Map<String, Object>> templateSoccerPlayersList = new ArrayList<>();
-                templateSoccerPlayers.forEach(template -> {
-                    Map<String, Object> templateSoccerPlayer = new HashMap<>();
+            List<Map<String, Object>> templateSoccerPlayersList = new ArrayList<>();
+            templateSoccerPlayers.forEach(template -> {
+                Map<String, Object> templateSoccerPlayer = new HashMap<>();
 
-                    templateSoccerPlayer.put("_id", template.templateSoccerPlayerId.toString());
-                    templateSoccerPlayer.put("name", template.name);
-                    templateSoccerPlayer.put("templateTeamId", template.templateTeamId.toString());
+                templateSoccerPlayer.put("_id", template.templateSoccerPlayerId.toString());
+                templateSoccerPlayer.put("name", template.name);
+                templateSoccerPlayer.put("templateTeamId", template.templateTeamId.toString());
 
-                    if (template.fantasyPoints != 0) {
-                        templateSoccerPlayer.put("fantasyPoints", template.fantasyPoints);
+                if (template.fantasyPoints != 0) {
+                    templateSoccerPlayer.put("fantasyPoints", template.fantasyPoints);
 
-                        Object competitions = template.getCompetitions();
-                        if (competitions != null) {
-                            templateSoccerPlayer.put("competitions", competitions);
-                        }
+                    Object competitions = template.getCompetitions();
+                    if (competitions != null) {
+                        templateSoccerPlayer.put("competitions", competitions);
                     }
+                }
 
-                    templateSoccerPlayersList.add(templateSoccerPlayer);
-                });
+                templateSoccerPlayersList.add(templateSoccerPlayer);
+            });
 
-                return new ReturnHelper(ImmutableMap.of(
-                        "template_soccer_players", templateSoccerPlayersList
-                )).toResult(JsonViews.Template.class);
-            }
+            return new ReturnHelper(ImmutableMap.of(
+                    "template_soccer_players", templateSoccerPlayersList
+            )).toResult(JsonViews.Template.class);
         }, CACHE_TEMPLATESOCCERPLAYERS);
     }
 
     private static Map<String, Object> msgGetTemplateSoccerPlayerInfo(String templateSoccerPlayerId) throws Exception {
-        return Cache.getOrElse("TemplateSoccerPlayerInfo-".concat(templateSoccerPlayerId), new Callable<Map<String, Object>>() {
-            @Override
-            public Map<String, Object> call() throws Exception {
-                TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(templateSoccerPlayerId));
+        return Cache.getOrElse("TemplateSoccerPlayerInfo-".concat(templateSoccerPlayerId), () -> {
+            TemplateSoccerPlayer templateSoccerPlayer = TemplateSoccerPlayer.findOne(new ObjectId(templateSoccerPlayerId));
 
-                Set<ObjectId> templateSoccerTeamIds = new HashSet<>();
+            Set<ObjectId> templateSoccerTeamIds = new HashSet<>();
 
-                // Añadimos el equipo en el que juega actualmente el futbolista
-                templateSoccerTeamIds.add(templateSoccerPlayer.templateTeamId);
+            // Añadimos el equipo en el que juega actualmente el futbolista
+            templateSoccerTeamIds.add(templateSoccerPlayer.templateTeamId);
 
-                // Añadimos los equipos CONTRA los que ha jugado el futbolista
-                for (SoccerPlayerStats stats : templateSoccerPlayer.stats) {
-                    templateSoccerTeamIds.add(stats.opponentTeamId);
-                }
-
-                // Incluimos el próximo partido que jugará el futbolista (y sus equipos)
-                TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findNextMatchEvent(templateSoccerPlayer.templateTeamId);
-                if (templateMatchEvent != null) {
-                    templateSoccerTeamIds.add(templateMatchEvent.templateSoccerTeamAId);
-                    templateSoccerTeamIds.add(templateMatchEvent.templateSoccerTeamBId);
-                }
-
-                List<TemplateSoccerTeam> templateSoccerTeams = !templateSoccerTeamIds.isEmpty() ? TemplateSoccerTeam.findAll(ListUtils.asList(templateSoccerTeamIds))
-                        : new ArrayList<TemplateSoccerTeam>();
-
-                Map<String, Object> response = new HashMap<>();
-                response.put("soccer_teams", templateSoccerTeams);
-                response.put("soccer_player", templateSoccerPlayer);
-                if (templateMatchEvent != null) {
-                    response.put("match_event", templateMatchEvent);
-                }
-                return response;
+            // Añadimos los equipos CONTRA los que ha jugado el futbolista
+            for (SoccerPlayerStats stats : templateSoccerPlayer.stats) {
+                templateSoccerTeamIds.add(stats.opponentTeamId);
             }
+
+            // Incluimos el próximo partido que jugará el futbolista (y sus equipos)
+            TemplateMatchEvent templateMatchEvent = TemplateMatchEvent.findNextMatchEvent(templateSoccerPlayer.templateTeamId);
+            if (templateMatchEvent != null) {
+                templateSoccerTeamIds.add(templateMatchEvent.templateSoccerTeamAId);
+                templateSoccerTeamIds.add(templateMatchEvent.templateSoccerTeamBId);
+            }
+
+            List<TemplateSoccerTeam> templateSoccerTeams = !templateSoccerTeamIds.isEmpty() ? TemplateSoccerTeam.findAll(ListUtils.asList(templateSoccerTeamIds))
+                    : new ArrayList<TemplateSoccerTeam>();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("soccer_teams", templateSoccerTeams);
+            response.put("soccer_player", templateSoccerPlayer);
+            if (templateMatchEvent != null) {
+                response.put("match_event", templateMatchEvent);
+            }
+            return response;
         }, CACHE_TEMPLATESOCCERPLAYER);
     }
 
     private static Result msgGetTemplateSoccerTeams() throws Exception {
-        return Cache.getOrElse("TemplateSoccerTeams", new Callable<Result>() {
-            @Override
-            public Result call() throws Exception {
-                ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
-                        .put("template_soccer_teams", TemplateSoccerTeam.findAll());
-                return new ReturnHelper(builder.build())
-                        .toResult(JsonViews.Template.class);
-            }
+        return Cache.getOrElse("TemplateSoccerTeams", () -> {
+            ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
+                    .put("template_soccer_teams", TemplateSoccerTeam.findAll());
+            return new ReturnHelper(builder.build())
+                    .toResult(JsonViews.Template.class);
         }, CACHE_TEMPLATESOCCERTEAMS);
     }
 
     private static Result msgGetSoccerPlayersByCompetition(String competitionId) throws Exception {
-        return Cache.getOrElse("SoccerPlayersByCompetition-".concat(competitionId), new Callable<Result>() {
-            @Override
-            public Result call() throws Exception {
-                List<TemplateSoccerTeam> templateSoccerTeamList = TemplateSoccerTeam.findAllByCompetition(competitionId);
+        return Cache.getOrElse("SoccerPlayersByCompetition-".concat(competitionId), () -> {
+            List<TemplateSoccerTeam> templateSoccerTeamList = TemplateSoccerTeam.findAllByCompetition(competitionId);
 
-                List<TemplateSoccerPlayer> templateSoccerPlayers = new ArrayList<>();
-                for (TemplateSoccerTeam templateSoccerTeam : templateSoccerTeamList) {
-                    templateSoccerPlayers.addAll(templateSoccerTeam.getTemplateSoccerPlayersWithSalary());
-                }
+            List<TemplateSoccerPlayer> templateSoccerPlayers = new ArrayList<>();
+            for (TemplateSoccerTeam templateSoccerTeam : templateSoccerTeamList) {
+                templateSoccerPlayers.addAll(templateSoccerTeam.getTemplateSoccerPlayersWithSalary());
+            }
 
-                List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
-                for (TemplateSoccerPlayer templateSoccerPlayer : templateSoccerPlayers) {
-                    instanceSoccerPlayers.add( new InstanceSoccerPlayer(templateSoccerPlayer) );
-                }
+            List<InstanceSoccerPlayer> instanceSoccerPlayers = new ArrayList<>();
+            for (TemplateSoccerPlayer templateSoccerPlayer : templateSoccerPlayers) {
+                instanceSoccerPlayers.add( new InstanceSoccerPlayer(templateSoccerPlayer) );
+            }
 
-                ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
-                        .put("instanceSoccerPlayers", instanceSoccerPlayers)
-                        .put("soccer_teams", templateSoccerTeamList);
+            ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
+                    .put("instanceSoccerPlayers", instanceSoccerPlayers)
+                    .put("soccer_teams", templateSoccerTeamList);
 
-                /*
-                if (theUser != null) {
-                    builder.put("profile", theUser.getProfile());
-                }
-                */
+            /*
+            if (theUser != null) {
+                builder.put("profile", theUser.getProfile());
+            }
+            */
 
-                return new ReturnHelper(builder.build())
-                        .toResult(JsonViews.FullContest.class);            }
-        }, CACHE_SOCCERPLAYER_BY_COMPETITION);
+            return new ReturnHelper(builder.build())
+                    .toResult(JsonViews.FullContest.class);            }, CACHE_SOCCERPLAYER_BY_COMPETITION);
     }
 
     private static Boolean msgExistsContestInLive() throws Exception {
-        return Cache.getOrElse("ExistsContestInLive", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return TemplateContest.existsAnyInState(ContestState.LIVE);
-            }
-        }, CACHE_EXISTS_LIVE);
+        return Cache.getOrElse("ExistsContestInLive", () -> TemplateContest.existsAnyInState(ContestState.LIVE), CACHE_EXISTS_LIVE);
     }
 
     private static List<UserRanking>  msgGetUserRankingList(String userId) throws Exception {
-        List<UserRanking> userRankingList = Cache.getOrElse("LeaderboardV2", new Callable<List<UserRanking>>() {
-            @Override
-            public List<UserRanking> call() throws Exception {
-                return getSortedUsersRanking();
-            }
-        }, CACHE_LEADERBOARD);
+        List<UserRanking> userRankingList = Cache.getOrElse("LeaderboardV2", QueryActor::getSortedUsersRanking, CACHE_LEADERBOARD);
 
         User theUser = (userId != null && ObjectId.isValid(userId))
                 ? User.findOne(new ObjectId(userId), "{ earnedMoney: 1, trueSkill: 1 }")
