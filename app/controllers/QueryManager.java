@@ -47,6 +47,16 @@ public class QueryManager {
         return F.Promise.wrap(ask(actor, new QueryActor.CacheMsg("getActiveContestV2", contestId), ACTOR_TIMEOUT));
     }
 
+    static Promise<Object> getMyLiveContestsV2(String userId) {
+        ActorRef actor = getActor("livecontests" );
+        return F.Promise.wrap(ask(actor, new QueryActor.CacheMsg("getMyLiveContestsV2", userId, null), ACTOR_TIMEOUT));
+    }
+
+    static Promise<Object> getMyLiveContestV2(String userId, String contestId) {
+        ActorRef actor = getActor("livecontests" );
+        return F.Promise.wrap(ask(actor, new QueryActor.CacheMsg("getMyLiveContestV2", userId, contestId), ACTOR_TIMEOUT));
+    }
+
     static Promise<Object> getContestInfoV2(String contestId) {
         String actorName = "contestinfo-".concat(contestId);
         ActorRef actor = getActor(actorName );
@@ -85,7 +95,7 @@ public class QueryManager {
 
     static Promise<Object> getUserRankingList(String userId) {
         ActorRef actor = getActor("userRanking" );
-        return F.Promise.wrap(ask(actor, new QueryActor.CacheMsg("getUserRankingList", userId), ACTOR_TIMEOUT));
+        return F.Promise.wrap(ask(actor, new QueryActor.CacheMsg("getUserRankingList", userId, null), ACTOR_TIMEOUT));
     }
 
     private static ActorRef getActor(String name) {

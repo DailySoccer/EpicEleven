@@ -123,48 +123,6 @@ public class MainController extends Controller {
         return new ReturnHelper(ImmutableMap.of("users", userRankingList)).toResult(JsonViews.Leaderboard.class);
     }
 
-    private static List<UserRanking> getSortedUsersRanking() {
-        List<UserRanking> usersRanking = new ArrayList<UserRanking>();
-
-        List<User> users = User.findAll(JsonViews.Leaderboard.class);
-
-        // Creamos la estructura de ranking de usuarios
-        users.forEach(user -> usersRanking.add( new UserRanking(user) ) );
-
-        // Obtenemos la posición de ranking de cada uno de los usuarios
-        class UserValue {
-            public int index = 0;       // índice en la tabla general de "users"
-            public float value = 0;      // valor a comparar (gold o trueskill)
-            public UserValue(int index, float value) {
-                this.index = index;
-                this.value = value;
-            }
-        }
-
-        // Crear 2 lista para obtener el ranking de trueskill y gold
-        List<UserValue> skillRanking = new ArrayList<>(users.size());
-        List<UserValue> goldRanking = new ArrayList<>(users.size());
-        for (int i=0; i<users.size(); i++) {
-            User user = users.get(i);
-            skillRanking.add( new UserValue(i, user.trueSkill) );
-            goldRanking.add( new UserValue(i, user.earnedMoney.getAmount().floatValue()) );
-        }
-
-        Collections.sort(skillRanking, (v1, v2) -> Float.compare(v2.value, v1.value));
-        Collections.sort(goldRanking, (v1, v2) -> Float.compare(v2.value, v1.value));
-
-        // Registrar el ranking en la lista de ranking de usuarios
-        for (int i=0; i<users.size(); i++) {
-            UserValue skillRank = skillRanking.get(i);
-            usersRanking.get(skillRank.index).put("skillRank", i+1);
-
-            UserValue goldRank = goldRanking.get(i);
-            usersRanking.get(goldRank.index).put("goldRank", i+1);
-        }
-
-        return usersRanking;
-    }
-
     public static Promise<Result> getLeaderboardV2() throws Exception {
         ObjectId userId = SessionUtils.getUserIdFromRequest(Controller.ctx().request());
         return QueryManager.getUserRankingList(userId != null ? userId.toString() : null)

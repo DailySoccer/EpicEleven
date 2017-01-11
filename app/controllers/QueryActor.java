@@ -1,6 +1,7 @@
 package controllers;
 
 import akka.actor.UntypedActor;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import model.*;
 import org.bson.types.ObjectId;
@@ -9,8 +10,10 @@ import play.cache.Cache;
 import play.mvc.Result;
 import utils.ListUtils;
 import utils.ReturnHelper;
+import utils.ReturnHelperWithAttach;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class QueryActor extends UntypedActor {
 
@@ -30,6 +33,13 @@ public class QueryActor extends UntypedActor {
     private final static int CACHE_TEMPLATESOCCERTEAMS = 24 * 60 * 60;
     private final static int CACHE_LEADERBOARD = 12 * 60 * 60;              // 12 horas
 
+    private static final String ERROR_VIEW_CONTEST_INVALID = "ERROR_VIEW_CONTEST_INVALID";
+    private static final String ERROR_MY_CONTEST_INVALID = "ERROR_MY_CONTEST_INVALID";
+    private static final String ERROR_MY_CONTEST_ENTRY_INVALID = "ERROR_MY_CONTEST_ENTRY_INVALID";
+    private static final String ERROR_TEMPLATE_CONTEST_INVALID = "ERROR_TEMPLATE_CONTEST_INVALID";
+    private static final String ERROR_CONTEST_INVALID = "ERROR_CONTEST_INVALID";
+    private static final String ERROR_TEMPLATE_CONTEST_NOT_ACTIVE = "ERROR_TEMPLATE_CONTEST_NOT_ACTIVE";
+    private static final String ERROR_OP_UNAUTHORIZED = "ERROR_OP_UNAUTHORIZED";
 
     public static class CacheMsg {
         public String msg;
@@ -78,6 +88,14 @@ public class QueryActor extends UntypedActor {
                 sender().tell(msgGetActiveContestV2((String) msg.param), getSelf());
                 break;
 
+            case "getMyLiveContestsV2":
+                sender().tell(msgGetMyLiveContestsV2(msg.userId), getSelf());
+                break;
+
+            case "getMyLiveContestV2":
+                sender().tell(msgGetMyLiveContestV2(msg.userId, (String) msg.param), getSelf());
+                break;
+
             case "getContestInfoV2":
                 sender().tell(msgGetContestInfoV2((String) msg.param), getSelf());
                 break;
@@ -87,7 +105,7 @@ public class QueryActor extends UntypedActor {
                 break;
 
             case "getUserRankingList":
-                sender().tell(msgGetUserRankingList((String) msg.param), getSelf());
+                sender().tell(msgGetUserRankingList((String) msg.userId), getSelf());
                 break;
 
             default:
@@ -176,6 +194,166 @@ public class QueryActor extends UntypedActor {
             Contest contest = Contest.findOne(new ObjectId(contestId), JsonViews.ActiveContest.class);
             return new ReturnHelper(ImmutableMap.of("contest", contest)).toResult(JsonViews.ActiveContest.class);
         }, CACHE_ACTIVE_CONTEST);
+    }
+
+    private static Result msgGetMyLiveContestsV2(String userIdStr) throws Exception {
+        final ObjectId userId = new ObjectId(userIdStr);
+        final List<Contest> myLiveContests = new ArrayList<>();
+
+        // Solicitamos los contests en los que estamos apuntados (incluye información de tiempo de actualización del "live")
+        List<Contest> myLiveContestIds = Contest.findMyLiveUpdated(userId);
+
+        // Contests que tendremos que obtener
+        List<ObjectId> myLiveIdsToUpdate = new ArrayList<>();
+
+        myLiveContestIds.forEach(contest -> {
+            Contest contestCached = (Contest) Cache.get(contest.contestId.toString().concat("live"));
+            if (contestCached != null) {
+                // El tiempo de caché está correctamente actualizada ?
+                if (contestCached.liveUpdatedAt.compareTo(contest.liveUpdatedAt) >= 0) {
+                    Logger.debug("myLiveContests: {} OK : {} >= {}",
+                            contest.contestId, GlobalDate.formatDate(contestCached.liveUpdatedAt), GlobalDate.formatDate(contest.liveUpdatedAt));
+                    myLiveContests.add(contestCached);
+                } else {
+                    Logger.debug("myLiveContests: {} FAILED : {} < {}",
+                            contest.contestId, GlobalDate.formatDate(contestCached.liveUpdatedAt), GlobalDate.formatDate(contest.liveUpdatedAt));
+                    myLiveIdsToUpdate.add(contest.contestId);
+                }
+            } else {
+                myLiveIdsToUpdate.add(contest.contestId);
+            }
+        });
+
+        List<Contest> myLiveContestsToUpdate = getLiveInfo(myLiveIdsToUpdate);
+        myLiveContests.addAll(myLiveContestsToUpdate);
+
+        List<Contest> result = myLiveContests.stream().map(contest -> {
+            // Clonamos los torneos a devolver, para modificarlos y no afectar a lo registrado en la caché
+            Contest contestFiltered = new Contest(contest);
+
+            contestFiltered.contestId = contest.contestId;
+
+            // Eliminar los contestEntries que no sean el usuario
+            contestFiltered.contestEntries = contest.contestEntries.stream().filter(contestEntry -> contestEntry.userId.equals(userId)).collect(Collectors.toList());
+
+            // Una vez calculado el ranking ya no estamos intesados en enviarlos al app
+            contestFiltered.templateMatchEventIds = null;
+
+            return contestFiltered;
+        }).collect(Collectors.toList());
+
+        return new ReturnHelperWithAttach()
+                .attachObject("contests", result, JsonViews.MyLiveContestsV2.class)
+                .toResult();
+    }
+
+    private static Result msgGetMyLiveContestV2(String userId, String contestId) throws Exception {
+        Contest contestCached = null;
+
+        Map<Object, Object> resultCached = (Map<Object, Object>) Cache.get("ViewLiveContestV2-".concat(contestId));
+        if (resultCached != null) {
+            contestCached = (Contest) resultCached.get("contest");
+
+            Contest infoLive = Contest.findOneLiveUpdated(new ObjectId(contestId));
+            if (contestCached.liveUpdatedAt.compareTo(infoLive.liveUpdatedAt) < 0) {
+
+                // No nos sirve la caché que tenemos registrada
+                contestCached = null;
+            }
+            else {
+                Logger.debug("ViewLiveContest: {} OK : {} >= {}",
+                        contestCached.contestId, GlobalDate.formatDate(contestCached.liveUpdatedAt), GlobalDate.formatDate(infoLive.liveUpdatedAt));
+            }
+        }
+
+        if (contestCached == null) {
+
+            contestCached = (Contest) Cache.get(contestId.concat("live"));
+            if (contestCached == null) {
+                List<Contest> myLiveContestsToUpdate = getLiveInfo(ImmutableList.of(new ObjectId(contestId)));
+                contestCached = myLiveContestsToUpdate.get(0);
+            }
+            else {
+                Logger.debug("myLiveContest: {} OK", contestCached.contestId);
+            }
+
+            // No se puede ver el contest "completo" si está "activo" (únicamente en "live" o "history")
+            if (contestCached.state.isActive()) {
+                Logger.error("WTF 7945: getViewContest: contest: {} user: {}", contestId, userId != null ? userId : "<guest>");
+                return new ReturnHelper(false, ERROR_VIEW_CONTEST_INVALID).toResult();
+            }
+
+            List<UserInfo> usersInfoInContest = UserInfo.findNicknamesFromContestEntries(contestCached.contestEntries);
+
+            // Creamos un mapa con los nickNames
+            Map<ObjectId, String> usersInfoMap = new HashMap<>();
+            usersInfoInContest.forEach( userInfo -> usersInfoMap.put(userInfo.userId, userInfo.nickName) );
+
+            // Incrustamos el nickName en el contestEntry, para evitar enviarlos como datos independientes
+            contestCached.contestEntries.forEach( contestEntry -> {
+                if (usersInfoMap.containsKey(contestEntry.userId)) {
+                    contestEntry.nickName = usersInfoMap.get(contestEntry.userId);
+                }
+            });
+
+            List<TemplateMatchEvent> matchEvents = TemplateMatchEvent.findAll(contestCached.templateMatchEventIds);
+
+            ImmutableMap.Builder<Object, Object> builder = ImmutableMap.builder()
+                    .put("contest", contestCached)
+                    .put("match_events", matchEvents)
+                    /*.put("prizes", Prizes.findOne(contestCached.prizeType, contestCached.getNumEntries(), contestCached.getPrizePool()))*/;
+
+            resultCached = builder.build();
+
+            Cache.set("ViewLiveContestV2-".concat(contestId), resultCached, CACHE_VIEW_LIVE_CONTESTS);
+
+            Logger.debug("ViewLiveContest: {} UPDATED", contestCached.contestId);
+        }
+
+        return new ReturnHelper(resultCached)
+                .toResult(JsonViews.FullContest.class);
+    }
+
+    static private List<Contest> getLiveInfo(List<ObjectId> idList) {
+        List<Contest> liveContests = new ArrayList<>();
+
+        idList.forEach( objectId -> {
+            liveContests.add( Contest.findOne(objectId, JsonViews.MyLiveContestsV2.class) );
+        });
+        if (!liveContests.isEmpty()) {
+            List<TemplateMatchEvent> liveMatchEvents = TemplateMatchEvent.gatherFromContests(liveContests);
+
+            Logger.debug("myLiveContestsToUpdate: {} liveMatchEvents: {}", liveContests.size(), liveMatchEvents.size());
+
+            // Unificamos a los futbolistas en un único Map
+            Map<String, LiveFantasyPoints> liveFantasyPointsMap = new HashMap<>();
+            liveMatchEvents.forEach( live -> liveFantasyPointsMap.putAll(live.liveFantasyPoints) );
+
+            // Registramos los fantasyPoints y su posición actual en cada contestEntry
+            liveContests.forEach( contest -> {
+                contest.contestEntries.forEach( contestEntry -> {
+                    contestEntry.fantasyPoints = contestEntry.getFantasyPointsFromMap(liveFantasyPointsMap);
+
+                    // Una vez calculados los fantasyPoints ya no estamos intesados en enviarlos al app
+                    // contestEntry.soccerIds = null;
+                });
+
+                contest.contestEntries.sort((ContestEntry c1, ContestEntry c2) -> {
+                    int compare = Integer.compare(c2.fantasyPoints, c1.fantasyPoints);
+                    // Si tienen los mismos fantasyPoints, los diferenciaremos por su contestEntryId
+                    return compare != 0 ? compare : c2.contestEntryId.toString().compareTo(c1.contestEntryId.toString());
+                });
+
+                for (int i=0; i<contest.contestEntries.size(); i++) {
+                    contest.contestEntries.get(i).position = i;
+                }
+
+                Cache.set(contest.contestId.toString().concat("live"), contest, CACHE_VIEW_LIVE_CONTESTS);
+
+                Logger.debug("myLiveContests: {} UPDATED", contest.contestId);
+            });
+        }
+        return liveContests;
     }
 
     private static Result msgGetContestInfoV2(String contestId) throws Exception {
