@@ -100,6 +100,10 @@ public class QueryActor extends UntypedActor {
                 sender().tell(msgGetLiveMatchEventsFromTemplateContest((String) msg.param), getSelf());
                 break;
 
+            case "getLiveContestEntries":
+                sender().tell(msgGetLiveContestEntries((String) msg.param), getSelf());
+                break;
+
             case "getContestInfoV2":
                 sender().tell(msgGetContestInfoV2((String) msg.param), getSelf());
                 break;
@@ -332,6 +336,25 @@ public class QueryActor extends UntypedActor {
 
                 return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
         }, CACHE_LIVE_MATCHEVENTS);
+    }
+
+    private static Result msgGetLiveContestEntries(String contestId) throws Exception {
+        return Cache.getOrElse("LiveContestEntries-".concat(contestId), () -> {
+            // Obtenemos el Contest
+            Contest contest = Contest.findOne(contestId, "{ state: 1, contestEntries: 1 }");
+
+            if (contest == null) {
+                return new ReturnHelper(false, ERROR_CONTEST_INVALID).toResult();
+            }
+
+            if (!contest.state.isLive() && !contest.state.isHistory()) {
+                return new ReturnHelper(false, ERROR_CONTEST_INVALID).toResult();
+            }
+
+            return new ReturnHelper(ImmutableMap.of(
+                    "contest_entries", contest.contestEntries))
+                    .toResult(JsonViews.FullContest.class);
+        }, CACHE_LIVE_CONTESTENTRIES);
     }
 
     static private List<Contest> getLiveInfo(List<ObjectId> idList) {

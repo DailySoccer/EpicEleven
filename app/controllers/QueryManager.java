@@ -63,6 +63,11 @@ public class QueryManager {
         return F.Promise.wrap(ask(actor, new QueryActor.CacheMsg("getLiveMatchEventsFromTemplateContest", templateContestId), ACTOR_TIMEOUT));
     }
 
+    static Promise<Object> getLiveContestEntries(String contestId) {
+        ActorRef actor = getActor( "livecontestentries" );
+        return F.Promise.wrap(ask(actor, new QueryActor.CacheMsg("getLiveContestEntries", contestId), ACTOR_TIMEOUT));
+    }
+
     static Promise<Object> getContestInfoV2(String contestId) {
         String actorName = "contestinfo-".concat(contestId);
         ActorRef actor = getActor(actorName );

@@ -484,27 +484,9 @@ public class ContestController extends Controller {
         return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
     }
 
-    public static Result getLiveContestEntries(String contestId) throws Exception {
-
-        return Cache.getOrElse("LiveContestEntries-".concat(contestId), new Callable<Result>() {
-            @Override
-            public Result call() throws Exception {
-                // Obtenemos el Contest
-                Contest contest = Contest.findOne(contestId);
-
-                if (contest == null) {
-                    return new ReturnHelper(false, ERROR_CONTEST_INVALID).toResult();
-                }
-
-                if (!contest.state.isLive() && !contest.state.isHistory()) {
-                    return new ReturnHelper(false, ERROR_CONTEST_INVALID).toResult();
-                }
-
-                return new ReturnHelper(ImmutableMap.of(
-                        "contest_entries", contest.contestEntries))
-                        .toResult(JsonViews.FullContest.class);
-            }
-        }, CACHE_LIVE_CONTESTENTRIES);
+    public static Promise<Result> getLiveContestEntries(String contestId) throws Exception {
+        return QueryManager.getLiveContestEntries(contestId)
+                .map(response -> (Result) response);
     }
 
     // @UserAuthenticated

@@ -280,12 +280,20 @@ public class Contest implements JongoId {
         return Model.contests().findOne("{_id : #}", contestId).as(Contest.class);
     }
 
+    static public Contest findOne(ObjectId contestId, String projection) {
+        return Model.contests().findOne("{_id : #}", contestId).projection(projection).as(Contest.class);
+    }
+
     static public Contest findOne(String contestId) {
-        Contest aContest = null;
-        if (ObjectId.isValid(contestId)) {
-            aContest = Model.contests().findOne(new ObjectId(contestId)).as(Contest.class);
-        }
-        return aContest;
+        return ObjectId.isValid(contestId)
+                ? findOne(new ObjectId(contestId))
+                : null;
+    }
+
+    static public Contest findOne(String contestId, String projection) {
+        return ObjectId.isValid(contestId)
+                ? findOne(new ObjectId(contestId), projection)
+                : null;
     }
 
     static public Contest findOne(ObjectId contestId, ObjectId userId) {
