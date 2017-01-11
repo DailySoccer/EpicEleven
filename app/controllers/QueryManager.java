@@ -43,7 +43,7 @@ public class QueryManager {
 
     static Promise<Object> getActiveContestV2(String contestId) {
         String actorName = "activecontest-".concat(contestId);
-        ActorRef actor = getActor(actorName );
+        ActorRef actor = getActor( actorName );
         return F.Promise.wrap(ask(actor, new QueryActor.CacheMsg("getActiveContestV2", contestId), ACTOR_TIMEOUT));
     }
 
@@ -53,8 +53,14 @@ public class QueryManager {
     }
 
     static Promise<Object> getMyLiveContestV2(String userId, String contestId) {
-        ActorRef actor = getActor("livecontests" );
+        ActorRef actor = getActor( "livecontests" );
         return F.Promise.wrap(ask(actor, new QueryActor.CacheMsg("getMyLiveContestV2", userId, contestId), ACTOR_TIMEOUT));
+    }
+
+    static Promise<Object> getLiveMatchEventsFromTemplateContest(String templateContestId) {
+        String actorName = "livematchevents".concat(templateContestId);
+        ActorRef actor = getActor( actorName );
+        return F.Promise.wrap(ask(actor, new QueryActor.CacheMsg("getLiveMatchEventsFromTemplateContest", templateContestId), ACTOR_TIMEOUT));
     }
 
     static Promise<Object> getContestInfoV2(String contestId) {

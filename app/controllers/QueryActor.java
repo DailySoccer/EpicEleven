@@ -96,6 +96,10 @@ public class QueryActor extends UntypedActor {
                 sender().tell(msgGetMyLiveContestV2(msg.userId, (String) msg.param), getSelf());
                 break;
 
+            case "getLiveMatchEventsFromTemplateContest":
+                sender().tell(msgGetLiveMatchEventsFromTemplateContest((String) msg.param), getSelf());
+                break;
+
             case "getContestInfoV2":
                 sender().tell(msgGetContestInfoV2((String) msg.param), getSelf());
                 break;
@@ -312,6 +316,22 @@ public class QueryActor extends UntypedActor {
 
         return new ReturnHelper(resultCached)
                 .toResult(JsonViews.FullContest.class);
+    }
+
+    private static Result msgGetLiveMatchEventsFromTemplateContest(String templateContestId) throws Exception {
+        return Cache.getOrElse("LiveMatchEventsFromTemplateContest-".concat(templateContestId), () -> {
+                // Obtenemos el TemplateContest
+                TemplateContest templateContest = TemplateContest.findOne(templateContestId, "{ templateMatchEventIds: 1 }");
+
+                if (templateContest == null) {
+                    return new ReturnHelper(false, ERROR_TEMPLATE_CONTEST_INVALID).toResult();
+                }
+
+                // Consultar por los partidos del TemplateContest (queremos su version "live")
+                List<TemplateMatchEvent> liveMatchEventList = TemplateMatchEvent.findAllPlaying(templateContest.templateMatchEventIds);
+
+                return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
+        }, CACHE_LIVE_MATCHEVENTS);
     }
 
     static private List<Contest> getLiveInfo(List<ObjectId> idList) {

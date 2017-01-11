@@ -167,12 +167,20 @@ public class TemplateContest implements JongoId {
         return Model.templateContests().findOne("{_id : #}", templateContestId).as(TemplateContest.class);
     }
 
+    static public TemplateContest findOne(ObjectId templateContestId, String projection) {
+        return Model.templateContests().findOne("{_id : #}", templateContestId).projection(projection).as(TemplateContest.class);
+    }
+
     static public TemplateContest findOne(String templateContestId) {
-        TemplateContest theTemplateContest = null;
-        if (ObjectId.isValid(templateContestId)) {
-            theTemplateContest = Model.templateContests().findOne("{_id : #}", new ObjectId(templateContestId)).as(TemplateContest.class);
-        }
-        return theTemplateContest;
+        return ObjectId.isValid(templateContestId)
+                ? findOne(new ObjectId(templateContestId))
+                : null;
+    }
+
+    static public TemplateContest findOne(String templateContestId, String projection) {
+        return ObjectId.isValid(templateContestId)
+                ? findOne(new ObjectId(templateContestId), projection)
+                : null;
     }
 
     static public List<TemplateContest> findAll() {

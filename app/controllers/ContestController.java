@@ -464,23 +464,9 @@ public class ContestController extends Controller {
      * @param templateContestId TemplateContest sobre el que se esta interesado
      * @return La lista de partidos "live"
      */
-    public static Result getLiveMatchEventsFromTemplateContest(String templateContestId) throws Exception {
-        return Cache.getOrElse("LiveMatchEventsFromTemplateContest-".concat(templateContestId), new Callable<Result>() {
-            @Override
-            public Result call() throws Exception {
-                // Obtenemos el TemplateContest
-                TemplateContest templateContest = TemplateContest.findOne(templateContestId);
-
-                if (templateContest == null) {
-                    return new ReturnHelper(false, ERROR_TEMPLATE_CONTEST_INVALID).toResult();
-                }
-
-                // Consultar por los partidos del TemplateContest (queremos su version "live")
-                List<TemplateMatchEvent> liveMatchEventList = TemplateMatchEvent.findAllPlaying(templateContest.templateMatchEventIds);
-
-                return new ReturnHelper(liveMatchEventList).toResult(JsonViews.FullContest.class);
-            }
-        }, CACHE_LIVE_MATCHEVENTS);
+    public static Promise<Result> getLiveMatchEventsFromTemplateContest(String templateContestId) throws Exception {
+        return QueryManager.getLiveMatchEventsFromTemplateContest(templateContestId)
+                .map(response -> (Result) response);
     }
 
     public static Result getLiveMatchEventsFromContest(String contestId) {
