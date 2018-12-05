@@ -1,0 +1,30 @@
+FROM library/java:8-jdk
+MAINTAINER Federico Mon <gnu.fede@gmail.com>
+
+RUN apt-get update -y && apt-get install apt-transport-https
+#RUN sh -c 'curl https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -'
+
+RUN apt-get install -y git && \
+    apt-get clean -y
+
+RUN curl -o activator.zip http://downloads.typesafe.com/typesafe-activator/1.3.2/typesafe-activator-1.3.2.zip
+RUN unzip activator.zip -d /opt/
+
+RUN echo 'export PATH="$PATH:/usr/lib/dart/bin:/opt/activator-1.3.2"' | tee -a ~/.profile 
+
+COPY id_rsa /root/.ssh/
+COPY id_rsa.pub /root/.ssh/
+RUN chmod 0600 /root/.ssh/id_rsa
+RUN chmod 0644 /root/.ssh/id_rsa.pub
+
+RUN ssh-keyscan -t rsa github.com > ~/.ssh/known_hosts
+
+RUN . ~/.profile && \
+    eval "$(ssh-agent -s)" && \
+    ssh-add ~/.ssh/id_rsa && \
+    git clone git@github.com:DailySoccer/webtest.git && \
+    cd webtest && \
+    git checkout feature/docker && \
+    activator compile
+
+CMD . ~/.profile && cd webtest && git pull --rebase && bash ./playTest.sh -B ${SELENIUM_PORT_4444_TCP_ADDR} -u http://${WEB_PORT_9000_TCP_ADDR}:9000

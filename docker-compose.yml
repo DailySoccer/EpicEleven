@@ -1,0 +1,140 @@
+#shipyard:
+#  image: shipyard/deploy
+#  volumes:
+#    - /var/run/docker.sock:/var/run/docker.sock
+#  command: start
+#  ports:
+#    - "8080"
+
+appdata:
+  build: docker/appdata
+  volumes:
+    - /app
+
+tester:
+  build: docker/tester
+  links:
+    - seleniumhub:selenium
+    - seleniumnode
+    - web
+
+#seleniumchrome:
+#  image: selenium/standalone-chrome:2.44.0
+#  ports:
+#    - "4444:4444"
+  
+seleniumhub:
+  image: selenium/hub:2.44.0
+
+seleniumnode:
+  image: selenium/node-chrome-debug:2.44.0
+  ports:
+    - "5900:5900"
+  links:
+    - seleniumhub:hub
+
+compiler:
+  build: docker/compiler
+  volumes_from:
+    - appdata
+  volumes:
+    - ~/.ssh:/root/.ssh
+
+mongobackup:
+  build: docker/mongo_backup
+  environment:
+    VIRTUAL_HOST: mongobackups.epicdocker.com
+    VIRTUAL_PORT: 8000
+  ports:
+    - "8000"
+  volumes:
+    - ./docker/mongo_backups:/shared
+  links:
+    - mongo:db
+
+pgbackup:
+  build: docker/pg_backup
+  ports:
+    - "8001"
+  environment:
+    PGPASSWORD: postgres
+    POSTGRES_USERNAME: postgres
+    VIRTUAL_HOST: pgbackups.epicdocker.com
+    VIRTUAL_PORT: 8001
+  volumes:
+    - ./docker/pg_backups:/shared
+  links:
+    - postgres:db
+
+genghis:
+  build: docker/genghis
+  environment:
+    VIRTUAL_HOST: genghis.epicdocker.com
+  ports:
+    - "5000"
+  links:
+    - mongo:db
+
+dockerui:
+  image: dockerui/dockerui
+  privileged: true
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+  environment:
+    VIRTUAL_HOST: dockerui.epicdocker.com
+  ports:
+    - "9000"
+
+
+logspout:
+#  image: gliderlabs/logspout
+  build: docker/logspout_custom
+  volumes:
+    - /var/run/docker.sock:/tmp/docker.sock
+  command: tcp://logs2.papertrailapp.com:46177
+
+postgres:
+  image: postgres
+  environment:
+    POSTGRES_PASSWORD: postgres
+
+mongo:
+  image: mongo:2.6
+  volumes:
+    - ./docker/data:/data
+
+rabbitmq:
+  image: rabbitmq
+  environment:
+    RABBITMQ_NODENAME: my-rabbit
+
+nginx:
+  image: jwilder/nginx-proxy
+  volumes:
+    - /var/run/docker.sock:/tmp/docker.sock
+    - ./docker/htpasswd:/etc/nginx/htpasswd
+  ports:
+    - "80:80"
+
+web:
+  build: docker/web_role
+  volumes_from:
+    - appdata
+  environment:
+    VIRTUAL_HOST: epicdocker.com
+  ports:
+    - "9000:9000"
+  links:
+    - mongo
+    - rabbitmq
+    - postgres
+
+worker:
+  build: docker/worker_role
+  volumes_from:
+    - appdata
+  links:
+    - postgres
+    - mongo
+    - rabbitmq
+    - web

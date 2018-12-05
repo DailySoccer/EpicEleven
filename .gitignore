@@ -23,3 +23,5 @@ data/snapshot*.tar.gz
 .env
 conf/apiKey_prod.properties
 *.pyc
+docker-compose.yml.bak
+docker/pg_backups/*.backup

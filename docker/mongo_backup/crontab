@@ -1,0 +1,4 @@
+DB_ADDR=DBADDRXXX
+*/30 * * * * root /usr/bin/mongo_backup.sh >> /var/log/cron.log 2>&1
+# An empty line is required at the end of this file for a valid cron file.
+

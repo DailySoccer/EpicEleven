@@ -1,0 +1,7 @@
+echo "Mongodump Started"
+DIR_COPY="/shared/mongodump-`date +%Y.%m.%d-%T`"
+TAR="/shared/mongodump-`date +%Y.%m.%d-%T`.tar.gz"
+/usr/local/bin/mongodump  -h "$DB_ADDR" -o "$DIR_COPY"
+tar czf "$TAR" "$DIR_COPY"
+rm -rf "$DIR_COPY"
+echo "Mongodump Performed"
